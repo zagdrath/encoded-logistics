@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 // Why a network is (or isn't) running, as shown on the Network screen's status line.
 public enum NetworkStatus {
     ONLINE("online"),
-    // Valid, but the controller's buffer is empty: offline, every device loses its channel.
+    // Valid, but the controller's buffer is empty: offline, every device loses its lane.
     NO_POWER("no_power"),
     // The controllers aren't an edge-only box.
     INVALID_SHAPE("invalid_shape"),

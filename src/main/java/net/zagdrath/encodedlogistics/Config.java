@@ -32,20 +32,24 @@ public class Config {
 
     static {
         BUILDER.pop();
-        BUILDER.push("channels");
+        BUILDER.push("lanes");
     }
 
-    public static final ModConfigSpec.IntValue CHANNELS_PER_CONTROLLER_FACE = BUILDER
-            .comment("Channels each controller face with a network connection provides.")
+    public static final ModConfigSpec.IntValue LANES_PER_CONTROLLER_FACE = BUILDER
+            .comment("Lanes each controller face with a network connection provides.")
             .defineInRange("perControllerFace", 32, 1, 1024);
 
-    public static final ModConfigSpec.IntValue CHANNELS_PER_CABLE = BUILDER
-            .comment("Channels a Network Cable carries.")
+    public static final ModConfigSpec.IntValue LANES_PER_CABLE = BUILDER
+            .comment("Lanes a Network Cable carries.")
             .defineInRange("perCable", 8, 1, 1024);
 
-    public static final ModConfigSpec.IntValue CHANNELS_PER_DENSE_CABLE = BUILDER
-            .comment("Channels a Dense Network Cable carries.")
+    public static final ModConfigSpec.IntValue LANES_PER_DENSE_CABLE = BUILDER
+            .comment("Lanes a Dense Network Cable carries.")
             .defineInRange("perDenseCable", 32, 1, 1024);
+
+    public static final ModConfigSpec.IntValue LANES_PER_FIBER_CABLE = BUILDER
+            .comment("Lanes a Fiber Cable carries.")
+            .defineInRange("perFiberCable", 32, 1, 1024);
 
     public static final ModConfigSpec.DoubleValue CABLE_DRAIN = BUILDER
             .comment("FE per tick each Network Cable block drains while its network runs.")
@@ -56,7 +60,7 @@ public class Config {
             .defineInRange("denseCableDrain", 0.2, 0.0, 1_000.0);
 
     public static final ModConfigSpec.IntValue ADHOC_MAX_DEVICES = BUILDER
-            .comment("Channel-using devices a network without a controller can run.")
+            .comment("Lane-using devices a network without a controller can run.")
             .defineInRange("adHocMaxDevices", 8, 0, 1024);
 
     static {

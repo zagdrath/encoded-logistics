@@ -53,7 +53,7 @@ import net.zagdrath.encodedlogistics.registry.ModBlocks;
 // every colour, a dye only its own colour and neutral; normal and dense join each other) or to a network block
 // (BLOCK: a controller now, devices later), or to nothing. The multipart blockstates draw it from those six
 // properties, and the shape follows the same parts (CableShapes). On a network it's a link carrying its tier's
-// channels and using none itself. A dye recolours a placed cable; a water bucket washes a dyed one back to neutral.
+// lanes and using none itself. A dye recolours a placed cable; a water bucket washes a dyed one back to neutral.
 public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, NetworkNodeBlock {
     public static final Map<Direction, EnumProperty<CableConnection>> CONNECTIONS = new EnumMap<>(Direction.class);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -153,9 +153,9 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
 
     // --- Network ---
 
-    public record CableNode(BlockPos pos, Set<Direction> connections, int channelCapacity, double passiveDrain) implements NetworkNode {
+    public record CableNode(BlockPos pos, Set<Direction> connections, int laneCapacity, double passiveDrain) implements NetworkNode {
         @Override
-        public int channelCost() {
+        public int laneCost() {
             return 0;
         }
     }
@@ -168,7 +168,7 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
                 connections.add(side);
             }
         }
-        return new CableNode(pos.immutable(), connections, tier.channels(), tier.passiveDrain());
+        return new CableNode(pos.immutable(), connections, tier.lanes(), tier.passiveDrain());
     }
 
     // --- Dyeing and washing ---

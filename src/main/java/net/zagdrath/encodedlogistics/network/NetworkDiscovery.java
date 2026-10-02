@@ -31,12 +31,12 @@ public final class NetworkDiscovery {
 
     public record Discovered(NetworkGraph graph, Map<BlockPos, Item> items) {}
 
-    // A controller block on the graph: links on all six sides, 32 (config) channels per linked face.
-    public record ControllerNode(BlockPos pos, long controllerGroup, int channelCapacity) implements NetworkNode {
+    // A controller block on the graph: links on all six sides, 32 (config) lanes per linked face.
+    public record ControllerNode(BlockPos pos, long controllerGroup, int laneCapacity) implements NetworkNode {
         private static final Set<Direction> ALL = EnumSet.allOf(Direction.class);
 
         @Override
-        public int channelCost() {
+        public int laneCost() {
             return 0;
         }
 
@@ -53,12 +53,12 @@ public final class NetworkDiscovery {
 
     private NetworkDiscovery() {}
 
-    public static Discovered discover(ServerLevel level, long structureId, Collection<BlockPos> members, int channelsPerFace) {
+    public static Discovered discover(ServerLevel level, long structureId, Collection<BlockPos> members, int lanesPerFace) {
         NetworkGraph graph = new NetworkGraph();
         Map<BlockPos, Item> items = new HashMap<>();
         ArrayDeque<NetworkNode> queue = new ArrayDeque<>();
         for (BlockPos member : members) {
-            NetworkNode node = new ControllerNode(member.immutable(), structureId, channelsPerFace);
+            NetworkNode node = new ControllerNode(member.immutable(), structureId, lanesPerFace);
             graph.addNode(node);
             queue.add(node);
         }
@@ -72,7 +72,7 @@ public final class NetworkDiscovery {
                 NetworkNode neighbour = graph.node(neighbourPos);
                 boolean added = false;
                 if (neighbour == null) {
-                    neighbour = nodeAt(level, neighbourPos, channelsPerFace);
+                    neighbour = nodeAt(level, neighbourPos, lanesPerFace);
                     if (neighbour == null || !neighbour.connections().contains(side.getOpposite())) {
                         continue;
                     }
@@ -95,14 +95,14 @@ public final class NetworkDiscovery {
         return new Discovered(graph, items);
     }
 
-    private static @Nullable NetworkNode nodeAt(ServerLevel level, BlockPos pos, int channelsPerFace) {
+    private static @Nullable NetworkNode nodeAt(ServerLevel level, BlockPos pos, int lanesPerFace) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() instanceof NetworkNodeBlock block) {
             return block.getNetworkNode(level, pos, state);
         }
         var blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof NetworkControllerBlockEntity controller) {
-            return new ControllerNode(pos.immutable(), controller.getStructureId(), channelsPerFace);
+            return new ControllerNode(pos.immutable(), controller.getStructureId(), lanesPerFace);
         }
         return blockEntity instanceof NetworkNodeHost host ? host.getNetworkNode() : null;
     }

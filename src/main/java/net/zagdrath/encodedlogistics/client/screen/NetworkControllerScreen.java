@@ -26,7 +26,7 @@ import net.zagdrath.encodedlogistics.net.NetworkSnapshotPayload;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
 
-// The Network Controller screen: energy gauge, status and channels, Stored / Usage / Generation, and a scrolling
+// The Network Controller screen: energy gauge, status and lanes, Stored / Usage / Generation, and a scrolling
 // grid of the devices on the network. Layout and colours are those of screens/controller.json and
 // screens/common/palette.json.
 public class NetworkControllerScreen extends AbstractContainerScreen<NetworkControllerMenu> {
@@ -39,7 +39,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
     private static final int WIDTH = 208, HEIGHT = 187;
     private static final int GAUGE_X = 9, GAUGE_Y = 19, GAUGE_W = 10, GAUGE_H = 50;
     private static final int LED_X = 28, LED_Y = 22, LED_SIZE = 6;
-    private static final int STATUS_X = 38, STATUS_Y = 21, CHANNELS_RIGHT = 196;
+    private static final int STATUS_X = 38, STATUS_Y = 21, LANES_RIGHT = 196;
     private static final int ROW_LABEL_X = 28, ROW_VALUE_X = 96, STORED_Y = 35, USAGE_Y = 46, GENERATION_Y = 57;
     // The devices label sits midway between the overview box and the device list.
     private static final int DEVICES_X = 8, DEVICES_Y = 78;
@@ -104,8 +104,8 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
         graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
 
         graphics.text(font, status.description(), STATUS_X, STATUS_Y, statusColor(status), false);
-        Component channels = Component.translatable("gui.encodedlogistics.channels", snapshot.channelsUsed(), snapshot.channelCapacity());
-        graphics.text(font, channels, CHANNELS_RIGHT - font.width(channels), STATUS_Y, TEXT_MUTED, false);
+        Component lanes = Component.translatable("gui.encodedlogistics.lanes", snapshot.lanesUsed(), snapshot.laneCapacity());
+        graphics.text(font, lanes, LANES_RIGHT - font.width(lanes), STATUS_Y, TEXT_MUTED, false);
 
         row(graphics, "stored", Component.literal(compact(snapshot.stored()) + " / " + compact(snapshot.capacity()) + " FE"), STORED_Y);
         row(graphics, "usage", Component.literal(perTick(snapshot.usage())), USAGE_Y);
@@ -147,8 +147,8 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
             lines.add(Component.translatable("gui.encodedlogistics.tooltip.passive_drain", decimal(entry.drain())).withColor(TEXT_MUTED));
             if (entry.unpowered()) {
                 lines.add(Component.translatable("gui.encodedlogistics.tooltip.unpowered").withColor(ERROR));
-            } else if (entry.missingChannel() > 0) {
-                lines.add(Component.translatable("gui.encodedlogistics.tooltip.missing_channel").withColor(ERROR));
+            } else if (entry.missingLane() > 0) {
+                lines.add(Component.translatable("gui.encodedlogistics.tooltip.missing_lane").withColor(ERROR));
             }
         } else if (inside(mouseX, mouseY, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
             lines.add(Component.translatable("gui.encodedlogistics.stored"));

@@ -27,7 +27,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
-// Network Cables: connections and colours, the controller flange, channels and drain on the network, dyeing, shapes.
+// Network Cables: connections and colours, the controller flange, lanes and drain on the network, dyeing, shapes.
 final class CableGameTests {
     private CableGameTests() {}
 
@@ -66,7 +66,7 @@ final class CableGameTests {
                 .thenSucceed();
     }
 
-    // A cable against a controller ends in a block connection; the controller face then provides 32 channels, the cable
+    // A cable against a controller ends in a block connection; the controller face then provides 32 lanes, the cable
     // carries 8, and the cables show on the controller's screen with their drain.
     static void cableJoinsController(GameTestHelper helper) {
         BlockPos controller = new BlockPos(0, 1, 0);
@@ -81,7 +81,7 @@ final class CableGameTests {
                     assertSide(helper, new BlockPos(1, 1, 0), Direction.EAST, CableConnection.CABLE);
                     long id = helper.getBlockEntity(controller, NetworkControllerBlockEntity.class).getStructureId();
                     NetworkSnapshot snapshot = ControllerStructures.get(helper.getLevel()).snapshot(id);
-                    helper.assertTrue(snapshot.channelCapacity() == 32, "Capacity is " + snapshot.channelCapacity());
+                    helper.assertTrue(snapshot.laneCapacity() == 32, "Capacity is " + snapshot.laneCapacity());
                     NetworkSnapshot.DeviceEntry cables = snapshot.devices().stream()
                             .filter(entry -> entry.item().getPath().equals("network_cable")).findFirst().orElse(null);
                     helper.assertTrue(cables != null && cables.count() == 4, "Cables on the screen: " + cables);
@@ -93,7 +93,7 @@ final class CableGameTests {
                 .thenExecute(() -> {
                     long id = helper.getBlockEntity(controller, NetworkControllerBlockEntity.class).getStructureId();
                     NetworkSnapshot snapshot = ControllerStructures.get(helper.getLevel()).snapshot(id);
-                    helper.assertTrue(snapshot.channelCapacity() == 0, "Capacity is still " + snapshot.channelCapacity());
+                    helper.assertTrue(snapshot.laneCapacity() == 0, "Capacity is still " + snapshot.laneCapacity());
                     helper.assertTrue(snapshot.devices().size() == 1, "Cables still listed");
                 })
                 .thenSucceed();

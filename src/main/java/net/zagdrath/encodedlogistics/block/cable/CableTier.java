@@ -7,7 +7,7 @@ package net.zagdrath.encodedlogistics.block.cable;
 
 import net.zagdrath.encodedlogistics.Config;
 
-// Network Cable (8 channels) and Dense Network Cable (32); both from the config.
+// Network Cable (8 lanes) and Dense Network Cable (32); both from the config.
 public enum CableTier {
     NORMAL("network_cable"),
     DENSE("dense_network_cable");
@@ -23,8 +23,8 @@ public enum CableTier {
         return name;
     }
 
-    public int channels() {
-        return this == DENSE ? Config.CHANNELS_PER_DENSE_CABLE.getAsInt() : Config.CHANNELS_PER_CABLE.getAsInt();
+    public int lanes() {
+        return this == DENSE ? Config.LANES_PER_DENSE_CABLE.getAsInt() : Config.LANES_PER_CABLE.getAsInt();
     }
 
     public double passiveDrain() {

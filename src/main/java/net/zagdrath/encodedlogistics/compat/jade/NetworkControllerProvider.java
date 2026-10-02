@@ -25,17 +25,17 @@ import snownee.jade.api.ITooltip;
 import snownee.jade.api.StreamServerDataProvider;
 import snownee.jade.api.config.IPluginConfig;
 
-// Jade for the Network Controller: "Online", "0 / 32 channels", "3x3x3 frame, 20 blocks".
+// Jade for the Network Controller: "Online", "0 / 32 lanes", "3x3x3 frame, 20 blocks".
 public enum NetworkControllerProvider implements StreamServerDataProvider<BlockAccessor, NetworkControllerProvider.Data> {
     INSTANCE;
 
     public static final Identifier UID = EncodedLogistics.id("network_controller");
 
-    public record Data(int status, int channelsUsed, int channelCapacity, int sizeX, int sizeY, int sizeZ, int blocks) {
+    public record Data(int status, int lanesUsed, int laneCapacity, int sizeX, int sizeY, int sizeZ, int blocks) {
         public static final StreamCodec<RegistryFriendlyByteBuf, Data> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, Data::status,
-                ByteBufCodecs.VAR_INT, Data::channelsUsed,
-                ByteBufCodecs.VAR_INT, Data::channelCapacity,
+                ByteBufCodecs.VAR_INT, Data::lanesUsed,
+                ByteBufCodecs.VAR_INT, Data::laneCapacity,
                 ByteBufCodecs.VAR_INT, Data::sizeX,
                 ByteBufCodecs.VAR_INT, Data::sizeY,
                 ByteBufCodecs.VAR_INT, Data::sizeZ,
@@ -49,7 +49,7 @@ public enum NetworkControllerProvider implements StreamServerDataProvider<BlockA
             return null;
         }
         NetworkSnapshot snapshot = ControllerStructures.get(level).snapshot(controller.getStructureId());
-        return new Data(snapshot.status().ordinal(), snapshot.channelsUsed(), snapshot.channelCapacity(), snapshot.sizeX(), snapshot.sizeY(),
+        return new Data(snapshot.status().ordinal(), snapshot.lanesUsed(), snapshot.laneCapacity(), snapshot.sizeX(), snapshot.sizeY(),
                 snapshot.sizeZ(), snapshot.blocks());
     }
 
@@ -72,7 +72,7 @@ public enum NetworkControllerProvider implements StreamServerDataProvider<BlockA
                 NetworkStatus status = NetworkStatus.byId(data.status());
                 ChatFormatting color = status.isError() ? ChatFormatting.RED : status == NetworkStatus.ONLINE ? ChatFormatting.GREEN : ChatFormatting.GOLD;
                 tooltip.add(status.description().copy().withStyle(color));
-                tooltip.add(Component.translatable("gui.encodedlogistics.channels", data.channelsUsed(), data.channelCapacity())
+                tooltip.add(Component.translatable("gui.encodedlogistics.lanes", data.lanesUsed(), data.laneCapacity())
                         .withStyle(ChatFormatting.GRAY));
                 if (status != NetworkStatus.INVALID_SHAPE && status != NetworkStatus.TOO_LARGE) {
                     tooltip.add((data.blocks() == 1 ? Component.translatable("gui.encodedlogistics.structure.single")

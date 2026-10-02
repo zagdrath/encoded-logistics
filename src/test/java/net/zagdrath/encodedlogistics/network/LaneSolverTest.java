@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Test;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
-class ChannelSolverTest {
+class LaneSolverTest {
     private static final int FACE = 32, CABLE = 8, DENSE = 32, AD_HOC = 8;
     private static final Set<Direction> ALL = EnumSet.allOf(Direction.class);
 
-    private record Node(BlockPos pos, int channelCost, double passiveDrain, Set<Direction> connections, int channelCapacity,
+    private record Node(BlockPos pos, int laneCost, double passiveDrain, Set<Direction> connections, int laneCapacity,
             long controllerGroup) implements NetworkNode {}
 
     private static Node controller(int x, int y, int z, long group) {
@@ -55,8 +55,8 @@ class ChannelSolverTest {
 
     @Test
     void singleCableOverCapacity() {
-        // Controller at x=0, an 8-channel cable at x=1, then a dense cable spine along x=2 with nine devices on it (y=1).
-        // Every device's path runs through the one cable, so only eight get a channel.
+        // Controller at x=0, an 8-lane cable at x=1, then a dense cable spine along x=2 with nine devices on it (y=1).
+        // Every device's path runs through the one cable, so only eight get a lane.
         NetworkNode[] nodes = new NetworkNode[3 + 9 + 9];
         int n = 0;
         nodes[n++] = controller(0, 0, 0, 1);
@@ -68,21 +68,21 @@ class ChannelSolverTest {
         for (int z = 0; z <= 8; z++) {
             nodes[n++] = device(2, 1, z);
         }
-        ChannelResult result = ChannelSolver.solve(graph(nodes), AD_HOC);
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
 
         assertEquals(NetworkStatus.ONLINE, result.status());
         assertEquals(FACE, result.capacity());
         assertEquals(8, result.used());
         assertEquals(1, result.missing());
         // Nearest first: the device furthest down the spine misses out.
-        assertFalse(result.hasChannel(new BlockPos(2, 1, 8)));
+        assertFalse(result.hasLane(new BlockPos(2, 1, 8)));
         NetworkLink throughCable = new NetworkLink(new BlockPos(0, 0, 0), new BlockPos(1, 0, 0), CABLE);
         assertEquals(8, result.usage(throughCable));
     }
 
     @Test
     void twoBranchesEachLimitedByTheirCable() {
-        // Controller at the origin with an 8-channel cable on its east and west faces, ten devices beyond each.
+        // Controller at the origin with an 8-lane cable on its east and west faces, ten devices beyond each.
         NetworkNode[] nodes = new NetworkNode[1 + 2 * (1 + 10 + 10)];
         int n = 0;
         nodes[n++] = controller(0, 0, 0, 1);
@@ -93,37 +93,37 @@ class ChannelSolverTest {
                 nodes[n++] = device(sign * 2, 1, i);
             }
         }
-        ChannelResult result = ChannelSolver.solve(graph(nodes), AD_HOC);
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
 
         assertEquals(2 * FACE, result.capacity());
         assertEquals(16, result.used());
         assertEquals(4, result.missing());
-        long east = result.channels().entrySet().stream().filter(e -> e.getKey().getX() > 0 && e.getValue()).count();
-        long west = result.channels().entrySet().stream().filter(e -> e.getKey().getX() < 0 && e.getValue()).count();
+        long east = result.lanes().entrySet().stream().filter(e -> e.getKey().getX() > 0 && e.getValue()).count();
+        long west = result.lanes().entrySet().stream().filter(e -> e.getKey().getX() < 0 && e.getValue()).count();
         assertEquals(8, east);
         assertEquals(8, west);
     }
 
     @Test
     void tiesGoToTheLowerBlockPos() {
-        // A 1-channel bottleneck with two devices at the same distance: the lower position wins, every time.
+        // A 1-lane bottleneck with two devices at the same distance: the lower position wins, every time.
         Node bottleneck = new Node(new BlockPos(1, 0, 0), 0, 0, ALL, 1, NetworkNode.NO_CONTROLLER);
         NetworkNode[] nodes = { controller(0, 0, 0, 1), bottleneck, device(1, 0, -1), device(1, 0, 1) };
         for (int run = 0; run < 5; run++) {
-            ChannelResult result = ChannelSolver.solve(graph(nodes), AD_HOC);
-            assertTrue(result.hasChannel(new BlockPos(1, 0, -1)));
-            assertFalse(result.hasChannel(new BlockPos(1, 0, 1)));
+            LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
+            assertTrue(result.hasLane(new BlockPos(1, 0, -1)));
+            assertFalse(result.hasLane(new BlockPos(1, 0, 1)));
         }
     }
 
     @Test
     void nearerDevicesWinOverLowerPositions() {
-        // The far device has the lower position but is further away, so the near one gets the only channel.
+        // The far device has the lower position but is further away, so the near one gets the only lane.
         Node bottleneck = new Node(new BlockPos(1, 0, 0), 0, 0, ALL, 1, NetworkNode.NO_CONTROLLER);
         NetworkNode[] nodes = { controller(0, 0, 0, 1), bottleneck, device(2, 0, 0), cable(1, 0, -1, CABLE), device(1, 0, -2) };
-        ChannelResult result = ChannelSolver.solve(graph(nodes), AD_HOC);
-        assertTrue(result.hasChannel(new BlockPos(2, 0, 0)));
-        assertFalse(result.hasChannel(new BlockPos(1, 0, -2)));
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
+        assertTrue(result.hasLane(new BlockPos(2, 0, 0)));
+        assertFalse(result.hasLane(new BlockPos(1, 0, -2)));
     }
 
     @Test
@@ -131,7 +131,7 @@ class ChannelSolverTest {
         // A 2-block controller structure with something on three of its faces.
         NetworkNode[] nodes = { controller(0, 0, 0, 1), controller(1, 0, 0, 1), cable(-1, 0, 0, CABLE), cable(2, 0, 0, CABLE),
                 device(0, 1, 0) };
-        ChannelResult result = ChannelSolver.solve(graph(nodes), AD_HOC);
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
         assertEquals(3 * FACE, result.capacity());
         assertEquals(1, result.used());
     }
@@ -148,13 +148,13 @@ class ChannelSolverTest {
             nine[2 * i] = cable(i, 0, 0, CABLE);
             nine[2 * i + 1] = device(i, 1, 0);
         }
-        ChannelResult fits = ChannelSolver.solve(graph(eight), AD_HOC);
+        LaneResult fits = LaneSolver.solve(graph(eight), AD_HOC);
         assertTrue(fits.adHoc());
         assertEquals(NetworkStatus.ONLINE, fits.status());
         assertEquals(8, fits.used());
         assertEquals(0, fits.missing());
 
-        ChannelResult over = ChannelSolver.solve(graph(nine), AD_HOC);
+        LaneResult over = LaneSolver.solve(graph(nine), AD_HOC);
         assertEquals(NetworkStatus.ADHOC_OVERLOAD, over.status());
         assertEquals(0, over.used());
         assertEquals(9, over.missing());
@@ -164,20 +164,20 @@ class ChannelSolverTest {
     void conflictBetweenTwoControllerStructures() {
         NetworkNode[] nodes = { controller(0, 0, 0, 1), cable(1, 0, 0, CABLE), device(1, 1, 0), cable(2, 0, 0, CABLE),
                 controller(3, 0, 0, 2) };
-        ChannelResult result = ChannelSolver.solve(graph(nodes), AD_HOC);
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
         assertEquals(NetworkStatus.CONFLICT, result.status());
         assertEquals(0, result.used());
-        assertFalse(result.hasChannel(new BlockPos(1, 1, 0)));
+        assertFalse(result.hasLane(new BlockPos(1, 1, 0)));
     }
 
     @Test
     void oneStructureIsNotAConflict() {
         NetworkNode[] nodes = { controller(0, 0, 0, 7), controller(0, 1, 0, 7), cable(1, 0, 0, CABLE), device(1, 1, 0) };
-        assertEquals(NetworkStatus.ONLINE, ChannelSolver.solve(graph(nodes), AD_HOC).status());
+        assertEquals(NetworkStatus.ONLINE, LaneSolver.solve(graph(nodes), AD_HOC).status());
     }
 
     @Test
-    void unreachableDeviceHasNoChannel() {
+    void unreachableDeviceHasNoLane() {
         // Linked to the network only through a node that doesn't connect back.
         Node oneWay = new Node(new BlockPos(1, 0, 0), 0, 0, EnumSet.of(Direction.EAST), CABLE, NetworkNode.NO_CONTROLLER);
         NetworkGraph graph = new NetworkGraph();
@@ -186,8 +186,8 @@ class ChannelSolverTest {
         graph.addNode(oneWay);
         graph.addNode(device(5, 5, 5));
         graph.connect(new BlockPos(0, 0, 0), Direction.UP);
-        ChannelResult result = ChannelSolver.solve(graph, AD_HOC);
-        assertTrue(result.hasChannel(new BlockPos(0, 1, 0)));
-        assertFalse(result.hasChannel(new BlockPos(5, 5, 5)));
+        LaneResult result = LaneSolver.solve(graph, AD_HOC);
+        assertTrue(result.hasLane(new BlockPos(0, 1, 0)));
+        assertFalse(result.hasLane(new BlockPos(5, 5, 5)));
     }
 }

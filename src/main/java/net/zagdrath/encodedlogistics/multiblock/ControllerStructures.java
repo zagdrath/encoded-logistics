@@ -36,8 +36,8 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
-import net.zagdrath.encodedlogistics.network.ChannelResult;
-import net.zagdrath.encodedlogistics.network.ChannelSolver;
+import net.zagdrath.encodedlogistics.network.LaneResult;
+import net.zagdrath.encodedlogistics.network.LaneSolver;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -257,16 +257,16 @@ public class ControllerStructures extends SavedData {
         double usage = 0;
         if (status != null) {
             runtime.discovered = null;
-            runtime.channels = null;
+            runtime.lanes = null;
             runtime.dirty = true;
         } else {
-            if (runtime.dirty || runtime.discovered == null || runtime.channels == null) {
+            if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
                 runtime.discovered = NetworkDiscovery.discover(level, structure.id(), structure.members(),
-                        Config.CHANNELS_PER_CONTROLLER_FACE.getAsInt());
-                runtime.channels = ChannelSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
+                        Config.LANES_PER_CONTROLLER_FACE.getAsInt());
+                runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
                 runtime.dirty = false;
             }
-            if (runtime.channels.status() == NetworkStatus.CONFLICT) {
+            if (runtime.lanes.status() == NetworkStatus.CONFLICT) {
                 status = NetworkStatus.CONFLICT;
             } else {
                 usage = Config.CONTROLLER_DRAIN.getAsDouble() * blocks.size();
@@ -337,13 +337,13 @@ public class ControllerStructures extends SavedData {
         }
         Runtime runtime = runtimes.getOrDefault(id, new Runtime());
         BlockPos min = structure.min(), max = structure.max();
-        ChannelResult channels = runtime.channels;
+        LaneResult lanes = runtime.lanes;
         List<NetworkSnapshot.DeviceEntry> devices = new ArrayList<>();
         boolean online = runtime.status == NetworkStatus.ONLINE;
         // The structure's own blocks come first in the list (sorted with the rest by count).
         devices.add(new NetworkSnapshot.DeviceEntry(BuiltInRegistries.ITEM.getKey(ModItems.NETWORK_CONTROLLER.get()), structure.members().size(),
                 Config.CONTROLLER_DRAIN.getAsDouble() * structure.members().size(), 0, !online));
-        if (runtime.discovered != null && channels != null) {
+        if (runtime.discovered != null && lanes != null) {
             Map<Item, int[]> counts = new LinkedHashMap<>();
             Map<Item, Double> drains = new HashMap<>();
             for (NetworkNode node : runtime.discovered.graph().nodes()) {
@@ -356,7 +356,7 @@ public class ControllerStructures extends SavedData {
                 }
                 int[] count = counts.computeIfAbsent(item, key -> new int[2]);
                 count[0]++;
-                if (online && node.channelCost() > 0 && !channels.hasChannel(node.pos())) {
+                if (online && node.laneCost() > 0 && !lanes.hasLane(node.pos())) {
                     count[1]++;
                 }
                 drains.merge(item, node.passiveDrain(), Double::sum);
@@ -369,7 +369,7 @@ public class ControllerStructures extends SavedData {
         devices.sort(Comparator.comparingInt(NetworkSnapshot.DeviceEntry::count).reversed()
                 .thenComparing(entry -> entry.item().toString()));
         return new NetworkSnapshot(runtime.status, runtime.stored, runtime.capacity, runtime.usage, runtime.generation,
-                channels != null ? channels.used() : 0, channels != null ? channels.capacity() : 0,
+                lanes != null ? lanes.used() : 0, lanes != null ? lanes.capacity() : 0,
                 max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1, structure.members().size(),
                 devices);
     }
@@ -397,7 +397,7 @@ public class ControllerStructures extends SavedData {
     private static final class Runtime {
         boolean dirty = true;
         NetworkDiscovery.@Nullable Discovered discovered;
-        @Nullable ChannelResult channels;
+        @Nullable LaneResult lanes;
         final int[] received = new int[GENERATION_WINDOW];
         int receivedIndex;
         double drainCarry;

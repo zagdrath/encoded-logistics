@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
-// The nodes of one network and the links between neighbouring nodes: what the ChannelSolver routes over.
+// The nodes of one network and the links between neighbouring nodes: what the LaneSolver routes over.
 public final class NetworkGraph {
     private final Map<BlockPos, NetworkNode> nodes = new HashMap<>();
     private final Map<BlockPos, Map<Direction, NetworkLink>> links = new HashMap<>();
@@ -47,7 +47,7 @@ public final class NetworkGraph {
         return nodes.size();
     }
 
-    // Links the node at pos to its neighbour on side, with the smaller channel capacity of the two. Both must be in
+    // Links the node at pos to its neighbour on side, with the smaller lane capacity of the two. Both must be in
     // the graph; linking the same pair twice returns the existing link.
     public NetworkLink connect(BlockPos pos, Direction side) {
         BlockPos neighbour = pos.relative(side);
@@ -60,7 +60,7 @@ public final class NetworkGraph {
         if (existing != null) {
             return existing;
         }
-        NetworkLink link = new NetworkLink(pos.immutable(), neighbour.immutable(), Math.min(a.channelCapacity(), b.channelCapacity()));
+        NetworkLink link = new NetworkLink(pos.immutable(), neighbour.immutable(), Math.min(a.laneCapacity(), b.laneCapacity()));
         links.computeIfAbsent(pos.immutable(), p -> new EnumMap<>(Direction.class)).put(side, link);
         links.computeIfAbsent(neighbour.immutable(), p -> new EnumMap<>(Direction.class)).put(side.getOpposite(), link);
         allLinks.add(link);

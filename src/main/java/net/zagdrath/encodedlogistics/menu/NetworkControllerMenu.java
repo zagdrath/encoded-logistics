@@ -22,7 +22,7 @@ import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
 // The Network screen of a controller structure: no slots. While it's open the server sends the structure's snapshot
-// (status, energy, channels, structure, devices) every SYNC_INTERVAL ticks.
+// (status, energy, lanes, structure, devices) every SYNC_INTERVAL ticks.
 public class NetworkControllerMenu extends AbstractContainerMenu {
     private static final int SYNC_INTERVAL = 10;
 

@@ -7,7 +7,7 @@ package net.zagdrath.encodedlogistics.network;
 
 import net.minecraft.core.BlockPos;
 
-// A connection between two adjacent nodes, carrying at most capacity channels (the smaller tier of its two ends).
+// A connection between two adjacent nodes, carrying at most capacity lanes (the smaller tier of its two ends).
 // from is always the lower position, so a link has one identity whichever end it is looked up from.
 public record NetworkLink(BlockPos from, BlockPos to, int capacity) {
     public NetworkLink {

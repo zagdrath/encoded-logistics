@@ -13,7 +13,7 @@ import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 
 // Jade support (only loaded when Jade is installed). Jade's own energy bar reads the controller's FE capability, which
-// reports the whole structure's buffer; this adds the network's status, channels and structure.
+// reports the whole structure's buffer; this adds the network's status, lanes and structure.
 @WailaPlugin
 public class EncodedLogisticsJadePlugin implements IWailaPlugin {
     @Override

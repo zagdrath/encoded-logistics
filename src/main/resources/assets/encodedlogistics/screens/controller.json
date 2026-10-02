@@ -29,7 +29,7 @@
   "text": {
     "title":      { "key": "gui.encodedlogistics.network", "left": 8, "top": 5, "color": "TEXT" },
     "status":     { "left": 38, "top": 21, "color": "ACCENT", "errorColor": "ERROR" },
-    "channels":   { "right": 196, "top": 21, "color": "TEXT_MUTED" },
+    "lanes":   { "right": 196, "top": 21, "color": "TEXT_MUTED" },
     "stored":     { "left": 28, "top": 35, "valueLeft": 96, "color": "TEXT", "labelColor": "TEXT_MUTED" },
     "usage":      { "left": 28, "top": 46, "valueLeft": 96, "color": "TEXT", "labelColor": "TEXT_MUTED" },
     "generation": { "left": 28, "top": 57, "valueLeft": 96, "color": "TEXT", "labelColor": "TEXT_MUTED" },

@@ -14,14 +14,14 @@ import net.minecraft.resources.Identifier;
 
 // Everything the Network screen shows, as the server last saw it.
 public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, double usage, double generation,
-        int channelsUsed, int channelCapacity, int sizeX, int sizeY, int sizeZ, int blocks, List<DeviceEntry> devices) {
+        int lanesUsed, int laneCapacity, int sizeX, int sizeY, int sizeZ, int blocks, List<DeviceEntry> devices) {
     public static final NetworkSnapshot EMPTY = new NetworkSnapshot(NetworkStatus.NO_POWER, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, List.of());
 
     // One type of device on the network (grouped by item): how many, their total drain, and how many of them are
-    // missing a channel. unpowered: the whole network is offline.
-    public record DeviceEntry(Identifier item, int count, double drain, int missingChannel, boolean unpowered) {
+    // missing a lane. unpowered: the whole network is offline.
+    public record DeviceEntry(Identifier item, int count, double drain, int missingLane, boolean unpowered) {
         public boolean hasError() {
-            return missingChannel > 0 || unpowered;
+            return missingLane > 0 || unpowered;
         }
 
         static final StreamCodec<RegistryFriendlyByteBuf, DeviceEntry> STREAM_CODEC = StreamCodec.of(
@@ -29,7 +29,7 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                     buf.writeIdentifier(entry.item);
                     buf.writeVarInt(entry.count);
                     buf.writeDouble(entry.drain);
-                    buf.writeVarInt(entry.missingChannel);
+                    buf.writeVarInt(entry.missingLane);
                     buf.writeBoolean(entry.unpowered);
                 },
                 buf -> new DeviceEntry(buf.readIdentifier(), buf.readVarInt(), buf.readDouble(), buf.readVarInt(), buf.readBoolean()));
@@ -46,8 +46,8 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                 buf.writeVarLong(snapshot.capacity);
                 buf.writeDouble(snapshot.usage);
                 buf.writeDouble(snapshot.generation);
-                buf.writeVarInt(snapshot.channelsUsed);
-                buf.writeVarInt(snapshot.channelCapacity);
+                buf.writeVarInt(snapshot.lanesUsed);
+                buf.writeVarInt(snapshot.laneCapacity);
                 buf.writeVarInt(snapshot.sizeX);
                 buf.writeVarInt(snapshot.sizeY);
                 buf.writeVarInt(snapshot.sizeZ);
@@ -62,7 +62,7 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                 double usage = buf.readDouble();
                 double generation = buf.readDouble();
                 int used = buf.readVarInt();
-                int channelCapacity = buf.readVarInt();
+                int laneCapacity = buf.readVarInt();
                 int sizeX = buf.readVarInt();
                 int sizeY = buf.readVarInt();
                 int sizeZ = buf.readVarInt();
@@ -72,7 +72,7 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                 for (int i = 0; i < count; i++) {
                     devices.add(DeviceEntry.STREAM_CODEC.decode(buf));
                 }
-                return new NetworkSnapshot(status, stored, capacity, usage, generation, used, channelCapacity, sizeX, sizeY, sizeZ,
+                return new NetworkSnapshot(status, stored, capacity, usage, generation, used, laneCapacity, sizeX, sizeY, sizeZ,
                         blocks, devices);
             });
 }

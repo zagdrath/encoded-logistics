@@ -29,7 +29,7 @@ import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 // A short description of what each Encoded Logistics item does, under its name, the same way as Arcforge: "Hold
 // [Shift] for info", and the description while Shift is held. Descriptions live in the lang file as
 // tooltip.encodedlogistics.info.<item>; coloured items (cables) share one without the colour, e.g.
-// tooltip.encodedlogistics.info.network_cable. A cable's Shift info ends with its channels and the colours it joins.
+// tooltip.encodedlogistics.info.network_cable. A cable's Shift info ends with its lanes and the colours it joins.
 @EventBusSubscriber(modid = EncodedLogistics.MODID, value = Dist.CLIENT)
 public final class ItemInfoTooltips {
     private static final String PREFIX = "tooltip.encodedlogistics.info.";
@@ -63,7 +63,7 @@ public final class ItemInfoTooltips {
         }
         if (event.getItemStack().getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof NetworkCableBlock cable) {
             at += lines.size();
-            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.cable.channels", cable.getTier().channels()).withStyle(ChatFormatting.GRAY));
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.cable.lanes", cable.getTier().lanes()).withStyle(ChatFormatting.GRAY));
             DyeColor dye = cable.getColor().dye();
             tooltip.add(at, (dye == null ? Component.translatable("tooltip.encodedlogistics.cable.neutral")
                     : Component.translatable("tooltip.encodedlogistics.cable.dyed", Component.translatable("color.minecraft." + dye.getSerializedName())))

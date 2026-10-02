@@ -17,22 +17,22 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
-// AE2-style channel assignment, as a pure function of the graph.
+// AE2-style lane assignment, as a pure function of the graph.
 //
 // With one controller structure: a multi-source BFS from every controller block that has a link to the rest of the
 // network builds a shortest-path tree (ties broken by Direction order DOWN, UP, NORTH, SOUTH, WEST, EAST, sources in
 // BlockPos order, so assignment is stable between reloads). Devices are then visited nearest first (ties by BlockPos);
-// each walks its tree path back to the controller and gets a channel only if every link on the path has room for it,
-// otherwise it is missing a channel (still connected, but inactive).
+// each walks its tree path back to the controller and gets a lane only if every link on the path has room for it,
+// otherwise it is missing a lane (still connected, but inactive).
 //
 // With no controller the network is ad hoc: up to adHocLimit devices work with no routing limits; more and none do.
-// With controllers from two or more structures the network is in conflict and no device gets a channel.
-public final class ChannelSolver {
+// With controllers from two or more structures the network is in conflict and no device gets a lane.
+public final class LaneSolver {
     private static final Comparator<NetworkNode> BY_POS = Comparator.comparing(NetworkNode::pos);
 
-    private ChannelSolver() {}
+    private LaneSolver() {}
 
-    public static ChannelResult solve(NetworkGraph graph, int adHocLimit) {
+    public static LaneResult solve(NetworkGraph graph, int adHocLimit) {
         List<NetworkNode> devices = new ArrayList<>();
         List<NetworkNode> controllers = new ArrayList<>();
         Set<Long> groups = new HashSet<>();
@@ -40,7 +40,7 @@ public final class ChannelSolver {
             if (node.isController()) {
                 controllers.add(node);
                 groups.add(node.controllerGroup());
-            } else if (node.channelCost() > 0) {
+            } else if (node.laneCost() > 0) {
                 devices.add(node);
             }
         }
@@ -48,12 +48,12 @@ public final class ChannelSolver {
         controllers.sort(BY_POS);
 
         if (groups.size() > 1) {
-            return new ChannelResult(NetworkStatus.CONFLICT, false, 0, 0, allDevices(devices, false), Map.of());
+            return new LaneResult(NetworkStatus.CONFLICT, false, 0, 0, allDevices(devices, false), Map.of());
         }
         if (groups.isEmpty()) {
-            int needed = devices.stream().mapToInt(NetworkNode::channelCost).sum();
+            int needed = devices.stream().mapToInt(NetworkNode::laneCost).sum();
             boolean fits = needed <= adHocLimit;
-            return new ChannelResult(fits ? NetworkStatus.ONLINE : NetworkStatus.ADHOC_OVERLOAD, true, adHocLimit,
+            return new LaneResult(fits ? NetworkStatus.ONLINE : NetworkStatus.ADHOC_OVERLOAD, true, adHocLimit,
                     fits ? needed : 0, allDevices(devices, fits), Map.of());
         }
 
@@ -69,7 +69,7 @@ public final class ChannelSolver {
                 NetworkLink link = graph.link(controller.pos(), side);
                 NetworkNode other = link != null ? graph.node(link.other(controller.pos())) : null;
                 if (other != null && !other.isController()) {
-                    capacity += controller.channelCapacity();
+                    capacity += controller.laneCapacity();
                     source = true;
                 }
             }
@@ -98,7 +98,7 @@ public final class ChannelSolver {
         }
 
         devices.sort(Comparator.<NetworkNode>comparingInt(d -> distance.getOrDefault(d.pos(), Integer.MAX_VALUE)).thenComparing(BY_POS));
-        Map<BlockPos, Boolean> channels = new HashMap<>();
+        Map<BlockPos, Boolean> lanes = new HashMap<>();
         Map<NetworkLink, Integer> usage = new HashMap<>();
         int used = 0;
         for (NetworkNode device : devices) {
@@ -106,7 +106,7 @@ public final class ChannelSolver {
             boolean fits = path != null;
             if (fits) {
                 for (NetworkLink link : path) {
-                    if (usage.getOrDefault(link, 0) + device.channelCost() > link.capacity()) {
+                    if (usage.getOrDefault(link, 0) + device.laneCost() > link.capacity()) {
                         fits = false;
                         break;
                     }
@@ -114,13 +114,13 @@ public final class ChannelSolver {
             }
             if (fits) {
                 for (NetworkLink link : path) {
-                    usage.merge(link, device.channelCost(), Integer::sum);
+                    usage.merge(link, device.laneCost(), Integer::sum);
                 }
-                used += device.channelCost();
+                used += device.laneCost();
             }
-            channels.put(device.pos(), fits);
+            lanes.put(device.pos(), fits);
         }
-        return new ChannelResult(NetworkStatus.ONLINE, false, capacity, used, channels, usage);
+        return new LaneResult(NetworkStatus.ONLINE, false, capacity, used, lanes, usage);
     }
 
     // The links from a device back to the controller along the BFS tree, or null when it can't reach one.
@@ -138,9 +138,9 @@ public final class ChannelSolver {
         return path;
     }
 
-    private static Map<BlockPos, Boolean> allDevices(List<NetworkNode> devices, boolean hasChannel) {
-        Map<BlockPos, Boolean> channels = new HashMap<>();
-        devices.forEach(device -> channels.put(device.pos(), hasChannel));
-        return channels;
+    private static Map<BlockPos, Boolean> allDevices(List<NetworkNode> devices, boolean hasLane) {
+        Map<BlockPos, Boolean> lanes = new HashMap<>();
+        devices.forEach(device -> lanes.put(device.pos(), hasLane));
+        return lanes;
     }
 }
