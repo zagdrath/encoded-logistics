@@ -1,0 +1,17 @@
+{
+  "values": [
+    "encodedlogistics:dense_network_cable",
+    "encodedlogistics:white_dense_network_cable",
+    "encodedlogistics:orange_dense_network_cable",
+    "encodedlogistics:magenta_dense_network_cable",
+    "encodedlogistics:light_blue_dense_network_cable",
+    "encodedlogistics:yellow_dense_network_cable",
+    "encodedlogistics:lime_dense_network_cable",
+    "encodedlogistics:pink_dense_network_cable",
+    "encodedlogistics:cyan_dense_network_cable",
+    "encodedlogistics:purple_dense_network_cable",
+    "encodedlogistics:blue_dense_network_cable",
+    "encodedlogistics:green_dense_network_cable",
+    "encodedlogistics:red_dense_network_cable"
+  ]
+}

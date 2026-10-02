@@ -1,0 +1,14 @@
+{
+ "parent": "encodedlogistics:block/cable/normal/template_cube_straight",
+ "textures": {
+  "h": "encodedlogistics:block/cable/normal/pink_h",
+  "v": "encodedlogistics:block/cable/normal/pink_v",
+  "j": "encodedlogistics:block/cable/normal/pink_j",
+  "f": "encodedlogistics:block/cable/normal/pink_f",
+  "h_glow": "encodedlogistics:block/cable/normal/pink_h_glow",
+  "v_glow": "encodedlogistics:block/cable/normal/pink_v_glow",
+  "j_glow": "encodedlogistics:block/cable/normal/pink_j_glow",
+  "f_glow": "encodedlogistics:block/cable/normal/pink_f_glow",
+  "particle": "encodedlogistics:block/cable/normal/pink_h"
+ }
+}

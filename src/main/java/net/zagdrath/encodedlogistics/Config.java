@@ -47,6 +47,14 @@ public class Config {
             .comment("Channels a Dense Network Cable carries.")
             .defineInRange("perDenseCable", 32, 1, 1024);
 
+    public static final ModConfigSpec.DoubleValue CABLE_DRAIN = BUILDER
+            .comment("FE per tick each Network Cable block drains while its network runs.")
+            .defineInRange("cableDrain", 0.05, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue DENSE_CABLE_DRAIN = BUILDER
+            .comment("FE per tick each Dense Network Cable block drains while its network runs.")
+            .defineInRange("denseCableDrain", 0.2, 0.0, 1_000.0);
+
     public static final ModConfigSpec.IntValue ADHOC_MAX_DEVICES = BUILDER
             .comment("Channel-using devices a network without a controller can run.")
             .defineInRange("adHocMaxDevices", 8, 0, 1024);

@@ -1,0 +1,14 @@
+{
+ "parent": "encodedlogistics:block/cable/dense/template_arm_junction",
+ "textures": {
+  "h": "encodedlogistics:block/cable/dense/blue_h",
+  "v": "encodedlogistics:block/cable/dense/blue_v",
+  "j": "encodedlogistics:block/cable/dense/blue_j",
+  "f": "encodedlogistics:block/cable/dense/blue_f",
+  "h_glow": "encodedlogistics:block/cable/dense/blue_h_glow",
+  "v_glow": "encodedlogistics:block/cable/dense/blue_v_glow",
+  "j_glow": "encodedlogistics:block/cable/dense/blue_j_glow",
+  "f_glow": "encodedlogistics:block/cable/dense/blue_f_glow",
+  "particle": "encodedlogistics:block/cable/dense/blue_h"
+ }
+}

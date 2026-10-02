@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "network_cable_dyeing",
+  "key": {
+    "C": "#encodedlogistics:network_cables",
+    "D": "minecraft:yellow_dye"
+  },
+  "pattern": [
+    "CCC",
+    "CDC",
+    "CCC"
+  ],
+  "result": {
+    "count": 8,
+    "id": "encodedlogistics:yellow_network_cable"
+  }
+}

@@ -18,11 +18,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 
 // Builds a controller structure's network graph from the world: its controller blocks, then everything reachable
-// from them through NetworkNodeHosts that connect toward each other. Controllers of another structure that turn up
-// are added too (and not walked through), so the solver sees the conflict.
+// from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other.
+// Controllers of another structure that turn up are added too (and not walked through), so the solver sees the
+// conflict.
 public final class NetworkDiscovery {
     // A network bigger than this is cut off where the walk stops.
     public static final int MAX_NODES = 16_384;
@@ -94,6 +96,10 @@ public final class NetworkDiscovery {
     }
 
     private static @Nullable NetworkNode nodeAt(ServerLevel level, BlockPos pos, int channelsPerFace) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof NetworkNodeBlock block) {
+            return block.getNetworkNode(level, pos, state);
+        }
         var blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof NetworkControllerBlockEntity controller) {
             return new ControllerNode(pos.immutable(), controller.getStructureId(), channelsPerFace);

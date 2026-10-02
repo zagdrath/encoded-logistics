@@ -52,6 +52,10 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("breaking_splits_structures", EncodedLogisticsGameTests::breakingSplitsStructures);
         TESTS.put("power_cycle", EncodedLogisticsGameTests::powerCycle);
         TESTS.put("energy_pools_across_structure", EncodedLogisticsGameTests::energyPoolsAcrossStructure);
+        TESTS.put("cable_colours_connect", CableGameTests::coloursConnect);
+        TESTS.put("cable_joins_controller", CableGameTests::cableJoinsController);
+        TESTS.put("cable_dyeing_recolours", CableGameTests::dyeingRecolours);
+        TESTS.put("cable_shapes", CableGameTests::shapes);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

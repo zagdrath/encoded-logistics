@@ -1,0 +1,14 @@
+{
+ "parent": "encodedlogistics:block/cable/dense/template_cube_straight",
+ "textures": {
+  "h": "encodedlogistics:block/cable/dense/green_h",
+  "v": "encodedlogistics:block/cable/dense/green_v",
+  "j": "encodedlogistics:block/cable/dense/green_j",
+  "f": "encodedlogistics:block/cable/dense/green_f",
+  "h_glow": "encodedlogistics:block/cable/dense/green_h_glow",
+  "v_glow": "encodedlogistics:block/cable/dense/green_v_glow",
+  "j_glow": "encodedlogistics:block/cable/dense/green_j_glow",
+  "f_glow": "encodedlogistics:block/cable/dense/green_f_glow",
+  "particle": "encodedlogistics:block/cable/dense/green_h"
+ }
+}

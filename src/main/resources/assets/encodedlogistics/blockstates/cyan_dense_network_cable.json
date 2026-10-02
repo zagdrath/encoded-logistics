@@ -1,0 +1,795 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "north": "cable",
+    "south": "cable",
+    "east": "none",
+    "west": "none",
+    "up": "none",
+    "down": "none"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/cube_straight"
+   }
+  },
+  {
+   "when": {
+    "north": "none",
+    "south": "none",
+    "east": "cable",
+    "west": "cable",
+    "up": "none",
+    "down": "none"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/cube_straight",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "north": "none",
+    "south": "none",
+    "east": "none",
+    "west": "none",
+    "up": "cable",
+    "down": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/cube_straight",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "OR": [
+       {
+        "north": "!cable"
+       },
+       {
+        "south": "!cable"
+       },
+       {
+        "east": "!none"
+       },
+       {
+        "west": "!none"
+       },
+       {
+        "up": "!none"
+       },
+       {
+        "down": "!none"
+       }
+      ]
+     },
+     {
+      "OR": [
+       {
+        "east": "!cable"
+       },
+       {
+        "west": "!cable"
+       },
+       {
+        "north": "!none"
+       },
+       {
+        "south": "!none"
+       },
+       {
+        "up": "!none"
+       },
+       {
+        "down": "!none"
+       }
+      ]
+     },
+     {
+      "OR": [
+       {
+        "up": "!cable"
+       },
+       {
+        "down": "!cable"
+       },
+       {
+        "north": "!none"
+       },
+       {
+        "south": "!none"
+       },
+       {
+        "east": "!none"
+       },
+       {
+        "west": "!none"
+       }
+      ]
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/cube_junction"
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "north": "cable",
+      "south": "cable",
+      "east": "none",
+      "west": "none",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "north": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_straight"
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "AND": [
+       {
+        "OR": [
+         {
+          "north": "!cable"
+         },
+         {
+          "south": "!cable"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "east": "!cable"
+         },
+         {
+          "west": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "up": "!cable"
+         },
+         {
+          "down": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "north": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_junction"
+   }
+  },
+  {
+   "when": {
+    "north": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_block"
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "north": "cable",
+      "south": "cable",
+      "east": "none",
+      "west": "none",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "south": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_straight",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "AND": [
+       {
+        "OR": [
+         {
+          "north": "!cable"
+         },
+         {
+          "south": "!cable"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "east": "!cable"
+         },
+         {
+          "west": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "up": "!cable"
+         },
+         {
+          "down": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "south": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_junction",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "south": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_block",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "north": "none",
+      "south": "none",
+      "east": "cable",
+      "west": "cable",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "east": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_straight",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "AND": [
+       {
+        "OR": [
+         {
+          "north": "!cable"
+         },
+         {
+          "south": "!cable"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "east": "!cable"
+         },
+         {
+          "west": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "up": "!cable"
+         },
+         {
+          "down": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "east": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_junction",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "east": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_block",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "north": "none",
+      "south": "none",
+      "east": "cable",
+      "west": "cable",
+      "up": "none",
+      "down": "none"
+     },
+     {
+      "west": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_straight",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "AND": [
+       {
+        "OR": [
+         {
+          "north": "!cable"
+         },
+         {
+          "south": "!cable"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "east": "!cable"
+         },
+         {
+          "west": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "up": "!cable"
+         },
+         {
+          "down": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "west": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_junction",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "west": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_block",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "north": "none",
+      "south": "none",
+      "east": "none",
+      "west": "none",
+      "up": "cable",
+      "down": "cable"
+     },
+     {
+      "up": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_straight",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "AND": [
+       {
+        "OR": [
+         {
+          "north": "!cable"
+         },
+         {
+          "south": "!cable"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "east": "!cable"
+         },
+         {
+          "west": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "up": "!cable"
+         },
+         {
+          "down": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "up": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_junction",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "up": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_block",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "north": "none",
+      "south": "none",
+      "east": "none",
+      "west": "none",
+      "up": "cable",
+      "down": "cable"
+     },
+     {
+      "down": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_straight",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "AND": [
+     {
+      "AND": [
+       {
+        "OR": [
+         {
+          "north": "!cable"
+         },
+         {
+          "south": "!cable"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "east": "!cable"
+         },
+         {
+          "west": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "up": "!none"
+         },
+         {
+          "down": "!none"
+         }
+        ]
+       },
+       {
+        "OR": [
+         {
+          "up": "!cable"
+         },
+         {
+          "down": "!cable"
+         },
+         {
+          "north": "!none"
+         },
+         {
+          "south": "!none"
+         },
+         {
+          "east": "!none"
+         },
+         {
+          "west": "!none"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "down": "cable"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_junction",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "down": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/dense/cyan/arm_block",
+    "x": 90
+   }
+  }
+ ]
+}

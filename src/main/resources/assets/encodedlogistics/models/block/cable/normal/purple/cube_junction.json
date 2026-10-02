@@ -1,0 +1,14 @@
+{
+ "parent": "encodedlogistics:block/cable/normal/template_cube_junction",
+ "textures": {
+  "h": "encodedlogistics:block/cable/normal/purple_h",
+  "v": "encodedlogistics:block/cable/normal/purple_v",
+  "j": "encodedlogistics:block/cable/normal/purple_j",
+  "f": "encodedlogistics:block/cable/normal/purple_f",
+  "h_glow": "encodedlogistics:block/cable/normal/purple_h_glow",
+  "v_glow": "encodedlogistics:block/cable/normal/purple_v_glow",
+  "j_glow": "encodedlogistics:block/cable/normal/purple_j_glow",
+  "f_glow": "encodedlogistics:block/cable/normal/purple_f_glow",
+  "particle": "encodedlogistics:block/cable/normal/purple_h"
+ }
+}

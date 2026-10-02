@@ -1,0 +1,14 @@
+{
+ "parent": "encodedlogistics:block/cable/normal/template_arm_junction",
+ "textures": {
+  "h": "encodedlogistics:block/cable/normal/orange_h",
+  "v": "encodedlogistics:block/cable/normal/orange_v",
+  "j": "encodedlogistics:block/cable/normal/orange_j",
+  "f": "encodedlogistics:block/cable/normal/orange_f",
+  "h_glow": "encodedlogistics:block/cable/normal/orange_h_glow",
+  "v_glow": "encodedlogistics:block/cable/normal/orange_v_glow",
+  "j_glow": "encodedlogistics:block/cable/normal/orange_j_glow",
+  "f_glow": "encodedlogistics:block/cable/normal/orange_f_glow",
+  "particle": "encodedlogistics:block/cable/normal/orange_h"
+ }
+}

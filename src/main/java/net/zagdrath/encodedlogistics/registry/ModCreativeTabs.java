@@ -22,7 +22,10 @@ public final class ModCreativeTabs {
             .title(Component.translatable("itemGroup.encodedlogistics"))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
             .icon(() -> ModItems.NETWORK_CONTROLLER.get().getDefaultInstance())
-            .displayItems((parameters, output) -> output.accept(ModItems.NETWORK_CONTROLLER.get()))
+            .displayItems((parameters, output) -> {
+                output.accept(ModItems.NETWORK_CONTROLLER.get());
+                ModItems.allCables().forEach(cable -> output.accept(cable.get()));
+            })
             .build());
 
     private ModCreativeTabs() {}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "dense_network_cable",
+  "ingredients": [
+    "encodedlogistics:yellow_network_cable",
+    "encodedlogistics:yellow_network_cable",
+    "encodedlogistics:yellow_network_cable",
+    "encodedlogistics:yellow_network_cable",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "count": 1,
+    "id": "encodedlogistics:yellow_dense_network_cable"
+  }
+}

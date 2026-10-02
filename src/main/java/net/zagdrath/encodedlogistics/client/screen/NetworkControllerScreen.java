@@ -109,7 +109,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
 
         row(graphics, "stored", Component.literal(compact(snapshot.stored()) + " / " + compact(snapshot.capacity()) + " FE"), STORED_Y);
         row(graphics, "usage", Component.literal(perTick(snapshot.usage())), USAGE_Y);
-        row(graphics, "generation", Component.literal(perTick(snapshot.generation())), GENERATION_Y);
+        row(graphics, "received", Component.literal(perTick(snapshot.generation())), GENERATION_Y);
 
         int total = snapshot.devices().stream().mapToInt(NetworkSnapshot.DeviceEntry::count).sum();
         graphics.text(font, Component.translatable("gui.encodedlogistics.devices", snapshot.devices().size(), total), DEVICES_X, DEVICES_Y,

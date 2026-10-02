@@ -1,0 +1,14 @@
+{
+ "parent": "encodedlogistics:block/cable/dense/template_arm_block",
+ "textures": {
+  "h": "encodedlogistics:block/cable/dense/lime_h",
+  "v": "encodedlogistics:block/cable/dense/lime_v",
+  "j": "encodedlogistics:block/cable/dense/lime_j",
+  "f": "encodedlogistics:block/cable/dense/lime_f",
+  "h_glow": "encodedlogistics:block/cable/dense/lime_h_glow",
+  "v_glow": "encodedlogistics:block/cable/dense/lime_v_glow",
+  "j_glow": "encodedlogistics:block/cable/dense/lime_j_glow",
+  "f_glow": "encodedlogistics:block/cable/dense/lime_f_glow",
+  "particle": "encodedlogistics:block/cable/dense/lime_h"
+ }
+}
