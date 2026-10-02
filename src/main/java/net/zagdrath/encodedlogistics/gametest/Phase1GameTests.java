@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
+import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
@@ -171,12 +172,12 @@ final class Phase1GameTests {
                 })
                 .thenIdle(3)
                 .thenExecute(() -> {
-                    helper.assertTrue(helper.getBlockEntity(cablePos, CableBlockEntity.class).getAttachments().terminal(Direction.UP), "No terminal");
+                    helper.assertTrue(helper.getBlockEntity(cablePos, CableBlockEntity.class).getAttachments().part(Direction.UP) == PartType.ACCESS_TERMINAL, "No terminal");
                     assertSide(helper, cablePos, Direction.UP, CableConnection.NONE);
                     helper.assertTrue(helper.getBlockEntity(cablePos, CableBlockEntity.class).isOnline(), "Cable terminal offline");
                     helper.assertTrue(helper.getBlockState(host).getBlock() instanceof PartHostBlock, "No part host");
                     CableBlockEntity hostEntity = helper.getBlockEntity(host, CableBlockEntity.class);
-                    helper.assertTrue(hostEntity.getAttachments().terminal(Direction.DOWN), "Host terminal not against the controller");
+                    helper.assertTrue(hostEntity.getAttachments().part(Direction.DOWN) == PartType.ACCESS_TERMINAL, "Host terminal not against the controller");
                     helper.assertTrue(hostEntity.isOnline(), "Host terminal offline");
                     helper.assertTrue(player.getMainHandItem().isEmpty(), "Terminals not used up");
                     long id = helper.getBlockEntity(controller, NetworkControllerBlockEntity.class).getStructureId();

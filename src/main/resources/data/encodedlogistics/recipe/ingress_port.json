@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "encodedlogistics:tantalum_capacitor",
+  "minecraft:iron_ingot",
+  "minecraft:hopper"
+ ],
+ "result": {
+  "id": "encodedlogistics:ingress_port",
+  "count": 1
+ }
+}

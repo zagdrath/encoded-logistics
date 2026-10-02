@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 
 // The Access Terminal: the terminal kit as screens/access_terminal.json lays it out, nothing added.
-public class AccessTerminalScreen extends AbstractTerminalScreen {
+public class AccessTerminalScreen extends AbstractTerminalScreen<AccessTerminalMenu> {
     public static final String LAYOUT = "access_terminal";
 
     public AccessTerminalScreen(AccessTerminalMenu menu, Inventory inventory, Component title) {

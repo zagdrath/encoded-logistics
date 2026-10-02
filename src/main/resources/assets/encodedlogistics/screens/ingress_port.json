@@ -1,0 +1,69 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/port.png",
+  "width": 176,
+  "height": 176
+ },
+ "slots": {
+  "filter": {
+   "left": 62,
+   "top": 19,
+   "columns": 3,
+   "rows": 3,
+   "ghost_items": true
+  },
+  "modules": {
+   "left": 152,
+   "top": [
+    19,
+    37,
+    55,
+    73
+   ],
+   "accepts": "#encodedlogistics:port_modules",
+   "ghost": "port/ghost_module"
+  }
+ },
+ "widgets": {
+  "redstone_mode": {
+   "left": 8,
+   "top": 18,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "icons": [
+    "port/redstone_ignore",
+    "port/redstone_high",
+    "port/redstone_low",
+    "port/redstone_pulse"
+   ]
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 94
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.ingress_port",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "filter_label": {
+   "key": "gui.encodedlogistics.port.filter",
+   "left": 62,
+   "top": 5,
+   "color": "TEXT_MUTED",
+   "hidden": true
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 82,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

@@ -1,0 +1,87 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "particle": "minecraft:block/stone",
+  "base": "minecraft:block/stone",
+  "ore": "encodedlogistics:block/ore/tantalum_ore"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "down": {
+     "texture": "#base",
+     "cullface": "down"
+    },
+    "up": {
+     "texture": "#base",
+     "cullface": "up"
+    },
+    "north": {
+     "texture": "#base",
+     "cullface": "north"
+    },
+    "south": {
+     "texture": "#base",
+     "cullface": "south"
+    },
+    "west": {
+     "texture": "#base",
+     "cullface": "west"
+    },
+    "east": {
+     "texture": "#base",
+     "cullface": "east"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "down": {
+     "texture": "#ore",
+     "cullface": "down"
+    },
+    "up": {
+     "texture": "#ore",
+     "cullface": "up"
+    },
+    "north": {
+     "texture": "#ore",
+     "cullface": "north"
+    },
+    "south": {
+     "texture": "#ore",
+     "cullface": "south"
+    },
+    "west": {
+     "texture": "#ore",
+     "cullface": "west"
+    },
+    "east": {
+     "texture": "#ore",
+     "cullface": "east"
+    }
+   }
+  }
+ ]
+}

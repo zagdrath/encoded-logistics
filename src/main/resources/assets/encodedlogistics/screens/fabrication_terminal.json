@@ -1,0 +1,16 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.fabrication_terminal"
+  }
+ },
+ "features": {
+  "crafting_grid": true
+ },
+ "sections": {
+  "crafting": "terminal/crafting_section.json"
+ }
+}

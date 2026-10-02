@@ -1,0 +1,12 @@
+{
+ "type": "encodedlogistics:lithography",
+ "wafer": "encodedlogistics:doped_silicon",
+ "additive": "encodedlogistics:ferrite",
+ "photomask": "encodedlogistics:memory_photomask",
+ "result": {
+  "id": "encodedlogistics:memory_die",
+  "count": 1
+ },
+ "energy": 6000,
+ "time": 140
+}

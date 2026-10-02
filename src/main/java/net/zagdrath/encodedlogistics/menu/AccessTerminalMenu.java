@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.IntSupplier;
+import java.util.function.IntUnaryOperator;
 
 import org.jspecify.annotations.Nullable;
 
@@ -23,6 +23,7 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -44,13 +45,16 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // Click actions.
     public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4;
 
-    // How many grid rows fit the client's window; set by the client.
-    public static IntSupplier clientRows = () -> DEFAULT_ROWS;
+    // The player's inventory slots come first (0-35); terminals with a crafting section add theirs after.
+    public static final int INVENTORY_SLOTS = 36;
 
-    private final BlockPos pos;
-    private final Direction side;
+    // How many grid rows fit the client's window, given the height of any extra section; set by the client.
+    public static IntUnaryOperator clientRows = section -> DEFAULT_ROWS;
+
+    protected final BlockPos pos;
+    protected final Direction side;
     private final int rows;
-    private final Player player;
+    protected final Player player;
 
     // Server: what the client was last sent.
     private @Nullable Map<ItemKey, Long> sent;
@@ -64,20 +68,22 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // Client constructor, with the terminal's position and side written by the server.
     public AccessTerminalMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
-        this(containerId, inventory, extraData.readBlockPos(), extraData.readEnum(Direction.class), clientRows.getAsInt());
+        this(ModMenuTypes.ACCESS_TERMINAL.get(), containerId, inventory, extraData.readBlockPos(), extraData.readEnum(Direction.class),
+                clientRows.applyAsInt(0), 0);
     }
 
     public AccessTerminalMenu(int containerId, Inventory inventory, BlockPos pos, Direction side) {
-        this(containerId, inventory, pos, side, DEFAULT_ROWS);
+        this(ModMenuTypes.ACCESS_TERMINAL.get(), containerId, inventory, pos, side, DEFAULT_ROWS, 0);
     }
 
-    private AccessTerminalMenu(int containerId, Inventory inventory, BlockPos pos, Direction side, int rows) {
-        super(ModMenuTypes.ACCESS_TERMINAL.get(), containerId);
+    // section: the height of a section between the grid and the inventory (the Fabrication Terminal's crafting grid).
+    protected AccessTerminalMenu(MenuType<?> type, int containerId, Inventory inventory, BlockPos pos, Direction side, int rows, int section) {
+        super(type, containerId);
         this.pos = pos;
         this.side = side;
         this.rows = rows;
         this.player = inventory.player;
-        addStandardInventorySlots(inventory, 9, TOP + rows * ROW + 17);
+        addStandardInventorySlots(inventory, 9, TOP + rows * ROW + section + 17);
     }
 
     public int rows() {
@@ -95,7 +101,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // --- Server ---
 
-    private @Nullable NetworkStorage storage() {
+    protected @Nullable NetworkStorage storage() {
         return player.level() instanceof ServerLevel level ? ControllerStructures.get(level).storageAt(level, pos) : null;
     }
 
@@ -169,7 +175,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 }
                 int amount = (int) Math.min(storage.count(key), key.maxStackSize());
                 ItemStack stack = key.toStack((int) storage.extract(key, amount, false));
-                moveItemStackTo(stack, 0, slots.size(), true);
+                moveItemStackTo(stack, 0, INVENTORY_SLOTS, true);
                 if (!stack.isEmpty()) {
                     // What didn't fit goes back.
                     storage.insert(ItemKey.of(stack), stack.getCount(), false);
@@ -197,8 +203,8 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return player.level().getBlockEntity(pos) instanceof CableBlockEntity host && host.getAttachments().terminal(side)
-                && player.isWithinBlockInteractionRange(pos, 4.0);
+        return player.level().getBlockEntity(pos) instanceof CableBlockEntity host && host.getAttachments().part(side) != null
+                && host.getAttachments().part(side).isTerminal() && player.isWithinBlockInteractionRange(pos, 4.0);
     }
 
     // --- Client ---

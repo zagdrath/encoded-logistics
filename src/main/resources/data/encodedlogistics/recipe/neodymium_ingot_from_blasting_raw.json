@@ -1,0 +1,11 @@
+{
+ "type": "minecraft:blasting",
+ "category": "misc",
+ "ingredient": "encodedlogistics:raw_neodymium",
+ "result": {
+  "id": "encodedlogistics:neodymium_ingot",
+  "count": 1
+ },
+ "experience": 0.7,
+ "cookingtime": 100
+}

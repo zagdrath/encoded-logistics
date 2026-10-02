@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:memory_die",
+  "encodedlogistics:tantalum_capacitor"
+ ],
+ "result": {
+  "id": "encodedlogistics:throughput_module",
+  "count": 1
+ }
+}

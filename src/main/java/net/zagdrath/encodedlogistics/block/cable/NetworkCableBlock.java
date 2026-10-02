@@ -6,7 +6,6 @@
 package net.zagdrath.encodedlogistics.block.cable;
 
 import java.util.EnumMap;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -50,16 +49,16 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.common.Tags;
-import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
-import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
+import net.zagdrath.encodedlogistics.part.PartHosting;
+import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -72,10 +71,11 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 // washes a dyed one back to neutral.
 //
 // Its block entity (CableBlockEntity) holds the attachments: a Cable Anchor on a side stops that side connecting (for
-// this cable and its neighbour alike), a Cable Facade covers it with a panel, an Access Terminal is a device facing out
-// of that side (the side doesn't connect; the cable becomes a device using the terminals' lanes). Using any of those
-// items on a cable mounts it on the side you're looking at; a wrench, or sneak-use with an empty hand, takes it off
-// again; mining hits a facade or terminal before the cable.
+// this cable and its neighbour alike), a Cable Facade covers it with a panel, a part (terminal, port, tap, sensor) is a
+// device facing out of that side (the side doesn't connect; the cable becomes a device using the parts' lanes). Using
+// any of those items on a cable mounts it on the side you're looking at; using a part opens its menu; a wrench, or
+// sneak-use with an empty hand, takes it off again (with its contents); mining hits a facade or part before the cable.
+// A cable carrying a Threshold Sensor sends redstone like a lever.
 public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, NetworkNodeBlock, EntityBlock {
     public static final Map<Direction, EnumProperty<CableConnection>> CONNECTIONS = new EnumMap<>(Direction.class);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -238,20 +238,16 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
                 connections.add(side);
             }
         }
-        int terminals = attachments(level, pos).terminals();
-        if (terminals == 0) {
+        CableAttachments attachments = attachments(level, pos);
+        if (!attachments.hasParts()) {
             return new CableNode(pos.immutable(), connections, tier.lanes(), tier.passiveDrain());
         }
-        // With terminals on it the cable is a device: it needs their lanes, and drains for them too.
-        List<NetworkPart> parts = new ArrayList<>(terminals);
-        for (int i = 0; i < terminals; i++) {
-            parts.add(new NetworkPart(ModItems.ACCESS_TERMINAL.get(), Config.TERMINAL_DRAIN.getAsDouble()));
-        }
-        return new CableDeviceNode(pos.immutable(), connections, tier.lanes(), terminals * Config.TERMINAL_LANES.getAsInt(),
-                tier.passiveDrain() + terminals * Config.TERMINAL_DRAIN.getAsDouble(), List.copyOf(parts));
+        // With parts on it the cable is a device: it needs their lanes, and drains for them too.
+        return new CableDeviceNode(pos.immutable(), connections, tier.lanes(), PartHosting.lanes(attachments),
+                tier.passiveDrain() + PartHosting.drain(attachments), PartHosting.networkParts(attachments));
     }
 
-    // A cable carrying terminals: still a link of its tier's lanes, and a device needing the terminals' lanes.
+    // A cable carrying parts: still a link of its tier's lanes, and a device needing the parts' lanes.
     public record CableDeviceNode(BlockPos pos, Set<Direction> connections, int laneCapacity, int laneCost, double passiveDrain,
             List<NetworkPart> parts) implements NetworkNode {}
 
@@ -260,7 +256,7 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
-        if (stack.is(ModItems.CABLE_ANCHOR.get()) || stack.is(ModItems.CABLE_FACADE.get()) || stack.is(ModItems.ACCESS_TERMINAL.get())) {
+        if (stack.is(ModItems.CABLE_ANCHOR.get()) || stack.is(ModItems.CABLE_FACADE.get()) || PartType.byItem(stack.getItem()) != null) {
             return attach(stack, level, pos, player, sideAt(hit.getLocation(), pos));
         }
         if (stack.is(Tags.Items.TOOLS_WRENCH)) {
@@ -285,16 +281,16 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         return InteractionResult.SUCCESS;
     }
 
-    // Sneak-use with an empty hand takes the attachment off the side you're looking at; using a terminal opens it.
+    // Sneak-use with an empty hand takes the attachment off the side you're looking at; using a part opens its menu.
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         Direction side = sideAt(hit.getLocation(), pos);
         if (player.isSecondaryUseActive() && detach(level, pos, player, side)) {
             return InteractionResult.SUCCESS;
         }
-        if (!player.isSecondaryUseActive() && attachments(level, pos).terminal(side)) {
+        if (!player.isSecondaryUseActive() && attachments(level, pos).part(side) != null) {
             if (player instanceof ServerPlayer serverPlayer) {
-                AccessTerminalMenu.open(serverPlayer, pos, side);
+                PartHosting.open(level, pos, side, serverPlayer);
             }
             return InteractionResult.SUCCESS;
         }
@@ -308,8 +304,8 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         CableAttachments.Attachment attachment;
         if (stack.is(ModItems.CABLE_ANCHOR.get())) {
             attachment = CableAttachments.Attachment.ANCHOR;
-        } else if (stack.is(ModItems.ACCESS_TERMINAL.get())) {
-            attachment = CableAttachments.Attachment.TERMINAL;
+        } else if (PartType.byItem(stack.getItem()) != null) {
+            attachment = CableAttachments.Attachment.part(PartType.byItem(stack.getItem()));
         } else {
             BlockState target = stack.get(ModDataComponents.FACADE_TARGET.get());
             if (target != null && !CableFacadeItem.canCopy(target)) {
@@ -336,10 +332,10 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
             return false;
         }
         if (!level.isClientSide()) {
-            cable.setAttachment(side, CableAttachments.Attachment.NONE);
             if (player == null || !player.isCreative()) {
-                Block.popResourceFromFace(level, pos, side, attachment.toItem());
+                PartHosting.dropFrom(level, pos, side, cable);
             }
+            cable.setAttachment(side, CableAttachments.Attachment.NONE);
             refreshConnections(level, pos, side);
             level.playSound(null, pos, SoundEvents.METAL_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
@@ -352,8 +348,7 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         return Direction.getApproximateNearest(hit.subtract(Vec3.atCenterOf(pos)));
     }
 
-    // Mining a cable takes off the facade or terminal you're looking at first; the cable itself goes once none is in the
-    // way.
+    // Mining a cable takes off the facade or part you're looking at first; the cable itself goes once none is in the way.
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, ItemStack toolStack, boolean willHarvest,
             FluidState fluid) {
@@ -376,8 +371,9 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         }
         Vec3 local = blockHit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
         for (Direction side : Direction.values()) {
+            PartType part = attachments.part(side);
             if (attachments.facade(side) && CableShapes.facade(side).bounds().inflate(1.0E-4).contains(local)
-                    || attachments.terminal(side) && CableShapes.terminal(side).bounds().inflate(1.0E-4).contains(local)) {
+                    || part != null && CableShapes.part(part, side).bounds().inflate(1.0E-4).contains(local)) {
                 return side;
             }
         }
@@ -393,6 +389,29 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         }
         BlockState target = attachments.get(dir).target();
         return target == null || target.canOcclude();
+    }
+
+    // --- Redstone (Threshold Sensors) ---
+
+    @Override
+    protected boolean isSignalSource(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return PartHosting.weakSignal(level, pos);
+    }
+
+    @Override
+    protected int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return PartHosting.strongSignal(level, pos, direction);
+    }
+
+    // Redstone dust only joins cables that carry a sensor.
+    @Override
+    protected boolean shouldRedstoneWireConnectTo(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+        return direction != null && PartHosting.hasSensor(level, pos);
     }
 
     // --- Shape and fluid ---

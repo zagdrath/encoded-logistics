@@ -6,50 +6,37 @@
 package net.zagdrath.encodedlogistics.storage;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.item.ItemStack;
-import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
-import net.zagdrath.encodedlogistics.item.StorageDriveItem;
-
-// A network's storage as a terminal sees it: every drive in its online Drive Bays (bays in position order, drives in
-// slot order). Items go to drives that already hold that item first, then to the first drive with room; they come out
-// of the last drives first.
+// A network's storage as its parts see it: every drive in its online Drive Bays and every inventory its online
+// Inventory Taps face. Items go in by priority (highest first; drives before taps on a tie), and within a priority to the
+// places already holding that item first; they come out lowest priority first (taps before drives on a tie).
 public final class NetworkStorage {
-    private record Drive(DriveBayBlockEntity bay, int slot, UUID id, StorageTier tier) {}
+    private final List<StorageView> fillOrder, emptyOrder;
 
-    private final DriveStorage data;
-    private final List<Drive> drives = new ArrayList<>();
-
-    public NetworkStorage(MinecraftServer server, List<DriveBayBlockEntity> bays) {
-        this.data = DriveStorage.get(server);
-        for (DriveBayBlockEntity bay : bays) {
-            for (int slot = 0; slot < DriveBayBlockEntity.SLOTS; slot++) {
-                ItemStack stack = bay.drive(slot);
-                if (stack != null && stack.getItem() instanceof StorageDriveItem item) {
-                    drives.add(new Drive(bay, slot, StorageDriveItem.id(stack), item.getTier()));
-                }
-            }
-        }
+    public NetworkStorage(List<StorageView> views) {
+        fillOrder = new ArrayList<>(views);
+        fillOrder.sort(Comparator.comparingInt(StorageView::priority).reversed().thenComparing(StorageView::isTap));
+        emptyOrder = new ArrayList<>(views);
+        emptyOrder.sort(Comparator.comparingInt(StorageView::priority).thenComparing(view -> !view.isTap()));
     }
 
-    // Everything stored, added up across the drives.
+    // Everything stored, added up.
     public Map<ItemKey, Long> list() {
         Map<ItemKey, Long> all = new LinkedHashMap<>();
-        for (Drive drive : drives) {
-            data.contents(drive.id()).forEach((key, count) -> all.merge(key, count, Long::sum));
+        for (StorageView view : fillOrder) {
+            view.listInto(all);
         }
         return all;
     }
 
     public long count(ItemKey key) {
         long count = 0;
-        for (Drive drive : drives) {
-            count += data.count(drive.id(), key);
+        for (StorageView view : fillOrder) {
+            count += view.count(key);
         }
         return count;
     }
@@ -57,23 +44,25 @@ public final class NetworkStorage {
     // Puts up to amount of an item into the network; returns how many went in.
     public long insert(ItemKey key, long amount, boolean simulate) {
         long left = amount;
-        // Drives that already hold it, then any drive.
-        for (int pass = 0; pass < 2 && left > 0; pass++) {
-            for (Drive drive : drives) {
-                if (left <= 0) {
-                    break;
-                }
-                if (pass == 0 && data.count(drive.id(), key) == 0) {
-                    continue;
-                }
-                long accepted = data.insert(drive.id(), drive.tier(), key, left, simulate);
-                if (accepted > 0) {
-                    left -= accepted;
-                    if (!simulate) {
-                        drive.bay().driveChanged(drive.slot());
+        int start = 0;
+        while (start < fillOrder.size() && left > 0) {
+            int priority = fillOrder.get(start).priority(), end = start;
+            while (end < fillOrder.size() && fillOrder.get(end).priority() == priority) {
+                end++;
+            }
+            // Within a priority: where it already is, then anywhere else (each place once, so a simulation adds up).
+            boolean[] holds = new boolean[end - start];
+            for (int i = start; i < end; i++) {
+                holds[i - start] = fillOrder.get(i).count(key) > 0;
+            }
+            for (int pass = 0; pass < 2 && left > 0; pass++) {
+                for (int i = start; i < end && left > 0; i++) {
+                    if (holds[i - start] == (pass == 0)) {
+                        left -= fillOrder.get(i).insert(key, left, simulate);
                     }
                 }
             }
+            start = end;
         }
         return amount - left;
     }
@@ -81,15 +70,11 @@ public final class NetworkStorage {
     // Takes up to amount of an item out of the network; returns how many came out.
     public long extract(ItemKey key, long amount, boolean simulate) {
         long left = amount;
-        for (int i = drives.size() - 1; i >= 0 && left > 0; i--) {
-            Drive drive = drives.get(i);
-            long taken = data.extract(drive.id(), key, left, simulate);
-            if (taken > 0) {
-                left -= taken;
-                if (!simulate) {
-                    drive.bay().driveChanged(drive.slot());
-                }
+        for (StorageView view : emptyOrder) {
+            if (left <= 0) {
+                break;
             }
+            left -= view.extract(key, left, simulate);
         }
         return amount - left;
     }

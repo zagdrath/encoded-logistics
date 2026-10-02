@@ -1,0 +1,32 @@
+{
+ "$comment": "Optional section for terminals with features.crafting_grid: drawn between the item-grid rows and the bottom piece.",
+ "texture": "gui/terminal/crafting.png",
+ "height": 76,
+ "bottom_texture": "gui/terminal/bottom_plain.png",
+ "grid": {
+  "left": 31,
+  "top": 9,
+  "columns": 3,
+  "rows": 3
+ },
+ "output": {
+  "left": 127,
+  "top": 26,
+  "well": [
+   122,
+   21,
+   26,
+   26
+  ]
+ },
+ "arrow": {
+  "left": 92,
+  "top": 26
+ },
+ "clear": {
+  "left": 84,
+  "top": 8,
+  "sprite": "terminal/clear_grid",
+  "hover": "terminal/clear_grid_hover"
+ }
+}

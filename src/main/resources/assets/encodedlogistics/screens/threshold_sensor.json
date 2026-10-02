@@ -1,0 +1,73 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/threshold_sensor.png",
+  "width": 176,
+  "height": 166
+ },
+ "slots": {
+  "item": {
+   "left": 26,
+   "top": 33,
+   "ghost_item": true
+  }
+ },
+ "widgets": {
+  "threshold": {
+   "left": 52,
+   "top": 35,
+   "sprite": "threshold_sensor/number_field",
+   "sprite_focused": "threshold_sensor/number_field_focused",
+   "min": 0,
+   "max": 2147483647
+  },
+  "compare_mode": {
+   "left": 130,
+   "top": 31,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "icons": [
+    "threshold_sensor/compare_above",
+    "threshold_sensor/compare_below",
+    "threshold_sensor/compare_equal"
+   ]
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 84
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.threshold_sensor",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "item_label": {
+   "key": "gui.encodedlogistics.sensor.item",
+   "left": 26,
+   "top": 22,
+   "color": "TEXT_MUTED"
+  },
+  "threshold_label": {
+   "key": "gui.encodedlogistics.sensor.threshold",
+   "left": 52,
+   "top": 22,
+   "color": "TEXT_MUTED"
+  },
+  "state": {
+   "left": 52,
+   "top": 52,
+   "color": "ACCENT"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 72,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

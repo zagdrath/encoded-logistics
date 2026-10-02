@@ -6,8 +6,6 @@
 package net.zagdrath.encodedlogistics.block;
 
 import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
@@ -27,24 +25,21 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.block.cable.CableShapes;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
-import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
-import net.zagdrath.encodedlogistics.network.NetworkPart;
-import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.part.PartHosting;
 
-// A part host: holds an Access Terminal mounted on the face of a block that isn't a cable. No cable, no item of its own
-// - just a CableBlockEntity whose terminal sits on the side toward the block it's mounted on, with its screen facing
-// out. It's on that block's network when the block is a network block (a Drive Bay, a controller...), as a device using
-// the terminal's lanes; otherwise the terminal is offline. Mining it (or sneak-using it with an empty hand) drops the
-// terminal and the host goes with it.
+// A part host: holds a part mounted on the face of a block that isn't a cable. No cable, no item of its own - just a
+// CableBlockEntity whose part sits on the side toward the block it's mounted on (terminals and sensors facing out, ports
+// and taps facing the block). It's on that block's network when the block is a network block (a Drive Bay, a
+// controller...), as a device using the part's lanes; otherwise the part is offline. Using it opens the part's menu;
+// mining it (or sneak-using it with an empty hand) drops the part and its contents, and the host goes with it.
 public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBlock {
     public PartHostBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -55,10 +50,10 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
         return new CableBlockEntity(pos, state);
     }
 
-    // The side the terminal is on: the block it's mounted on.
+    // The side the part is on: toward the block it's mounted on.
     public static @Nullable Direction mount(CableAttachments attachments) {
         for (Direction side : Direction.values()) {
-            if (attachments.terminal(side)) {
+            if (attachments.part(side) != null) {
                 return side;
             }
         }
@@ -80,7 +75,7 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
         }
         Direction mount = mount(NetworkCableBlock.attachments(level, pos));
         if (mount != null && player instanceof ServerPlayer serverPlayer) {
-            AccessTerminalMenu.open(serverPlayer, pos, mount);
+            PartHosting.open(level, pos, mount, serverPlayer);
         }
         return InteractionResult.SUCCESS;
     }
@@ -94,14 +89,13 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
 
     @Override
     public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
-        Direction mount = mount(NetworkCableBlock.attachments(level, pos));
+        CableAttachments attachments = NetworkCableBlock.attachments(level, pos);
+        Direction mount = mount(attachments);
         if (mount == null) {
             return null;
         }
-        Set<Direction> sides = EnumSet.of(mount);
-        double drain = Config.TERMINAL_DRAIN.getAsDouble();
-        return new DeviceNode(pos.immutable(), sides, Config.TERMINAL_LANES.getAsInt(), drain,
-                List.of(new NetworkPart(ModItems.ACCESS_TERMINAL.get(), drain)), false);
+        return new DeviceNode(pos.immutable(), EnumSet.of(mount), PartHosting.lanes(attachments), PartHosting.drain(attachments),
+                PartHosting.networkParts(attachments), false);
     }
 
     @Override
@@ -116,5 +110,27 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
         ControllerStructures.get(level).markTopologyChanged();
+    }
+
+    // --- Redstone (a Threshold Sensor on a block face) ---
+
+    @Override
+    protected boolean isSignalSource(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return PartHosting.weakSignal(level, pos);
+    }
+
+    @Override
+    protected int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return PartHosting.strongSignal(level, pos, direction);
+    }
+
+    @Override
+    protected boolean shouldRedstoneWireConnectTo(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+        return direction != null && PartHosting.hasSensor(level, pos);
     }
 }

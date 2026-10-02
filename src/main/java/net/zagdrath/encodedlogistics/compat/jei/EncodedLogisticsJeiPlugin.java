@@ -7,9 +7,11 @@ package net.zagdrath.encodedlogistics.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +20,8 @@ import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
-// category (with the press as its station) and an info page on how controllers form structures and what they provide.
+// category (with the press as its station), recipe transfer into the Fabrication Terminal's grid, and an info page on
+// how controllers form structures and what they provide.
 @JeiPlugin
 public class EncodedLogisticsJeiPlugin implements IModPlugin {
     private static final Identifier UID = EncodedLogistics.id("jei_plugin");
@@ -39,6 +42,11 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
         registration.addRecipes(LithographyCategory.TYPE, LithographyRecipes.clientRecipes());
         registration.addItemStackInfo(new ItemStack(ModItems.NETWORK_CONTROLLER.get()),
                 Component.translatable("jei.encodedlogistics.network_controller.info"));
+    }
+
+    @Override
+    public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
+        registration.addRecipeTransferHandler(new FabricationTransferHandler(), RecipeTypes.CRAFTING);
     }
 
     @Override

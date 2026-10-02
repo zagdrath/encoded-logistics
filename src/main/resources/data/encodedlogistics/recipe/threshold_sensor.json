@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:logic_die",
+  "minecraft:redstone_torch",
+  "minecraft:comparator"
+ ],
+ "result": {
+  "id": "encodedlogistics:threshold_sensor",
+  "count": 1
+ }
+}

@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,10 +39,12 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
+import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
@@ -49,8 +53,13 @@ import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
+import net.zagdrath.encodedlogistics.part.CablePart;
+import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.DriveStorage;
+import net.zagdrath.encodedlogistics.storage.DriveView;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageView;
 
 // Every Network Controller structure in a level, by id, saved with the level. Each controller block entity holds its
 // structure's id.
@@ -61,7 +70,9 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // re-solved only when the topology changed) and the FORMED / STATE of its blocks.
 //
 // Devices (anything using lanes: Drive Bays, terminals) are told every tick whether they're online: on a powered
-// network, with their lanes. A terminal reaches its network's storage (the online Drive Bays) through storageAt.
+// network, with their lanes. A part reaches its network's storage (the drives in online Drive Bays and the inventories
+// online Inventory Taps face) through storageAt, and takes FE for its work through drawEnergy. Cables and part hosts
+// with ticking parts tick from here, after the networks.
 //
 // A network's energy is its controllers' buffers plus the Capacitor Banks on it. FE coming in through Power Inlets
 // (fill) goes to the controllers first, then the banks; the network's drain comes out of the banks first, so the
@@ -117,6 +128,8 @@ public class ControllerStructures extends SavedData {
     // Devices on a controller's network, by position, and the ones online as of the last tick.
     private final Map<BlockPos, Long> deviceNetworks = new HashMap<>();
     private Set<BlockPos> onlineDevices = new HashSet<>();
+    // Cables and part hosts holding parts that tick.
+    private final Set<CableBlockEntity> ticking = new LinkedHashSet<>();
     private boolean topologyChanged;
 
     public ControllerStructures() {}
@@ -182,6 +195,22 @@ public class ControllerStructures extends SavedData {
             setDeviceOnline(level, pos, true);
         }
         onlineDevices = online;
+        for (CableBlockEntity host : List.copyOf(ticking)) {
+            if (host.isRemoved()) {
+                ticking.remove(host);
+            } else {
+                host.tickParts(level);
+            }
+        }
+    }
+
+    // A cable or part host starts or stops holding parts that tick.
+    public void setTicking(CableBlockEntity host, boolean ticks) {
+        if (ticks) {
+            ticking.add(host);
+        } else {
+            ticking.remove(host);
+        }
     }
 
     private static void setDeviceOnline(ServerLevel level, BlockPos pos, boolean online) {
@@ -374,7 +403,7 @@ public class ControllerStructures extends SavedData {
     private void setNetworkNodes(ServerLevel level, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
         energyNetworks.values().removeIf(owner -> owner == id);
         deviceNetworks.values().removeIf(owner -> owner == id);
-        List<BlockPos> banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>();
+        List<BlockPos> banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(), partHosts = new ArrayList<>();
         if (discovered != null) {
             for (NetworkNode node : discovered.graph().nodes()) {
                 if (node.laneCost() > 0) {
@@ -389,6 +418,8 @@ public class ControllerStructures extends SavedData {
                     energyNetworks.put(node.pos(), id);
                 } else if (blockEntity instanceof DriveBayBlockEntity) {
                     driveBays.add(node.pos());
+                } else if (blockEntity instanceof CableBlockEntity host && host.getAttachments().hasParts()) {
+                    partHosts.add(node.pos());
                 }
             }
         }
@@ -397,6 +428,8 @@ public class ControllerStructures extends SavedData {
         runtime.banks = List.copyOf(banks);
         runtime.devices = List.copyOf(devices);
         runtime.driveBays = List.copyOf(driveBays);
+        partHosts.sort(Comparator.naturalOrder());
+        runtime.partHosts = List.copyOf(partHosts);
     }
 
     private static List<CapacitorBankBlockEntity> banks(ServerLevel level, Runtime runtime) {
@@ -416,21 +449,68 @@ public class ControllerStructures extends SavedData {
         return onlineDevices.contains(pos);
     }
 
-    // The storage a device at pos (a terminal) reaches: the online Drive Bays on its network. Null while the device
-    // itself is offline.
+    // The storage a device at pos (a terminal, port, sensor) reaches: the drives in the online Drive Bays on its network
+    // and the inventories its online Inventory Taps face. Null while the device itself is offline.
     public @Nullable NetworkStorage storageAt(ServerLevel level, BlockPos device) {
         Long id = deviceNetworks.get(device);
         Runtime runtime = id != null ? runtimes.get(id) : null;
         if (runtime == null || !onlineDevices.contains(device)) {
             return null;
         }
-        List<DriveBayBlockEntity> bays = new ArrayList<>(runtime.driveBays.size());
+        List<StorageView> views = new ArrayList<>();
+        DriveStorage drives = DriveStorage.get(level.getServer());
         for (BlockPos pos : runtime.driveBays) {
             if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof DriveBayBlockEntity bay) {
-                bays.add(bay);
+                for (int slot = 0; slot < DriveBayBlockEntity.SLOTS; slot++) {
+                    ItemStack stack = bay.drive(slot);
+                    if (stack != null && stack.getItem() instanceof StorageDriveItem drive) {
+                        views.add(new DriveView(drives, bay, slot, StorageDriveItem.id(stack), drive.getTier()));
+                    }
+                }
             }
         }
-        return new NetworkStorage(level.getServer(), bays);
+        for (BlockPos pos : runtime.partHosts) {
+            if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CableBlockEntity host) {
+                for (CablePart part : host.parts()) {
+                    if (part instanceof InventoryTapPart tap) {
+                        StorageView view = tap.view(level);
+                        if (view != null) {
+                            views.add(view);
+                        }
+                    }
+                }
+            }
+        }
+        return new NetworkStorage(views);
+    }
+
+    // --- Energy for work ---
+
+    // Takes up to amount FE from the energy of the network a device at pos is on (banks first, then controllers), for
+    // work beyond its passive drain. Returns what it got.
+    public int drawEnergy(ServerLevel level, BlockPos device, int amount) {
+        Long id = deviceNetworks.get(device);
+        Structure structure = id != null ? structures.get(id) : null;
+        Runtime runtime = id != null ? runtimes.get(id) : null;
+        if (structure == null || runtime == null || runtime.status != NetworkStatus.ONLINE || amount <= 0) {
+            return 0;
+        }
+        int left = amount;
+        for (CapacitorBankBlockEntity bank : banks(level, runtime)) {
+            if (left <= 0) {
+                break;
+            }
+            left -= bank.drain(left);
+        }
+        for (BlockPos pos : structure.members()) {
+            if (left <= 0) {
+                break;
+            }
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller && controller.getStructureId() == id) {
+                left -= controller.drain(left);
+            }
+        }
+        return amount - left;
     }
 
     // --- Energy from outside ---
@@ -568,7 +648,7 @@ public class ControllerStructures extends SavedData {
         boolean dirty = true;
         NetworkDiscovery.@Nullable Discovered discovered;
         @Nullable LaneResult lanes;
-        List<BlockPos> banks = List.of(), devices = List.of(), driveBays = List.of();
+        List<BlockPos> banks = List.of(), devices = List.of(), driveBays = List.of(), partHosts = List.of();
         final int[] received = new int[GENERATION_WINDOW];
         int receivedIndex;
         double drainCarry;

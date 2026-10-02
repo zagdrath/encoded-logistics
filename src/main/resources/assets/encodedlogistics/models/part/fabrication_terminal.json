@@ -1,0 +1,140 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "front": "encodedlogistics:block/fabrication_terminal/front",
+  "side": "encodedlogistics:block/fabrication_terminal/side",
+  "back": "encodedlogistics:block/fabrication_terminal/back",
+  "screen": "encodedlogistics:block/fabrication_terminal/screen",
+  "parts": "encodedlogistics:block/part/parts",
+  "particle": "encodedlogistics:block/fabrication_terminal/front"
+ },
+ "elements": [
+  {
+   "from": [
+    1,
+    1,
+    0
+   ],
+   "to": [
+    15,
+    15,
+    2.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#front",
+     "uv": [
+      1,
+      1,
+      15,
+      15
+     ]
+    },
+    "south": {
+     "texture": "#back",
+     "uv": [
+      1,
+      1,
+      15,
+      15
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      2.5,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      2.5,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      14,
+      2.5
+     ]
+    },
+    "down": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      14,
+      2.5
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6,
+    6,
+    2.5
+   ],
+   "to": [
+    10,
+    10,
+    5
+   ],
+   "faces": {
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    }
+   }
+  }
+ ]
+}

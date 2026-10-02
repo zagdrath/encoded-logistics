@@ -30,6 +30,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
+import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -70,7 +71,12 @@ public final class ItemInfoTooltips {
         } else if (stack.getItem() instanceof StorageTierItem die) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.die.tier",
                     Component.literal(die.getTier().label()).withColor(die.getTier().light())).withStyle(ChatFormatting.GRAY));
-        } else if (stack.is(ModItems.LOGIC_PHOTOMASK.get()) || stack.is(ModItems.STORAGE_PHOTOMASK.get())) {
+        } else if (stack.is(ModItems.FILTER_MODULE.get()) || stack.is(ModItems.THROUGHPUT_MODULE.get())) {
+            tooltip.add(at++, Component.translatable(stack.is(ModItems.FILTER_MODULE.get()) ? "tooltip.encodedlogistics.module.filter"
+                    : "tooltip.encodedlogistics.module.throughput").withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof PartItem part && !part.getPartType().isTerminal()) {
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.part.lane").withStyle(ChatFormatting.DARK_GRAY));
+        } else if (stack.is(ModItems.LOGIC_PHOTOMASK.get()) || stack.is(ModItems.STORAGE_PHOTOMASK.get()) || stack.is(ModItems.MEMORY_PHOTOMASK.get())) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.photomask.reusable").withStyle(ChatFormatting.GRAY));
         }
         // A facade always says what it looks like.

@@ -14,8 +14,8 @@ public enum StorageTier {
     K512("512k", "512K", 512L * 1024, 0x164A80, 0x2474C2, 0x3FA3F5, 0xA8D8FF),
     M2("2m", "2M", 2048L * 1024, 0x4C2685, 0x7A44C8, 0xA66BF5, 0xDDC4FF);
 
-    // Tiers with items so far (8K and 32K in Phase 1).
-    public static final StorageTier[] REGISTERED = { K8, K32 };
+    // Tiers with items so far (8K and 32K in Phase 1, 128K and 512K in Phase 2).
+    public static final StorageTier[] REGISTERED = { K8, K32, K128, K512 };
 
     private final String id, label;
     private final long bytes;

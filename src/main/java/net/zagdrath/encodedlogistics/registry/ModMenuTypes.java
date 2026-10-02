@@ -16,8 +16,12 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
+import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
+import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
 import net.zagdrath.encodedlogistics.menu.LithographyPressMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
+import net.zagdrath.encodedlogistics.menu.PortMenu;
+import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
 
 public final class ModMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, EncodedLogistics.MODID);
@@ -36,6 +40,17 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<AccessTerminalMenu>> ACCESS_TERMINAL = MENU_TYPES.register("access_terminal",
             () -> IMenuTypeExtension.create(AccessTerminalMenu::new));
+
+    public static final Supplier<MenuType<FabricationTerminalMenu>> FABRICATION_TERMINAL = MENU_TYPES.register("fabrication_terminal",
+            () -> IMenuTypeExtension.create(FabricationTerminalMenu::new));
+
+    public static final Supplier<MenuType<PortMenu>> PORT = MENU_TYPES.register("port", () -> IMenuTypeExtension.create(PortMenu::new));
+
+    public static final Supplier<MenuType<InventoryTapMenu>> INVENTORY_TAP = MENU_TYPES.register("inventory_tap",
+            () -> IMenuTypeExtension.create(InventoryTapMenu::new));
+
+    public static final Supplier<MenuType<ThresholdSensorMenu>> THRESHOLD_SENSOR = MENU_TYPES.register("threshold_sensor",
+            () -> IMenuTypeExtension.create(ThresholdSensorMenu::new));
 
     private ModMenuTypes() {}
 }

@@ -14,6 +14,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 public final class ModCreativeTabs {
@@ -34,17 +35,27 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.CABLE_FACADE.get());
                 output.accept(ModItems.LITHOGRAPHY_PRESS.get());
                 output.accept(ModItems.DRIVE_BAY.get());
-                output.accept(ModItems.ACCESS_TERMINAL.get());
+                for (PartType part : PartType.values()) {
+                    output.accept(ModItems.part(part).get());
+                }
+                output.accept(ModItems.FILTER_MODULE.get());
+                output.accept(ModItems.THROUGHPUT_MODULE.get());
                 for (StorageTier tier : StorageTier.REGISTERED) {
                     output.accept(ModItems.storageDrive(tier).get());
                 }
                 for (var material : List.of(ModItems.SILICA, ModItems.SILICA_BLEND, ModItems.SILICON_BOULE, ModItems.SILICON_WAFER,
                         ModItems.FERRITE, ModItems.COPPER_FOIL, ModItems.FIBERGLASS, ModItems.SOLDER_PASTE, ModItems.CIRCUIT_SUBSTRATE,
-                        ModItems.LOGIC_PHOTOMASK, ModItems.STORAGE_PHOTOMASK, ModItems.LOGIC_DIE)) {
+                        ModItems.LOGIC_PHOTOMASK, ModItems.STORAGE_PHOTOMASK, ModItems.LOGIC_DIE, ModItems.RAW_NEODYMIUM,
+                        ModItems.NEODYMIUM_INGOT, ModItems.RAW_TANTALUM, ModItems.TANTALUM_INGOT, ModItems.DOPED_SILICON,
+                        ModItems.MEMORY_PHOTOMASK, ModItems.MEMORY_DIE, ModItems.TANTALUM_CAPACITOR)) {
                     output.accept(material.get());
                 }
                 for (StorageTier tier : StorageTier.REGISTERED) {
                     output.accept(ModItems.storageDie(tier).get());
+                }
+                for (var ore : List.of(ModItems.NEODYMIUM_ORE, ModItems.DEEPSLATE_NEODYMIUM_ORE, ModItems.TANTALUM_ORE,
+                        ModItems.DEEPSLATE_TANTALUM_ORE)) {
+                    output.accept(ore.get());
                 }
             })
             .build());

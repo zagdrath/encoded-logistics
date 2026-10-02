@@ -10,7 +10,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class ModNetwork {
-    private static final String VERSION = "4";
+    private static final String VERSION = "5";
 
     private ModNetwork() {}
 
@@ -24,5 +24,7 @@ public final class ModNetwork {
         registrar.playToClient(CapacitorBankPayload.TYPE, CapacitorBankPayload.STREAM_CODEC, CapacitorBankPayload::handle);
         registrar.playToClient(TerminalItemsPayload.TYPE, TerminalItemsPayload.STREAM_CODEC, TerminalItemsPayload::handle);
         registrar.playToServer(TerminalClickPayload.TYPE, TerminalClickPayload.STREAM_CODEC, TerminalClickPayload::handle);
+        registrar.playToServer(TerminalRecipePayload.TYPE, TerminalRecipePayload.STREAM_CODEC, TerminalRecipePayload::handle);
+        registrar.playToServer(MenuValuePayload.TYPE, MenuValuePayload.STREAM_CODEC, MenuValuePayload::handle);
     }
 }

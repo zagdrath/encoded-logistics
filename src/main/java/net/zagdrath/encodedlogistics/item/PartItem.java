@@ -21,14 +21,22 @@ import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
-// The Access Terminal. On a cable it mounts on the side you're looking at (NetworkCableBlock does that). On any other
-// block's face it puts a part host in the space in front, holding the terminal against that face, screen out - before
-// the block itself reacts, so a network block's own screen doesn't open instead.
-public class AccessTerminalItem extends Item {
-    public AccessTerminalItem(Item.Properties properties) {
+// A cable part's item (terminals, ports, the tap, the sensor). On a cable it mounts on the side you're looking at
+// (NetworkCableBlock does that). On any other block's face it puts a part host in the space in front, holding the part
+// against that face - before the block itself reacts, so a network block's own screen doesn't open instead.
+public class PartItem extends Item {
+    private final PartType type;
+
+    public PartItem(Item.Properties properties, PartType type) {
         super(properties);
+        this.type = type;
+    }
+
+    public PartType getPartType() {
+        return type;
     }
 
     @Override
@@ -46,7 +54,7 @@ public class AccessTerminalItem extends Item {
         if (!level.isClientSide()) {
             level.setBlock(pos, ModBlocks.PART_HOST.get().defaultBlockState(), Block.UPDATE_ALL);
             if (level.getBlockEntity(pos) instanceof CableBlockEntity host) {
-                host.setAttachment(face.getOpposite(), CableAttachments.Attachment.TERMINAL);
+                host.setAttachment(face.getOpposite(), CableAttachments.Attachment.part(type));
             }
             if (level instanceof ServerLevel serverLevel) {
                 ControllerStructures.get(serverLevel).markTopologyChanged();

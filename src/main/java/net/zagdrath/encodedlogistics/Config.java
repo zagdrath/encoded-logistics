@@ -123,6 +123,22 @@ public class Config {
             .comment("Lanes an Access Terminal uses (0: terminals are free).")
             .defineInRange("terminalLanes", 1, 0, 32);
 
+    public static final ModConfigSpec.DoubleValue PART_DRAIN = BUILDER
+            .comment("FE per tick each other cable part (ports, taps, sensors) drains.")
+            .defineInRange("partDrain", 0.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue PART_LANES = BUILDER
+            .comment("Lanes each other cable part (ports, taps, sensors) uses.")
+            .defineInRange("partLanes", 1, 0, 32);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends Integer>> PORT_RATES = BUILDER
+            .comment("Items an Ingress or Egress Port moves per operation (one every 20 ticks), with 0, 1, 2 and 3 Throughput Modules.")
+            .defineList("portRates", List.of(4, 16, 32, 64), () -> 4, entry -> entry instanceof Integer value && value >= 0);
+
+    public static final ModConfigSpec.DoubleValue PORT_ENERGY_PER_ITEM = BUILDER
+            .comment("FE a port spends from its network for each item it moves.")
+            .defineInRange("portEnergyPerItem", 0.5, 0.0, 1_000.0);
+
     static {
         BUILDER.pop();
         BUILDER.push("lithography");

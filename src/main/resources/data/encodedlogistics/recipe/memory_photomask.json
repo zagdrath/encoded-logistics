@@ -1,0 +1,18 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "GFG",
+  "FDF",
+  "GFG"
+ ],
+ "key": {
+  "G": "minecraft:glass",
+  "F": "encodedlogistics:ferrite",
+  "D": "encodedlogistics:doped_silicon"
+ },
+ "result": {
+  "id": "encodedlogistics:memory_photomask",
+  "count": 1
+ }
+}

@@ -1,10 +1,14 @@
 {
-  "values": [
-    "encodedlogistics:network_controller",
-    "encodedlogistics:power_inlet",
-    "encodedlogistics:capacitor_bank",
-    "encodedlogistics:segment_isolator",
-    "encodedlogistics:lithography_press",
-    "encodedlogistics:drive_bay"
-  ]
+ "values": [
+  "encodedlogistics:network_controller",
+  "encodedlogistics:power_inlet",
+  "encodedlogistics:capacitor_bank",
+  "encodedlogistics:segment_isolator",
+  "encodedlogistics:lithography_press",
+  "encodedlogistics:drive_bay",
+  "encodedlogistics:neodymium_ore",
+  "encodedlogistics:deepslate_neodymium_ore",
+  "encodedlogistics:tantalum_ore",
+  "encodedlogistics:deepslate_tantalum_ore"
+ ]
 }

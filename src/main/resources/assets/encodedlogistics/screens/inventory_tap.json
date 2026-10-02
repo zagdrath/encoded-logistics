@@ -1,0 +1,84 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/inventory_tap.png",
+  "width": 176,
+  "height": 176
+ },
+ "slots": {
+  "filter": {
+   "left": 98,
+   "top": 19,
+   "columns": 3,
+   "rows": 3,
+   "ghost_items": true
+  }
+ },
+ "widgets": {
+  "priority": {
+   "field": {
+    "left": 8,
+    "top": 31,
+    "sprite": "inventory_tap/number_field",
+    "sprite_focused": "inventory_tap/number_field_focused",
+    "min": -999,
+    "max": 999
+   },
+   "up": {
+    "left": 46,
+    "top": 31,
+    "sprite": "inventory_tap/step_up",
+    "hover": "inventory_tap/step_up_hover"
+   },
+   "down": {
+    "left": 46,
+    "top": 37,
+    "sprite": "inventory_tap/step_down",
+    "hover": "inventory_tap/step_down_hover"
+   }
+  },
+  "access_mode": {
+   "left": 8,
+   "top": 56,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "icons": [
+    "inventory_tap/access_read_write",
+    "inventory_tap/access_read",
+    "inventory_tap/access_write"
+   ]
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 94
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.inventory_tap",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "priority": {
+   "key": "gui.encodedlogistics.tap.priority",
+   "left": 8,
+   "top": 21,
+   "color": "TEXT_MUTED"
+  },
+  "access": {
+   "key": "gui.encodedlogistics.tap.access",
+   "left": 30,
+   "top": 61,
+   "color": "TEXT_MUTED"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 82,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

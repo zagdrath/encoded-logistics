@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:paper"
+ ],
+ "result": {
+  "id": "encodedlogistics:filter_module",
+  "count": 1
+ }
+}

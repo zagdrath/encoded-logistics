@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:access_terminal",
+  "minecraft:crafting_table",
+  "encodedlogistics:memory_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:fabrication_terminal",
+  "count": 1
+ }
+}

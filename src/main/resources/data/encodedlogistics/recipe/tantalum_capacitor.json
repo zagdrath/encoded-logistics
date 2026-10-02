@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:tantalum_ingot",
+  "encodedlogistics:copper_foil",
+  "encodedlogistics:solder_paste"
+ ],
+ "result": {
+  "id": "encodedlogistics:tantalum_capacitor",
+  "count": 2
+ }
+}

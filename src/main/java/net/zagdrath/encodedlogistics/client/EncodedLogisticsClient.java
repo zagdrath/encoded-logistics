@@ -26,9 +26,13 @@ import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
 import net.zagdrath.encodedlogistics.client.screen.DriveBayScreen;
+import net.zagdrath.encodedlogistics.client.screen.FabricationTerminalScreen;
+import net.zagdrath.encodedlogistics.client.screen.InventoryTapScreen;
 import net.zagdrath.encodedlogistics.client.screen.LithographyPressScreen;
 import net.zagdrath.encodedlogistics.client.screen.NetworkControllerScreen;
+import net.zagdrath.encodedlogistics.client.screen.PortScreen;
 import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
+import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
@@ -42,8 +46,8 @@ public class EncodedLogisticsClient {
         // Config screen is accessed via Mods screen > Encoded Logistics > Config.
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         // A terminal's grid gets as many rows as fit the window when it opens.
-        AccessTerminalMenu.clientRows = () -> TerminalLayout.load(AccessTerminalScreen.LAYOUT)
-                .rowsFor(Minecraft.getInstance().getWindow().getGuiScaledHeight());
+        AccessTerminalMenu.clientRows = section -> TerminalLayout.load(AccessTerminalScreen.LAYOUT)
+                .rowsFor(Minecraft.getInstance().getWindow().getGuiScaledHeight() - section);
     }
 
     @SubscribeEvent
@@ -53,6 +57,10 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.LITHOGRAPHY_PRESS.get(), LithographyPressScreen::new);
         event.register(ModMenuTypes.DRIVE_BAY.get(), DriveBayScreen::new);
         event.register(ModMenuTypes.ACCESS_TERMINAL.get(), AccessTerminalScreen::new);
+        event.register(ModMenuTypes.FABRICATION_TERMINAL.get(), FabricationTerminalScreen::new);
+        event.register(ModMenuTypes.PORT.get(), PortScreen::new);
+        event.register(ModMenuTypes.INVENTORY_TAP.get(), InventoryTapScreen::new);
+        event.register(ModMenuTypes.THRESHOLD_SENSOR.get(), ThresholdSensorScreen::new);
     }
 
     // The Network Controller's connected textures (see ControllerModel).

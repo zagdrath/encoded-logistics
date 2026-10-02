@@ -37,7 +37,7 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // (1.2K, 34M, 5.1B). Left click takes a stack, right click half, shift-click moves one into the inventory; clicking with
 // an item held puts it in (right click: just one). Search matches names; "@" searches mod ids. Each terminal adds
 // little more than its layout and title (AccessTerminalScreen).
-public abstract class AbstractTerminalScreen extends AbstractContainerScreen<AccessTerminalMenu> {
+public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> extends AbstractContainerScreen<M> {
     // palette.json
     private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ERROR = 0xFFFF6B6B;
 
@@ -59,14 +59,14 @@ public abstract class AbstractTerminalScreen extends AbstractContainerScreen<Acc
     private int scrollRow;
     private boolean draggingThumb;
 
-    protected AbstractTerminalScreen(AccessTerminalMenu menu, Inventory inventory, Component title, TerminalLayout layout) {
+    protected AbstractTerminalScreen(M menu, Inventory inventory, Component title, TerminalLayout layout) {
         super(menu, inventory, title, layout.width, layout.height(menu.rows()));
         this.layout = layout;
         this.rows = menu.rows();
         this.titleLabelX = layout.titleLeft;
         this.titleLabelY = layout.titleTop;
         this.inventoryLabelX = layout.inventoryLeft;
-        this.inventoryLabelY = layout.topHeight + rows * layout.rowHeight + layout.inventoryTopInBottom;
+        this.inventoryLabelY = layout.topHeight + rows * layout.rowHeight + layout.sectionHeight + layout.inventoryTopInBottom;
     }
 
     @Override
@@ -154,7 +154,12 @@ public abstract class AbstractTerminalScreen extends AbstractContainerScreen<Acc
             graphics.blit(RenderPipelines.GUI_TEXTURED, layout.row, x, y + layout.topHeight + row * layout.rowHeight, 0.0F, 0.0F, layout.width,
                     layout.rowHeight, 256, 32);
         }
-        graphics.blit(RenderPipelines.GUI_TEXTURED, layout.bottom, x, y + layout.topHeight + rows * layout.rowHeight, 0.0F, 0.0F, layout.width,
+        int sectionTop = y + layout.topHeight + rows * layout.rowHeight;
+        if (layout.section != null) {
+            graphics.blit(RenderPipelines.GUI_TEXTURED, layout.section, x, sectionTop, 0.0F, 0.0F, layout.width, layout.sectionHeight, 256, 128);
+            extractSection(graphics, x, sectionTop, mouseX, mouseY);
+        }
+        graphics.blit(RenderPipelines.GUI_TEXTURED, layout.bottom, x, sectionTop + layout.sectionHeight, 0.0F, 0.0F, layout.width,
                 layout.bottomHeight, 256, 128);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, search != null && search.isFocused() ? layout.searchSpriteFocused : layout.searchSprite,
                 x + layout.searchLeft, y + layout.searchTop, layout.searchWidth, layout.searchHeight);
@@ -189,6 +194,17 @@ public abstract class AbstractTerminalScreen extends AbstractContainerScreen<Acc
         int max = maxScroll();
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, max == 0 ? layout.thumbDisabled : layout.thumb, x + layout.scrollLeft, y + thumbY(),
                 layout.thumbWidth, layout.thumbHeight);
+    }
+
+    // Draws over a terminal's section (the Fabrication Terminal's clear button); top: the section's top on screen.
+    protected void extractSection(GuiGraphicsExtractor graphics, int left, int top, int mouseX, int mouseY) {}
+
+    protected TerminalLayout layout() {
+        return layout;
+    }
+
+    protected int rows() {
+        return rows;
     }
 
     private int cellUnder(double mouseX, double mouseY) {

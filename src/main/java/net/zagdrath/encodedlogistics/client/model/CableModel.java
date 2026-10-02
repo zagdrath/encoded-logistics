@@ -26,28 +26,31 @@ import net.zagdrath.encodedlogistics.block.cable.CableShapes;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
+import net.zagdrath.encodedlogistics.part.PartType;
 
 // A cable blockstate's model, wrapped. Without attachments it's the blockstate's own multipart model. With them (from
 // the block entity's ModelData) it builds the cable from the same parts (CableParts) by the same rules, except that an
 // anchor or terminal puts the cable on its junction cube and a facade over a block connection drops that arm's flange,
-// then adds the anchors and terminals (rotated like arms; a terminal's screen lit while it's online) and the facade
-// panels (FacadeQuads). A part host has no body: just its terminal.
+// then adds the anchors and parts (rotated like arms; each part's lit model while it's lit - a terminal online, a port
+// moving items, a tap attached, a sensor emitting) and the facade panels (FacadeQuads). A part host has no body: just
+// its part.
 final class CableModel implements DynamicBlockStateModel {
     private final BlockStateModel original;
     private final CableTier tier;
     private final CableParts.@Nullable Body body;
     private final Map<Direction, BlockStateModelPart> anchors;
-    private final BlockStateModelPart[][] terminals;
+    // [part][lit ? 1 : 0][Direction ordinal]
+    private final BlockStateModelPart[][][] parts;
     private final FacadeQuads facades;
     private final int materialFlags;
 
     CableModel(BlockStateModel original, CableTier tier, CableParts.@Nullable Body body, Map<Direction, BlockStateModelPart> anchors,
-            BlockStateModelPart[][] terminals, FacadeQuads facades) {
+            BlockStateModelPart[][][] parts, FacadeQuads facades) {
         this.original = original;
         this.tier = tier;
         this.body = body;
         this.anchors = anchors;
-        this.terminals = terminals;
+        this.parts = parts;
         this.facades = facades;
         @SuppressWarnings("deprecation")
         int flags = original.materialFlags();
@@ -64,12 +67,11 @@ final class CableModel implements DynamicBlockStateModel {
             original.collectParts(level, pos, state, random, parts);
             return;
         }
-        int online = Boolean.TRUE.equals(level.getModelData(pos).get(CableBlockEntity.ONLINE)) ? 1 : 0;
+        Integer litMask = level.getModelData(pos).get(CableBlockEntity.LIT);
+        int lit = litMask != null ? litMask : 0;
         if (body == null || !(state.getBlock() instanceof NetworkCableBlock)) {
             for (Direction side : Direction.values()) {
-                if (attachments.terminal(side)) {
-                    parts.add(terminals[online][side.ordinal()]);
-                }
+                addPart(attachments, lit, side, parts);
             }
             return;
         }
@@ -95,14 +97,21 @@ final class CableModel implements DynamicBlockStateModel {
         for (Direction side : Direction.values()) {
             if (attachments.anchored(side)) {
                 parts.add(anchors.get(side));
-            } else if (attachments.terminal(side)) {
-                parts.add(terminals[online][side.ordinal()]);
+            } else {
+                addPart(attachments, lit, side, parts);
             }
         }
         BlockStateModelPart panels = facades.build(level, pos, attachments, connections, tier.dense() ? 8 : 6,
                 original.particleMaterial(level, pos, state));
         if (panels != null) {
             parts.add(panels);
+        }
+    }
+
+    private void addPart(CableAttachments attachments, int lit, Direction side, List<BlockStateModelPart> out) {
+        PartType part = attachments.part(side);
+        if (part != null) {
+            out.add(parts[part.ordinal()][(lit >> side.ordinal()) & 1][side.ordinal()]);
         }
     }
 

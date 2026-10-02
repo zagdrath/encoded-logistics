@@ -62,7 +62,12 @@ def model_quads(rl,rx,ry,origin,frame=0):
     for e in m['elements']:
         bright=bool(e.get('neoforge_data',{}).get('block_light',0)>=15) or e.get('shade',True) is False
         for face,fd in e['faces'].items():
-            tex=load_tex(resolve(fd['texture'],T),frame); u1,v1,u2,v2=fd['uv']
+            tex=load_tex(resolve(fd['texture'],T),frame)
+            if 'uv' in fd: u1,v1,u2,v2=fd['uv']
+            else:                                   # vanilla default UVs from the element bounds
+                (x0,y0,z0),(x1,y1,z1)=e['from'],e['to']
+                u1,v1,u2,v2={'down':(x0,16-z1,x1,16-z0),'up':(x0,z0,x1,z1),'north':(16-x1,16-y1,16-x0,16-y0),
+                             'south':(x0,16-y1,x1,16-y0),'west':(z0,16-y1,z1,16-y0),'east':(16-z1,16-y1,16-z0,16-y0)}[face]
             verts=[];uvs=[]
             for (p,(s,tt)) in face_corners(face,e['from'],e['to']):
                 q=(p[0]-8,p[1]-8,p[2]-8); q=rot_x(q,rx); q=rot_y(q,ry)

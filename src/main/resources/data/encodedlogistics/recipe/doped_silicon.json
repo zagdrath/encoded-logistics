@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:silicon_wafer",
+  "minecraft:redstone"
+ ],
+ "result": {
+  "id": "encodedlogistics:doped_silicon",
+  "count": 1
+ }
+}

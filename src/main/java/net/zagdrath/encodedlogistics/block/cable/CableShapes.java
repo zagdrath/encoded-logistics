@@ -14,9 +14,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.zagdrath.encodedlogistics.part.PartType;
 
 // Cable collision and selection shapes: the union of the model parts a cable shows (the same rules as the multipart
-// blockstates), plus its anchors, terminals and facade panels, arms rotated from north like the blockstates rotate
+// blockstates), plus its anchors, parts and facade panels, arms rotated from north like the blockstates rotate
 // them. Shapes depend only on the geometry (slim or dense), the six connections and the six attachment kinds, so
 // they're cached.
 public final class CableShapes {
@@ -45,28 +46,29 @@ public final class CableShapes {
                     { 11, 11, 1.5, 12, 12, 2 } });
     // A facade: a 16x16x1 panel over the side.
     private static final double[] FACADE = { 0, 0, 0, 16, 16, 1 };
-    // An Access Terminal: a 14x14x2.5 housing flush with the side and a 4x4 stub back to the cable's core.
-    private static final double[] TERMINAL_HOUSING = { 1, 1, 0, 15, 15, 2.5 };
-    private static final double[] TERMINAL_STUB = { 6, 6, 2.5, 10, 10, 5 };
+    // How far a part host moves a part that faces out (terminals, the sensor) from the far side back to the block it's
+    // mounted on: the block less a terminal's 2.5 px housing.
+    public static final double HOST_SHIFT = 13.5;
 
-    private static final Map<Integer, VoxelShape> SLIM_CACHE = new ConcurrentHashMap<>();
-    private static final Map<Integer, VoxelShape> DENSE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Long, VoxelShape> SLIM_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Long, VoxelShape> DENSE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Long, VoxelShape> HOST_CACHE = new ConcurrentHashMap<>();
 
     private CableShapes() {}
 
     // connections by Direction ordinal (DOWN, UP, NORTH, SOUTH, WEST, EAST).
     public static VoxelShape get(CableTier tier, CableConnection[] connections, CableAttachments attachments) {
-        int key = 0;
+        long key = 0;
         for (CableConnection connection : connections) {
             key = key * 3 + connection.ordinal();
         }
-        key = key * 4096 + attachments.shapeKey();
+        key = (key << 24) + attachments.shapeKey();
         Parts parts = tier.dense() ? DENSE : SLIM;
         return (tier.dense() ? DENSE_CACHE : SLIM_CACHE).computeIfAbsent(key, k -> build(parts, connections, attachments));
     }
 
     // The axis of a straight piece: the only connections are cables on two opposite sides, and nothing is mounted (an
-    // anchor or a terminal sits on the junction cube). Otherwise null.
+    // anchor or a part sits on the junction cube). Otherwise null.
     public static Direction.@Nullable Axis straightAxis(CableConnection[] connections, CableAttachments attachments) {
         if (attachments.hasMountedPart()) {
             return null;
@@ -115,8 +117,8 @@ public final class CableShapes {
         for (Direction side : Direction.values()) {
             if (attachments.anchored(side)) {
                 shape = Shapes.or(shape, boxes(parts.anchor(), side));
-            } else if (attachments.terminal(side)) {
-                shape = Shapes.or(shape, Shapes.or(rotated(TERMINAL_HOUSING, side), rotated(TERMINAL_STUB, side)));
+            } else if (attachments.part(side) != null) {
+                shape = Shapes.or(shape, boxes(attachments.part(side).boxes(), side));
             } else if (attachments.facade(side)) {
                 shape = Shapes.or(shape, rotated(FACADE, side));
             }
@@ -129,17 +131,36 @@ public final class CableShapes {
         return rotated(FACADE, side);
     }
 
-    // A terminal's housing on a side (its part, for mining it off a cable).
-    public static VoxelShape terminal(Direction side) {
-        return rotated(TERMINAL_HOUSING, side);
+    // A part on a cable side, for working out whether a hit landed on it.
+    public static VoxelShape part(PartType part, Direction side) {
+        return boxes(part.boxes(), side);
     }
 
-    // A part host: just its terminal's housing, against the block it's mounted on.
+    // A part host: just its part on the side toward the block it's mounted on. A part that faces out is the part on the
+    // far side moved back against the block (its stub, which would reach into that block, left out); one that faces the
+    // block sits as on a cable.
     public static VoxelShape partHost(CableAttachments attachments) {
+        return HOST_CACHE.computeIfAbsent(attachments.shapeKey(), key -> {
+            VoxelShape shape = Shapes.empty();
+            for (Direction side : Direction.values()) {
+                PartType part = attachments.part(side);
+                if (part != null) {
+                    shape = Shapes.or(shape, hostPart(part, side));
+                }
+            }
+            return shape.optimize();
+        });
+    }
+
+    public static VoxelShape hostPart(PartType part, Direction mount) {
+        if (!part.facesOut()) {
+            return boxes(part.boxes(), mount);
+        }
         VoxelShape shape = Shapes.empty();
-        for (Direction side : Direction.values()) {
-            if (attachments.terminal(side)) {
-                shape = Shapes.or(shape, rotated(TERMINAL_HOUSING, side));
+        for (double[] box : part.boxes()) {
+            if (box[5] + HOST_SHIFT <= 16) {
+                shape = Shapes.or(shape, rotated(new double[] { box[0], box[1], box[2] + HOST_SHIFT, box[3], box[4], box[5] + HOST_SHIFT },
+                        mount.getOpposite()));
             }
         }
         return shape;

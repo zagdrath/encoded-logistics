@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:chest",
+  "encodedlogistics:ferrite"
+ ],
+ "result": {
+  "id": "encodedlogistics:inventory_tap",
+  "count": 1
+ }
+}

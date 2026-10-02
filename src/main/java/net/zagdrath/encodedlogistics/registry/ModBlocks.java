@@ -10,7 +10,10 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -50,7 +53,22 @@ public final class ModBlocks {
     public static final DeferredBlock<DriveBayBlock> DRIVE_BAY = BLOCKS.registerBlock("drive_bay", DriveBayBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
 
-    // Holds an Access Terminal mounted on a block face (no item; the terminal is what drops).
+    // Neodymium and tantalum ores (Phase 2): drop their raw metal (silk touch: the ore), need an iron pickaxe.
+    public static final DeferredBlock<Block> NEODYMIUM_ORE = BLOCKS.registerSimpleBlock("neodymium_ore", ModBlocks::stoneOre);
+    public static final DeferredBlock<Block> DEEPSLATE_NEODYMIUM_ORE = BLOCKS.registerSimpleBlock("deepslate_neodymium_ore", ModBlocks::deepslateOre);
+    public static final DeferredBlock<Block> TANTALUM_ORE = BLOCKS.registerSimpleBlock("tantalum_ore", ModBlocks::stoneOre);
+    public static final DeferredBlock<Block> DEEPSLATE_TANTALUM_ORE = BLOCKS.registerSimpleBlock("deepslate_tantalum_ore", ModBlocks::deepslateOre);
+
+    private static BlockBehaviour.Properties stoneOre(BlockBehaviour.Properties properties) {
+        return properties.mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 3.0F);
+    }
+
+    private static BlockBehaviour.Properties deepslateOre(BlockBehaviour.Properties properties) {
+        return properties.mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
+                .strength(4.5F, 3.0F).sound(SoundType.DEEPSLATE);
+    }
+
+    // Holds a part mounted on a block face (no item; the part is what drops).
     public static final DeferredBlock<PartHostBlock> PART_HOST = BLOCKS.registerBlock("part_host", PartHostBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(0.5F, 1.0F).sound(SoundType.METAL).noOcclusion().dynamicShape().noLootTable()
                     .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -41,6 +43,12 @@ public final class TerminalLayout {
     public final String titleKey;
     public final int titleLeft, titleTop, inventoryLeft, inventoryTopInBottom;
     public final JsonObject features;
+    // The crafting section (features.crafting_grid, sections.crafting): drawn between the item rows and the bottom piece,
+    // which is then the lip-less bottom_texture. sectionHeight 0 when there's none.
+    public final int sectionHeight;
+    public final @Nullable Identifier section;
+    public final int clearLeft, clearTop;
+    public final Identifier clear, clearHover;
 
     private TerminalLayout(JsonObject json) {
         JsonObject pieces = object(json, "pieces");
@@ -50,7 +58,7 @@ public final class TerminalLayout {
         bottomHeight = integer(object(pieces, "bottom"), "height", 99);
         top = texture(string(object(pieces, "top"), "texture", "gui/terminal/top.png"));
         row = texture(string(object(pieces, "row"), "texture", "gui/terminal/row.png"));
-        bottom = texture(string(object(pieces, "bottom"), "texture", "gui/terminal/bottom.png"));
+        Identifier plainBottom = texture(string(object(pieces, "bottom"), "texture", "gui/terminal/bottom.png"));
         JsonObject rows = object(json, "rows");
         minRows = integer(rows, "min", 3);
         maxRows = integer(rows, "max", 12);
@@ -110,6 +118,17 @@ public final class TerminalLayout {
         inventoryLeft = integer(inventory, "left", 9);
         inventoryTopInBottom = integer(inventory, "top_in_bottom", 6);
         features = object(json, "features");
+        JsonObject sections = object(json, "sections");
+        JsonObject crafting = feature("crafting_grid") && sections.has("crafting")
+                ? read(sections.get("crafting").getAsString().replaceFirst("\\.json$", ""), 1) : new JsonObject();
+        sectionHeight = crafting.has("texture") ? integer(crafting, "height", 76) : 0;
+        section = crafting.has("texture") ? texture(string(crafting, "texture", "gui/terminal/crafting.png")) : null;
+        bottom = crafting.has("bottom_texture") ? texture(string(crafting, "bottom_texture", "gui/terminal/bottom_plain.png")) : plainBottom;
+        JsonObject clearButton = object(crafting, "clear");
+        clearLeft = integer(clearButton, "left", 84);
+        clearTop = integer(clearButton, "top", 8);
+        clear = sprite(string(clearButton, "sprite", "terminal/clear_grid"));
+        clearHover = sprite(string(clearButton, "hover", "terminal/clear_grid_hover"));
     }
 
     // The layout of screens/<name>.json with its includes.
@@ -121,17 +140,18 @@ public final class TerminalLayout {
         return features.has(name) && features.get(name).getAsBoolean();
     }
 
-    // Grid rows that fit a window this many GUI pixels tall (with a little margin), within min / max.
+    // Grid rows that fit a window this many GUI pixels tall (with a little margin, and room for any section), within
+    // min / max.
     public int rowsFor(int screenHeight) {
         if (!fitToWindow) {
             return defaultRows;
         }
-        int rows = (screenHeight - topHeight - bottomHeight - 16) / rowHeight;
+        int rows = (screenHeight - topHeight - sectionHeight - bottomHeight - 16) / rowHeight;
         return Math.max(minRows, Math.min(maxRows, rows));
     }
 
     public int height(int rows) {
-        return topHeight + rows * rowHeight + bottomHeight;
+        return topHeight + rows * rowHeight + sectionHeight + bottomHeight;
     }
 
     // --- Reading ---

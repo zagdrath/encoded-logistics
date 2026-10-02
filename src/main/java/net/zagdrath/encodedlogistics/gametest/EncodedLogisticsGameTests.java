@@ -64,6 +64,10 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("lithography_press_etches", Phase1GameTests::lithographyPressEtches);
         TESTS.put("drive_storage", Phase1GameTests::driveStorage);
         TESTS.put("access_terminals", Phase1GameTests::terminals);
+        TESTS.put("ingress_port", Phase2GameTests::ingressPort);
+        TESTS.put("egress_port", Phase2GameTests::egressPort);
+        TESTS.put("inventory_tap", Phase2GameTests::inventoryTap);
+        TESTS.put("threshold_sensor", Phase2GameTests::thresholdSensor);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
