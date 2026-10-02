@@ -26,7 +26,21 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    // JEI
+    maven {
+        name = "BlameJared"
+        url = "https://maven.blamejared.com/"
+        content {
+            includeGroup "mezz.jei"
+            includeGroup "net.mezzdev.config"
+        }
+    }
+    // Jade
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content { includeGroup "maven.modrinth" }
+    }
 }
 
 base {
@@ -103,6 +117,12 @@ dependencies {
     // And its provides the option to then use net.minecraft as the group, and one of; client, server or joined as the module name, plus the game version as version.
     // For all intends and purposes: You can treat this dependency as if it is a normal library you would use.
     implementation "net.neoforged:neoforge:${neo_version}"
+
+    // Optional integrations: compiled against, present in dev runs, never required by the mod.
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    compileOnly "maven.modrinth:jade:${jade_version}"
+    localRuntime "maven.modrinth:jade:${jade_version}"
 
     // Graph-level unit tests (the channel solver and the frame validator).
     testImplementation platform('org.junit:junit-bom:5.11.4')

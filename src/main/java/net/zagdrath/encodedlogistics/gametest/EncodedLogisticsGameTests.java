@@ -51,6 +51,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("long_line_is_too_large", EncodedLogisticsGameTests::longLineIsTooLarge);
         TESTS.put("breaking_splits_structures", EncodedLogisticsGameTests::breakingSplitsStructures);
         TESTS.put("power_cycle", EncodedLogisticsGameTests::powerCycle);
+        TESTS.put("energy_pools_across_structure", EncodedLogisticsGameTests::energyPoolsAcrossStructure);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
@@ -220,6 +221,37 @@ public final class EncodedLogisticsGameTests {
                 .thenExecute(() -> insert(helper, pos, 1_000))
                 .thenIdle(1)
                 .thenExecute(() -> assertShown(helper, pos, false, ControllerState.ONLINE))
+                .thenSucceed();
+    }
+
+    // FE fed into one face fills the whole structure, not just that block, and every face reports the structure's
+    // buffer (what Jade shows).
+    private static void energyPoolsAcrossStructure(GameTestHelper helper) {
+        for (int x = 0; x < 3; x++) {
+            controller(helper, new BlockPos(x, 1, 0));
+        }
+        BlockPos end = new BlockPos(0, 1, 0);
+        int[] taken = new int[1];
+        helper.startSequence()
+                .thenIdle(2)
+                // Up to 4,096 FE/t per block: 12,288 a tick for three blocks.
+                .thenExecute(() -> taken[0] = insert(helper, end, 60_000))
+                .thenExecute(() -> helper.assertTrue(taken[0] == 3 * 4_096, "Took " + taken[0] + " in one tick"))
+                .thenExecute(() -> {
+                    for (int tick = 0; tick < 10; tick++) {
+                        helper.getBlockEntity(new BlockPos(tick % 3, 1, 0), NetworkControllerBlockEntity.class).takeReceived();
+                        insert(helper, end, 60_000);
+                    }
+                })
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    EnergyHandler far = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(new BlockPos(2, 1, 0)), Direction.UP);
+                    helper.assertTrue(far != null && far.getCapacityAsLong() == 75_000, "Far face reports " + (far == null ? null : far.getCapacityAsLong()));
+                    helper.assertTrue(far.getAmountAsLong() > 25_000, "Only " + far.getAmountAsLong() + " FE stored: not pooled");
+                    NetworkSnapshot snapshot = snapshot(helper, end);
+                    helper.assertTrue(snapshot.capacity() == 75_000 && snapshot.stored() > 25_000, "Screen shows " + snapshot.stored() + " / "
+                            + snapshot.capacity());
+                })
                 .thenSucceed();
     }
 }

@@ -42,6 +42,7 @@ import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
+import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // Every Network Controller structure in a level, by id, saved with the level. Each controller block entity holds its
 // structure's id.
@@ -338,8 +339,11 @@ public class ControllerStructures extends SavedData {
         BlockPos min = structure.min(), max = structure.max();
         ChannelResult channels = runtime.channels;
         List<NetworkSnapshot.DeviceEntry> devices = new ArrayList<>();
+        boolean online = runtime.status == NetworkStatus.ONLINE;
+        // The structure's own blocks come first in the list (sorted with the rest by count).
+        devices.add(new NetworkSnapshot.DeviceEntry(BuiltInRegistries.ITEM.getKey(ModItems.NETWORK_CONTROLLER.get()), structure.members().size(),
+                Config.CONTROLLER_DRAIN.getAsDouble() * structure.members().size(), 0, !online));
         if (runtime.discovered != null && channels != null) {
-            boolean online = runtime.status == NetworkStatus.ONLINE;
             Map<Item, int[]> counts = new LinkedHashMap<>();
             Map<Item, Double> drains = new HashMap<>();
             for (NetworkNode node : runtime.discovered.graph().nodes()) {
@@ -361,9 +365,9 @@ public class ControllerStructures extends SavedData {
                 Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
                 devices.add(new NetworkSnapshot.DeviceEntry(itemId, count[0], drains.getOrDefault(item, 0.0), count[1], !online));
             });
-            devices.sort(Comparator.comparingInt(NetworkSnapshot.DeviceEntry::count).reversed()
-                    .thenComparing(entry -> entry.item().toString()));
         }
+        devices.sort(Comparator.comparingInt(NetworkSnapshot.DeviceEntry::count).reversed()
+                .thenComparing(entry -> entry.item().toString()));
         return new NetworkSnapshot(runtime.status, runtime.stored, runtime.capacity, runtime.usage, runtime.generation,
                 channels != null ? channels.used() : 0, channels != null ? channels.capacity() : 0,
                 max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1, structure.members().size(),

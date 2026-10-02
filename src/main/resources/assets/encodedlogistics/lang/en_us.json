@@ -22,6 +22,8 @@
   "gui.encodedlogistics.tooltip.missing_channel": "Missing channel",
   "gui.encodedlogistics.tooltip.unpowered": "No power",
   "tooltip.encodedlogistics.network_controller": "Provides 32 channels per connected face. Forms hollow frames up to 7x7x7.",
+  "config.jade.plugin_encodedlogistics.network_controller": "Network Controller",
+  "jei.encodedlogistics.network_controller.info": "The heart of a network. Touching Network Controllers form one structure: a single block, a line, or the hollow edge frame of a box up to 7x7x7 (a 3x3x3 frame is 20 blocks). Filled faces and anything bigger don't form. Each controller face with a network connection provides 32 channels. Every block stores 25,000 FE, takes FE on any face, and the network drains 2 FE/t per block plus its devices. Only one controller structure may be on a network.",
 
   "encodedlogistics.configuration.title": "Encoded Logistics Configs",
   "encodedlogistics.configuration.section.encodedlogistics.local.toml": "Encoded Logistics Configs",

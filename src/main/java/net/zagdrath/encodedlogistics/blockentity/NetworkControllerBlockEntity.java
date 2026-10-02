@@ -5,6 +5,9 @@
 
 package net.zagdrath.encodedlogistics.blockentity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -22,11 +25,14 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
 // One Network Controller block: which structure it belongs to, and its share of the structure's FE buffer. Each block
-// buffers its own energyPerBlock and accepts up to maxReceivePerBlock FE per tick on any face; the structure's buffer is
-// the sum, so energy stays put when structures merge or split. ControllerStructures drains it and counts what came in.
+// buffers its own energyPerBlock and takes up to maxReceivePerBlock FE per tick; the structure's buffer is the sum, so
+// energy stays put when structures merge or split. The energy capability on every face is a view of the whole
+// structure (StructureEnergy): FE in fills this block, then spills over into the others. ControllerStructures drains it
+// and counts what came in.
 public class NetworkControllerBlockEntity extends BlockEntity {
     private long structureId;
     private final Buffer energy = new Buffer();
+    private final StructureEnergy structureEnergy = new StructureEnergy();
 
     public NetworkControllerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.NETWORK_CONTROLLER.get(), pos, state);
@@ -43,9 +49,9 @@ public class NetworkControllerBlockEntity extends BlockEntity {
         }
     }
 
-    // Insert-only on every face.
+    // Insert-only on every face, for the whole structure.
     public EnergyHandler getEnergyHandler(@Nullable Direction side) {
-        return energy;
+        return structureEnergy;
     }
 
     public int getEnergy() {
@@ -107,6 +113,65 @@ public class NetworkControllerBlockEntity extends BlockEntity {
         super.saveAdditional(output);
         output.putLong("structure", structureId);
         energy.serialize(output);
+    }
+
+    // This block first, then the rest of its structure (loaded blocks only). Just this block when the level doesn't know
+    // its structure (client side, or before the structure is validated).
+    private List<NetworkControllerBlockEntity> structureBlocks() {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return List.of(this);
+        }
+        ControllerStructures.Structure structure = ControllerStructures.get(serverLevel).get(structureId);
+        if (structure == null) {
+            return List.of(this);
+        }
+        List<NetworkControllerBlockEntity> blocks = new ArrayList<>(structure.members().size());
+        blocks.add(this);
+        for (BlockPos pos : structure.members()) {
+            if (!pos.equals(worldPosition) && serverLevel.isLoaded(pos)
+                    && serverLevel.getBlockEntity(pos) instanceof NetworkControllerBlockEntity other && other.structureId == structureId) {
+                blocks.add(other);
+            }
+        }
+        return blocks;
+    }
+
+    private final class StructureEnergy implements EnergyHandler {
+        @Override
+        public long getAmountAsLong() {
+            long amount = 0;
+            for (NetworkControllerBlockEntity block : structureBlocks()) {
+                amount += block.energy.getAmountAsLong();
+            }
+            return amount;
+        }
+
+        @Override
+        public long getCapacityAsLong() {
+            long capacity = 0;
+            for (NetworkControllerBlockEntity block : structureBlocks()) {
+                block.energy.refreshLimits();
+                capacity += block.energy.getCapacityAsLong();
+            }
+            return capacity;
+        }
+
+        @Override
+        public int insert(int amount, TransactionContext transaction) {
+            int left = amount;
+            for (NetworkControllerBlockEntity block : structureBlocks()) {
+                if (left <= 0) {
+                    break;
+                }
+                left -= block.energy.insert(left, transaction);
+            }
+            return amount - left;
+        }
+
+        @Override
+        public int extract(int amount, TransactionContext transaction) {
+            return 0;
+        }
     }
 
     private final class Buffer extends SimpleEnergyHandler {

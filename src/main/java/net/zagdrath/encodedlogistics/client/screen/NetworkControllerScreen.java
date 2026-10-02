@@ -26,11 +26,12 @@ import net.zagdrath.encodedlogistics.net.NetworkSnapshotPayload;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
 
-// The Network screen: energy gauge, status and channels, Stored / Usage / Generation, the structure, and a scrolling
+// The Network Controller screen: energy gauge, status and channels, Stored / Usage / Generation, and a scrolling
 // grid of the devices on the network. Layout and colours are those of screens/controller.json and
 // screens/common/palette.json.
 public class NetworkControllerScreen extends AbstractContainerScreen<NetworkControllerMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/controller.png");
+    private static final Identifier CONTROLLER = EncodedLogistics.id("network_controller");
 
     // palette.json
     private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ACCENT = 0xFF00D992, WARNING = 0xFFE8C24A, ERROR = 0xFFFF6B6B;
@@ -40,7 +41,8 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
     private static final int LED_X = 28, LED_Y = 22, LED_SIZE = 6;
     private static final int STATUS_X = 38, STATUS_Y = 21, CHANNELS_RIGHT = 196;
     private static final int ROW_LABEL_X = 28, ROW_VALUE_X = 96, STORED_Y = 35, USAGE_Y = 46, GENERATION_Y = 57;
-    private static final int STRUCTURE_X = 8, STRUCTURE_Y = 73, STRUCTURE_VALUE_X = 64, DEVICES_X = 8, DEVICES_Y = 84;
+    // The devices label sits midway between the overview box and the device list.
+    private static final int DEVICES_X = 8, DEVICES_Y = 78;
     private static final int LIST_X = 10, LIST_Y = 97, COLUMNS = 4, ROWS = 4, CELL_W = 44, CELL_H = 20;
     private static final int ICON_X = 2, ICON_Y = 2, COUNT_X = 22, COUNT_Y = 6;
     private static final int SCROLL_X = 195, SCROLL_Y = 96, SCROLL_H = 82, THUMB_W = 6, THUMB_H = 15;
@@ -109,20 +111,6 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
         row(graphics, "usage", Component.literal(perTick(snapshot.usage())), USAGE_Y);
         row(graphics, "generation", Component.literal(perTick(snapshot.generation())), GENERATION_Y);
 
-        graphics.text(font, Component.translatable("gui.encodedlogistics.structure"), STRUCTURE_X, STRUCTURE_Y, TEXT_MUTED, false);
-        Component structure;
-        int structureColor = TEXT;
-        if (status == NetworkStatus.INVALID_SHAPE || status == NetworkStatus.TOO_LARGE || status == NetworkStatus.CONFLICT) {
-            structure = status.description();
-            structureColor = ERROR;
-        } else if (snapshot.single()) {
-            structure = Component.translatable("gui.encodedlogistics.structure.single");
-        } else {
-            structure = Component.translatable("gui.encodedlogistics.structure.value", snapshot.sizeX(), snapshot.sizeY(), snapshot.sizeZ(),
-                    snapshot.blocks());
-        }
-        graphics.text(font, structure, STRUCTURE_VALUE_X, STRUCTURE_Y, structureColor, false);
-
         int total = snapshot.devices().stream().mapToInt(NetworkSnapshot.DeviceEntry::count).sum();
         graphics.text(font, Component.translatable("gui.encodedlogistics.devices", snapshot.devices().size(), total), DEVICES_X, DEVICES_Y,
                 TEXT_MUTED, false);
@@ -152,6 +140,9 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
         if (cell >= 0 && index < snapshot.devices().size()) {
             NetworkSnapshot.DeviceEntry entry = snapshot.devices().get(index);
             lines.add(stack(entry).getHoverName());
+            if (entry.item().equals(CONTROLLER)) {
+                lines.add(structure(snapshot));
+            }
             lines.add(Component.translatable("gui.encodedlogistics.tooltip.installed", entry.count()).withColor(TEXT_MUTED));
             lines.add(Component.translatable("gui.encodedlogistics.tooltip.passive_drain", decimal(entry.drain())).withColor(TEXT_MUTED));
             if (entry.unpowered()) {
@@ -166,6 +157,19 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
         if (!lines.isEmpty()) {
             graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
         }
+    }
+
+    // The controllers' entry: "3x3x3 frame, 20 blocks", "Single block", or what's wrong with the shape.
+    private static Component structure(NetworkSnapshot snapshot) {
+        NetworkStatus status = snapshot.status();
+        if (status == NetworkStatus.INVALID_SHAPE || status == NetworkStatus.TOO_LARGE) {
+            return status.description().copy().withColor(ERROR);
+        }
+        if (snapshot.single()) {
+            return Component.translatable("gui.encodedlogistics.structure.single").withColor(ACCENT);
+        }
+        return Component.translatable("gui.encodedlogistics.structure.value", snapshot.sizeX(), snapshot.sizeY(), snapshot.sizeZ(),
+                snapshot.blocks()).withColor(ACCENT);
     }
 
     // --- Scrolling ---

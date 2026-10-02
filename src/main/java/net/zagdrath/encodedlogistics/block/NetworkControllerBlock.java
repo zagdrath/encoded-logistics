@@ -108,7 +108,7 @@ public class NetworkControllerBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, p) -> new NetworkControllerMenu(id, inventory, pos),
-                Component.translatable("gui.encodedlogistics.network")), buf -> buf.writeBlockPos(pos));
+                Component.translatable("block.encodedlogistics.network_controller")), buf -> buf.writeBlockPos(pos));
         return InteractionResult.SUCCESS;
     }
 
