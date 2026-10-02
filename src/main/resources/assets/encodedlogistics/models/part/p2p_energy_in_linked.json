@@ -1,0 +1,208 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "face": "encodedlogistics:block/part/p2p/energy_in",
+  "glow": "encodedlogistics:block/part/p2p/energy_in_glow",
+  "parts": "encodedlogistics:block/part/parts",
+  "particle": "encodedlogistics:block/part/p2p/energy_in"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    3,
+    0
+   ],
+   "to": [
+    13,
+    13,
+    1.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#face",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      4,
+      0,
+      6,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      0,
+      8,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    5,
+    1.5
+   ],
+   "to": [
+    11,
+    11,
+    3
+   ],
+   "faces": {
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6,
+    6,
+    3
+   ],
+   "to": [
+    10,
+    10,
+    5
+   ],
+   "faces": {
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      4,
+      0,
+      6,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      4,
+      0,
+      6,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      4,
+      0,
+      6,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      4,
+      0,
+      6,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    3,
+    -0.02
+   ],
+   "to": [
+    13,
+    13,
+    -0.02
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glow",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:fiberglass",
+  "encodedlogistics:logic_die",
+  "minecraft:glass",
+  "encodedlogistics:copper_foil",
+  "encodedlogistics:gallium_ingot"
+ ],
+ "result": {
+  "id": "encodedlogistics:optical_transceiver",
+  "count": 1
+ }
+}

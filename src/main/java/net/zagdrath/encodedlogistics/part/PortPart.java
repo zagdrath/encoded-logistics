@@ -35,16 +35,19 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // portEnergyPerItem FE each from the network. Ingress takes whatever passes its filter (empty: everything) and leaves
 // what the network can't store; egress sends only what passes its filter (empty: nothing), one candidate item per
 // operation in turn. Lit while it moved something in its last operation. Modules: one Filter Module (filter options),
-// up to three Throughput Modules. Redstone modes need a Redstone Control Module (Phase 4); until then it's always on.
+// up to three Throughput Modules, one Fuzzy Match Module (its filter's entries can match by tag or damage) and one
+// Redstone Control Module, which unlocks its redstone modes: work only while the block it's on is powered (high), only
+// while it isn't (low), or one operation each time it's powered (pulse). Without the module it ignores redstone.
 public class PortPart extends CablePart {
-    public static final int OPERATION = 20, MODULE_SLOTS = 4, REDSTONE_IGNORE = 0;
+    public static final int OPERATION = 20, MODULE_SLOTS = 4;
+    public static final int REDSTONE_IGNORE = 0, REDSTONE_HIGH = 1, REDSTONE_LOW = 2, REDSTONE_PULSE = 3, REDSTONE_MODES = 4;
 
     private final PartFilter filter = new PartFilter();
     private final NonNullList<ItemStack> modules = NonNullList.withSize(MODULE_SLOTS, ItemStack.EMPTY);
     private int redstoneMode = REDSTONE_IGNORE;
     private int timer, roundRobin;
     private double energyCredit;
-    private boolean active;
+    private boolean active, wasPowered;
 
     public PortPart(PartType type, CableBlockEntity host, Direction side) {
         super(type, host, side);
@@ -68,6 +71,22 @@ public class PortPart extends CablePart {
 
     public boolean hasFilterModule() {
         return modules.stream().anyMatch(stack -> stack.is(ModItems.FILTER_MODULE.get()));
+    }
+
+    public boolean hasFuzzyModule() {
+        return modules.stream().anyMatch(stack -> stack.is(ModItems.FUZZY_MATCH_MODULE.get()));
+    }
+
+    public boolean hasRedstoneModule() {
+        return modules.stream().anyMatch(stack -> stack.is(ModItems.REDSTONE_CONTROL_MODULE.get()));
+    }
+
+    // The next redstone mode (needs a Redstone Control Module).
+    public void cycleRedstoneMode() {
+        if (hasRedstoneModule()) {
+            redstoneMode = (redstoneMode + 1) % REDSTONE_MODES;
+            changed();
+        }
     }
 
     public int throughputModules() {
@@ -99,7 +118,23 @@ public class PortPart extends CablePart {
 
     @Override
     public void tick(ServerLevel level) {
-        if (++timer < OPERATION) {
+        int mode = hasRedstoneModule() ? redstoneMode : REDSTONE_IGNORE;
+        boolean pulse = false;
+        if (mode != REDSTONE_IGNORE) {
+            boolean powered = level.hasNeighborSignal(host.getBlockPos());
+            boolean rising = powered && !wasPowered;
+            wasPowered = powered;
+            if (mode == REDSTONE_HIGH && !powered || mode == REDSTONE_LOW && powered || mode == REDSTONE_PULSE && !rising) {
+                // Held off by redstone: idle (a pulse port just waits for the next pulse).
+                if (mode != REDSTONE_PULSE || ++timer >= OPERATION) {
+                    timer = 0;
+                    setActive(false);
+                }
+                return;
+            }
+            pulse = mode == REDSTONE_PULSE;
+        }
+        if (!pulse && ++timer < OPERATION) {
             return;
         }
         timer = 0;
@@ -114,6 +149,13 @@ public class PortPart extends CablePart {
             active = moved > 0;
         }
         if (active != wasActive) {
+            changed();
+        }
+    }
+
+    private void setActive(boolean active) {
+        if (this.active != active) {
+            this.active = active;
             changed();
         }
     }
@@ -134,14 +176,14 @@ public class PortPart extends CablePart {
     // Ingress: from the faced inventory into the network.
     private int pull(ResourceHandler<ItemResource> source, NetworkStorage storage, int budget) {
         int left = budget;
-        boolean options = hasFilterModule();
+        boolean options = hasFilterModule(), fuzzy = hasFuzzyModule();
         for (int slot = 0; slot < source.size() && left > 0; slot++) {
             ItemResource resource = source.getResource(slot);
             if (resource.isEmpty()) {
                 continue;
             }
             ItemStack stack = resource.toStack(1);
-            if (!filter.test(stack, options, true)) {
+            if (!filter.test(stack, options, true, fuzzy)) {
                 continue;
             }
             ItemKey key = ItemKey.of(stack);
@@ -168,11 +210,11 @@ public class PortPart extends CablePart {
         if (filter.isEmpty() || budget <= 0) {
             return 0;
         }
-        boolean options = hasFilterModule();
+        boolean options = hasFilterModule(), fuzzy = hasFuzzyModule();
         List<ItemKey> candidates = new ArrayList<>();
         Map<ItemKey, Long> stored = storage.list();
         for (ItemKey key : stored.keySet()) {
-            if (filter.test(key.stack(), options, false)) {
+            if (filter.test(key.stack(), options, false, fuzzy)) {
                 candidates.add(key);
             }
         }

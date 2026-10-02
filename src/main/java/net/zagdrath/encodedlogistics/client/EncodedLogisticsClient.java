@@ -28,14 +28,20 @@ import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
+import net.zagdrath.encodedlogistics.client.screen.CollectorPlaneScreen;
+import net.zagdrath.encodedlogistics.client.screen.DeployerPlaneScreen;
 import net.zagdrath.encodedlogistics.client.screen.DriveBayScreen;
 import net.zagdrath.encodedlogistics.client.screen.FabricationTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.FabricatorScreen;
 import net.zagdrath.encodedlogistics.client.screen.GatewayScreen;
+import net.zagdrath.encodedlogistics.client.screen.HandheldTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.InventoryTapScreen;
 import net.zagdrath.encodedlogistics.client.screen.LithographyPressScreen;
+import net.zagdrath.encodedlogistics.client.screen.NetworkBridgeScreen;
 import net.zagdrath.encodedlogistics.client.screen.NetworkControllerScreen;
+import net.zagdrath.encodedlogistics.client.screen.PointToPointScreen;
 import net.zagdrath.encodedlogistics.client.screen.PortScreen;
+import net.zagdrath.encodedlogistics.client.screen.RelayAntennaScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchedulerCoreScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
 import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
@@ -72,6 +78,12 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.FABRICATOR.get(), FabricatorScreen::new);
         event.register(ModMenuTypes.GATEWAY.get(), GatewayScreen::new);
         event.register(ModMenuTypes.SCHEDULER_CORE.get(), SchedulerCoreScreen::new);
+        event.register(ModMenuTypes.RELAY_ANTENNA.get(), RelayAntennaScreen::new);
+        event.register(ModMenuTypes.NETWORK_BRIDGE.get(), NetworkBridgeScreen::new);
+        event.register(ModMenuTypes.HANDHELD_TERMINAL.get(), HandheldTerminalScreen::new);
+        event.register(ModMenuTypes.POINT_TO_POINT_LINK.get(), PointToPointScreen::new);
+        event.register(ModMenuTypes.COLLECTOR_PLANE.get(), CollectorPlaneScreen::new);
+        event.register(ModMenuTypes.DEPLOYER_PLANE.get(), DeployerPlaneScreen::new);
     }
 
     // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).

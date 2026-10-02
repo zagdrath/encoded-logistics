@@ -1,0 +1,61 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/point_to_point_link.png",
+  "width": 176,
+  "height": 96
+ },
+ "widgets": {
+  "type": {
+   "left": 8,
+   "top": 20,
+   "spacing": 20,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "options": [
+    "items",
+    "energy",
+    "redstone",
+    "lanes"
+   ],
+   "icons": [
+    "p2p/type_items",
+    "p2p/type_energy",
+    "p2p/type_redstone",
+    "p2p/type_lanes"
+   ],
+   "note": "locked once paired; re-pick after unpairing"
+  },
+  "direction": {
+   "left": 150,
+   "top": 20,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "icons": [
+    "p2p/dir_in",
+    "p2p/dir_out"
+   ]
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.point_to_point_link",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "status": {
+   "left": 12,
+   "top": 50,
+   "color": "TEXT"
+  },
+  "partner": {
+   "key": "gui.encodedlogistics.p2p.partner",
+   "left": 12,
+   "top": 63,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

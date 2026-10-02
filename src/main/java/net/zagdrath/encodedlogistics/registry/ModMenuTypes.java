@@ -15,14 +15,20 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
+import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
+import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.FabricatorMenu;
 import net.zagdrath.encodedlogistics.menu.GatewayMenu;
+import net.zagdrath.encodedlogistics.menu.HandheldTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
 import net.zagdrath.encodedlogistics.menu.LithographyPressMenu;
+import net.zagdrath.encodedlogistics.menu.NetworkBridgeMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
+import net.zagdrath.encodedlogistics.menu.PointToPointMenu;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
+import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
@@ -67,6 +73,24 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<SchedulerCoreMenu>> SCHEDULER_CORE = MENU_TYPES.register("scheduler_core",
             () -> IMenuTypeExtension.create(SchedulerCoreMenu::new));
+
+    public static final Supplier<MenuType<RelayAntennaMenu>> RELAY_ANTENNA = MENU_TYPES.register("relay_antenna",
+            () -> new MenuType<>(RelayAntennaMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final Supplier<MenuType<NetworkBridgeMenu>> NETWORK_BRIDGE = MENU_TYPES.register("network_bridge",
+            () -> IMenuTypeExtension.create(NetworkBridgeMenu::new));
+
+    public static final Supplier<MenuType<HandheldTerminalMenu>> HANDHELD_TERMINAL = MENU_TYPES.register("handheld_terminal",
+            () -> IMenuTypeExtension.create(HandheldTerminalMenu::new));
+
+    public static final Supplier<MenuType<PointToPointMenu>> POINT_TO_POINT_LINK = MENU_TYPES.register("point_to_point_link",
+            () -> IMenuTypeExtension.create(PointToPointMenu::new));
+
+    public static final Supplier<MenuType<CollectorPlaneMenu>> COLLECTOR_PLANE = MENU_TYPES.register("collector_plane",
+            () -> IMenuTypeExtension.create(CollectorPlaneMenu::new));
+
+    public static final Supplier<MenuType<DeployerPlaneMenu>> DEPLOYER_PLANE = MENU_TYPES.register("deployer_plane",
+            () -> IMenuTypeExtension.create(DeployerPlaneMenu::new));
 
     private ModMenuTypes() {}
 }

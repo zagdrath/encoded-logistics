@@ -1,0 +1,59 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/network_bridge.png",
+  "width": 176,
+  "height": 96
+ },
+ "widgets": {
+  "status_light": {
+   "left": 12,
+   "top": 23,
+   "sprites": {
+    "linked": "bridge/status_linked",
+    "unlinked": "bridge/status_unlinked",
+    "offline": "bridge/status_offline"
+   }
+  },
+  "lanes": {
+   "left": 9,
+   "top": 63,
+   "segments": 32,
+   "pitch": 5,
+   "sprite": "bridge/lane_on"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "block.encodedlogistics.network_bridge",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "status": {
+   "left": 22,
+   "top": 22,
+   "color": "TEXT"
+  },
+  "partner": {
+   "key": "gui.encodedlogistics.bridge.partner",
+   "left": 12,
+   "top": 34,
+   "color": "TEXT_MUTED",
+   "note": "x, y, z on this line"
+  },
+  "dimension": {
+   "left": 12,
+   "top": 44,
+   "color": "TEXT_MUTED"
+  },
+  "lanes": {
+   "key": "gui.encodedlogistics.bridge.lanes",
+   "left": 8,
+   "top": 76,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

@@ -32,6 +32,7 @@ import net.neoforged.neoforge.model.data.ModelProperty;
 import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -45,11 +46,13 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     public static final ModelProperty<CableAttachments> ATTACHMENTS = new ModelProperty<>();
     // Which sides' parts show their lit model, by Direction ordinal bit.
     public static final ModelProperty<Integer> LIT = new ModelProperty<>();
+    // Which model each side's part shows (CablePart.look()), four bits per side by Direction ordinal.
+    public static final ModelProperty<Integer> LOOKS = new ModelProperty<>();
 
     private CableAttachments attachments = CableAttachments.EMPTY;
     private final Map<Direction, CablePart> parts = new EnumMap<>(Direction.class);
     private boolean online;
-    private int lit;
+    private int lit, looks;
 
     public CableBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.CABLE.get(), pos, state);
@@ -76,6 +79,15 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
             return;
         }
         this.attachments = attachments;
+        // Parts coming off (or swapped for another) hear about it first.
+        if (level instanceof ServerLevel serverLevel) {
+            for (Direction side : Direction.values()) {
+                CablePart part = parts.get(side);
+                if (part != null && attachments.part(side) != part.type()) {
+                    part.removed(serverLevel);
+                }
+            }
+        }
         syncParts();
         setChanged();
         updateTicking();
@@ -115,7 +127,10 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
-        if (level != null && !level.isClientSide()) {
+        if (level instanceof ServerLevel serverLevel) {
+            for (CablePart part : List.copyOf(parts.values())) {
+                part.removed(serverLevel);
+            }
             for (Direction side : Direction.values()) {
                 for (ItemStack drop : drops(side)) {
                     Block.popResource(level, pos, drop);
@@ -145,19 +160,35 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         updateLit(false);
     }
 
-    // Recomputes which parts are lit; clients get the change (and, when asked, the online state with it).
+    // Recomputes which parts are lit and which models they show; clients get the change (and, when asked, the online
+    // state with it).
     private void updateLit(boolean always) {
-        int now = 0;
+        int now = 0, nowLooks = 0;
         for (CablePart part : parts.values()) {
             if (part.lit()) {
                 now |= 1 << part.side().ordinal();
             }
+            nowLooks |= (part.look() & 0xF) << part.side().ordinal() * 4;
         }
-        if ((now != lit || always) && level != null && !level.isClientSide()) {
+        if ((now != lit || nowLooks != looks || always) && level != null && !level.isClientSide()) {
             lit = now;
+            looks = nowLooks;
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
         lit = now;
+        looks = nowLooks;
+    }
+
+    // The remote links its parts carry (lanes Point-to-Point Links), for its network node.
+    public List<RemoteLink> remoteLinks() {
+        if (level == null || parts.isEmpty()) {
+            return List.of();
+        }
+        List<RemoteLink> links = new ArrayList<>();
+        for (CablePart part : parts.values()) {
+            links.addAll(part.remoteLinks(level.dimension()));
+        }
+        return links;
     }
 
     // Server, every tick while it holds ticking parts (ControllerStructures calls it).
@@ -180,6 +211,10 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     public void onLoad() {
         super.onLoad();
         updateTicking();
+        // An end of a remote link coming back can join a network up again.
+        if (level instanceof ServerLevel serverLevel && !remoteLinks().isEmpty()) {
+            ControllerStructures.get(serverLevel).markTopologyChanged();
+        }
     }
 
     @Override
@@ -195,6 +230,9 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         super.onChunkUnloaded();
         if (level instanceof ServerLevel serverLevel) {
             ControllerStructures.get(serverLevel).setTicking(this, false);
+            if (!remoteLinks().isEmpty()) {
+                ControllerStructures.get(serverLevel).markTopologyChanged();
+            }
         }
     }
 
@@ -214,7 +252,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     }
 
     public boolean emitsRedstone(Direction side) {
-        return parts.get(side) != null && parts.get(side).type() == PartType.THRESHOLD_SENSOR;
+        return parts.get(side) != null && parts.get(side).emitsRedstone();
     }
 
     // A part's redstone changed: update the neighbours, and the block its face is against.
@@ -240,6 +278,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         // Only sent to clients (getUpdateTag); the server works these out as it runs.
         online = input.getBooleanOr("online", false);
         lit = input.getIntOr("lit", 0);
+        looks = input.getIntOr("looks", 0);
     }
 
     @Override
@@ -263,6 +302,9 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         if (lit != 0) {
             tag.putInt("lit", lit);
         }
+        if (looks != 0) {
+            tag.putInt("looks", looks);
+        }
         return tag;
     }
 
@@ -275,9 +317,9 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     @Override
     public void onDataPacket(Connection connection, ValueInput input) {
         CableAttachments before = attachments;
-        int litBefore = lit;
+        int litBefore = lit, looksBefore = looks;
         super.onDataPacket(connection, input);
-        if (!attachments.equals(before) || lit != litBefore) {
+        if (!attachments.equals(before) || lit != litBefore || looks != looksBefore) {
             remesh();
         }
     }
@@ -297,6 +339,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
 
     @Override
     public ModelData getModelData() {
-        return attachments.isEmpty() ? ModelData.EMPTY : ModelData.builder().with(ATTACHMENTS, attachments).with(LIT, lit).build();
+        return attachments.isEmpty() ? ModelData.EMPTY
+                : ModelData.builder().with(ATTACHMENTS, attachments).with(LIT, lit).with(LOOKS, looks).build();
     }
 }

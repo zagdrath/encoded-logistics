@@ -35,7 +35,8 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.CABLE_FACADE.get());
                 output.accept(ModItems.LITHOGRAPHY_PRESS.get());
                 output.accept(ModItems.DRIVE_BAY.get());
-                for (var block : List.of(ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE, ModItems.JOB_BUFFER, ModItems.THREAD_UNIT)) {
+                for (var block : List.of(ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE, ModItems.JOB_BUFFER, ModItems.THREAD_UNIT,
+                        ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE)) {
                     output.accept(block.get());
                 }
                 for (PartType part : PartType.values()) {
@@ -43,6 +44,10 @@ public final class ModCreativeTabs {
                 }
                 output.accept(ModItems.FILTER_MODULE.get());
                 output.accept(ModItems.THROUGHPUT_MODULE.get());
+                output.accept(ModItems.FUZZY_MATCH_MODULE.get());
+                output.accept(ModItems.REDSTONE_CONTROL_MODULE.get());
+                output.accept(ModItems.HANDHELD_TERMINAL.get());
+                output.accept(ModItems.LINK_CARD.get());
                 output.accept(ModItems.SCHEMATIC_CARD.get());
                 for (StorageTier tier : StorageTier.REGISTERED) {
                     output.accept(ModItems.storageDrive(tier).get());
@@ -52,7 +57,7 @@ public final class ModCreativeTabs {
                         ModItems.LOGIC_PHOTOMASK, ModItems.STORAGE_PHOTOMASK, ModItems.LOGIC_DIE, ModItems.RAW_NEODYMIUM,
                         ModItems.NEODYMIUM_INGOT, ModItems.RAW_TANTALUM, ModItems.TANTALUM_INGOT, ModItems.DOPED_SILICON,
                         ModItems.MEMORY_PHOTOMASK, ModItems.MEMORY_DIE, ModItems.TANTALUM_CAPACITOR, ModItems.RAW_GALLIUM, ModItems.GALLIUM_INGOT,
-                        ModItems.PROCESSOR_PHOTOMASK, ModItems.PROCESSOR_DIE, ModItems.HEATSINK)) {
+                        ModItems.PROCESSOR_PHOTOMASK, ModItems.PROCESSOR_DIE, ModItems.HEATSINK, ModItems.OPTICAL_TRANSCEIVER)) {
                     output.accept(material.get());
                 }
                 for (StorageTier tier : StorageTier.REGISTERED) {

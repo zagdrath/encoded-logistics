@@ -1,0 +1,58 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/collector_plane.png",
+  "width": 176,
+  "height": 166
+ },
+ "slots": {
+  "module": {
+   "left": 8,
+   "top": 18,
+   "accepts": "#encodedlogistics:plane_modules",
+   "ghost": "port/ghost_module"
+  },
+  "filter": {
+   "left": 62,
+   "top": 18,
+   "columns": 3,
+   "rows": 3,
+   "ghost_items": true
+  }
+ },
+ "widgets": {
+  "filter_options": {
+   "left": 134,
+   "top": 18,
+   "spacing": 20,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "when": "filter_module",
+   "options": [
+    "deny",
+    "tags",
+    "components"
+   ]
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 84
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.collector_plane",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 72,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

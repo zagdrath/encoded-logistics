@@ -8,8 +8,11 @@ package net.zagdrath.encodedlogistics.client.screen;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -17,13 +20,17 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
+import net.zagdrath.encodedlogistics.net.MenuValuePayload;
 import net.zagdrath.encodedlogistics.part.PartFilter;
 
-// An Ingress or Egress Port's screen (screens/ingress_port.json, egress_port.json): the redstone mode button, the 3x3
-// ghost filter, four module slots and the inventory. With a Filter Module installed, three more buttons beside the
-// redstone one: allow / deny list, match by tag, match components exactly.
+// An Ingress or Egress Port's screen (screens/ingress_port.json, egress_port.json): the redstone mode button (it cycles
+// once a Redstone Control Module is in), the 3x3 ghost filter, four module slots and the inventory. With a Filter Module
+// installed, three more buttons beside the redstone one: allow / deny list, match by tag, match components exactly.
+// With a Fuzzy Match Module, right-clicking a filter entry opens its fuzzy choices (FuzzyPopup); fuzzy entries are
+// marked with a "~".
 public class PortScreen extends AbstractContainerScreen<PortMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/port.png");
     private static final Identifier GHOST_MODULE = EncodedLogistics.id("port/ghost_module");
@@ -31,6 +38,8 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
             EncodedLogistics.id("port/redstone_low"), EncodedLogistics.id("port/redstone_pulse") };
     private static final String[] REDSTONE_KEYS = { "ignore", "high", "low", "pulse" };
     private static final int REDSTONE_X = 8, REDSTONE_Y = 18, OPTIONS_X = 30, OPTIONS_Y = 18, OPTIONS_STEP = 20;
+
+    private @Nullable FuzzyPopup popup;
 
     public PortScreen(PortMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 176);
@@ -93,12 +102,30 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
     }
 
     @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        if (menu.flag(PortMenu.FLAG_FUZZY_MODULE)) {
+            graphics.nextStratum();
+            FuzzyMarks.extract(graphics, font, menu, leftPos + PortMenu.FILTER_X, topPos + PortMenu.FILTER_Y, menu::fuzzy);
+        }
+        if (popup != null) {
+            graphics.nextStratum();
+            popup.extract(graphics, font, mouseX, mouseY);
+        }
+    }
+
+    @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (popup != null) {
+            return;
+        }
         super.extractTooltip(graphics, mouseX, mouseY);
         List<Component> lines = new ArrayList<>();
         if (PartScreens.over(mouseX, mouseY, leftPos + REDSTONE_X, topPos + REDSTONE_Y, 18, 18)) {
             lines.add(Component.translatable("gui.encodedlogistics.redstone." + REDSTONE_KEYS[Math.min(menu.redstoneMode(), 3)]));
-            lines.add(Component.translatable("gui.encodedlogistics.redstone.needs_module").withColor(PartScreens.TEXT_MUTED));
+            if (!menu.flag(PortMenu.FLAG_REDSTONE_MODULE)) {
+                lines.add(Component.translatable("gui.encodedlogistics.redstone.needs_module").withColor(PartScreens.TEXT_MUTED));
+            }
         } else if (options()) {
             for (int option = 0; option < 3; option++) {
                 if (PartScreens.over(mouseX, mouseY, leftPos + OPTIONS_X, topPos + OPTIONS_Y + option * OPTIONS_STEP, 18, 18)) {
@@ -110,6 +137,10 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
                     }));
                 }
             }
+        }
+        if (lines.isEmpty() && menu.flag(PortMenu.FLAG_FUZZY_MODULE) && hoveredSlot != null && hoveredSlot.index < PartFilter.SIZE
+                && hoveredSlot.hasItem()) {
+            FuzzyMarks.tooltip(hoveredSlot.getItem(), menu.fuzzy(hoveredSlot.index), lines);
         }
         if (lines.isEmpty() && PartScreens.over(mouseX, mouseY, leftPos + PortMenu.FILTER_X, topPos + PortMenu.FILTER_Y, 54, 54)
                 && hoveredSlot != null && !hoveredSlot.hasItem() && menu.getCarried().isEmpty()) {
@@ -124,6 +155,21 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (popup != null) {
+            int code = popup.click(event.x(), event.y());
+            if (code >= 0) {
+                ClientPacketDistributor.sendToServer(new MenuValuePayload(menu.containerId, popup.entry, code));
+            }
+            popup = null;
+            return true;
+        }
+        // Right-clicking a filter entry with an empty hand and a Fuzzy Match Module in: its fuzzy choices.
+        if (event.button() == 1 && menu.flag(PortMenu.FLAG_FUZZY_MODULE) && menu.getCarried().isEmpty() && hoveredSlot != null
+                && hoveredSlot.index < PartFilter.SIZE && hoveredSlot.hasItem()) {
+            popup = new FuzzyPopup(font, hoveredSlot.index, hoveredSlot.getItem(), menu.fuzzy(hoveredSlot.index), (int) event.x(), (int) event.y(),
+                    width, height);
+            return true;
+        }
         if (event.button() == 0) {
             if (PartScreens.over(event.x(), event.y(), leftPos + REDSTONE_X, topPos + REDSTONE_Y, 18, 18)) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, PortMenu.BUTTON_REDSTONE);
@@ -139,5 +185,23 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
             }
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (popup != null) {
+            popup.scroll(scrollY);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (popup != null && event.isEscape()) {
+            popup = null;
+            return true;
+        }
+        return super.keyPressed(event);
     }
 }

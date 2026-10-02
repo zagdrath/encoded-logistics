@@ -1,0 +1,6 @@
+{
+ "values": [
+  "encodedlogistics:filter_module",
+  "encodedlogistics:fuzzy_match_module"
+ ]
+}

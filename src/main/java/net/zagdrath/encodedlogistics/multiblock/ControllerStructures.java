@@ -26,11 +26,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -43,18 +45,22 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
-import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
+import net.zagdrath.encodedlogistics.network.NetworkGraph;
+import net.zagdrath.encodedlogistics.network.NetworkLink;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
+import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -69,13 +75,15 @@ import net.zagdrath.encodedlogistics.storage.StorageView;
 // Placing or breaking a controller queues the positions around it; once per tick the queued positions are flood-filled
 // into groups, each group is validated (ControllerFrame) and keeps the id most of it had, or gets a new one. Then every
 // structure ticks: its energy (buffer, drain, FE received over the last 20 ticks), its network (rediscovered and
-// re-solved only when the topology changed) and the FORMED / STATE of its blocks.
+// re-solved only when the topology changed, anywhere: a Bridge can carry a network into another dimension) and the
+// FORMED / STATE of its blocks.
 //
 // Devices (anything using lanes: Drive Bays, terminals) are told every tick whether they're online: on a powered
 // network, with their lanes. A part reaches its network's storage (the drives in online Drive Bays and the inventories
 // online Inventory Taps face) through storageAt, and takes FE for its work through drawEnergy. Autocrafting finds the
-// network's Fabricators and Gateways (providersAt) and Schedulers (schedulersAt) the same way. Cables and part hosts
-// with ticking parts tick from here, after the networks.
+// network's Fabricators and Gateways (providersAt) and Schedulers (schedulersAt) the same way, Handheld Terminals its
+// Relay Antennas (relays). Which network a node is on is kept across dimensions (NetworkIndex), so these work from any
+// level. Cables and part hosts with ticking parts tick from here, after the networks.
 //
 // A network's energy is its controllers' buffers plus the Capacitor Banks on it. FE coming in through Power Inlets
 // (fill) goes to the controllers first, then the banks; the network's drain comes out of the banks first, so the
@@ -126,14 +134,11 @@ public class ControllerStructures extends SavedData {
     private final Set<BlockPos> pending = new HashSet<>();
     private final Set<Long> touched = new HashSet<>();
     private final Map<Long, Runtime> runtimes = new HashMap<>();
-    // Power Inlets and Capacitor Banks on a controller's network, by position: which structure's energy they're part of.
-    private final Map<BlockPos, Long> energyNetworks = new HashMap<>();
-    // Devices on a controller's network, by position, and the ones online as of the last tick.
-    private final Map<BlockPos, Long> deviceNetworks = new HashMap<>();
-    private Set<BlockPos> onlineDevices = new HashSet<>();
     // Cables and part hosts holding parts that tick.
     private final Set<CableBlockEntity> ticking = new LinkedHashSet<>();
     private boolean topologyChanged;
+    // The NetworkIndex generation this level's networks were last solved for.
+    private int seenGeneration = -1;
 
     public ControllerStructures() {}
 
@@ -170,7 +175,7 @@ public class ControllerStructures extends SavedData {
         queueNeighbours(pos);
     }
 
-    // A network node was added, removed or reconnected somewhere: re-solve every network next tick.
+    // A network node was added, removed or reconnected somewhere: re-solve every network (in every level) next tick.
     public void markTopologyChanged() {
         topologyChanged = true;
     }
@@ -178,26 +183,33 @@ public class ControllerStructures extends SavedData {
     // --- Ticking ---
 
     public void tick(ServerLevel level) {
-        processPending(level);
-        boolean topology = topologyChanged;
-        topologyChanged = false;
-        Set<BlockPos> online = new HashSet<>();
+        MinecraftServer server = level.getServer();
+        NetworkIndex index = NetworkIndex.get(server);
+        processPending(level, index);
+        if (topologyChanged) {
+            topologyChanged = false;
+            index.generation++;
+        }
+        boolean topology = index.generation != seenGeneration;
+        seenGeneration = index.generation;
+        List<NodePos> online = new ArrayList<>();
         for (Structure structure : List.copyOf(structures.values())) {
             Runtime runtime = runtimes.computeIfAbsent(structure.id(), id -> new Runtime());
             if (topology) {
                 runtime.dirty = true;
             }
-            tickStructure(level, structure, runtime, online);
-        }
-        for (BlockPos pos : onlineDevices) {
-            if (!online.contains(pos)) {
-                setDeviceOnline(level, pos, false);
+            Set<NodePos> before = runtime.online;
+            tickStructure(level, index, structure, runtime);
+            for (NodePos pos : before) {
+                if (!runtime.online.contains(pos)) {
+                    setDeviceOnline(server, pos, false);
+                }
             }
+            online.addAll(runtime.online);
         }
-        for (BlockPos pos : online) {
-            setDeviceOnline(level, pos, true);
+        for (NodePos pos : online) {
+            setDeviceOnline(server, pos, true);
         }
-        onlineDevices = online;
         for (CableBlockEntity host : List.copyOf(ticking)) {
             if (host.isRemoved()) {
                 ticking.remove(host);
@@ -216,13 +228,13 @@ public class ControllerStructures extends SavedData {
         }
     }
 
-    private static void setDeviceOnline(ServerLevel level, BlockPos pos, boolean online) {
-        if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof NetworkDevice device) {
+    private static void setDeviceOnline(MinecraftServer server, NodePos pos, boolean online) {
+        if (blockEntity(server, pos) instanceof NetworkDevice device) {
             device.setNetworkOnline(online);
         }
     }
 
-    private void processPending(ServerLevel level) {
+    private void processPending(ServerLevel level, NetworkIndex index) {
         if (pending.isEmpty() && touched.isEmpty()) {
             return;
         }
@@ -261,9 +273,13 @@ public class ControllerStructures extends SavedData {
         for (long id : touched) {
             if (!claimed.contains(id)) {
                 structures.remove(id);
-                runtimes.remove(id);
-                energyNetworks.values().removeIf(owner -> owner == id);
-                deviceNetworks.values().removeIf(owner -> owner == id);
+                Runtime runtime = runtimes.remove(id);
+                if (runtime != null) {
+                    // Its devices go offline and leave the index.
+                    runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
+                    NetworkRef ref = new NetworkRef(level.dimension(), id);
+                    runtime.members.forEach(pos -> index.members.remove(pos, ref));
+                }
             }
         }
         touched.clear();
@@ -295,15 +311,17 @@ public class ControllerStructures extends SavedData {
         return level.isLoaded(pos) && level.getBlockState(pos).getBlock() instanceof NetworkControllerBlock;
     }
 
-    private void tickStructure(ServerLevel level, Structure structure, Runtime runtime, Set<BlockPos> online) {
+    private void tickStructure(ServerLevel level, NetworkIndex index, Structure structure, Runtime runtime) {
         List<NetworkControllerBlockEntity> blocks = new ArrayList<>(structure.members().size());
         for (BlockPos pos : structure.members()) {
-            // Part of it unloaded: the structure waits until all of it is back.
+            // Part of it unloaded: the structure waits until all of it is back (and its devices are offline meanwhile).
             if (!level.isLoaded(pos)) {
+                runtime.online = Set.of();
                 return;
             }
             if (!(level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller) || controller.getStructureId() != structure.id()) {
                 queue(pos);
+                runtime.online = Set.of();
                 return;
             }
             blocks.add(controller);
@@ -316,7 +334,7 @@ public class ControllerStructures extends SavedData {
             stored += controller.getEnergy();
             capacity += controller.getCapacity();
         }
-        List<CapacitorBankBlockEntity> banks = banks(level, runtime);
+        List<CapacitorBankBlockEntity> banks = banks(level.getServer(), runtime);
         for (CapacitorBankBlockEntity bank : banks) {
             received += bank.lastInput();
             stored += bank.getStored();
@@ -335,14 +353,14 @@ public class ControllerStructures extends SavedData {
             runtime.discovered = null;
             runtime.lanes = null;
             runtime.dirty = true;
-            setNetworkNodes(level, structure.id(), runtime, null);
+            setNetworkNodes(level, index, structure.id(), runtime, null);
         } else {
             if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
                 runtime.discovered = NetworkDiscovery.discover(level, structure.id(), structure.members(),
                         Config.LANES_PER_CONTROLLER_FACE.getAsInt());
                 runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
                 runtime.dirty = false;
-                setNetworkNodes(level, structure.id(), runtime,
+                setNetworkNodes(level, index, structure.id(), runtime,
                         runtime.lanes.status() == NetworkStatus.CONFLICT ? null : runtime.discovered);
             }
             if (runtime.lanes.status() == NetworkStatus.CONFLICT) {
@@ -378,13 +396,15 @@ public class ControllerStructures extends SavedData {
             }
         }
         runtime.status = status;
+        Set<NodePos> online = new HashSet<>();
         if (status == NetworkStatus.ONLINE && runtime.lanes != null) {
-            for (BlockPos device : runtime.devices) {
+            for (NodePos device : runtime.devices) {
                 if (runtime.lanes.hasLane(device)) {
                     online.add(device);
                 }
             }
         }
+        runtime.online = online;
         runtime.stored = stored;
         runtime.capacity = capacity;
         runtime.usage = usage;
@@ -401,78 +421,122 @@ public class ControllerStructures extends SavedData {
         }
     }
 
-    // Records what's on this structure's network: its Power Inlets and Capacitor Banks (its energy), its devices and
-    // Drive Bays. Nothing when it has no working network.
-    private void setNetworkNodes(ServerLevel level, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
-        energyNetworks.values().removeIf(owner -> owner == id);
-        deviceNetworks.values().removeIf(owner -> owner == id);
-        List<BlockPos> banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(), partHosts = new ArrayList<>(),
-                providers = new ArrayList<>(), schedulers = new ArrayList<>();
+    // Records what's on this structure's network, in the index and by kind: its Capacitor Banks (its energy), its
+    // devices, Drive Bays, part hosts, autocrafting blocks and Relay Antennas. Nothing when it has no working network.
+    private void setNetworkNodes(ServerLevel level, NetworkIndex index, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
+        NetworkRef ref = new NetworkRef(level.dimension(), id);
+        runtime.members.forEach(pos -> index.members.remove(pos, ref));
+        List<NodePos> members = new ArrayList<>(), banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(),
+                partHosts = new ArrayList<>(), providers = new ArrayList<>(), schedulers = new ArrayList<>(), relays = new ArrayList<>();
         if (discovered != null) {
-            for (NetworkNode node : discovered.graph().nodes()) {
+            discovered.graph().entries().forEach((pos, node) -> {
+                if (node.isController()) {
+                    return;
+                }
+                members.add(pos);
+                index.members.put(pos, ref);
                 if (node.laneCost() > 0) {
-                    devices.add(node.pos());
-                    deviceNetworks.put(node.pos(), id);
+                    devices.add(pos);
                 }
-                var blockEntity = level.getBlockEntity(node.pos());
+                BlockEntity blockEntity = blockEntity(level.getServer(), pos);
                 if (blockEntity instanceof CapacitorBankBlockEntity) {
-                    banks.add(node.pos());
-                    energyNetworks.put(node.pos(), id);
-                } else if (blockEntity instanceof PowerInletBlockEntity) {
-                    energyNetworks.put(node.pos(), id);
+                    banks.add(pos);
                 } else if (blockEntity instanceof DriveBayBlockEntity) {
-                    driveBays.add(node.pos());
+                    driveBays.add(pos);
                 } else if (blockEntity instanceof CraftingProvider) {
-                    providers.add(node.pos());
+                    providers.add(pos);
                 } else if (blockEntity instanceof SchedulerCoreBlockEntity && node.laneCost() > 0) {
-                    schedulers.add(node.pos());
+                    schedulers.add(pos);
+                } else if (blockEntity instanceof RelayAntennaBlockEntity) {
+                    relays.add(pos);
                 } else if (blockEntity instanceof CableBlockEntity host && host.getAttachments().hasParts()) {
-                    partHosts.add(node.pos());
+                    partHosts.add(pos);
                 }
-            }
+            });
         }
-        banks.sort(Comparator.naturalOrder());
-        driveBays.sort(Comparator.naturalOrder());
+        for (List<NodePos> list : List.of(banks, driveBays, partHosts, providers, schedulers, relays)) {
+            list.sort(NetworkGraph.ORDER);
+        }
+        runtime.members = List.copyOf(members);
         runtime.banks = List.copyOf(banks);
         runtime.devices = List.copyOf(devices);
         runtime.driveBays = List.copyOf(driveBays);
-        partHosts.sort(Comparator.naturalOrder());
         runtime.partHosts = List.copyOf(partHosts);
-        providers.sort(Comparator.naturalOrder());
-        schedulers.sort(Comparator.naturalOrder());
         runtime.providers = List.copyOf(providers);
         runtime.schedulers = List.copyOf(schedulers);
+        runtime.relays = List.copyOf(relays);
     }
 
-    private static List<CapacitorBankBlockEntity> banks(ServerLevel level, Runtime runtime) {
+    private static List<CapacitorBankBlockEntity> banks(MinecraftServer server, Runtime runtime) {
         List<CapacitorBankBlockEntity> banks = new ArrayList<>(runtime.banks.size());
-        for (BlockPos pos : runtime.banks) {
-            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CapacitorBankBlockEntity bank) {
+        for (NodePos pos : runtime.banks) {
+            if (blockEntity(server, pos) instanceof CapacitorBankBlockEntity bank) {
                 banks.add(bank);
             }
         }
         return banks;
     }
 
+    // The block entity at a position in any dimension, if that's loaded.
+    private static @Nullable BlockEntity blockEntity(MinecraftServer server, NodePos pos) {
+        ServerLevel level = server.getLevel(pos.dimension());
+        return level != null && level.isLoaded(pos.pos()) ? level.getBlockEntity(pos.pos()) : null;
+    }
+
+    // --- Finding a node's network ---
+
+    // A network found from one of its nodes: its home level and structures, the structure and its live state.
+    private record Owner(ServerLevel home, Structure structure, Runtime runtime, NetworkRef ref) {}
+
+    private static @Nullable Owner owner(MinecraftServer server, @Nullable NetworkRef ref) {
+        if (ref == null) {
+            return null;
+        }
+        ServerLevel home = server.getLevel(ref.dimension());
+        if (home == null) {
+            return null;
+        }
+        ControllerStructures structures = get(home);
+        Structure structure = structures.structures.get(ref.id());
+        Runtime runtime = structures.runtimes.get(ref.id());
+        return structure != null && runtime != null ? new Owner(home, structure, runtime, ref) : null;
+    }
+
+    private static @Nullable Owner owner(ServerLevel level, BlockPos pos) {
+        return owner(level.getServer(), networkOf(level, pos));
+    }
+
+    // The network the node at pos is on (a controller's network that isn't in conflict), or null.
+    public static @Nullable NetworkRef networkOf(ServerLevel level, BlockPos pos) {
+        return NetworkIndex.get(level.getServer()).members.get(NetworkGraph.at(level.dimension(), pos));
+    }
+
+    // Whether a network runs: valid, powered and not in conflict.
+    public static boolean isOnline(MinecraftServer server, @Nullable NetworkRef ref) {
+        Owner owner = owner(server, ref);
+        return owner != null && owner.runtime.status == NetworkStatus.ONLINE;
+    }
+
     // --- Storage ---
 
     // Whether the device at pos is on a powered network with its lanes (as of the last tick).
-    public boolean isDeviceOnline(BlockPos pos) {
-        return onlineDevices.contains(pos);
+    public boolean isDeviceOnline(ServerLevel level, BlockPos pos) {
+        Owner owner = owner(level, pos);
+        return owner != null && owner.runtime.online.contains(NetworkGraph.at(level.dimension(), pos));
     }
 
     // The storage a device at pos (a terminal, port, sensor) reaches: the drives in the online Drive Bays on its network
     // and the inventories its online Inventory Taps face. Null while the device itself is offline.
     public @Nullable NetworkStorage storageAt(ServerLevel level, BlockPos device) {
-        Long id = deviceNetworks.get(device);
-        Runtime runtime = id != null ? runtimes.get(id) : null;
-        if (runtime == null || !onlineDevices.contains(device)) {
+        Owner owner = owner(level, device);
+        if (owner == null || !owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device))) {
             return null;
         }
+        MinecraftServer server = level.getServer();
         List<StorageView> views = new ArrayList<>();
-        DriveStorage drives = DriveStorage.get(level.getServer());
-        for (BlockPos pos : runtime.driveBays) {
-            if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof DriveBayBlockEntity bay) {
+        DriveStorage drives = DriveStorage.get(server);
+        for (NodePos pos : owner.runtime.driveBays) {
+            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveBayBlockEntity bay) {
                 for (int slot = 0; slot < DriveBayBlockEntity.SLOTS; slot++) {
                     ItemStack stack = bay.drive(slot);
                     if (stack != null && stack.getItem() instanceof StorageDriveItem drive) {
@@ -481,11 +545,12 @@ public class ControllerStructures extends SavedData {
                 }
             }
         }
-        for (BlockPos pos : runtime.partHosts) {
-            if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CableBlockEntity host) {
+        for (NodePos pos : owner.runtime.partHosts) {
+            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof CableBlockEntity host
+                    && host.getLevel() instanceof ServerLevel hostLevel) {
                 for (CablePart part : host.parts()) {
                     if (part instanceof InventoryTapPart tap) {
-                        StorageView view = tap.view(level);
+                        StorageView view = tap.view(hostLevel);
                         if (view != null) {
                             views.add(view);
                         }
@@ -500,11 +565,11 @@ public class ControllerStructures extends SavedData {
 
     // The online Fabricators and Gateways on the network a device at pos is on (empty while it's offline).
     public List<CraftingProvider> providersAt(ServerLevel level, BlockPos device) {
-        Runtime runtime = onlineRuntime(device);
+        Runtime runtime = onlineRuntime(level, device);
         List<CraftingProvider> providers = new ArrayList<>();
         if (runtime != null) {
-            for (BlockPos pos : runtime.providers) {
-                if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CraftingProvider provider) {
+            for (NodePos pos : runtime.providers) {
+                if (runtime.online.contains(pos) && blockEntity(level.getServer(), pos) instanceof CraftingProvider provider) {
                     providers.add(provider);
                 }
             }
@@ -514,12 +579,11 @@ public class ControllerStructures extends SavedData {
 
     // The online, formed Schedulers on the network a device at pos is on.
     public List<SchedulerCoreBlockEntity> schedulersAt(ServerLevel level, BlockPos device) {
-        Runtime runtime = onlineRuntime(device);
+        Runtime runtime = onlineRuntime(level, device);
         List<SchedulerCoreBlockEntity> schedulers = new ArrayList<>();
         if (runtime != null) {
-            for (BlockPos pos : runtime.schedulers) {
-                if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof SchedulerCoreBlockEntity core
-                        && core.formed()) {
+            for (NodePos pos : runtime.schedulers) {
+                if (runtime.online.contains(pos) && blockEntity(level.getServer(), pos) instanceof SchedulerCoreBlockEntity core && core.formed()) {
                     schedulers.add(core);
                 }
             }
@@ -527,15 +591,47 @@ public class ControllerStructures extends SavedData {
         return schedulers;
     }
 
-    // Whether two devices are on the same network.
-    public boolean sameNetwork(BlockPos a, BlockPos b) {
-        Long id = deviceNetworks.get(a);
-        return id != null && id.equals(deviceNetworks.get(b));
+    // Whether two nodes in this level are on the same network.
+    public boolean sameNetwork(ServerLevel level, BlockPos a, BlockPos b) {
+        NetworkRef ref = networkOf(level, a);
+        return ref != null && ref.equals(networkOf(level, b));
     }
 
-    private @Nullable Runtime onlineRuntime(BlockPos device) {
-        Long id = deviceNetworks.get(device);
-        return id != null && onlineDevices.contains(device) ? runtimes.get(id) : null;
+    private static @Nullable Runtime onlineRuntime(ServerLevel level, BlockPos device) {
+        Owner owner = owner(level, device);
+        return owner != null && owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device)) ? owner.runtime : null;
+    }
+
+    // --- Wireless and links ---
+
+    // The online Relay Antennas of a network, wherever they are.
+    public static List<RelayAntennaBlockEntity> relays(MinecraftServer server, @Nullable NetworkRef ref) {
+        Owner owner = owner(server, ref);
+        List<RelayAntennaBlockEntity> relays = new ArrayList<>();
+        if (owner != null && owner.runtime.status == NetworkStatus.ONLINE) {
+            for (NodePos pos : owner.runtime.relays) {
+                if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof RelayAntennaBlockEntity relay) {
+                    relays.add(relay);
+                }
+            }
+        }
+        return relays;
+    }
+
+    // Lanes running over the remote link between two nodes (a Bridge pair), as last solved; 0 when they aren't linked.
+    public static int remoteUsage(MinecraftServer server, NodePos a, NodePos b) {
+        Owner owner = owner(server, NetworkIndex.get(server).members.get(a));
+        if (owner == null || owner.runtime.discovered == null || owner.runtime.lanes == null) {
+            return 0;
+        }
+        NetworkLink link = owner.runtime.discovered.graph().remoteLink(a, b);
+        return link != null ? owner.runtime.lanes.usage(link) : 0;
+    }
+
+    // Whether the remote link between two nodes is part of a network right now.
+    public static boolean remoteLinked(MinecraftServer server, NodePos a, NodePos b) {
+        Owner owner = owner(server, NetworkIndex.get(server).members.get(a));
+        return owner != null && owner.runtime.discovered != null && owner.runtime.discovered.graph().remoteLink(a, b) != null;
     }
 
     // --- Energy for work ---
@@ -543,24 +639,23 @@ public class ControllerStructures extends SavedData {
     // Takes up to amount FE from the energy of the network a device at pos is on (banks first, then controllers), for
     // work beyond its passive drain. Returns what it got.
     public int drawEnergy(ServerLevel level, BlockPos device, int amount) {
-        Long id = deviceNetworks.get(device);
-        Structure structure = id != null ? structures.get(id) : null;
-        Runtime runtime = id != null ? runtimes.get(id) : null;
-        if (structure == null || runtime == null || runtime.status != NetworkStatus.ONLINE || amount <= 0) {
+        Owner owner = owner(level, device);
+        if (owner == null || owner.runtime.status != NetworkStatus.ONLINE || amount <= 0) {
             return 0;
         }
         int left = amount;
-        for (CapacitorBankBlockEntity bank : banks(level, runtime)) {
+        for (CapacitorBankBlockEntity bank : banks(level.getServer(), owner.runtime)) {
             if (left <= 0) {
                 break;
             }
             left -= bank.drain(left);
         }
-        for (BlockPos pos : structure.members()) {
+        for (BlockPos pos : owner.structure.members()) {
             if (left <= 0) {
                 break;
             }
-            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller && controller.getStructureId() == id) {
+            if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
+                    && controller.getStructureId() == owner.ref.id()) {
                 left -= controller.drain(left);
             }
         }
@@ -569,30 +664,29 @@ public class ControllerStructures extends SavedData {
 
     // --- Energy from outside ---
 
-    // The structure whose energy a Power Inlet or Capacitor Bank at pos is part of, or 0 when it isn't on a
+    // The network whose energy a Power Inlet or Capacitor Bank at pos is part of, or null when it isn't on a
     // controller's network.
-    public long energyNetworkOf(BlockPos pos) {
-        return energyNetworks.getOrDefault(pos, 0L);
+    public @Nullable NetworkRef energyNetworkOf(ServerLevel level, BlockPos pos) {
+        return networkOf(level, pos);
     }
 
-    // Puts up to amount FE into a structure's energy: its controllers first, then its banks. Returns what went in.
-    public int fill(ServerLevel level, long id, int amount, TransactionContext transaction) {
-        Structure structure = structures.get(id);
-        Runtime runtime = runtimes.get(id);
-        if (structure == null || runtime == null || runtime.status.isError()) {
+    // Puts up to amount FE into a network's energy: its controllers first, then its banks. Returns what went in.
+    public static int fill(MinecraftServer server, NetworkRef network, int amount, TransactionContext transaction) {
+        Owner owner = owner(server, network);
+        if (owner == null || owner.runtime.status.isError()) {
             return 0;
         }
         int left = amount;
-        for (BlockPos pos : structure.members()) {
+        for (BlockPos pos : owner.structure.members()) {
             if (left <= 0) {
                 break;
             }
-            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
-                    && controller.getStructureId() == id) {
+            if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
+                    && controller.getStructureId() == network.id()) {
                 left -= controller.fill(left, transaction);
             }
         }
-        for (CapacitorBankBlockEntity bank : banks(level, runtime)) {
+        for (CapacitorBankBlockEntity bank : banks(server, owner.runtime)) {
             if (left <= 0) {
                 break;
             }
@@ -638,11 +732,11 @@ public class ControllerStructures extends SavedData {
         if (runtime.discovered != null && lanes != null) {
             Map<Item, int[]> counts = new LinkedHashMap<>();
             Map<Item, Double> drains = new HashMap<>();
-            for (NetworkNode node : runtime.discovered.graph().nodes()) {
+            runtime.discovered.graph().entries().forEach((pos, node) -> {
                 if (node.isController()) {
-                    continue;
+                    return;
                 }
-                boolean missingLane = online && node.laneCost() > 0 && !lanes.hasLane(node.pos());
+                boolean missingLane = online && node.laneCost() > 0 && !lanes.hasLane(pos);
                 // Parts (terminals) are listed on their own; the block they're on keeps the rest of the drain.
                 double partsDrain = 0;
                 for (NetworkPart part : node.parts()) {
@@ -654,9 +748,9 @@ public class ControllerStructures extends SavedData {
                     drains.merge(part.item(), part.passiveDrain(), Double::sum);
                     partsDrain += part.passiveDrain();
                 }
-                Item item = runtime.discovered.items().get(node.pos());
+                Item item = runtime.discovered.items().get(pos);
                 if (item == null || item == Items.AIR) {
-                    continue;
+                    return;
                 }
                 int[] count = counts.computeIfAbsent(item, key -> new int[2]);
                 count[0]++;
@@ -664,7 +758,7 @@ public class ControllerStructures extends SavedData {
                     count[1]++;
                 }
                 drains.merge(item, node.passiveDrain() - partsDrain, Double::sum);
-            }
+            });
             counts.forEach((item, count) -> {
                 Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
                 devices.add(new NetworkSnapshot.DeviceEntry(itemId, count[0], drains.getOrDefault(item, 0.0), count[1], !online));
@@ -702,8 +796,11 @@ public class ControllerStructures extends SavedData {
         boolean dirty = true;
         NetworkDiscovery.@Nullable Discovered discovered;
         @Nullable LaneResult lanes;
-        List<BlockPos> banks = List.of(), devices = List.of(), driveBays = List.of(), partHosts = List.of(), providers = List.of(),
-                schedulers = List.of();
+        // Every node on the network but the controllers (as entered in the index), and by kind.
+        List<NodePos> members = List.of(), banks = List.of(), devices = List.of(), driveBays = List.of(), partHosts = List.of(),
+                providers = List.of(), schedulers = List.of(), relays = List.of();
+        // The devices online as of the last tick.
+        Set<NodePos> online = Set.of();
         final int[] received = new int[GENERATION_WINDOW];
         int receivedIndex;
         double drainCarry;

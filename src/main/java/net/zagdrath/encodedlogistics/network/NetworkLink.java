@@ -5,20 +5,19 @@
 
 package net.zagdrath.encodedlogistics.network;
 
-import net.minecraft.core.BlockPos;
-
-// A connection between two adjacent nodes, carrying at most capacity lanes (the smaller tier of its two ends).
-// from is always the lower position, so a link has one identity whichever end it is looked up from.
-public record NetworkLink(BlockPos from, BlockPos to, int capacity) {
+// A connection between two nodes, carrying at most capacity lanes: between neighbours, the smaller tier of its two ends;
+// a remote link (a Bridge pair, a lanes Point-to-Point Link), what its ends allow. from is always the lower position
+// (NetworkGraph.ORDER), so a link has one identity whichever end it is looked up from.
+public record NetworkLink(NodePos from, NodePos to, int capacity) {
     public NetworkLink {
-        if (from.compareTo(to) > 0) {
-            BlockPos swap = from;
+        if (NetworkGraph.ORDER.compare(from, to) > 0) {
+            NodePos swap = from;
             from = to;
             to = swap;
         }
     }
 
-    public BlockPos other(BlockPos end) {
+    public NodePos other(NodePos end) {
         return end.equals(from) ? to : from;
     }
 }

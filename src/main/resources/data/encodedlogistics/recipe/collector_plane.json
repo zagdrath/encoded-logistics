@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:logic_die",
+  "encodedlogistics:circuit_substrate",
+  "minecraft:iron_pickaxe",
+  "minecraft:hopper",
+  "encodedlogistics:ferrite"
+ ],
+ "result": {
+  "id": "encodedlogistics:collector_plane",
+  "count": 1
+ }
+}

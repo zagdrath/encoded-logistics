@@ -5,24 +5,52 @@
 
 package net.zagdrath.encodedlogistics.network;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LaneSolverTest {
     private static final int FACE = 32, CABLE = 8, DENSE = 32, AD_HOC = 8;
     private static final Set<Direction> ALL = EnumSet.allOf(Direction.class);
+    private static final ResourceKey<Level> DIM = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("overworld")),
+            OTHER = ResourceKey.create(Registries.DIMENSION, Identifier.withDefaultNamespace("the_nether"));
+
+    private static NodePos at(BlockPos pos) {
+        return NodePos.of(DIM, pos);
+    }
 
     private record Node(BlockPos pos, int laneCost, double passiveDrain, Set<Direction> connections, int laneCapacity,
             long controllerGroup) implements NetworkNode {}
+
+    // A node with remote links and nothing else (a Bridge).
+    private record Remote(BlockPos pos, List<RemoteLink> remoteLinks) implements NetworkNode {
+        @Override
+        public int laneCost() {
+            return 0;
+        }
+
+        @Override
+        public double passiveDrain() {
+            return 0;
+        }
+
+        @Override
+        public Set<Direction> connections() {
+            return ALL;
+        }
+    }
 
     private static Node controller(int x, int y, int z, long group) {
         return new Node(new BlockPos(x, y, z), 0, 0, ALL, FACE, group);
@@ -40,13 +68,13 @@ class LaneSolverTest {
     private static NetworkGraph graph(NetworkNode... nodes) {
         NetworkGraph graph = new NetworkGraph();
         for (NetworkNode node : nodes) {
-            graph.addNode(node);
+            graph.addNode(DIM, node);
         }
         for (NetworkNode node : nodes) {
             for (Direction side : Direction.values()) {
-                NetworkNode other = graph.node(node.pos().relative(side));
+                NetworkNode other = graph.node(at(node.pos().relative(side)));
                 if (other != null && !(node.isController() && other.isController())) {
-                    graph.connect(node.pos(), side);
+                    graph.connect(at(node.pos()), side);
                 }
             }
         }
@@ -75,8 +103,8 @@ class LaneSolverTest {
         assertEquals(8, result.used());
         assertEquals(1, result.missing());
         // Nearest first: the device furthest down the spine misses out.
-        assertFalse(result.hasLane(new BlockPos(2, 1, 8)));
-        NetworkLink throughCable = new NetworkLink(new BlockPos(0, 0, 0), new BlockPos(1, 0, 0), CABLE);
+        assertFalse(result.hasLane(at(new BlockPos(2, 1, 8))));
+        NetworkLink throughCable = new NetworkLink(at(new BlockPos(0, 0, 0)), at(new BlockPos(1, 0, 0)), CABLE);
         assertEquals(8, result.usage(throughCable));
     }
 
@@ -98,8 +126,8 @@ class LaneSolverTest {
         assertEquals(2 * FACE, result.capacity());
         assertEquals(16, result.used());
         assertEquals(4, result.missing());
-        long east = result.lanes().entrySet().stream().filter(e -> e.getKey().getX() > 0 && e.getValue()).count();
-        long west = result.lanes().entrySet().stream().filter(e -> e.getKey().getX() < 0 && e.getValue()).count();
+        long east = result.lanes().entrySet().stream().filter(e -> e.getKey().pos().getX() > 0 && e.getValue()).count();
+        long west = result.lanes().entrySet().stream().filter(e -> e.getKey().pos().getX() < 0 && e.getValue()).count();
         assertEquals(8, east);
         assertEquals(8, west);
     }
@@ -111,8 +139,8 @@ class LaneSolverTest {
         NetworkNode[] nodes = { controller(0, 0, 0, 1), bottleneck, device(1, 0, -1), device(1, 0, 1) };
         for (int run = 0; run < 5; run++) {
             LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
-            assertTrue(result.hasLane(new BlockPos(1, 0, -1)));
-            assertFalse(result.hasLane(new BlockPos(1, 0, 1)));
+            assertTrue(result.hasLane(at(new BlockPos(1, 0, -1))));
+            assertFalse(result.hasLane(at(new BlockPos(1, 0, 1))));
         }
     }
 
@@ -122,8 +150,8 @@ class LaneSolverTest {
         Node bottleneck = new Node(new BlockPos(1, 0, 0), 0, 0, ALL, 1, NetworkNode.NO_CONTROLLER);
         NetworkNode[] nodes = { controller(0, 0, 0, 1), bottleneck, device(2, 0, 0), cable(1, 0, -1, CABLE), device(1, 0, -2) };
         LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
-        assertTrue(result.hasLane(new BlockPos(2, 0, 0)));
-        assertFalse(result.hasLane(new BlockPos(1, 0, -2)));
+        assertTrue(result.hasLane(at(new BlockPos(2, 0, 0))));
+        assertFalse(result.hasLane(at(new BlockPos(1, 0, -2))));
     }
 
     @Test
@@ -167,7 +195,7 @@ class LaneSolverTest {
         LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
         assertEquals(NetworkStatus.CONFLICT, result.status());
         assertEquals(0, result.used());
-        assertFalse(result.hasLane(new BlockPos(1, 1, 0)));
+        assertFalse(result.hasLane(at(new BlockPos(1, 1, 0))));
     }
 
     @Test
@@ -181,13 +209,38 @@ class LaneSolverTest {
         // Linked to the network only through a node that doesn't connect back.
         Node oneWay = new Node(new BlockPos(1, 0, 0), 0, 0, EnumSet.of(Direction.EAST), CABLE, NetworkNode.NO_CONTROLLER);
         NetworkGraph graph = new NetworkGraph();
-        graph.addNode(controller(0, 0, 0, 1));
-        graph.addNode(device(0, 1, 0));
-        graph.addNode(oneWay);
-        graph.addNode(device(5, 5, 5));
-        graph.connect(new BlockPos(0, 0, 0), Direction.UP);
+        graph.addNode(DIM, controller(0, 0, 0, 1));
+        graph.addNode(DIM, device(0, 1, 0));
+        graph.addNode(DIM, oneWay);
+        graph.addNode(DIM, device(5, 5, 5));
+        graph.connect(at(new BlockPos(0, 0, 0)), Direction.UP);
         LaneResult result = LaneSolver.solve(graph, AD_HOC);
-        assertTrue(result.hasLane(new BlockPos(0, 1, 0)));
-        assertFalse(result.hasLane(new BlockPos(5, 5, 5)));
+        assertTrue(result.hasLane(at(new BlockPos(0, 1, 0))));
+        assertFalse(result.hasLane(at(new BlockPos(5, 5, 5))));
+    }
+
+    @Test
+    void remoteLinkCarriesLanesIntoAnotherDimension() {
+        // Controller - 8-lane cable - bridge here; its partner in another dimension at the same coordinates, with two
+        // devices beyond it. The remote link carries 1 lane: one device gets it, and it shows on the link.
+        NetworkGraph graph = new NetworkGraph();
+        NodePos here = at(new BlockPos(2, 0, 0)), there = NodePos.of(OTHER, new BlockPos(2, 0, 0));
+        graph.addNode(DIM, controller(0, 0, 0, 1));
+        graph.addNode(DIM, cable(1, 0, 0, CABLE));
+        graph.addNode(DIM, new Remote(new BlockPos(2, 0, 0), List.of(new RemoteLink(there, 1))));
+        graph.addNode(OTHER, new Remote(new BlockPos(2, 0, 0), List.of(new RemoteLink(here, 1))));
+        graph.addNode(OTHER, device(3, 0, 0));
+        graph.addNode(OTHER, device(2, 1, 0));
+        graph.connect(at(new BlockPos(0, 0, 0)), Direction.EAST);
+        graph.connect(at(new BlockPos(1, 0, 0)), Direction.EAST);
+        NetworkLink bridge = graph.connectRemote(here, there, 1);
+        graph.connect(there, Direction.EAST);
+        graph.connect(there, Direction.UP);
+        LaneResult result = LaneSolver.solve(graph, AD_HOC);
+        assertEquals(1, result.used());
+        assertEquals(1, result.missing());
+        assertEquals(1, result.usage(bridge));
+        // Same distance: the lower position (y=0 before y=1) wins.
+        assertTrue(result.hasLane(NodePos.of(OTHER, new BlockPos(2, 1, 0))) != result.hasLane(NodePos.of(OTHER, new BlockPos(3, 0, 0))));
     }
 }

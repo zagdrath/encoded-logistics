@@ -23,6 +23,7 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.PowerInletBlock;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
 // The Power Inlet's port: FE pushed in goes straight into its network's energy (ControllerStructures.fill), up to
@@ -63,11 +64,10 @@ public class PowerInletBlockEntity extends BlockEntity {
         }
         // Whatever was held back goes in first.
         if (inlet.buffer > 0) {
-            ControllerStructures structures = ControllerStructures.get(serverLevel);
-            long network = structures.energyNetworkOf(pos);
-            if (network > 0) {
+            NetworkIndex.NetworkRef network = ControllerStructures.get(serverLevel).energyNetworkOf(serverLevel, pos);
+            if (network != null) {
                 try (Transaction transaction = Transaction.openRoot()) {
-                    int moved = structures.fill(serverLevel, network, inlet.buffer, transaction);
+                    int moved = ControllerStructures.fill(serverLevel.getServer(), network, inlet.buffer, transaction);
                     transaction.commit();
                     inlet.buffer -= moved;
                 }
@@ -117,16 +117,15 @@ public class PowerInletBlockEntity extends BlockEntity {
             if (amount <= 0 || !(level instanceof ServerLevel serverLevel)) {
                 return 0;
             }
-            ControllerStructures structures = ControllerStructures.get(serverLevel);
-            long network = structures.energyNetworkOf(worldPosition);
-            if (network <= 0) {
+            NetworkIndex.NetworkRef network = ControllerStructures.get(serverLevel).energyNetworkOf(serverLevel, worldPosition);
+            if (network == null) {
                 return 0;
             }
             int allowed = Math.min(amount, Math.max(0, Config.INLET_MAX_INPUT.getAsInt() - receivedThisTick));
             if (allowed <= 0) {
                 return 0;
             }
-            int filled = structures.fill(serverLevel, network, allowed, transaction);
+            int filled = ControllerStructures.fill(serverLevel.getServer(), network, allowed, transaction);
             int held = Math.min(allowed - filled, Math.max(0, Config.INLET_BUFFER.getAsInt() - buffer));
             int taken = filled + held;
             if (taken > 0) {

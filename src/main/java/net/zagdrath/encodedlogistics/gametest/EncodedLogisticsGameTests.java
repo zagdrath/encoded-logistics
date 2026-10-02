@@ -72,6 +72,14 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("encoder_encodes", Phase3GameTests::encoderEncodes);
         TESTS.put("fabricator_crafts", Phase3GameTests::fabricatorCrafts);
         TESTS.put("gateway_processes", Phase3GameTests::gatewayProcesses);
+        TESTS.put("bridge_joins_networks", Phase4GameTests::bridgeJoinsNetworks);
+        TESTS.put("bridge_cross_dimension", Phase4GameTests::bridgeCrossDimension);
+        TESTS.put("relay_range", Phase4GameTests::relayRange);
+        TESTS.put("point_to_point", Phase4GameTests::pointToPoint);
+        TESTS.put("point_to_point_lanes", Phase4GameTests::pointToPointLanes);
+        TESTS.put("planes", Phase4GameTests::planes);
+        TESTS.put("fuzzy_filter", Phase4GameTests::fuzzyFilter);
+        TESTS.put("redstone_control", Phase4GameTests::redstoneControl);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

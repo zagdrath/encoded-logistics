@@ -55,7 +55,9 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // How many grid rows fit the client's window, given the height of any extra section; set by the client.
     public static IntUnaryOperator clientRows = section -> DEFAULT_ROWS;
 
-    protected final BlockPos pos;
+    // The device it reaches the network through: the block the terminal is on (a Handheld Terminal's: the Relay Antenna
+    // it's using, which can change as the player moves).
+    protected BlockPos pos;
     protected final Direction side;
     private final int rows;
     protected final Player player;
@@ -96,10 +98,13 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         return rows;
     }
 
-    // The block the terminal is on (a cable or part host).
+    // The block the terminal is on (a cable or part host), or for a Handheld Terminal the Relay Antenna it uses.
     public BlockPos pos() {
         return pos;
     }
+
+    // Items moved in or out of the network by a click (a Handheld Terminal pays for them).
+    protected void moved(int items) {}
 
     // Opens the terminal on that side of the block at pos (a cable or a part host).
     public static void open(ServerPlayer player, BlockPos pos, Direction side) {
@@ -167,8 +172,10 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                     return;
                 }
                 int amount = action == INSERT_ONE ? 1 : carried.getCount();
-                carried.shrink((int) storage.insert(ItemKey.of(carried), amount, false));
+                int stored = (int) storage.insert(ItemKey.of(carried), amount, false);
+                carried.shrink(stored);
                 setCarried(carried);
+                moved(stored);
             }
             case TAKE_STACK, TAKE_HALF -> {
                 if (key == null || !carried.isEmpty()) {
@@ -182,6 +189,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 int taken = (int) storage.extract(key, amount, false);
                 if (taken > 0) {
                     setCarried(key.toStack(taken));
+                    moved(taken);
                 }
             }
             case TAKE_TO_INVENTORY -> {
@@ -190,11 +198,13 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 }
                 int amount = (int) Math.min(storage.count(key), key.maxStackSize());
                 ItemStack stack = key.toStack((int) storage.extract(key, amount, false));
+                int taken = stack.getCount();
                 moveItemStackTo(stack, 0, INVENTORY_SLOTS, true);
                 if (!stack.isEmpty()) {
                     // What didn't fit goes back.
                     storage.insert(ItemKey.of(stack), stack.getCount(), false);
                 }
+                moved(taken - stack.getCount());
             }
             default -> {}
         }
@@ -211,8 +221,10 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
             return ItemStack.EMPTY;
         }
         ItemStack stack = slot.getItem();
-        stack.shrink((int) storage.insert(ItemKey.of(stack), stack.getCount(), false));
+        int stored = (int) storage.insert(ItemKey.of(stack), stack.getCount(), false);
+        stack.shrink(stored);
         slot.setChanged();
+        moved(stored);
         return ItemStack.EMPTY;
     }
 

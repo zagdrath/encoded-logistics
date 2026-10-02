@@ -22,7 +22,6 @@ import net.minecraft.client.resources.model.SimpleModelWrapper;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneModel;
@@ -36,8 +35,8 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
 // The model parts a cable with attachments is built from (CableModel), baked as standalone models in every rotation the
-// blockstates use: each tier's and colour's cubes and arms, the two anchors, every part (unlit and lit) and the blank
-// facade panel. Once baking is done, every cable blockstate's model is wrapped in a CableModel, the part
+// blockstates use: each tier's and colour's cubes and arms, the two anchors, every part (each of its looks, unlit and lit)
+// and the blank facade panel. Once baking is done, every cable blockstate's model is wrapped in a CableModel, the part
 // host's in a CableModel without a cable, and the Drive Bay's in a DriveBayModel (its sleds are baked here too).
 public final class CableParts {
     private static final Map<String, StandaloneModelKey<BlockStateModelPart>> KEYS = new HashMap<>();
@@ -69,9 +68,11 @@ public final class CableParts {
         }
         register(event, "facade_solid", Direction.NORTH);
         for (PartType part : PartType.values()) {
-            for (Direction toward : Direction.values()) {
-                register(event, part.model(false), toward);
-                register(event, part.model(true), toward);
+            for (int look = 0; look < part.looks(); look++) {
+                for (Direction toward : Direction.values()) {
+                    register(event, part.model(look, false), toward);
+                    register(event, part.model(look, true), toward);
+                }
             }
         }
         event.register(SLEDS, new DriveBayModel.Unbaked());
@@ -132,17 +133,21 @@ public final class CableParts {
             denseAnchors.put(toward, get(baked, "cable_anchor_dense", toward));
         }
         FacadeQuads facades = new FacadeQuads(get(baked, "facade_solid", Direction.NORTH));
-        // [part][lit ? 1 : 0][Direction ordinal]: on a cable, and on a part host (a part that faces out moved back against
-        // the block it's mounted on; one that faces the block as on a cable).
-        BlockStateModelPart[][][] parts = new BlockStateModelPart[PartType.values().length][2][6];
-        BlockStateModelPart[][][] hostParts = new BlockStateModelPart[PartType.values().length][2][6];
+        // [part][look][lit ? 1 : 0][Direction ordinal]: on a cable, and on a part host (a part that faces out moved back
+        // against the block it's mounted on; one that faces the block as on a cable).
+        BlockStateModelPart[][][][] parts = new BlockStateModelPart[PartType.values().length][][][];
+        BlockStateModelPart[][][][] hostParts = new BlockStateModelPart[PartType.values().length][][][];
         for (PartType part : PartType.values()) {
-            for (Direction toward : Direction.values()) {
-                for (int lit = 0; lit < 2; lit++) {
-                    String model = part.model(lit == 1);
-                    parts[part.ordinal()][lit][toward.ordinal()] = get(baked, model, toward);
-                    hostParts[part.ordinal()][lit][toward.ordinal()] = part.facesOut() ? mounted(get(baked, model, toward.getOpposite()), toward)
-                            : get(baked, model, toward);
+            parts[part.ordinal()] = new BlockStateModelPart[part.looks()][2][6];
+            hostParts[part.ordinal()] = new BlockStateModelPart[part.looks()][2][6];
+            for (int look = 0; look < part.looks(); look++) {
+                for (Direction toward : Direction.values()) {
+                    for (int lit = 0; lit < 2; lit++) {
+                        String model = part.model(look, lit == 1);
+                        parts[part.ordinal()][look][lit][toward.ordinal()] = get(baked, model, toward);
+                        hostParts[part.ordinal()][look][lit][toward.ordinal()] = part.facesOut()
+                                ? mounted(get(baked, model, toward.getOpposite()), toward) : get(baked, model, toward);
+                    }
                 }
             }
         }

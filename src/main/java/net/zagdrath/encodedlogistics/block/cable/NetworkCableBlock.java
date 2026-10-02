@@ -57,6 +57,7 @@ import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
+import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.part.PartHosting;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
@@ -243,13 +244,15 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
             return new CableNode(pos.immutable(), connections, tier.lanes(), tier.passiveDrain());
         }
         // With parts on it the cable is a device: it needs their lanes, and drains for them too.
+        List<RemoteLink> links = level.getBlockEntity(pos) instanceof CableBlockEntity cable ? cable.remoteLinks() : List.of();
         return new CableDeviceNode(pos.immutable(), connections, tier.lanes(), PartHosting.lanes(attachments),
-                tier.passiveDrain() + PartHosting.drain(attachments), PartHosting.networkParts(attachments));
+                tier.passiveDrain() + PartHosting.drain(attachments), PartHosting.networkParts(attachments), links);
     }
 
-    // A cable carrying parts: still a link of its tier's lanes, and a device needing the parts' lanes.
+    // A cable carrying parts: still a link of its tier's lanes, and a device needing the parts' lanes; remoteLinks:
+    // those of its lanes Point-to-Point Links.
     public record CableDeviceNode(BlockPos pos, Set<Direction> connections, int laneCapacity, int laneCost, double passiveDrain,
-            List<NetworkPart> parts) implements NetworkNode {}
+            List<NetworkPart> parts, List<RemoteLink> remoteLinks) implements NetworkNode {}
 
     // --- Using items: attachments, dyeing and washing ---
 

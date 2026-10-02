@@ -1,0 +1,63 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/relay_antenna.png",
+  "width": 176,
+  "height": 176
+ },
+ "slots": {
+  "transceivers": {
+   "left": [
+    107,
+    124,
+    141,
+    158
+   ],
+   "top": 17,
+   "accepts": "encodedlogistics:optical_transceiver",
+   "ghost": "relay/ghost_transceiver"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "block.encodedlogistics.relay_antenna",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "range": {
+   "key": "gui.encodedlogistics.relay.range",
+   "left": 11,
+   "top": 21,
+   "color": "ACCENT"
+  },
+  "linked": {
+   "key": "gui.encodedlogistics.relay.linked",
+   "left": 8,
+   "top": 35,
+   "color": "TEXT_MUTED"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 82,
+   "color": "TEXT_MUTED"
+  }
+ },
+ "lists": {
+  "linked": {
+   "left": 10,
+   "top": 46,
+   "rows": 3,
+   "row_height": 11,
+   "entry": "gui.encodedlogistics.relay.entry",
+   "scroll": true
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 94
+ }
+}

@@ -16,21 +16,25 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 
 // Builds a controller structure's network graph from the world: its controller blocks, then everything reachable
-// from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other. A node
-// that doesn't pass through (a Segment Isolator) is on the network but the walk stops there.
+// from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other, and
+// through remote links (Network Bridges, lanes Point-to-Point Links) whose two ends are both loaded and list each other -
+// into another dimension too, for Bridges, when bridgeCrossDimension allows. A node that doesn't pass through (a
+// Segment Isolator) is on the network but the walk stops there.
 // Controllers of another structure that turn up are added too (and not walked through), so the solver sees the
 // conflict.
 public final class NetworkDiscovery {
     // A network bigger than this is cut off where the walk stops.
     public static final int MAX_NODES = 16_384;
 
-    public record Discovered(NetworkGraph graph, Map<BlockPos, Item> items) {}
+    public record Discovered(NetworkGraph graph, Map<NodePos, Item> items) {}
 
     // A controller block on the graph: links on all six sides, 32 (config) lanes per linked face.
     public record ControllerNode(BlockPos pos, long controllerGroup, int laneCapacity) implements NetworkNode {
@@ -55,29 +59,30 @@ public final class NetworkDiscovery {
     private NetworkDiscovery() {}
 
     public static Discovered discover(ServerLevel level, long structureId, Collection<BlockPos> members, int lanesPerFace) {
+        MinecraftServer server = level.getServer();
         NetworkGraph graph = new NetworkGraph();
-        Map<BlockPos, Item> items = new HashMap<>();
-        ArrayDeque<NetworkNode> queue = new ArrayDeque<>();
+        Map<NodePos, Item> items = new HashMap<>();
+        ArrayDeque<NodePos> queue = new ArrayDeque<>();
         for (BlockPos member : members) {
-            NetworkNode node = new ControllerNode(member.immutable(), structureId, lanesPerFace);
-            graph.addNode(node);
-            queue.add(node);
+            queue.add(graph.addNode(level.dimension(), new ControllerNode(member.immutable(), structureId, lanesPerFace)));
         }
         while (!queue.isEmpty() && graph.size() < MAX_NODES) {
-            NetworkNode node = queue.poll();
+            NodePos at = queue.poll();
+            NetworkNode node = graph.node(at);
+            ServerLevel here = server.getLevel(at.dimension());
             for (Direction side : node.connections()) {
-                BlockPos neighbourPos = node.pos().relative(side);
-                if (!level.isLoaded(neighbourPos)) {
+                NodePos neighbourPos = NodePos.of(at.dimension(), at.pos().relative(side));
+                if (here == null || !here.isLoaded(neighbourPos.pos())) {
                     continue;
                 }
                 NetworkNode neighbour = graph.node(neighbourPos);
                 boolean added = false;
                 if (neighbour == null) {
-                    neighbour = nodeAt(level, neighbourPos, lanesPerFace);
+                    neighbour = nodeAt(here, neighbourPos.pos(), lanesPerFace);
                     if (neighbour == null || !neighbour.connections().contains(side.getOpposite())) {
                         continue;
                     }
-                    graph.addNode(neighbour);
+                    graph.addNode(at.dimension(), neighbour);
                     added = true;
                 } else if (!neighbour.connections().contains(side.getOpposite())) {
                     continue;
@@ -86,16 +91,56 @@ public final class NetworkDiscovery {
                 if (node.isController() && neighbour.isController()) {
                     continue;
                 }
-                graph.connect(node.pos(), side);
+                graph.connect(at, side);
                 if (added && !neighbour.isController()) {
-                    items.put(neighbourPos, level.getBlockState(neighbourPos).getBlock().asItem());
+                    items.put(neighbourPos, here.getBlockState(neighbourPos.pos()).getBlock().asItem());
                     if (neighbour.passesThrough()) {
-                        queue.add(neighbour);
+                        queue.add(neighbourPos);
                     }
                 }
             }
+            for (RemoteLink remote : node.remoteLinks()) {
+                NodePos target = remote.target();
+                if (target.equals(at) || !target.dimension().equals(at.dimension()) && !Config.BRIDGE_CROSS_DIMENSION.getAsBoolean()) {
+                    continue;
+                }
+                ServerLevel there = server.getLevel(target.dimension());
+                if (there == null || !there.isLoaded(target.pos())) {
+                    continue;
+                }
+                NetworkNode other = graph.node(target);
+                boolean added = false;
+                if (other == null) {
+                    other = nodeAt(there, target.pos(), lanesPerFace);
+                    if (other == null) {
+                        continue;
+                    }
+                    added = true;
+                }
+                RemoteLink back = linkTo(other, at);
+                if (back == null || other.isController()) {
+                    continue;
+                }
+                if (added) {
+                    graph.addNode(target.dimension(), other);
+                    items.put(target, there.getBlockState(target.pos()).getBlock().asItem());
+                    if (other.passesThrough()) {
+                        queue.add(target);
+                    }
+                }
+                graph.connectRemote(at, target, Math.min(remote.capacity(), back.capacity()));
+            }
         }
         return new Discovered(graph, items);
+    }
+
+    private static @Nullable RemoteLink linkTo(NetworkNode node, NodePos target) {
+        for (RemoteLink link : node.remoteLinks()) {
+            if (link.target().equals(target)) {
+                return link;
+            }
+        }
+        return null;
     }
 
     private static @Nullable NetworkNode nodeAt(ServerLevel level, BlockPos pos, int lanesPerFace) {

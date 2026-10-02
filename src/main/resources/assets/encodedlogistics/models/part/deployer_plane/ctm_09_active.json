@@ -1,0 +1,7 @@
+{
+ "parent": "encodedlogistics:part/deployer_plane_active",
+ "textures": {
+  "face": "encodedlogistics:block/part/deployer_plane/ctm_09",
+  "particle": "encodedlogistics:block/part/deployer_plane/ctm_09"
+ }
+}

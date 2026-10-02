@@ -190,6 +190,80 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("reach");
+    }
+
+    public static final ModConfigSpec.IntValue RELAY_BASE_RANGE = BUILDER
+            .comment("Blocks a Relay Antenna covers on its own (a sphere around it).")
+            .defineInRange("relayBaseRange", 32, 0, 4096);
+
+    public static final ModConfigSpec.IntValue RELAY_RANGE_PER_TRANSCEIVER = BUILDER
+            .comment("Blocks each Optical Transceiver in a Relay Antenna adds to its range.")
+            .defineInRange("relayRangePerTransceiver", 32, 0, 4096);
+
+    public static final ModConfigSpec.DoubleValue RELAY_DRAIN = BUILDER
+            .comment("FE per tick a Relay Antenna drains while its network runs.")
+            .defineInRange("relayDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue HANDHELD_CAPACITY = BUILDER
+            .comment("FE a Handheld Terminal's battery holds.")
+            .defineInRange("handheldCapacity", 200_000, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue HANDHELD_DRAIN_PER_SECOND = BUILDER
+            .comment("FE a Handheld Terminal uses each second while its screen is open.")
+            .defineInRange("handheldDrainPerSecond", 10, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue HANDHELD_ENERGY_PER_ITEM = BUILDER
+            .comment("FE a Handheld Terminal uses for each item it moves in or out of the network.")
+            .defineInRange("handheldEnergyPerItem", 1, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue HANDHELD_CHARGE_RATE = BUILDER
+            .comment("FE per tick a Handheld Terminal takes from a Capacitor Bank while held against it (use and hold), and at most",
+                    "from any other charger.")
+            .defineInRange("handheldChargeRate", 4_096, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue BRIDGE_LANES = BUILDER
+            .comment("Lanes a linked pair of Network Bridges carries between its two networks.")
+            .defineInRange("bridgeLanes", 32, 1, 1024);
+
+    public static final ModConfigSpec.DoubleValue BRIDGE_DRAIN = BUILDER
+            .comment("FE per tick each Network Bridge drains while its network runs.")
+            .defineInRange("bridgeDrain", 8.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.BooleanValue BRIDGE_CROSS_DIMENSION = BUILDER
+            .comment("Whether a pair of Network Bridges links networks in different dimensions.")
+            .define("bridgeCrossDimension", true);
+
+    public static final ModConfigSpec.BooleanValue BRIDGE_CHUNK_LOADING = BUILDER
+            .comment("Whether a linked Network Bridge keeps its own chunk loaded (so its partner's network reaches it while nobody is near).")
+            .define("bridgeChunkLoading", false);
+
+    public static final ModConfigSpec.IntValue P2P_LANES = BUILDER
+            .comment("Lanes a lanes Point-to-Point Link carries from its input to its outputs (split evenly between them).")
+            .defineInRange("p2pLanes", 8, 1, 1024);
+
+    public static final ModConfigSpec.DoubleValue P2P_DRAIN = BUILDER
+            .comment("FE per tick each Point-to-Point Link endpoint drains while its network runs.")
+            .defineInRange("p2pDrain", 0.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue P2P_ITEMS_PER_OPERATION = BUILDER
+            .comment("Items an items Point-to-Point Link moves per operation (one every 10 ticks).")
+            .defineInRange("p2pItemsPerOperation", 64, 1, 4096);
+
+    public static final ModConfigSpec.IntValue P2P_ENERGY_PER_TICK = BUILDER
+            .comment("FE per tick an energy Point-to-Point Link moves from its input to its outputs at most.")
+            .defineInRange("p2pEnergyPerTick", 8_192, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue COLLECTOR_TICKS_PER_HARDNESS = BUILDER
+            .comment("Ticks a Collector Plane takes to break a block, per point of the block's hardness.")
+            .defineInRange("collectorTicksPerHardness", 30, 1, 1_000);
+
+    public static final ModConfigSpec.IntValue DEPLOYER_INTERVAL = BUILDER
+            .comment("Ticks between a Deployer Plane's operations.")
+            .defineInRange("deployerInterval", 10, 1, 1_000);
+
+    static {
+        BUILDER.pop();
         BUILDER.push("lithography");
     }
 

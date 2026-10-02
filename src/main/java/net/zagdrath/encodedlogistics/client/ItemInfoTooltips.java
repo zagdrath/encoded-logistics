@@ -32,10 +32,14 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
+import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
+import net.zagdrath.encodedlogistics.item.LinkAddress;
+import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -75,10 +79,31 @@ public final class ItemInfoTooltips {
         } else if (stack.getItem() instanceof StorageTierItem die) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.die.tier",
                     Component.literal(die.getTier().label()).withColor(die.getTier().light())).withStyle(ChatFormatting.GRAY));
-        } else if (stack.is(ModItems.FILTER_MODULE.get()) || stack.is(ModItems.THROUGHPUT_MODULE.get())) {
-            tooltip.add(at++, Component.translatable(stack.is(ModItems.FILTER_MODULE.get()) ? "tooltip.encodedlogistics.module.filter"
-                    : "tooltip.encodedlogistics.module.throughput").withStyle(ChatFormatting.GRAY));
-        } else if (stack.getItem() instanceof PartItem part && !part.getPartType().isTerminal()) {
+        } else if (stack.is(ModItems.FILTER_MODULE.get()) || stack.is(ModItems.THROUGHPUT_MODULE.get()) || stack.is(ModItems.FUZZY_MATCH_MODULE.get())
+                || stack.is(ModItems.REDSTONE_CONTROL_MODULE.get())) {
+            String module = stack.is(ModItems.FILTER_MODULE.get()) ? "filter" : stack.is(ModItems.THROUGHPUT_MODULE.get()) ? "throughput"
+                    : stack.is(ModItems.FUZZY_MATCH_MODULE.get()) ? "fuzzy" : "redstone";
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.module." + module).withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof LinkCardItem) {
+            // A written card says what it holds.
+            LinkAddress address = LinkCardItem.address(stack);
+            if (address != null) {
+                Component kind = Component.translatable(address.kind() == LinkAddress.Kind.BRIDGE ? "block.encodedlogistics.network_bridge"
+                        : "item.encodedlogistics.point_to_point_link");
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.link_card.address", kind, address.pos().pos().getX(),
+                        address.pos().pos().getY(), address.pos().pos().getZ()).withStyle(ChatFormatting.GRAY));
+                tooltip.add(at++, Component.literal(address.pos().dimension().identifier().toString()).withStyle(ChatFormatting.DARK_GRAY));
+            }
+        } else if (stack.getItem() instanceof HandheldTerminalItem) {
+            // Its network and battery.
+            NetworkIndex.NetworkRef network = HandheldTerminalItem.network(stack);
+            tooltip.add(at++, (network != null
+                    ? Component.translatable("tooltip.encodedlogistics.handheld.network", network.id(), network.dimension().identifier().toString())
+                    : Component.translatable("tooltip.encodedlogistics.handheld.hint")).withStyle(ChatFormatting.GRAY));
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.handheld.energy",
+                    String.format(Locale.ROOT, "%,d", HandheldTerminalItem.energy(stack)), String.format(Locale.ROOT, "%,d", HandheldTerminalItem.capacity()))
+                    .withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof PartItem part && !part.getPartType().isTerminal() && part.getPartType().lanes() > 0) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.part.lane").withStyle(ChatFormatting.DARK_GRAY));
         } else if (SchematicItem.schematic(stack) != null) {
             // An encoded schematic: what it makes and takes.
@@ -129,10 +154,13 @@ public final class ItemInfoTooltips {
 
     // Numbers a description shows that come from the config.
     private static Object[] descriptionArguments(String path) {
-        if (path.equals("capacitor_bank")) {
-            return new Object[] { String.format(Locale.ROOT, "%,d", Config.CAPACITOR_CAPACITY.getAsInt()) };
-        }
-        return new Object[0];
+        return switch (path) {
+            case "capacitor_bank" -> new Object[] { String.format(Locale.ROOT, "%,d", Config.CAPACITOR_CAPACITY.getAsInt()) };
+            case "optical_transceiver" -> new Object[] { Config.RELAY_RANGE_PER_TRANSCEIVER.getAsInt() };
+            case "relay_antenna" -> new Object[] { Config.RELAY_BASE_RANGE.getAsInt() };
+            case "network_bridge" -> new Object[] { Config.BRIDGE_LANES.getAsInt() };
+            default -> new Object[0];
+        };
     }
 
     // The item's description key, or the shared one without its colour, or null if it has none.

@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:memory_die",
+  "minecraft:string"
+ ],
+ "result": {
+  "id": "encodedlogistics:fuzzy_match_module",
+  "count": 1
+ }
+}

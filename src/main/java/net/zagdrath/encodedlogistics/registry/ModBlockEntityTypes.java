@@ -19,8 +19,10 @@ import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 
 public final class ModBlockEntityTypes {
@@ -55,6 +57,12 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<SchedulerCoreBlockEntity>> SCHEDULER_CORE = BLOCK_ENTITY_TYPES.register(
             "scheduler_core", () -> new BlockEntityType<>(SchedulerCoreBlockEntity::new, ModBlocks.SCHEDULER_CORE.get()));
+
+    public static final Supplier<BlockEntityType<RelayAntennaBlockEntity>> RELAY_ANTENNA = BLOCK_ENTITY_TYPES.register(
+            "relay_antenna", () -> new BlockEntityType<>(RelayAntennaBlockEntity::new, ModBlocks.RELAY_ANTENNA.get()));
+
+    public static final Supplier<BlockEntityType<NetworkBridgeBlockEntity>> NETWORK_BRIDGE = BLOCK_ENTITY_TYPES.register(
+            "network_bridge", () -> new BlockEntityType<>(NetworkBridgeBlockEntity::new, ModBlocks.NETWORK_BRIDGE.get()));
 
     private ModBlockEntityTypes() {}
 }

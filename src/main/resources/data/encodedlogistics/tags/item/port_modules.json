@@ -1,6 +1,8 @@
 {
  "values": [
   "encodedlogistics:filter_module",
-  "encodedlogistics:throughput_module"
+  "encodedlogistics:throughput_module",
+  "encodedlogistics:fuzzy_match_module",
+  "encodedlogistics:redstone_control_module"
  ]
 }

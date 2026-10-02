@@ -19,6 +19,8 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
+import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
+import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
@@ -69,9 +71,11 @@ public final class ModItems {
     public static final DeferredItem<Item> MEMORY_DIE = ITEMS.registerSimpleItem("memory_die");
     public static final DeferredItem<Item> MEMORY_PHOTOMASK = ITEMS.registerSimpleItem("memory_photomask", p -> p.stacksTo(1));
     public static final DeferredItem<Item> TANTALUM_CAPACITOR = ITEMS.registerSimpleItem("tantalum_capacitor");
-    // Port modules (#encodedlogistics:port_modules). Fuzzy Match and Redstone Control come in Phase 4.
+    // Port modules (#encodedlogistics:port_modules; Filter and Fuzzy Match also #encodedlogistics:plane_modules).
     public static final DeferredItem<Item> FILTER_MODULE = ITEMS.registerSimpleItem("filter_module");
     public static final DeferredItem<Item> THROUGHPUT_MODULE = ITEMS.registerSimpleItem("throughput_module");
+    public static final DeferredItem<Item> FUZZY_MATCH_MODULE = ITEMS.registerSimpleItem("fuzzy_match_module");
+    public static final DeferredItem<Item> REDSTONE_CONTROL_MODULE = ITEMS.registerSimpleItem("redstone_control_module");
 
     // Phase 3: gallium, the Processor Die, schematics, autocrafting blocks.
     public static final DeferredItem<BlockItem> DEEPSLATE_GALLIUM_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.DEEPSLATE_GALLIUM_ORE);
@@ -90,6 +94,14 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> SCHEDULER_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.SCHEDULER_CORE);
     public static final DeferredItem<BlockItem> JOB_BUFFER = ITEMS.registerSimpleBlockItem(ModBlocks.JOB_BUFFER);
     public static final DeferredItem<BlockItem> THREAD_UNIT = ITEMS.registerSimpleBlockItem(ModBlocks.THREAD_UNIT);
+
+    // Phase 4: wireless access, long-range links.
+    public static final DeferredItem<Item> OPTICAL_TRANSCEIVER = ITEMS.registerSimpleItem("optical_transceiver");
+    public static final DeferredItem<LinkCardItem> LINK_CARD = ITEMS.registerItem("link_card", LinkCardItem::new);
+    public static final DeferredItem<HandheldTerminalItem> HANDHELD_TERMINAL = ITEMS.registerItem("handheld_terminal", HandheldTerminalItem::new,
+            p -> p.stacksTo(1));
+    public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);
+    public static final DeferredItem<BlockItem> NETWORK_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_BRIDGE);
 
     // Cable parts: terminals, ports, the tap and the sensor (PartType).
     private static final Map<PartType, DeferredItem<PartItem>> PARTS = new EnumMap<>(PartType.class);

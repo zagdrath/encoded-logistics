@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.block;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
@@ -33,6 +34,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.part.PartHosting;
 
 // A part host: holds a part mounted on the face of a block that isn't a cable. No cable, no item of its own - just a
@@ -94,8 +96,10 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
         if (mount == null) {
             return null;
         }
+        // A lanes Point-to-Point Link output on it carries its lanes on into the block it's mounted on.
+        List<RemoteLink> links = level.getBlockEntity(pos) instanceof CableBlockEntity host ? host.remoteLinks() : List.of();
         return new DeviceNode(pos.immutable(), EnumSet.of(mount), PartHosting.lanes(attachments), PartHosting.drain(attachments),
-                PartHosting.networkParts(attachments), false);
+                PartHosting.networkParts(attachments), !links.isEmpty(), links);
     }
 
     @Override

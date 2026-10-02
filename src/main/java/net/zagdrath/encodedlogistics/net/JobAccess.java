@@ -28,7 +28,7 @@ final class JobAccess {
         if (player.containerMenu instanceof SchedulerCoreMenu menu && menu.pos().equals(pos)) {
             return core;
         }
-        if (player.containerMenu instanceof AccessTerminalMenu menu && ControllerStructures.get(level).sameNetwork(menu.pos(), pos)) {
+        if (player.containerMenu instanceof AccessTerminalMenu menu && ControllerStructures.get(level).sameNetwork(level, menu.pos(), pos)) {
             return core;
         }
         return null;

@@ -1,0 +1,49 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/deployer_plane.png",
+  "width": 176,
+  "height": 166
+ },
+ "slots": {
+  "filter": {
+   "left": 62,
+   "top": 18,
+   "columns": 3,
+   "rows": 3,
+   "ghost_items": true
+  }
+ },
+ "widgets": {
+  "mode": {
+   "left": 8,
+   "top": 18,
+   "button": "terminal/button",
+   "button_hover": "terminal/button_hover",
+   "icons": [
+    "deployer/mode_place",
+    "deployer/mode_drop"
+   ]
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 84
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.deployer_plane",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 72,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

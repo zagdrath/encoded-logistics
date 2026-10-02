@@ -8,6 +8,8 @@ package net.zagdrath.encodedlogistics.registry;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -17,6 +19,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.item.HandheldLinkState;
+import net.zagdrath.encodedlogistics.item.LinkAddress;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
 public final class ModDataComponents {
@@ -38,6 +43,22 @@ public final class ModDataComponents {
     // An Encoded Schematic's recipe (crafting) or inputs and outputs (processing), written by the Schematic Encoder.
     public static final Supplier<DataComponentType<Schematic>> SCHEMATIC = DATA_COMPONENTS.registerComponentType("schematic",
             builder -> builder.persistent(Schematic.CODEC).networkSynchronized(Schematic.STREAM_CODEC));
+
+    // A written Link Card's address: the Network Bridge or Point-to-Point Link endpoint it was sneak-used on.
+    public static final Supplier<DataComponentType<LinkAddress>> LINK_ADDRESS = DATA_COMPONENTS.registerComponentType("link_address",
+            builder -> builder.persistent(LinkAddress.CODEC).networkSynchronized(LinkAddress.STREAM_CODEC));
+
+    // The network a Handheld Terminal is linked to.
+    public static final Supplier<DataComponentType<NetworkIndex.NetworkRef>> HANDHELD_NETWORK = DATA_COMPONENTS.registerComponentType(
+            "handheld_network", builder -> builder.persistent(NetworkIndex.NetworkRef.CODEC).networkSynchronized(NetworkIndex.NetworkRef.STREAM_CODEC));
+
+    // Whether a Handheld Terminal is in range of its network (its icon); kept up to date while it's in an inventory.
+    public static final Supplier<DataComponentType<HandheldLinkState>> HANDHELD_LINK_STATE = DATA_COMPONENTS.registerComponentType(
+            "handheld_link_state", builder -> builder.persistent(HandheldLinkState.CODEC).networkSynchronized(HandheldLinkState.STREAM_CODEC));
+
+    // FE in a Handheld Terminal's battery.
+    public static final Supplier<DataComponentType<Integer>> ENERGY = DATA_COMPONENTS.registerComponentType("energy",
+            builder -> builder.persistent(Codec.intRange(0, Integer.MAX_VALUE)).networkSynchronized(ByteBufCodecs.VAR_INT));
 
     private ModDataComponents() {}
 }

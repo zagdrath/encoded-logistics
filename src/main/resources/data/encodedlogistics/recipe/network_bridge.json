@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "FOF",
+  "PCM",
+  "FOF"
+ ],
+ "key": {
+  "F": "encodedlogistics:ferrite",
+  "O": "encodedlogistics:optical_transceiver",
+  "P": "encodedlogistics:processor_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "M": "encodedlogistics:memory_die"
+ },
+ "result": {
+  "id": "encodedlogistics:network_bridge",
+  "count": 1
+ }
+}

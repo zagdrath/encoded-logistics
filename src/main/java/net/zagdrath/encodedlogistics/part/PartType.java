@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.part;
 
+import java.util.Locale;
 import java.util.function.BiFunction;
 
 import com.mojang.serialization.Codec;
@@ -21,7 +22,11 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 // sensor emitting), its collision boxes (the model's, modelled on the NORTH face with z = 0 on the face it mounts on), and
 // its behaviour (CablePart). Terminals and the sensor face away from a block they're mounted on through a part host;
 // ports and taps face it. Every part is a device: terminals use terminalLanes and terminalDrain, the rest partLanes and
-// partDrain.
+// partDrain; Point-to-Point Links none, and p2pDrain.
+//
+// Most parts have one model (and its lit state). A Point-to-Point Link has eight (looks): part/p2p_<type>_<in|out>, lit
+// _linked. A plane has sixteen, one per connected-texture mask (part/<id>/ctm_<mask>, lit _active), which the model picks
+// from the planes beside it.
 public enum PartType implements StringRepresentable {
     ACCESS_TERMINAL("access_terminal", "online", true, false, Boxes.TERMINAL, TerminalPart::new),
     FABRICATION_TERMINAL("fabrication_terminal", "online", true, false, Boxes.TERMINAL, FabricationTerminalPart::new),
@@ -29,7 +34,10 @@ public enum PartType implements StringRepresentable {
     INGRESS_PORT("ingress_port", "active", false, true, Boxes.PORT, PortPart::new),
     EGRESS_PORT("egress_port", "active", false, true, Boxes.PORT, PortPart::new),
     INVENTORY_TAP("inventory_tap", "active", false, true, Boxes.TAP, InventoryTapPart::new),
-    THRESHOLD_SENSOR("threshold_sensor", "on", true, true, Boxes.SENSOR, ThresholdSensorPart::new);
+    THRESHOLD_SENSOR("threshold_sensor", "on", true, true, Boxes.SENSOR, ThresholdSensorPart::new),
+    POINT_TO_POINT_LINK("point_to_point_link", "linked", false, true, Boxes.P2P, PointToPointPart::new),
+    COLLECTOR_PLANE("collector_plane", "active", false, true, Boxes.PLANE, CollectorPlanePart::new),
+    DEPLOYER_PLANE("deployer_plane", "active", false, true, Boxes.PLANE, DeployerPlanePart::new);
 
     public static final Codec<PartType> CODEC = StringRepresentable.fromEnum(PartType::values);
 
@@ -40,6 +48,8 @@ public enum PartType implements StringRepresentable {
         static final double[][] TAP = { { 1, 1, 0, 15, 15, 1 }, { 1, 1, 1, 15, 2, 2.5 }, { 1, 14, 1, 15, 15, 2.5 }, { 4, 4, 1, 12, 12, 3 },
                 { 6, 6, 3, 10, 10, 5 } };
         static final double[][] SENSOR = { { 3, 3, 0.5, 13, 13, 2 }, { 6, 6, 2, 10, 10, 5 }, { 6, 6, 0, 10, 10, 0.5 } };
+        static final double[][] P2P = { { 3, 3, 0, 13, 13, 1.5 }, { 5, 5, 1.5, 11, 11, 3 }, { 6, 6, 3, 10, 10, 5 } };
+        static final double[][] PLANE = { { 0, 0, 0, 16, 16, 2 }, { 6, 6, 2, 10, 10, 5 } };
     }
 
     private final String id, lit;
@@ -66,9 +76,31 @@ public enum PartType implements StringRepresentable {
         return id;
     }
 
-    // The part model, unlit and lit: part/<id> and part/<id>_<lit>.
-    public String model(boolean lit) {
-        return lit ? "part/" + id + "_" + this.lit : "part/" + id;
+    // How many models it has, picked by CablePart.look() (or, for planes, by its neighbours).
+    public int looks() {
+        return switch (this) {
+            case POINT_TO_POINT_LINK -> LinkType.values().length * 2;
+            case COLLECTOR_PLANE, DEPLOYER_PLANE -> 16;
+            default -> 1;
+        };
+    }
+
+    // Planes join their neighbours (connected textures).
+    public boolean isPlane() {
+        return this == COLLECTOR_PLANE || this == DEPLOYER_PLANE;
+    }
+
+    // The part model for a look, unlit and lit: part/<id> and part/<id>_<lit> for most.
+    public String model(int look, boolean lit) {
+        String suffix = lit ? "_" + this.lit : "";
+        if (this == POINT_TO_POINT_LINK) {
+            LinkType linkType = LinkType.byId(look / 2);
+            return "part/p2p_" + linkType.getSerializedName() + (look % 2 == 0 ? "_in" : "_out") + suffix;
+        }
+        if (isPlane()) {
+            return String.format(Locale.ROOT, "part/%s/ctm_%02d%s", id, look, suffix);
+        }
+        return "part/" + id + suffix;
     }
 
     // On a part host: true when the part faces away from the block it's mounted on (terminals, the sensor), false when
@@ -94,11 +126,12 @@ public enum PartType implements StringRepresentable {
     }
 
     public int lanes() {
-        return isTerminal() ? Config.TERMINAL_LANES.getAsInt() : Config.PART_LANES.getAsInt();
+        return this == POINT_TO_POINT_LINK ? 0 : isTerminal() ? Config.TERMINAL_LANES.getAsInt() : Config.PART_LANES.getAsInt();
     }
 
     public double drain() {
-        return isTerminal() ? Config.TERMINAL_DRAIN.getAsDouble() : Config.PART_DRAIN.getAsDouble();
+        return this == POINT_TO_POINT_LINK ? Config.P2P_DRAIN.getAsDouble()
+                : isTerminal() ? Config.TERMINAL_DRAIN.getAsDouble() : Config.PART_DRAIN.getAsDouble();
     }
 
     public CablePart create(CableBlockEntity host, Direction side) {

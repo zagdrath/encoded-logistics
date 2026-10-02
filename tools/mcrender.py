@@ -69,7 +69,9 @@ def model_quads(rl,rx,ry,origin,frame=0):
                 u1,v1,u2,v2={'down':(x0,16-z1,x1,16-z0),'up':(x0,z0,x1,z1),'north':(16-x1,16-y1,16-x0,16-y0),
                              'south':(x0,16-y1,x1,16-y0),'west':(z0,16-y1,z1,16-y0),'east':(16-z1,16-y1,16-z0,16-y0)}[face]
             verts=[];uvs=[]
+            rot=fd.get('rotation',0)//90
             for (p,(s,tt)) in face_corners(face,e['from'],e['to']):
+                for _ in range(rot): s,tt=tt,1-s                # face texture rotation, 90 deg steps (clockwise)
                 q=(p[0]-8,p[1]-8,p[2]-8); q=rot_x(q,rx); q=rot_y(q,ry)
                 verts.append((origin[0]+(q[0]+8)/16,origin[1]+(q[1]+8)/16,origin[2]+(q[2]+8)/16))
                 uvs.append((u1+s*(u2-u1),v1+tt*(v2-v1)))

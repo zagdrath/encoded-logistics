@@ -16,8 +16,10 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
@@ -51,6 +53,7 @@ public class EncodedLogistics {
         ModNetwork.register(modEventBus);
         EncodedLogisticsGameTests.register(modEventBus);
 
+        modEventBus.addListener(EncodedLogistics::registerTicketControllers);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
 
@@ -70,6 +73,11 @@ public class EncodedLogistics {
 
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MODID, path);
+    }
+
+    // Linked Network Bridges may keep their chunks loaded (bridgeChunkLoading).
+    private static void registerTicketControllers(RegisterTicketControllersEvent event) {
+        event.register(NetworkBridgeBlockEntity.CHUNKS);
     }
 
     // Clients get the lithography recipes (the press's slots and JEI need them).

@@ -1,0 +1,51 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.handheld_terminal"
+  }
+ },
+ "side_panel": {
+  "texture": "gui/terminal/handheld_panel.png",
+  "width": 26,
+  "height": 96,
+  "attach": "right",
+  "top": 4,
+  "energy_bar": {
+   "left": 8,
+   "top": 9,
+   "sprite": "controller/energy_bar",
+   "fill": "bottom_up",
+   "tooltip": "tooltip.encodedlogistics.handheld.energy"
+  },
+  "link_light": {
+   "left": 10,
+   "top": 70,
+   "sprites": {
+    "linked": "handheld/link_linked",
+    "out_of_range": "handheld/link_out_of_range",
+    "unlinked": "handheld/link_unlinked"
+   }
+  },
+  "signal": {
+   "left": 7,
+   "top": 78,
+   "sprites": [
+    "handheld/signal_0",
+    "handheld/signal_1",
+    "handheld/signal_2",
+    "handheld/signal_3",
+    "handheld/signal_4"
+   ]
+  }
+ },
+ "offline_overlay": {
+  "when": [
+   "unlinked",
+   "out_of_range"
+  ],
+  "text": "gui.encodedlogistics.handheld.out_of_range"
+ }
+}

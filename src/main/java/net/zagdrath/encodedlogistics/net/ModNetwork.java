@@ -10,7 +10,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class ModNetwork {
-    private static final String VERSION = "6";
+    private static final String VERSION = "7";
 
     private ModNetwork() {}
 
@@ -33,5 +33,6 @@ public final class ModNetwork {
         registrar.playBidirectional(JobStatusPayload.TYPE, JobStatusPayload.STREAM_CODEC, JobStatusPayload::handleServer,
                 JobStatusPayload::handleClient);
         registrar.playToServer(JobCancelPayload.TYPE, JobCancelPayload.STREAM_CODEC, JobCancelPayload::handle);
+        registrar.playToClient(RelayTerminalsPayload.TYPE, RelayTerminalsPayload.STREAM_CODEC, RelayTerminalsPayload::handle);
     }
 }

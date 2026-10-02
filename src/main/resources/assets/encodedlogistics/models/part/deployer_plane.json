@@ -1,0 +1,132 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "face": "encodedlogistics:block/part/deployer_plane/ctm_00",
+  "edge": "encodedlogistics:block/part/deployer_plane/edge",
+  "flash": "encodedlogistics:block/part/deployer_plane/flash",
+  "parts": "encodedlogistics:block/part/parts",
+  "particle": "encodedlogistics:block/part/deployer_plane/ctm_00"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#face",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      4,
+      0,
+      6,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#edge",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ],
+     "rotation": 90
+    },
+    "west": {
+     "texture": "#edge",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ],
+     "rotation": 90
+    },
+    "up": {
+     "texture": "#edge",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#edge",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6,
+    6,
+    2
+   ],
+   "to": [
+    10,
+    10,
+    5
+   ],
+   "faces": {
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      2,
+      0,
+      4,
+      2
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  " B ",
+  "POP",
+  "FBF"
+ ],
+ "key": {
+  "B": "minecraft:iron_bars",
+  "P": "encodedlogistics:processor_die",
+  "O": "encodedlogistics:optical_transceiver",
+  "F": "encodedlogistics:ferrite"
+ },
+ "result": {
+  "id": "encodedlogistics:relay_antenna",
+  "count": 1
+ }
+}

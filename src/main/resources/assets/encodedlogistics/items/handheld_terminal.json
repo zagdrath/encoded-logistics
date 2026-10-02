@@ -1,0 +1,27 @@
+{
+ "model": {
+  "type": "minecraft:select",
+  "property": "minecraft:component",
+  "component": "encodedlogistics:handheld_link_state",
+  "cases": [
+   {
+    "when": "linked",
+    "model": {
+     "type": "minecraft:model",
+     "model": "encodedlogistics:item/handheld_terminal_linked"
+    }
+   },
+   {
+    "when": "out_of_range",
+    "model": {
+     "type": "minecraft:model",
+     "model": "encodedlogistics:item/handheld_terminal_out_of_range"
+    }
+   }
+  ],
+  "fallback": {
+   "type": "minecraft:model",
+   "model": "encodedlogistics:item/handheld_terminal"
+  }
+ }
+}

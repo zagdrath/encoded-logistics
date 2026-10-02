@@ -223,6 +223,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         };
     }
 
+    // What the grid says while the terminal can't reach its network.
+    protected Component offlineMessage() {
+        return Component.translatable("gui.encodedlogistics.terminal.offline");
+    }
+
     // The section shown between the grid and the inventory, if any (the Schematic Encoder switches by mode).
     protected @Nullable Identifier sectionTexture() {
         return layout.section;
@@ -255,7 +260,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_MUTED, false);
         if (!menu.isOnline()) {
-            Component offline = Component.translatable("gui.encodedlogistics.terminal.offline");
+            Component offline = offlineMessage();
             int gridWidth = layout.columns * layout.cell;
             graphics.text(font, offline, layout.gridLeft + (gridWidth - font.width(offline)) / 2,
                     layout.topHeight + (rows * layout.rowHeight - 8) / 2, ERROR, false);

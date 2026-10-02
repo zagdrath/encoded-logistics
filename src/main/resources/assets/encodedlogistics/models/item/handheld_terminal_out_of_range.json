@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "encodedlogistics:item/handheld_terminal_out_of_range"
+ }
+}

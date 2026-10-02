@@ -52,4 +52,9 @@ public interface NetworkNode {
     default boolean passesThrough() {
         return true;
     }
+
+    // Links to nodes that aren't next to this one (a Network Bridge's partner, a lanes Point-to-Point Link's other end).
+    default List<RemoteLink> remoteLinks() {
+        return List.of();
+    }
 }

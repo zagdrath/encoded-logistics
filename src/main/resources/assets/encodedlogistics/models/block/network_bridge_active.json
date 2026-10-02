@@ -1,0 +1,162 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "front": "encodedlogistics:block/network_bridge/front",
+  "side": "encodedlogistics:block/network_bridge/side",
+  "port_idle": "encodedlogistics:block/network_bridge/port_idle",
+  "port_active": "encodedlogistics:block/network_bridge/port_active",
+  "leds": "encodedlogistics:block/leds",
+  "leds_glow": "encodedlogistics:block/leds_glow",
+  "particle": "encodedlogistics:block/network_bridge/side"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#front",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    -0.01
+   ],
+   "to": [
+    16,
+    16,
+    -0.01
+   ],
+   "faces": {
+    "north": {
+     "texture": "#port_active",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    2,
+    13,
+    -0.02
+   ],
+   "to": [
+    4,
+    14,
+    0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#leds",
+     "uv": [
+      2,
+      0,
+      4,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    13,
+    -0.02
+   ],
+   "to": [
+    4,
+    14,
+    0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#leds_glow",
+     "uv": [
+      2,
+      0,
+      4,
+      1
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

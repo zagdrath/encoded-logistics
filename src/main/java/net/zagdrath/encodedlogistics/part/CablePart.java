@@ -11,14 +11,17 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // A part's behaviour and state on one side of a cable (or part host): what it saves, what it drops besides itself, how it
@@ -61,6 +64,11 @@ public abstract class CablePart {
         return isOnline();
     }
 
+    // Which of its type's models it shows (PartType.looks()): a Point-to-Point Link's type and direction. 0 for most.
+    public int look() {
+        return 0;
+    }
+
     public void load(ValueInput input) {}
 
     public void save(ValueOutput output) {}
@@ -73,10 +81,23 @@ public abstract class CablePart {
     // Server, every tick while the host is loaded (for parts whose type ticks).
     public void tick(ServerLevel level) {}
 
-    // The redstone it sends out of its face (the Threshold Sensor), 0-15.
+    // The redstone it sends out of its face (the Threshold Sensor, a redstone Point-to-Point Link output), 0-15.
     public int signal() {
         return 0;
     }
+
+    // Whether it sends redstone at all (redstone dust joins its host).
+    public boolean emitsRedstone() {
+        return false;
+    }
+
+    // Its links to nodes elsewhere, which its host carries on the network (a lanes Point-to-Point Link).
+    public List<RemoteLink> remoteLinks(ResourceKey<Level> dimension) {
+        return List.of();
+    }
+
+    // Server: taken off its host or broken with it (not unloaded).
+    public void removed(ServerLevel level) {}
 
     // Opens its menu; false when it has none.
     public boolean openMenu(ServerPlayer player) {

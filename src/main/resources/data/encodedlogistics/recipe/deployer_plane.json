@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:logic_die",
+  "encodedlogistics:circuit_substrate",
+  "minecraft:dispenser",
+  "encodedlogistics:ferrite"
+ ],
+ "result": {
+  "id": "encodedlogistics:deployer_plane",
+  "count": 1
+ }
+}

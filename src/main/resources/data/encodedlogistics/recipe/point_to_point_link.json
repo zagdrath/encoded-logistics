@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:logic_die",
+  "encodedlogistics:network_cable"
+ ],
+ "result": {
+  "id": "encodedlogistics:point_to_point_link",
+  "count": 2
+ }
+}
