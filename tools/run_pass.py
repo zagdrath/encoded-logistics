@@ -1,7 +1,8 @@
-# RETIRED: no exporter runs this any more. Cable textures are now painted clean in ramp steps by tools/export_cables.py
-# (docs/TEXTURE_STYLE.md section 3: no random grain), and the Drive Bay casing is painted by tools/p23_v2.py.
-# Kept for reference: the Minecraft-style shading pass (tools/mcpass.py) over the cable textures, in place, with seeded
-# random grain. Don't run it over the current textures.
+# The Minecraft-style shading pass (tools/mcpass.py) over the cable textures, in place. tools/export_cables.py runs it
+# right after writing the base textures; don't run it on its own, since a second pass over already-shaded textures
+# changes them again. Deterministic: the grain is seeded from each file name, and a glow overlay gets the same seed as
+# its base so the grain matches pixel for pixel. (The Drive Bay's textures ship already shaded, in
+# textures/block/drive_bay/.)
 import os, glob, shutil, zlib, sys
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

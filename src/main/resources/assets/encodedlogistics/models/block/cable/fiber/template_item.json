@@ -52,24 +52,6 @@
       2,
       16
      ]
-    },
-    "north": {
-     "texture": "#core",
-     "uv": [
-      0,
-      0,
-      2,
-      2
-     ]
-    },
-    "south": {
-     "texture": "#core",
-     "uv": [
-      0,
-      0,
-      2,
-      2
-     ]
     }
    },
    "neoforge_data": {
@@ -87,13 +69,13 @@
    "to": [
     11,
     11,
-    8
+    4
    ],
    "faces": {
     "east": {
      "texture": "#sheath",
      "uv": [
-      8,
+      12,
       0,
       16,
       6
@@ -104,7 +86,7 @@
      "uv": [
       0,
       0,
-      8,
+      4,
       6
      ]
     },
@@ -114,7 +96,7 @@
       0,
       6,
       6,
-      14
+      10
      ]
     },
     "down": {
@@ -123,6 +105,15 @@
       0,
       6,
       6,
+      10
+     ]
+    },
+    "south": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
       14
      ]
     },
@@ -139,9 +130,213 @@
   },
   {
    "from": [
+    6,
+    6,
+    4
+   ],
+   "to": [
+    10,
+    10,
+    5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "from": [
     5,
     5,
-    8
+    5
+   ],
+   "to": [
+    11,
+    11,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    6,
+    6,
+    11
+   ],
+   "to": [
+    10,
+    10,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#fittings",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    5,
+    12
    ],
    "to": [
     11,
@@ -154,14 +349,14 @@
      "uv": [
       0,
       0,
-      8,
+      4,
       6
      ]
     },
     "west": {
      "texture": "#sheath",
      "uv": [
-      8,
+      12,
       0,
       16,
       6
@@ -173,7 +368,7 @@
       0,
       6,
       6,
-      14
+      10
      ]
     },
     "down": {
@@ -182,10 +377,19 @@
       0,
       6,
       6,
-      14
+      10
      ]
     },
     "south": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "north": {
      "texture": "#sheath",
      "uv": [
       8,

@@ -1,10 +1,8 @@
 # Encoded Logistics — Texture Style Guide
 
 How every Encoded Logistics texture is shaded, coloured and textured so it reads as a real Minecraft texture.
-Encoded Logistics textures follow **Applied Energistics 2**: clean, flat steel fields, crisp stepped bevels and a
-clear inset/recess structure. Shading is stepped (whole ramp steps), and detail is *structural* (panel lines, rails,
-slats, bolts, recesses), never random per-pixel noise. An earlier revision of this guide asked for random "grain" and
-wear specks on every surface; that read as speckle in game and is retired.
+This replaces the earlier "flat faces, no gradients, no dithering" rules: Encoded Logistics textures have
+**stepped shading**, in the way vanilla, Create and AE2 do it - and, like AE2, clean fields with no speckle.
 
 The rules come from measuring the actual texture files of vanilla (iron block, crafter, observer, hopper,
 lodestone, copper, wool), Create (andesite, brass, copper and railway casings, gearbox) and AE2 (controller,
@@ -18,9 +16,9 @@ recolour or use their textures as a base; AE2's art is CC BY-NC-SA.
 1. **Mid tones carry the texture.** Most pixels sit in the middle of the steel ramp. Near-black is reserved
    for real holes and cast shadows; pure white is reserved for glints.
 2. **Stepped tones, never gradients.** Colour changes in whole ramp steps. No lerped or per-pixel ramps.
-3. **No speckle: fields are clean.** A field is one flat ramp step. Large areas get their interest from structure
-   (bevels, panel lines, raised slats, recesses, bolts), never from random one-step pixels, wear specks or brushed
-   noise.
+3. **Shading is structural, never noisy.** Faces are shaded by bevels, lips, recesses, raised detail and their
+   cast shadows, in whole ramp steps. Fields between them are flat at their step: no random speckle, wear specks
+   or brushed grain (the "noise" that made the earlier textures look dirty).
 4. **Hue shifts with value.** Shadows lean cool (toward blue/purple) and gain saturation; highlights lean warm
    (toward yellow) and soften.
 5. **Light comes from the top-left.** Top and left edges catch light, bottom and right edges fall into
@@ -37,9 +35,9 @@ One 11-step ramp. Shadows are cool, highlights warm-neutral. Pick tones by index
 | Step | Hex | Typical use |
 | --- | --- | --- |
 | 0 | `#1F2228` | Cast shadows, true holes |
-| 1 | `#2B2F36` | Deepest recess, pocket floors |
+| 1 | `#2B2F36` | Deepest recess, seam shadow |
 | 2 | `#373C44` | Controller field, inner lip under lit rails |
-| 3 | `#454B54` | Dark steel |
+| 3 | `#454B54` | Dark steel, divider ends |
 | 4 | `#555B65` | Dividers, shaded steel |
 | 5 | `#666D77` | Inner lip on shaded rails, bottom-right frame corner |
 | 6 | `#79808A` | Bottom/right frame rail |
@@ -103,20 +101,15 @@ Shown only as a stripe or label band, never a whole body.
 
 ---
 
-## 3. Clean surfaces (no grain)
+## 3. No grain
 
-- A field, plate, sleeve or panel is **one flat ramp step**. No random speckle, wear specks, brushed runs or
-  dithering anywhere on block, part or cable textures.
-- Detail is structural and placed on purpose: frame bevels (section 4), panel lines and dividers, raised slats and
-  rails with a cast shadow, recesses, bolts, status lights. Repeating detail is regular (e.g. the cable rings every
-  8 px), never random.
-- Painters may still use a seeded random generator for *layout* (the controller maze, screen contents), but never for
-  per-pixel tone variation.
-- The shared helpers implement this: `el_style.field` / `bevel_frame` and `style_kit.dark_field` / `rail` / `raised` /
-  `recess` / `inlay` / `brushed` all paint flat steps (their `seed` arguments are kept only for call compatibility).
+Fields are **flat**: one ramp step over the whole run of a material. The texture reads through its structure -
+the frame bevel and inner lip, recesses with their shadow line and lit lower lip, raised traces with their glint and
+down-right shadow, slats, bolts, panel lines. Those are deliberate, repeatable features; random per-pixel variation
+(speckle, wear specks, brushed runs, dim "wear" pixels in a glow) is not used anywhere.
 
-(Items follow their own rules in `p1_items.py` and may still use a light one-step grain; this section covers blocks,
-parts and cables.)
+Deterministic patterns are still fine when they are a feature, not grain: a terminal screen's lit cells, a
+checkered connector pad, a hatch on a plate. Everything is seeded or fixed, so a regenerated texture is identical.
 
 ---
 
@@ -125,10 +118,12 @@ parts and cables.)
 Frames read as a **recessed bevel**, not a flat line.
 
 - **Outer rail (1 px):**
-  - Top and left: step 9. Bottom and right: step 6. Flat along the edge (no wear specks, no glints).
+  - Top and left: step 9, flat.
+  - Bottom and right: step 6, flat.
   - Corners: top-left step 10, top-right and bottom-left step 7, bottom-right step 5.
+  - A 2px glint (+1 step) at positions 6–7 along every edge. It sits at the same spot on every piece, so seams line up.
 - **Inner lip (1 px):** step 2 under the lit rails (top and left, the shadow the rail casts) and step 5 on the shaded rails (bottom and right, a lit inner edge).
-- **Dividers** (where structure pieces join): step 4 with step-3 ends. They read as a seam, never as a bright line.
+- **Dividers** (where structure pieces join): steel at step 4 with step-3 ends. They read as a seam, never as a bright line.
 - **No near-black grooves.** The old `#15181C` groove is retired.
 
 ---
@@ -136,9 +131,9 @@ Frames read as a **recessed bevel**, not a flat line.
 ## 5. Raised detail and recesses
 
 - **Raised features** (controller traces, ribs):
-  - Runs are step 7; ends and bends are step 8, where the light catches. No wear pixels.
+  - Runs are step 7; ends and bends are step 8, where the light catches. No wear.
   - Every raised pixel casts a shadow one pixel down-right, at step 0, onto the field.
-- **Recesses** (bays, pockets) are the darkest part of a face: a flat back wall at step 1 or 2, with a step-0 shadow line directly under the overhang.
+- **Recesses** (bays, pockets) are the darkest part of a face: a flat back wall at step 2 (step 1 for the deepest), a step-0 shadow line directly under the overhang and a lit lower lip at step 6.
 - **3D geometry over painted depth:** if something should look recessed or raised (drive bays, shelves, the spine), model it. A 2px rib with mid-steel tops, step-0 undersides and dark-steel sides reads better than any painted bevel.
 
 ---
@@ -146,12 +141,11 @@ Frames read as a **recessed bevel**, not a flat line.
 ## 6. Glow (emissive) textures
 
 - Glow lives on a separate overlay: `*_glow.png` for cables and the drive array, `*_emissive.png` for the controller. It renders full-bright with `"neoforge_data": {"block_light": 15, "sky_light": 15}` and `"shade": false`.
-- **The glow is shaded, not noisy.** Use two tones:
+- **The glow has structure too.** Use two tones:
   - saturated base on runs;
-  - whiter, brighter glints at exposed edges, ends and bends (saturation ×0.6, value +0.06).
-  - No random dimmer "wear" pixels.
+  - whiter, brighter glints at ends and bends (saturation ×0.6, value +0.06).
 - Never whiten every exposed pixel. On 1px features that washes the whole glow out.
-- A glow overlay copies its base texture pixel for pixel where it is lit.
+- A glow overlay copies its base texture pixel for pixel where it is lit, so the glowing strip keeps the jacket's grain.
 - **Controller:** hue gradient rotating round the wheel, 16 frames, `frametime 6`, `interpolate: true`. Error state is static red with the same texture.
 - **Neutral cable:** the same hue cycle, so the backbone pulses in step with the controller.
 
@@ -160,38 +154,23 @@ Frames read as a **recessed bevel**, not a flat line.
 ## 7. Block notes
 
 **Network Controller** (`tools/ctrl.py`)
-- 2px recessed bevel frame; flat field at step 2; maze traces raised (the maze layout is seeded, the tones are not).
+- 2px recessed bevel frame; flat field at step 2; maze traces raised.
 - 8 variants per piece, with column pieces and dividers. Traces cross a joined seam only at pixel 8.
 - Traces never cross a framed side.
 
-**Network Cables** (normal, dense and fiber): `tools/export_cables.py`, `tools/export_cable_geometry.py`, fiber in `tools/export_feature.py`
-- AE2-style continuous cables: **no necks**. A straight run is one tube (sleeve 0–5, straight body 5–11, sleeve
-  11–16, all the same width); arms run flush into the junction cube; a cable against a network block ends in a flange.
-  Faces that are always inside the cable are left out, so nothing z-fights or shows as a plate at a joint.
-- Texture sheets: `_h` (tube along u, plus the item end cap at (0,8)), `_v` (tube along v), `_j` (junction face),
-  `_f` (flange face). Painted directly in dye-ramp steps; the old shading pass (`run_pass.py` / `mcpass.py`) is no longer run.
-- Normal tube: one rounded strand (−2, 0, +1, +1, 0, −2). Dense: two strands with a darker *dye* seam
-  (−2, 0, +1, −1, −1, +1, 0, −2), never a black gap. Both have a 2 px ring one step darker every 8 px (at 0|15 and
-  7–8 of each block), symmetric so the rings line up across seams and rotations.
-- Junction faces: dark rim, flat dye, a bevelled 2x2 centre light (the only glowing pixels on dyed cables).
-- Fiber: clean glass sheath (no streaks) over a full-bright core that runs to the block centre; straight runs use a
-  4-sided straight body so the glass is continuous.
+**Network Cables** (normal and dense)
+- Texture sheets: `_h` (strip along u), `_v` (strip along v), `_j` (junction face), `_f` (flange face).
+- Brushed grain runs along the cable: along u on `_h` sheets, along v on `_v` sheets. Wear specks go on `_j` and `_f`.
+- Dye bands use the dye ramps in 2.2; the steel uses the steel ramp.
 
 **Drive Bay** (the Drive Array design)
-- Casing (`tools/p23_v2.py` `drive_bay_casing`): the controller's frame, a flat recessed panel, raised vent slats and bolts.
-- Front (`drive_bay_front`): modelled 3D ribs (frame, shelves, spine) with 2px pockets. Rib fronts carry the frame steel.
-
-**Cable parts** (`tools/parts_p2.py` models, `tools/p23_v2.py` textures)
-- Parts are solid stepped housings, AE2-bus style: e.g. the Ingress/Egress Port is a 12x12x1 plate, a 10x10x2 body, an
-  8x8x1 back plate and a 4x4 stub, with no half-pixel sheets.
-- Every side face maps 1:1 onto its own strip of a side sheet (never a stretched texel). Side strips are flat along the
-  depth and symmetric across, so they read the same whatever the face rotation; accents sit in the middle of a face,
-  never as dashes along an edge.
+- Casing: the controller's frame with vent slats in trace steps and screws as raised features.
+- Front: modelled 3D ribs (frame, shelves, spine) with 2px pockets. Rib fronts carry the frame steel.
 - Drives in the bays: slate body, silver handle, a thin tier stripe at the outer end, and a 2×2 status light. The status light must stay the dominant colour in each bay.
 
 **Items** (to follow these rules next)
 - Outline in the darkest step of the item's own material, never pure black.
-- 4–7 tones per material, top-left light (items keep their own grain rules in `p1_items.py`).
+- 4–7 tones per material, top-left light; shading by shape, not speckle.
 
 ---
 
@@ -199,9 +178,7 @@ Frames read as a **recessed bevel**, not a flat line.
 
 - Large fields in the 20–45 brightness range (near-black faces).
 - Lerped "sheen" gradients that change colour every pixel.
-- Random speckle, wear specks, brushed noise or dithering on block, part or cable faces.
-- Stretched texels or texture slices on part side faces; accent dashes running along edges.
-- Necks, gaps or end plates at cable joints.
+- Random speckle, wear specks or brushed noise standing in for shading.
 - Brightness-only ramps with no hue shift.
 - Detail that changes between animation frames (flicker).
 - Whole-body tier or dye colour fighting with status lights.
@@ -215,16 +192,15 @@ Frames read as a **recessed bevel**, not a flat line.
    | Script | Makes |
    | --- | --- |
    | `tools/ctrl.py` | Controller textures |
-   | `tools/export_cables.py` (with `export_cable_geometry.py`) | Network / dense cable textures, models and blockstates |
+   | `tools/export_cables.py` | Cable models and base textures |
    | `tools/export_feature.py` | Power Inlet, Capacitor Bank, Fiber Cable, anchors, facades, Segment Isolator |
    | `tools/p1_export.py`, `p1_gui.py`, `p1_data.py` | Phase 1 items, Lithography Press, Access Terminal, their GUIs and recipes. The Drive Bay's textures ship already shaded (from the Drive Array v2 art) |
-   | `tools/p2_export.py`, `p3_export.py`, `p4_export.py`, `p23_export.py` (`p23_v2.py`, `parts_p2.py`, `blocks_p3.py`, `blocks_p4.py`) | Phase 2-4 blocks and parts; `p23_export.paint()` runs at the end of p1-p3 and wins (ports, tap, sensor, Drive Bay casing, scheduler, ...) |
-   | `tools/run_pass.py` (with `mcpass.py`) | The retired grain/shading pass. No longer run by any exporter |
+   | `tools/run_pass.py` (with `mcpass.py`) | The shading pass. `export_cables.py` runs it on the cable textures; never run it twice over the same files |
 
 2. **Check against this guide:**
    - [ ] Every grey is a step of the steel ramp; every dye pixel is a step of its dye ramp.
    - [ ] Brightness spans about 35–215 with mid tones dominant; near-black only in holes and shadows.
-   - [ ] No gradient runs and no random per-pixel variation: flat fields, structural detail only.
+   - [ ] No gradient runs and no speckle: fields are flat at their step, edges and 1px lines crisp.
    - [ ] Light is top-left; raised detail casts down-right; frames read as a recessed bevel.
    - [ ] The glow has base and glint tones, matches its base pixels, and doesn't flicker.
    - [ ] The layout is unchanged when replacing a texture (size, UVs, opaque pixels, frame count).

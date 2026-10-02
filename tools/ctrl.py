@@ -251,7 +251,7 @@ def emissive(E,framed,hue_fn,frames,sat=0.72,hub=False):
 
 # ======================= Minecraft-style rendering (redraw) =======================
 # Rules (shared with the cable / drive array texture pass): one stepped 11-tone steel ramp (cool shadows, warm-neutral
-# highlights), no lerped gradients, no near-black except true holes, clean flat fields (no random grain), raised
+# highlights), no lerped gradients, no near-black except true holes, one-step grain inside materials only, raised
 # traces with a top-left highlight and a down-right cast shadow, emissive pixels with 3 tones.
 G=[H(c) for c in ['#1F2228','#2B2F36','#373C44','#454B54','#555B65','#666D77','#79808A','#8D949D','#A3A9B1','#BBC0C6','#D3D7DB']]
 FRAME=2
@@ -259,8 +259,8 @@ VARIANTS=8
 GATE=8
 COLUMN_MASKS={'v':(0,1,4,5),'h':(0,2,8,10)}
 def edge_grain(along,side_seed):
-    """Frame edges are clean (docs/TEXTURE_STYLE.md 3): no wear specks or glints."""
-    return 0
+    """A frame edge: flat, with one 2px glint per edge (the same place on every block, so seams match). No specks."""
+    return 1 if along in (6,7) else 0
 def frame_px(depth,along,lit_side,corner=None):
     if corner=='tl': return G[10]
     if corner in ('tr','bl'): return G[7]
@@ -271,7 +271,7 @@ def frame_px(depth,along,lit_side,corner=None):
     # inner lip: shadow under the lit (top/left) rail, lit edge on the shaded (bottom/right) rail
     return G[2] if lit_side else G[5]
 # Divider: laid over a block's frame where it meets a column of the same structure, so the join reads as a seam
-# (darker steel), stepped and grained like the frame.
+# (darker steel), stepped like the frame.
 def divider(side):
     im=Image.new('RGBA',(16,16),(0,0,0,0)); p=im.load()
     for a in range(1,15):
@@ -331,7 +331,7 @@ def piece_build(kind,mask,seed):
         for x in range(16):
             e=edge_info(x,y)
             if e is not None: p[x,y]=frame_px(*e); continue
-            p[x,y]=G[2]                                  # field: flat dark-mid slate, no speckle
+            p[x,y]=G[2]                                  # field: flat dark-mid slate, no grain
     for (x,y) in E:                                      # cast shadow down-right of raised traces
         sx,sy=x+1,y+1
         if sx<16 and sy<16 and (sx,sy) not in E and not framed(sx,sy): p[sx,sy]=G[0]
@@ -343,10 +343,10 @@ def piece_build(kind,mask,seed):
     return im,E,framed
 
 def emissive(E,framed,hue_fn,frames,sat=0.72,hub=False):
-    """Glow overlay with 3 tones per frame: exposed (top/left) edge pixels brighter and whiter, interior base,
-    a few dimmer wear pixels - so the glow has the same texture as the metal under it."""
+    """Glow overlay with 2 tones per frame: exposed (top/left) edge pixels brighter and whiter, interior base - the
+    same structure as the metal under it, no dim wear pixels."""
     out=Image.new('RGBA',(16,16*frames),(0,0,0,0)); o=out.load()
-    wear=set()                                           # no random dim pixels: the glow is clean like the metal
+    wear=set()
     for f in range(frames):
         oy=16*f
         for x,y in E:

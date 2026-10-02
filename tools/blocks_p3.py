@@ -59,9 +59,9 @@ def gateway_face(glow=False,active=False):
 def sched_frame(im,mask,seed):
     U,R,D,Lf=bool(mask&1),bool(mask&2),bool(mask&4),bool(mask&8); r=random.Random(seed)
     for a in range(16):
-        if not U: put(im,a,0,g(9)); put(im,a,1,g(2))
+        if not U: put(im,a,0,g(9 if a not in (6,7) else 10)); put(im,a,1,g(2))
         if not D: put(im,a,15,g(6)); put(im,a,14,g(5))
-        if not Lf: put(im,0,a,g(9)); put(im,1,a,g(2))
+        if not Lf: put(im,0,a,g(9 if a not in (6,7) else 10)); put(im,1,a,g(2))
         if not R: put(im,15,a,g(6)); put(im,14,a,g(5))
     if not U and not Lf: put(im,0,0,g(10))
     if not U and not R: put(im,15,0,g(7))

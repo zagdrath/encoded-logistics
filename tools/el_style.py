@@ -23,31 +23,31 @@ LED_GREEN=[H('#22A03C'),H('#3CE05A'),H('#B5FFB0')]
 def img(w=16,h=16): return Image.new('RGBA',(w,h),(0,0,0,0))
 def put(im,x,y,c,a=255):
     if 0<=x<im.width and 0<=y<im.height: im.putpixel((x,y),tuple(c)+(a,))
+# No random grain (docs/TEXTURE_STYLE.md 3): a field is flat at its step, and the shading comes from bevels, lips,
+# recesses, raised detail and their shadows. speckle/brushed keep their signatures for the painters that call them.
 def speckle(seed,p_dark=0.10,p_light=0.07):
-    r=random.Random(seed)
-    def f(): x=r.random(); return -1 if x<p_dark else (1 if x<p_dark+p_light else 0)
-    return f
+    return lambda: 0
 def brushed(seed):
-    r=random.Random(seed)
-    def run():
-        return r.randint(2,4), r.choices((-1,0,1),(0.20,0.68,0.12))[0]
-    return run
+    return lambda: (4,0)
 def bevel_frame(im,x0,y0,w,h,seed=1,lip=True):
-    """Guide 4: 1px outer rail (top/left 9, bottom/right 6, corners 10/7/5) + inner lip. Clean: no random wear specks
-       (guide 3); seed is kept for call compatibility."""
+    """Guide 4: 1px outer rail (top/left 9, bottom/right 6, corners 10/7/5, glint at 6-7) + inner lip. No wear specks."""
     for a in range(w):
-        put(im,x0+a,y0,g(9)); put(im,x0+a,y0+h-1,g(6))
+        for side,(x,y) in (('t',(x0+a,y0)),('b',(x0+a,y0+h-1))):
+            base=9 if side=='t' else 6
+            t=base+(1 if a in (6,7) else 0); put(im,x,y,g(t))
     for a in range(h):
-        put(im,x0,y0+a,g(9)); put(im,x0+w-1,y0+a,g(6))
+        for side,(x,y) in (('l',(x0,y0+a)),('r',(x0+w-1,y0+a))):
+            base=9 if side=='l' else 6
+            t=base+(1 if a in (6,7) else 0); put(im,x,y,g(t))
     put(im,x0,y0,g(10)); put(im,x0+w-1,y0,g(7)); put(im,x0,y0+h-1,g(7)); put(im,x0+w-1,y0+h-1,g(5))
     if lip:
         for a in range(1,w-1): put(im,x0+a,y0+1,g(2)); put(im,x0+a,y0+h-2,g(5))
         for a in range(1,h-1): put(im,x0+1,y0+a,g(2)); put(im,x0+w-2,y0+a,g(5))
         put(im,x0+w-2,y0+1,g(3)); put(im,x0+1,y0+h-2,g(3))
-def field(im,x0,y0,w,h,base,seed=None):
-    """Guide 3: a flat steel field at one ramp step - no random speckle (seed kept for call compatibility)."""
+def field(im,x0,y0,w,h,base,seed):
+    f=speckle(seed)
     for y in range(y0,y0+h):
-        for x in range(x0,x0+w): put(im,x,y,g(base))
+        for x in range(x0,x0+w): put(im,x,y,g(base+f()))
 def port_ring(im,cx,cy,seed=0):
     """Cable attach point: 6x6 raised ring (lit top-left) around a 4x4 recess with a shadow line under the lip."""
     x0,y0=cx-3,cy-3

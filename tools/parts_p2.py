@@ -49,14 +49,16 @@ def port_models(kind,acc,inward):
     tx={'mouth':T+'_mouth','side':T+'_side','side_glow':T+'_side_glow','casing':'encodedlogistics:block/network_casing_port',
         'parts':'encodedlogistics:block/part/parts','particle':T+'_mouth'}
     def face(t,uv): return {'texture':t,'uv':uv}
-    # Solid stepped housing, every step 1:1 on its own strip of the side sheet (tools/p23_v2.py PORT_STRIPS).
-    S={'plate':((15,0,16,12),(0,0,12,1)),'body':((13,0,15,10),(0,2,10,4)),'back':((12,0,13,8),(0,5,8,6))}
-    def sides(t,k): ew,ud=S[k]; return {'east':face(t,list(ew)),'west':face(t,list(ew)),'up':face(t,list(ud)),'down':face(t,list(ud))}
-    els=[{'from':[2,2,0],'to':[14,14,1],'faces':{'north':face('#mouth',[2,2,14,14]),'south':face('#parts',PU['mid']),**sides('#side','plate')}},
-         {'from':[3,3,1],'to':[13,13,3],'faces':sides('#side','body')},
-         {'from':[4,4,3],'to':[12,12,4],'faces':{'south':face('#side',[0,8,8,16]),**sides('#side','back')}},
-         {'from':[6,6,4],'to':[10,10,5],'faces':{**{f:face('#parts',PU['mid']) for f in ('east','west','up','down')},'south':face('#parts',PU['dark'])}}]
-    glow={'from':[3,3,1],'to':[13,13,3],'faces':sides('#side_glow','body'),'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+    def side_faces(t,z0,z1):
+        d=z1-z0
+        return {'east':face(t,[0,0,d,10]),'west':face(t,[0,0,d,10]),'up':face(t,[4,0,14,d]),'down':face(t,[4,0,14,d])}
+    els=[{'from':[2,2,0],'to':[14,14,1],'faces':{'north':face('#mouth',[2,2,14,14]),'south':face('#parts',PU['dark']),
+          'east':face('#parts',PU['side']),'west':face('#parts',PU['side']),'up':face('#parts',PU['lit']),'down':face('#parts',PU['shadow'])}},
+         {'from':[3,3,1],'to':[13,13,4],'faces':side_faces('#side',1,4)},
+         {'from':[4,4,4],'to':[12,12,4.5],'faces':{'south':face('#casing',[4,4,12,12]),'east':face('#parts',PU['mid']),'west':face('#parts',PU['mid']),
+          'up':face('#parts',PU['lit']),'down':face('#parts',PU['dark'])}},
+         {'from':[6,6,4.5],'to':[10,10,5],'faces':{f:face('#parts',PU['mid']) for f in ('east','west','up','down')}}]
+    glow={'from':[3,3,1],'to':[13,13,4],'faces':side_faces('#side_glow',1,4),'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
     return {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':els},\
            {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':els+[glow]}
 # ---------------- inventory tap ----------------
