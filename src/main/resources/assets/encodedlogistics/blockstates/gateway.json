@@ -1,0 +1,10 @@
+{
+ "variants": {
+  "active=false": {
+   "model": "encodedlogistics:block/gateway"
+  },
+  "active=true": {
+   "model": "encodedlogistics:block/gateway_active"
+  }
+ }
+}

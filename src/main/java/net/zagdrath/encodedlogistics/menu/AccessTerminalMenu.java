@@ -7,8 +7,11 @@ package net.zagdrath.encodedlogistics.menu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.IntUnaryOperator;
 
 import org.jspecify.annotations.Nullable;
@@ -28,6 +31,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
@@ -58,11 +62,13 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // Server: what the client was last sent.
     private @Nullable Map<ItemKey, Long> sent;
+    private @Nullable Set<ItemKey> sentCraftables;
     private boolean sentOnline;
     private int ticksUntilSync;
 
-    // Client: the network's items as last received.
+    // Client: the network's items and craftables as last received.
     private final Map<ItemKey, Long> items = new HashMap<>();
+    private final Set<ItemKey> craftables = new LinkedHashSet<>();
     private boolean online;
     private int version;
 
@@ -88,6 +94,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     public int rows() {
         return rows;
+    }
+
+    // The block the terminal is on (a cable or part host).
+    public BlockPos pos() {
+        return pos;
     }
 
     // Opens the terminal on that side of the block at pos (a cable or a part host).
@@ -131,10 +142,14 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 }
             });
         }
-        if (full || !changes.isEmpty() || isOnline != sentOnline) {
-            PacketDistributor.sendToPlayer(serverPlayer, new TerminalItemsPayload(containerId, isOnline, full, changes));
+        Set<ItemKey> craftable = isOnline && player.level() instanceof ServerLevel level ? CraftRequests.craftables(level, pos) : Set.of();
+        boolean craftablesChanged = !craftable.equals(sentCraftables);
+        if (full || !changes.isEmpty() || isOnline != sentOnline || craftablesChanged) {
+            PacketDistributor.sendToPlayer(serverPlayer, new TerminalItemsPayload(containerId, isOnline, full, changes,
+                    craftablesChanged ? Optional.of(List.copyOf(craftable)) : Optional.empty()));
         }
         sent = new HashMap<>(now);
+        sentCraftables = craftable;
         sentOnline = isOnline;
     }
 
@@ -209,8 +224,12 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // --- Client ---
 
-    public void applyUpdate(boolean online, boolean full, List<TerminalItemsPayload.Entry> entries) {
+    public void applyUpdate(boolean online, boolean full, List<TerminalItemsPayload.Entry> entries, @Nullable List<ItemKey> craftables) {
         this.online = online;
+        if (craftables != null) {
+            this.craftables.clear();
+            this.craftables.addAll(craftables);
+        }
         if (full) {
             items.clear();
         }
@@ -226,6 +245,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     public Map<ItemKey, Long> items() {
         return items;
+    }
+
+    // What the network can craft.
+    public Set<ItemKey> craftables() {
+        return craftables;
     }
 
     public boolean isOnline() {

@@ -9,6 +9,12 @@
   "encodedlogistics:neodymium_ore",
   "encodedlogistics:deepslate_neodymium_ore",
   "encodedlogistics:tantalum_ore",
-  "encodedlogistics:deepslate_tantalum_ore"
+  "encodedlogistics:deepslate_tantalum_ore",
+  "encodedlogistics:deepslate_gallium_ore",
+  "encodedlogistics:fabricator",
+  "encodedlogistics:gateway",
+  "encodedlogistics:scheduler_core",
+  "encodedlogistics:job_buffer",
+  "encodedlogistics:thread_unit"
  ]
 }

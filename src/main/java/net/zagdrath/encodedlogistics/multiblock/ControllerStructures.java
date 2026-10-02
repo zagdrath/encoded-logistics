@@ -44,6 +44,8 @@ import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
@@ -71,7 +73,8 @@ import net.zagdrath.encodedlogistics.storage.StorageView;
 //
 // Devices (anything using lanes: Drive Bays, terminals) are told every tick whether they're online: on a powered
 // network, with their lanes. A part reaches its network's storage (the drives in online Drive Bays and the inventories
-// online Inventory Taps face) through storageAt, and takes FE for its work through drawEnergy. Cables and part hosts
+// online Inventory Taps face) through storageAt, and takes FE for its work through drawEnergy. Autocrafting finds the
+// network's Fabricators and Gateways (providersAt) and Schedulers (schedulersAt) the same way. Cables and part hosts
 // with ticking parts tick from here, after the networks.
 //
 // A network's energy is its controllers' buffers plus the Capacitor Banks on it. FE coming in through Power Inlets
@@ -403,7 +406,8 @@ public class ControllerStructures extends SavedData {
     private void setNetworkNodes(ServerLevel level, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
         energyNetworks.values().removeIf(owner -> owner == id);
         deviceNetworks.values().removeIf(owner -> owner == id);
-        List<BlockPos> banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(), partHosts = new ArrayList<>();
+        List<BlockPos> banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(), partHosts = new ArrayList<>(),
+                providers = new ArrayList<>(), schedulers = new ArrayList<>();
         if (discovered != null) {
             for (NetworkNode node : discovered.graph().nodes()) {
                 if (node.laneCost() > 0) {
@@ -418,6 +422,10 @@ public class ControllerStructures extends SavedData {
                     energyNetworks.put(node.pos(), id);
                 } else if (blockEntity instanceof DriveBayBlockEntity) {
                     driveBays.add(node.pos());
+                } else if (blockEntity instanceof CraftingProvider) {
+                    providers.add(node.pos());
+                } else if (blockEntity instanceof SchedulerCoreBlockEntity && node.laneCost() > 0) {
+                    schedulers.add(node.pos());
                 } else if (blockEntity instanceof CableBlockEntity host && host.getAttachments().hasParts()) {
                     partHosts.add(node.pos());
                 }
@@ -430,6 +438,10 @@ public class ControllerStructures extends SavedData {
         runtime.driveBays = List.copyOf(driveBays);
         partHosts.sort(Comparator.naturalOrder());
         runtime.partHosts = List.copyOf(partHosts);
+        providers.sort(Comparator.naturalOrder());
+        schedulers.sort(Comparator.naturalOrder());
+        runtime.providers = List.copyOf(providers);
+        runtime.schedulers = List.copyOf(schedulers);
     }
 
     private static List<CapacitorBankBlockEntity> banks(ServerLevel level, Runtime runtime) {
@@ -482,6 +494,48 @@ public class ControllerStructures extends SavedData {
             }
         }
         return new NetworkStorage(views);
+    }
+
+    // --- Autocrafting ---
+
+    // The online Fabricators and Gateways on the network a device at pos is on (empty while it's offline).
+    public List<CraftingProvider> providersAt(ServerLevel level, BlockPos device) {
+        Runtime runtime = onlineRuntime(device);
+        List<CraftingProvider> providers = new ArrayList<>();
+        if (runtime != null) {
+            for (BlockPos pos : runtime.providers) {
+                if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CraftingProvider provider) {
+                    providers.add(provider);
+                }
+            }
+        }
+        return providers;
+    }
+
+    // The online, formed Schedulers on the network a device at pos is on.
+    public List<SchedulerCoreBlockEntity> schedulersAt(ServerLevel level, BlockPos device) {
+        Runtime runtime = onlineRuntime(device);
+        List<SchedulerCoreBlockEntity> schedulers = new ArrayList<>();
+        if (runtime != null) {
+            for (BlockPos pos : runtime.schedulers) {
+                if (onlineDevices.contains(pos) && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof SchedulerCoreBlockEntity core
+                        && core.formed()) {
+                    schedulers.add(core);
+                }
+            }
+        }
+        return schedulers;
+    }
+
+    // Whether two devices are on the same network.
+    public boolean sameNetwork(BlockPos a, BlockPos b) {
+        Long id = deviceNetworks.get(a);
+        return id != null && id.equals(deviceNetworks.get(b));
+    }
+
+    private @Nullable Runtime onlineRuntime(BlockPos device) {
+        Long id = deviceNetworks.get(device);
+        return id != null && onlineDevices.contains(device) ? runtimes.get(id) : null;
     }
 
     // --- Energy for work ---
@@ -648,7 +702,8 @@ public class ControllerStructures extends SavedData {
         boolean dirty = true;
         NetworkDiscovery.@Nullable Discovered discovered;
         @Nullable LaneResult lanes;
-        List<BlockPos> banks = List.of(), devices = List.of(), driveBays = List.of(), partHosts = List.of();
+        List<BlockPos> banks = List.of(), devices = List.of(), driveBays = List.of(), partHosts = List.of(), providers = List.of(),
+                schedulers = List.of();
         final int[] received = new int[GENERATION_WINDOW];
         int receivedIndex;
         double drainCarry;

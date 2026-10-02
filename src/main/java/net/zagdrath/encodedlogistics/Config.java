@@ -141,6 +141,55 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("autocrafting");
+    }
+
+    public static final ModConfigSpec.IntValue SCHEDULER_MAX_SIZE = BUILDER
+            .comment("Largest Scheduler structure, in blocks along each axis.")
+            .defineInRange("schedulerMaxSize", 7, 1, 16);
+
+    public static final ModConfigSpec.DoubleValue SCHEDULER_DRAIN = BUILDER
+            .comment("FE per tick a formed Scheduler drains, on top of its blocks.")
+            .defineInRange("schedulerDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue SCHEDULER_DRAIN_PER_BLOCK = BUILDER
+            .comment("FE per tick each block of a formed Scheduler drains.")
+            .defineInRange("schedulerDrainPerBlock", 0.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue SCHEDULER_BASE_MEMORY = BUILDER
+            .comment("Job memory a Scheduler Core provides on its own (items across its jobs' ingredient trees).")
+            .defineInRange("schedulerBaseMemory", 4_096, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue JOB_BUFFER_MEMORY = BUILDER
+            .comment("Job memory each Job Buffer adds.")
+            .defineInRange("jobBufferMemory", 16_384, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue SCHEDULER_BASE_THREADS = BUILDER
+            .comment("Jobs a Scheduler Core runs at once on its own.")
+            .defineInRange("schedulerBaseThreads", 1, 1, 1024);
+
+    public static final ModConfigSpec.IntValue THREAD_UNIT_THREADS = BUILDER
+            .comment("Jobs each Thread Unit adds.")
+            .defineInRange("threadUnitThreads", 1, 0, 1024);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends Integer>> FABRICATOR_CRAFT_TICKS = BUILDER
+            .comment("Ticks a Fabricator takes per craft with 0, 1 and 2 Throughput Modules.")
+            .defineList("fabricatorCraftTicks", List.of(20, 10, 5), () -> 20, entry -> entry instanceof Integer value && value >= 1);
+
+    public static final ModConfigSpec.IntValue FABRICATOR_ENERGY_PER_CRAFT = BUILDER
+            .comment("FE a Fabricator spends from its network per craft.")
+            .defineInRange("fabricatorEnergyPerCraft", 50, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.DoubleValue FABRICATOR_DRAIN = BUILDER
+            .comment("FE per tick a Fabricator drains while its network runs.")
+            .defineInRange("fabricatorDrain", 1.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue GATEWAY_DRAIN = BUILDER
+            .comment("FE per tick a Gateway drains while its network runs.")
+            .defineInRange("gatewayDrain", 1.0, 0.0, 1_000.0);
+
+    static {
+        BUILDER.pop();
         BUILDER.push("lithography");
     }
 

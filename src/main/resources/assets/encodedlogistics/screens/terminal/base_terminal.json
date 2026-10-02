@@ -77,6 +77,13 @@
      "terminal/icon_dir_asc",
      "terminal/icon_dir_desc"
     ]
+   },
+   {
+    "id": "craftables",
+    "icons": [
+     "terminal/icon_craftable_on",
+     "terminal/icon_craftable_off"
+    ]
    }
   ]
  },

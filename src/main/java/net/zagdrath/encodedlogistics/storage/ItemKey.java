@@ -5,14 +5,19 @@
 
 package net.zagdrath.encodedlogistics.storage;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 
 // One kind of item as storage counts it: the item and its components, without a count. Two keys are equal when the
 // stacks would stack together.
 public final class ItemKey {
     public static final StreamCodec<RegistryFriendlyByteBuf, ItemKey> STREAM_CODEC = ItemStack.STREAM_CODEC.map(ItemKey::of, ItemKey::stack);
+    public static final Codec<ItemKey> CODEC = ItemStackTemplate.CODEC.xmap(template -> ItemKey.of(template.create()),
+            key -> ItemStackTemplate.fromNonEmptyStack(key.stack()));
 
     private final ItemStack stack;
     private final int hash;

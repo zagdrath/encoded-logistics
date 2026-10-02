@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "IPI",
+  "CTC",
+  "IKI"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "P": "encodedlogistics:processor_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "T": "minecraft:crafting_table",
+  "K": "minecraft:piston"
+ },
+ "result": {
+  "id": "encodedlogistics:fabricator",
+  "count": 1
+ }
+}

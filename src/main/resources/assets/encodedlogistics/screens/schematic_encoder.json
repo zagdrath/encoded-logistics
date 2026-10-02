@@ -1,0 +1,18 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.schematic_encoder"
+  }
+ },
+ "features": {
+  "encoding": true
+ },
+ "sections": {
+  "crafting": "terminal/encoder_crafting_section.json",
+  "processing": "terminal/encoder_processing_section.json"
+ },
+ "section_selector": "mode_toggle"
+}

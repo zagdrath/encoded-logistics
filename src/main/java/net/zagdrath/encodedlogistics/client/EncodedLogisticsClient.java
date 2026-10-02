@@ -16,6 +16,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
@@ -23,14 +24,20 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
+import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
+import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
 import net.zagdrath.encodedlogistics.client.screen.DriveBayScreen;
 import net.zagdrath.encodedlogistics.client.screen.FabricationTerminalScreen;
+import net.zagdrath.encodedlogistics.client.screen.FabricatorScreen;
+import net.zagdrath.encodedlogistics.client.screen.GatewayScreen;
 import net.zagdrath.encodedlogistics.client.screen.InventoryTapScreen;
 import net.zagdrath.encodedlogistics.client.screen.LithographyPressScreen;
 import net.zagdrath.encodedlogistics.client.screen.NetworkControllerScreen;
 import net.zagdrath.encodedlogistics.client.screen.PortScreen;
+import net.zagdrath.encodedlogistics.client.screen.SchedulerCoreScreen;
+import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
 import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
@@ -61,12 +68,23 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.PORT.get(), PortScreen::new);
         event.register(ModMenuTypes.INVENTORY_TAP.get(), InventoryTapScreen::new);
         event.register(ModMenuTypes.THRESHOLD_SENSOR.get(), ThresholdSensorScreen::new);
+        event.register(ModMenuTypes.SCHEMATIC_ENCODER.get(), SchematicEncoderScreen::new);
+        event.register(ModMenuTypes.FABRICATOR.get(), FabricatorScreen::new);
+        event.register(ModMenuTypes.GATEWAY.get(), GatewayScreen::new);
+        event.register(ModMenuTypes.SCHEDULER_CORE.get(), SchedulerCoreScreen::new);
     }
 
-    // The Network Controller's connected textures (see ControllerModel).
+    // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).
     @SubscribeEvent
     static void registerBlockStateModels(RegisterBlockStateModels event) {
         event.registerModel(ControllerModel.ID, ControllerModel.Unbaked.MAP_CODEC);
+        event.registerModel(SchedulerModel.ID, SchedulerModel.Unbaked.MAP_CODEC);
+    }
+
+    // Encoded Schematics drawn as what they make while Shift is held (see SchematicOutputModel).
+    @SubscribeEvent
+    static void registerItemModels(RegisterItemModelsEvent event) {
+        event.register(SchematicOutputModel.ID, SchematicOutputModel.Unbaked.MAP_CODEC);
     }
 
     // Cable attachments: the parts cables are rebuilt from when they carry anchors or facades, the wrapped cable models,

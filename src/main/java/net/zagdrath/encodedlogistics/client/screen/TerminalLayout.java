@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,14 +39,21 @@ public final class TerminalLayout {
     public final Identifier searchSprite, searchSpriteFocused;
     public final int toolbarLeft, toolbarTop, toolbarSpacing;
     public final Identifier button, buttonHover, buttonPressed;
+    // The toolbar's buttons, top to bottom: their ids (sort_mode, sort_direction, craftables) and icons by state.
+    public final List<String> buttonIds;
     public final List<List<Identifier>> buttonIcons;
     public final Identifier slotHighlight;
     public final String titleKey;
     public final int titleLeft, titleTop, inventoryLeft, inventoryTopInBottom;
     public final JsonObject features;
-    // The crafting section (features.crafting_grid, sections.crafting): drawn between the item rows and the bottom piece,
-    // which is then the lip-less bottom_texture. sectionHeight 0 when there's none.
+    // A section between the item rows and the bottom piece (which is then the lip-less bottom_texture): the Fabrication
+    // Terminal's crafting grid (sections.crafting), the Schematic Encoder's crafting and processing sections. Every
+    // section of a terminal has the same height; the screen picks which one shows. sectionHeight 0 when there's none.
+    public record Section(Identifier texture, int height, Identifier bottom, JsonObject json) {}
+
+    public final Map<String, Section> sections;
     public final int sectionHeight;
+    // The first section (crafting when there is one) and its clear button.
     public final @Nullable Identifier section;
     public final int clearLeft, clearTop;
     public final Identifier clear, clearHover;
@@ -94,6 +102,7 @@ public final class TerminalLayout {
         button = sprite(string(toolbar, "button", "terminal/button"));
         buttonHover = sprite(string(toolbar, "button_hover", "terminal/button_hover"));
         buttonPressed = sprite(string(toolbar, "button_pressed", "terminal/button_pressed"));
+        List<String> ids = new ArrayList<>();
         List<List<Identifier>> icons = new ArrayList<>();
         if (toolbar.has("buttons")) {
             for (JsonElement entry : toolbar.getAsJsonArray("buttons")) {
@@ -101,12 +110,16 @@ public final class TerminalLayout {
                 for (JsonElement icon : entry.getAsJsonObject().getAsJsonArray("icons")) {
                     states.add(sprite(icon.getAsString()));
                 }
+                ids.add(string(entry.getAsJsonObject(), "id", ""));
                 icons.add(List.copyOf(states));
             }
         } else {
+            ids.addAll(List.of("sort_mode", "sort_direction", "craftables"));
             icons.add(List.of(sprite("terminal/icon_sort_name"), sprite("terminal/icon_sort_count"), sprite("terminal/icon_sort_mod")));
             icons.add(List.of(sprite("terminal/icon_dir_asc"), sprite("terminal/icon_dir_desc")));
+            icons.add(List.of(sprite("terminal/icon_craftable_on"), sprite("terminal/icon_craftable_off")));
         }
+        buttonIds = List.copyOf(ids);
         buttonIcons = List.copyOf(icons);
         slotHighlight = sprite(string(json, "slot_highlight", "terminal/slot_highlight"));
         JsonObject text = object(json, "text");
@@ -118,12 +131,20 @@ public final class TerminalLayout {
         inventoryLeft = integer(inventory, "left", 9);
         inventoryTopInBottom = integer(inventory, "top_in_bottom", 6);
         features = object(json, "features");
-        JsonObject sections = object(json, "sections");
-        JsonObject crafting = feature("crafting_grid") && sections.has("crafting")
-                ? read(sections.get("crafting").getAsString().replaceFirst("\\.json$", ""), 1) : new JsonObject();
-        sectionHeight = crafting.has("texture") ? integer(crafting, "height", 76) : 0;
-        section = crafting.has("texture") ? texture(string(crafting, "texture", "gui/terminal/crafting.png")) : null;
-        bottom = crafting.has("bottom_texture") ? texture(string(crafting, "bottom_texture", "gui/terminal/bottom_plain.png")) : plainBottom;
+        Map<String, Section> found = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonElement> entry : object(json, "sections").entrySet()) {
+            JsonObject piece = read(entry.getValue().getAsString().replaceFirst("\\.json$", ""), 1);
+            if (piece.has("texture")) {
+                found.put(entry.getKey(), new Section(texture(string(piece, "texture", "gui/terminal/crafting.png")), integer(piece, "height", 76),
+                        texture(string(piece, "bottom_texture", "gui/terminal/bottom_plain.png")), piece));
+            }
+        }
+        sections = Map.copyOf(found);
+        Section first = found.containsKey("crafting") ? found.get("crafting") : found.values().stream().findFirst().orElse(null);
+        JsonObject crafting = first != null ? first.json() : new JsonObject();
+        sectionHeight = first != null ? first.height() : 0;
+        section = first != null ? first.texture() : null;
+        bottom = first != null ? first.bottom() : plainBottom;
         JsonObject clearButton = object(crafting, "clear");
         clearLeft = integer(clearButton, "left", 84);
         clearTop = integer(clearButton, "top", 8);
@@ -134,6 +155,10 @@ public final class TerminalLayout {
     // The layout of screens/<name>.json with its includes.
     public static TerminalLayout load(String name) {
         return new TerminalLayout(read(name, 0));
+    }
+
+    public @Nullable Section section(String name) {
+        return sections.get(name);
     }
 
     public boolean feature(String name) {

@@ -20,6 +20,7 @@ import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
 import net.zagdrath.encodedlogistics.net.ModNetwork;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
@@ -76,9 +77,10 @@ public class EncodedLogistics {
         event.sendRecipes(ModRecipeTypes.LITHOGRAPHY.get());
     }
 
-    // Controller structures revalidate and tick once per level tick.
+    // Scheduler and controller structures revalidate (and controllers tick) once per level tick.
     private static void onLevelTick(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel level) {
+            SchedulerStructures.get(level).tick(level);
             ControllerStructures.get(level).tick(level);
         }
     }

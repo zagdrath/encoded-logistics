@@ -1,0 +1,131 @@
+/*
+ * Copyright (c) 2026 Zagdrath
+ * SPDX-License-Identifier: MIT
+ */
+
+package net.zagdrath.encodedlogistics.block;
+
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import org.jspecify.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.network.DeviceNode;
+import net.zagdrath.encodedlogistics.network.NetworkNode;
+import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
+
+// The Fabricator: crafts crafting-table recipes for the network's Schedulers from the Crafting Schematics it holds.
+// Faces the player when placed; cables connect on every face but the front window. ACTIVE (work lights and the warm wash
+// over the cell) while it works. A device: one lane, fabricatorDrain FE/t.
+public class FabricatorBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
+
+    public FabricatorBlock(BlockBehaviour.Properties properties) {
+        super(properties);
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(ACTIVE, false));
+    }
+
+    public static int lightLevel(BlockState state) {
+        return state.getValue(ACTIVE) ? 7 : 0;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(FACING, ACTIVE);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
+
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof FabricatorBlockEntity fabricator) {
+            player.openMenu(fabricator);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    // --- Network ---
+
+    @Override
+    public boolean connectsOn(BlockState state, Direction side) {
+        return side != state.getValue(FACING);
+    }
+
+    @Override
+    public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
+        Set<Direction> sides = EnumSet.allOf(Direction.class);
+        sides.remove(state.getValue(FACING));
+        return new DeviceNode(pos.immutable(), sides, 1, Config.FABRICATOR_DRAIN.getAsDouble(), List.of(), true);
+    }
+
+    @Override
+    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!oldState.is(this) && level instanceof ServerLevel serverLevel) {
+            ControllerStructures.get(serverLevel).markTopologyChanged();
+        }
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        ControllerStructures.get(level).markTopologyChanged();
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new FabricatorBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntityTypes.FABRICATOR.get(),
+                (tickLevel, pos, tickState, fabricator) -> fabricator.serverTick((ServerLevel) tickLevel));
+    }
+}

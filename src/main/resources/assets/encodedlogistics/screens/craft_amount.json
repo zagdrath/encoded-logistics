@@ -1,0 +1,96 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/craft_amount.png",
+  "width": 176,
+  "height": 92
+ },
+ "widgets": {
+  "item": {
+   "left": 13,
+   "top": 31
+  },
+  "amount": {
+   "left": 41,
+   "top": 37,
+   "width": 72,
+   "min": 1,
+   "max": 999999
+  },
+  "steps": {
+   "buttons": [
+    [
+     "+1",
+     40,
+     18
+    ],
+    [
+     "+10",
+     66,
+     18
+    ],
+    [
+     "+64",
+     92,
+     18
+    ],
+    [
+     "-1",
+     40,
+     54
+    ],
+    [
+     "-10",
+     66,
+     54
+    ],
+    [
+     "-64",
+     92,
+     54
+    ]
+   ],
+   "size": [
+    24,
+    14
+   ],
+   "button": {
+    "sprite": "common/button_wide",
+    "hover": "common/button_wide_hover",
+    "pressed": "common/button_wide_pressed",
+    "disabled": "common/button_wide_disabled",
+    "nine_slice": [
+     3,
+     3
+    ]
+   }
+  },
+  "next": {
+   "left": 124,
+   "top": 34,
+   "width": 44,
+   "height": 18,
+   "button": {
+    "sprite": "common/button_wide",
+    "hover": "common/button_wide_hover",
+    "pressed": "common/button_wide_pressed",
+    "disabled": "common/button_wide_disabled",
+    "nine_slice": [
+     3,
+     3
+    ]
+   },
+   "text": "gui.encodedlogistics.craft.next"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.craft.amount",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

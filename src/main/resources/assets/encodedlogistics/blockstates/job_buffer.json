@@ -1,0 +1,8 @@
+{
+ "variants": {
+  "": {
+   "type": "encodedlogistics:scheduler",
+   "block": "job_buffer"
+  }
+ }
+}

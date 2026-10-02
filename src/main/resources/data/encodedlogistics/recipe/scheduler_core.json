@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "FPF",
+  "CHC",
+  "FPF"
+ ],
+ "key": {
+  "F": "encodedlogistics:ferrite",
+  "P": "encodedlogistics:processor_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "H": "encodedlogistics:heatsink"
+ },
+ "result": {
+  "id": "encodedlogistics:scheduler_core",
+  "count": 1
+ }
+}

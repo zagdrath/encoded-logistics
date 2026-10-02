@@ -1,0 +1,21 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "HLH",
+  "CTC",
+  "IMI"
+ ],
+ "key": {
+  "H": "minecraft:hopper",
+  "L": "encodedlogistics:logic_die",
+  "M": "encodedlogistics:memory_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "T": "encodedlogistics:tantalum_capacitor",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:gateway",
+  "count": 1
+ }
+}

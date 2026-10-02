@@ -1,0 +1,18 @@
+{
+ "model": {
+  "type": "minecraft:condition",
+  "property": "minecraft:keybind_down",
+  "keybind": "key.sneak",
+  "on_true": {
+   "type": "encodedlogistics:schematic_output",
+   "fallback": {
+    "type": "minecraft:model",
+    "model": "encodedlogistics:item/encoded_schematic_crafting"
+   }
+  },
+  "on_false": {
+   "type": "minecraft:model",
+   "model": "encodedlogistics:item/encoded_schematic_crafting"
+  }
+ }
+}

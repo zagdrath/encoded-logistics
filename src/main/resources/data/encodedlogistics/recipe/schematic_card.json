@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:memory_die",
+  "minecraft:paper"
+ ],
+ "result": {
+  "id": "encodedlogistics:schematic_card",
+  "count": 4
+ }
+}

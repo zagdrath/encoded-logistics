@@ -1,10 +1,4 @@
 {
- "neoforge:conditions": [
-  {
-   "type": "neoforge:registered",
-   "value": "encodedlogistics:storage_drive_2m"
-  }
- ],
  "type": "minecraft:crafting_shaped",
  "category": "misc",
  "pattern": [

@@ -20,11 +20,16 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
+import net.zagdrath.encodedlogistics.block.FabricatorBlock;
+import net.zagdrath.encodedlogistics.block.GatewayBlock;
 import net.zagdrath.encodedlogistics.block.LithographyPressBlock;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.block.PartHostBlock;
 import net.zagdrath.encodedlogistics.block.PowerInletBlock;
+import net.zagdrath.encodedlogistics.block.SchedulerBlock;
+import net.zagdrath.encodedlogistics.block.SchedulerCoreBlock;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.block.ThreadUnitBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
@@ -58,6 +63,27 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> DEEPSLATE_NEODYMIUM_ORE = BLOCKS.registerSimpleBlock("deepslate_neodymium_ore", ModBlocks::deepslateOre);
     public static final DeferredBlock<Block> TANTALUM_ORE = BLOCKS.registerSimpleBlock("tantalum_ore", ModBlocks::stoneOre);
     public static final DeferredBlock<Block> DEEPSLATE_TANTALUM_ORE = BLOCKS.registerSimpleBlock("deepslate_tantalum_ore", ModBlocks::deepslateOre);
+
+    // Gallium (Phase 3): deepslate only.
+    public static final DeferredBlock<Block> DEEPSLATE_GALLIUM_ORE = BLOCKS.registerSimpleBlock("deepslate_gallium_ore", ModBlocks::deepslateOre);
+
+    // Autocrafting (Phase 3): the Fabricator and Gateway carry out schematics; the Scheduler multiblock runs the jobs.
+    public static final DeferredBlock<FabricatorBlock> FABRICATOR = BLOCKS.registerBlock("fabricator", FabricatorBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .lightLevel(FabricatorBlock::lightLevel));
+
+    public static final DeferredBlock<GatewayBlock> GATEWAY = BLOCKS.registerBlock("gateway", GatewayBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .lightLevel(GatewayBlock::lightLevel));
+
+    public static final DeferredBlock<SchedulerCoreBlock> SCHEDULER_CORE = BLOCKS.registerBlock("scheduler_core", SchedulerCoreBlock::new,
+            ModBlocks::scheduler);
+    public static final DeferredBlock<SchedulerBlock> JOB_BUFFER = BLOCKS.registerBlock("job_buffer", SchedulerBlock::new, ModBlocks::scheduler);
+    public static final DeferredBlock<ThreadUnitBlock> THREAD_UNIT = BLOCKS.registerBlock("thread_unit", ThreadUnitBlock::new, ModBlocks::scheduler);
+
+    private static BlockBehaviour.Properties scheduler(BlockBehaviour.Properties properties) {
+        return properties.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);
+    }
 
     private static BlockBehaviour.Properties stoneOre(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 3.0F);

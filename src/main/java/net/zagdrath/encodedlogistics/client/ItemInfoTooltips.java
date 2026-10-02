@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.client;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -29,12 +30,15 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
+import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
+import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // A short description of what each Encoded Logistics item does, under its name, the same way as Arcforge: "Hold
@@ -76,7 +80,21 @@ public final class ItemInfoTooltips {
                     : "tooltip.encodedlogistics.module.throughput").withStyle(ChatFormatting.GRAY));
         } else if (stack.getItem() instanceof PartItem part && !part.getPartType().isTerminal()) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.part.lane").withStyle(ChatFormatting.DARK_GRAY));
-        } else if (stack.is(ModItems.LOGIC_PHOTOMASK.get()) || stack.is(ModItems.STORAGE_PHOTOMASK.get()) || stack.is(ModItems.MEMORY_PHOTOMASK.get())) {
+        } else if (SchematicItem.schematic(stack) != null) {
+            // An encoded schematic: what it makes and takes.
+            Schematic schematic = SchematicItem.schematic(stack);
+            ItemStack output = schematic.output();
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.schematic.output",
+                    Component.literal(output.getCount() + " x ").append(output.getHoverName())).withStyle(ChatFormatting.GRAY));
+            for (Map.Entry<ItemKey, Long> input : schematic.inputTotals().entrySet()) {
+                tooltip.add(at++, Component.literal("  " + input.getValue() + " x ").append(input.getKey().stack().getHoverName())
+                        .withStyle(ChatFormatting.DARK_GRAY));
+            }
+            if (!Minecraft.getInstance().hasShiftDown()) {
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.schematic.hold_shift").withStyle(ChatFormatting.DARK_GRAY));
+            }
+        } else if (stack.is(ModItems.LOGIC_PHOTOMASK.get()) || stack.is(ModItems.STORAGE_PHOTOMASK.get()) || stack.is(ModItems.MEMORY_PHOTOMASK.get())
+                || stack.is(ModItems.PROCESSOR_PHOTOMASK.get())) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.photomask.reusable").withStyle(ChatFormatting.GRAY));
         }
         // A facade always says what it looks like.

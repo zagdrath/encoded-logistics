@@ -1,0 +1,7 @@
+{
+ "values": [
+  "encodedlogistics:scheduler_core",
+  "encodedlogistics:job_buffer",
+  "encodedlogistics:thread_unit"
+ ]
+}

@@ -1,0 +1,68 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/gateway.png",
+  "width": 176,
+  "height": 206
+ },
+ "slots": {
+  "schematics": {
+   "left": 8,
+   "top": 18,
+   "columns": 9,
+   "rows": 1,
+   "accepts": "encodedlogistics:encoded_schematic_processing"
+  },
+  "stock": {
+   "left": 8,
+   "top": 50,
+   "columns": 9,
+   "rows": 1,
+   "ghost_items": true,
+   "amounts": true,
+   "amount_field": {
+    "below": true,
+    "width": 16
+   }
+  },
+  "buffer": {
+   "left": 9,
+   "top": 84,
+   "columns": 9,
+   "read_only": true,
+   "note": "shows what is held for the faced machine / stocked items"
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 124
+ },
+ "text": {
+  "title": {
+   "key": "block.encodedlogistics.gateway",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "stock": {
+   "key": "gui.encodedlogistics.gateway.stock",
+   "left": 8,
+   "top": 39,
+   "color": "TEXT_MUTED"
+  },
+  "buffer": {
+   "key": "gui.encodedlogistics.gateway.buffer",
+   "left": 8,
+   "top": 72,
+   "color": "TEXT_MUTED"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 112,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

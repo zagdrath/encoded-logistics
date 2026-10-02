@@ -17,10 +17,14 @@ import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
+import net.zagdrath.encodedlogistics.menu.FabricatorMenu;
+import net.zagdrath.encodedlogistics.menu.GatewayMenu;
 import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
 import net.zagdrath.encodedlogistics.menu.LithographyPressMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
+import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
+import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
 
 public final class ModMenuTypes {
@@ -51,6 +55,18 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<ThresholdSensorMenu>> THRESHOLD_SENSOR = MENU_TYPES.register("threshold_sensor",
             () -> IMenuTypeExtension.create(ThresholdSensorMenu::new));
+
+    public static final Supplier<MenuType<SchematicEncoderMenu>> SCHEMATIC_ENCODER = MENU_TYPES.register("schematic_encoder",
+            () -> IMenuTypeExtension.create(SchematicEncoderMenu::new));
+
+    public static final Supplier<MenuType<FabricatorMenu>> FABRICATOR = MENU_TYPES.register("fabricator",
+            () -> new MenuType<>(FabricatorMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final Supplier<MenuType<GatewayMenu>> GATEWAY = MENU_TYPES.register("gateway",
+            () -> new MenuType<>(GatewayMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final Supplier<MenuType<SchedulerCoreMenu>> SCHEDULER_CORE = MENU_TYPES.register("scheduler_core",
+            () -> IMenuTypeExtension.create(SchedulerCoreMenu::new));
 
     private ModMenuTypes() {}
 }

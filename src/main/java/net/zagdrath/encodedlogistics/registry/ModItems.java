@@ -17,8 +17,10 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
+import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.part.PartType;
@@ -70,6 +72,24 @@ public final class ModItems {
     // Port modules (#encodedlogistics:port_modules). Fuzzy Match and Redstone Control come in Phase 4.
     public static final DeferredItem<Item> FILTER_MODULE = ITEMS.registerSimpleItem("filter_module");
     public static final DeferredItem<Item> THROUGHPUT_MODULE = ITEMS.registerSimpleItem("throughput_module");
+
+    // Phase 3: gallium, the Processor Die, schematics, autocrafting blocks.
+    public static final DeferredItem<BlockItem> DEEPSLATE_GALLIUM_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.DEEPSLATE_GALLIUM_ORE);
+    public static final DeferredItem<Item> RAW_GALLIUM = ITEMS.registerSimpleItem("raw_gallium");
+    public static final DeferredItem<Item> GALLIUM_INGOT = ITEMS.registerSimpleItem("gallium_ingot");
+    public static final DeferredItem<Item> PROCESSOR_DIE = ITEMS.registerSimpleItem("processor_die");
+    public static final DeferredItem<Item> PROCESSOR_PHOTOMASK = ITEMS.registerSimpleItem("processor_photomask", p -> p.stacksTo(1));
+    public static final DeferredItem<Item> HEATSINK = ITEMS.registerSimpleItem("heatsink");
+    public static final DeferredItem<Item> SCHEMATIC_CARD = ITEMS.registerSimpleItem("schematic_card");
+    public static final DeferredItem<SchematicItem> ENCODED_SCHEMATIC_CRAFTING = ITEMS.registerItem("encoded_schematic_crafting",
+            p -> new SchematicItem(p, Schematic.Kind.CRAFTING), p -> p.stacksTo(1));
+    public static final DeferredItem<SchematicItem> ENCODED_SCHEMATIC_PROCESSING = ITEMS.registerItem("encoded_schematic_processing",
+            p -> new SchematicItem(p, Schematic.Kind.PROCESSING), p -> p.stacksTo(1));
+    public static final DeferredItem<BlockItem> FABRICATOR = ITEMS.registerSimpleBlockItem(ModBlocks.FABRICATOR);
+    public static final DeferredItem<BlockItem> GATEWAY = ITEMS.registerSimpleBlockItem(ModBlocks.GATEWAY);
+    public static final DeferredItem<BlockItem> SCHEDULER_CORE = ITEMS.registerSimpleBlockItem(ModBlocks.SCHEDULER_CORE);
+    public static final DeferredItem<BlockItem> JOB_BUFFER = ITEMS.registerSimpleBlockItem(ModBlocks.JOB_BUFFER);
+    public static final DeferredItem<BlockItem> THREAD_UNIT = ITEMS.registerSimpleBlockItem(ModBlocks.THREAD_UNIT);
 
     // Cable parts: terminals, ports, the tap and the sensor (PartType).
     private static final Map<PartType, DeferredItem<PartItem>> PARTS = new EnumMap<>(PartType.class);

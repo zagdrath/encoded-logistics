@@ -1,0 +1,54 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/fabricator.png",
+  "width": 176,
+  "height": 166
+ },
+ "slots": {
+  "schematics": {
+   "left": 45,
+   "top": 18,
+   "columns": 3,
+   "rows": 3,
+   "accepts": "encodedlogistics:encoded_schematic_crafting"
+  },
+  "modules": {
+   "left": 153,
+   "top": [
+    27,
+    45
+   ],
+   "accepts": "encodedlogistics:throughput_module",
+   "ghost": "port/ghost_module"
+  }
+ },
+ "widgets": {
+  "progress": {
+   "left": 108,
+   "top": 35,
+   "sprite": "lithography_press/progress",
+   "fill": "left_to_right"
+  }
+ },
+ "player_inventory": {
+  "left": 8,
+  "top": 84
+ },
+ "text": {
+  "title": {
+   "key": "block.encodedlogistics.fabricator",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 72,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

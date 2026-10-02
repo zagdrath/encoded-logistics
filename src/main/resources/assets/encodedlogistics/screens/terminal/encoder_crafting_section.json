@@ -1,0 +1,65 @@
+{
+ "texture": "gui/terminal/encoder_crafting.png",
+ "height": 76,
+ "bottom_texture": "gui/terminal/bottom_plain.png",
+ "grid": {
+  "left": 31,
+  "top": 9,
+  "columns": 3,
+  "rows": 3,
+  "ghost_items": true
+ },
+ "mode_toggle": {
+  "left": 8,
+  "top": 8,
+  "button": "terminal/button",
+  "icons": [
+   "encoder/mode_crafting",
+   "encoder/mode_processing"
+  ]
+ },
+ "clear": {
+  "left": 84,
+  "top": 8,
+  "sprite": "terminal/clear_grid",
+  "hover": "terminal/clear_grid_hover"
+ },
+ "blank_card": {
+  "left": 161,
+  "top": 9,
+  "ghost": "encoder/ghost_card"
+ },
+ "encode": {
+  "left": 150,
+  "top": 29,
+  "width": 38,
+  "height": 14,
+  "button": {
+   "sprite": "common/button_wide",
+   "hover": "common/button_wide_hover",
+   "pressed": "common/button_wide_pressed",
+   "disabled": "common/button_wide_disabled",
+   "nine_slice": [
+    3,
+    3
+   ]
+  },
+  "text": "gui.encodedlogistics.encoder.encode"
+ },
+ "encoded_card": {
+  "left": 161,
+  "top": 47,
+  "output": true
+ },
+ "output": {
+  "left": 119,
+  "top": 26,
+  "well": [
+   114,
+   21,
+   26,
+   26
+  ],
+  "ghost_item": true
+ }
+}

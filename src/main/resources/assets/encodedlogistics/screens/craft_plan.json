@@ -1,0 +1,102 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/craft_plan.png",
+  "width": 220,
+  "height": 196
+ },
+ "tree": {
+  "left": 10,
+  "top": 44,
+  "rows": 6,
+  "row_height": 18,
+  "indent": 8,
+  "expand": "common/tree_expand",
+  "collapse": "common/tree_collapse",
+  "columns": {
+   "name": 18,
+   "stored": 112,
+   "to_craft": 142,
+   "missing": 172
+  },
+  "colors": {
+   "stored": "TEXT",
+   "to_craft": "ACCENT",
+   "missing": "ERROR"
+  },
+  "header_top": 31,
+  "scrollbar": {
+   "left": 205,
+   "top": 29,
+   "height": 130
+  }
+ },
+ "widgets": {
+  "scheduler": {
+   "left": 8,
+   "top": 168,
+   "width": 104,
+   "height": 18,
+   "button": {
+    "sprite": "common/button_wide",
+    "hover": "common/button_wide_hover",
+    "pressed": "common/button_wide_pressed",
+    "disabled": "common/button_wide_disabled",
+    "nine_slice": [
+     3,
+     3
+    ]
+   }
+  },
+  "start": {
+   "left": 118,
+   "top": 168,
+   "width": 46,
+   "height": 18,
+   "button": {
+    "sprite": "common/button_wide",
+    "hover": "common/button_wide_hover",
+    "pressed": "common/button_wide_pressed",
+    "disabled": "common/button_wide_disabled",
+    "nine_slice": [
+     3,
+     3
+    ]
+   },
+   "text": "gui.encodedlogistics.craft.start",
+   "disabled_when_missing": true
+  },
+  "cancel": {
+   "left": 166,
+   "top": 168,
+   "width": 46,
+   "height": 18,
+   "button": {
+    "sprite": "common/button_wide",
+    "hover": "common/button_wide_hover",
+    "pressed": "common/button_wide_pressed",
+    "disabled": "common/button_wide_disabled",
+    "nine_slice": [
+     3,
+     3
+    ]
+   },
+   "text": "gui.encodedlogistics.craft.cancel"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.craft.plan",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "status": {
+   "right": 212,
+   "top": 18,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

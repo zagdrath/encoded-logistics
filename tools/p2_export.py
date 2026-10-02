@@ -92,8 +92,11 @@ def tags():
         jd({'values':[RL(f'raw_{metal}')]},D+f'c/tags/item/raw_materials/{metal}.json')
         jd({'values':[RL(f'{metal}_ingot')]},D+f'c/tags/item/ingots/{metal}.json')
     jd({'values':[RL(o['stone']) for o in ORES.values()]},D+'c/tags/block/ores_in_ground/stone.json')
-    jd({'values':[RL(o['deep']) for o in ORES.values()]},D+'c/tags/block/ores_in_ground/deepslate.json')
-    jd({'values':['#c:ores/neodymium','#c:ores/tantalum']},D+'c/tags/block/ores.json'); jd({'values':['#c:ores/neodymium','#c:ores/tantalum']},D+'c/tags/item/ores.json')
+    def merge(path,values):                                 # gallium (Phase 3) is in these too
+        have=json.load(open(path))['values'] if os.path.exists(path) else []
+        jd({'values':have+[v for v in values if v not in have]},path)
+    merge(D+'c/tags/block/ores_in_ground/deepslate.json',[RL(o['deep']) for o in ORES.values()])
+    merge(D+'c/tags/block/ores.json',['#c:ores/neodymium','#c:ores/tantalum']); merge(D+'c/tags/item/ores.json',['#c:ores/neodymium','#c:ores/tantalum'])
     jd({'values':[RL('filter_module'),RL('throughput_module')]},D+'encodedlogistics/tags/item/port_modules.json')
 def recipes():
     R=D+'encodedlogistics/recipe/'; E=RL; V=lambda n:'minecraft:'+n

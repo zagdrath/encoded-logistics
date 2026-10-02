@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
 public final class ModDataComponents {
@@ -33,6 +34,10 @@ public final class ModDataComponents {
     // What a Storage Drive holds, cached on the item for its tooltip and the Drive Bay.
     public static final Supplier<DataComponentType<DriveStats>> DRIVE_STATS = DATA_COMPONENTS.registerComponentType("drive_stats",
             builder -> builder.persistent(DriveStats.CODEC).networkSynchronized(DriveStats.STREAM_CODEC));
+
+    // An Encoded Schematic's recipe (crafting) or inputs and outputs (processing), written by the Schematic Encoder.
+    public static final Supplier<DataComponentType<Schematic>> SCHEMATIC = DATA_COMPONENTS.registerComponentType("schematic",
+            builder -> builder.persistent(Schematic.CODEC).networkSynchronized(Schematic.STREAM_CODEC));
 
     private ModDataComponents() {}
 }

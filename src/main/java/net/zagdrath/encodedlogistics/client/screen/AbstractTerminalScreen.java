@@ -27,19 +27,22 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.zagdrath.encodedlogistics.client.CraftingClient;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalClickPayload;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 
 // The modular terminal screen, built from a TerminalLayout: a title bar with the search field, a grid of the network's
 // items (as many rows as fit the window, between the layout's min and max), a scrollbar, the player's inventory, and
-// a toolbar on the left (sort mode: name / amount / mod; sort direction). Counts are drawn at half size and abbreviated
-// (1.2K, 34M, 5.1B). Left click takes a stack, right click half, shift-click moves one into the inventory; clicking with
-// an item held puts it in (right click: just one). Search matches names; "@" searches mod ids. Each terminal adds
+// a toolbar on the left (sort mode: name / amount / mod; sort direction; craftables shown always or only when searching).
+// Counts are drawn at half size and abbreviated (1.2K, 34M, 5.1B); what the network can craft but doesn't have shows with
+// "Craft" instead. Left click takes a stack, right click half, shift-click moves one into the inventory; clicking with
+// an item held puts it in (right click: just one). Middle-click or Ctrl-click on a craftable item (or any click on one
+// the network has none of) asks how many to craft. Search matches names; "@" searches mod ids. Each terminal adds
 // little more than its layout and title (AccessTerminalScreen).
 public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> extends AbstractContainerScreen<M> {
     // palette.json
-    private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ERROR = 0xFFFF6B6B;
+    private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ERROR = 0xFFFF6B6B, ACCENT = 0xFF00D992;
 
     private enum SortMode {
         NAME, COUNT, MOD
@@ -48,6 +51,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     // Sort settings last the session, across terminals.
     private static SortMode sortMode = SortMode.NAME;
     private static boolean descending;
+    private static boolean craftablesAlways = true;
     private static String lastSearch = "";
 
     private final TerminalLayout layout;
@@ -113,6 +117,20 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 entries.add(Map.entry(entry.getKey(), entry.getValue()));
             }
         }
+        // What the network can make but has none of, with a count of 0.
+        if (craftablesAlways || !needle.isEmpty()) {
+            for (ItemKey key : menu.craftables()) {
+                if (menu.items().containsKey(key)) {
+                    continue;
+                }
+                ItemStack stack = key.stack();
+                String haystack = byMod ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()
+                        : stack.getHoverName().getString().toLowerCase(Locale.ROOT);
+                if (needle.isEmpty() || haystack.contains(needle)) {
+                    entries.add(Map.entry(key, 0L));
+                }
+            }
+        }
         Comparator<Map.Entry<ItemKey, Long>> byName = Comparator.comparing(entry -> entry.getKey().stack().getHoverName().getString(),
                 String.CASE_INSENSITIVE_ORDER);
         Comparator<Map.Entry<ItemKey, Long>> order = switch (sortMode) {
@@ -155,8 +173,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                     layout.rowHeight, 256, 32);
         }
         int sectionTop = y + layout.topHeight + rows * layout.rowHeight;
-        if (layout.section != null) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, layout.section, x, sectionTop, 0.0F, 0.0F, layout.width, layout.sectionHeight, 256, 128);
+        Identifier section = sectionTexture();
+        if (section != null) {
+            graphics.blit(RenderPipelines.GUI_TEXTURED, section, x, sectionTop, 0.0F, 0.0F, layout.width, layout.sectionHeight, 256, 128);
             extractSection(graphics, x, sectionTop, mouseX, mouseY);
         }
         graphics.blit(RenderPipelines.GUI_TEXTURED, layout.bottom, x, sectionTop + layout.sectionHeight, 0.0F, 0.0F, layout.width,
@@ -170,7 +189,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             boolean hover = mouseX >= bx && mouseX < bx + 18 && mouseY >= by && mouseY < by + 18;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? layout.buttonHover : layout.button, bx, by, 18, 18);
             List<Identifier> icons = layout.buttonIcons.get(button);
-            int state = button == 0 ? sortMode.ordinal() : descending ? 1 : 0;
+            int state = buttonState(layout.buttonIds.get(button));
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, icons.get(Math.min(state, icons.size() - 1)), bx + 1, by + 1, 16, 16);
         }
 
@@ -194,6 +213,19 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         int max = maxScroll();
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, max == 0 ? layout.thumbDisabled : layout.thumb, x + layout.scrollLeft, y + thumbY(),
                 layout.thumbWidth, layout.thumbHeight);
+    }
+
+    private static int buttonState(String id) {
+        return switch (id) {
+            case "sort_mode" -> sortMode.ordinal();
+            case "craftables" -> craftablesAlways ? 0 : 1;
+            default -> descending ? 1 : 0;
+        };
+    }
+
+    // The section shown between the grid and the inventory, if any (the Schematic Encoder switches by mode).
+    protected @Nullable Identifier sectionTexture() {
+        return layout.section;
     }
 
     // Draws over a terminal's section (the Fabrication Terminal's clear button); top: the section's top on screen.
@@ -237,16 +269,16 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 break;
             }
             long count = entries.get(index).getValue();
-            if (count <= 1) {
+            if (count == 1) {
                 continue;
             }
-            String text = abbreviate(count);
+            String text = count == 0 ? Component.translatable("gui.encodedlogistics.terminal.craft").getString() : abbreviate(count);
             int cx = layout.gridLeft + (cell % layout.columns) * layout.cell;
             int cy = layout.topHeight + layout.gridTopInRow + (cell / layout.columns) * layout.cell;
             graphics.pose().pushMatrix();
             graphics.pose().translate(cx + 16 - font.width(text) * 0.5F, cy + 16 - 4.5F);
             graphics.pose().scale(0.5F, 0.5F);
-            graphics.text(font, text, 0, 0, TEXT, true);
+            graphics.text(font, text, 0, 0, count == 0 ? ACCENT : TEXT, true);
             graphics.pose().popMatrix();
         }
     }
@@ -258,14 +290,26 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         if (index >= 0 && menu.getCarried().isEmpty()) {
             Map.Entry<ItemKey, Long> entry = view().get(index);
             List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(entry.getKey().stack()));
-            lines.add(Component.literal(String.format(Locale.ROOT, "%,d", entry.getValue())).withColor(TEXT_MUTED));
+            if (entry.getValue() > 0) {
+                lines.add(Component.literal(String.format(Locale.ROOT, "%,d", entry.getValue())).withColor(TEXT_MUTED));
+            }
+            if (menu.craftables().contains(entry.getKey())) {
+                lines.add(Component.translatable("gui.encodedlogistics.terminal.craft_hint").withColor(ACCENT));
+            }
             graphics.setTooltipForNextFrame(font, lines, Optional.empty(), entry.getKey().stack(), mouseX, mouseY);
             return;
         }
         for (int button = 0; button < layout.buttonIcons.size(); button++) {
             int bx = leftPos + layout.toolbarLeft, by = topPos + layout.toolbarTop + button * layout.toolbarSpacing;
             if (mouseX >= bx && mouseX < bx + 18 && mouseY >= by && mouseY < by + 18) {
-                String key = button == 0 ? "gui.encodedlogistics.terminal.sort." + sortMode.name().toLowerCase(Locale.ROOT)
+                String id = layout.buttonIds.get(button);
+                if (id.equals("craftables")) {
+                    graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.craftable"),
+                            Component.translatable(craftablesAlways ? "gui.encodedlogistics.terminal.craftable.always"
+                                    : "gui.encodedlogistics.terminal.craftable.search").withColor(TEXT_MUTED)), mouseX, mouseY);
+                    continue;
+                }
+                String key = id.equals("sort_mode") ? "gui.encodedlogistics.terminal.sort." + sortMode.name().toLowerCase(Locale.ROOT)
                         : descending ? "gui.encodedlogistics.terminal.dir.desc" : "gui.encodedlogistics.terminal.dir.asc";
                 graphics.setTooltipForNextFrame(Component.translatable(key), mouseX, mouseY);
             }
@@ -296,10 +340,10 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         for (int button = 0; button < layout.buttonIcons.size(); button++) {
             int bx = leftPos + layout.toolbarLeft, by = topPos + layout.toolbarTop + button * layout.toolbarSpacing;
             if (mx >= bx && mx < bx + 18 && my >= by && my < by + 18) {
-                if (button == 0) {
-                    sortMode = SortMode.values()[(sortMode.ordinal() + 1) % SortMode.values().length];
-                } else {
-                    descending = !descending;
+                switch (layout.buttonIds.get(button)) {
+                    case "sort_mode" -> sortMode = SortMode.values()[(sortMode.ordinal() + 1) % SortMode.values().length];
+                    case "craftables" -> craftablesAlways = !craftablesAlways;
+                    default -> descending = !descending;
                 }
                 viewVersion = -1;
                 return true;
@@ -315,6 +359,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         if (index != -1 && menu.isOnline()) {
             boolean carrying = !menu.getCarried().isEmpty();
             ItemKey key = index >= 0 ? view().get(index).getKey() : null;
+            // Crafting: middle-click or Ctrl-click a craftable, or click one the network has none of.
+            if (key != null && !carrying && menu.craftables().contains(key)
+                    && (event.button() == 2 || event.hasControlDown() || view().get(index).getValue() == 0)) {
+                CraftingClient.openAmount(this, menu, key);
+                return true;
+            }
             int action;
             if (carrying) {
                 action = event.button() == 1 ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;

@@ -5,10 +5,11 @@ import json,os
 D='src/main/resources/data/encodedlogistics/recipe/'; os.makedirs(D,exist_ok=True)
 E=lambda n:'encodedlogistics:'+n; V=lambda n:'minecraft:'+n
 def res(i,c=1): return {'id':i,'count':c}
-REGISTERED=['8k','32k','128k','512k']
-P2=('storage_die_128k','storage_die_512k','storage_drive_128k','storage_drive_512k')   # tools/p2_export.py writes these
+REGISTERED=['8k','32k','128k','512k','2m']
+# tools/p2_export.py and tools/p3_export.py write these
+LATER=('storage_die_128k','storage_die_512k','storage_drive_128k','storage_drive_512k','storage_die_2m','storage_drive_2m')
 def w(name,obj):
-    if name in P2: return
+    if name in LATER: return
     later=[t for t in ('128k','512k','2m') if t not in REGISTERED and name.endswith('_'+t)]
     if later: obj={'neoforge:conditions':[{'type':'neoforge:registered','value':obj['result']['id']}],**obj}
     json.dump(obj,open(D+name+'.json','w',newline='\n'),indent=1)

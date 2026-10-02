@@ -1,0 +1,12 @@
+{
+ "type": "encodedlogistics:lithography",
+ "wafer": "encodedlogistics:doped_silicon",
+ "additive": "encodedlogistics:gallium_ingot",
+ "photomask": "encodedlogistics:processor_photomask",
+ "result": {
+  "id": "encodedlogistics:processor_die",
+  "count": 1
+ },
+ "energy": 8000,
+ "time": 180
+}

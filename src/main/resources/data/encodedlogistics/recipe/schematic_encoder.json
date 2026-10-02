@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:fabrication_terminal",
+  "encodedlogistics:processor_die",
+  "encodedlogistics:schematic_card"
+ ],
+ "result": {
+  "id": "encodedlogistics:schematic_encoder",
+  "count": 1
+ }
+}

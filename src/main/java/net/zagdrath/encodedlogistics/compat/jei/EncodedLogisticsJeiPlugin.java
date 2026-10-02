@@ -20,8 +20,9 @@ import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
-// category (with the press as its station), recipe transfer into the Fabrication Terminal's grid, and an info page on
-// how controllers form structures and what they provide.
+// category (with the press as its station), the Fabricator as a crafting station, recipe transfer into the Fabrication
+// Terminal's grid and the Schematic Encoder's ghost slots (any recipe), and an info page on how controllers form
+// structures and what they provide.
 @JeiPlugin
 public class EncodedLogisticsJeiPlugin implements IModPlugin {
     private static final Identifier UID = EncodedLogistics.id("jei_plugin");
@@ -47,10 +48,12 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new FabricationTransferHandler(), RecipeTypes.CRAFTING);
+        registration.addUniversalRecipeTransferHandler(new EncoderTransferHandler());
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addCraftingStation(LithographyCategory.TYPE, ModItems.LITHOGRAPHY_PRESS.get());
+        registration.addCraftingStation(RecipeTypes.CRAFTING, ModItems.FABRICATOR.get());
     }
 }

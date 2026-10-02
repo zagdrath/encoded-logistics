@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "MFM",
+  "MCM"
+ ],
+ "key": {
+  "M": "encodedlogistics:memory_die",
+  "F": "encodedlogistics:ferrite",
+  "C": "encodedlogistics:circuit_substrate"
+ },
+ "result": {
+  "id": "encodedlogistics:job_buffer",
+  "count": 1
+ }
+}

@@ -25,6 +25,7 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 public enum PartType implements StringRepresentable {
     ACCESS_TERMINAL("access_terminal", "online", true, false, Boxes.TERMINAL, TerminalPart::new),
     FABRICATION_TERMINAL("fabrication_terminal", "online", true, false, Boxes.TERMINAL, FabricationTerminalPart::new),
+    SCHEMATIC_ENCODER("schematic_encoder", "online", true, false, Boxes.TERMINAL, SchematicEncoderPart::new),
     INGRESS_PORT("ingress_port", "active", false, true, Boxes.PORT, PortPart::new),
     EGRESS_PORT("egress_port", "active", false, true, Boxes.PORT, PortPart::new),
     INVENTORY_TAP("inventory_tap", "active", false, true, Boxes.TAP, InventoryTapPart::new),
@@ -81,7 +82,7 @@ public enum PartType implements StringRepresentable {
     }
 
     public boolean isTerminal() {
-        return this == ACCESS_TERMINAL || this == FABRICATION_TERMINAL;
+        return this == ACCESS_TERMINAL || this == FABRICATION_TERMINAL || this == SCHEMATIC_ENCODER;
     }
 
     public double[][] boxes() {

@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "FHF",
+  "FPF",
+  "FTF"
+ ],
+ "key": {
+  "F": "encodedlogistics:ferrite",
+  "H": "encodedlogistics:heatsink",
+  "P": "encodedlogistics:processor_die",
+  "T": "encodedlogistics:tantalum_capacitor"
+ },
+ "result": {
+  "id": "encodedlogistics:thread_unit",
+  "count": 1
+ }
+}

@@ -5,18 +5,26 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 
-// What the part screens (ports, tap, sensor) share: the palette and the 18x18 kit buttons with a 16x16 icon.
+// What the kit's screens (parts, autocrafting) share: the palette, the 18x18 kit buttons with a 16x16 icon, the wide text
+// buttons (common/button_wide*, any size: the sprite's corners kept, the rest cut from it), progress bars and amounts
+// drawn at half size like the terminal's counts.
 final class PartScreens {
     // palette.json
-    static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, TEXT_DISABLED = 0xFF7A7A7A, ACCENT = 0xFF00D992;
+    static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, TEXT_DISABLED = 0xFF7A7A7A, ACCENT = 0xFF00D992, ERROR = 0xFFFF6B6B;
     static final Identifier BUTTON = EncodedLogistics.id("terminal/button"), BUTTON_HOVER = EncodedLogistics.id("terminal/button_hover");
     static final int BUTTON_SIZE = 18;
+    private static final Identifier WIDE = EncodedLogistics.id("common/button_wide"), WIDE_HOVER = EncodedLogistics.id("common/button_wide_hover"),
+            WIDE_DISABLED = EncodedLogistics.id("common/button_wide_disabled");
+    private static final int WIDE_WIDTH = 200, WIDE_HEIGHT = 18, CORNER = 3, BAR_WIDTH = 200, BAR_HEIGHT = 6;
 
     private PartScreens() {}
 
@@ -38,6 +46,45 @@ final class PartScreens {
 
     static boolean over(double mouseX, double mouseY, int x, int y, int width, int height) {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    }
+
+    // A wide button at (x, y) on screen, width by height, with its text centred; dimmed and not hovered when disabled.
+    static void wideButton(GuiGraphicsExtractor graphics, Font font, int x, int y, int width, int height, Component text, boolean enabled,
+            int mouseX, int mouseY) {
+        Identifier sprite = !enabled ? WIDE_DISABLED : over(mouseX, mouseY, x, y, width, height) ? WIDE_HOVER : WIDE;
+        int w = width - CORNER, h = height - CORNER;
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, WIDE_WIDTH, WIDE_HEIGHT, 0, 0, x, y, w, h);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, WIDE_WIDTH, WIDE_HEIGHT, WIDE_WIDTH - CORNER, 0, x + w, y, CORNER, h);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, WIDE_WIDTH, WIDE_HEIGHT, 0, WIDE_HEIGHT - CORNER, x, y + h, w, CORNER);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, WIDE_WIDTH, WIDE_HEIGHT, WIDE_WIDTH - CORNER, WIDE_HEIGHT - CORNER, x + w, y + h,
+                CORNER, CORNER);
+        graphics.centeredText(font, text, x + width / 2, y + (height - 8) / 2, enabled ? TEXT : TEXT_DISABLED);
+    }
+
+    // A progress bar's fill (common/bar_fill_*), width wide when full.
+    static void bar(GuiGraphicsExtractor graphics, Identifier sprite, int x, int y, int width, float progress) {
+        int filled = Math.round(width * Math.clamp(progress, 0.0F, 1.0F));
+        if (filled > 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, BAR_WIDTH, BAR_HEIGHT, 0, 0, x, y, filled, BAR_HEIGHT);
+        }
+    }
+
+    // An item with its amount at half size in the bottom right corner (nothing for 1).
+    static void itemWithAmount(GuiGraphicsExtractor graphics, Font font, ItemStack stack, int x, int y) {
+        graphics.item(stack, x, y);
+        if (stack.getCount() > 1) {
+            String text = Integer.toString(stack.getCount());
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(x + 16 - font.width(text) * 0.5F, y + 16 - 4.5F);
+            graphics.pose().scale(0.5F, 0.5F);
+            graphics.text(font, text, 0, 0, TEXT, true);
+            graphics.pose().popMatrix();
+        }
+    }
+
+    // A ghost amount after a scroll or right click: up or down by 1, or 10 with Shift, within 1..max.
+    static int stepAmount(int amount, boolean up, boolean shift, int max) {
+        return Math.clamp(amount + (up ? 1 : -1) * (shift ? 10 : 1), 1, max);
     }
 
     // A kit button at (x, y) on screen, with its icon.

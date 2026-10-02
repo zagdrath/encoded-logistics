@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "CCC",
+  "CFC"
+ ],
+ "key": {
+  "C": "minecraft:copper_ingot",
+  "F": "encodedlogistics:ferrite"
+ },
+ "result": {
+  "id": "encodedlogistics:heatsink",
+  "count": 1
+ }
+}

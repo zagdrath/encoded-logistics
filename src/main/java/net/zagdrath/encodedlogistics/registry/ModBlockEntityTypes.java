@@ -16,9 +16,12 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -43,6 +46,15 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<DriveBayBlockEntity>> DRIVE_BAY = BLOCK_ENTITY_TYPES.register(
             "drive_bay", () -> new BlockEntityType<>(DriveBayBlockEntity::new, ModBlocks.DRIVE_BAY.get()));
+
+    public static final Supplier<BlockEntityType<FabricatorBlockEntity>> FABRICATOR = BLOCK_ENTITY_TYPES.register(
+            "fabricator", () -> new BlockEntityType<>(FabricatorBlockEntity::new, ModBlocks.FABRICATOR.get()));
+
+    public static final Supplier<BlockEntityType<GatewayBlockEntity>> GATEWAY = BLOCK_ENTITY_TYPES.register(
+            "gateway", () -> new BlockEntityType<>(GatewayBlockEntity::new, ModBlocks.GATEWAY.get()));
+
+    public static final Supplier<BlockEntityType<SchedulerCoreBlockEntity>> SCHEDULER_CORE = BLOCK_ENTITY_TYPES.register(
+            "scheduler_core", () -> new BlockEntityType<>(SchedulerCoreBlockEntity::new, ModBlocks.SCHEDULER_CORE.get()));
 
     private ModBlockEntityTypes() {}
 }
