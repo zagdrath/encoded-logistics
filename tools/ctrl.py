@@ -248,27 +248,41 @@ def emissive(E,framed,hue_fn,frames,sat=0.72,hub=False):
 # The frame is a 1px steel edge, shaded smoothly along its length (a sheen at the middle of each block's edge, darker
 # toward its ends, the same rule on every side so edges, corners and seams match), and a 1px dark groove. The maze
 # never crosses a framed side, so nothing wraps round the cube edges.
-SHEEN,EDGE_END,GROOVE=H('#AEB6C0'),H('#7C8692'),H('#15181C')
-FRAME=2   # steel edge + groove
+
+# ======================= Minecraft-style rendering (redraw) =======================
+# Rules (shared with the cable / drive array texture pass): one stepped 11-tone steel ramp (cool shadows, warm-neutral
+# highlights), no lerped gradients, no near-black except true holes, one-step grain inside materials only, raised
+# traces with a top-left highlight and a down-right cast shadow, emissive pixels with 3 tones.
+G=[H(c) for c in ['#1F2228','#2B2F36','#373C44','#454B54','#555B65','#666D77','#79808A','#8D949D','#A3A9B1','#BBC0C6','#D3D7DB']]
+FRAME=2
 VARIANTS=8
 GATE=8
 COLUMN_MASKS={'v':(0,1,4,5),'h':(0,2,8,10)}
-def silver(along):
-    """The edge's colour at a position along it (0-15): smooth from the sheen at the middle to EDGE_END at the ends."""
-    return lerp(SHEEN,EDGE_END,tri(along)**1.5)
-def rim(depth,along):
-    return silver(along) if depth==0 else GROOVE
-# Where a block's side meets another part of the structure (a corner against its column), the model lays a divider
-# over the frame's edge: the same edge, a darker steel, so the join blends in instead of reading as a bright line.
-DIV_SHEEN,DIV_END=H('#59616C'),H('#3B424B')
+def edge_grain(along,side_seed):
+    """Stepped wear on a frame edge: mostly 0, some -1 specks, one 2px glint per edge (same for every block)."""
+    r=random.Random(side_seed*31+along)
+    if along in (6,7): return 1                       # the glint: the same place on every edge, so seams match
+    return -1 if r.random()<0.18 else 0
+def frame_px(depth,along,lit_side,corner=None):
+    if corner=='tl': return G[10]
+    if corner in ('tr','bl'): return G[7]
+    if corner=='br': return G[5]
+    if depth==0:
+        base=9 if lit_side else 6
+        return G[max(0,min(10,base+edge_grain(along,1 if lit_side else 2)))]
+    # inner lip: shadow under the lit (top/left) rail, lit edge on the shaded (bottom/right) rail
+    return G[2] if lit_side else G[5]
+# Divider: laid over a block's frame where it meets a column of the same structure, so the join reads as a seam
+# (darker steel), stepped and grained like the frame.
 def divider(side):
     im=Image.new('RGBA',(16,16),(0,0,0,0)); p=im.load()
+    r=random.Random({'u':1,'d':2,'l':3,'r':4}[side])
     for a in range(1,15):
-        c=lerp(DIV_SHEEN,DIV_END,tri(a)**1.5)
+        t=4 if 2<=a<=13 else 3
+        if r.random()<0.2: t-=1
         x,y={'u':(a,0),'d':(a,15),'l':(0,a),'r':(15,a)}[side]
-        p[x,y]=c
+        p[x,y]=G[t]
     return im
-
 def piece_sides(kind,mask):
     """Each side of a piece (U, R, D, L): 'frame', 'join' (to the next column piece) or 'open' (a column end that
     meets a block)."""
@@ -297,27 +311,63 @@ def piece_pattern(kind,mask,seed):
     tips+=[((7,7),(-1,0)),((8,7),(1,0))]
     return grow(seed,lit,tips,lo('L'),hi('R'),lo('U'),hi('D')),sides
 
+
 def piece_build(kind,mask,seed):
     E,sides=piece_pattern(kind,mask,seed)
-    def depth(x,y):
-        """How far in from the nearest framed side (0 = the outer edge) and the position along that side, or None
-        inside the frame. Where two framed sides meet, the corner takes the shade of a side's end."""
-        d=[(v,a) for v,a,side in ((y,x,'U'),(15-y,x,'D'),(x,y,'L'),(15-x,y,'R')) if sides[side]=='frame' and v<FRAME]
-        return min(d, key=lambda t:(t[0],-tri(t[1]))) if d else None
-    framed=lambda x,y: depth(x,y) is not None
+    def edge_info(x,y):
+        """(depth, along, lit_side, corner) for framed pixels, else None."""
+        hits=[]
+        for v,a,side in ((y,x,'U'),(15-y,x,'D'),(x,y,'L'),(15-x,y,'R')):
+            if sides[side]=='frame' and v<FRAME: hits.append((v,a,side))
+        if not hits: return None
+        hits.sort(key=lambda t:t[0]); v,a,side=hits[0]
+        corner=None
+        if len(hits)>1 and hits[0][0]==hits[1][0]==0:
+            s2={hits[0][2],hits[1][2]}
+            corner={frozenset('UL'):'tl',frozenset('UR'):'tr',frozenset('DL'):'bl',frozenset('DR'):'br'}.get(frozenset(s2))
+        if len(hits)>1 and hits[0][0]==hits[1][0]==1:      # inner lip corner: take the shadow if either side casts it
+            lit=any(h[2] in 'UL' for h in hits[:2]); return (1,a,lit,None)
+        return (v,a,side in 'UL',corner)
+    framed=lambda x,y: edge_info(x,y) is not None
+    rnd=random.Random(seed*7+3)
     im=Image.new('RGBA',(16,16)); p=im.load()
     for y in range(16):
         for x in range(16):
-            r=depth(x,y)
-            p[x,y]=rim(*r) if r is not None else BG[min(3,int(((tri(x)+tri(y))/2)*4))]
-    for (x,y) in E:
+            e=edge_info(x,y)
+            if e is not None: p[x,y]=frame_px(*e); continue
+            t=2                                          # field: dark-mid slate with sparse grain
+            r=rnd.random()
+            if r<0.10: t=1
+            elif r<0.17: t=3
+            p[x,y]=G[t]
+    for (x,y) in E:                                      # cast shadow down-right of raised traces
         sx,sy=x+1,y+1
-        if sx<16 and sy<16 and (sx,sy) not in E and not framed(sx,sy): p[sx,sy]=SH
+        if sx<16 and sy<16 and (sx,sy) not in E and not framed(sx,sy): p[sx,sy]=G[0]
     for (x,y) in E:
-        t=(tri(x)+tri(y))/2
-        p[x,y]=TR[0] if t<0.45 else TR[1] if t<0.75 else TR[2]
+        n=sum(((x+dx,y+dy) in E) for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)))
+        bend=((x-1,y) in E or (x+1,y) in E) and ((x,y-1) in E or (x,y+1) in E)
+        t=8 if (n<=1 or bend) else 7                     # ends and corners catch the light, runs are steel
+        if rnd.random()<0.10: t-=1                       # wear
+        p[x,y]=G[t]
     return im,E,framed
 
+def emissive(E,framed,hue_fn,frames,sat=0.72,hub=False):
+    """Glow overlay with 3 tones per frame: exposed (top/left) edge pixels brighter and whiter, interior base,
+    a few dimmer wear pixels - so the glow has the same texture as the metal under it."""
+    out=Image.new('RGBA',(16,16*frames),(0,0,0,0)); o=out.load()
+    rnd=random.Random(len(E)*13+7); wear={e for e in E if rnd.random()<0.12}
+    for f in range(frames):
+        oy=16*f
+        for x,y in E:
+            h=hue_fn(f,x,y); t=(tri(x)+tri(y))/2
+            v=0.98 if t<0.4 else 0.90 if t<0.75 else 0.82
+            s=sat
+            n=sum(((x+dx,y+dy) in E) for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)))
+            bend=((x-1,y) in E or (x+1,y) in E) and ((x,y-1) in E or (x,y+1) in E)
+            if n<=1 or bend: s=sat*0.6; v=min(1.0,v+0.06)   # glints at ends and corners only
+            if (x,y) in wear: v*=0.86
+            r,g,b=colorsys.hsv_to_rgb(h,s,v); o[x,oy+y]=(int(r*255),int(g*255),int(b*255),255)
+    return out
 def clumps16(E): return sum(1 for x in range(15) for y in range(15) if {(x,y),(x+1,y),(x,y+1),(x+1,y+1)}<=E)
 N=16
 cycle=lambda f,x,y: ((0.62+f/N) + 0.14*((tri(x)+tri(y))/2))%1.0   # two-hue gradient rotating round the wheel

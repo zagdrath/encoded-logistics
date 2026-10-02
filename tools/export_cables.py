@@ -1,6 +1,8 @@
 # Encoded Logistics - Network Cable asset exporter.
 # Writes textures, block models, item models, blockstates and item definitions for every cable.
 # Run from the project root: python tools/export_cables.py
+# After writing the base textures it runs the Minecraft-style shading pass (tools/run_pass.py, see
+# docs/TEXTURE_STYLE.md), so what it leaves on disk is the shipped art.
 #
 # Shape (AE2-style): a straight run is one continuous tube; an end, bend or junction is a cube, joined to its
 # neighbours by a thinner core, and a cable against a network block ends in a flange plate. So a run reads
@@ -246,5 +248,7 @@ def shapes_reference():
     return out
 
 if __name__=='__main__':
-    write_textures(); write_models(); write_blockstates_and_items()
+    import sys; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+    from run_pass import run_cables
+    write_textures(); run_cables(); write_models(); write_blockstates_and_items()
     print(json.dumps(shapes_reference()))
