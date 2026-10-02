@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
+import net.zagdrath.encodedlogistics.client.ClientRenderHooks;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
@@ -73,6 +75,13 @@ public class NetworkControllerBlock extends BaseEntityBlock {
         // Our own FORMED / STATE updates come through here too; only a newly placed controller changes the shape.
         if (!oldState.is(this) && level instanceof ServerLevel serverLevel) {
             ControllerStructures.get(serverLevel).queue(pos);
+        }
+    }
+
+    @Override
+    public void onBlockStateChange(LevelReader level, BlockPos pos, BlockState oldState, BlockState newState) {
+        if (level.isClientSide()) {
+            ClientRenderHooks.controllerChanged(level, pos);
         }
     }
 

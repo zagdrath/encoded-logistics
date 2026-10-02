@@ -36,14 +36,20 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 
-// The Network Controller's connected textures. Blockstates use it as {"type": "encodedlogistics:network_controller"}.
+// The Network Controller's connected textures, AE2-style. Blockstates use it as
+// {"type": "encodedlogistics:network_controller"}.
 //
-// Each face picks one of 16 pieces from a mask of its in-plane neighbours (1 = up, 2 = right, 4 = down, 8 = left; a bit
-// is set when that neighbour is a controller of the same formed structure): controller.png for 0, controller_ctm_NN
-// otherwise. An unformed block always uses controller.png. Over it goes the state's overlay, full-bright and without
-// AO: the hue cycle (<piece>_emissive) when online, the red <piece>_error_emissive on error, nothing when offline.
-// Where two joined sides meet but the block diagonally between them isn't part of the structure (the corners of a
-// frame's holes), a controller_corner_* piece closes the border so it runs unbroken round the hole.
+// A formed controller with formed neighbours on both ends of one axis and nowhere else is a column piece; every other
+// controller (corners, line ends, cubes, singles, anything unformed) is a block. A block shows controller_block_<v> on
+// every face: framed all round, so each corner reads as its own section. A column piece shows
+// controller_column_<v|h>_<mask>_<v> on its side faces (v when the column runs up the face's texture, h when across):
+// rails along the column, joined (mask bit set: 1 = up, 2 = right, 4 = down, 8 = left) toward the next column piece,
+// and left open where the column meets a block so its rails run into the block's frame. Where a formed block touches
+// another part of the structure, a controller_divider_<side> lays a darker steel over that side's frame edge so the
+// join blends in rather than reading as a bright line. <v> is one of
+// VARIANTS mazes picked from the block's position and face, so a structure never repeats; all variants cross a joined
+// seam at the same pixel. Over each piece goes the state's overlay, full-bright and without AO: the hue cycle
+// (<piece>_emissive) when online, the red <piece>_error_emissive on error, nothing when offline.
 //
 // Every face measures "right" and "down" from the same world ends so the traces line up round cube edges: sides run
 // right along +X (north, south) or +Z (east, west) and down along -Y; the top and bottom run right along +X and down
@@ -51,11 +57,14 @@ import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 public final class ControllerModel {
     public static final Identifier ID = EncodedLogistics.id("network_controller");
 
+    // Must match VARIANTS and COLUMN_MASKS in tools/ctrl.py.
+    private static final int VARIANTS = 8;
+    private static final int[] VERTICAL_MASKS = { 0, 1, 4, 5 }, HORIZONTAL_MASKS = { 0, 2, 8, 10 };
+
     // Overlays stand this far (in pixels) in front of the face, so they never z-fight with it or each other.
-    private static final float CORNER_OFFSET = 0.01F, OVERLAY_OFFSET = 0.02F;
-    // Inner corners in texture orientation, with the mask bits of the two sides that meet there.
-    private static final String[] CORNERS = { "tl", "tr", "bl", "br" };
-    private static final int[][] CORNER_SIDES = { { 1, 8 }, { 1, 2 }, { 4, 8 }, { 4, 2 } };
+    private static final float DIVIDER_OFFSET = 0.01F, OVERLAY_OFFSET = 0.02F;
+    // Divider textures by texture side: up, right, down, left.
+    private static final String[] DIVIDER_SIDES = { "u", "r", "d", "l" };
     private static final ExtraFaceData EMISSIVE = new ExtraFaceData(0xFFFFFFFF, 15, false);
 
     private ControllerModel() {}
@@ -81,41 +90,58 @@ public final class ControllerModel {
     private static final Direction[] RIGHT = { Direction.EAST, Direction.EAST, Direction.EAST, Direction.EAST, Direction.SOUTH, Direction.SOUTH };
     private static final Direction[] DOWN = { Direction.SOUTH, Direction.SOUTH, Direction.DOWN, Direction.DOWN, Direction.DOWN, Direction.DOWN };
 
+    // A piece's base quad and its two overlays.
+    private record Piece(BakedQuad base, BakedQuad online, BakedQuad error) {}
+
     static final class Baked implements DynamicBlockStateModel {
         private final Material.Baked particle;
-        // [face][mask]
-        private final BakedQuad[][] base = new BakedQuad[6][16];
-        private final BakedQuad[][] online = new BakedQuad[6][16];
-        private final BakedQuad[][] error = new BakedQuad[6][16];
-        // [face][corner]
-        private final BakedQuad[][] corners = new BakedQuad[6][4];
+        // [face][variant]
+        private final Piece[][] blocks = new Piece[6][VARIANTS];
+        // [face][mask][variant], for columns running up / across the face's texture; only their masks are filled.
+        private final Piece[][][] vertical = new Piece[6][16][VARIANTS];
+        private final Piece[][][] horizontal = new Piece[6][16][VARIANTS];
+        // [face][side: up, right, down, left]
+        private final BakedQuad[][] dividers = new BakedQuad[6][4];
         private final int materialFlags;
 
         Baked(ModelBaker baker) {
             this.particle = material(baker, "controller");
             int flags = 0;
-            for (int mask = 0; mask < 16; mask++) {
-                String piece = mask == 0 ? "controller" : String.format("controller_ctm_%02d", mask);
-                Material.Baked baseTexture = material(baker, piece);
-                Material.Baked onlineTexture = material(baker, piece + "_emissive");
-                Material.Baked errorTexture = material(baker, piece + "_error_emissive");
+            for (int v = 0; v < VARIANTS; v++) {
                 for (Direction face : Direction.values()) {
-                    int f = face.ordinal();
-                    base[f][mask] = bake(baker, face, 0, baseTexture, null);
-                    online[f][mask] = bake(baker, face, OVERLAY_OFFSET, onlineTexture, EMISSIVE);
-                    error[f][mask] = bake(baker, face, OVERLAY_OFFSET, errorTexture, EMISSIVE);
-                    flags |= base[f][mask].materialInfo().flags() | online[f][mask].materialInfo().flags()
-                            | error[f][mask].materialInfo().flags();
+                    Piece block = piece(baker, face, "controller_block_" + v);
+                    blocks[face.ordinal()][v] = block;
+                    flags |= flags(block);
+                    for (int mask : VERTICAL_MASKS) {
+                        Piece column = piece(baker, face, String.format("controller_column_v_%02d_%d", mask, v));
+                        vertical[face.ordinal()][mask][v] = column;
+                        flags |= flags(column);
+                    }
+                    for (int mask : HORIZONTAL_MASKS) {
+                        Piece column = piece(baker, face, String.format("controller_column_h_%02d_%d", mask, v));
+                        horizontal[face.ordinal()][mask][v] = column;
+                        flags |= flags(column);
+                    }
                 }
             }
-            for (int c = 0; c < CORNERS.length; c++) {
-                Material.Baked texture = material(baker, "controller_corner_" + CORNERS[c]);
-                for (Direction face : Direction.values()) {
-                    corners[face.ordinal()][c] = bake(baker, face, CORNER_OFFSET, texture, null);
-                    flags |= corners[face.ordinal()][c].materialInfo().flags();
+            for (Direction face : Direction.values()) {
+                for (int side = 0; side < 4; side++) {
+                    BakedQuad divider = bake(baker, face, DIVIDER_OFFSET, material(baker, "controller_divider_" + DIVIDER_SIDES[side]), null);
+                    dividers[face.ordinal()][side] = divider;
+                    flags |= divider.materialInfo().flags();
                 }
             }
             this.materialFlags = flags;
+        }
+
+        private static Piece piece(ModelBaker baker, Direction face, String texture) {
+            return new Piece(bake(baker, face, 0, material(baker, texture), null),
+                    bake(baker, face, OVERLAY_OFFSET, material(baker, texture + "_emissive"), EMISSIVE),
+                    bake(baker, face, OVERLAY_OFFSET, material(baker, texture + "_error_emissive"), EMISSIVE));
+        }
+
+        private static int flags(Piece piece) {
+            return piece.base().materialInfo().flags() | piece.online().materialInfo().flags() | piece.error().materialInfo().flags();
         }
 
         private static Material.Baked material(ModelBaker baker, String texture) {
@@ -146,60 +172,79 @@ public final class ControllerModel {
                     data != null ? data.lightEmission() : 0);
         }
 
-        private static int mask(BlockAndTintGetter level, BlockPos pos, Direction face) {
+        // The axis this controller runs along as a column piece, or null when it's a block.
+        static Direction.@Nullable Axis columnAxis(BlockAndTintGetter level, BlockPos pos) {
+            if (!NetworkControllerBlock.isFormed(level.getBlockState(pos))) {
+                return null;
+            }
+            Direction.Axis axis = null;
+            int neighbours = 0;
+            for (Direction side : Direction.values()) {
+                if (NetworkControllerBlock.isFormed(level.getBlockState(pos.relative(side)))) {
+                    if (axis != null && axis != side.getAxis()) {
+                        return null;
+                    }
+                    axis = side.getAxis();
+                    neighbours++;
+                }
+            }
+            return neighbours == 2 ? axis : null;
+        }
+
+        // Which of the face's sides join the next column piece along the axis.
+        private static int columnMask(BlockAndTintGetter level, BlockPos pos, Direction face, Direction.Axis axis) {
             Direction right = RIGHT[face.ordinal()];
             Direction down = DOWN[face.ordinal()];
             int mask = 0;
-            if (NetworkControllerBlock.isFormed(level.getBlockState(pos.relative(down.getOpposite())))) {
-                mask |= 1;
-            }
-            if (NetworkControllerBlock.isFormed(level.getBlockState(pos.relative(right)))) {
-                mask |= 2;
-            }
-            if (NetworkControllerBlock.isFormed(level.getBlockState(pos.relative(down)))) {
-                mask |= 4;
-            }
-            if (NetworkControllerBlock.isFormed(level.getBlockState(pos.relative(right.getOpposite())))) {
-                mask |= 8;
+            for (Direction side : new Direction[] { down.getOpposite(), right, down, right.getOpposite() }) {
+                if (side.getAxis() == axis && columnAxis(level, pos.relative(side)) == axis) {
+                    mask |= side == down.getOpposite() ? 1 : side == right ? 2 : side == down ? 4 : 8;
+                }
             }
             return mask;
+        }
+
+        // A stable choice of maze for one face of one block.
+        private static int variant(BlockPos pos, Direction face) {
+            long seed = pos.asLong() * 31 + face.ordinal();
+            seed ^= seed >>> 33;
+            seed *= 0xff51afd7ed558ccdL;
+            seed ^= seed >>> 33;
+            return (int) Math.floorMod(seed, (long) VARIANTS);
         }
 
         @Override
         public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
             QuadCollection.Builder quads = new QuadCollection.Builder();
-            boolean formed = state.getBlock() instanceof NetworkControllerBlock && state.getValue(NetworkControllerBlock.FORMED);
             ControllerState shown = state.getBlock() instanceof NetworkControllerBlock ? state.getValue(NetworkControllerBlock.STATE)
                     : ControllerState.OFFLINE;
+            Direction.Axis axis = columnAxis(level, pos);
+            boolean formed = NetworkControllerBlock.isFormed(state);
             for (Direction face : Direction.values()) {
                 int f = face.ordinal();
-                int mask = formed ? mask(level, pos, face) : 0;
-                quads.addCulledFace(face, base[f][mask]);
-                if (formed) {
-                    addCorners(level, pos, face, mask, quads);
+                int v = variant(pos, face);
+                Piece piece = blocks[f][v];
+                if (axis != null && face.getAxis() != axis) {
+                    Piece[][] columns = axis == DOWN[f].getAxis() ? vertical[f] : horizontal[f];
+                    piece = columns[columnMask(level, pos, face, axis)][v];
+                }
+                quads.addCulledFace(face, piece.base());
+                if (axis == null && formed) {
+                    Direction right = RIGHT[f], down = DOWN[f];
+                    Direction[] sides = { down.getOpposite(), right, down, right.getOpposite() };
+                    for (int side = 0; side < 4; side++) {
+                        if (NetworkControllerBlock.isFormed(level.getBlockState(pos.relative(sides[side])))) {
+                            quads.addCulledFace(face, dividers[f][side]);
+                        }
+                    }
                 }
                 if (shown == ControllerState.ONLINE) {
-                    quads.addCulledFace(face, online[f][mask]);
+                    quads.addCulledFace(face, piece.online());
                 } else if (shown == ControllerState.ERROR) {
-                    quads.addCulledFace(face, error[f][mask]);
+                    quads.addCulledFace(face, piece.error());
                 }
             }
             parts.add(new SimpleModelWrapper(quads.build(), true, particle));
-        }
-
-        private void addCorners(BlockAndTintGetter level, BlockPos pos, Direction face, int mask, QuadCollection.Builder quads) {
-            Direction right = RIGHT[face.ordinal()];
-            Direction down = DOWN[face.ordinal()];
-            for (int c = 0; c < CORNERS.length; c++) {
-                int vertical = CORNER_SIDES[c][0], horizontal = CORNER_SIDES[c][1];
-                if ((mask & vertical) == 0 || (mask & horizontal) == 0) {
-                    continue;
-                }
-                BlockPos diagonal = pos.relative(vertical == 1 ? down.getOpposite() : down).relative(horizontal == 2 ? right : right.getOpposite());
-                if (!NetworkControllerBlock.isFormed(level.getBlockState(diagonal))) {
-                    quads.addCulledFace(face, corners[face.ordinal()][c]);
-                }
-            }
         }
 
         @Override

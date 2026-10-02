@@ -94,7 +94,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
         }
 
         String thumb = maxScroll() == 0 ? "scroll_thumb_disabled" : draggingThumb || overThumb(mouseX, mouseY) ? "scroll_thumb_hover" : "scroll_thumb";
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite(thumb), x + SCROLL_X + 1, y + thumbY(), THUMB_W, THUMB_H);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite(thumb), x + SCROLL_X, y + thumbY(), THUMB_W, THUMB_H);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
     }
 
     private boolean overThumb(double mouseX, double mouseY) {
-        return inside(mouseX, mouseY, SCROLL_X + 1, thumbY(), THUMB_W, THUMB_H);
+        return inside(mouseX, mouseY, SCROLL_X, thumbY(), THUMB_W, THUMB_H);
     }
 
     private void scrollTo(double mouseY) {
@@ -202,7 +202,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (maxScroll() > 0 && inside(mouseX, mouseY, LIST_X, SCROLL_Y, SCROLL_X + 8 - LIST_X, SCROLL_H)) {
+        if (maxScroll() > 0 && inside(mouseX, mouseY, LIST_X, SCROLL_Y, SCROLL_X + THUMB_W + 1 - LIST_X, SCROLL_H)) {
             scrollRow = Mth.clamp(scrollRow - (int) Math.signum(scrollY), 0, maxScroll());
             return true;
         }
@@ -211,7 +211,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && maxScroll() > 0 && inside(event.x(), event.y(), SCROLL_X, SCROLL_Y, 8, SCROLL_H)) {
+        if (event.button() == 0 && maxScroll() > 0 && inside(event.x(), event.y(), SCROLL_X - 1, SCROLL_Y, THUMB_W + 2, SCROLL_H)) {
             draggingThumb = true;
             scrollTo(event.y());
             return true;

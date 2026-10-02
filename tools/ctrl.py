@@ -232,43 +232,84 @@ def emissive(E,framed,hue_fn,frames,sat=0.72,hub=False):
     return out
 
 
-# ---------------- connected (multiblock) pieces ----------------
-# mask bits match Arcforge: 1 = up, 2 = right, 4 = down, 8 = left (a set bit = that side joins another controller).
-# Mask 0 is the single block (controller.png).
-# Open sides get a flat 1px silver edge and a 1px dark lip; the maze stays a further pixel in from the lip (a clean
-# dark channel, AE2-style) and never crosses an open side, so nothing wraps round the cube edges. Joined sides carry
-# one trace across the seam at pixel 8. The 3x3 corner squares stay clear of traces so the inner-corner overlays
-# (controller_corner_*) can close the border round a frame's holes.
-SILVER=H('#C3CAD3'); LIP=H('#15181C')
-CORNER=frozenset((x,y) for x in range(16) for y in range(16) if (x<=2 or x>=13) and (y<=2 or y>=13))
-def ctm_pattern(mask,seed,gate=8):
+# ---------------- multiblock pieces (AE2-style) ----------------
+# A formed controller is either a column piece (formed neighbours on both ends of one axis and nowhere else) or a
+# block (corners, line ends, cubes, singles). Blocks are framed on every side: each reads as its own section.
+# Column pieces have rails (frame) along their long sides only; their ends either
+# join the next column piece (one trace across the seam at pixel 8) or meet a block, where there's no cap: the rails
+# run straight into the block's frame and the maze stops short of it. Columns come vertical (v) and horizontal (h) in
+# texture space; their masks use Arcforge's bits (1 = up, 2 = right, 4 = down, 8 = left: a set bit joins the next
+# column piece), only along the column: v 0, 1, 4, 5 and h 0, 2, 8, 10.
+#
+# The maze grows outward from the centre of each piece, 1px traces with a 1px gap between them: on blocks right up to
+# the groove (1px of black round it), on columns with 2px of black round it. Every piece comes in VARIANTS seeded differently, all with the same seam crossings, and the model picks one
+# per block face from its position, so a structure's maze never repeats.
+#
+# The frame is a 1px steel edge, shaded smoothly along its length (a sheen at the middle of each block's edge, darker
+# toward its ends, the same rule on every side so edges, corners and seams match), and a 1px dark groove. The maze
+# never crosses a framed side, so nothing wraps round the cube edges.
+SHEEN,EDGE_END,GROOVE=H('#AEB6C0'),H('#7C8692'),H('#15181C')
+FRAME=2   # steel edge + groove
+VARIANTS=8
+GATE=8
+COLUMN_MASKS={'v':(0,1,4,5),'h':(0,2,8,10)}
+def silver(along):
+    """The edge's colour at a position along it (0-15): smooth from the sheen at the middle to EDGE_END at the ends."""
+    return lerp(SHEEN,EDGE_END,tri(along)**1.5)
+def rim(depth,along):
+    return silver(along) if depth==0 else GROOVE
+# Where a block's side meets another part of the structure (a corner against its column), the model lays a divider
+# over the frame's edge: the same edge, a darker steel, so the join blends in instead of reading as a bright line.
+DIV_SHEEN,DIV_END=H('#59616C'),H('#3B424B')
+def divider(side):
+    im=Image.new('RGBA',(16,16),(0,0,0,0)); p=im.load()
+    for a in range(1,15):
+        c=lerp(DIV_SHEEN,DIV_END,tri(a)**1.5)
+        x,y={'u':(a,0),'d':(a,15),'l':(0,a),'r':(15,a)}[side]
+        p[x,y]=c
+    return im
+
+def piece_sides(kind,mask):
+    """Each side of a piece (U, R, D, L): 'frame', 'join' (to the next column piece) or 'open' (a column end that
+    meets a block)."""
     U,R,Dn,L=bool(mask&1),bool(mask&2),bool(mask&4),bool(mask&8)
-    xlo,xhi=(1 if L else 3),(15 if R else 12); ylo,yhi=(1 if U else 3),(15 if Dn else 12)
+    if kind=='block': return {'U':'frame','R':'frame','D':'frame','L':'frame'}
+    if kind=='v': return {'U':'join' if U else 'open','D':'join' if Dn else 'open','L':'frame','R':'frame'}
+    return {'L':'join' if L else 'open','R':'join' if R else 'open','U':'frame','D':'frame'}
+
+def piece_pattern(kind,mask,seed):
+    """The maze, grown outward from the centre (every trace 1px with a 1px gap to every other). Blocks run it right
+    up to the groove (1px of black round the maze); columns keep 2px of black round it: a pixel in from the groove
+    along their rails, and two pixels short of an open end. Across a joined seam one trace crosses at pixel 8."""
+    sides=piece_sides(kind,mask)
+    rail=3 if kind!='block' else 2
+    lo=lambda side: 1 if sides[side]=='join' else rail if sides[side]=='frame' else 2
+    hi=lambda side: 15 if sides[side]=='join' else 15-rail if sides[side]=='frame' else 13
     lit=set(); tips=[]
-    for side,conn in (('U',U),('R',R),('D',Dn),('L',L)):
-        if not conn: continue
-        if side=='U': pts=[(gate,d) for d in range(3)]; d=(0,1)
-        if side=='D': pts=[(gate,15-d) for d in range(2)]; d=(0,-1)
-        if side=='L': pts=[(d,gate) for d in range(3)]; d=(1,0)
-        if side=='R': pts=[(15-d,gate) for d in range(2)]; d=(-1,0)
+    for side in 'URDL':
+        if sides[side]!='join': continue
+        if side=='U': pts=[(GATE,d) for d in range(3)]; d=(0,1)
+        if side=='D': pts=[(GATE,15-d) for d in range(2)]; d=(0,-1)
+        if side=='L': pts=[(d,GATE) for d in range(3)]; d=(1,0)
+        if side=='R': pts=[(15-d,GATE) for d in range(2)]; d=(-1,0)
         lit|=set(pts); tips.append((pts[-1],d))
     lit|={(7,7),(8,7)}
     tips+=[((7,7),(-1,0)),((8,7),(1,0))]
-    return grow(seed,lit,tips,xlo,xhi,ylo,yhi,forbid=CORNER)
+    return grow(seed,lit,tips,lo('L'),hi('R'),lo('U'),hi('D')),sides
 
-def ctm_build(mask,seed):
-    U,R,Dn,L=bool(mask&1),bool(mask&2),bool(mask&4),bool(mask&8)
-    def framed(x,y):
-        return (not U and y<=1) or (not Dn and y>=14) or (not L and x<=1) or (not R and x>=14)
-    E=ctm_pattern(mask,seed)
+def piece_build(kind,mask,seed):
+    E,sides=piece_pattern(kind,mask,seed)
+    def depth(x,y):
+        """How far in from the nearest framed side (0 = the outer edge) and the position along that side, or None
+        inside the frame. Where two framed sides meet, the corner takes the shade of a side's end."""
+        d=[(v,a) for v,a,side in ((y,x,'U'),(15-y,x,'D'),(x,y,'L'),(15-x,y,'R')) if sides[side]=='frame' and v<FRAME]
+        return min(d, key=lambda t:(t[0],-tri(t[1]))) if d else None
+    framed=lambda x,y: depth(x,y) is not None
     im=Image.new('RGBA',(16,16)); p=im.load()
     for y in range(16):
         for x in range(16):
-            if framed(x,y):
-                outer=(not U and y==0) or (not Dn and y==15) or (not L and x==0) or (not R and x==15)
-                p[x,y]=SILVER if outer else LIP
-            else:
-                p[x,y]=BG[min(3,int(((tri(x)+tri(y))/2)*4))]
+            r=depth(x,y)
+            p[x,y]=rim(*r) if r is not None else BG[min(3,int(((tri(x)+tri(y))/2)*4))]
     for (x,y) in E:
         sx,sy=x+1,y+1
         if sx<16 and sy<16 and (sx,sy) not in E and not framed(sx,sy): p[sx,sy]=SH
@@ -277,33 +318,29 @@ def ctm_build(mask,seed):
         p[x,y]=TR[0] if t<0.45 else TR[1] if t<0.75 else TR[2]
     return im,E,framed
 
-def corner(name):
-    """The 2x2 that closes the border where two joined sides meet an open diagonal: silver in the very corner, lip
-    on the other three pixels (they continue the neighbours' edges)."""
-    im=Image.new('RGBA',(16,16),(0,0,0,0)); p=im.load()
-    cx,cy=(0 if 'l' in name[1] else 15),(0 if name[0]=='t' else 15)
-    ix,iy=(1 if cx==0 else 14),(1 if cy==0 else 14)
-    p[cx,cy]=SILVER; p[ix,cy]=LIP; p[cx,iy]=LIP; p[ix,iy]=LIP
-    return im
-
 def clumps16(E): return sum(1 for x in range(15) for y in range(15) if {(x,y),(x+1,y),(x,y+1),(x+1,y+1)}<=E)
 N=16
 cycle=lambda f,x,y: ((0.62+f/N) + 0.14*((tri(x)+tri(y))/2))%1.0   # two-hue gradient rotating round the wheel
 err  =lambda f,x,y: (0.99+0.03*((tri(x)+tri(y))/2))%1.0
-import glob, os
-for f in glob.glob(B+'controller_column*')+glob.glob(B+'controller_inside*')+glob.glob(B+'controller_ctm_*'): os.remove(f)
-# 16 hue frames, 8 ticks each, blended: one turn of the colour wheel every 6.4 s.
-mc='{\n  "animation": {\n    "frametime": 8,\n    "interpolate": true\n  }\n}\n'
-CTM_SEED=5
-for m in range(0,16):
-    sd=CTM_SEED
+import glob, os, shutil
+for f in glob.glob(B+'controller*'): os.remove(f)
+# 16 hue frames, 6 ticks each, blended: one turn of the colour wheel every 4.8 s.
+mc='{\n  "animation": {\n    "frametime": 6,\n    "interpolate": true\n  }\n}\n'
+def save(name,kind,mask,seed):
     while True:
-        im,E,fr=ctm_build(m,sd)
+        im,E,fr=piece_build(kind,mask,seed)
         if clumps16(E)==0: break
-        sd+=100
-    n='controller' if m==0 else f'controller_ctm_{m:02d}'
-    im.save(B+n+'.png'); emissive(E,fr,cycle,N).save(B+n+'_emissive.png'); open(B+n+'_emissive.png.mcmeta','w').write(mc)
-    emissive(E,fr,err,1,sat=0.8).save(B+n+'_error_emissive.png')
-    print(n,'seed',sd,'colours',len(set(im.getdata())))
-for c in ('tl','tr','bl','br'):
-    corner(c).save(B+'controller_corner_'+c+'.png')
+        seed+=1000
+    im.save(B+name+'.png'); emissive(E,fr,cycle,N).save(B+name+'_emissive.png'); open(B+name+'_emissive.png.mcmeta','w').write(mc)
+    emissive(E,fr,err,1,sat=0.8).save(B+name+'_error_emissive.png')
+for v in range(VARIANTS):
+    save(f'controller_block_{v}','block',0,11+v)
+    for kind,masks in COLUMN_MASKS.items():
+        for m in masks:
+            save(f'controller_column_{kind}_{m:02d}_{v}',kind,m,101+17*v+m+(0 if kind=='v' else 500))
+for side in 'urdl':
+    divider(side).save(B+'controller_divider_'+side+'.png')
+# The item and particle texture: the first block variant.
+for suffix in ('.png','_emissive.png','_emissive.png.mcmeta','_error_emissive.png'):
+    shutil.copy(B+'controller_block_0'+suffix,B+'controller'+suffix)
+print(len(glob.glob(B+'controller*')),'files')
