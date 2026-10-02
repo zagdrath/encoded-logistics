@@ -45,7 +45,18 @@ public class EncodedLogistics {
 
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
 
-        modContainer.registerConfig(ModConfig.Type.LOCAL, Config.SPEC);
+        modContainer.registerConfig(localConfigType(), Config.SPEC);
+    }
+
+    // FML 12.0.8 (NeoForge 26.3.0.37-beta) renamed COMMON to LOCAL. Looked up by name so the mod runs on both sides of
+    // the rename while 26.3 is in beta.
+    private static ModConfig.Type localConfigType() {
+        for (ModConfig.Type type : ModConfig.Type.values()) {
+            if (type.name().equals("LOCAL")) {
+                return type;
+            }
+        }
+        return ModConfig.Type.valueOf("COMMON");
     }
 
     public static Identifier id(String path) {

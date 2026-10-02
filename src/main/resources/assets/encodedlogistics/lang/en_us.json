@@ -26,6 +26,8 @@
   "encodedlogistics.configuration.title": "Encoded Logistics Configs",
   "encodedlogistics.configuration.section.encodedlogistics.local.toml": "Encoded Logistics Configs",
   "encodedlogistics.configuration.section.encodedlogistics.local.toml.title": "Encoded Logistics Configs",
+  "encodedlogistics.configuration.section.encodedlogistics.common.toml": "Encoded Logistics Configs",
+  "encodedlogistics.configuration.section.encodedlogistics.common.toml.title": "Encoded Logistics Configs",
   "encodedlogistics.configuration.controller": "Network Controller",
   "encodedlogistics.configuration.maxSize": "Max Structure Size",
   "encodedlogistics.configuration.energyPerBlock": "Energy per Block",
