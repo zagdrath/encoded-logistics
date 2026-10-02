@@ -74,8 +74,11 @@ def model_quads(rl,rx,ry,origin,frame=0):
 def block_quads(block_id,state,origin,frame=0):
     bs=json.load(open(f'{ROOT}/blockstates/{block_id}.json')); out=[]
     if 'variants' in bs:
-        key=','.join(f'{k}={state[k]}' for k in sorted(state))
-        a=bs['variants'][key]; return model_quads(a['model'],a.get('x',0),a.get('y',0),origin,frame)
+        for key,a in bs['variants'].items():          # like the game: properties in any order
+            want=dict(kv.split('=') for kv in key.split(',') if kv)
+            if all(state.get(k)==v for k,v in want.items()):
+                return model_quads(a['model'],a.get('x',0),a.get('y',0),origin,frame)
+        raise KeyError(state)
     for part in bs['multipart']:
         if 'when' in part and not when_ok(part['when'],state): continue
         a=part['apply']; out+=model_quads(a['model'],a.get('x',0),a.get('y',0),origin,frame)
@@ -90,7 +93,12 @@ def render(quads,cam,target,W=1600,Hh=900,fov=70,ss=2):
     zb=np.full((H2,W2),np.inf,np.float32)
     def proj(p):
         d=p-cam; return np.array([W2/2+fl*(d@r)/(d@f), H2/2-fl*(d@u)/(d@f), d@f])
-    for verts,uvs,tex,shade,bright in quads:
+    def translucent(tex): a=tex[...,3]; return bool(((a>0)&(a<255)).any())
+    def cdist(verts): c=verts.mean(0)-cam; return -float(c@c)
+    opaque=[q for q in quads if not translucent(q[2])]
+    glass=sorted([q for q in quads if translucent(q[2])],key=lambda q:cdist(q[0]))   # far to near
+    for verts,uvs,tex,shade,bright in opaque+glass:
+        blend=translucent(tex)
         V=np.array([proj(v) for v in verts])
         if (V[:,2]<=0.05).any(): continue
         th,tw=tex.shape[:2]
@@ -112,6 +120,11 @@ def render(quads,cam,target,W=1600,Hh=900,fov=70,ss=2):
             px=tex[vi,ui]; m&=px[...,3]>0
             if not m.any(): continue
             col=px[...,:3].astype(np.float32)*shade
-            reg=img[y0:y1+1,x0:x1+1]; reg[m]=col[m]; sub[m]=z[m]
+            reg=img[y0:y1+1,x0:x1+1]
+            if blend:                                   # translucent: blend, no depth write (like the game's translucent layer)
+                a=(px[...,3:4].astype(np.float32)/255.0)
+                reg[m]=(col*a+reg*(1-a))[m]
+            else:
+                reg[m]=col[m]; sub[m]=z[m]
     out=Image.fromarray(np.clip(img,0,255).astype(np.uint8))
     return out.resize((W,Hh),Image.LANCZOS) if ss>1 else out

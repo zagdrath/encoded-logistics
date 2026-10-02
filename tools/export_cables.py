@@ -4,12 +4,11 @@
 # After writing the base textures it runs the Minecraft-style shading pass (tools/run_pass.py, see
 # docs/TEXTURE_STYLE.md), so what it leaves on disk is the shipped art.
 #
-# Shape (AE2-style): a straight run is one continuous tube; an end, bend or junction is a cube, joined to its
-# neighbours by a thinner core, and a cable against a network block ends in a flange plate. So a run reads
-# cube - core - tube ... tube - core - cube.
-#                    tube   core   junction cube   flange
-#   Normal           6x6    4x4    6x6x6           8x8 x1
-#   Dense            8x8    6x6    10x10x10        12x12 x2
+# Shape (the cable spec, shared with Fiber Cable): every block of a run is sleeve 4 | neck 1 | cube 6 | neck 1 | sleeve 4,
+# so neighbouring sleeves meet as one 8 px run; a cable against a network block ends in a flange plate.
+#                    sleeve  neck   straight cube   junction cube   flange
+#   Normal           6x6     4x4    6x6x6           6x6x6           8x8 x1
+#   Dense            8x8     6x6    8x8x6           10x10x10        12x12 x1
 #
 # Colours: dyes in Minecraft's wool colours, with the controller's steel and groove (tools/ctrl.py). Dyed bodies are lit
 # like any block; only their small accents (connector dots, cube centres) glow.
@@ -141,74 +140,9 @@ def write_textures():
                 else:
                     G[k].save(f'{d}/{colour}_{k}_glow.png')
 
-# ---------- geometry (pixel coords; arms are modelled pointing NORTH = -Z, the blockstate rotates them) ----------
-def box(w,z0,z1):
-    lo,hi=8-w/2,8+w/2; return [lo,lo,z0],[hi,hi,z1]
-def solid_uv(name): x,y=SOLID[name]; return [x,y,x+1,y+1]
-def run_faces(z0,z1,w,row):
-    """Side faces of a tube or core along Z: the profile across, running along the cable on all four sides."""
-    return {
-      'east': {'texture':'#h','uv':[16-z1,row,16-z0,row+w]},
-      'west': {'texture':'#h','uv':[z0,row,z1,row+w]},
-      'up':   {'texture':'#v','uv':[row,z0,row+w,z1]},
-      'down': {'texture':'#v','uv':[row,16-z1,row+w,16-z0]},
-      'north':{'texture':'#h','uv':solid_uv('end')},'south':{'texture':'#h','uv':solid_uv('end')}}
-def cube_faces(tex,n):
-    r=[0,0,n,n]; return {f:{'texture':tex,'uv':r} for f in ('north','south','east','west','up','down')}
-def flange_faces(n):
-    fc={'north':{'texture':'#f','uv':[0,0,n,n]},'south':{'texture':'#f','uv':[0,0,n,n]}}
-    for f in ('east','west','up','down'): fc[f]={'texture':'#h','uv':solid_uv('flange_edge')}
-    return fc
-def el(frm,to,faces): return {'from':frm,'to':to,'faces':faces}
-def with_glow(elements):
-    """Duplicate every element as a full-bright overlay using the matching _glow textures (Arcforge's method)."""
-    out=list(elements)
-    for e in elements:
-        g={'from':e['from'],'to':e['to'],'faces':{k:{**v,'texture':v['texture']+'_glow'} for k,v in e['faces'].items()},
-           'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
-        out.append(g)
-    return out
-def part_elements(tier,part):
-    S=SIZES[tier]; w,n,j,f,ft=S['tube'],S['core'],S['junction'],S['flange'],S['flange_t']; h=j/2
-    if part=='cube_straight':                       # the middle of a straight tube, along Z
-        return [el(*box(w,5,11),run_faces(5,11,w,0))]
-    if part=='arm_straight':                        # the tube out to the block edge
-        return [el(*box(w,0,5),run_faces(0,5,w,0))]
-    if part=='cube_junction':
-        return [el([8-h]*3,[8+h]*3,cube_faces('#j',j))]
-    if part=='arm_junction':                        # the core from the junction cube to the block edge
-        return [el(*box(n,0,8-h),run_faces(0,8-h,n,CORE_ROW))]
-    if part=='arm_block':                           # the core, then a flange plate against the block
-        return [el(*box(n,ft,8-h),run_faces(ft,8-h,n,CORE_ROW)), el(*box(f,0,ft),flange_faces(f))]
-PARTS=['cube_straight','cube_junction','arm_straight','arm_junction','arm_block']
-def textures_for(tier,colour):
-    t={k:f'encodedlogistics:block/{tex_name(tier,colour,k)}' for k in 'hvjf'}
-    t.update({k+'_glow':f'encodedlogistics:block/{tex_name(tier,colour,k)}_glow' for k in 'hvjf'})
-    t['particle']=f'encodedlogistics:block/{tex_name(tier,colour,"j")}'; return t
-def item_elements(tier):
-    """The item: cube - core - tube - core - cube along Z, the way a short run looks placed (cubes 4px long)."""
-    S=SIZES[tier]; w,n,j=S['tube'],S['core'],S['junction']; hj=j/2
-    def end_cube(z0,z1):
-        faces={'north':{'texture':'#j','uv':[0,0,j,j]},'south':{'texture':'#j','uv':[0,0,j,j]}}
-        for f in ('east','west','up','down'): faces[f]={'texture':'#j','uv':[0,0,z1-z0,j] if f in ('east','west') else [0,0,j,z1-z0]}
-        return el([8-hj,8-hj,z0],[8+hj,8+hj,z1],faces)
-    return [end_cube(0,4), end_cube(12,16),
-            el(*box(n,4,5),run_faces(4,5,n,CORE_ROW)), el(*box(n,11,12),run_faces(11,12,n,CORE_ROW)),
-            el(*box(w,5,11),run_faces(5,11,w,0))]
-def write_models():
-    for tier in SIZES:
-        base=f'{OUT}/models/block/cable/{tier}'; os.makedirs(base,exist_ok=True)
-        for part in PARTS:      # template models (geometry + texture variables)
-            json.dump({'render_type':'minecraft:cutout','textures':{'particle':'#j'},
-                       'elements':with_glow(part_elements(tier,part))},open(f'{base}/template_{part}.json','w',newline='\n'),indent=1)
-        json.dump({'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':{'particle':'#j'},
-                   'display':{'gui':{'rotation':[30,45,0],'scale':[0.9,0.9,0.9]}},
-                   'elements':with_glow(item_elements(tier))},open(f'{base}/template_item.json','w',newline='\n'),indent=1)
-        for colour in COLOURS:
-            d=f'{base}/{colour}'; os.makedirs(d,exist_ok=True)
-            for part in PARTS+['item']:
-                json.dump({'parent':f'encodedlogistics:block/cable/{tier}/template_{part}','textures':textures_for(tier,colour)},
-                          open(f'{d}/{part}.json','w',newline='\n'),indent=1)
+# ---------- geometry ----------
+# The models come from tools/export_cable_geometry.py (the cable spec shared with Fiber Cable), which also derives the
+# dense straight-cube sheets (_c) from the finished junction textures, so it runs after the shading pass.
 
 # ---------- blockstates ----------
 DIRS=['north','south','east','west','up','down']
@@ -240,15 +174,12 @@ def write_blockstates_and_items():
             json.dump({'multipart':mp},open(f'{OUT}/blockstates/{bid}.json','w',newline='\n'),indent=1)
             json.dump({'model':{'type':'minecraft:model','model':m('item')}},open(f'{OUT}/items/{bid}.json','w',newline='\n'),indent=1)
 
-def shapes_reference():
-    """The collision boxes of each part (pixels), for CableShapes.java."""
-    out={}
-    for tier in SIZES:
-        out[tier]={part:[e['from']+e['to'] for e in part_elements(tier,part)] for part in PARTS}
-    return out
-
 if __name__=='__main__':
     import sys; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
     from run_pass import run_cables
-    write_textures(); run_cables(); write_models(); write_blockstates_and_items()
-    print(json.dumps(shapes_reference()))
+    import export_cable_geometry
+    write_textures(); run_cables()
+    for tier in SIZES: os.makedirs(f'{OUT}/models/block/cable/{tier}',exist_ok=True)
+    shapes=export_cable_geometry.write(export_cable_geometry.TEX)
+    write_blockstates_and_items()
+    print(json.dumps(shapes))      # the part boxes (pixels, arms pointing north) in CableShapes.java

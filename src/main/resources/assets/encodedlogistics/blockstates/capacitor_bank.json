@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "fill=0": {
+   "model": "encodedlogistics:block/capacitor_bank_0"
+  },
+  "fill=1": {
+   "model": "encodedlogistics:block/capacitor_bank_1"
+  },
+  "fill=2": {
+   "model": "encodedlogistics:block/capacitor_bank_2"
+  },
+  "fill=3": {
+   "model": "encodedlogistics:block/capacitor_bank_3"
+  },
+  "fill=4": {
+   "model": "encodedlogistics:block/capacitor_bank_4"
+  }
+ }
+}

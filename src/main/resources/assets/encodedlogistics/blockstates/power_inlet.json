@@ -1,0 +1,50 @@
+{
+ "variants": {
+  "facing=north,powered=false": {
+   "model": "encodedlogistics:block/power_inlet"
+  },
+  "facing=north,powered=true": {
+   "model": "encodedlogistics:block/power_inlet_powered"
+  },
+  "facing=east,powered=false": {
+   "model": "encodedlogistics:block/power_inlet",
+   "y": 90
+  },
+  "facing=east,powered=true": {
+   "model": "encodedlogistics:block/power_inlet_powered",
+   "y": 90
+  },
+  "facing=south,powered=false": {
+   "model": "encodedlogistics:block/power_inlet",
+   "y": 180
+  },
+  "facing=south,powered=true": {
+   "model": "encodedlogistics:block/power_inlet_powered",
+   "y": 180
+  },
+  "facing=west,powered=false": {
+   "model": "encodedlogistics:block/power_inlet",
+   "y": 270
+  },
+  "facing=west,powered=true": {
+   "model": "encodedlogistics:block/power_inlet_powered",
+   "y": 270
+  },
+  "facing=up,powered=false": {
+   "model": "encodedlogistics:block/power_inlet",
+   "x": 270
+  },
+  "facing=up,powered=true": {
+   "model": "encodedlogistics:block/power_inlet_powered",
+   "x": 270
+  },
+  "facing=down,powered=false": {
+   "model": "encodedlogistics:block/power_inlet",
+   "x": 90
+  },
+  "facing=down,powered=true": {
+   "model": "encodedlogistics:block/power_inlet_powered",
+   "x": 90
+  }
+ }
+}

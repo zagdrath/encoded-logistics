@@ -31,11 +31,14 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
+import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
@@ -49,8 +52,12 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 //
 // Placing or breaking a controller queues the positions around it; once per tick the queued positions are flood-filled
 // into groups, each group is validated (ControllerFrame) and keeps the id most of it had, or gets a new one. Then every
-// structure ticks: its energy (buffer, drain, generation over the last 20 ticks), its network (rediscovered and
+// structure ticks: its energy (buffer, drain, FE received over the last 20 ticks), its network (rediscovered and
 // re-solved only when the topology changed) and the FORMED / STATE of its blocks.
+//
+// A network's energy is its controllers' buffers plus the Capacitor Banks on it. FE coming in through Power Inlets
+// (fill) goes to the controllers first, then the banks; the network's drain comes out of the banks first, so the
+// controllers stay topped up.
 public class ControllerStructures extends SavedData {
     // A connected group of controllers bigger than this is cut off where the flood fill stops (it's invalid anyway).
     private static final int MAX_GROUP = 4096;
@@ -97,6 +104,8 @@ public class ControllerStructures extends SavedData {
     private final Set<BlockPos> pending = new HashSet<>();
     private final Set<Long> touched = new HashSet<>();
     private final Map<Long, Runtime> runtimes = new HashMap<>();
+    // Power Inlets and Capacitor Banks on a controller's network, by position: which structure's energy they're part of.
+    private final Map<BlockPos, Long> energyNetworks = new HashMap<>();
     private boolean topologyChanged;
 
     public ControllerStructures() {}
@@ -194,6 +203,7 @@ public class ControllerStructures extends SavedData {
             if (!claimed.contains(id)) {
                 structures.remove(id);
                 runtimes.remove(id);
+                energyNetworks.values().removeIf(owner -> owner == id);
             }
         }
         touched.clear();
@@ -246,6 +256,12 @@ public class ControllerStructures extends SavedData {
             stored += controller.getEnergy();
             capacity += controller.getCapacity();
         }
+        List<CapacitorBankBlockEntity> banks = banks(level, runtime);
+        for (CapacitorBankBlockEntity bank : banks) {
+            received += bank.lastInput();
+            stored += bank.getStored();
+            capacity += bank.getCapacity();
+        }
         runtime.received[runtime.receivedIndex] = received;
         runtime.receivedIndex = (runtime.receivedIndex + 1) % GENERATION_WINDOW;
         long window = 0;
@@ -259,12 +275,15 @@ public class ControllerStructures extends SavedData {
             runtime.discovered = null;
             runtime.lanes = null;
             runtime.dirty = true;
+            setEnergyNodes(level, structure.id(), runtime, null);
         } else {
             if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
                 runtime.discovered = NetworkDiscovery.discover(level, structure.id(), structure.members(),
                         Config.LANES_PER_CONTROLLER_FACE.getAsInt());
                 runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
                 runtime.dirty = false;
+                setEnergyNodes(level, structure.id(), runtime,
+                        runtime.lanes.status() == NetworkStatus.CONFLICT ? null : runtime.discovered);
             }
             if (runtime.lanes.status() == NetworkStatus.CONFLICT) {
                 status = NetworkStatus.CONFLICT;
@@ -279,6 +298,12 @@ public class ControllerStructures extends SavedData {
                 int toDrain = (int) runtime.drainCarry;
                 runtime.drainCarry -= toDrain;
                 int left = toDrain;
+                for (CapacitorBankBlockEntity bank : banks) {
+                    if (left <= 0) {
+                        break;
+                    }
+                    left -= bank.drain(left);
+                }
                 for (NetworkControllerBlockEntity controller : blocks) {
                     if (left <= 0) {
                         break;
@@ -307,6 +332,70 @@ public class ControllerStructures extends SavedData {
                 level.updateNeighbourForOutputSignal(pos, level.getBlockState(pos).getBlock());
             }
         }
+    }
+
+    // Records which Power Inlets and Capacitor Banks are on this structure's network (none when it has no working
+    // network).
+    private void setEnergyNodes(ServerLevel level, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
+        energyNetworks.values().removeIf(owner -> owner == id);
+        List<BlockPos> banks = new ArrayList<>();
+        if (discovered != null) {
+            for (NetworkNode node : discovered.graph().nodes()) {
+                var blockEntity = level.getBlockEntity(node.pos());
+                if (blockEntity instanceof CapacitorBankBlockEntity) {
+                    banks.add(node.pos());
+                    energyNetworks.put(node.pos(), id);
+                } else if (blockEntity instanceof PowerInletBlockEntity) {
+                    energyNetworks.put(node.pos(), id);
+                }
+            }
+        }
+        banks.sort(Comparator.naturalOrder());
+        runtime.banks = List.copyOf(banks);
+    }
+
+    private static List<CapacitorBankBlockEntity> banks(ServerLevel level, Runtime runtime) {
+        List<CapacitorBankBlockEntity> banks = new ArrayList<>(runtime.banks.size());
+        for (BlockPos pos : runtime.banks) {
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CapacitorBankBlockEntity bank) {
+                banks.add(bank);
+            }
+        }
+        return banks;
+    }
+
+    // --- Energy from outside ---
+
+    // The structure whose energy a Power Inlet or Capacitor Bank at pos is part of, or 0 when it isn't on a
+    // controller's network.
+    public long energyNetworkOf(BlockPos pos) {
+        return energyNetworks.getOrDefault(pos, 0L);
+    }
+
+    // Puts up to amount FE into a structure's energy: its controllers first, then its banks. Returns what went in.
+    public int fill(ServerLevel level, long id, int amount, TransactionContext transaction) {
+        Structure structure = structures.get(id);
+        Runtime runtime = runtimes.get(id);
+        if (structure == null || runtime == null || runtime.status.isError()) {
+            return 0;
+        }
+        int left = amount;
+        for (BlockPos pos : structure.members()) {
+            if (left <= 0) {
+                break;
+            }
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
+                    && controller.getStructureId() == id) {
+                left -= controller.fill(left, transaction);
+            }
+        }
+        for (CapacitorBankBlockEntity bank : banks(level, runtime)) {
+            if (left <= 0) {
+                break;
+            }
+            left -= bank.fill(left, transaction);
+        }
+        return amount - left;
     }
 
     private static void applyStates(ServerLevel level, Structure structure, NetworkStatus status) {
@@ -398,6 +487,7 @@ public class ControllerStructures extends SavedData {
         boolean dirty = true;
         NetworkDiscovery.@Nullable Discovered discovered;
         @Nullable LaneResult lanes;
+        List<BlockPos> banks = List.of();
         final int[] received = new int[GENERATION_WINDOW];
         int receivedIndex;
         double drainCarry;

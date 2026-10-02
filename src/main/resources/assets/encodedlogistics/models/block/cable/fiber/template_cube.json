@@ -1,0 +1,150 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:translucent",
+ "textures": {
+  "particle": "#fittings"
+ },
+ "elements": [
+  {
+   "from": [
+    7,
+    7,
+    7
+   ],
+   "to": [
+    9,
+    9,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    5,
+    5,
+    5
+   ],
+   "to": [
+    11,
+    11,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "west": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "up": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    }
+   }
+  }
+ ]
+}

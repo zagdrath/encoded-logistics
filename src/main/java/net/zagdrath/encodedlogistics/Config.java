@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics;
 
+import java.util.List;
+
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class Config {
@@ -59,9 +61,52 @@ public class Config {
             .comment("FE per tick each Dense Network Cable block drains while its network runs.")
             .defineInRange("denseCableDrain", 0.2, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.DoubleValue FIBER_CABLE_DRAIN = BUILDER
+            .comment("FE per tick each Fiber Cable block drains while its network runs.")
+            .defineInRange("fiberCableDrain", 0.1, 0.0, 1_000.0);
+
     public static final ModConfigSpec.IntValue ADHOC_MAX_DEVICES = BUILDER
             .comment("Lane-using devices a network without a controller can run.")
             .defineInRange("adHocMaxDevices", 8, 0, 1024);
+
+    static {
+        BUILDER.pop();
+        BUILDER.push("power");
+    }
+
+    public static final ModConfigSpec.IntValue INLET_MAX_INPUT = BUILDER
+            .comment("FE per tick a Power Inlet accepts through its port.")
+            .defineInRange("inletMaxInput", 16_384, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue INLET_BUFFER = BUILDER
+            .comment("FE a Power Inlet holds when the network's energy is full, passed on as soon as there's room (0: none).")
+            .defineInRange("inletBuffer", 0, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue CAPACITOR_CAPACITY = BUILDER
+            .comment("FE a Capacitor Bank stores.")
+            .defineInRange("capacitorCapacity", 2_000_000, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue CAPACITOR_MAX_TRANSFER = BUILDER
+            .comment("FE per tick a Capacitor Bank takes in, and gives out, at most.")
+            .defineInRange("capacitorMaxTransfer", 16_384, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.BooleanValue CAPACITOR_DIRECT_IO = BUILDER
+            .comment("Whether Capacitor Banks also take and give FE directly on every face, not just through the network.")
+            .define("capacitorDirectIO", true);
+
+    public static final ModConfigSpec.DoubleValue ISOLATOR_DRAIN = BUILDER
+            .comment("FE per tick a Segment Isolator drains from each network it separates.")
+            .defineInRange("isolatorDrain", 0.5, 0.0, 1_000.0);
+
+    static {
+        BUILDER.pop();
+        BUILDER.push("facades");
+    }
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> FACADE_BLOCKLIST = BUILDER
+            .comment("Blocks a Cable Facade can't copy, by id (e.g. \"minecraft:bedrock\"), on top of the built-in rules: the block must be",
+                    "a full, non-translucent cube without a block entity.")
+            .defineListAllowEmpty("blocklist", List.of(), () -> "minecraft:stone", entry -> entry instanceof String);
 
     static {
         BUILDER.pop();

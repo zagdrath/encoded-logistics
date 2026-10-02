@@ -22,7 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 
 // Builds a controller structure's network graph from the world: its controller blocks, then everything reachable
-// from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other.
+// from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other. A node
+// that doesn't pass through (a Segment Isolator) is on the network but the walk stops there.
 // Controllers of another structure that turn up are added too (and not walked through), so the solver sees the
 // conflict.
 public final class NetworkDiscovery {
@@ -88,7 +89,9 @@ public final class NetworkDiscovery {
                 graph.connect(node.pos(), side);
                 if (added && !neighbour.isController()) {
                     items.put(neighbourPos, level.getBlockState(neighbourPos).getBlock().asItem());
-                    queue.add(neighbour);
+                    if (neighbour.passesThrough()) {
+                        queue.add(neighbour);
+                    }
                 }
             }
         }

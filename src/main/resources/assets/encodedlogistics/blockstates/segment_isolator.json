@@ -1,0 +1,26 @@
+{
+ "variants": {
+  "axis=z,active=false": {
+   "model": "encodedlogistics:block/segment_isolator"
+  },
+  "axis=z,active=true": {
+   "model": "encodedlogistics:block/segment_isolator_active"
+  },
+  "axis=x,active=false": {
+   "model": "encodedlogistics:block/segment_isolator",
+   "y": 90
+  },
+  "axis=x,active=true": {
+   "model": "encodedlogistics:block/segment_isolator_active",
+   "y": 90
+  },
+  "axis=y,active=false": {
+   "model": "encodedlogistics:block/segment_isolator",
+   "x": 90
+  },
+  "axis=y,active=true": {
+   "model": "encodedlogistics:block/segment_isolator_active",
+   "x": 90
+  }
+ }
+}

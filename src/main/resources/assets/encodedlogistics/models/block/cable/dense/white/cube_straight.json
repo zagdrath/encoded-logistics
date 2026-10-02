@@ -5,10 +5,12 @@
   "v": "encodedlogistics:block/cable/dense/white_v",
   "j": "encodedlogistics:block/cable/dense/white_j",
   "f": "encodedlogistics:block/cable/dense/white_f",
+  "c": "encodedlogistics:block/cable/dense/white_c",
   "h_glow": "encodedlogistics:block/cable/dense/white_h_glow",
   "v_glow": "encodedlogistics:block/cable/dense/white_v_glow",
   "j_glow": "encodedlogistics:block/cable/dense/white_j_glow",
   "f_glow": "encodedlogistics:block/cable/dense/white_f_glow",
+  "c_glow": "encodedlogistics:block/cable/dense/white_c_glow",
   "particle": "encodedlogistics:block/cable/dense/white_j"
  }
 }

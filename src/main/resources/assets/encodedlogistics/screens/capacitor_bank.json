@@ -1,0 +1,68 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/capacitor_bank.png",
+  "width": 176,
+  "height": 80
+ },
+ "sprites": {
+  "energy_bar": {
+   "sprite": "controller/energy_bar",
+   "width": 10,
+   "height": 50,
+   "fill": "bottom_up",
+   "note": "reuses the controller/Arcforge bar"
+  }
+ },
+ "widgets": {
+  "energy_bar": {
+   "left": 9,
+   "top": 19,
+   "sprite": "energy_bar",
+   "tooltip": "energy"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "block.encodedlogistics.capacitor_bank",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "fill": {
+   "right": 168,
+   "top": 5,
+   "color": "ACCENT"
+  },
+  "stored": {
+   "left": 28,
+   "top": 22,
+   "valueLeft": 84,
+   "color": "TEXT",
+   "labelColor": "TEXT_MUTED"
+  },
+  "input": {
+   "left": 28,
+   "top": 35,
+   "valueLeft": 84,
+   "color": "TEXT",
+   "labelColor": "TEXT_MUTED"
+  },
+  "output": {
+   "left": 28,
+   "top": 46,
+   "valueLeft": 84,
+   "color": "TEXT",
+   "labelColor": "TEXT_MUTED"
+  },
+  "capacity": {
+   "left": 28,
+   "top": 57,
+   "valueLeft": 84,
+   "color": "TEXT",
+   "labelColor": "TEXT_MUTED"
+  }
+ }
+}

@@ -39,7 +39,7 @@ import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
-// In-game tests of the Network Controller, run with `gradlew runGameTestServer` or `/test runall` in a dev client.
+// In-game tests of the Network Controller, cables and infrastructure, run with `gradlew runGameTestServer` or `/test runall` in a dev client.
 public final class EncodedLogisticsGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION,
             EncodedLogistics.MODID);
@@ -56,6 +56,11 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("cable_joins_controller", CableGameTests::cableJoinsController);
         TESTS.put("cable_dyeing_recolours", CableGameTests::dyeingRecolours);
         TESTS.put("cable_shapes", CableGameTests::shapes);
+        TESTS.put("fiber_cable", InfrastructureGameTests::fiberCable);
+        TESTS.put("anchor_blocks_side", InfrastructureGameTests::anchorBlocksSide);
+        TESTS.put("facades", InfrastructureGameTests::facades);
+        TESTS.put("inlet_fills_controller_then_bank", InfrastructureGameTests::inletFillsControllerThenBank);
+        TESTS.put("isolator_splits_network", InfrastructureGameTests::isolatorSplitsNetwork);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

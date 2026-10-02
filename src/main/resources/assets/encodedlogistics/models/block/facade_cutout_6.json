@@ -1,0 +1,281 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "facade": "encodedlogistics:block/facade_blank",
+  "particle": "#facade"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    11,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      5
+     ]
+    },
+    "south": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      5
+     ]
+    },
+    "east": {
+     "texture": "#facade",
+     "uv": [
+      15,
+      0,
+      16,
+      5
+     ]
+    },
+    "west": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      1,
+      5
+     ]
+    },
+    "up": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    5,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      11,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      11,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#facade",
+     "uv": [
+      15,
+      11,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      11,
+      1,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    5,
+    0
+   ],
+   "to": [
+    5,
+    11,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#facade",
+     "uv": [
+      11,
+      5,
+      16,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      5,
+      5,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#facade",
+     "uv": [
+      15,
+      5,
+      16,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      5,
+      1,
+      11
+     ]
+    },
+    "up": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      5,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      15,
+      5,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    11,
+    5,
+    0
+   ],
+   "to": [
+    16,
+    11,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      5,
+      5,
+      11
+     ]
+    },
+    "south": {
+     "texture": "#facade",
+     "uv": [
+      11,
+      5,
+      16,
+      11
+     ]
+    },
+    "east": {
+     "texture": "#facade",
+     "uv": [
+      15,
+      5,
+      16,
+      11
+     ]
+    },
+    "west": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      5,
+      1,
+      11
+     ]
+    },
+    "up": {
+     "texture": "#facade",
+     "uv": [
+      11,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#facade",
+     "uv": [
+      11,
+      15,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "group": "fiber_cable",
+  "ingredients": [
+    "encodedlogistics:light_blue_dense_network_cable",
+    "encodedlogistics:light_blue_dense_network_cable",
+    "encodedlogistics:light_blue_dense_network_cable",
+    "encodedlogistics:light_blue_dense_network_cable",
+    "minecraft:glass_pane",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "count": 4,
+    "id": "encodedlogistics:light_blue_fiber_cable"
+  }
+}

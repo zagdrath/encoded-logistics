@@ -24,8 +24,10 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModCapabilities;
 import net.zagdrath.encodedlogistics.registry.ModCreativeTabs;
+import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
+import net.zagdrath.encodedlogistics.registry.ModRecipeSerializers;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(EncodedLogistics.MODID)
@@ -36,6 +38,8 @@ public class EncodedLogistics {
     public EncodedLogistics(IEventBus modEventBus, ModContainer modContainer) {
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        ModDataComponents.DATA_COMPONENTS.register(modEventBus);
+        ModRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
         ModBlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModMenuTypes.MENU_TYPES.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);

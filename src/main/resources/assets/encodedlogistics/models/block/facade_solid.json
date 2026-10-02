@@ -1,0 +1,77 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "facade": "encodedlogistics:block/facade_blank",
+  "particle": "#facade"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#facade",
+     "uv": [
+      15,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      1,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#facade",
+     "uv": [
+      0,
+      15,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

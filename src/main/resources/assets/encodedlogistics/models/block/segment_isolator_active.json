@@ -1,0 +1,283 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "a": "encodedlogistics:block/segment_isolator/half_a",
+  "b": "encodedlogistics:block/segment_isolator/half_b",
+  "end": "encodedlogistics:block/segment_isolator/end",
+  "collar": "encodedlogistics:block/segment_isolator/collar_active",
+  "particle": "encodedlogistics:block/segment_isolator/half_a",
+  "collar_glow": "encodedlogistics:block/segment_isolator/collar_glow"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    3,
+    0
+   ],
+   "to": [
+    13,
+    13,
+    7
+   ],
+   "faces": {
+    "east": {
+     "texture": "#a",
+     "uv": [
+      0,
+      0,
+      7,
+      10
+     ]
+    },
+    "west": {
+     "texture": "#a",
+     "uv": [
+      0,
+      0,
+      7,
+      10
+     ]
+    },
+    "up": {
+     "texture": "#a",
+     "uv": [
+      0,
+      0,
+      10,
+      7
+     ]
+    },
+    "down": {
+     "texture": "#a",
+     "uv": [
+      0,
+      0,
+      10,
+      7
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    3,
+    9
+   ],
+   "to": [
+    13,
+    13,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7,
+      10
+     ]
+    },
+    "west": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      7,
+      10
+     ]
+    },
+    "up": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      10,
+      7
+     ]
+    },
+    "down": {
+     "texture": "#b",
+     "uv": [
+      0,
+      0,
+      10,
+      7
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    2,
+    7
+   ],
+   "to": [
+    14,
+    14,
+    9
+   ],
+   "faces": {
+    "east": {
+     "texture": "#collar",
+     "uv": [
+      0,
+      0,
+      2,
+      12
+     ]
+    },
+    "west": {
+     "texture": "#collar",
+     "uv": [
+      0,
+      0,
+      2,
+      12
+     ]
+    },
+    "up": {
+     "texture": "#collar",
+     "uv": [
+      4,
+      0,
+      16,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#collar",
+     "uv": [
+      4,
+      0,
+      16,
+      2
+     ]
+    },
+    "north": {
+     "texture": "#collar",
+     "uv": [
+      0,
+      15,
+      12,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#collar",
+     "uv": [
+      0,
+      15,
+      12,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    3,
+    0
+   ],
+   "to": [
+    13,
+    13,
+    7
+   ],
+   "faces": {
+    "north": {
+     "texture": "#end",
+     "uv": [
+      0,
+      0,
+      10,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    3,
+    9
+   ],
+   "to": [
+    13,
+    13,
+    16
+   ],
+   "faces": {
+    "south": {
+     "texture": "#end",
+     "uv": [
+      0,
+      0,
+      10,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    2,
+    2,
+    7
+   ],
+   "to": [
+    14,
+    14,
+    9
+   ],
+   "faces": {
+    "east": {
+     "texture": "#collar_glow",
+     "uv": [
+      0,
+      0,
+      2,
+      12
+     ]
+    },
+    "west": {
+     "texture": "#collar_glow",
+     "uv": [
+      0,
+      0,
+      2,
+      12
+     ]
+    },
+    "up": {
+     "texture": "#collar_glow",
+     "uv": [
+      4,
+      0,
+      16,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#collar_glow",
+     "uv": [
+      4,
+      0,
+      16,
+      2
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

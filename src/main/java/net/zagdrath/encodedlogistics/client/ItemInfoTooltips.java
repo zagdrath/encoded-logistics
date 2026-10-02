@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.client;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.jspecify.annotations.Nullable;
 
@@ -22,14 +23,18 @@ import net.minecraft.world.item.DyeColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
+import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 
 // A short description of what each Encoded Logistics item does, under its name, the same way as Arcforge: "Hold
 // [Shift] for info", and the description while Shift is held. Descriptions live in the lang file as
 // tooltip.encodedlogistics.info.<item>; coloured items (cables) share one without the colour, e.g.
-// tooltip.encodedlogistics.info.network_cable. A cable's Shift info ends with its lanes and the colours it joins.
+// tooltip.encodedlogistics.info.network_cable. A cable's Shift info ends with its lanes and the colours it joins; a
+// facade always shows the block it copies.
 @EventBusSubscriber(modid = EncodedLogistics.MODID, value = Dist.CLIENT)
 public final class ItemInfoTooltips {
     private static final String PREFIX = "tooltip.encodedlogistics.info.";
@@ -51,13 +56,20 @@ public final class ItemInfoTooltips {
         List<Component> tooltip = event.getToolTip();
         // Right under the name, before the item's own lines.
         int at = Math.min(1, tooltip.size());
+        // A facade always says what it looks like.
+        if (event.getItemStack().getItem() instanceof CableFacadeItem) {
+            BlockState target = CableFacadeItem.target(event.getItemStack());
+            tooltip.add(at++, (target != null
+                    ? Component.translatable("tooltip.encodedlogistics.cable_facade.target", target.getBlock().getName())
+                    : Component.translatable("tooltip.encodedlogistics.cable_facade.blank")).withStyle(ChatFormatting.GRAY));
+        }
         if (!Minecraft.getInstance().hasShiftDown()) {
             tooltip.add(at, Component.translatable("tooltip.encodedlogistics.hold_shift",
                     Component.translatable("tooltip.encodedlogistics.shift").withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.DARK_GRAY));
             return;
         }
         List<FormattedText> lines = Minecraft.getInstance().font.getSplitter()
-                .splitLines(Component.translatable(key), WRAP_WIDTH, Style.EMPTY);
+                .splitLines(Component.translatable(key, descriptionArguments(id.getPath())), WRAP_WIDTH, Style.EMPTY);
         for (int i = 0; i < lines.size(); i++) {
             tooltip.add(at + i, Component.literal(lines.get(i).getString()).withStyle(ChatFormatting.GRAY));
         }
@@ -69,6 +81,14 @@ public final class ItemInfoTooltips {
                     : Component.translatable("tooltip.encodedlogistics.cable.dyed", Component.translatable("color.minecraft." + dye.getSerializedName())))
                     .withStyle(ChatFormatting.GRAY));
         }
+    }
+
+    // Numbers a description shows that come from the config.
+    private static Object[] descriptionArguments(String path) {
+        if (path.equals("capacitor_bank")) {
+            return new Object[] { String.format(Locale.ROOT, "%,d", Config.CAPACITOR_CAPACITY.getAsInt()) };
+        }
+        return new Object[0];
     }
 
     // The item's description key, or the shared one without its colour, or null if it has none.

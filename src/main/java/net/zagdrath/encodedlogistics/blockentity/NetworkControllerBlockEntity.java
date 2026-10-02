@@ -72,6 +72,12 @@ public class NetworkControllerBlockEntity extends BlockEntity {
         return taken;
     }
 
+    // Network side (a Power Inlet's FE): fills this block's buffer past the per-tick limit on its faces. It counts toward
+    // what the structure received, and so toward this tick's allowance on its faces too.
+    public int fill(int amount, TransactionContext transaction) {
+        return energy.fill(amount, transaction);
+    }
+
     // FE received since the last call; starts a new tick's receive allowance.
     public int takeReceived() {
         int received = energy.receivedThisTick;
@@ -192,6 +198,17 @@ public class NetworkControllerBlockEntity extends BlockEntity {
         @Override
         public int insert(int amount, TransactionContext transaction) {
             return super.insert(Math.min(amount, Math.max(0, maxInsert - receivedThisTick)), transaction);
+        }
+
+        int fill(int amount, TransactionContext transaction) {
+            refreshLimits();
+            int limit = maxInsert;
+            maxInsert = Integer.MAX_VALUE;
+            try {
+                return super.insert(amount, transaction);
+            } finally {
+                maxInsert = limit;
+            }
         }
 
         @Override

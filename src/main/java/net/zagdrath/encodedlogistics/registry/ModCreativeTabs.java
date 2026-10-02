@@ -24,7 +24,12 @@ public final class ModCreativeTabs {
             .icon(() -> ModItems.NETWORK_CONTROLLER.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 output.accept(ModItems.NETWORK_CONTROLLER.get());
+                output.accept(ModItems.POWER_INLET.get());
+                output.accept(ModItems.CAPACITOR_BANK.get());
+                output.accept(ModItems.SEGMENT_ISOLATOR.get());
                 ModItems.allCables().forEach(cable -> output.accept(cable.get()));
+                output.accept(ModItems.CABLE_ANCHOR.get());
+                output.accept(ModItems.CABLE_FACADE.get());
             })
             .build());
 

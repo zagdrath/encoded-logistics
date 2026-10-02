@@ -1,0 +1,115 @@
+{
+ "multipart": [
+  {
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/cube"
+   }
+  },
+  {
+   "when": {
+    "north": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_cable"
+   }
+  },
+  {
+   "when": {
+    "north": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_block"
+   }
+  },
+  {
+   "when": {
+    "south": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_cable",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "south": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_block",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "east": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_cable",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "east": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_block",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "west": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_cable",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "west": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_block",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "up": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_cable",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "up": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_block",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "down": "cable"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_cable",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "down": "block"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/cable/fiber/red/arm_block",
+    "x": 90
+   }
+  }
+ ]
+}

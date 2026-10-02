@@ -40,4 +40,10 @@ public interface NetworkNode {
     default boolean isController() {
         return controllerGroup() != NO_CONTROLLER;
     }
+
+    // Whether the network carries on through this node to its other connections. A Segment Isolator doesn't: it ends
+    // the network on each side, so the two sides are separate networks.
+    default boolean passesThrough() {
+        return true;
+    }
 }

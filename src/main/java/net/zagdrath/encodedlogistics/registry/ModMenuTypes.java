@@ -12,6 +12,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 
 public final class ModMenuTypes {
@@ -19,6 +20,9 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<NetworkControllerMenu>> NETWORK_CONTROLLER = MENU_TYPES.register("network_controller",
             () -> IMenuTypeExtension.create(NetworkControllerMenu::new));
+
+    public static final Supplier<MenuType<CapacitorBankMenu>> CAPACITOR_BANK = MENU_TYPES.register("capacitor_bank",
+            () -> IMenuTypeExtension.create(CapacitorBankMenu::new));
 
     private ModMenuTypes() {}
 }

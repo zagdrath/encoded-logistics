@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "minecraft:iron_nugget",
+    "minecraft:iron_nugget",
+    "minecraft:iron_nugget",
+    "encodedlogistics:network_cable"
+  ],
+  "result": {
+    "count": 6,
+    "id": "encodedlogistics:cable_facade"
+  }
+}

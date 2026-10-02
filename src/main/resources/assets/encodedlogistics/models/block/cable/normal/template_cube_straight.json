@@ -1,4 +1,5 @@
 {
+ "parent": "minecraft:block/block",
  "render_type": "minecraft:cutout",
  "textures": {
   "particle": "#j"
@@ -8,66 +9,66 @@
    "from": [
     5.0,
     5.0,
-    5
+    5.0
    ],
    "to": [
     11.0,
     11.0,
-    11
+    11.0
    ],
    "faces": {
-    "east": {
-     "texture": "#h",
+    "north": {
+     "texture": "#j",
      "uv": [
-      5,
       0,
-      11,
+      0,
+      6,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#j",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#j",
+     "uv": [
+      0,
+      0,
+      6,
       6
      ]
     },
     "west": {
-     "texture": "#h",
+     "texture": "#j",
      "uv": [
-      5,
       0,
-      11,
+      0,
+      6,
       6
      ]
     },
     "up": {
-     "texture": "#v",
+     "texture": "#j",
      "uv": [
       0,
-      5,
+      0,
       6,
-      11
+      6
      ]
     },
     "down": {
-     "texture": "#v",
+     "texture": "#j",
      "uv": [
       0,
-      5,
+      0,
       6,
-      11
-     ]
-    },
-    "north": {
-     "texture": "#h",
-     "uv": [
-      15,
-      15,
-      16,
-      16
-     ]
-    },
-    "south": {
-     "texture": "#h",
-     "uv": [
-      15,
-      15,
-      16,
-      16
+      6
      ]
     }
    }
@@ -76,66 +77,66 @@
    "from": [
     5.0,
     5.0,
-    5
+    5.0
    ],
    "to": [
     11.0,
     11.0,
-    11
+    11.0
    ],
    "faces": {
-    "east": {
-     "texture": "#h_glow",
+    "north": {
+     "texture": "#j_glow",
      "uv": [
-      5,
       0,
-      11,
+      0,
+      6,
+      6
+     ]
+    },
+    "south": {
+     "texture": "#j_glow",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "east": {
+     "texture": "#j_glow",
+     "uv": [
+      0,
+      0,
+      6,
       6
      ]
     },
     "west": {
-     "texture": "#h_glow",
+     "texture": "#j_glow",
      "uv": [
-      5,
       0,
-      11,
+      0,
+      6,
       6
      ]
     },
     "up": {
-     "texture": "#v_glow",
+     "texture": "#j_glow",
      "uv": [
       0,
-      5,
+      0,
       6,
-      11
+      6
      ]
     },
     "down": {
-     "texture": "#v_glow",
+     "texture": "#j_glow",
      "uv": [
       0,
-      5,
+      0,
       6,
-      11
-     ]
-    },
-    "north": {
-     "texture": "#h_glow",
-     "uv": [
-      15,
-      15,
-      16,
-      16
-     ]
-    },
-    "south": {
-     "texture": "#h_glow",
-     "uv": [
-      15,
-      15,
-      16,
-      16
+      6
      ]
     }
    },
