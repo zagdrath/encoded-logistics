@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "type": "encodedlogistics:network_controller"
+    }
+  }
+}

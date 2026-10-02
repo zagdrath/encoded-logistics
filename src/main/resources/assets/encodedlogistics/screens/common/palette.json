@@ -1,0 +1,12 @@
+{
+  "palette": {
+    "TEXT": "#F0F0F0",
+    "TEXT_MUTED": "#B4B4B4",
+    "TEXT_DISABLED": "#7A7A7A",
+    "ACCENT": "#00D992",
+    "WARNING": "#E8C24A",
+    "ERROR": "#FF6B6B",
+    "SELECTION": "#00A06B",
+    "HOVER_OVERLAY": "#3800D992"
+  }
+}

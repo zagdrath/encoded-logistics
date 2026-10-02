@@ -1,0 +1,39 @@
+{
+  "includes": ["common/palette.json"],
+  "background": { "texture": "gui/controller.png", "width": 208, "height": 187 },
+  "sprites": {
+    "energy_bar":            { "sprite": "controller/energy_bar", "width": 10, "height": 50, "fill": "bottom_up", "note": "same sprite and 12x52 track as Arcforge" },
+    "led_online":            { "sprite": "controller/led_online",  "width": 6, "height": 6 },
+    "led_idle":              { "sprite": "controller/led_idle",    "width": 6, "height": 6 },
+    "led_warning":           { "sprite": "controller/led_warning", "width": 6, "height": 6 },
+    "led_error":             { "sprite": "controller/led_error",   "width": 6, "height": 6 },
+    "device_entry":          { "sprite": "controller/device_entry",       "width": 44, "height": 20 },
+    "device_entry_hover":    { "sprite": "controller/device_entry_hover", "width": 44, "height": 20 },
+    "device_entry_error":    { "sprite": "controller/device_entry_error", "width": 44, "height": 20 },
+    "scroll_thumb":          { "sprite": "controller/scroll_thumb",          "width": 6, "height": 15 },
+    "scroll_thumb_hover":    { "sprite": "controller/scroll_thumb_hover",    "width": 6, "height": 15 },
+    "scroll_thumb_disabled": { "sprite": "controller/scroll_thumb_disabled", "width": 6, "height": 15 }
+  },
+  "widgets": {
+    "energy_bar": { "left": 9, "top": 19, "sprite": "energy_bar", "tooltip": "energy" },
+    "status_led": { "left": 28, "top": 22 },
+    "device_list": {
+      "left": 10, "top": 97, "columns": 4, "rows": 4, "cellWidth": 44, "cellHeight": 20,
+      "icon": { "left": 2, "top": 2 },
+      "count": { "left": 22, "top": 6, "format": "x%s", "color": "TEXT", "errorColor": "ERROR" },
+      "sort": "count_desc",
+      "tooltip": ["name", "installed", "passive_drain", "error_reason"]
+    },
+    "scrollbar": { "left": 195, "top": 96, "height": 82, "thumb": "scroll_thumb" }
+  },
+  "text": {
+    "title":      { "key": "gui.encodedlogistics.network", "left": 8, "top": 5, "color": "TEXT" },
+    "status":     { "left": 38, "top": 21, "color": "ACCENT", "errorColor": "ERROR" },
+    "channels":   { "right": 196, "top": 21, "color": "TEXT_MUTED" },
+    "stored":     { "left": 28, "top": 35, "valueLeft": 96, "color": "TEXT", "labelColor": "TEXT_MUTED" },
+    "usage":      { "left": 28, "top": 46, "valueLeft": 96, "color": "TEXT", "labelColor": "TEXT_MUTED" },
+    "generation": { "left": 28, "top": 57, "valueLeft": 96, "color": "TEXT", "labelColor": "TEXT_MUTED" },
+    "structure":  { "left": 8, "top": 73, "valueLeft": 64, "color": "TEXT", "labelColor": "TEXT_MUTED" },
+    "devices":    { "key": "gui.encodedlogistics.devices", "left": 8, "top": 84, "color": "TEXT_MUTED" }
+  }
+}
