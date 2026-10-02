@@ -207,4 +207,6 @@ def lang():
     return len(L)
 if __name__=='__main__':
     items(); ore(); fabricator(); gateway(); scheduler(); encoder(); recipes(); drops(); n=lang()
+    # the Phase 2 + 3 texture pass (tools/p23_v2.py) redraws some of what this wrote: write those again on top
+    import p23_export; p23_export.paint()
     print('lang',n,'files',sum(len(f) for _,_,f in os.walk('src')))

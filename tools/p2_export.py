@@ -97,7 +97,7 @@ def tags():
         jd({'values':have+[v for v in values if v not in have]},path)
     merge(D+'c/tags/block/ores_in_ground/deepslate.json',[RL(o['deep']) for o in ORES.values()])
     merge(D+'c/tags/block/ores.json',['#c:ores/neodymium','#c:ores/tantalum']); merge(D+'c/tags/item/ores.json',['#c:ores/neodymium','#c:ores/tantalum'])
-    jd({'values':[RL('filter_module'),RL('throughput_module')]},D+'encodedlogistics/tags/item/port_modules.json')
+    merge(D+'encodedlogistics/tags/item/port_modules.json',[RL('filter_module'),RL('throughput_module')])   # Phase 4 adds two more
 def recipes():
     R=D+'encodedlogistics/recipe/'; E=RL; V=lambda n:'minecraft:'+n
     def res(i,c=1): return {'id':i,'count':c}
@@ -154,4 +154,6 @@ def lang():
     return len(L)
 if __name__=='__main__':
     items(); ores(); parts(); worldgen(); tags(); recipes(); n=lang()
+    # the Phase 2 + 3 texture pass (tools/p23_v2.py) redraws some of what this wrote: write those again on top
+    import p23_export; p23_export.paint()
     print('items',len(ITEMS),'lang',n,'files',sum(len(f) for _,_,f in os.walk('src')))

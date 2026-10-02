@@ -102,4 +102,6 @@ if __name__=='__main__':
     os.makedirs(f'{T}/gui',exist_ok=True)
     shared(); items(); press(); terminal()
     if len(sys.argv)>2: drive_bay(sys.argv[1],sys.argv[2])
+    # the Phase 2 + 3 texture pass (tools/p23_v2.py) redraws some of what this wrote: write those again on top
+    import p23_export; p23_export.paint()
     print('files',sum(len(f) for _,_,f in os.walk(A)))
