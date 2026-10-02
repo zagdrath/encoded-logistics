@@ -19,7 +19,25 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 // drawn at half size like the terminal's counts.
 final class PartScreens {
     // palette.json
-    static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, TEXT_DISABLED = 0xFF7A7A7A, ACCENT = 0xFF00D992, ERROR = 0xFFFF6B6B;
+    static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, TEXT_DISABLED = 0xFF7A7A7A, ACCENT = 0xFF00D992, WARNING = 0xFFE8C24A,
+            ERROR = 0xFFFF6B6B;
+    // The controller's status lights, with the colour of the text beside them.
+    enum Status {
+        ONLINE("led_online", ACCENT), IDLE("led_idle", TEXT_MUTED), WARNING("led_warning", PartScreens.WARNING), ERROR("led_error",
+                PartScreens.ERROR);
+
+        final Identifier led;
+        final int color;
+
+        Status(String led, int color) {
+            this.led = EncodedLogistics.id("controller/" + led);
+            this.color = color;
+        }
+    }
+
+    // Where a status sits: right-aligned in the title strip (the title's line), like the Drive Bay's and the Capacitor
+    // Bank's.
+    static final int STATUS_RIGHT = 168, STATUS_Y = 5;
     static final Identifier BUTTON = EncodedLogistics.id("terminal/button"), BUTTON_HOVER = EncodedLogistics.id("terminal/button_hover");
     static final int BUTTON_SIZE = 18;
     private static final Identifier WIDE = EncodedLogistics.id("common/button_wide"), WIDE_HOVER = EncodedLogistics.id("common/button_wide_hover"),
@@ -85,6 +103,14 @@ final class PartScreens {
     // A ghost amount after a scroll or right click: up or down by 1, or 10 with Shift, within 1..max.
     static int stepAmount(int amount, boolean up, boolean shift, int max) {
         return Math.clamp(amount + (up ? 1 : -1) * (shift ? 10 : 1), 1, max);
+    }
+
+    // A status: the controller's light, then the text in the light's colour, ending at right (screen-relative to the
+    // pose, as labels are); y is the text's top.
+    static void status(GuiGraphicsExtractor graphics, Font font, int right, int y, Component text, Status status) {
+        int textX = right - font.width(text);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, status.led, textX - 9, y + 1, 6, 6);
+        graphics.text(font, text, textX, y, status.color, false);
     }
 
     // A kit button at (x, y) on screen, with its icon.

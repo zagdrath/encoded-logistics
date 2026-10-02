@@ -87,9 +87,9 @@ public final class CableParts {
         event.register(key, SimpleUnbakedStandaloneModel.simpleModelWrapper(EncodedLogistics.id(path), rotation(toward)));
     }
 
-    // Every part model of a tier: Fiber Cable has one cube and one cable arm for both straight runs and junctions.
+    // Every part model of a tier: Fiber Cable has a straight body, a junction cube and one cable arm for both.
     private static String[] parts(CableTier tier) {
-        return tier == CableTier.FIBER ? new String[] { "cube", "arm_cable", "arm_block" }
+        return tier == CableTier.FIBER ? new String[] { "cube", "cube_straight", "arm_cable", "arm_block" }
                 : new String[] { "cube_straight", "cube_junction", "arm_straight", "arm_junction", "arm_block" };
     }
 
@@ -182,7 +182,7 @@ public final class CableParts {
     }
 
     private static Body body(StandaloneModelLoader.BakedModels baked, CableTier tier, CableColor color) {
-        String cubeStraight = tier == CableTier.FIBER ? "cube" : "cube_straight";
+        String cubeStraight = "cube_straight";
         String cubeJunction = tier == CableTier.FIBER ? "cube" : "cube_junction";
         String armStraight = tier == CableTier.FIBER ? "arm_cable" : "arm_straight";
         String armJunction = tier == CableTier.FIBER ? "arm_cable" : "arm_junction";

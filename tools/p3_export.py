@@ -3,6 +3,7 @@
 import os, json, sys, random
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image
+from item_display import centred
 from el_style import *
 from items_p3 import ITEMS, BLOCK_TEX, PROCESSOR, CRAFTING
 import blocks_p3 as B
@@ -57,6 +58,7 @@ def ore():
     merge_tag(D+'c/tags/block/ores_in_ground/deepslate.json',[RL(name)])
     merge_tag(D+'c/tags/block/ores.json',['#c:ores/gallium']); merge_tag(D+'c/tags/item/ores.json',['#c:ores/gallium'])
     jd({'values':[RL('raw_gallium')]},D+'c/tags/item/raw_materials/gallium.json'); jd({'values':[RL('gallium_ingot')]},D+'c/tags/item/ingots/gallium.json')
+    jd({'values':[RL('gallium_dust')]},D+'c/tags/item/dusts/gallium.json'); merge_tag(D+'c/tags/item/dusts.json',['#c:dusts/gallium'])
     blocks=[RL(name),RL('fabricator'),RL('gateway'),RL('scheduler_core'),RL('job_buffer'),RL('thread_unit')]
     merge_tag(D+'minecraft/tags/block/mineable/pickaxe.json',blocks); merge_tag(D+'minecraft/tags/block/needs_iron_tool.json',[RL(name)])
     jd({'values':[RL('scheduler_core'),RL('job_buffer'),RL('thread_unit')]},D+'encodedlogistics/tags/block/scheduler_parts.json')
@@ -148,9 +150,10 @@ def encoder():
     screen={'from':[3,4,-0.02],'to':[13,13,-0.02],'faces':{'north':face('#screen',[3,3,13,12])},**GLOW}
     jd({'parent':'minecraft:block/block','textures':tx,'elements':[housing,stub]},f'{M}part/schematic_encoder.json')
     jd({'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':[housing,stub,screen]},f'{M}part/schematic_encoder_online.json')
-    jd({'parent':RL('part/schematic_encoder_online'),'display':{'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},'ground':{'scale':[0.4,0.4,0.4]},
+    jd({'parent':RL('part/schematic_encoder_online'),'display':centred({'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},'ground':{'scale':[0.4,0.4,0.4]},
         'fixed':{'rotation':[0,180,0],'scale':[0.6,0.6,0.6]},'firstperson_righthand':{'rotation':[0,200,0],'scale':[0.45,0.45,0.45]},
-        'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}}},f'{M}item/schematic_encoder.json')
+        'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}},f'{M}part/schematic_encoder_online.json')},
+        f'{M}item/schematic_encoder.json')
     jd({'model':{'type':'minecraft:model','model':RL('item/schematic_encoder')}},f'{A}items/schematic_encoder.json')
 def recipes():
     R=D+'encodedlogistics/recipe/'; E=RL; V=lambda n:'minecraft:'+n
@@ -163,6 +166,9 @@ def recipes():
     for src,tag in ((E('raw_gallium'),'raw'),('#c:ores/gallium','ore')):
         cook(f'gallium_ingot_from_smelting_{tag}','minecraft:smelting',src,E('gallium_ingot'),1.0,200)
         cook(f'gallium_ingot_from_blasting_{tag}','minecraft:blasting',src,E('gallium_ingot'),1.0,100)
+    cook('gallium_ingot_from_smelting_dust','minecraft:smelting','#c:dusts/gallium',E('gallium_ingot'),1.0,200)
+    cook('gallium_ingot_from_blasting_dust','minecraft:blasting','#c:dusts/gallium',E('gallium_ingot'),1.0,100)
+    from p2_export import crushing; crushing(R,'gallium')          # Arcforge's Arc Crusher, only with Arcforge installed
     shaped('processor_photomask',['GFG','FAF','GFG'],{'G':V('glass'),'F':E('ferrite'),'A':E('gallium_ingot')},E('processor_photomask'))
     litho('processor_die',E('doped_silicon'),E('gallium_ingot'),E('processor_photomask'),E('processor_die'))
     shaped('heatsink',['CCC','CFC'],{'C':V('copper_ingot'),'F':E('ferrite')},E('heatsink'))
@@ -183,7 +189,7 @@ def drops():                                                    # the autocrafti
 def lang():
     L={'item.encodedlogistics.schematic_card':'Schematic Card','item.encodedlogistics.encoded_schematic_crafting':'Encoded Schematic (Crafting)',
        'item.encodedlogistics.encoded_schematic_processing':'Encoded Schematic (Processing)','item.encodedlogistics.raw_gallium':'Raw Gallium',
-       'item.encodedlogistics.gallium_ingot':'Gallium Ingot','item.encodedlogistics.processor_die':'Processor Die',
+       'item.encodedlogistics.gallium_ingot':'Gallium Ingot','item.encodedlogistics.gallium_dust':'Gallium Dust','item.encodedlogistics.processor_die':'Processor Die',
        'item.encodedlogistics.processor_photomask':'Processor Photomask','item.encodedlogistics.heatsink':'Heatsink',
        'item.encodedlogistics.storage_die_2m':'2M Storage Die','item.encodedlogistics.storage_drive_2m':'2M Storage Drive',
        'item.encodedlogistics.schematic_encoder':'Schematic Encoder','block.encodedlogistics.deepslate_gallium_ore':'Deepslate Gallium Ore',

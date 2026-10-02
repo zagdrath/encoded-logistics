@@ -17,8 +17,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.LithographyPressMenu;
 
-// The Lithography Press screen: energy bar, photomask / wafer / additive slots with ghost icons when empty, the violet
-// progress arrow and the output. Layout and colours are those of screens/lithography_press.json and palette.json.
+// The Lithography Press screen: the energy gauge (the controller's), and beside it in one inset the photomask / wafer /
+// additive slots (dim silhouettes of each item while empty), the violet progress arrow and the output; the status
+// (Working / Idle / No power) in the title strip. Layout and colours are those of screens/lithography_press.json and
+// palette.json.
 public class LithographyPressScreen extends AbstractContainerScreen<LithographyPressMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/lithography_press.png");
     private static final Identifier ENERGY_BAR = EncodedLogistics.id("controller/energy_bar");
@@ -26,15 +28,14 @@ public class LithographyPressScreen extends AbstractContainerScreen<LithographyP
     private static final Identifier[] GHOSTS = { EncodedLogistics.id("lithography_press/ghost_photomask"),
             EncodedLogistics.id("lithography_press/ghost_wafer"), EncodedLogistics.id("lithography_press/ghost_additive") };
 
-    private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4;
-    private static final int GAUGE_X = 9, GAUGE_Y = 19, GAUGE_W = 10, GAUGE_H = 50, ARROW_X = 70, ARROW_Y = 36, ARROW_W = 24, ARROW_H = 17;
+    private static final int GAUGE_X = 9, GAUGE_Y = 19, GAUGE_W = 10, GAUGE_H = 50, ARROW_X = 98, ARROW_Y = 35, ARROW_W = 24, ARROW_H = 17;
 
     public LithographyPressScreen(LithographyPressMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 166);
         this.titleLabelX = 8;
         this.titleLabelY = 5;
         this.inventoryLabelX = 8;
-        this.inventoryLabelY = 72;
+        this.inventoryLabelY = 73;
     }
 
     @Override
@@ -61,8 +62,18 @@ public class LithographyPressScreen extends AbstractContainerScreen<LithographyP
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_MUTED, false);
+        graphics.text(font, title, titleLabelX, titleLabelY, PartScreens.TEXT, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, PartScreens.TEXT_MUTED, false);
+        if (menu.progress() > 0) {
+            PartScreens.status(graphics, font, PartScreens.STATUS_RIGHT, PartScreens.STATUS_Y, Component.translatable("gui.encodedlogistics.status.working"),
+                    PartScreens.Status.ONLINE);
+        } else if (menu.energy() <= 0) {
+            PartScreens.status(graphics, font, PartScreens.STATUS_RIGHT, PartScreens.STATUS_Y, Component.translatable("gui.encodedlogistics.status.no_power"),
+                    PartScreens.Status.WARNING);
+        } else {
+            PartScreens.status(graphics, font, PartScreens.STATUS_RIGHT, PartScreens.STATUS_Y, Component.translatable("gui.encodedlogistics.status.idle"),
+                    PartScreens.Status.IDLE);
+        }
     }
 
     @Override

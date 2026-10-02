@@ -1,0 +1,9 @@
+{
+ "parent": "encodedlogistics:block/cable/fiber/template_cube_straight",
+ "textures": {
+  "sheath": "encodedlogistics:block/cable/fiber/pink_sheath",
+  "core": "encodedlogistics:block/cable/fiber/pink_core",
+  "fittings": "encodedlogistics:block/cable/fiber/fittings",
+  "particle": "encodedlogistics:block/cable/fiber/pink_sheath"
+ }
+}

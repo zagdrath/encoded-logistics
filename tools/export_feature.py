@@ -4,6 +4,7 @@ import os, json, colorsys, random, sys, zlib
 sys.path.insert(0,os.path.dirname(__file__))
 from el_style import *
 from PIL import Image
+from item_display import centred
 A='src/main/resources/assets/encodedlogistics'
 T=A+'/textures'; M=A+'/models'
 def save(im,path):
@@ -96,7 +97,7 @@ def cap_side(stage,glow=False):
         field(im,0,0,16,16,4,21); bevel_frame(im,0,0,16,16,22)
         for cx in (2,11):                                                  # two capacitor cans
             for y in range(2,14):
-                for i,t in enumerate((8,7,5)): put(im,cx+i,y,g(t-(1 if (y*7+cx)%11==0 else 0)))
+                for i,t in enumerate((8,7,5)): put(im,cx+i,y,g(t))
             for i in range(3): put(im,cx+i,2,g(9)); put(im,cx+i,13,g(3)); put(im,cx+i,4,g(6)); put(im,cx+i,11,g(6))
             put(im,cx+1,14,g(1))
         for y in range(2,14): put(im,5,y,g(1)); put(im,10,y,g(6))          # gauge bezel
@@ -127,8 +128,10 @@ def cap_models():
     jdump({'model':{'type':'minecraft:model','model':RL('block/capacitor_bank_3')}},f'{A}/items/capacitor_bank.json')
 
 # ================= 3. FIBER CABLE =================
-# Geometry follows the cable spec: 6x6x6 core cube, 4x4x1 neck, 6x6x4 sleeve (sleeves of neighbours meet as one 8 px run).
-# Glass sheath (translucent, dye-tinted) over a 2x2 full-bright fiber core; steel necks and flange.
+# Geometry follows the cable spec (tools/export_cable_geometry.py): a 6x6 tube with no necks - a straight run is one
+# continuous glass tube (sleeve 0..5 | straight body 5..11 | sleeve 11..16), a junction is a 6x6x6 glass cube the arms
+# run flush into. Glass sheath (translucent, dye-tinted) over a 2x2 full-bright fibre core that runs to the centre;
+# steel flange against network blocks.
 def glass_tint(colour):
     """Sheath glass: the dye's base tone (darker than the core), so the lit fibre reads through it."""
     if colour=='neutral': return (150,170,186)
@@ -141,12 +144,11 @@ def core_cols(colour,frame=0):
     r=dye_ramp(DYE_BASE[colour]); return [r[3],r[5],r[6]]
 def sheath_tex(colour):
     """rows 0..5: sheath side, sheen along u; x0..5/y6..15: same with sheen along v; (8,8) 6x6: cube face."""
-    im=img(); tint=glass_tint(colour); rnd=random.Random(zlib.crc32(colour.encode()))
+    im=img(); tint=glass_tint(colour)
     def glass(along,across,w):
-        # alpha + value per row across the tube: bright rim, soft sheen, clear body, darker lower rim
+        # alpha + value per row across the tube: bright rim, soft sheen, clear body, darker lower rim (clean: no streaks)
         prof={0:(200,1.35),1:(120,1.25),w-1:(185,0.62)}                       # bright rim, sheen, dark lower rim
         a,k=prof.get(across,(62,0.85))                                            # clear body: the core shows through
-        if 0<across<w-1 and rnd.random()<0.12: a+=20; k-=0.06                     # faint streaks (glass grain)
         return tuple(min(255,int(c*k)) for c in tint),a
     for u in range(16):
         for v in range(6):
@@ -175,62 +177,53 @@ def fittings_tex():
         for x in range(4): put(im,x,y,g(8 if (x==0 or y==0) else 4 if (x==3 or y==3) else 6))
     bevel_frame(im,4,0,8,8,31,lip=False)
     for y in range(1,7):
-        for x in range(5,11): put(im,x,y,g(5 if (x+y)%5 else 4))
+        for x in range(5,11): put(im,x,y,g(5))                                    # flat plate, no hatch
     port_ring(im,8,4)
     for x in range(8): put(im,x,8,g(8)); put(im,x,9,g(5))
     return im
 def fiber_models():
     B='block/cable/fiber/'
-    def sleeve(z0,z1):
+    def sleeve(z0,z1,ends=()):
+        """Glass tube along z (L = z1-z0 <= 10 for the up/down strip); ends only where it is ever seen (the item)."""
         L=z1-z0
         return el((5,5,z0),(11,11,z1),{'east':face('#sheath',[16-z1,0,16-z0,6]),'west':face('#sheath',[z0,0,z1,6]),
                    'up':face('#sheath',[0,6,6,6+L]),'down':face('#sheath',[0,6,6,6+L]),
-                   'south':face('#sheath',[8,8,14,14])})
-    def neck(z0,z1): return el((6,6,z0),(10,10,z1),{f:face('#fittings',[0,0,4,4]) for f in ('north','south','east','west','up','down')})
-    def core(z0,z1):
+                   **{f:face('#sheath',[8,8,14,14]) for f in ends}})
+    def core(z0,z1,ends=()):
         e=el((7,7,z0),(9,9,z1),{'east':face('#core',[16-z1,0,16-z0,2]),'west':face('#core',[z0,0,z1,2]),
-                                'up':face('#core',[0,z0,2,z1]),'down':face('#core',[0,z0,2,z1])}); e.update(GLOW); return e
+                                'up':face('#core',[0,z0,2,z1]),'down':face('#core',[0,z0,2,z1]),
+                                **{f:face('#core',[0,0,2,2]) for f in ends}}); e.update(GLOW); return e
     cube=el((5,5,5),(11,11,11),{f:face('#sheath',[8,8,14,14]) for f in ('north','south','east','west','up','down')})
-    core_c=el((7,7,7),(9,9,9),{f:face('#core',[0,0,2,2]) for f in ('north','south','east','west','up','down')}); core_c.update(GLOW)
+    # the junction's core node, a hair bigger than the arms' cores so it covers where they meet it (no coplanar faces)
+    core_c=el((6.95,6.95,6.95),(9.05,9.05,9.05),{f:face('#core',[0,0,2,2]) for f in ('north','south','east','west','up','down')}); core_c.update(GLOW)
     flange=el((4,4,0),(12,12,1),{'north':face('#fittings',[4,0,12,8]),'south':face('#fittings',[4,0,12,8]),
               'east':face('#fittings',[0,8,1,9]),'west':face('#fittings',[0,8,1,9]),'up':face('#fittings',[0,8,8,9]),'down':face('#fittings',[0,9,8,10])})
-    # core first, sheath after it: the translucent glass draws over the lit fibre
-    parts={'cube':[core_c,cube],'arm_cable':[core(0,5),neck(4,5),sleeve(0,4)],'arm_block':[core(1,5),flange,neck(4,5),sleeve(1,4)]}
+    # item: a straight run along Z like the normal / dense cable items, its two ends closed
+    item=[core(0,16,('north','south')),sleeve(0,8,('north',)),sleeve(8,16,('south',))]
+    # core first, sheath after it: the translucent glass draws over the lit fibre. Arm cores run to the centre (z 8), so
+    # a straight run's fibre is continuous and a junction's arms reach its core node.
+    parts={'cube':[core_c,cube],'cube_straight':[sleeve(5,11)],'arm_cable':[core(0,8),sleeve(0,5)],
+           'arm_block':[core(1,8),flange,sleeve(1,5)],'item':item}
     for name,els in parts.items():
         jdump({'parent':'minecraft:block/block','render_type':'minecraft:translucent','textures':{'particle':'#fittings'},'elements':els},f'{M}/{B}template_{name}.json')
     DIRS=['north','south','east','west','up','down']; ROT={'north':{},'south':{'y':180},'east':{'y':90},'west':{'y':270},'up':{'x':270},'down':{'x':90}}
+    AXES={'z':('north','south'),'x':('east','west'),'y':('up','down')}; AXIS_ROT={'z':{},'x':{'y':90},'y':{'x':90}}
+    straight=lambda ax:{d:('cable' if d in AXES[ax] else 'none') for d in DIRS}
+    not_straight=lambda ax:{'OR':[{AXES[ax][0]:'!cable'},{AXES[ax][1]:'!cable'}]+[{d:'!none'} for d in DIRS if d not in AXES[ax]]}
+    junction={'AND':[not_straight(ax) for ax in 'zxy']}
     for c in COLOURS:
         tx={'sheath':RL(f'{B}{c}_sheath'),'core':RL(f'{B}{c}_core'),'fittings':RL(f'{B}fittings'),'particle':RL(f'{B}{c}_sheath')}
         for name in parts: jdump({'parent':RL(f'{B}template_{name}'),'textures':tx},f'{M}/{B}{c}/{name}.json')
-        mp=[{'apply':{'model':RL(f'{B}{c}/cube')}}]
+        # a straight run (cable on both ends of one axis, nothing else): the straight body turned to its axis; otherwise
+        # the junction cube (the same rule as the normal / dense cables and CableShapes.straightAxis)
+        mp=[{'when':straight(ax),'apply':{'model':RL(f'{B}{c}/cube_straight'),**AXIS_ROT[ax]}} for ax in 'zxy']
+        mp.append({'when':junction,'apply':{'model':RL(f'{B}{c}/cube')}})
         for d in DIRS:
             mp.append({'when':{d:'cable'},'apply':{'model':RL(f'{B}{c}/arm_cable'),**ROT[d]}})
             mp.append({'when':{d:'block'},'apply':{'model':RL(f'{B}{c}/arm_block'),**ROT[d]}})
         bid='fiber_cable' if c=='neutral' else f'{c}_fiber_cable'
         jdump({'multipart':mp},f'{A}/blockstates/{bid}.json')
-        jdump({'parent':'minecraft:item/generated','textures':{'layer0':RL(f'item/fiber_cable/{c}')}},f'{M}/item/{bid}.json')
-        jdump({'model':{'type':'minecraft:model','model':RL(f'item/{bid}')}},f'{A}/items/{bid}.json')
-def fiber_icon(colour):
-    """Item icon: a diagonal length of glass tube (outline, rim, glass, lit core) with steel collars at both ends."""
-    im=img(); tint=glass_tint(colour); lo,mid,hi=core_cols(colour)
-    rim=tuple(min(255,int(c*1.35)) for c in tint); dark=tuple(int(c*0.55) for c in tint); O=tuple(int(c*0.32) for c in tint)
-    for i in range(4,12):
-        x,y=i,15-i
-        for d in range(-3,4):
-            px=x+d
-            if not 0<=px<16: continue
-            if abs(d)==3: c=O
-            elif d==-2: c=rim
-            elif d==2: c=dark
-            elif d==0: c=hi if i%3 else mid
-            else: c=tint if d==1 else tuple(min(255,int(v*1.1)) for v in tint)
-            put(im,px,y,c)
-    for (cx,cy) in ((3,12),(12,3)):                                   # steel collars
-        for dx in range(-2,3):
-            for dy in range(-1,2):
-                x,y=cx+dx+dy,cy+dy
-                if 0<=x<16 and 0<=y<16: put(im,x,y,g(9 if dy<0 else 7 if dy==0 else 4))
-    return im
+        jdump({'model':{'type':'minecraft:model','model':RL(f'{B}{c}/item')}},f'{A}/items/{bid}.json')
 
 # ================= 4. CABLE ANCHOR =================
 def anchor_tex():
@@ -295,9 +288,10 @@ def facade_models():
                 el((0,a,0),(a,b,1),f(0,a,a,b)),el((b,a,0),(16,b,1),f(b,a,16,b))]
     for name,hole in (('facade_solid',None),('facade_cutout_6',6),('facade_cutout_8',8)):
         jdump({'parent':'minecraft:block/block','textures':{'facade':RL('block/facade_blank'),'particle':'#facade'},'elements':panel(hole)},f'{M}/block/{name}.json')
-    jdump({'parent':RL('block/facade_solid'),'display':{'gui':{'rotation':[30,225,0],'translation':[0,0,0],'scale':[0.625,0.625,0.625]},
+    jdump({'parent':RL('block/facade_solid'),'display':centred({'gui':{'rotation':[30,225,0],'scale':[0.625,0.625,0.625]},
            'ground':{'scale':[0.5,0.5,0.5]},'fixed':{'scale':[0.5,0.5,0.5]},'firstperson_righthand':{'rotation':[0,45,0],'scale':[0.4,0.4,0.4]},
-           'thirdperson_righthand':{'rotation':[75,45,0],'translation':[0,2.5,0],'scale':[0.375,0.375,0.375]}}},f'{M}/item/cable_facade.json')
+           'thirdperson_righthand':{'rotation':[75,45,0],'translation':[0,2.5,0],'scale':[0.375,0.375,0.375]}},f'{M}/block/facade_solid.json')},
+           f'{M}/item/cable_facade.json')
     jdump({'model':{'type':'minecraft:model','model':RL('item/cable_facade')}},f'{A}/items/cable_facade.json')
 def facade_icon():
     im=img(); O=g(0)
@@ -410,7 +404,6 @@ def write_all():
             for fr in range(16): strip.paste(core_tex(c,fr),(0,16*fr))
             save(strip,f'{T}/block/cable/fiber/{c}_core.png'); open(f'{T}/block/cable/fiber/{c}_core.png.mcmeta','w',newline='\n').write(MCMETA_CYCLE)
         else: save(core_tex(c),f'{T}/block/cable/fiber/{c}_core.png')
-        save(fiber_icon(c),f'{T}/item/fiber_cable/{c}.png')
     fiber_models()
     save(anchor_tex(),f'{T}/block/cable_anchor.png'); save(anchor_dense_tex(),f'{T}/block/cable_anchor_dense.png'); save(anchor_icon(),f'{T}/item/cable_anchor.png'); anchor_models()
     save(facade_blank(),f'{T}/block/facade_blank.png'); save(facade_icon(),f'{T}/item/cable_facade.png'); facade_models()

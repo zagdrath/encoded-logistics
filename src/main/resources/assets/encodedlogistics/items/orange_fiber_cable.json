@@ -1,6 +1,6 @@
 {
  "model": {
   "type": "minecraft:model",
-  "model": "encodedlogistics:item/orange_fiber_cable"
+  "model": "encodedlogistics:block/cable/fiber/orange/item"
  }
 }

@@ -4,6 +4,7 @@
 import os, json, sys
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image
+from item_display import centred
 from el_style import *
 from items_p4 import ITEMS
 import blocks_p4 as B
@@ -67,10 +68,10 @@ def bridge():
     st={'unlinked':'network_bridge','linked_idle':'network_bridge_linked','linked_active':'network_bridge_active'}
     jd({'variants':{f'facing={f},status={s}':{'model':RL('block/'+m),**r} for f,r in ROT6.items() for s,m in st.items()}},f'{A}blockstates/network_bridge.json')
     jd({'model':{'type':'minecraft:model','model':RL('block/network_bridge_linked')}},f'{A}items/network_bridge.json')
-def part_item(name,model):
-    jd({'parent':RL(model),'display':{'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},'ground':{'scale':[0.4,0.4,0.4]},
+def part_item(name,model):     # centred in the slot, though the part sits against one face of its block
+    jd({'parent':RL(model),'display':centred({'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},'ground':{'scale':[0.4,0.4,0.4]},
         'fixed':{'rotation':[0,180,0],'scale':[0.6,0.6,0.6]},'firstperson_righthand':{'rotation':[0,200,0],'scale':[0.45,0.45,0.45]},
-        'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}}},f'{M}item/{name}.json')
+        'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}},f'{M}{model}.json')},f'{M}item/{name}.json')
     jd({'model':{'type':'minecraft:model','model':RL(f'item/{name}')}},f'{A}items/{name}.json')
 def p2p():
     P=T+'block/part/p2p/'
@@ -136,7 +137,7 @@ def lang():
        'item.encodedlogistics.collector_plane':'Collector Plane','item.encodedlogistics.deployer_plane':'Deployer Plane',
        'gui.encodedlogistics.handheld_terminal':'Handheld Terminal','gui.encodedlogistics.handheld.linked':'Linked',
        'gui.encodedlogistics.handheld.unlinked':'Not linked','gui.encodedlogistics.handheld.out_of_range':'Out of range',
-       'gui.encodedlogistics.relay.range':'Range: %s blocks','gui.encodedlogistics.relay.transceivers':'Transceivers',
+       'gui.encodedlogistics.relay.range':'Range: %s m','gui.encodedlogistics.relay.transceivers':'Transceivers',
        'gui.encodedlogistics.relay.linked':'Linked terminals','gui.encodedlogistics.relay.entry':'%s - %s m',
        'gui.encodedlogistics.bridge.status.unlinked':'Not linked','gui.encodedlogistics.bridge.status.linked':'Linked',
        'gui.encodedlogistics.bridge.status.offline':'Partner offline','gui.encodedlogistics.bridge.partner':'Partner: %s, %s, %s',

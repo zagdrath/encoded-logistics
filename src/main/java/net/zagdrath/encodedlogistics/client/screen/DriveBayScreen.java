@@ -23,26 +23,23 @@ import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
-// The Drive Bay screen: the ten drive slots laid out like the front, each with a fill bar in its status light's colour
-// (green, yellow, orange, red), a ghost drive in empty slots, and Online / Offline in the corner. Layout and colours from
-// screens/drive_bay.json and palette.json.
+// The Drive Bay screen: the ten drive slots in one inset, laid out like the front, each with a fill bar in its status
+// light's colour (green, yellow, orange, red), a dim Storage Drive silhouette in empty slots, and Online / Offline (the
+// controller's lights) in the title strip. Layout and colours from screens/drive_bay.json and palette.json.
 public class DriveBayScreen extends AbstractContainerScreen<DriveBayMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/drive_bay.png");
     private static final Identifier GHOST = EncodedLogistics.id("drive_bay/ghost_drive");
     private static final Identifier[] FILLS = { EncodedLogistics.id("drive_bay/fill_green"), EncodedLogistics.id("drive_bay/fill_yellow"),
             EncodedLogistics.id("drive_bay/fill_orange"), EncodedLogistics.id("drive_bay/fill_red") };
-    private static final Identifier DOT_ONLINE = EncodedLogistics.id("drive_bay/dot_green"), DOT_OFFLINE = EncodedLogistics.id("drive_bay/dot_red");
-
-    private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ACCENT = 0xFF00D992, ERROR = 0xFFFF6B6B;
     // The fill bar sits 20 px right of the slot frame (19 from the item), as tall as the item.
-    private static final int STATUS_RIGHT = 168, BAR_X = 19, BAR_W = 4, BAR_H = 16;
+    private static final int BAR_X = 19, BAR_W = 4, BAR_H = 16;
 
     public DriveBayScreen(DriveBayMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 176, 205);
+        super(menu, inventory, title, 176, 208);
         this.titleLabelX = 8;
         this.titleLabelY = 5;
         this.inventoryLabelX = 8;
-        this.inventoryLabelY = 111;
+        this.inventoryLabelY = 115;
     }
 
     @Override
@@ -68,13 +65,12 @@ public class DriveBayScreen extends AbstractContainerScreen<DriveBayMenu> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_MUTED, false);
+        graphics.text(font, title, titleLabelX, titleLabelY, PartScreens.TEXT, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, PartScreens.TEXT_MUTED, false);
         boolean online = menu.isOnline();
-        Component status = Component.translatable(online ? "gui.encodedlogistics.drive_bay.online" : "gui.encodedlogistics.drive_bay.offline");
-        int textX = STATUS_RIGHT - font.width(status);
-        graphics.text(font, status, textX, titleLabelY, online ? ACCENT : ERROR, false);
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, online ? DOT_ONLINE : DOT_OFFLINE, textX - 9, titleLabelY + 1, 6, 6);
+        PartScreens.status(graphics, font, PartScreens.STATUS_RIGHT, titleLabelY,
+                Component.translatable(online ? "gui.encodedlogistics.drive_bay.online" : "gui.encodedlogistics.drive_bay.offline"),
+                online ? PartScreens.Status.ONLINE : PartScreens.Status.ERROR);
     }
 
     @Override
@@ -88,9 +84,9 @@ public class DriveBayScreen extends AbstractContainerScreen<DriveBayMenu> {
                 graphics.setComponentTooltipForNextFrame(font, List.of(
                         Component.translatable("gui.encodedlogistics.drive_bay.fill", Math.round(stats.fill() * 100)),
                         Component.translatable("tooltip.encodedlogistics.drive.bytes", String.format(Locale.ROOT, "%,d", stats.bytesUsed()),
-                                String.format(Locale.ROOT, "%,d", stats.bytesTotal())).withColor(TEXT_MUTED),
+                                String.format(Locale.ROOT, "%,d", stats.bytesTotal())).withColor(PartScreens.TEXT_MUTED),
                         Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
-                                .withColor(TEXT_MUTED)),
+                                .withColor(PartScreens.TEXT_MUTED)),
                         mouseX, mouseY);
             }
         }

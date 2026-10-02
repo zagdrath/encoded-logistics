@@ -20,8 +20,8 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 // The Fabricator's screen (screens/fabricator.json): its 3x3 Crafting Schematic slots, two Throughput Module slots, the
 // craft's progress and the player's inventory. data: progress, duration.
 public class FabricatorMenu extends AbstractContainerMenu {
-    public static final int SCHEMATICS_X = 45, SCHEMATICS_Y = 18, MODULE_X = 153, INVENTORY_Y = 84;
-    public static final int[] MODULE_Y = { 27, 45 };
+    public static final int SCHEMATICS_X = 27, SCHEMATICS_Y = 20, MODULE_X = 137, INVENTORY_Y = 88;
+    public static final int[] MODULE_Y = { 28, 46 };
     private static final int INVENTORY = FabricatorBlockEntity.SLOTS;
 
     private final Container fabricator;

@@ -1,0 +1,9 @@
+{
+ "parent": "encodedlogistics:block/cable/fiber/template_item",
+ "textures": {
+  "sheath": "encodedlogistics:block/cable/fiber/magenta_sheath",
+  "core": "encodedlogistics:block/cable/fiber/magenta_core",
+  "fittings": "encodedlogistics:block/cable/fiber/fittings",
+  "particle": "encodedlogistics:block/cable/fiber/magenta_sheath"
+ }
+}

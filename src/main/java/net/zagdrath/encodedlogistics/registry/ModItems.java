@@ -67,6 +67,9 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_TANTALUM = ITEMS.registerSimpleItem("raw_tantalum");
     public static final DeferredItem<Item> NEODYMIUM_INGOT = ITEMS.registerSimpleItem("neodymium_ingot");
     public static final DeferredItem<Item> TANTALUM_INGOT = ITEMS.registerSimpleItem("tantalum_ingot");
+    // Dusts (#c:dusts/<metal>): smelt into ingots; Arcforge's Arc Crusher makes them from ore, raw metal and ingots.
+    public static final DeferredItem<Item> NEODYMIUM_DUST = ITEMS.registerSimpleItem("neodymium_dust");
+    public static final DeferredItem<Item> TANTALUM_DUST = ITEMS.registerSimpleItem("tantalum_dust");
     public static final DeferredItem<Item> DOPED_SILICON = ITEMS.registerSimpleItem("doped_silicon");
     public static final DeferredItem<Item> MEMORY_DIE = ITEMS.registerSimpleItem("memory_die");
     public static final DeferredItem<Item> MEMORY_PHOTOMASK = ITEMS.registerSimpleItem("memory_photomask", p -> p.stacksTo(1));
@@ -81,6 +84,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> DEEPSLATE_GALLIUM_ORE = ITEMS.registerSimpleBlockItem(ModBlocks.DEEPSLATE_GALLIUM_ORE);
     public static final DeferredItem<Item> RAW_GALLIUM = ITEMS.registerSimpleItem("raw_gallium");
     public static final DeferredItem<Item> GALLIUM_INGOT = ITEMS.registerSimpleItem("gallium_ingot");
+    public static final DeferredItem<Item> GALLIUM_DUST = ITEMS.registerSimpleItem("gallium_dust");
     public static final DeferredItem<Item> PROCESSOR_DIE = ITEMS.registerSimpleItem("processor_die");
     public static final DeferredItem<Item> PROCESSOR_PHOTOMASK = ITEMS.registerSimpleItem("processor_photomask", p -> p.stacksTo(1));
     public static final DeferredItem<Item> HEATSINK = ITEMS.registerSimpleItem("heatsink");

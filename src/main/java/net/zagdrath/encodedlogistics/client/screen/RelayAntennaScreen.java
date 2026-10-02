@@ -23,8 +23,9 @@ import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
 public class RelayAntennaScreen extends AbstractContainerScreen<RelayAntennaMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/relay_antenna.png");
     private static final Identifier GHOST = EncodedLogistics.id("relay/ghost_transceiver");
-    private static final int RANGE_X = 11, RANGE_Y = 21, LINKED_X = 8, LINKED_Y = 35, LIST_X = 10, LIST_Y = 46, ROWS = 3, ROW_HEIGHT = 11,
-            LIST_W = 156;
+    // The range readout's inset is 8..91 x 17..34, the list's 8..167 x 46..79 (rows of 10 from 48).
+    private static final int RANGE_X = 13, RANGE_Y = 22, LINKED_X = 8, LINKED_Y = 37, LIST_X = 12, LIST_Y = 48, ROWS = 3, ROW_HEIGHT = 10,
+            LIST_W = 152;
 
     private int scroll;
 
@@ -33,7 +34,7 @@ public class RelayAntennaScreen extends AbstractContainerScreen<RelayAntennaMenu
         this.titleLabelX = 8;
         this.titleLabelY = 5;
         this.inventoryLabelX = 8;
-        this.inventoryLabelY = 82;
+        this.inventoryLabelY = 83;
     }
 
     @Override

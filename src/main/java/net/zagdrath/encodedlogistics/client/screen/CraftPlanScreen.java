@@ -33,11 +33,11 @@ import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
 public class CraftPlanScreen extends Screen {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/craft_plan.png");
     private static final Identifier EXPAND = EncodedLogistics.id("common/tree_expand"), COLLAPSE = EncodedLogistics.id("common/tree_collapse"),
-            HIGHLIGHT = EncodedLogistics.id("common/row_highlight"), THUMB = EncodedLogistics.id("terminal/scroll_thumb"),
-            THUMB_DISABLED = EncodedLogistics.id("terminal/scroll_thumb_disabled");
+            HIGHLIGHT = EncodedLogistics.id("common/row_highlight"), THUMB = EncodedLogistics.id("controller/scroll_thumb"),
+            THUMB_DISABLED = EncodedLogistics.id("controller/scroll_thumb_disabled");
     private static final int WIDTH = 220, HEIGHT = 196, TREE_X = 10, TREE_Y = 44, ROWS = 6, ROW = 18, INDENT = 8, MAX_INDENT = 6;
     private static final int HAVE_X = 112, MAKE_X = 142, MISS_X = 172, HEADER_Y = 31, TREE_WIDTH = 192;
-    private static final int SCROLL_X = 205, SCROLL_Y = 29, SCROLL_H = 130, THUMB_W = 10, THUMB_H = 15;
+    private static final int SCROLL_X = 205, SCROLL_Y = 29, SCROLL_H = 130, THUMB_W = 6, THUMB_H = 15;
     private static final int BUTTON_Y = 168, BUTTON_H = 18, SCHEDULER_X = 8, SCHEDULER_W = 104, START_X = 118, CANCEL_X = 166, SMALL_W = 46;
 
     private final Screen terminal;
@@ -156,7 +156,7 @@ public class CraftPlanScreen extends Screen {
             number(graphics, line.missing(), left + MISS_X, y + 5, PartScreens.ERROR);
         }
         int max = maxScroll();
-        int thumbY = top + SCROLL_Y + 1 + (max == 0 ? 0 : Math.round((float) scroll * (SCROLL_H - THUMB_H - 2) / max));
+        int thumbY = top + SCROLL_Y + (max == 0 ? 0 : Math.round((float) scroll * (SCROLL_H - THUMB_H) / max));
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, max == 0 ? THUMB_DISABLED : THUMB, left + SCROLL_X, thumbY, THUMB_W, THUMB_H);
 
         PartScreens.wideButton(graphics, font, left + SCHEDULER_X, top + BUTTON_Y, SCHEDULER_W, BUTTON_H, schedulerText(), !plan.schedulers().isEmpty(),

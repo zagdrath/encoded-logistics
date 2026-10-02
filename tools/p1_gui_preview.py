@@ -36,7 +36,7 @@ for i,n in enumerate(names):
     x=24+9+(i%9)*18; y=19+1+(i//9)*18; c.alpha_composite(it(n),(x,y))
 c.alpha_composite(Image.open(R+'gui/sprites/terminal/slot_highlight.png'),(24+9+3*18,19+1))
 c.alpha_composite(Image.open(R+'gui/sprites/terminal/search_field_focused.png'),(24+104,4)); T(c,24+108,6,'si','#F0F0F0')
-T(c,24+8,6,'Access Terminal','#F0F0F0'); c.alpha_composite(Image.open(R+'gui/sprites/terminal/scroll_thumb.png'),(24+176,19+2))
+T(c,24+8,6,'Access Terminal','#F0F0F0'); c.alpha_composite(Image.open(R+'gui/sprites/controller/scroll_thumb.png'),(24+176,19))
 for i,(b,ic) in enumerate((('button','icon_sort_count'),('button_hover','icon_dir_desc'))):
     c.alpha_composite(Image.open(R+f'gui/sprites/terminal/{b}.png'),(2,6+20*i)); c.alpha_composite(Image.open(R+f'gui/sprites/terminal/{ic}.png'),(3,7+20*i))
 bt=19+6*18; T(c,24+9,bt+6,'Inventory','#B4B4B4')

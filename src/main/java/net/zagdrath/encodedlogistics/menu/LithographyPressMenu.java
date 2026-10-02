@@ -39,10 +39,10 @@ public class LithographyPressMenu extends AbstractContainerMenu {
         this.data = data;
         this.level = inventory.player.level();
         press.startOpen(inventory.player);
-        addSlot(new InputSlot(press, LithographyPressBlockEntity.PHOTOMASK, 80, 17));
-        addSlot(new InputSlot(press, LithographyPressBlockEntity.WAFER, 44, 36));
-        addSlot(new InputSlot(press, LithographyPressBlockEntity.ADDITIVE, 80, 59));
-        addSlot(new Slot(press, LithographyPressBlockEntity.OUTPUT, 113, 36) {
+        addSlot(new InputSlot(press, LithographyPressBlockEntity.PHOTOMASK, 39, 36));
+        addSlot(new InputSlot(press, LithographyPressBlockEntity.WAFER, 57, 36));
+        addSlot(new InputSlot(press, LithographyPressBlockEntity.ADDITIVE, 75, 36));
+        addSlot(new Slot(press, LithographyPressBlockEntity.OUTPUT, 133, 36) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return false;

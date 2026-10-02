@@ -1,7 +1,7 @@
 # Phase 2 GUIs (same kit as the controller/Phase 1 screens): ports, inventory tap, threshold sensor, terminal crafting.
 import os, json, sys
 from PIL import Image
-from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, TW
+from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, TW, well_close, arrow, ghost, inset
 def sprite(path,w,h,fn):
     im=Image.new('RGBA',(w,h),(0,0,0,0)); q=im.load()
     for y in range(h):
@@ -32,7 +32,7 @@ def port_gui(T):
            '.......##.......','.......##.......','.......##.......','.......##.......','.....######.....','................']
     glyph(S+'redstone_high.png',torch,{'#':R_}); glyph(S+'redstone_low.png',torch,{'#':R2})
     glyph(S+'redstone_pulse.png',['................']*4+['..####....####..','..#..#....#..#..','..#..#....#..#..','..#..#....#..#..','###..######..###']+['................']*7,{'#':R_})
-    sprite(S+'ghost_module.png',16,16,lambda x,y:(255,255,255,70) if ((x in (3,12) and 2<=y<=13) or (y in (2,13) and 3<=x<=12) or (y==11 and 4<=x<=11 and x%2==0)) else None)
+    ghost(S+'ghost_module.png','module')
 def tap_gui(T):
     W,Hh=176,TAP_['h']; im=Image.new('RGBA',(256,256),(0,0,0,0)); p=im.load()
     panel(p,0,0,W,Hh); corners(p,W,Hh); header(p,W)
@@ -69,16 +69,11 @@ CRAFT={'h':76,'grid':(30,8),'arrow':(92,26),'output':(122,21),'clear':(84,8)}
 def terminal_crafting(T):
     """Fabrication Terminal section: inserted between the item-grid rows and the bottom piece (195 x 76)."""
     im=Image.new('RGBA',(256,128),(0,0,0,0)); p=im.load(); panel(p,0,0,TW,CRAFT['h'],'lr')
-    for x in range(8,170): p[x,0]=SLOT[3]                           # closes the item-grid well (as bottom.png does)
-    for x in range(175,187): p[x,0]=SLOT[3]
-    for x in range(8,187): p[x,3]=C('#3A3A3A')                      # divider under the item grid
+    well_close(p)                                                   # closes the item-grid well (as bottom.png does)
     gx,gy=CRAFT['grid']
     for r in range(3):
         for c in range(3): slot(p,gx+c*18,gy+r*18)
-    ax,ay=CRAFT['arrow']
-    for y in range(17):
-        for x in range(24):
-            if (x<15 and 6<=y<=10) or (x>=15 and abs(y-8)<=8-(x-15)): p[ax+x,ay+y]=C('#2A2A2A')
+    arrow(p,*CRAFT['arrow'])
     slot(p,*CRAFT['output'],26,26)
     os.makedirs(T+'gui/terminal',exist_ok=True); im.save(T+'gui/terminal/crafting.png')
     # bottom piece without the well lip, drawn after any section (the section has already closed the well)

@@ -64,7 +64,7 @@ c=Image.new('RGBA',(195+24,Hh),(0,0,0,0)); c.alpha_composite(t,(24,0))
 names=['silicon_wafer','doped_silicon','ferrite','neodymium_ingot','tantalum_ingot','copper_foil','solder_paste','circuit_substrate','logic_die','memory_die','tantalum_capacitor','storage_die_8k','storage_die_32k','storage_die_128k']
 for i,n in enumerate(names): c.alpha_composite(it(n),(24+9+(i%9)*18,20+(i//9)*18))
 T(c,24+8,6,'Fabrication Terminal','#F0F0F0'); c.alpha_composite(spr('gui/sprites/terminal/search_field.png'),(24+104,4)) if False else None
-c.alpha_composite(spr('gui/sprites/terminal/scroll_thumb.png'),(24+176,21))
+c.alpha_composite(spr('gui/sprites/controller/scroll_thumb.png'),(24+176,19))
 grid=['circuit_substrate','memory_die','tantalum_capacitor',None,None,None,None,None,None]
 for i,n in enumerate(grid):
     if n: c.alpha_composite(it(n),(24+31+(i%3)*18,cy+9+(i//3)*18))

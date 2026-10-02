@@ -25,6 +25,8 @@ def paint():                                                    # the exporters 
     save(N.terminal_front(N.INDIGO),'schematic_encoder/front.png')
     # Phase 1 touch (shared base): Access Terminal glass gets the same reflection, no stripe
     save(N.terminal_front(None),'access_terminal/front.png')
+    # Drive Bay casing: clean repaint of the shipped (grainy) art, same layout
+    save(N.drive_bay_front(),'drive_bay/front.png'); save(N.drive_bay_casing(False),'drive_bay/side.png'); save(N.drive_bay_casing(True),'drive_bay/top.png')
 def check(repo_tex):
     # sanity: every file must already exist in the repo with the same size
     from PIL import Image

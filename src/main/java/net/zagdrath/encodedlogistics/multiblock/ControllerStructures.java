@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -535,11 +536,13 @@ public class ControllerStructures extends SavedData {
         MinecraftServer server = level.getServer();
         List<StorageView> views = new ArrayList<>();
         DriveStorage drives = DriveStorage.get(server);
+        // A copied drive (creative pick-block) shares its id, and so its contents, with the original: each id counts once.
+        Set<UUID> seen = new HashSet<>();
         for (NodePos pos : owner.runtime.driveBays) {
             if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveBayBlockEntity bay) {
                 for (int slot = 0; slot < DriveBayBlockEntity.SLOTS; slot++) {
                     ItemStack stack = bay.drive(slot);
-                    if (stack != null && stack.getItem() instanceof StorageDriveItem drive) {
+                    if (stack != null && stack.getItem() instanceof StorageDriveItem drive && seen.add(StorageDriveItem.id(stack))) {
                         views.add(new DriveView(drives, bay, slot, StorageDriveItem.id(stack), drive.getTier()));
                     }
                 }

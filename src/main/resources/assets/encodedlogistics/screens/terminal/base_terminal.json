@@ -1,5 +1,5 @@
 {
- "$comment": "Modular terminal layout. Height = top + rows*row + bottom; rows fill the window between min and max.",
+ "$comment": "Modular terminal layout. Height = top + rows*row + bottom; rows follow the height setting (small / medium / tall / fill the window) between min and max.",
  "width": 195,
  "pieces": {
   "top": {
@@ -19,7 +19,12 @@
   "min": 3,
   "max": 12,
   "default": 6,
-  "fit_to_window": true
+  "fit_to_window": true,
+  "heights": {
+   "small": 3,
+   "medium": 6,
+   "tall": 9
+  }
  },
  "grid": {
   "left": 9,
@@ -35,18 +40,19 @@
  "scrollbar": {
   "left": 176,
   "top": 19,
-  "width": 10,
-  "thumb": "terminal/scroll_thumb",
-  "thumb_disabled": "terminal/scroll_thumb_disabled",
+  "width": 6,
+  "thumb": "controller/scroll_thumb",
+  "thumb_hover": "controller/scroll_thumb_hover",
+  "thumb_disabled": "controller/scroll_thumb_disabled",
   "thumb_size": [
-   10,
+   6,
    15
   ]
  },
  "search": {
-  "left": 104,
+  "left": 119,
   "top": 4,
-  "width": 68,
+  "width": 64,
   "height": 12,
   "sprite": "terminal/search_field",
   "sprite_focused": "terminal/search_field_focused",
@@ -56,9 +62,14 @@
  },
  "toolbar": {
   "side": "left",
-  "left": -20,
-  "top": 6,
+  "left": -21,
+  "top": 19,
   "spacing": 20,
+  "tab": "terminal/toolbar",
+  "tab_size": [
+   24,
+   128
+  ],
   "button": "terminal/button",
   "button_hover": "terminal/button_hover",
   "button_pressed": "terminal/button_pressed",
@@ -84,6 +95,15 @@
      "terminal/icon_craftable_on",
      "terminal/icon_craftable_off"
     ]
+   },
+   {
+    "id": "height",
+    "icons": [
+     "terminal/icon_height_small",
+     "terminal/icon_height_medium",
+     "terminal/icon_height_tall",
+     "terminal/icon_height_fill"
+    ]
    }
   ]
  },
@@ -96,8 +116,9 @@
  "text": {
   "title": {
    "left": 8,
-   "top": 6,
-   "color": "TEXT"
+   "top": 5,
+   "color": "TEXT",
+   "max_right": 115
   },
   "inventory": {
    "key": "container.inventory",

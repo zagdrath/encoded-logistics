@@ -38,22 +38,22 @@
  },
  "slots": {
   "photomask": {
-   "left": 80,
-   "top": 17,
+   "left": 39,
+   "top": 36,
    "ghost": "ghost_photomask"
   },
   "wafer": {
-   "left": 44,
+   "left": 57,
    "top": 36,
    "ghost": "ghost_wafer"
   },
   "additive": {
-   "left": 80,
-   "top": 59,
+   "left": 75,
+   "top": 36,
    "ghost": "ghost_additive"
   },
   "output": {
-   "left": 113,
+   "left": 133,
    "top": 36,
    "output": true
   }
@@ -66,9 +66,22 @@
    "tooltip": "energy"
   },
   "progress": {
-   "left": 70,
-   "top": 36,
+   "left": 98,
+   "top": 35,
    "sprite": "progress"
+  },
+  "status": {
+   "right": 168,
+   "top": 5,
+   "led": [
+    -9,
+    1
+   ],
+   "states": {
+    "working": "ACCENT",
+    "idle": "TEXT_MUTED",
+    "no_power": "WARNING"
+   }
   }
  },
  "player_inventory": {
@@ -85,7 +98,7 @@
   "inventory": {
    "key": "container.inventory",
    "left": 8,
-   "top": 72,
+   "top": 73,
    "color": "TEXT_MUTED"
   }
  }

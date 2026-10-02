@@ -95,8 +95,9 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
         graphics.text(font, Component.translatable("gui.encodedlogistics.sensor.item"), 26, 22, PartScreens.TEXT_MUTED, false);
         graphics.text(font, Component.translatable("gui.encodedlogistics.sensor.threshold"), 52, 22, PartScreens.TEXT_MUTED, false);
         boolean emitting = menu.emitting();
-        graphics.text(font, Component.translatable(emitting ? "gui.encodedlogistics.sensor.state.on" : "gui.encodedlogistics.sensor.state.off"),
-                52, 52, emitting ? PartScreens.ACCENT : PartScreens.TEXT_MUTED, false);
+        PartScreens.status(graphics, font, PartScreens.STATUS_RIGHT, PartScreens.STATUS_Y,
+                Component.translatable(emitting ? "gui.encodedlogistics.sensor.state.on" : "gui.encodedlogistics.sensor.state.off"),
+                emitting ? PartScreens.Status.ONLINE : PartScreens.Status.IDLE);
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, PartScreens.TEXT_MUTED, false);
     }
 

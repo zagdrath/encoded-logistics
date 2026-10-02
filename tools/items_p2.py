@@ -28,6 +28,7 @@ def ore_overlay(src,ramp6):
             out.putpixel((x,y),tuple(round(R[i][k]+(R[i+1][k]-R[i][k])*f) for k in range(3))+(p[3],))
     return out
 def raw(ramp6,seed): return grain(arc_based.recolour('raw_nickel.png',ramp6),seed,0.06)
+def dust(ramp6): return arc_based.recolour('nether_quartz_dust.png',ramp6)   # Arcforge's dust heap in the raw ore's ramp
 def ingot(ramp8):
     im,_=arc_based.recolour_indexed('nickel_ingot.png',ramp8); return im
 def doped_silicon():
@@ -96,6 +97,7 @@ def module(name):
     return grain(out,85,0.06,keep=set(acc)|{H('#14181C')})
 ITEMS={'raw_neodymium':lambda: raw(NEO_RAMP,81),'raw_tantalum':lambda: raw(TAN_RAMP,82),
        'neodymium_ingot':lambda: ingot(NEO_INGOT),'tantalum_ingot':lambda: ingot(TAN_INGOT),
+       'neodymium_dust':lambda: dust(NEO_RAMP),'tantalum_dust':lambda: dust(TAN_RAMP),
        'doped_silicon':doped_silicon,'memory_die':memory_die,'memory_photomask':photomask_memory,
        'tantalum_capacitor':tantalum_capacitor,'filter_module':lambda: module('filter'),'throughput_module':lambda: module('throughput'),
        'fuzzy_match_module':lambda: module('fuzzy_match'),'redstone_control_module':lambda: module('redstone_control'),

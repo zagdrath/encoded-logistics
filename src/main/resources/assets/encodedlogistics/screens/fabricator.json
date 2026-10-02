@@ -5,21 +5,21 @@
  "background": {
   "texture": "gui/fabricator.png",
   "width": 176,
-  "height": 166
+  "height": 170
  },
  "slots": {
   "schematics": {
-   "left": 45,
-   "top": 18,
+   "left": 27,
+   "top": 20,
    "columns": 3,
    "rows": 3,
    "accepts": "encodedlogistics:encoded_schematic_crafting"
   },
   "modules": {
-   "left": 153,
+   "left": 137,
    "top": [
-    27,
-    45
+    28,
+    46
    ],
    "accepts": "encodedlogistics:throughput_module",
    "ghost": "port/ghost_module"
@@ -27,15 +27,27 @@
  },
  "widgets": {
   "progress": {
-   "left": 108,
-   "top": 35,
+   "left": 88,
+   "top": 37,
    "sprite": "lithography_press/progress",
    "fill": "left_to_right"
+  },
+  "status": {
+   "right": 168,
+   "top": 5,
+   "led": [
+    -9,
+    1
+   ],
+   "states": {
+    "working": "ACCENT",
+    "idle": "TEXT_MUTED"
+   }
   }
  },
  "player_inventory": {
   "left": 8,
-  "top": 84
+  "top": 88
  },
  "text": {
   "title": {
@@ -47,7 +59,7 @@
   "inventory": {
    "key": "container.inventory",
    "left": 8,
-   "top": 72,
+   "top": 77,
    "color": "TEXT_MUTED"
   }
  }

@@ -15,19 +15,19 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.menu.FabricatorMenu;
 
-// The Fabricator's screen (screens/fabricator.json): its schematics, the craft's progress arrow, its module slots (the
-// ghost module shows in empty ones) and the inventory.
+// The Fabricator's screen (screens/fabricator.json): in one inset its schematics, the craft's progress arrow and its
+// module slots (a dim module silhouette in empty ones); Working / Idle in the title strip; the inventory.
 public class FabricatorScreen extends AbstractContainerScreen<FabricatorMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/fabricator.png");
     private static final Identifier PROGRESS = EncodedLogistics.id("lithography_press/progress"), GHOST_MODULE = EncodedLogistics.id("port/ghost_module");
-    private static final int PROGRESS_X = 108, PROGRESS_Y = 35, PROGRESS_W = 24, PROGRESS_H = 17;
+    private static final int PROGRESS_X = 88, PROGRESS_Y = 37, PROGRESS_W = 24, PROGRESS_H = 17;
 
     public FabricatorScreen(FabricatorMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 176, 166);
+        super(menu, inventory, title, 176, 170);
         this.titleLabelX = 8;
         this.titleLabelY = 5;
         this.inventoryLabelX = 8;
-        this.inventoryLabelY = 72;
+        this.inventoryLabelY = 77;
     }
 
     @Override
@@ -50,5 +50,9 @@ public class FabricatorScreen extends AbstractContainerScreen<FabricatorMenu> {
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, title, titleLabelX, titleLabelY, PartScreens.TEXT, false);
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, PartScreens.TEXT_MUTED, false);
+        boolean working = menu.progress() > 0;
+        PartScreens.status(graphics, font, PartScreens.STATUS_RIGHT, PartScreens.STATUS_Y,
+                Component.translatable(working ? "gui.encodedlogistics.status.working" : "gui.encodedlogistics.status.idle"),
+                working ? PartScreens.Status.ONLINE : PartScreens.Status.IDLE);
     }
 }

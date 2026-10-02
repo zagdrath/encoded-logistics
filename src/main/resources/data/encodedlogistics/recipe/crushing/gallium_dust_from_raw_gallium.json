@@ -1,0 +1,21 @@
+{
+ "neoforge:conditions": [
+  {
+   "type": "neoforge:mod_loaded",
+   "modid": "arcforge"
+  }
+ ],
+ "type": "arcforge:crushing",
+ "ingredient": "#c:raw_materials/gallium",
+ "result": {
+  "count": 1,
+  "id": "encodedlogistics:gallium_dust"
+ },
+ "bonus": {
+  "count": 1,
+  "id": "encodedlogistics:gallium_dust"
+ },
+ "bonus_chance": 0.25,
+ "time": 200,
+ "ore": true
+}

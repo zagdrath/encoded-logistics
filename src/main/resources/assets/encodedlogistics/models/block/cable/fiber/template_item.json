@@ -1,0 +1,200 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:translucent",
+ "textures": {
+  "particle": "#fittings"
+ },
+ "elements": [
+  {
+   "from": [
+    7,
+    7,
+    0
+   ],
+   "to": [
+    9,
+    9,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      16
+     ]
+    },
+    "north": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#core",
+     "uv": [
+      0,
+      0,
+      2,
+      2
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "from": [
+    5,
+    5,
+    0
+   ],
+   "to": [
+    11,
+    11,
+    8
+   ],
+   "faces": {
+    "east": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      0,
+      16,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#sheath",
+     "uv": [
+      0,
+      0,
+      8,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#sheath",
+     "uv": [
+      0,
+      6,
+      6,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#sheath",
+     "uv": [
+      0,
+      6,
+      6,
+      14
+     ]
+    },
+    "north": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "from": [
+    5,
+    5,
+    8
+   ],
+   "to": [
+    11,
+    11,
+    16
+   ],
+   "faces": {
+    "east": {
+     "texture": "#sheath",
+     "uv": [
+      0,
+      0,
+      8,
+      6
+     ]
+    },
+    "west": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      0,
+      16,
+      6
+     ]
+    },
+    "up": {
+     "texture": "#sheath",
+     "uv": [
+      0,
+      6,
+      6,
+      14
+     ]
+    },
+    "down": {
+     "texture": "#sheath",
+     "uv": [
+      0,
+      6,
+      6,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#sheath",
+     "uv": [
+      8,
+      8,
+      14,
+      14
+     ]
+    }
+   }
+  }
+ ]
+}

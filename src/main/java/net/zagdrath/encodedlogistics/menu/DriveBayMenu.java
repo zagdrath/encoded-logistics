@@ -21,9 +21,9 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 // The Drive Bay screen: its ten drive slots laid out like the front (two columns of five) and the player's inventory.
 // data[0] is 1 while the bay is online.
 public class DriveBayMenu extends AbstractContainerMenu {
-    // Item positions, as screens/drive_bay.json lays them out (slot frames at 56 / 96, 18 down).
+    // Item positions, as screens/drive_bay.json lays them out (slot frames at 56 / 96 from 20, 18 down).
     public static final int[] COLUMN_X = { 57, 97 };
-    public static final int TOP = 19, ROW = 18, INVENTORY_Y = 123, HOTBAR_Y = 181;
+    public static final int TOP = 21, ROW = 18, INVENTORY_Y = 126, HOTBAR_Y = 184;
 
     private final Container bay;
     private final ContainerData data;

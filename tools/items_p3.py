@@ -4,7 +4,7 @@ from PIL import Image
 from el_style import H, put, img
 import arc_based
 from items_v3 import load, remap, grain, ramp, module_die, storage_die, drive, L
-from items_p2 import ore_overlay, raw, ingot, GLYPHS
+from items_p2 import ore_overlay, raw, ingot, dust, GLYPHS
 PROCESSOR=ramp('#1E2470','#3A44B8','#5C6CF0','#B8C0FF')          # Processor Die / Processor Photomask
 CRAFTING=ramp('#7A5C08','#B88E14','#E8C24A','#F5DE8A')           # Crafting Schematic (autocrafting gold)
 PROCESSING=ramp('#0B4A44','#138A7E','#27C4B4','#A8F0E6')         # Processing Schematic (teal)
@@ -80,7 +80,7 @@ def heatsink():
     return out
 ITEMS={'schematic_card':lambda: card(None,'blank'),'encoded_schematic_crafting':lambda: card(CRAFTING,'crafting'),
        'encoded_schematic_processing':lambda: card(PROCESSING,'processing'),
-       'raw_gallium':lambda: raw(GA_RAMP,95),'gallium_ingot':lambda: ingot(GA_INGOT),
+       'raw_gallium':lambda: raw(GA_RAMP,95),'gallium_ingot':lambda: ingot(GA_INGOT),'gallium_dust':lambda: dust(GA_RAMP),
        'processor_die':processor_die,'processor_photomask':photomask_processor,'heatsink':heatsink,
        'storage_die_2m':lambda: storage_die(4),'storage_drive_2m':lambda: drive(4)}
 BLOCK_TEX={'ore/deepslate_gallium_ore':lambda: ore_overlay('ore_deepslate_nickel_ore.png',GA_RAMP)}

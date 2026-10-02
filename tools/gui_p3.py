@@ -1,19 +1,7 @@
 # Phase 3 GUIs - same kit (lighter grey panels, inset slots, Arcforge-style bars) as the earlier screens.
 import os, json, sys
 from PIL import Image
-from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, TW
-def new(w,h): im=Image.new('RGBA',(256,256),(0,0,0,0)); p=im.load(); panel(p,0,0,w,h); corners(p,w,h); header(p,w); return im,p
-def inset(p,x0,y0,w,h):
-    for y in range(y0,y0+h):
-        for x in range(x0,x0+w):
-            p[x,y]=SLOT[0] if (x==x0 or y==y0) else SLOT[3] if (x==x0+w-1 or y==y0+h-1) else SLOT[1] if (x==x0+1 or y==y0+1) else C('#2A2A2A')
-def bar_track(p,x0,y0,w,h=8):
-    for y in range(y0,y0+h):
-        for x in range(x0,x0+w): p[x,y]=C('#0E0E0E') if (x==x0 or y==y0) else C('#5C5C5C') if (x==x0+w-1 or y==y0+h-1) else C('#1F1F1F')
-def arrow(p,ax,ay):
-    for y in range(17):
-        for x in range(24):
-            if (x<15 and 6<=y<=10) or (x>=15 and abs(y-8)<=8-(x-15)): p[ax+x,ay+y]=C('#2A2A2A')
+from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, TW, new, inset, bar_track, arrow, sep, vsep, scroll_track, well_close, ghost
 def sprite(path,w,h,fn):
     im=Image.new('RGBA',(w,h),(0,0,0,0)); q=im.load()
     for y in range(h):
@@ -50,9 +38,7 @@ def encoder_sections(T):
        blank-card slot, Encode button, encoded-card slot. Mode toggle at the left, Clear above the grid."""
     for mode in ('crafting','processing'):
         im=Image.new('RGBA',(256,128),(0,0,0,0)); p=im.load(); panel(p,0,0,TW,76,'lr')
-        for x in range(8,170): p[x,0]=SLOT[3]
-        for x in range(175,187): p[x,0]=SLOT[3]
-        for x in range(8,187): p[x,3]=C('#3A3A3A')
+        well_close(p)
         for r in range(3):
             for c in range(3): slot(p,30+c*18,8+r*18)
         arrow(p,88,26)
@@ -61,18 +47,22 @@ def encoder_sections(T):
             for r in range(3): slot(p,116,8+r*18)
         for y in range(8,62): p[146,y]=C('#3A3A3A')
         slot(p,160,8); slot(p,160,46)
-        for x in range(152,186): p[x,28]=C('#3A3A3A')
         im.save(T+f'gui/terminal/encoder_{mode}.png')
     S=T+'gui/sprites/encoder/'
     icon(S+'mode_crafting.png',['................','..###.###.###...','..#.#.#.#.#.#...','..###.###.###...','................','..###.###.###...','..#.#.#.#.#.#...','..###.###.###...','................','..###.###.###...','..#.#.#.#.#.#...','..###.###.###...'],GOLD)
     icon(S+'mode_processing.png',['................','..###...........','..#.#...........','..###..##.......','.......###......','..###..####.....','..#.#..###...###','..###..##....#.#','.............###'],TEAL)
-    sprite(S+'ghost_card.png',16,16,lambda x,y:(255,255,255,70) if ((x in (3,12) and 2<=y<=13) or (y in (2,13) and 3<=x<=12) or (y==9 and 5<=x<=10)) else None)
+    ghost(S+'ghost_card.png','card')
+FAB={'panel':(8,17,160,58),'grid':(26,19),'arrow':(88,37),'sep':124,'modules':(136,[27,45]),'inv':(7,87),'h':170}
 def fabricator_gui(T):
-    im,p=new(176,166)
+    """Schematics (3x3) -> progress arrow, then the module column, all in one inset like the Lithography Press."""
+    im,p=new(176,FAB['h']); inset(p,*FAB['panel'])
+    gx,gy=FAB['grid']
     for r in range(3):
-        for c in range(3): slot(p,44+c*18,17+r*18)
-    arrow(p,108,35); slot(p,152,26); slot(p,152,44); inventory(p,7,83)
-    for y in range(17,72): p[144,y]=C('#3A3A3A')
+        for c in range(3): slot(p,gx+c*18,gy+r*18)
+    arrow(p,*FAB['arrow'],col=C('#1F1F1F')); vsep(p,FAB['sep'],19,73)
+    mx,mys=FAB['modules']
+    for y in mys: slot(p,mx,y)
+    inventory(p,*FAB['inv'])
     im.save(T+'gui/fabricator.png')
 def gateway_gui(T):
     im,p=new(176,206)
@@ -98,10 +88,9 @@ def craft_amount_gui(T):
     im.save(T+'gui/craft_amount.png')
 def craft_plan_gui(T):
     im,p=new(220,196)
-    inset(p,8,28,192,132)                         # ingredient tree, 7 rows of 18 + header line
-    for x in range(10,198): p[x,29+14]=C('#232323')
-    for y in range(28,160): p[204,y]=C('#161616') if y==28 else C('#2A2A2A')
-    for y in range(28,160): p[205,y]=C('#2A2A2A'); p[210,y]=C('#707070')
+    inset(p,8,28,194,132)                         # ingredient tree, 7 rows of 18 + header line
+    sep(p,10,200,29+14)
+    scroll_track(p,204,28,132)                    # the controller's track; thumb at x 205
     im.save(T+'gui/craft_plan.png')
 def job_status_gui(T):
     im,p=new(220,150)
@@ -124,12 +113,13 @@ def screens(A):
     json.dump({'includes':['terminal/base_terminal.json'],'text':{'title':{'key':'gui.encodedlogistics.schematic_encoder'}},'features':{'encoding':True},
                'sections':{'crafting':'terminal/encoder_crafting_section.json','processing':'terminal/encoder_processing_section.json'},
                'section_selector':'mode_toggle'},open(S+'schematic_encoder.json','w',newline='\n'),indent=1)
-    json.dump({**pal,'background':{'texture':'gui/fabricator.png','width':176,'height':166},
-      'slots':{'schematics':{'left':45,'top':18,'columns':3,'rows':3,'accepts':'encodedlogistics:encoded_schematic_crafting'},
-               'modules':{'left':153,'top':[27,45],'accepts':'encodedlogistics:throughput_module','ghost':'port/ghost_module'}},
-      'widgets':{'progress':{'left':108,'top':35,'sprite':'lithography_press/progress','fill':'left_to_right'}},
-      'player_inventory':{'left':8,'top':84},'text':{'title':{'key':'block.encodedlogistics.fabricator','left':8,'top':5,'color':'TEXT'},
-      'inventory':{'key':'container.inventory','left':8,'top':72,'color':'TEXT_MUTED'}}},open(S+'fabricator.json','w',newline='\n'),indent=1)
+    json.dump({**pal,'background':{'texture':'gui/fabricator.png','width':176,'height':FAB['h']},
+      'slots':{'schematics':{'left':27,'top':20,'columns':3,'rows':3,'accepts':'encodedlogistics:encoded_schematic_crafting'},
+               'modules':{'left':137,'top':[28,46],'accepts':'encodedlogistics:throughput_module','ghost':'port/ghost_module'}},
+      'widgets':{'progress':{'left':88,'top':37,'sprite':'lithography_press/progress','fill':'left_to_right'},
+                 'status':{'right':168,'top':5,'led':[-9,1],'states':{'working':'ACCENT','idle':'TEXT_MUTED'}}},
+      'player_inventory':{'left':8,'top':88},'text':{'title':{'key':'block.encodedlogistics.fabricator','left':8,'top':5,'color':'TEXT'},
+      'inventory':{'key':'container.inventory','left':8,'top':77,'color':'TEXT_MUTED'}}},open(S+'fabricator.json','w',newline='\n'),indent=1)
     json.dump({**pal,'background':{'texture':'gui/gateway.png','width':176,'height':206},
       'slots':{'schematics':{'left':8,'top':18,'columns':9,'rows':1,'accepts':'encodedlogistics:encoded_schematic_processing'},
                'stock':{'left':8,'top':50,'columns':9,'rows':1,'ghost_items':True,'amounts':True,'amount_field':{'below':True,'width':16}},

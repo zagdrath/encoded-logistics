@@ -3,6 +3,7 @@
 import os, json, sys
 sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image
+from item_display import centred
 from items_p2 import ITEMS, BLOCK_TEX
 import parts_p2 as P
 from p1_blocks import term_front, term_side, term_back
@@ -38,10 +39,10 @@ def ores():
                 {'type':'minecraft:item','modifier':[{'type':'minecraft:apply_bonus','enchantment':'minecraft:fortune','formula':'minecraft:ore_drops'},
                                                     {'type':'minecraft:explosion_decay'}],'name':RL(f'raw_{metal}')}]}],'rolls':1}],
                 'random_sequence':RL(f'blocks/{name}')},f'{D}encodedlogistics/loot_table/blocks/{name}.json')
-def part_item(name,model):
-    jd({'parent':RL(model),'display':{'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},'ground':{'scale':[0.4,0.4,0.4]},
+def part_item(name,model):     # centred in the slot, though the part sits against one face of its block
+    jd({'parent':RL(model),'display':centred({'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},'ground':{'scale':[0.4,0.4,0.4]},
         'fixed':{'rotation':[0,180,0],'scale':[0.6,0.6,0.6]},'firstperson_righthand':{'rotation':[0,200,0],'scale':[0.45,0.45,0.45]},
-        'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}}},f'{M}item/{name}.json')
+        'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}},f'{M}{model}.json')},f'{M}item/{name}.json')
     jd({'model':{'type':'minecraft:model','model':RL(f'item/{name}')}},f'{A}items/{name}.json')
 def parts():
     B=T+'block/part/'; save(P.parts_tex(),B+'parts.png')
@@ -91,13 +92,24 @@ def tags():
         jd({'values':[RL(o['stone']),RL(o['deep'])]},D+f'c/tags/item/ores/{metal}.json')
         jd({'values':[RL(f'raw_{metal}')]},D+f'c/tags/item/raw_materials/{metal}.json')
         jd({'values':[RL(f'{metal}_ingot')]},D+f'c/tags/item/ingots/{metal}.json')
+        jd({'values':[RL(f'{metal}_dust')]},D+f'c/tags/item/dusts/{metal}.json')
     jd({'values':[RL(o['stone']) for o in ORES.values()]},D+'c/tags/block/ores_in_ground/stone.json')
     def merge(path,values):                                 # gallium (Phase 3) is in these too
         have=json.load(open(path))['values'] if os.path.exists(path) else []
         jd({'values':have+[v for v in values if v not in have]},path)
     merge(D+'c/tags/block/ores_in_ground/deepslate.json',[RL(o['deep']) for o in ORES.values()])
     merge(D+'c/tags/block/ores.json',['#c:ores/neodymium','#c:ores/tantalum']); merge(D+'c/tags/item/ores.json',['#c:ores/neodymium','#c:ores/tantalum'])
+    merge(D+'c/tags/item/dusts.json',['#c:dusts/neodymium','#c:dusts/tantalum'])
     merge(D+'encodedlogistics/tags/item/port_modules.json',[RL('filter_module'),RL('throughput_module')])   # Phase 4 adds two more
+ARCFORGE={'neoforge:conditions':[{'type':'neoforge:mod_loaded','modid':'arcforge'}]}
+def crushing(R,metal):
+    """Arcforge's Arc Crusher (and Crushing Array: 'ore' recipes double) in Arcforge's own amounts: 2 dust per ore
+       and 1 per raw (+25% a third/second), 1 per ingot. Loaded only when Arcforge is installed. Phase 3 uses this too."""
+    d='encodedlogistics:'+metal+'_dust'; C=R+'crushing/'
+    def w(src,tag,n,bonus,ore): jd({**ARCFORGE,'type':'arcforge:crushing','ingredient':tag,'result':{'count':n,'id':d},
+        **({'bonus':{'count':1,'id':d},'bonus_chance':0.25} if bonus else {}),'time':200,'ore':ore},C+f'{metal}_dust_from_{src}.json')
+    w(f'{metal}_ore','#c:ores/'+metal,2,True,True); w(f'raw_{metal}','#c:raw_materials/'+metal,1,True,True)
+    w(f'{metal}_ingot','#c:ingots/'+metal,1,False,False)
 def recipes():
     R=D+'encodedlogistics/recipe/'; E=RL; V=lambda n:'minecraft:'+n
     def res(i,c=1): return {'id':i,'count':c}
@@ -110,6 +122,9 @@ def recipes():
         for src,tag in ((E(f'raw_{metal}'),'raw'),('#c:ores/'+metal,'ore')):
             cook(f'{metal}_ingot_from_smelting_{tag}','minecraft:smelting',src,E(f'{metal}_ingot'),0.7,200)
             cook(f'{metal}_ingot_from_blasting_{tag}','minecraft:blasting',src,E(f'{metal}_ingot'),0.7,100)
+        cook(f'{metal}_ingot_from_smelting_dust','minecraft:smelting','#c:dusts/'+metal,E(f'{metal}_ingot'),0.7,200)
+        cook(f'{metal}_ingot_from_blasting_dust','minecraft:blasting','#c:dusts/'+metal,E(f'{metal}_ingot'),0.7,100)
+        crushing(R,metal)
     shapeless('doped_silicon',[E('silicon_wafer'),V('redstone')],E('doped_silicon'))
     shaped('memory_photomask',['GFG','FDF','GFG'],{'G':V('glass'),'F':E('ferrite'),'D':E('doped_silicon')},E('memory_photomask'))
     litho('memory_die',E('doped_silicon'),E('ferrite'),E('memory_photomask'),E('memory_die'))
@@ -130,6 +145,7 @@ def lang():
        'block.encodedlogistics.tantalum_ore':'Tantalum Ore','block.encodedlogistics.deepslate_tantalum_ore':'Deepslate Tantalum Ore',
        'item.encodedlogistics.raw_neodymium':'Raw Neodymium','item.encodedlogistics.raw_tantalum':'Raw Tantalum',
        'item.encodedlogistics.neodymium_ingot':'Neodymium Ingot','item.encodedlogistics.tantalum_ingot':'Tantalum Ingot',
+       'item.encodedlogistics.neodymium_dust':'Neodymium Dust','item.encodedlogistics.tantalum_dust':'Tantalum Dust',
        'item.encodedlogistics.doped_silicon':'Doped Silicon','item.encodedlogistics.memory_die':'Memory Die',
        'item.encodedlogistics.memory_photomask':'Memory Photomask','item.encodedlogistics.tantalum_capacitor':'Tantalum Capacitor',
        'item.encodedlogistics.filter_module':'Filter Module','item.encodedlogistics.throughput_module':'Throughput Module',

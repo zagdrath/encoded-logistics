@@ -10,12 +10,12 @@
  "slots": {
   "transceivers": {
    "left": [
-    107,
-    124,
-    141,
-    158
+    97,
+    115,
+    133,
+    151
    ],
-   "top": 17,
+   "top": 18,
    "accepts": "encodedlogistics:optical_transceiver",
    "ghost": "relay/ghost_transceiver"
   }
@@ -29,29 +29,29 @@
   },
   "range": {
    "key": "gui.encodedlogistics.relay.range",
-   "left": 11,
-   "top": 21,
+   "left": 13,
+   "top": 22,
    "color": "ACCENT"
   },
   "linked": {
    "key": "gui.encodedlogistics.relay.linked",
    "left": 8,
-   "top": 35,
+   "top": 37,
    "color": "TEXT_MUTED"
   },
   "inventory": {
    "key": "container.inventory",
    "left": 8,
-   "top": 82,
+   "top": 83,
    "color": "TEXT_MUTED"
   }
  },
  "lists": {
   "linked": {
-   "left": 10,
-   "top": 46,
+   "left": 12,
+   "top": 48,
    "rows": 3,
-   "row_height": 11,
+   "row_height": 10,
    "entry": "gui.encodedlogistics.relay.entry",
    "scroll": true
   }

@@ -34,7 +34,8 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 
 // The modular terminal screen, built from a TerminalLayout: a title bar with the search field, a grid of the network's
 // items (as many rows as fit the window, between the layout's min and max), a scrollbar, the player's inventory, and
-// a toolbar on the left (sort mode: name / amount / mod; sort direction; craftables shown always or only when searching).
+// a toolbar on a tab at the left (sort mode: name / amount / mod; sort direction; craftables shown always or only when
+// searching; grid height: small / medium / tall / fill the window, which re-lays the open screen out).
 // Counts are drawn at half size and abbreviated (1.2K, 34M, 5.1B); what the network can craft but doesn't have shows with
 // "Craft" instead. Left click takes a stack, right click half, shift-click moves one into the inventory; clicking with
 // an item held puts it in (right click: just one). Middle-click or Ctrl-click on a craftable item (or any click on one
@@ -55,7 +56,8 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     private static String lastSearch = "";
 
     private final TerminalLayout layout;
-    private final int rows;
+    // The grid's rows: the menu's when it opened, until the height button changes them.
+    private int rows;
     private @Nullable EditBox search;
     private List<Map.Entry<ItemKey, Long>> view = List.of();
     private int viewVersion = -1;
@@ -73,9 +75,46 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         this.inventoryLabelY = layout.topHeight + rows * layout.rowHeight + layout.sectionHeight + layout.inventoryTopInBottom;
     }
 
+    // The screen's height at the current rows (imageHeight stays what it was when the screen opened).
+    private int screenHeight() {
+        return layout.height(rows);
+    }
+
+    @Override
+    public int getImageHeight() {
+        return screenHeight();
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
+        boolean onTab = mouseX >= left + layout.toolbarLeft - 3 && mouseX < left && mouseY >= top + layout.toolbarTop - 3
+                && mouseY < top + layout.toolbarTop + 1 + layout.buttonIcons.size() * layout.toolbarSpacing;
+        return !onTab && (mouseX < left || mouseY < top || mouseX >= left + imageWidth || mouseY >= top + screenHeight());
+    }
+
+    // The height button: the next height setting, and the open screen laid out again at its rows. The menu's slots (all
+    // below the grid) move with it on the client.
+    private void cycleHeight() {
+        TerminalLayout.Height[] heights = TerminalLayout.Height.values();
+        TerminalLayout.height = heights[(TerminalLayout.height.ordinal() + 1) % heights.length];
+        int wanted = layout.rowsFor(height);
+        if (wanted == rows) {
+            return;
+        }
+        rows = wanted;
+        int dy = (rows - menu.rows()) * layout.rowHeight;
+        for (int i = 0; i < menu.slots.size(); i++) {
+            menu.slots.set(i, MovedSlot.of(menu.slots.get(i), dy));
+        }
+        inventoryLabelY = layout.topHeight + rows * layout.rowHeight + layout.sectionHeight + layout.inventoryTopInBottom;
+        scrollRow = Math.min(scrollRow, maxScroll());
+        rebuildWidgets();
+    }
+
     @Override
     protected void init() {
         super.init();
+        topPos = (height - screenHeight()) / 2;
         search = new EditBox(font, leftPos + layout.searchLeft + layout.searchTextLeft, topPos + layout.searchTop + layout.searchTextTop,
                 layout.searchWidth - layout.searchTextLeft - 2, 9, search, Component.translatable("gui.encodedlogistics.terminal.search"));
         search.setBordered(false);
@@ -183,7 +222,14 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, search != null && search.isFocused() ? layout.searchSpriteFocused : layout.searchSprite,
                 x + layout.searchLeft, y + layout.searchTop, layout.searchWidth, layout.searchHeight);
 
-        // Toolbar.
+        // Toolbar: its tab, then the buttons on it.
+        int buttons = layout.buttonIcons.size();
+        if (buttons > 0) {
+            int tx = x + layout.toolbarLeft - 3, ty = y + layout.toolbarTop - 3, th = Math.min(layout.tabHeight, buttons * layout.toolbarSpacing + 4);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, layout.tab, layout.tabWidth, layout.tabHeight, 0, 0, tx, ty, layout.tabWidth, th - 3);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, layout.tab, layout.tabWidth, layout.tabHeight, 0, layout.tabHeight - 3, tx, ty + th - 3,
+                    layout.tabWidth, 3);
+        }
         for (int button = 0; button < layout.buttonIcons.size(); button++) {
             int bx = x + layout.toolbarLeft, by = y + layout.toolbarTop + button * layout.toolbarSpacing;
             boolean hover = mouseX >= bx && mouseX < bx + 18 && mouseY >= by && mouseY < by + 18;
@@ -211,14 +257,17 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
         // Scrollbar.
         int max = maxScroll();
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, max == 0 ? layout.thumbDisabled : layout.thumb, x + layout.scrollLeft, y + thumbY(),
-                layout.thumbWidth, layout.thumbHeight);
+        boolean overThumb = mouseX >= x + layout.scrollLeft && mouseX < x + layout.scrollLeft + layout.thumbWidth && mouseY >= y + thumbY()
+                && mouseY < y + thumbY() + layout.thumbHeight;
+        Identifier thumb = max == 0 ? layout.thumbDisabled : draggingThumb || overThumb ? layout.thumbHover : layout.thumb;
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, thumb, x + layout.scrollLeft, y + thumbY(), layout.thumbWidth, layout.thumbHeight);
     }
 
     private static int buttonState(String id) {
         return switch (id) {
             case "sort_mode" -> sortMode.ordinal();
             case "craftables" -> craftablesAlways ? 0 : 1;
+            case "height" -> TerminalLayout.height.ordinal();
             default -> descending ? 1 : 0;
         };
     }
@@ -249,15 +298,22 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         return (int) gy / layout.cell * layout.columns + (int) gx / layout.cell;
     }
 
+    // The thumb runs the scroll track's inside, like the controller's.
     private int thumbY() {
-        int travel = rows * layout.rowHeight - layout.thumbHeight - 2;
+        int travel = rows * layout.rowHeight - layout.thumbHeight;
         int max = maxScroll();
-        return layout.scrollTop + 1 + (max == 0 ? 0 : Math.round((float) scrollRow * travel / max));
+        return layout.scrollTop + (max == 0 ? 0 : Math.round((float) Math.min(scrollRow, max) * travel / max));
     }
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
+        // The title stops short of the search field.
+        int room = layout.titleMaxRight - titleLabelX;
+        Component shown = title;
+        if (font.width(title) > room) {
+            shown = Component.literal(font.plainSubstrByWidth(title.getString(), room - font.width("...")) + "...");
+        }
+        graphics.text(font, shown, titleLabelX, titleLabelY, TEXT, false);
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_MUTED, false);
         if (!menu.isOnline()) {
             Component offline = offlineMessage();
@@ -308,6 +364,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             int bx = leftPos + layout.toolbarLeft, by = topPos + layout.toolbarTop + button * layout.toolbarSpacing;
             if (mouseX >= bx && mouseX < bx + 18 && mouseY >= by && mouseY < by + 18) {
                 String id = layout.buttonIds.get(button);
+                if (id.equals("height")) {
+                    graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.height"),
+                            Component.translatable("gui.encodedlogistics.terminal.height." + TerminalLayout.height.name().toLowerCase(Locale.ROOT))
+                                    .withColor(TEXT_MUTED)), mouseX, mouseY);
+                    continue;
+                }
                 if (id.equals("craftables")) {
                     graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.craftable"),
                             Component.translatable(craftablesAlways ? "gui.encodedlogistics.terminal.craftable.always"
@@ -348,6 +410,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 switch (layout.buttonIds.get(button)) {
                     case "sort_mode" -> sortMode = SortMode.values()[(sortMode.ordinal() + 1) % SortMode.values().length];
                     case "craftables" -> craftablesAlways = !craftablesAlways;
+                    case "height" -> cycleHeight();
                     default -> descending = !descending;
                 }
                 viewVersion = -1;
@@ -403,6 +466,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     private void scrollTo(double mouseY) {
         int max = maxScroll();
+        if (max <= 0) {
+            return;
+        }
         float position = (float) (mouseY - topPos - layout.scrollTop - layout.thumbHeight / 2.0) / (rows * layout.rowHeight - layout.thumbHeight);
         scrollRow = Mth.clamp(Math.round(position * max), 0, max);
     }

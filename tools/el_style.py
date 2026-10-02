@@ -33,25 +33,21 @@ def brushed(seed):
         return r.randint(2,4), r.choices((-1,0,1),(0.20,0.68,0.12))[0]
     return run
 def bevel_frame(im,x0,y0,w,h,seed=1,lip=True):
-    """Guide 4: 1px outer rail (top/left 9, bottom/right 6, corners 10/7/5, glint at 6-7, wear specks) + inner lip."""
-    r=random.Random(seed)
+    """Guide 4: 1px outer rail (top/left 9, bottom/right 6, corners 10/7/5) + inner lip. Clean: no random wear specks
+       (guide 3); seed is kept for call compatibility."""
     for a in range(w):
-        for side,(x,y) in (('t',(x0+a,y0)),('b',(x0+a,y0+h-1))):
-            base=9 if side=='t' else 6
-            t=base+(1 if a in (6,7) else (-1 if r.random()<0.18 else 0)); put(im,x,y,g(t))
+        put(im,x0+a,y0,g(9)); put(im,x0+a,y0+h-1,g(6))
     for a in range(h):
-        for side,(x,y) in (('l',(x0,y0+a)),('r',(x0+w-1,y0+a))):
-            base=9 if side=='l' else 6
-            t=base+(1 if a in (6,7) else (-1 if r.random()<0.18 else 0)); put(im,x,y,g(t))
+        put(im,x0,y0+a,g(9)); put(im,x0+w-1,y0+a,g(6))
     put(im,x0,y0,g(10)); put(im,x0+w-1,y0,g(7)); put(im,x0,y0+h-1,g(7)); put(im,x0+w-1,y0+h-1,g(5))
     if lip:
         for a in range(1,w-1): put(im,x0+a,y0+1,g(2)); put(im,x0+a,y0+h-2,g(5))
         for a in range(1,h-1): put(im,x0+1,y0+a,g(2)); put(im,x0+w-2,y0+a,g(5))
         put(im,x0+w-2,y0+1,g(3)); put(im,x0+1,y0+h-2,g(3))
-def field(im,x0,y0,w,h,base,seed):
-    f=speckle(seed)
+def field(im,x0,y0,w,h,base,seed=None):
+    """Guide 3: a flat steel field at one ramp step - no random speckle (seed kept for call compatibility)."""
     for y in range(y0,y0+h):
-        for x in range(x0,x0+w): put(im,x,y,g(base+f()))
+        for x in range(x0,x0+w): put(im,x,y,g(base))
 def port_ring(im,cx,cy,seed=0):
     """Cable attach point: 6x6 raised ring (lit top-left) around a 4x4 recess with a shadow line under the lip."""
     x0,y0=cx-3,cy-3

@@ -6,6 +6,7 @@ from p1_items import TIERS, TIER_RGB
 from items_v3 import ITEMS
 from p1_blocks import *
 from PIL import Image
+from item_display import centred
 A='src/main/resources/assets/encodedlogistics'; T=A+'/textures'; M=A+'/models'
 RL=lambda p:'encodedlogistics:'+p
 GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
@@ -65,10 +66,10 @@ def terminal():
     screen=el((3,4,-0.02),(13,13,-0.02),{'north':face('#screen',[3,3,13,12])},**GLOW)
     jd({'parent':'minecraft:block/block','textures':tx,'elements':[housing,stub]},f'{M}/part/access_terminal.json')
     jd({'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':[housing,stub,screen]},f'{M}/part/access_terminal_online.json')
-    jd({'parent':RL('part/access_terminal_online'),'display':{'gui':{'rotation':[30,200,0],'translation':[0,0,0],'scale':[0.8,0.8,0.8]},
+    jd({'parent':RL('part/access_terminal_online'),'display':centred({'gui':{'rotation':[30,200,0],'scale':[0.8,0.8,0.8]},
         'ground':{'scale':[0.4,0.4,0.4]},'fixed':{'rotation':[0,180,0],'scale':[0.6,0.6,0.6]},
-        'firstperson_righthand':{'rotation':[0,200,0],'scale':[0.45,0.45,0.45]},'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}}},
-       f'{M}/item/access_terminal.json')
+        'firstperson_righthand':{'rotation':[0,200,0],'scale':[0.45,0.45,0.45]},'thirdperson_righthand':{'rotation':[75,200,0],'translation':[0,2.5,0],'scale':[0.4,0.4,0.4]}},
+        f'{M}/part/access_terminal_online.json')},f'{M}/item/access_terminal.json')
     jd({'model':{'type':'minecraft:model','model':RL('item/access_terminal')}},f'{A}/items/access_terminal.json')
 
 def shared():
@@ -92,11 +93,10 @@ def drive_bay(src_tex,src_assets):
     for v in bs['variants'].values(): v['model']=v['model'].replace('drive_array','drive_bay')
     jd(bs,f'{A}/blockstates/drive_bay.json')
     jd({'model':{'type':'minecraft:model','model':RL('block/drive_bay')}},f'{A}/items/drive_bay.json')
-    shutil.copy(f'{src_assets}/textures/gui/drive_array.png',f'{T}/gui/drive_bay.png') if os.path.isdir(f'{T}/gui') else None
     os.makedirs(f'{T}/gui/sprites/drive_bay',exist_ok=True)
     for f in os.listdir(f'{src_assets}/textures/gui/sprites/drive_array'): shutil.copy(f'{src_assets}/textures/gui/sprites/drive_array/{f}',f'{T}/gui/sprites/drive_bay/{f}')
-    s=json.load(open(f'{src_assets}/screens/drive_array.json'))
-    js=json.dumps(s).replace('drive_array','drive_bay'); jd(json.loads(js),f'{A}/screens/drive_bay.json')
+    # the GUI sheet, the ghost drive and screens/drive_bay.json are painted with the shared GUI kit (tools/p1_gui.py)
+    import p1_gui; p1_gui.drive_bay_gui(T+'/'); p1_gui.screens(A+'/')
 
 if __name__=='__main__':
     os.makedirs(f'{T}/gui',exist_ok=True)

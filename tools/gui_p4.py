@@ -3,12 +3,13 @@ import os, json, sys
 from PIL import Image
 from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, TW, energy_track
 from gui_p3 import new, inset, bar_track, sprite, icon
+from p1_gui import sep, ghost
 W_=C('#E6E6E6'); CY=[C('#1E6E86'),C('#3FB4D8'),C('#9CE6F6')]; MINT=[C('#127A57'),C('#1FB582'),C('#5CF0B8')]
 AMB=C('#F5B23A'); RED=C('#E5483C'); GRY=C('#5A5A5A')
 TYPE_COL={'items':C('#4A8FE0'),'energy':C('#F0C030'),'redstone':C('#E5483C'),'lanes':C('#00D992')}
 def handheld(T):
     """Side panel attached to the terminal's right edge (26 x 96): Arcforge energy track, link light, signal bars."""
-    im=Image.new('RGBA',(64,128),(0,0,0,0)); p=im.load(); panel(p,0,0,26,96,'tbr')
+    im=Image.new('RGBA',(64,128),(0,0,0,0)); p=im.load(); panel(p,0,0,26,96,'tbr'); p[25,0]=p[25,95]=(0,0,0,0)
     energy_track(p,7,8)
     for y in range(66,90):
         for x in range(5,21): p[x,y]=SLOT[0] if (x==5 or y==66) else SLOT[3] if (x==20 or y==89) else C('#1C1C1C')
@@ -18,15 +19,16 @@ def handheld(T):
         sprite(S+name+'.png',6,6,lambda x,y,c=col: None if (x in (0,5) and y in (0,5)) else c)
     for n in range(5):                                        # signal bars 0..4
         sprite(S+f'signal_{n}.png',12,10,lambda x,y,n=n: (MINT[2] if (x//3)<n else C('#3A3A3A')) if (x%3<2 and y>=8-2*(x//3)) else None)
+RELAY={'range':(8,17,84,18),'slots_x':[96,114,132,150],'slots_y':17,'list':(8,46,160,34),'row':10,'inv':(7,93)}
 def relay_gui(T):
+    """Range readout and the four transceiver slots on one row inside the frame, then the linked-terminal list."""
     im,p=new(176,176)
-    inset(p,8,18,96,14)                                        # range readout
-    for i in range(4): slot(p,108+i*16 if False else 106+i*17,16)   # 4 transceiver slots
-    inset(p,8,44,160,34)                                       # linked terminal list (3 rows of 11)
-    for r in (1,2):
-        for x in range(10,166): p[x,44+r*11]=C('#232323')
-    inventory(p,7,93); im.save(T+'gui/relay_antenna.png')
-    sprite(T+'gui/sprites/relay/ghost_transceiver.png',16,16,lambda x,y:(255,255,255,70) if ((y in (5,11) and 2<=x<=13) or (x in (2,13) and 5<=y<=11) or (x==12 and 7<=y<=9)) else None)
+    inset(p,*RELAY['range'])
+    for x in RELAY['slots_x']: slot(p,x,RELAY['slots_y'])
+    lx,ly,lw,lh=RELAY['list']; inset(p,lx,ly,lw,lh)
+    for r in (1,2): sep(p,lx+2,lx+lw-2,ly+2+r*RELAY['row']-1)
+    inventory(p,*RELAY['inv']); im.save(T+'gui/relay_antenna.png')
+    ghost(T+'gui/sprites/relay/ghost_transceiver.png','transceiver')
 def bridge_gui(T):
     im,p=new(176,96)
     inset(p,8,18,160,38)                                       # status, partner, dimension lines
@@ -75,10 +77,10 @@ def screens(A):
         'signal':{'left':7,'top':78,'sprites':['handheld/signal_0','handheld/signal_1','handheld/signal_2','handheld/signal_3','handheld/signal_4']}},
       'offline_overlay':{'when':['unlinked','out_of_range'],'text':'gui.encodedlogistics.handheld.out_of_range'}},open(S+'handheld_terminal.json','w',newline='\n'),indent=1)
     json.dump({**pal,'background':{'texture':'gui/relay_antenna.png','width':176,'height':176},
-      'slots':{'transceivers':{'left':[107,124,141,158],'top':17,'accepts':'encodedlogistics:optical_transceiver','ghost':'relay/ghost_transceiver'}},
-      'text':{'title':{'key':'block.encodedlogistics.relay_antenna','left':8,'top':5,'color':'TEXT'},'range':{'key':'gui.encodedlogistics.relay.range','left':11,'top':21,'color':'ACCENT'},
-              'linked':{'key':'gui.encodedlogistics.relay.linked','left':8,'top':35,'color':'TEXT_MUTED'},'inventory':{'key':'container.inventory','left':8,'top':82,'color':'TEXT_MUTED'}},
-      'lists':{'linked':{'left':10,'top':46,'rows':3,'row_height':11,'entry':'gui.encodedlogistics.relay.entry','scroll':True}},
+      'slots':{'transceivers':{'left':[97,115,133,151],'top':18,'accepts':'encodedlogistics:optical_transceiver','ghost':'relay/ghost_transceiver'}},
+      'text':{'title':{'key':'block.encodedlogistics.relay_antenna','left':8,'top':5,'color':'TEXT'},'range':{'key':'gui.encodedlogistics.relay.range','left':13,'top':22,'color':'ACCENT'},
+              'linked':{'key':'gui.encodedlogistics.relay.linked','left':8,'top':37,'color':'TEXT_MUTED'},'inventory':{'key':'container.inventory','left':8,'top':83,'color':'TEXT_MUTED'}},
+      'lists':{'linked':{'left':12,'top':48,'rows':3,'row_height':10,'entry':'gui.encodedlogistics.relay.entry','scroll':True}},
       'player_inventory':{'left':8,'top':94}},open(S+'relay_antenna.json','w',newline='\n'),indent=1)
     json.dump({**pal,'background':{'texture':'gui/network_bridge.png','width':176,'height':96},
       'widgets':{'status_light':{'left':12,'top':23,'sprites':{'linked':'bridge/status_linked','unlinked':'bridge/status_unlinked','offline':'bridge/status_offline'}},

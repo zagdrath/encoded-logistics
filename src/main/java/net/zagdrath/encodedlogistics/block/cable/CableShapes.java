@@ -25,23 +25,23 @@ public final class CableShapes {
     private record Parts(double[][] cubeStraight, double[][] cubeJunction, double[][] armStraight, double[][] armJunction,
             double[][] armBlock, double[][] anchor) {}
 
-    // From tools/export_cables.py (it prints the cable parts) and the handoff's reference shapes (anchors). Every
-    // block of a straight run is sleeve | neck | cube | neck | sleeve; a junction arm is a sleeve and neck off the
-    // junction cube; a block arm ends in a flange. Network and Fiber Cable share the slim geometry.
+    // From tools/export_cables.py (it prints the cable parts) and the handoff's reference shapes (anchors). A straight
+    // run is one continuous tube; a junction arm runs straight into the junction cube; a block arm ends in a flange.
+    // Network and Fiber Cable share the slim geometry.
     private static final Parts SLIM = new Parts(
             new double[][] { { 5, 5, 5, 11, 11, 11 } },
             new double[][] { { 5, 5, 5, 11, 11, 11 } },
-            new double[][] { { 5, 5, 0, 11, 11, 4 }, { 6, 6, 4, 10, 10, 5 } },
-            new double[][] { { 5, 5, 0, 11, 11, 4 }, { 6, 6, 4, 10, 10, 5 } },
-            new double[][] { { 4, 4, 0, 12, 12, 1 }, { 5, 5, 1, 11, 11, 4 }, { 6, 6, 4, 10, 10, 5 } },
+            new double[][] { { 5, 5, 0, 11, 11, 5 } },
+            new double[][] { { 5, 5, 0, 11, 11, 5 } },
+            new double[][] { { 4, 4, 0, 12, 12, 1 }, { 5, 5, 1, 11, 11, 5 } },
             new double[][] { { 6, 6, 3, 10, 10, 5 }, { 4, 4, 2, 12, 12, 3 }, { 5, 5, 1.5, 6, 6, 2 }, { 10, 5, 1.5, 11, 6, 2 },
                     { 5, 10, 1.5, 6, 11, 2 }, { 10, 10, 1.5, 11, 11, 2 } });
     private static final Parts DENSE = new Parts(
             new double[][] { { 4, 4, 5, 12, 12, 11 } },
             new double[][] { { 3, 3, 3, 13, 13, 13 } },
-            new double[][] { { 4, 4, 0, 12, 12, 4 }, { 5, 5, 4, 11, 11, 5 } },
-            new double[][] { { 4, 4, 0, 12, 12, 2 }, { 5, 5, 2, 11, 11, 3 } },
-            new double[][] { { 2, 2, 0, 14, 14, 1 }, { 4, 4, 1, 12, 12, 2 }, { 5, 5, 2, 11, 11, 3 } },
+            new double[][] { { 4, 4, 0, 12, 12, 5 } },
+            new double[][] { { 4, 4, 0, 12, 12, 3 } },
+            new double[][] { { 2, 2, 0, 14, 14, 1 }, { 4, 4, 1, 12, 12, 3 } },
             new double[][] { { 3, 3, 2, 13, 13, 3 }, { 4, 4, 1.5, 5, 5, 2 }, { 11, 4, 1.5, 12, 5, 2 }, { 4, 11, 1.5, 5, 12, 2 },
                     { 11, 11, 1.5, 12, 12, 2 } });
     // A facade: a 16x16x1 panel over the side.

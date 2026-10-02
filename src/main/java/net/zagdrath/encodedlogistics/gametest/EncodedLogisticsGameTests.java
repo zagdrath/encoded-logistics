@@ -68,6 +68,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("egress_port", Phase2GameTests::egressPort);
         TESTS.put("inventory_tap", Phase2GameTests::inventoryTap);
         TESTS.put("threshold_sensor", Phase2GameTests::thresholdSensor);
+        TESTS.put("metal_dusts", MaterialGameTests::dusts);
         TESTS.put("scheduler_forms", Phase3GameTests::schedulerForms);
         TESTS.put("encoder_encodes", Phase3GameTests::encoderEncodes);
         TESTS.put("fabricator_crafts", Phase3GameTests::fabricatorCrafts);
@@ -80,6 +81,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("planes", Phase4GameTests::planes);
         TESTS.put("fuzzy_filter", Phase4GameTests::fuzzyFilter);
         TESTS.put("redstone_control", Phase4GameTests::redstoneControl);
+        TESTS.put("mounts_on_clicked_face", PlacementGameTests::mountsOnClickedFace);
+        TESTS.put("mounts_from_block_face", PlacementGameTests::mountsFromBlockFace);
+        TESTS.put("copied_drives_count_once", PlacementGameTests::copiedDrivesCountOnce);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

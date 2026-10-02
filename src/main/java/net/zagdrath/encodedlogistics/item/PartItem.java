@@ -24,9 +24,10 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
-// A cable part's item (terminals, ports, the tap, the sensor). On a cable it mounts on the side you're looking at
-// (NetworkCableBlock does that). On any other block's face it puts a part host in the space in front, holding the part
-// against that face - before the block itself reacts, so a network block's own screen doesn't open instead.
+// A cable part's item (terminals, ports, the tap, the sensor, links, planes). On a cable it mounts on the face you click
+// (NetworkCableBlock does that). On any other block's face it goes on the cable in front of that face, if there is one,
+// facing the block; otherwise it puts a part host in the space in front, holding the part against that face - before
+// the block itself reacts, so a network block's own screen doesn't open instead.
 public class PartItem extends Item {
     private final PartType type;
 
@@ -48,6 +49,10 @@ public class PartItem extends Item {
         }
         Direction face = context.getClickedFace();
         BlockPos pos = clicked.relative(face);
+        // A cable in front of the face: the part goes on the cable's side toward the block, as AE2's buses do.
+        if (level.getBlockState(pos).getBlock() instanceof NetworkCableBlock && context.getPlayer() != null) {
+            return NetworkCableBlock.attach(stack, level, pos, context.getPlayer(), face.getOpposite());
+        }
         if (!level.getBlockState(pos).canBeReplaced()) {
             return InteractionResult.FAIL;
         }

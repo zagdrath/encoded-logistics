@@ -16,8 +16,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -60,6 +62,14 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
             }
         }
         return null;
+    }
+
+    // Pick block (and Jade's name and icon): the part it holds.
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, Player player) {
+        CableAttachments attachments = NetworkCableBlock.attachments(level, pos);
+        Direction mount = mount(attachments);
+        return mount != null ? attachments.get(mount).toItem() : ItemStack.EMPTY;
     }
 
     @Override

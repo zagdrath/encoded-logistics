@@ -28,23 +28,36 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 // (screens/terminal/base_terminal.json for every terminal): later files override earlier ones key by key. Every number
 // has the kit's default, so a missing or broken file still gives a usable screen.
 public final class TerminalLayout {
+    // The grid's height setting (the toolbar's height button): a fixed number of rows (rows.heights in the layout), or as
+    // many as fit the window. Shared by every terminal; it lasts the session.
+    public enum Height {
+        SMALL, MEDIUM, TALL, FILL
+    }
+
+    public static Height height = Height.FILL;
+
     public final int width, topHeight, rowHeight, bottomHeight;
     public final Identifier top, row, bottom;
     public final int minRows, maxRows, defaultRows;
     public final boolean fitToWindow;
+    public final int smallRows, mediumRows, tallRows;
     public final int gridLeft, gridTopInRow, columns, cell;
     public final int scrollLeft, scrollTop, thumbWidth, thumbHeight;
-    public final Identifier thumb, thumbDisabled;
+    public final Identifier thumb, thumbHover, thumbDisabled;
     public final int searchLeft, searchTop, searchWidth, searchHeight, searchTextLeft, searchTextTop, searchMaxLength;
     public final Identifier searchSprite, searchSpriteFocused;
     public final int toolbarLeft, toolbarTop, toolbarSpacing;
     public final Identifier button, buttonHover, buttonPressed;
+    // The panel tab behind the toolbar's buttons (its top part, then its bottom 3 rows, at the toolbar's height).
+    public final Identifier tab;
+    public final int tabWidth, tabHeight;
     // The toolbar's buttons, top to bottom: their ids (sort_mode, sort_direction, craftables) and icons by state.
     public final List<String> buttonIds;
     public final List<List<Identifier>> buttonIcons;
     public final Identifier slotHighlight;
     public final String titleKey;
-    public final int titleLeft, titleTop, inventoryLeft, inventoryTopInBottom;
+    // titleMaxRight: the title is cut short (with "...") before it reaches the search field.
+    public final int titleLeft, titleTop, titleMaxRight, inventoryLeft, inventoryTopInBottom;
     public final JsonObject features;
     // A section between the item rows and the bottom piece (which is then the lip-less bottom_texture): the Fabrication
     // Terminal's crafting grid (sections.crafting), the Schematic Encoder's crafting and processing sections. Every
@@ -72,6 +85,10 @@ public final class TerminalLayout {
         maxRows = integer(rows, "max", 12);
         defaultRows = integer(rows, "default", 6);
         fitToWindow = rows.has("fit_to_window") ? rows.get("fit_to_window").getAsBoolean() : true;
+        JsonObject heights = object(rows, "heights");
+        smallRows = integer(heights, "small", 3);
+        mediumRows = integer(heights, "medium", 6);
+        tallRows = integer(heights, "tall", 9);
         JsonObject grid = object(json, "grid");
         gridLeft = integer(grid, "left", 9);
         gridTopInRow = integer(grid, "top_in_row", 1);
@@ -81,14 +98,15 @@ public final class TerminalLayout {
         scrollLeft = integer(scrollbar, "left", 176);
         scrollTop = integer(scrollbar, "top", 19);
         JsonArray thumbSize = scrollbar.has("thumb_size") ? scrollbar.getAsJsonArray("thumb_size") : null;
-        thumbWidth = thumbSize != null ? thumbSize.get(0).getAsInt() : 10;
+        thumbWidth = thumbSize != null ? thumbSize.get(0).getAsInt() : 6;
         thumbHeight = thumbSize != null ? thumbSize.get(1).getAsInt() : 15;
-        thumb = sprite(string(scrollbar, "thumb", "terminal/scroll_thumb"));
-        thumbDisabled = sprite(string(scrollbar, "thumb_disabled", "terminal/scroll_thumb_disabled"));
+        thumb = sprite(string(scrollbar, "thumb", "controller/scroll_thumb"));
+        thumbHover = sprite(string(scrollbar, "thumb_hover", "controller/scroll_thumb_hover"));
+        thumbDisabled = sprite(string(scrollbar, "thumb_disabled", "controller/scroll_thumb_disabled"));
         JsonObject search = object(json, "search");
-        searchLeft = integer(search, "left", 104);
+        searchLeft = integer(search, "left", 119);
         searchTop = integer(search, "top", 4);
-        searchWidth = integer(search, "width", 68);
+        searchWidth = integer(search, "width", 64);
         searchHeight = integer(search, "height", 12);
         searchTextLeft = integer(search, "text_left", 4);
         searchTextTop = integer(search, "text_top", 2);
@@ -96,12 +114,16 @@ public final class TerminalLayout {
         searchSprite = sprite(string(search, "sprite", "terminal/search_field"));
         searchSpriteFocused = sprite(string(search, "sprite_focused", "terminal/search_field_focused"));
         JsonObject toolbar = object(json, "toolbar");
-        toolbarLeft = integer(toolbar, "left", -20);
-        toolbarTop = integer(toolbar, "top", 6);
+        toolbarLeft = integer(toolbar, "left", -21);
+        toolbarTop = integer(toolbar, "top", 19);
         toolbarSpacing = integer(toolbar, "spacing", 20);
         button = sprite(string(toolbar, "button", "terminal/button"));
         buttonHover = sprite(string(toolbar, "button_hover", "terminal/button_hover"));
         buttonPressed = sprite(string(toolbar, "button_pressed", "terminal/button_pressed"));
+        tab = sprite(string(toolbar, "tab", "terminal/toolbar"));
+        JsonArray tabSize = toolbar.has("tab_size") ? toolbar.getAsJsonArray("tab_size") : null;
+        tabWidth = tabSize != null ? tabSize.get(0).getAsInt() : 24;
+        tabHeight = tabSize != null ? tabSize.get(1).getAsInt() : 128;
         List<String> ids = new ArrayList<>();
         List<List<Identifier>> icons = new ArrayList<>();
         if (toolbar.has("buttons")) {
@@ -114,10 +136,12 @@ public final class TerminalLayout {
                 icons.add(List.copyOf(states));
             }
         } else {
-            ids.addAll(List.of("sort_mode", "sort_direction", "craftables"));
+            ids.addAll(List.of("sort_mode", "sort_direction", "craftables", "height"));
             icons.add(List.of(sprite("terminal/icon_sort_name"), sprite("terminal/icon_sort_count"), sprite("terminal/icon_sort_mod")));
             icons.add(List.of(sprite("terminal/icon_dir_asc"), sprite("terminal/icon_dir_desc")));
             icons.add(List.of(sprite("terminal/icon_craftable_on"), sprite("terminal/icon_craftable_off")));
+            icons.add(List.of(sprite("terminal/icon_height_small"), sprite("terminal/icon_height_medium"), sprite("terminal/icon_height_tall"),
+                    sprite("terminal/icon_height_fill")));
         }
         buttonIds = List.copyOf(ids);
         buttonIcons = List.copyOf(icons);
@@ -126,7 +150,8 @@ public final class TerminalLayout {
         JsonObject title = object(text, "title");
         titleKey = string(title, "key", "gui.encodedlogistics.access_terminal");
         titleLeft = integer(title, "left", 8);
-        titleTop = integer(title, "top", 6);
+        titleTop = integer(title, "top", 5);
+        titleMaxRight = integer(title, "max_right", searchLeft - 4);
         JsonObject inventory = object(text, "inventory");
         inventoryLeft = integer(inventory, "left", 9);
         inventoryTopInBottom = integer(inventory, "top_in_bottom", 6);
@@ -165,14 +190,21 @@ public final class TerminalLayout {
         return features.has(name) && features.get(name).getAsBoolean();
     }
 
-    // Grid rows that fit a window this many GUI pixels tall (with a little margin, and room for any section), within
-    // min / max.
+    // Grid rows for a window this many GUI pixels tall (with a little margin, and room for any section): the height
+    // setting's rows, never more than fit, within min / max.
     public int rowsFor(int screenHeight) {
-        if (!fitToWindow) {
-            return defaultRows;
+        int fit = defaultRows;
+        if (fitToWindow) {
+            int rows = (screenHeight - topHeight - sectionHeight - bottomHeight - 16) / rowHeight;
+            fit = Math.max(minRows, Math.min(maxRows, rows));
         }
-        int rows = (screenHeight - topHeight - sectionHeight - bottomHeight - 16) / rowHeight;
-        return Math.max(minRows, Math.min(maxRows, rows));
+        int wanted = switch (height) {
+            case SMALL -> smallRows;
+            case MEDIUM -> mediumRows;
+            case TALL -> tallRows;
+            case FILL -> fit;
+        };
+        return Math.max(minRows, Math.min(wanted, fit));
     }
 
     public int height(int rows) {

@@ -14,7 +14,7 @@ sp=tex('gui/terminal/handheld_panel.png').crop((0,0,26,96)); c.alpha_composite(s
 bar=tex('gui/sprites/controller/energy_bar.png'); c.alpha_composite(bar.crop((0,50-30,10,50)),(24+193+8,4+9+50-30))
 c.alpha_composite(tex('gui/sprites/handheld/link_linked.png'),(24+193+10,4+70)); c.alpha_composite(tex('gui/sprites/handheld/signal_3.png'),(24+193+7,4+78))
 for i,n in enumerate(['optical_transceiver','link_card','gallium_ingot','processor_die','silicon_wafer','heatsink','memory_die','schematic_card']): c.alpha_composite(it(n),(24+9+(i%9)*18,20+(i//9)*18))
-T(c,32,6,'Handheld Terminal','#F0F0F0'); c.alpha_composite(tex('gui/sprites/terminal/scroll_thumb.png'),(24+176,21)); T(c,33,19+18*rows+6,'Inventory','#B4B4B4')
+T(c,32,6,'Handheld Terminal','#F0F0F0'); c.alpha_composite(tex('gui/sprites/controller/scroll_thumb.png'),(24+176,19)); T(c,33,19+18*rows+6,'Inventory','#B4B4B4')
 for i,(b,ic) in enumerate((('button','icon_sort_name'),('button','icon_dir_asc'))):
     c.alpha_composite(tex(f'gui/sprites/terminal/{b}.png'),(2,6+20*i)); c.alpha_composite(tex(f'gui/sprites/terminal/{ic}.png'),(3,7+20*i))
 finish(c,'handheld_terminal_gui.png',3)

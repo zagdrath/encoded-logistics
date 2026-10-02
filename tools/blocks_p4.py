@@ -14,12 +14,11 @@ def ring_pts(cx,cy,r0,r1,x0=0,y0=0,x1=16,y1=16):
 def disc_pts(cx,cy,r,x0=0,y0=0,x1=16,y1=16):
     return [(x,y) for y in range(y0,y1) for x in range(x0,x1) if math.hypot(x-cx,y-cy)<=r]
 def glow_from(pts,ramp,seed,size=(16,16)):
-    """Guide 6 textured glow: saturated base, whiter glints at exposed top-left/ends, ~12% dimmer wear pixels."""
-    im=Image.new('RGBA',size,(0,0,0,0)); P=set(pts); r=random.Random(seed)
+    """Guide 6 glow: saturated base, whiter glints at exposed top-left edges (no random dim pixels)."""
+    im=Image.new('RGBA',size,(0,0,0,0)); P=set(pts)
     for (x,y) in P:
         exposed=(x,y-1) not in P or (x-1,y) not in P
         k=5 if exposed else 4
-        if r.random()<0.12: k=3
         im.putpixel((x,y),ramp[k]+(255,))
     return im
 # ---------------- Relay Antenna ----------------
@@ -75,7 +74,7 @@ def bridge_front():
        under the flange, unlit octagonal lens (cyan ramp, dark steps)."""
     im=img(); dark_field(im,0,0,16,16,450); rail(im,0,451)
     bore=octagon(CX,CY,3.5,2)
-    for (x,y) in bore: put(im,x,y,g(1) if (x+y)%5 else g(2))
+    for (x,y) in bore: put(im,x,y,g(1))
     for (x,y) in bore:
         if (x-1,y) not in bore or (x,y-1) not in bore: put(im,x,y,g(0))
     for (x,y) in LENS: put(im,x,y,CYAN[1] if (x,y) in octagon(CX,CY,1.5,1) else CYAN[0])
@@ -87,7 +86,7 @@ LENS=octagon(CX,CY,2.5,1)
 def bridge_glow(level):
     frames=8 if level=='active' else 1
     strip=Image.new('RGBA',(16,16*frames),(0,0,0,0)); lens=LENS; r=random.Random(455)
-    wear={p for p in lens if r.random()<0.12}
+    wear=set()                                           # clean lens: no random dim pixels
     for f in range(frames):
         k=0.5+0.5*math.sin(2*math.pi*f/frames) if level=='active' else 0
         for (x,y) in lens:
@@ -138,8 +137,8 @@ def plane_flash(acc,frames=6):
         strip.alpha_composite(fr,(0,16*f))
     return strip
 def plane_edge(acc):
-    """Plate edge strip (16x2): steel step 8 over step 5, an accent pip every 4 px."""
+    """Plate edge strip (16x2): clean flat steel (step 6). No accent pips: the edge faces are seen edge-on and turn
+       with the face rotation, so detail there reads as stray coloured dashes (the accent stays on the plate face)."""
     im=img()
-    for x in range(16): put(im,x,0,g(8)); put(im,x,1,g(5))
-    for x in (2,6,10,14): put(im,x,1,acc[2])
+    for x in range(16): put(im,x,0,g(6)); put(im,x,1,g(6))
     return im

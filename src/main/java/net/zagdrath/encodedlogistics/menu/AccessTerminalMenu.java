@@ -44,7 +44,7 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // the inventory slots sit under it; the server doesn't care where they are.
 public class AccessTerminalMenu extends AbstractContainerMenu {
     public static final int TOP = 19, ROW = 18, BOTTOM = 99, COLUMNS = 9, DEFAULT_ROWS = 6;
-    private static final int SYNC_INTERVAL = 10;
+    private static final int SYNC_INTERVAL = 5;
 
     // Click actions.
     public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4;
@@ -225,6 +225,8 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         stack.shrink(stored);
         slot.setChanged();
         moved(stored);
+        // The grid shows it straight away (vanilla broadcasts after the click), not at the next sync.
+        ticksUntilSync = 0;
         return ItemStack.EMPTY;
     }
 

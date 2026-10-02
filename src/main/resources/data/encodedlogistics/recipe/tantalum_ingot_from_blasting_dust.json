@@ -1,0 +1,11 @@
+{
+ "type": "minecraft:blasting",
+ "category": "misc",
+ "ingredient": "#c:dusts/tantalum",
+ "result": {
+  "id": "encodedlogistics:tantalum_ingot",
+  "count": 1
+ },
+ "experience": 0.7,
+ "cookingtime": 100
+}

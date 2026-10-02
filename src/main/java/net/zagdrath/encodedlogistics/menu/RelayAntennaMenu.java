@@ -30,8 +30,8 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 // The Relay Antenna's screen (screens/relay_antenna.json): its range, four Optical Transceiver slots, the linked
 // terminals in range (sent every SYNC_INTERVAL ticks) and the player's inventory. data: range.
 public class RelayAntennaMenu extends AbstractContainerMenu {
-    public static final int[] SLOT_X = { 107, 124, 141, 158 };
-    public static final int SLOT_Y = 17, INVENTORY_Y = 94;
+    public static final int[] SLOT_X = { 97, 115, 133, 151 };
+    public static final int SLOT_Y = 18, INVENTORY_Y = 94;
     private static final int SYNC_INTERVAL = 20;
 
     private final Container relay;

@@ -7,16 +7,15 @@ from style_kit import g, accent, dark_field, rail, raised, recess, inlay, brushe
 INGRESS=accent('#4A8FE0'); EGRESS=accent('#E8913A'); TAP=accent('#A77BF0'); RED=accent('#E5483C'); GOLD=accent('#E8C24A')
 INDIGO=accent('#5C6CF0'); MINT=accent('#1FB582'); AMB=accent('#F5B23A'); HOT=accent('#F0702A'); PCB=accent('#2C7C4A'); WARM=accent('#F2B848')
 def glow_from(pts,ramp,seed,size=(16,16)):
-    im=Image.new('RGBA',size,(0,0,0,0)); P=set(pts); r=random.Random(seed)
+    im=Image.new('RGBA',size,(0,0,0,0)); P=set(pts)                  # clean: no random dim pixels
     for (x,y) in P:
         k=5 if ((x,y-1) not in P or (x-1,y) not in P) else 4
-        if r.random()<0.12: k=3
         im.putpixel((x,y),ramp[k]+(255,))
     return im
 def mini_rail(im,x0,y0,w,h,lip=True):
     """Guide rail on a sub-plate (parts smaller than a block face)."""
     for a in range(w):
-        put(im,x0+a,y0,g(10 if a in (6,7) else 9)); put(im,x0+a,y0+h-1,g(6))
+        put(im,x0+a,y0,g(9)); put(im,x0+a,y0+h-1,g(6))
     for a in range(h):
         put(im,x0,y0+a,g(9)); put(im,x0+w-1,y0+a,g(6))
     put(im,x0,y0,g(10)); put(im,x0+w-1,y0,g(7)); put(im,x0,y0+h-1,g(7)); put(im,x0+w-1,y0+h-1,g(5))
@@ -34,17 +33,33 @@ def port_mouth(acc):
     for (x,y) in ((4,4),(11,4),(4,11),(11,11)): inlay(im,[(x,y)],acc,506+x+y)
     inlay(im,[(x,3) for x in range(6,10)],acc,507)
     return im
+# Port body sheet. The port is a solid stepped housing (tools/parts_p2.py port_models): a 12x12x1 plate at the
+# inventory, a 10x10x2 body, an 8x8x1 back plate, a 4x4 stub to the cable. Every side face maps 1:1 onto its own strip
+# (no stretched texels): strips are flat along the depth and symmetric across, so any face orientation reads the same.
+#   across x depth (up/down faces):  plate (0,0) 12x1, body (0,2) 10x2, back (0,5) 8x1
+#   depth x across (east/west faces): plate (15,0) 1x12, body (13,0) 2x10, back (12,0) 1x8
+#   back face (south, toward the cable): (0,8) 8x8
+PORT_STRIPS={'plate':(12,1,(0,0),(15,0)),'body':(10,2,(0,2),(13,0)),'back':(8,1,(0,5),(12,0))}
 def port_side(acc,inward,glow=False):
-    """Body strips: (0,0) 3x10 (u = depth) and (4,0) 10x3 (v = depth). Brushed steel along the body, a chevron inlay
-       pointing to the cable (ingress) or out (egress)."""
-    pts=[]
-    for a in range(2,8):
-        d=abs(a-4.5); dd=int(2-min(2,d)) if inward else int(min(2,d)); pts.append((dd,a))
-    A=[(d,a) for d,a in pts]; Bp=[(4+a,d) for d,a in pts]
-    if glow: return glow_from(A+Bp,acc,510)
-    im=img(); brushed(im,0,0,3,10,[7,6,5],511,'v'); brushed(im,4,0,10,3,[7,6,5],512,'h')
-    for a in range(10): put(im,0,a,g(8)); put(im,4+a,0,g(8))
-    inlay(im,A,acc,513); inlay(im,Bp,acc,514)
+    """Clean steel strips: plate edge bright (it catches the light), body mid steel with a 2 px status light in the
+       middle of every side (the accent; also the glow), back plate darker; ends of each strip one step darker."""
+    im=img()
+    tone={'plate':(8,6),'body':(6,4),'back':(5,4)}
+    for k,(n,d,(hx,hy),(vx,vy)) in PORT_STRIPS.items():
+        for a in range(n):
+            for b in range(d):
+                light=k=='body' and a in (n//2-1,n//2)
+                if glow and not light: continue
+                if light: c=acc[5 if glow else 4] if a==n//2-1 else acc[4 if glow else 3]
+                else: c=g(tone[k][1] if a in (0,n-1) else tone[k][0])
+                put(im,hx+a,hy+b,c); put(im,vx+b,vy+a,c)
+    if not glow:
+        for y in range(8):
+            for x in range(8):
+                r=min(x,y,7-x,7-y)
+                c=g(8 if (x==0 or y==0) else 4) if r==0 else g(6) if r==1 else g(4)
+                put(im,x,8+y,c)
+        put(im,7,8,g(6)); put(im,0,15,g(6))
     return im
 def tap_plate():
     """14x14 probe plate (1..14): rail + lip, dark field, raised clamp bars top and bottom, two recessed rows of gold
@@ -221,4 +236,31 @@ def thread_glow():
             d=abs(x-7.5)+abs(y-7.5)
             if d<6 and not (5<=x<=10 and 5<=y<=10):
                 im.putpixel((x,y),HOT[6 if d<3.5 else 5 if d<4.5 else 4]+(255,))
+    return im
+# ---- Drive Bay (was shipped pre-shaded with heavy grain; now painted clean, same layout and UVs) ----
+def _bay_frame(im):
+    """Outer 1px rail: top/left lit (9), bottom/right shaded (8/7), corners 7."""
+    for a in range(16): put(im,a,0,g(9)); put(im,0,a,g(9)); put(im,15,a,g(8)); put(im,a,15,g(8))
+    for (x,y) in ((0,0),(15,0),(0,15),(15,15)): put(im,x,y,g(7))
+def drive_bay_front():
+    """Front (the modelled ribs use it): steel frame, shelves at rows 3/6/9/12, a spine at cols 7-8, and ten 6x2
+       pockets - each a step-0 shadow row under the shelf above and a step-1 floor."""
+    im=img(); _bay_frame(im)
+    for y in range(1,15):
+        for x in range(1,15):
+            if x in (7,8): c=g(9 if x==7 else 8)
+            elif y in (3,6,9,12): c=g(8)
+            else: c=g(0 if y in (1,4,7,10,13) else 1)
+            put(im,x,y,c)
+    return im
+def drive_bay_casing(vertical):
+    """Side / top: frame, dark recessed panel, three raised vent slats (horizontal on the sides, vertical on top) with
+       a step-0 shadow down-right, four raised bolts."""
+    im=img(); _bay_frame(im)
+    for y in range(1,15):
+        for x in range(1,15): put(im,x,y,g(2 if (2<=x<=13 and 2<=y<=13) else 1))
+    for i in (4,7,10):
+        pts=[(i,y) for y in range(4,12)] if vertical else [(x,i) for x in range(4,12)]
+        raised(im,pts,0,bounds=(2,2,14,14))
+    bolts(im,((3,3),(12,3),(3,12),(12,12)),0)
     return im

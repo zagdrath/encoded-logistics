@@ -74,7 +74,8 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 // Its block entity (CableBlockEntity) holds the attachments: a Cable Anchor on a side stops that side connecting (for
 // this cable and its neighbour alike), a Cable Facade covers it with a panel, a part (terminal, port, tap, sensor) is a
 // device facing out of that side (the side doesn't connect; the cable becomes a device using the parts' lanes). Using
-// any of those items on a cable mounts it on the side you're looking at; using a part opens its menu; a wrench, or
+// any of those items on a cable mounts it on the face you click (or, clicking a block a cable is next to, on the cable's
+// side toward that block); using a part opens its menu; a wrench, or
 // sneak-use with an empty hand, takes it off again (with its contents); mining hits a facade or part before the cable.
 // A cable carrying a Threshold Sensor sends redstone like a lever.
 public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, NetworkNodeBlock, EntityBlock {
@@ -260,7 +261,8 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         if (stack.is(ModItems.CABLE_ANCHOR.get()) || stack.is(ModItems.CABLE_FACADE.get()) || PartType.byItem(stack.getItem()) != null) {
-            return attach(stack, level, pos, player, sideAt(hit.getLocation(), pos));
+            // The face clicked: a cable's arm or cube side, never the arm's direction.
+            return attach(stack, level, pos, player, hit.getDirection());
         }
         if (stack.is(Tags.Items.TOOLS_WRENCH)) {
             return detach(level, pos, player, sideAt(hit.getLocation(), pos)) ? InteractionResult.SUCCESS
@@ -300,7 +302,8 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         return super.useWithoutItem(state, level, pos, player, hit);
     }
 
-    private InteractionResult attach(ItemStack stack, Level level, BlockPos pos, Player player, Direction side) {
+    // Mounts the item (an anchor, facade or part) on a side of the cable at pos; FAIL when that side already has one.
+    public static InteractionResult attach(ItemStack stack, Level level, BlockPos pos, Player player, Direction side) {
         if (!(level.getBlockEntity(pos) instanceof CableBlockEntity cable) || cable.getAttachments().get(side).kind() != CableAttachments.Kind.NONE) {
             return InteractionResult.FAIL;
         }
@@ -363,7 +366,14 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         return super.onDestroyedByPlayer(state, level, pos, player, toolStack, willHarvest, fluid);
     }
 
-    private static @Nullable Direction partLookedAt(Level level, BlockPos pos, Player player) {
+    // Pick block (and Jade's name and icon): the part or facade you're looking at, otherwise the cable.
+    @Override
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData, Player player) {
+        Direction side = partLookedAt(level, pos, player);
+        return side != null ? attachments(level, pos).get(side).toItem() : super.getCloneItemStack(level, pos, state, includeData, player);
+    }
+
+    private static @Nullable Direction partLookedAt(BlockGetter level, BlockPos pos, Player player) {
         CableAttachments attachments = attachments(level, pos);
         if (attachments.isEmpty()) {
             return null;
