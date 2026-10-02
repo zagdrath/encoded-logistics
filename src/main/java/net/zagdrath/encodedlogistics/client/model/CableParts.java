@@ -5,15 +5,22 @@
 
 package net.zagdrath.encodedlogistics.client.model;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.joml.Vector3f;
 
 import com.mojang.math.Quadrant;
 
 import net.minecraft.client.renderer.block.dispatch.BlockModelRotation;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.resources.model.SimpleModelWrapper;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,10 +35,14 @@ import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
 // The model parts a cable with attachments is built from (CableModel), baked as standalone models in every rotation the
-// blockstates use: each tier's and colour's cubes and arms, the two anchors, and the blank facade panel. Once baking is
-// done, every cable blockstate's model is wrapped in a CableModel.
+// blockstates use: each tier's and colour's cubes and arms, the two anchors, the Access Terminal (offline and online)
+// and the blank facade panel. Once baking is done, every cable blockstate's model is wrapped in a CableModel, the part
+// host's in a CableModel without a cable, and the Drive Bay's in a DriveBayModel (its sleds are baked here too).
 public final class CableParts {
     private static final Map<String, StandaloneModelKey<BlockStateModelPart>> KEYS = new HashMap<>();
+    private static final StandaloneModelKey<DriveBayModel.Sleds> SLEDS = new StandaloneModelKey<>(() -> "encodedlogistics:drive_bay sleds");
+    // How far a host's terminal moves from the far side to the block it's mounted on: the 16 px block less its 2.5 px housing.
+    private static final float HOST_SHIFT = 13.5F / 16;
 
     // A cable's own parts, already rotated: [axis ordinal] for the straight cube, [Direction ordinal] for the arms.
     record Body(BlockStateModelPart[] cubeStraight, BlockStateModelPart cubeJunction, BlockStateModelPart[] armStraight,
@@ -56,13 +67,20 @@ public final class CableParts {
             register(event, "cable_anchor_dense", toward);
         }
         register(event, "facade_solid", Direction.NORTH);
+        for (Direction toward : Direction.values()) {
+            register(event, "part/access_terminal", toward);
+            register(event, "part/access_terminal_online", toward);
+        }
+        event.register(SLEDS, new DriveBayModel.Unbaked());
     }
 
+    // model: a path under models/, without "block/" for block models.
     private static void register(ModelEvent.RegisterStandalone event, String model, Direction toward) {
         String name = name(model, toward);
         StandaloneModelKey<BlockStateModelPart> key = new StandaloneModelKey<>(() -> EncodedLogistics.MODID + ":" + name);
         KEYS.put(name, key);
-        event.register(key, SimpleUnbakedStandaloneModel.simpleModelWrapper(EncodedLogistics.id("block/" + model), rotation(toward)));
+        String path = model.startsWith("part/") ? model : "block/" + model;
+        event.register(key, SimpleUnbakedStandaloneModel.simpleModelWrapper(EncodedLogistics.id(path), rotation(toward)));
     }
 
     // Every part model of a tier: Fiber Cable has one cube and one cable arm for both straight runs and junctions.
@@ -111,7 +129,31 @@ public final class CableParts {
             denseAnchors.put(toward, get(baked, "cable_anchor_dense", toward));
         }
         FacadeQuads facades = new FacadeQuads(get(baked, "facade_solid", Direction.NORTH));
+        // [online ? 1 : 0][Direction ordinal]: on a cable, and on a part host (against the block, screen out).
+        BlockStateModelPart[][] terminals = new BlockStateModelPart[2][6], hostTerminals = new BlockStateModelPart[2][6];
+        for (Direction toward : Direction.values()) {
+            for (int online = 0; online < 2; online++) {
+                String model = online == 1 ? "part/access_terminal_online" : "part/access_terminal";
+                terminals[online][toward.ordinal()] = get(baked, model, toward);
+                hostTerminals[online][toward.ordinal()] = mounted(get(baked, model, toward.getOpposite()), toward);
+            }
+        }
         Map<BlockState, BlockStateModel> models = event.getBakingResult().blockStateModels();
+        for (BlockState state : ModBlocks.PART_HOST.get().getStateDefinition().getPossibleStates()) {
+            BlockStateModel original = models.get(state);
+            if (original != null) {
+                models.put(state, new CableModel(original, CableTier.NORMAL, null, anchors, hostTerminals, facades));
+            }
+        }
+        DriveBayModel.Sleds sleds = baked.get(SLEDS);
+        if (sleds != null) {
+            for (BlockState state : ModBlocks.DRIVE_BAY.get().getStateDefinition().getPossibleStates()) {
+                BlockStateModel original = models.get(state);
+                if (original != null) {
+                    models.put(state, new DriveBayModel(original, sleds));
+                }
+            }
+        }
         for (CableTier tier : CableTier.values()) {
             for (CableColor color : CableColor.values()) {
                 Body body = body(baked, tier, color);
@@ -119,7 +161,7 @@ public final class CableParts {
                 for (BlockState state : block.getStateDefinition().getPossibleStates()) {
                     BlockStateModel original = models.get(state);
                     if (original != null) {
-                        models.put(state, new CableModel(original, tier, body, tier.dense() ? denseAnchors : anchors, facades));
+                        models.put(state, new CableModel(original, tier, body, tier.dense() ? denseAnchors : anchors, terminals, facades));
                     }
                 }
             }
@@ -143,6 +185,31 @@ public final class CableParts {
             armsBlock[toward.ordinal()] = get(baked, model(tier, color, "arm_block"), toward);
         }
         return new Body(straight, get(baked, model(tier, color, cubeJunction), Direction.NORTH), armsStraight, armsJunction, armsBlock);
+    }
+
+    // A part host's terminal: the terminal that would face out of the far side, moved back against the block it's
+    // mounted on (toward), screen still facing out; its stub, which would poke into that block, is left out.
+    private static BlockStateModelPart mounted(BlockStateModelPart part, Direction toward) {
+        float dx = toward.getStepX() * HOST_SHIFT, dy = toward.getStepY() * HOST_SHIFT, dz = toward.getStepZ() * HOST_SHIFT;
+        QuadCollection.Builder quads = new QuadCollection.Builder();
+        List<BakedQuad> all = new ArrayList<>(part.getQuads(null));
+        for (Direction face : Direction.values()) {
+            all.addAll(part.getQuads(face));
+        }
+        for (BakedQuad quad : all) {
+            Vector3f[] moved = new Vector3f[4];
+            boolean inside = true;
+            for (int i = 0; i < 4; i++) {
+                moved[i] = new Vector3f(quad.position(i)).add(dx, dy, dz);
+                inside &= moved[i].x > -1.0E-3F && moved[i].x < 1.001F && moved[i].y > -1.0E-3F && moved[i].y < 1.001F
+                        && moved[i].z > -1.0E-3F && moved[i].z < 1.001F;
+            }
+            if (inside) {
+                quads.addUnculledFace(new BakedQuad(moved[0], moved[1], moved[2], moved[3], quad.packedUV0(), quad.packedUV1(), quad.packedUV2(),
+                        quad.packedUV3(), quad.direction(), quad.materialInfo(), quad.bakedNormals(), quad.bakedColors()));
+            }
+        }
+        return new SimpleModelWrapper(quads.build(), part.useAmbientOcclusion(), part.particleMaterial());
     }
 
     private static BlockStateModelPart get(StandaloneModelLoader.BakedModels baked, String model, Direction toward) {

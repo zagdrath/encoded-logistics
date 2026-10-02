@@ -1,8 +1,8 @@
 # The Minecraft-style shading pass (tools/mcpass.py) over the cable textures, in place. tools/export_cables.py runs it
 # right after writing the base textures; don't run it on its own, since a second pass over already-shaded textures
 # changes them again. Deterministic: the grain is seeded from each file name, and a glow overlay gets the same seed as
-# its base so the grain matches pixel for pixel. (The Drive Array's textures ship already shaded, in art/drive_array_v2/;
-# its exporter should call repaint the same way once that block is added.)
+# its base so the grain matches pixel for pixel. (The Drive Bay's textures ship already shaded, in
+# textures/block/drive_bay/.)
 import os, glob, shutil, zlib, sys
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

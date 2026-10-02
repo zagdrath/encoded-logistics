@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:glass_pane",
+  "encodedlogistics:network_cable"
+ ],
+ "result": {
+  "id": "encodedlogistics:access_terminal",
+  "count": 1
+ }
+}

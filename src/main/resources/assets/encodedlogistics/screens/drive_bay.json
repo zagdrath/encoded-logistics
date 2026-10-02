@@ -1,0 +1,89 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "background": {
+  "texture": "gui/drive_bay.png",
+  "width": 176,
+  "height": 205
+ },
+ "sprites": {
+  "fill_green": {
+   "sprite": "drive_bay/fill_green",
+   "width": 4,
+   "height": 16,
+   "fill": "bottom_up"
+  },
+  "fill_yellow": {
+   "sprite": "drive_bay/fill_yellow",
+   "width": 4,
+   "height": 16,
+   "fill": "bottom_up"
+  },
+  "fill_orange": {
+   "sprite": "drive_bay/fill_orange",
+   "width": 4,
+   "height": 16,
+   "fill": "bottom_up"
+  },
+  "fill_red": {
+   "sprite": "drive_bay/fill_red",
+   "width": 4,
+   "height": 16,
+   "fill": "bottom_up"
+  },
+  "ghost_drive": {
+   "sprite": "drive_bay/ghost_drive",
+   "width": 16,
+   "height": 16
+  },
+  "dot_green": {
+   "sprite": "drive_bay/dot_green",
+   "width": 6,
+   "height": 6
+  },
+  "dot_red": {
+   "sprite": "drive_bay/dot_red",
+   "width": 6,
+   "height": 6
+  }
+ },
+ "widgets": {
+  "drive_slots": {
+   "note": "slot i: column i/5, row i%5; slot item at +1,+1; fill bar 4x16 at +20,+1 drawn bottom-up",
+   "columns_x": [
+    56,
+    96
+   ],
+   "top": 18,
+   "row_height": 18,
+   "bar_offset_x": 20,
+   "bar_offset_y": 1
+  },
+  "status": {
+   "dot_left_from_text": -9,
+   "right": 168,
+   "top": 5
+  }
+ },
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.drive_bay",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "status": {
+   "right": 168,
+   "top": 5,
+   "color": "ACCENT",
+   "errorColor": "ERROR"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top": 111,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

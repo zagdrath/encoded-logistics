@@ -1,0 +1,102 @@
+{
+ "$comment": "Modular terminal layout. Height = top + rows*row + bottom; rows fill the window between min and max.",
+ "width": 195,
+ "pieces": {
+  "top": {
+   "texture": "gui/terminal/top.png",
+   "height": 19
+  },
+  "row": {
+   "texture": "gui/terminal/row.png",
+   "height": 18
+  },
+  "bottom": {
+   "texture": "gui/terminal/bottom.png",
+   "height": 99
+  }
+ },
+ "rows": {
+  "min": 3,
+  "max": 12,
+  "default": 6,
+  "fit_to_window": true
+ },
+ "grid": {
+  "left": 9,
+  "top_in_row": 1,
+  "columns": 9,
+  "cell": 18,
+  "count_text": {
+   "scale": 0.5,
+   "align": "bottom_right",
+   "color": "TEXT"
+  }
+ },
+ "scrollbar": {
+  "left": 176,
+  "top": 19,
+  "width": 10,
+  "thumb": "terminal/scroll_thumb",
+  "thumb_disabled": "terminal/scroll_thumb_disabled",
+  "thumb_size": [
+   10,
+   15
+  ]
+ },
+ "search": {
+  "left": 104,
+  "top": 4,
+  "width": 68,
+  "height": 12,
+  "sprite": "terminal/search_field",
+  "sprite_focused": "terminal/search_field_focused",
+  "text_left": 4,
+  "text_top": 2,
+  "max_length": 64
+ },
+ "toolbar": {
+  "side": "left",
+  "left": -20,
+  "top": 6,
+  "spacing": 20,
+  "button": "terminal/button",
+  "button_hover": "terminal/button_hover",
+  "button_pressed": "terminal/button_pressed",
+  "buttons": [
+   {
+    "id": "sort_mode",
+    "icons": [
+     "terminal/icon_sort_name",
+     "terminal/icon_sort_count",
+     "terminal/icon_sort_mod"
+    ]
+   },
+   {
+    "id": "sort_direction",
+    "icons": [
+     "terminal/icon_dir_asc",
+     "terminal/icon_dir_desc"
+    ]
+   }
+  ]
+ },
+ "player_inventory": {
+  "left": 9,
+  "top_in_bottom": 17,
+  "label_top_in_bottom": 6
+ },
+ "slot_highlight": "terminal/slot_highlight",
+ "text": {
+  "title": {
+   "left": 8,
+   "top": 6,
+   "color": "TEXT"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 9,
+   "top_in_bottom": 6,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

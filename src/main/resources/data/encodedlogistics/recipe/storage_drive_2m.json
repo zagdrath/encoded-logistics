@@ -1,0 +1,25 @@
+{
+ "neoforge:conditions": [
+  {
+   "type": "neoforge:registered",
+   "value": "encodedlogistics:storage_drive_2m"
+  }
+ ],
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "IFI",
+  "IDI",
+  "ICI"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "F": "encodedlogistics:ferrite",
+  "D": "encodedlogistics:storage_die_2m",
+  "C": "encodedlogistics:circuit_substrate"
+ },
+ "result": {
+  "id": "encodedlogistics:storage_drive_2m",
+  "count": 1
+ }
+}

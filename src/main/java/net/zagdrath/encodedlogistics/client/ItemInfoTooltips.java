@@ -20,15 +20,21 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
+import net.zagdrath.encodedlogistics.item.StorageDriveItem;
+import net.zagdrath.encodedlogistics.item.StorageTierItem;
+import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.DriveStats;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // A short description of what each Encoded Logistics item does, under its name, the same way as Arcforge: "Hold
 // [Shift] for info", and the description while Shift is held. Descriptions live in the lang file as
@@ -49,19 +55,33 @@ public final class ItemInfoTooltips {
         if (!EncodedLogistics.MODID.equals(id.getNamespace())) {
             return;
         }
-        String key = descriptionKey(id.getPath());
-        if (key == null) {
-            return;
-        }
         List<Component> tooltip = event.getToolTip();
+        String key = descriptionKey(id.getPath());
         // Right under the name, before the item's own lines.
         int at = Math.min(1, tooltip.size());
+        // Drives, dies and photomasks always say their tier, fill or that they're reusable.
+        ItemStack stack = event.getItemStack();
+        if (stack.getItem() instanceof StorageDriveItem) {
+            DriveStats stats = StorageDriveItem.stats(stack);
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.bytes", String.format(Locale.ROOT, "%,d", stats.bytesUsed()),
+                    String.format(Locale.ROOT, "%,d", stats.bytesTotal())).withStyle(ChatFormatting.GRAY));
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
+                    .withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof StorageTierItem die) {
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.die.tier",
+                    Component.literal(die.getTier().label()).withColor(die.getTier().light())).withStyle(ChatFormatting.GRAY));
+        } else if (stack.is(ModItems.LOGIC_PHOTOMASK.get()) || stack.is(ModItems.STORAGE_PHOTOMASK.get())) {
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.photomask.reusable").withStyle(ChatFormatting.GRAY));
+        }
         // A facade always says what it looks like.
         if (event.getItemStack().getItem() instanceof CableFacadeItem) {
             BlockState target = CableFacadeItem.target(event.getItemStack());
             tooltip.add(at++, (target != null
                     ? Component.translatable("tooltip.encodedlogistics.cable_facade.target", target.getBlock().getName())
                     : Component.translatable("tooltip.encodedlogistics.cable_facade.blank")).withStyle(ChatFormatting.GRAY));
+        }
+        if (key == null) {
+            return;
         }
         if (!Minecraft.getInstance().hasShiftDown()) {
             tooltip.add(at, Component.translatable("tooltip.encodedlogistics.hold_shift",
@@ -101,6 +121,12 @@ public final class ItemInfoTooltips {
             String colour = dye.getSerializedName() + "_";
             if (path.startsWith(colour) && language.has(PREFIX + path.substring(colour.length()))) {
                 return PREFIX + path.substring(colour.length());
+            }
+        }
+        for (StorageTier tier : StorageTier.values()) {
+            String suffix = "_" + tier.id();
+            if (path.endsWith(suffix) && language.has(PREFIX + path.substring(0, path.length() - suffix.length()))) {
+                return PREFIX + path.substring(0, path.length() - suffix.length());
             }
         }
         return null;

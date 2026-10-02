@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.registry;
 
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
@@ -14,6 +15,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 
@@ -24,15 +27,22 @@ public final class ModBlockEntityTypes {
     public static final Supplier<BlockEntityType<NetworkControllerBlockEntity>> NETWORK_CONTROLLER = BLOCK_ENTITY_TYPES.register(
             "network_controller", () -> new BlockEntityType<>(NetworkControllerBlockEntity::new, ModBlocks.NETWORK_CONTROLLER.get()));
 
-    // One type for every cable, of every tier and colour.
+    // One type for every cable, of every tier and colour, and for part hosts.
     public static final Supplier<BlockEntityType<CableBlockEntity>> CABLE = BLOCK_ENTITY_TYPES.register("cable",
-            () -> new BlockEntityType<>(CableBlockEntity::new, ModBlocks.allCables().stream().map(cable -> (Block) cable.get()).toArray(Block[]::new)));
+            () -> new BlockEntityType<>(CableBlockEntity::new, Stream.concat(ModBlocks.allCables().stream().map(cable -> (Block) cable.get()),
+                    Stream.of(ModBlocks.PART_HOST.get())).toArray(Block[]::new)));
 
     public static final Supplier<BlockEntityType<PowerInletBlockEntity>> POWER_INLET = BLOCK_ENTITY_TYPES.register(
             "power_inlet", () -> new BlockEntityType<>(PowerInletBlockEntity::new, ModBlocks.POWER_INLET.get()));
 
     public static final Supplier<BlockEntityType<CapacitorBankBlockEntity>> CAPACITOR_BANK = BLOCK_ENTITY_TYPES.register(
             "capacitor_bank", () -> new BlockEntityType<>(CapacitorBankBlockEntity::new, ModBlocks.CAPACITOR_BANK.get()));
+
+    public static final Supplier<BlockEntityType<LithographyPressBlockEntity>> LITHOGRAPHY_PRESS = BLOCK_ENTITY_TYPES.register(
+            "lithography_press", () -> new BlockEntityType<>(LithographyPressBlockEntity::new, ModBlocks.LITHOGRAPHY_PRESS.get()));
+
+    public static final Supplier<BlockEntityType<DriveBayBlockEntity>> DRIVE_BAY = BLOCK_ENTITY_TYPES.register(
+            "drive_bay", () -> new BlockEntityType<>(DriveBayBlockEntity::new, ModBlocks.DRIVE_BAY.get()));
 
     private ModBlockEntityTypes() {}
 }

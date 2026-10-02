@@ -3,6 +3,8 @@
     "encodedlogistics:network_controller",
     "encodedlogistics:power_inlet",
     "encodedlogistics:capacitor_bank",
-    "encodedlogistics:segment_isolator"
+    "encodedlogistics:segment_isolator",
+    "encodedlogistics:lithography_press",
+    "encodedlogistics:drive_bay"
   ]
 }

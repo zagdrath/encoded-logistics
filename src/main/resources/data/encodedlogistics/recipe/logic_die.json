@@ -1,0 +1,12 @@
+{
+ "type": "encodedlogistics:lithography",
+ "wafer": "encodedlogistics:silicon_wafer",
+ "additive": "minecraft:redstone",
+ "photomask": "encodedlogistics:logic_photomask",
+ "result": {
+  "id": "encodedlogistics:logic_die",
+  "count": 1
+ },
+ "energy": 4000,
+ "time": 100
+}

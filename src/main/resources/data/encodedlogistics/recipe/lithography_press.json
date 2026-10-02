@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "IGI",
+  "FRF",
+  "ICI"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "G": "minecraft:glass",
+  "F": "encodedlogistics:ferrite",
+  "R": "minecraft:redstone",
+  "C": "encodedlogistics:circuit_substrate"
+ },
+ "result": {
+  "id": "encodedlogistics:lithography_press",
+  "count": 1
+ }
+}

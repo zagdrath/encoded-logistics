@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.registry;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import net.minecraft.core.registries.Registries;
@@ -13,6 +14,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 public final class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB,
@@ -30,6 +32,20 @@ public final class ModCreativeTabs {
                 ModItems.allCables().forEach(cable -> output.accept(cable.get()));
                 output.accept(ModItems.CABLE_ANCHOR.get());
                 output.accept(ModItems.CABLE_FACADE.get());
+                output.accept(ModItems.LITHOGRAPHY_PRESS.get());
+                output.accept(ModItems.DRIVE_BAY.get());
+                output.accept(ModItems.ACCESS_TERMINAL.get());
+                for (StorageTier tier : StorageTier.REGISTERED) {
+                    output.accept(ModItems.storageDrive(tier).get());
+                }
+                for (var material : List.of(ModItems.SILICA, ModItems.SILICA_BLEND, ModItems.SILICON_BOULE, ModItems.SILICON_WAFER,
+                        ModItems.FERRITE, ModItems.COPPER_FOIL, ModItems.FIBERGLASS, ModItems.SOLDER_PASTE, ModItems.CIRCUIT_SUBSTRATE,
+                        ModItems.LOGIC_PHOTOMASK, ModItems.STORAGE_PHOTOMASK, ModItems.LOGIC_DIE)) {
+                    output.accept(material.get());
+                }
+                for (StorageTier tier : StorageTier.REGISTERED) {
+                    output.accept(ModItems.storageDie(tier).get());
+                }
             })
             .build());
 

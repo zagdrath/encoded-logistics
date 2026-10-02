@@ -1,0 +1,12 @@
+{
+ "type": "encodedlogistics:lithography",
+ "wafer": "encodedlogistics:silicon_wafer",
+ "additive": "encodedlogistics:ferrite",
+ "photomask": "encodedlogistics:storage_photomask",
+ "result": {
+  "id": "encodedlogistics:storage_die_8k",
+  "count": 1
+ },
+ "energy": 4000,
+ "time": 100
+}

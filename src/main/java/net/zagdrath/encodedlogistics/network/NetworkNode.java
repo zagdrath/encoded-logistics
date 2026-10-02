@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.network;
 
+import java.util.List;
 import java.util.Set;
 
 import net.minecraft.core.BlockPos;
@@ -39,6 +40,11 @@ public interface NetworkNode {
 
     default boolean isController() {
         return controllerGroup() != NO_CONTROLLER;
+    }
+
+    // Devices mounted on this node (terminals on a cable), each listed on its own on the network's screen.
+    default List<NetworkPart> parts() {
+        return List.of();
     }
 
     // Whether the network carries on through this node to its other connections. A Segment Isolator doesn't: it ends

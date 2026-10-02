@@ -16,8 +16,9 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 // Cable collision and selection shapes: the union of the model parts a cable shows (the same rules as the multipart
-// blockstates), plus its anchors and facade panels, arms rotated from north like the blockstates rotate them. Shapes
-// depend only on the geometry (slim or dense), the six connections and the six attachment kinds, so they're cached.
+// blockstates), plus its anchors, terminals and facade panels, arms rotated from north like the blockstates rotate
+// them. Shapes depend only on the geometry (slim or dense), the six connections and the six attachment kinds, so
+// they're cached.
 public final class CableShapes {
     // Boxes in pixels {x1, y1, z1, x2, y2, z2}; arms point north (-Z) and the straight cube runs along Z.
     private record Parts(double[][] cubeStraight, double[][] cubeJunction, double[][] armStraight, double[][] armJunction,
@@ -44,6 +45,9 @@ public final class CableShapes {
                     { 11, 11, 1.5, 12, 12, 2 } });
     // A facade: a 16x16x1 panel over the side.
     private static final double[] FACADE = { 0, 0, 0, 16, 16, 1 };
+    // An Access Terminal: a 14x14x2.5 housing flush with the side and a 4x4 stub back to the cable's core.
+    private static final double[] TERMINAL_HOUSING = { 1, 1, 0, 15, 15, 2.5 };
+    private static final double[] TERMINAL_STUB = { 6, 6, 2.5, 10, 10, 5 };
 
     private static final Map<Integer, VoxelShape> SLIM_CACHE = new ConcurrentHashMap<>();
     private static final Map<Integer, VoxelShape> DENSE_CACHE = new ConcurrentHashMap<>();
@@ -56,15 +60,15 @@ public final class CableShapes {
         for (CableConnection connection : connections) {
             key = key * 3 + connection.ordinal();
         }
-        key = key * 729 + attachments.shapeKey();
+        key = key * 4096 + attachments.shapeKey();
         Parts parts = tier.dense() ? DENSE : SLIM;
         return (tier.dense() ? DENSE_CACHE : SLIM_CACHE).computeIfAbsent(key, k -> build(parts, connections, attachments));
     }
 
-    // The axis of a straight piece: the only connections are cables on two opposite sides, and nothing is anchored (an
-    // anchor sits on the junction cube). Otherwise null.
+    // The axis of a straight piece: the only connections are cables on two opposite sides, and nothing is mounted (an
+    // anchor or a terminal sits on the junction cube). Otherwise null.
     public static Direction.@Nullable Axis straightAxis(CableConnection[] connections, CableAttachments attachments) {
-        if (attachments.hasAnchor()) {
+        if (attachments.hasMountedPart()) {
             return null;
         }
         for (Direction.Axis axis : Direction.Axis.values()) {
@@ -111,6 +115,8 @@ public final class CableShapes {
         for (Direction side : Direction.values()) {
             if (attachments.anchored(side)) {
                 shape = Shapes.or(shape, boxes(parts.anchor(), side));
+            } else if (attachments.terminal(side)) {
+                shape = Shapes.or(shape, Shapes.or(rotated(TERMINAL_HOUSING, side), rotated(TERMINAL_STUB, side)));
             } else if (attachments.facade(side)) {
                 shape = Shapes.or(shape, rotated(FACADE, side));
             }
@@ -121,6 +127,22 @@ public final class CableShapes {
     // The facade panel on a side, for working out whether a hit landed on it.
     public static VoxelShape facade(Direction side) {
         return rotated(FACADE, side);
+    }
+
+    // A terminal's housing on a side (its part, for mining it off a cable).
+    public static VoxelShape terminal(Direction side) {
+        return rotated(TERMINAL_HOUSING, side);
+    }
+
+    // A part host: just its terminal's housing, against the block it's mounted on.
+    public static VoxelShape partHost(CableAttachments attachments) {
+        VoxelShape shape = Shapes.empty();
+        for (Direction side : Direction.values()) {
+            if (attachments.terminal(side)) {
+                shape = Shapes.or(shape, rotated(TERMINAL_HOUSING, side));
+            }
+        }
+        return shape;
     }
 
     private static Direction along(Direction.Axis axis) {

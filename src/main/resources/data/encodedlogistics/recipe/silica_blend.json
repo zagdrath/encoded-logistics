@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:silica",
+  "encodedlogistics:silica",
+  "encodedlogistics:silica",
+  "encodedlogistics:silica",
+  "minecraft:coal"
+ ],
+ "result": {
+  "id": "encodedlogistics:silica_blend",
+  "count": 1
+ }
+}

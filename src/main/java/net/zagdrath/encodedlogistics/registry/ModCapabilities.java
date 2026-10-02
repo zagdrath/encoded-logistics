@@ -9,6 +9,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 
@@ -24,5 +25,7 @@ public final class ModCapabilities {
                 NetworkControllerBlockEntity::getEnergyHandler);
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntityTypes.POWER_INLET.get(), PowerInletBlockEntity::getEnergyHandler);
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntityTypes.CAPACITOR_BANK.get(), CapacitorBankBlockEntity::getEnergyHandler);
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntityTypes.LITHOGRAPHY_PRESS.get(), LithographyPressBlockEntity::getEnergyHandler);
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntityTypes.LITHOGRAPHY_PRESS.get(), LithographyPressBlockEntity::getItemHandler);
     }
 }

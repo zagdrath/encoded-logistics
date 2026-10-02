@@ -22,14 +22,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
-// What's mounted on each side of a cable: nothing, a Cable Anchor (the side never connects) or a Cable Facade (a panel
-// covering the side, copying the look of its target block; no target is a blank facade). Immutable; one per side, by
-// Direction ordinal.
+// What's mounted on each side of a cable: nothing, a Cable Anchor (the side never connects), a Cable Facade (a panel
+// covering the side, copying the look of its target block; no target is a blank facade) or an Access Terminal (a part
+// facing out of that side; the side doesn't connect either). Immutable; one per side, by Direction ordinal. A part host
+// (a terminal on a block face, no cable) uses the same, with its terminal on the side toward the block it's on.
 public final class CableAttachments {
     public enum Kind implements StringRepresentable {
         NONE("none"),
         ANCHOR("anchor"),
-        FACADE("facade");
+        FACADE("facade"),
+        TERMINAL("terminal");
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
 
@@ -48,6 +50,7 @@ public final class CableAttachments {
     public record Attachment(Kind kind, @Nullable BlockState target) {
         public static final Attachment NONE = new Attachment(Kind.NONE, null);
         public static final Attachment ANCHOR = new Attachment(Kind.ANCHOR, null);
+        public static final Attachment TERMINAL = new Attachment(Kind.TERMINAL, null);
 
         static final Codec<Attachment> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Kind.CODEC.fieldOf("kind").forGetter(Attachment::kind),
@@ -66,11 +69,21 @@ public final class CableAttachments {
             return kind == Kind.FACADE;
         }
 
+        public boolean isTerminal() {
+            return kind == Kind.TERMINAL;
+        }
+
+        // Anchors and terminals keep their side from connecting.
+        public boolean blocksConnection() {
+            return kind == Kind.ANCHOR || kind == Kind.TERMINAL;
+        }
+
         // The item this attachment drops as: an anchor, or a facade carrying its target.
         public ItemStack toItem() {
             return switch (kind) {
                 case NONE -> ItemStack.EMPTY;
                 case ANCHOR -> new ItemStack(ModItems.CABLE_ANCHOR.get());
+                case TERMINAL -> new ItemStack(ModItems.ACCESS_TERMINAL.get());
                 case FACADE -> {
                     ItemStack stack = new ItemStack(ModItems.CABLE_FACADE.get());
                     if (target != null) {
@@ -114,9 +127,10 @@ public final class CableAttachments {
         return true;
     }
 
-    public boolean hasAnchor() {
+    // An anchor or a terminal anywhere: the cable sits on its junction cube.
+    public boolean hasMountedPart() {
         for (Attachment attachment : sides) {
-            if (attachment.isAnchor()) {
+            if (attachment.blocksConnection()) {
                 return true;
             }
         }
@@ -127,15 +141,34 @@ public final class CableAttachments {
         return get(side).isAnchor();
     }
 
+    public boolean terminal(Direction side) {
+        return get(side).isTerminal();
+    }
+
+    public int terminals() {
+        int count = 0;
+        for (Attachment attachment : sides) {
+            if (attachment.isTerminal()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // The side doesn't connect: an anchor or a terminal is on it.
+    public boolean blocksConnection(Direction side) {
+        return get(side).blocksConnection();
+    }
+
     public boolean facade(Direction side) {
         return get(side).isFacade();
     }
 
-    // The kinds on all six sides as one number (0 to 728), for caching shapes.
+    // The kinds on all six sides as one number (0 to 4095), for caching shapes.
     public int shapeKey() {
         int key = 0;
         for (Attachment attachment : sides) {
-            key = key * 3 + attachment.kind().ordinal();
+            key = key * 4 + attachment.kind().ordinal();
         }
         return key;
     }

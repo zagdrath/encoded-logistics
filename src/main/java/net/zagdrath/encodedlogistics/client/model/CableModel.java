@@ -29,21 +29,25 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 
 // A cable blockstate's model, wrapped. Without attachments it's the blockstate's own multipart model. With them (from
 // the block entity's ModelData) it builds the cable from the same parts (CableParts) by the same rules, except that an
-// anchor puts the cable on its junction cube and a facade over a block connection drops that arm's flange, then adds
-// the anchors (rotated like arms) and the facade panels (FacadeQuads).
+// anchor or terminal puts the cable on its junction cube and a facade over a block connection drops that arm's flange,
+// then adds the anchors and terminals (rotated like arms; a terminal's screen lit while it's online) and the facade
+// panels (FacadeQuads). A part host has no body: just its terminal.
 final class CableModel implements DynamicBlockStateModel {
     private final BlockStateModel original;
     private final CableTier tier;
-    private final CableParts.Body body;
+    private final CableParts.@Nullable Body body;
     private final Map<Direction, BlockStateModelPart> anchors;
+    private final BlockStateModelPart[][] terminals;
     private final FacadeQuads facades;
     private final int materialFlags;
 
-    CableModel(BlockStateModel original, CableTier tier, CableParts.Body body, Map<Direction, BlockStateModelPart> anchors, FacadeQuads facades) {
+    CableModel(BlockStateModel original, CableTier tier, CableParts.@Nullable Body body, Map<Direction, BlockStateModelPart> anchors,
+            BlockStateModelPart[][] terminals, FacadeQuads facades) {
         this.original = original;
         this.tier = tier;
         this.body = body;
         this.anchors = anchors;
+        this.terminals = terminals;
         this.facades = facades;
         @SuppressWarnings("deprecation")
         int flags = original.materialFlags();
@@ -56,8 +60,17 @@ final class CableModel implements DynamicBlockStateModel {
     @Override
     public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockStateModelPart> parts) {
         CableAttachments attachments = level.getModelData(pos).get(CableBlockEntity.ATTACHMENTS);
-        if (attachments == null || attachments.isEmpty() || !(state.getBlock() instanceof NetworkCableBlock)) {
+        if (attachments == null || attachments.isEmpty()) {
             original.collectParts(level, pos, state, random, parts);
+            return;
+        }
+        int online = Boolean.TRUE.equals(level.getModelData(pos).get(CableBlockEntity.ONLINE)) ? 1 : 0;
+        if (body == null || !(state.getBlock() instanceof NetworkCableBlock)) {
+            for (Direction side : Direction.values()) {
+                if (attachments.terminal(side)) {
+                    parts.add(terminals[online][side.ordinal()]);
+                }
+            }
             return;
         }
         CableConnection[] connections = NetworkCableBlock.connections(state);
@@ -82,6 +95,8 @@ final class CableModel implements DynamicBlockStateModel {
         for (Direction side : Direction.values()) {
             if (attachments.anchored(side)) {
                 parts.add(anchors.get(side));
+            } else if (attachments.terminal(side)) {
+                parts.add(terminals[online][side.ordinal()]);
             }
         }
         BlockStateModelPart panels = facades.build(level, pos, attachments, connections, tier.dense() ? 8 : 6,

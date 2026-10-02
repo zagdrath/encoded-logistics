@@ -1,0 +1,8 @@
+{
+ "type": "minecraft:stonecutting",
+ "ingredient": "encodedlogistics:silicon_boule",
+ "result": {
+  "id": "encodedlogistics:silicon_wafer",
+  "count": 4
+ }
+}

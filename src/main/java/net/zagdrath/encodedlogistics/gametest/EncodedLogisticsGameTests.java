@@ -61,6 +61,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("facades", InfrastructureGameTests::facades);
         TESTS.put("inlet_fills_controller_then_bank", InfrastructureGameTests::inletFillsControllerThenBank);
         TESTS.put("isolator_splits_network", InfrastructureGameTests::isolatorSplitsNetwork);
+        TESTS.put("lithography_press_etches", Phase1GameTests::lithographyPressEtches);
+        TESTS.put("drive_storage", Phase1GameTests::driveStorage);
+        TESTS.put("access_terminals", Phase1GameTests::terminals);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

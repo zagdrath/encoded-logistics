@@ -1,0 +1,23 @@
+{
+ "neoforge:conditions": [
+  {
+   "type": "neoforge:registered",
+   "value": "encodedlogistics:storage_die_128k"
+  }
+ ],
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "DSD",
+  "DLD"
+ ],
+ "key": {
+  "D": "encodedlogistics:storage_die_32k",
+  "S": "encodedlogistics:solder_paste",
+  "L": "encodedlogistics:logic_die"
+ },
+ "result": {
+  "id": "encodedlogistics:storage_die_128k",
+  "count": 1
+ }
+}

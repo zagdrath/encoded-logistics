@@ -16,7 +16,10 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
+import net.zagdrath.encodedlogistics.block.DriveBayBlock;
+import net.zagdrath.encodedlogistics.block.LithographyPressBlock;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
+import net.zagdrath.encodedlogistics.block.PartHostBlock;
 import net.zagdrath.encodedlogistics.block.PowerInletBlock;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
@@ -39,6 +42,18 @@ public final class ModBlocks {
 
     public static final DeferredBlock<SegmentIsolatorBlock> SEGMENT_ISOLATOR = BLOCKS.registerBlock("segment_isolator", SegmentIsolatorBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+
+    public static final DeferredBlock<LithographyPressBlock> LITHOGRAPHY_PRESS = BLOCKS.registerBlock("lithography_press",
+            LithographyPressBlock::new, p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL).lightLevel(LithographyPressBlock::lightLevel));
+
+    public static final DeferredBlock<DriveBayBlock> DRIVE_BAY = BLOCKS.registerBlock("drive_bay", DriveBayBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
+
+    // Holds an Access Terminal mounted on a block face (no item; the terminal is what drops).
+    public static final DeferredBlock<PartHostBlock> PART_HOST = BLOCKS.registerBlock("part_host", PartHostBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(0.5F, 1.0F).sound(SoundType.METAL).noOcclusion().dynamicShape().noLootTable()
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
 
     // Network, Dense Network and Fiber Cables in every colour: network_cable, white_network_cable, ...,
     // dense_network_cable, ..., fiber_cable, white_fiber_cable, .... Their shape depends on their attachments (block

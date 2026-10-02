@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "DSD",
+  "DLD"
+ ],
+ "key": {
+  "D": "encodedlogistics:storage_die_8k",
+  "S": "encodedlogistics:solder_paste",
+  "L": "encodedlogistics:logic_die"
+ },
+ "result": {
+  "id": "encodedlogistics:storage_die_32k",
+  "count": 1
+ }
+}

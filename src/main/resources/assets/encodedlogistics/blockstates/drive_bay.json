@@ -1,0 +1,19 @@
+{
+ "variants": {
+  "facing=north": {
+   "model": "encodedlogistics:block/drive_bay"
+  },
+  "facing=east": {
+   "model": "encodedlogistics:block/drive_bay",
+   "y": 90
+  },
+  "facing=south": {
+   "model": "encodedlogistics:block/drive_bay",
+   "y": 180
+  },
+  "facing=west": {
+   "model": "encodedlogistics:block/drive_bay",
+   "y": 270
+  }
+ }
+}

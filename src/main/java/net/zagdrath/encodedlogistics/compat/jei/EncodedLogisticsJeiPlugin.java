@@ -7,15 +7,18 @@ package net.zagdrath.encodedlogistics.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.registration.IRecipeCatalystRegistration;
+import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
-// JEI support (only loaded when JEI is installed). The crafting recipe shows up on its own; this adds an info page on
-// how controllers form structures and what they provide.
+// JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
+// category (with the press as its station) and an info page on how controllers form structures and what they provide.
 @JeiPlugin
 public class EncodedLogisticsJeiPlugin implements IModPlugin {
     private static final Identifier UID = EncodedLogistics.id("jei_plugin");
@@ -26,8 +29,20 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
     }
 
     @Override
+    public void registerCategories(IRecipeCategoryRegistration registration) {
+        registration.addRecipeCategories(new LithographyCategory(registration.getJeiHelpers().getGuiHelper()));
+    }
+
+    @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        // The recipes the server sent (EncodedLogisticsClient keeps them).
+        registration.addRecipes(LithographyCategory.TYPE, LithographyRecipes.clientRecipes());
         registration.addItemStackInfo(new ItemStack(ModItems.NETWORK_CONTROLLER.get()),
                 Component.translatable("jei.encodedlogistics.network_controller.info"));
+    }
+
+    @Override
+    public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        registration.addCraftingStation(LithographyCategory.TYPE, ModItems.LITHOGRAPHY_PRESS.get());
     }
 }

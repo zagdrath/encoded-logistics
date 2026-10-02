@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "minecraft:glass",
+  "minecraft:string",
+  "minecraft:string"
+ ],
+ "result": {
+  "id": "encodedlogistics:fiberglass",
+  "count": 2
+ }
+}

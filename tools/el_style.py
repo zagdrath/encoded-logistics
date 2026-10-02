@@ -21,7 +21,8 @@ AMBER=[H(c) for c in ['#6B4208','#9A6410','#D8941C','#F5B23A','#FFD27A']]
 BRASS=[H(c) for c in ['#6E4F12','#9C7420','#C99A35','#E8C25A','#F8E39A']]
 LED_GREEN=[H('#22A03C'),H('#3CE05A'),H('#B5FFB0')]
 def img(w=16,h=16): return Image.new('RGBA',(w,h),(0,0,0,0))
-def put(im,x,y,c,a=255): im.putpixel((x,y),tuple(c)+(a,))
+def put(im,x,y,c,a=255):
+    if 0<=x<im.width and 0<=y<im.height: im.putpixel((x,y),tuple(c)+(a,))
 def speckle(seed,p_dark=0.10,p_light=0.07):
     r=random.Random(seed)
     def f(): x=r.random(); return -1 if x<p_dark else (1 if x<p_dark+p_light else 0)

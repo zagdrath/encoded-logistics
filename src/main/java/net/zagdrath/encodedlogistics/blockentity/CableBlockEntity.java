@@ -24,15 +24,19 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.model.data.ModelProperty;
 import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
+import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
-// Every cable's block entity (Network, Dense and Fiber, all colours): the anchors and facades mounted on its sides.
-// The connections stay in the blockstate; this only adds the attachments, saved with the chunk, synced to clients and
-// handed to the cable's model as ModelData. It never ticks, so a cable without attachments costs next to nothing.
-public class CableBlockEntity extends BlockEntity {
+// Every cable's block entity (Network, Dense and Fiber, all colours), and a part host's: the anchors, facades and
+// terminals mounted on its sides. The connections stay in the blockstate; this only adds the attachments, saved with
+// the chunk, synced to clients and handed to the model as ModelData, and whether its terminals are online (their
+// screens light up). It never ticks, so a cable without attachments costs next to nothing.
+public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     public static final ModelProperty<CableAttachments> ATTACHMENTS = new ModelProperty<>();
+    public static final ModelProperty<Boolean> ONLINE = new ModelProperty<>();
 
     private CableAttachments attachments = CableAttachments.EMPTY;
+    private boolean online;
 
     public CableBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.CABLE.get(), pos, state);
@@ -57,6 +61,21 @@ public class CableBlockEntity extends BlockEntity {
         }
     }
 
+    // Whether its terminals are on a powered network with their lanes.
+    public boolean isOnline() {
+        return online;
+    }
+
+    @Override
+    public void setNetworkOnline(boolean online) {
+        if (this.online != online) {
+            this.online = online;
+            if (level != null) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+            }
+        }
+    }
+
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
@@ -73,6 +92,8 @@ public class CableBlockEntity extends BlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         attachments = input.read("attachments", CableAttachments.CODEC).orElse(CableAttachments.EMPTY);
+        // Only sent to clients (getUpdateTag); the server works it out again every tick.
+        online = input.getBooleanOr("online", false);
     }
 
     @Override
@@ -85,7 +106,11 @@ public class CableBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+        CompoundTag tag = saveCustomOnly(registries);
+        if (online) {
+            tag.putBoolean("online", true);
+        }
+        return tag;
     }
 
     @Override
@@ -97,10 +122,9 @@ public class CableBlockEntity extends BlockEntity {
     @Override
     public void onDataPacket(Connection connection, ValueInput input) {
         CableAttachments before = attachments;
-        // An empty update means every attachment is gone (saveAdditional writes nothing then).
-        attachments = CableAttachments.EMPTY;
+        boolean wasOnline = online;
         super.onDataPacket(connection, input);
-        if (!attachments.equals(before)) {
+        if (!attachments.equals(before) || online != wasOnline) {
             remesh();
         }
     }
@@ -120,6 +144,6 @@ public class CableBlockEntity extends BlockEntity {
 
     @Override
     public ModelData getModelData() {
-        return attachments.isEmpty() ? ModelData.EMPTY : ModelData.of(ATTACHMENTS, attachments);
+        return attachments.isEmpty() ? ModelData.EMPTY : ModelData.builder().with(ATTACHMENTS, attachments).with(ONLINE, online).build();
     }
 }

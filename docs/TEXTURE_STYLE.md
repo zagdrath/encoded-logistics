@@ -167,7 +167,7 @@ Frames read as a **recessed bevel**, not a flat line.
 - Brushed grain runs along the cable: along u on `_h` sheets, along v on `_v` sheets. Wear specks go on `_j` and `_f`.
 - Dye bands use the dye ramps in 2.2; the steel uses the steel ramp.
 
-**Drive Array**
+**Drive Bay** (the Drive Array design)
 - Casing: the controller's frame with vent slats in trace steps and screws as raised features.
 - Front: modelled 3D ribs (frame, shelves, spine) with 2px pockets. Rib fronts carry the frame steel.
 - Drives in the bays: slate body, silver handle, a thin tier stripe at the outer end, and a 2×2 status light. The status light must stay the dominant colour in each bay.
@@ -197,7 +197,8 @@ Frames read as a **recessed bevel**, not a flat line.
    | --- | --- |
    | `tools/ctrl.py` | Controller textures |
    | `tools/export_cables.py` | Cable models and base textures |
-   | `tools/export_drives.py`, then `export_drive_array_v2.py` | Drive array assets (run in that order) |
+   | `tools/export_feature.py` | Power Inlet, Capacitor Bank, Fiber Cable, anchors, facades, Segment Isolator |
+   | `tools/p1_export.py`, `p1_gui.py`, `p1_data.py` | Phase 1 items, Lithography Press, Access Terminal, their GUIs and recipes. The Drive Bay's textures ship already shaded (from the Drive Array v2 art) |
    | `tools/run_pass.py` (with `mcpass.py`) | The shading pass. `export_cables.py` runs it on the cable textures; never run it twice over the same files |
 
 2. **Check against this guide:**

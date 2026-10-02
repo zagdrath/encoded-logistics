@@ -5,12 +5,15 @@
 
 package net.zagdrath.encodedlogistics.client;
 
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -20,9 +23,16 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
+import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
+import net.zagdrath.encodedlogistics.client.screen.DriveBayScreen;
+import net.zagdrath.encodedlogistics.client.screen.LithographyPressScreen;
 import net.zagdrath.encodedlogistics.client.screen.NetworkControllerScreen;
+import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
+import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
+import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
 
 // This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = EncodedLogistics.MODID, dist = Dist.CLIENT)
@@ -31,12 +41,18 @@ public class EncodedLogisticsClient {
     public EncodedLogisticsClient(ModContainer container) {
         // Config screen is accessed via Mods screen > Encoded Logistics > Config.
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        // A terminal's grid gets as many rows as fit the window when it opens.
+        AccessTerminalMenu.clientRows = () -> TerminalLayout.load(AccessTerminalScreen.LAYOUT)
+                .rowsFor(Minecraft.getInstance().getWindow().getGuiScaledHeight());
     }
 
     @SubscribeEvent
     static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.NETWORK_CONTROLLER.get(), NetworkControllerScreen::new);
         event.register(ModMenuTypes.CAPACITOR_BANK.get(), CapacitorBankScreen::new);
+        event.register(ModMenuTypes.LITHOGRAPHY_PRESS.get(), LithographyPressScreen::new);
+        event.register(ModMenuTypes.DRIVE_BAY.get(), DriveBayScreen::new);
+        event.register(ModMenuTypes.ACCESS_TERMINAL.get(), AccessTerminalScreen::new);
     }
 
     // The Network Controller's connected textures (see ControllerModel).
@@ -60,5 +76,12 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void registerBlockTints(RegisterColorHandlersEvent.BlockTintSources event) {
         FacadeTints.register(event);
+    }
+
+    // The lithography recipes the server sent: the press's slots and JEI use them. Early, so they're in before JEI
+    // reloads on the same event.
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    static void onRecipesReceived(RecipesReceivedEvent event) {
+        LithographyRecipes.setClientRecipes(event.getRecipeMap().byType(ModRecipeTypes.LITHOGRAPHY.get()));
     }
 }

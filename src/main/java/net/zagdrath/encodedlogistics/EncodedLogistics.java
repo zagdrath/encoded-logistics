@@ -16,6 +16,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -28,6 +29,7 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeSerializers;
+import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(EncodedLogistics.MODID)
@@ -40,6 +42,7 @@ public class EncodedLogistics {
         ModItems.ITEMS.register(modEventBus);
         ModDataComponents.DATA_COMPONENTS.register(modEventBus);
         ModRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
+        ModRecipeTypes.RECIPE_TYPES.register(modEventBus);
         ModBlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModMenuTypes.MENU_TYPES.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
@@ -48,6 +51,7 @@ public class EncodedLogistics {
         EncodedLogisticsGameTests.register(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
 
         modContainer.registerConfig(localConfigType(), Config.SPEC);
     }
@@ -65,6 +69,11 @@ public class EncodedLogistics {
 
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MODID, path);
+    }
+
+    // Clients get the lithography recipes (the press's slots and JEI need them).
+    private static void onDatapackSync(OnDatapackSyncEvent event) {
+        event.sendRecipes(ModRecipeTypes.LITHOGRAPHY.get());
     }
 
     // Controller structures revalidate and tick once per level tick.

@@ -100,6 +100,44 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("storage");
+    }
+
+    public static final ModConfigSpec.DoubleValue DRIVE_BAY_DRAIN = BUILDER
+            .comment("FE per tick a Drive Bay drains while its network runs, on top of its drives.")
+            .defineInRange("driveBayDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue DRIVE_BAY_DRAIN_PER_DRIVE = BUILDER
+            .comment("FE per tick each Storage Drive in a Drive Bay drains.")
+            .defineInRange("driveBayDrainPerDrive", 0.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue DRIVE_TYPE_LIMIT = BUILDER
+            .comment("Different item types one Storage Drive holds, whatever its size.")
+            .defineInRange("driveTypeLimit", 63, 1, 4096);
+
+    public static final ModConfigSpec.DoubleValue TERMINAL_DRAIN = BUILDER
+            .comment("FE per tick an Access Terminal drains.")
+            .defineInRange("terminalDrain", 0.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue TERMINAL_LANES = BUILDER
+            .comment("Lanes an Access Terminal uses (0: terminals are free).")
+            .defineInRange("terminalLanes", 1, 0, 32);
+
+    static {
+        BUILDER.pop();
+        BUILDER.push("lithography");
+    }
+
+    public static final ModConfigSpec.IntValue PRESS_CAPACITY = BUILDER
+            .comment("FE a Lithography Press buffers.")
+            .defineInRange("pressCapacity", 32_000, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue PRESS_MAX_INPUT = BUILDER
+            .comment("FE per tick a Lithography Press takes in.")
+            .defineInRange("pressMaxInput", 512, 0, Integer.MAX_VALUE);
+
+    static {
+        BUILDER.pop();
         BUILDER.push("facades");
     }
 

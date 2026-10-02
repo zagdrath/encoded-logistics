@@ -1,0 +1,13 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.access_terminal"
+  }
+ },
+ "features": {
+  "crafting_grid": false
+ }
+}

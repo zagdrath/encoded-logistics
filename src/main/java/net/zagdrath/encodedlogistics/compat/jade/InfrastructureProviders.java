@@ -17,6 +17,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
@@ -24,8 +26,8 @@ import snownee.jade.api.ITooltip;
 import snownee.jade.api.StreamServerDataProvider;
 import snownee.jade.api.config.IPluginConfig;
 
-// Jade for the power and cable infrastructure. The Capacitor Bank needs nothing extra: Jade's energy bar reads its
-// capability.
+// Jade for the power and cable infrastructure and the Phase 1 machines. The Capacitor Bank and the Lithography Press's
+// energy need nothing extra: Jade's energy bar reads their capability.
 public final class InfrastructureProviders {
     private InfrastructureProviders() {}
 
@@ -64,6 +66,62 @@ public final class InfrastructureProviders {
             public Identifier getUid() {
                 return UID;
             }
+        }
+    }
+
+    // Lithography Press: "Exposure 45%" while it's etching.
+    public enum LithographyPress implements StreamServerDataProvider<BlockAccessor, Integer> {
+        INSTANCE;
+
+        public static final Identifier UID = EncodedLogistics.id("lithography_press");
+
+        @Override
+        public @Nullable Integer streamData(BlockAccessor accessor) {
+            return accessor.getBlockEntity() instanceof LithographyPressBlockEntity press ? Math.round(press.progress() * 100) : null;
+        }
+
+        @Override
+        public StreamCodec<RegistryFriendlyByteBuf, Integer> streamCodec() {
+            return ByteBufCodecs.VAR_INT.cast();
+        }
+
+        @Override
+        public Identifier getUid() {
+            return UID;
+        }
+
+        public enum Client implements IBlockComponentProvider {
+            INSTANCE;
+
+            @Override
+            public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+                LithographyPress.INSTANCE.decodeFromData(accessor).filter(percent -> percent > 0).ifPresent(percent -> tooltip.add(
+                        Component.translatable("jade.encodedlogistics.lithography_press.progress", percent).withStyle(ChatFormatting.LIGHT_PURPLE)));
+            }
+
+            @Override
+            public Identifier getUid() {
+                return UID;
+            }
+        }
+    }
+
+    // Drive Bay: "4 / 10 drives", from the drives the client already has.
+    public enum DriveBay implements IBlockComponentProvider {
+        INSTANCE;
+
+        public static final Identifier UID = EncodedLogistics.id("drive_bay");
+
+        @Override
+        public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+            if (accessor.getBlockEntity() instanceof DriveBayBlockEntity bay) {
+                tooltip.add(Component.translatable("jade.encodedlogistics.drive_bay.drives", bay.driveCount()).withStyle(ChatFormatting.GRAY));
+            }
+        }
+
+        @Override
+        public Identifier getUid() {
+            return UID;
         }
     }
 

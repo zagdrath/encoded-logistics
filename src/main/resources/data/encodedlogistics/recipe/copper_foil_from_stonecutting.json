@@ -1,0 +1,8 @@
+{
+ "type": "minecraft:stonecutting",
+ "ingredient": "minecraft:copper_ingot",
+ "result": {
+  "id": "encodedlogistics:copper_foil",
+  "count": 2
+ }
+}
