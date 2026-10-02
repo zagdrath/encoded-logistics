@@ -9,6 +9,6 @@
   "v_glow": "encodedlogistics:block/cable/normal/magenta_v_glow",
   "j_glow": "encodedlogistics:block/cable/normal/magenta_j_glow",
   "f_glow": "encodedlogistics:block/cable/normal/magenta_f_glow",
-  "particle": "encodedlogistics:block/cable/normal/magenta_h"
+  "particle": "encodedlogistics:block/cable/normal/magenta_j"
  }
 }

@@ -1,7 +1,7 @@
 {
  "render_type": "minecraft:cutout",
  "textures": {
-  "particle": "#h"
+  "particle": "#j"
  },
  "elements": [
   {

@@ -17,17 +17,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 
 // A short description of what each Encoded Logistics item does, under its name, the same way as Arcforge: "Hold
 // [Shift] for info", and the description while Shift is held. Descriptions live in the lang file as
 // tooltip.encodedlogistics.info.<item>; coloured items (cables) share one without the colour, e.g.
-// tooltip.encodedlogistics.info.network_cable.
+// tooltip.encodedlogistics.info.network_cable. A cable's Shift info ends with its channels and the colours it joins.
 @EventBusSubscriber(modid = EncodedLogistics.MODID, value = Dist.CLIENT)
 public final class ItemInfoTooltips {
     private static final String PREFIX = "tooltip.encodedlogistics.info.";
@@ -58,6 +60,14 @@ public final class ItemInfoTooltips {
                 .splitLines(Component.translatable(key), WRAP_WIDTH, Style.EMPTY);
         for (int i = 0; i < lines.size(); i++) {
             tooltip.add(at + i, Component.literal(lines.get(i).getString()).withStyle(ChatFormatting.GRAY));
+        }
+        if (event.getItemStack().getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof NetworkCableBlock cable) {
+            at += lines.size();
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.cable.channels", cable.getTier().channels()).withStyle(ChatFormatting.GRAY));
+            DyeColor dye = cable.getColor().dye();
+            tooltip.add(at, (dye == null ? Component.translatable("tooltip.encodedlogistics.cable.neutral")
+                    : Component.translatable("tooltip.encodedlogistics.cable.dyed", Component.translatable("color.minecraft." + dye.getSerializedName())))
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 

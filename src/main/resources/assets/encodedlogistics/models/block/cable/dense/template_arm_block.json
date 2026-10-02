@@ -1,14 +1,14 @@
 {
  "render_type": "minecraft:cutout",
  "textures": {
-  "particle": "#h"
+  "particle": "#j"
  },
  "elements": [
   {
    "from": [
     5.0,
     5.0,
-    2.0
+    2
    ],
    "to": [
     11.0,
@@ -16,58 +16,58 @@
     3.0
    ],
    "faces": {
-    "north": {
-     "texture": "#h",
-     "uv": [
-      10,
-      8,
-      16,
-      14
-     ]
-    },
-    "south": {
-     "texture": "#h",
-     "uv": [
-      10,
-      8,
-      16,
-      14
-     ]
-    },
     "east": {
      "texture": "#h",
      "uv": [
-      10,
+      13.0,
       8,
-      16,
+      14,
       14
      ]
     },
     "west": {
      "texture": "#h",
      "uv": [
-      10,
+      2,
       8,
-      16,
+      3.0,
       14
      ]
     },
     "up": {
-     "texture": "#h",
+     "texture": "#v",
      "uv": [
-      10,
       8,
-      16,
-      14
+      2,
+      14,
+      3.0
      ]
     },
     "down": {
+     "texture": "#v",
+     "uv": [
+      8,
+      13.0,
+      14,
+      14
+     ]
+    },
+    "north": {
      "texture": "#h",
      "uv": [
-      10,
-      8,
+      15,
+      15,
       16,
-      14
+      16
+     ]
+    },
+    "south": {
+     "texture": "#h",
+     "uv": [
+      15,
+      15,
+      16,
+      16
      ]
     }
    }
@@ -144,7 +144,7 @@
    "from": [
     5.0,
     5.0,
-    2.0
+    2
    ],
    "to": [
     11.0,
@@ -152,58 +152,58 @@
     3.0
    ],
    "faces": {
-    "north": {
-     "texture": "#h_glow",
-     "uv": [
-      10,
-      8,
-      16,
-      14
-     ]
-    },
-    "south": {
-     "texture": "#h_glow",
-     "uv": [
-      10,
-      8,
-      16,
-      14
-     ]
-    },
     "east": {
      "texture": "#h_glow",
      "uv": [
-      10,
+      13.0,
       8,
-      16,
+      14,
       14
      ]
     },
     "west": {
      "texture": "#h_glow",
      "uv": [
-      10,
+      2,
       8,
-      16,
+      3.0,
       14
      ]
     },
     "up": {
-     "texture": "#h_glow",
+     "texture": "#v_glow",
      "uv": [
-      10,
       8,
-      16,
-      14
+      2,
+      14,
+      3.0
      ]
     },
     "down": {
+     "texture": "#v_glow",
+     "uv": [
+      8,
+      13.0,
+      14,
+      14
+     ]
+    },
+    "north": {
      "texture": "#h_glow",
      "uv": [
-      10,
-      8,
+      15,
+      15,
       16,
-      14
+      16
+     ]
+    },
+    "south": {
+     "texture": "#h_glow",
+     "uv": [
+      15,
+      15,
+      16,
+      16
      ]
     }
    },

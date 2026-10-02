@@ -9,6 +9,6 @@
   "v_glow": "encodedlogistics:block/cable/dense/purple_v_glow",
   "j_glow": "encodedlogistics:block/cable/dense/purple_j_glow",
   "f_glow": "encodedlogistics:block/cable/dense/purple_f_glow",
-  "particle": "encodedlogistics:block/cable/dense/purple_h"
+  "particle": "encodedlogistics:block/cable/dense/purple_j"
  }
 }

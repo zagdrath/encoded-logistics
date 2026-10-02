@@ -15,24 +15,26 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-// Cable collision and selection shapes, from the handoff's reference/cable_shapes.json: the union of the model parts a
-// state uses (the same rules as the multipart blockstates), arms rotated from north like the blockstates rotate them.
-// Shapes depend only on the tier and the six connections, so they're cached per tier for the 729 combinations.
+// Cable collision and selection shapes: the union of the model parts a state uses (the same rules as the multipart
+// blockstates), arms rotated from north like the blockstates rotate them. Shapes depend only on the tier and the six
+// connections, so they're cached per tier for the 729 combinations.
 public final class CableShapes {
     // Boxes in pixels {x1, y1, z1, x2, y2, z2}; arms point north (-Z) and the straight cube runs along Z.
     private record Parts(double[][] cubeStraight, double[][] cubeJunction, double[][] armStraight, double[][] armJunction, double[][] armBlock) {}
 
+    // From tools/export_cables.py (it prints these): a straight run is one tube, a junction a cube with thinner cores
+    // out to its neighbours, and a block connection a core ending in a flange plate.
     private static final Parts NORMAL = new Parts(
             new double[][] { { 5, 5, 5, 11, 11, 11 } },
             new double[][] { { 5, 5, 5, 11, 11, 11 } },
-            new double[][] { { 5, 5, 0, 11, 11, 4 }, { 6, 6, 4, 10, 10, 5 } },
-            new double[][] { { 5, 5, 0, 11, 11, 4 }, { 6, 6, 4, 10, 10, 5 } },
-            new double[][] { { 6, 6, 4, 10, 10, 5 }, { 5, 5, 1, 11, 11, 4 }, { 4, 4, 0, 12, 12, 1 } });
+            new double[][] { { 5, 5, 0, 11, 11, 5 } },
+            new double[][] { { 6, 6, 0, 10, 10, 5 } },
+            new double[][] { { 6, 6, 1, 10, 10, 5 }, { 4, 4, 0, 12, 12, 1 } });
     private static final Parts DENSE = new Parts(
             new double[][] { { 4, 4, 5, 12, 12, 11 } },
             new double[][] { { 3, 3, 3, 13, 13, 13 } },
-            new double[][] { { 4, 4, 0, 12, 12, 4 }, { 5, 5, 4, 11, 11, 5 } },
-            new double[][] { { 4, 4, 0, 12, 12, 2 }, { 5, 5, 2, 11, 11, 3 } },
+            new double[][] { { 4, 4, 0, 12, 12, 5 } },
+            new double[][] { { 5, 5, 0, 11, 11, 3 } },
             new double[][] { { 5, 5, 2, 11, 11, 3 }, { 2, 2, 0, 14, 14, 2 } });
 
     private static final Map<CableTier, VoxelShape[]> CACHE = new EnumMap<>(CableTier.class);
