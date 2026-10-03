@@ -12,17 +12,19 @@ import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ExternalSearch;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
 // category (with the press as its station), the Fabricator as a crafting station, recipe transfer into the Fabrication
 // Terminal's grid and the Schematic Encoder's ghost slots (any recipe), and an info page on how controllers form
-// structures and what they provide.
+// structures and what they provide. Its search bar is what the terminals' JEI search mode syncs with (ExternalSearch).
 @JeiPlugin
 public class EncodedLogisticsJeiPlugin implements IModPlugin {
     private static final Identifier UID = EncodedLogistics.id("jei_plugin");
@@ -49,6 +51,26 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new FabricationTransferHandler(), RecipeTypes.CRAFTING);
         registration.addUniversalRecipeTransferHandler(new EncoderTransferHandler());
+    }
+
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime runtime) {
+        ExternalSearch.set(new ExternalSearch.Field() {
+            @Override
+            public String text() {
+                return runtime.getIngredientFilter().getFilterText();
+            }
+
+            @Override
+            public void setText(String text) {
+                runtime.getIngredientFilter().setFilterText(text);
+            }
+        });
+    }
+
+    @Override
+    public void onRuntimeUnavailable() {
+        ExternalSearch.set(null);
     }
 
     @Override

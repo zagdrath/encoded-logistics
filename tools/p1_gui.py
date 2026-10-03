@@ -196,6 +196,15 @@ def term_kit(out):
                        '...###....###...','....###..###....','.....######.....','......####......','.......##.......','................','................','................']}
     for n,rows in icons.items():
         spr('icon_'+n,16,16,lambda x,y,rows=rows,n=n: (ac if n.startswith('dir') and y<=5 and n=='dir_asc' else ic) if rows[y][x]=='#' else None)
+    # search mode: standard (a magnifier) or synced with JEI's search bar (the magnifier and two arrows, in accent)
+    search_rows={'search_standard':['................','....####........','...#....#.......','..#......#......','..#......#......','..#......#......',
+                                    '..#......#......','...#....#.......','....####.#......','..........#.....','...........#....','............#...',
+                                    '................','................','................','................'],
+                 'search_jei':['................','...####.........','..#....#........','.#......#.......','.#......#.......','.#......#.......',
+                               '..#....#........','...####.#.......','.........#......','................','.....#..........','....##########..',
+                               '.....#..........','..........#.....','..##########....','..........#.....']}
+    for n,rows in search_rows.items():
+        spr('icon_'+n,16,16,lambda x,y,rows=rows,n=n: (ac if n=='search_jei' and y>=10 else ic) if rows[y][x]=='#' else None)
     # grid height: a window outline filled to the chosen height (fill-screen in accent with end stops)
     for n,top_y in (('small',10),('medium',7),('tall',4),('fill',3)):
         def h_icon(x,y,top_y=top_y,n=n):
@@ -252,7 +261,8 @@ def screens(A):
                  'buttons':[{'id':'sort_mode','icons':['terminal/icon_sort_name','terminal/icon_sort_count','terminal/icon_sort_mod']},
                             {'id':'sort_direction','icons':['terminal/icon_dir_asc','terminal/icon_dir_desc']},
                             {'id':'craftables','icons':['terminal/icon_craftable_on','terminal/icon_craftable_off']},
-                            {'id':'height','icons':['terminal/icon_height_small','terminal/icon_height_medium','terminal/icon_height_tall','terminal/icon_height_fill']}]},
+                            {'id':'height','icons':['terminal/icon_height_small','terminal/icon_height_medium','terminal/icon_height_tall','terminal/icon_height_fill']},
+                            {'id':'search_mode','icons':['terminal/icon_search_standard','terminal/icon_search_jei']}]},
       'player_inventory':{'left':9,'top_in_bottom':17,'label_top_in_bottom':6},
       'slot_highlight':'terminal/slot_highlight',
       'text':{'title':{'left':8,'top':5,'color':'TEXT','max_right':115},'inventory':{'key':'container.inventory','left':9,'top_in_bottom':6,'color':'TEXT_MUTED'}}},

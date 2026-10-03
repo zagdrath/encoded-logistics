@@ -30,6 +30,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.client.CraftingClient;
+import net.zagdrath.encodedlogistics.client.ExternalSearch;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalClickPayload;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -37,7 +38,8 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // The modular terminal screen, built from a TerminalLayout: a title bar with the search field, a grid of the network's
 // items (as many rows as fit the window, between the layout's min and max), a scrollbar, the player's inventory, and
 // a toolbar on a tab at the left (sort mode: name / amount / mod; sort direction; craftables shown always or only when
-// searching; grid height: small / medium / tall / fill the window, which re-lays the open screen out).
+// searching; grid height: small / medium / tall / fill the window, which re-lays the open screen out; search mode:
+// standard, or synced with JEI's search bar both ways, as AE2's is).
 // Counts are drawn at half size and abbreviated (1.2K, 34M, 5.1B); what the network can craft but doesn't have shows with
 // "Craft" instead. Clicks work as in AE2: left click takes a stack, right click half of one, shift-click moves a stack
 // into the inventory, shift-right-click takes one onto the cursor; clicking with an item held puts it in (right click:
@@ -57,6 +59,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     private static boolean descending;
     private static boolean craftablesAlways = true;
     private static String lastSearch = "";
+    private static boolean searchSynced;
 
     private final TerminalLayout layout;
     // The grid's rows: the menu's when it opened, until the height button changes them.
@@ -95,6 +98,20 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         return !onTab && (mouseX < left || mouseY < top || mouseX >= left + imageWidth || mouseY >= top + screenHeight());
     }
 
+    // The search mode button: synced with JEI's search bar or not. Turning it on hands the terminal's search to JEI.
+    // Without JEI it stays standard.
+    private void toggleSearchSync() {
+        if (ExternalSearch.field() == null) {
+            searchSynced = false;
+            return;
+        }
+        searchSynced = !searchSynced;
+        ExternalSearch.Field jei = syncedField();
+        if (jei != null && search != null) {
+            jei.setText(search.getValue());
+        }
+    }
+
     // The height button: the next height setting, and the open screen laid out again at its rows. The menu's slots (all
     // below the grid) move with it on the client.
     private void cycleHeight() {
@@ -124,14 +141,36 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         search.setMaxLength(layout.searchMaxLength);
         search.setTextColor(TEXT);
         search.setHint(Component.translatable("gui.encodedlogistics.terminal.search").withColor(0xFF7A7A7A));
-        if (search.getValue().isEmpty()) {
+        ExternalSearch.Field jei = syncedField();
+        if (jei != null) {
+            search.setValue(jei.text());
+        } else if (search.getValue().isEmpty()) {
             search.setValue(lastSearch);
         }
         search.setResponder(text -> {
             lastSearch = text;
             scrollRow = 0;
+            ExternalSearch.Field field = syncedField();
+            if (field != null && !field.text().equals(text)) {
+                field.setText(text);
+            }
         });
         addRenderableWidget(search);
+    }
+
+    // JEI's search bar while the search mode is synced (and JEI is there), else null.
+    private static ExternalSearch.@Nullable Field syncedField() {
+        return searchSynced ? ExternalSearch.field() : null;
+    }
+
+    // Synced: what's typed into JEI's search bar shows up here too.
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        ExternalSearch.Field jei = syncedField();
+        if (jei != null && search != null && !search.isFocused() && !jei.text().equals(search.getValue())) {
+            search.setValue(jei.text());
+        }
     }
 
     // --- The list ---
@@ -187,6 +226,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     private int maxScroll() {
         return Math.max(0, (view().size() + layout.columns - 1) / layout.columns - rows);
+    }
+
+    // The grid with the gaps between its squares.
+    private boolean inInsertArea(double mouseX, double mouseY) {
+        double x = mouseX - leftPos - layout.gridLeft, y = mouseY - topPos - layout.topHeight - layout.gridTopInRow;
+        return x >= 0 && y >= 0 && x < layout.columns * layout.cell && y < rows * layout.cell;
     }
 
     // The entry under the mouse, or -1.
@@ -271,6 +316,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             case "sort_mode" -> sortMode.ordinal();
             case "craftables" -> craftablesAlways ? 0 : 1;
             case "height" -> TerminalLayout.height.ordinal();
+            case "search_mode" -> searchSynced ? 1 : 0;
             default -> descending ? 1 : 0;
         };
     }
@@ -373,6 +419,16 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                                     .withColor(TEXT_MUTED)), mouseX, mouseY);
                     continue;
                 }
+                if (id.equals("search_mode")) {
+                    String mode = searchSynced ? "gui.encodedlogistics.terminal.search_mode.jei" : "gui.encodedlogistics.terminal.search_mode.standard";
+                    List<Component> lines = new ArrayList<>(List.of(Component.translatable("gui.encodedlogistics.terminal.search_mode"),
+                            Component.translatable(mode).withColor(TEXT_MUTED)));
+                    if (ExternalSearch.field() == null) {
+                        lines.add(Component.translatable("gui.encodedlogistics.terminal.search_mode.no_jei").withColor(ERROR));
+                    }
+                    graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+                    continue;
+                }
                 if (id.equals("craftables")) {
                     graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.craftable"),
                             Component.translatable(craftablesAlways ? "gui.encodedlogistics.terminal.craftable.always"
@@ -414,6 +470,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                     case "sort_mode" -> sortMode = SortMode.values()[(sortMode.ordinal() + 1) % SortMode.values().length];
                     case "craftables" -> craftablesAlways = !craftablesAlways;
                     case "height" -> cycleHeight();
+                    case "search_mode" -> toggleSearchSync();
                     default -> descending = !descending;
                 }
                 viewVersion = -1;
@@ -427,6 +484,13 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             return true;
         }
         int index = hoveredIndex(mx, my);
+        // With an item held, a gap between the grid's squares puts it in too.
+        if (index == -1 && menu.isOnline() && !menu.getCarried().isEmpty() && inInsertArea(mx, my)
+                && (event.button() == InputConstants.MOUSE_BUTTON_LEFT || event.button() == InputConstants.MOUSE_BUTTON_RIGHT)) {
+            int action = event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;
+            ClientPacketDistributor.sendToServer(new TerminalClickPayload(menu.containerId, Optional.empty(), action));
+            return true;
+        }
         if (index != -1 && menu.isOnline()) {
             boolean carrying = !menu.getCarried().isEmpty();
             ItemKey key = index >= 0 ? view().get(index).getKey() : null;

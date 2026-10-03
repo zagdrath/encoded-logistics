@@ -104,6 +104,13 @@
      "terminal/icon_height_tall",
      "terminal/icon_height_fill"
     ]
+   },
+   {
+    "id": "search_mode",
+    "icons": [
+     "terminal/icon_search_standard",
+     "terminal/icon_search_jei"
+    ]
    }
   ]
  },
