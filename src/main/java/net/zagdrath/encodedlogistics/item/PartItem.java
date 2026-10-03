@@ -24,8 +24,8 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
-// A cable part's item (terminals, ports, the tap, the sensor, links, planes). On a cable it mounts on the face you click
-// (NetworkCableBlock does that). On any other block's face it goes on the cable in front of that face, if there is one,
+// A cable part's item (terminals, ports, the tap, the sensor, links, planes). On a cable it mounts on the face you click,
+// sneaking or not. On any other block's face it goes on the cable in front of that face, if there is one,
 // facing the block; otherwise it puts a part host in the space in front, holding the part against that face - before
 // the block itself reacts, so a network block's own screen doesn't open instead.
 public class PartItem extends Item {
@@ -44,7 +44,12 @@ public class PartItem extends Item {
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         BlockPos clicked = context.getClickedPos();
-        if (level.getBlockState(clicked).getBlock() instanceof NetworkCableBlock || level.getBlockState(clicked).getBlock() instanceof PartHostBlock) {
+        // On a cable: the face clicked. Done here rather than in the cable's useItemOn, which the game skips while
+        // sneaking - and sneaking is how a part gets placed by a chest or machine without opening it.
+        if (level.getBlockState(clicked).getBlock() instanceof NetworkCableBlock && context.getPlayer() != null) {
+            return NetworkCableBlock.attach(stack, level, clicked, context.getPlayer(), context.getClickedFace());
+        }
+        if (level.getBlockState(clicked).getBlock() instanceof PartHostBlock) {
             return InteractionResult.PASS;
         }
         Direction face = context.getClickedFace();

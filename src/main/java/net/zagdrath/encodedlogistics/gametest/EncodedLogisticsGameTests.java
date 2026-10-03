@@ -83,6 +83,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("redstone_control", Phase4GameTests::redstoneControl);
         TESTS.put("mounts_on_clicked_face", PlacementGameTests::mountsOnClickedFace);
         TESTS.put("mounts_from_block_face", PlacementGameTests::mountsFromBlockFace);
+        TESTS.put("mounts_through_game_mode", PlacementGameTests::mountsThroughGameMode);
         TESTS.put("copied_drives_count_once", PlacementGameTests::copiedDrivesCountOnce);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }

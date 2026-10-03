@@ -196,6 +196,8 @@ Frames read as a **recessed bevel**, not a flat line.
    | `tools/export_feature.py` | Power Inlet, Capacitor Bank, Fiber Cable, anchors, facades, Segment Isolator |
    | `tools/p1_export.py`, `p1_gui.py`, `p1_data.py` | Phase 1 items, Lithography Press, Access Terminal, their GUIs and recipes. The Drive Bay's textures ship already shaded (from the Drive Array v2 art) |
    | `tools/run_pass.py` (with `mcpass.py`) | The shading pass. `export_cables.py` runs it on the cable textures; never run it twice over the same files |
+   | `tools/depth_pass.py` | The depth pass: shades flat fields the Drive Bay's way (main panel sunk to a pocket with a cast shadow, raised detail lit top-left). Run `--all` once after the exporters rewrite the textures it lists; never twice. `--preview <dir>` shows before/after |
+   | `tools/close_part_backs.py` | Gives every part model element a back face, so a part on a block face (no cable behind it) isn't see-through. Run after the part exporters; safe to re-run |
 
 2. **Check against this guide:**
    - [ ] Every grey is a step of the steel ramp; every dye pixel is a step of its dye ramp.

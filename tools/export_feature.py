@@ -293,8 +293,21 @@ def facade_icon():
 
 # ================= 6. SEGMENT ISOLATOR =================
 def iso_half(base,seed):
+    """The body's sides show only the top-left 10x7 (up/down) or 7x10 (sides) of this, so it's drawn for that corner
+    and is the same both ways round: a lit rail along row/column 0, a shaded one along 9, and between them a recessed
+    pocket in the Drive Bay's manner (step-0 cast shadow under the lit rail, a deeper far edge, a lit centre). base: the
+    pocket's step, which tells the two halves apart (A dark, B light)."""
     im=img(); field(im,0,0,16,16,base,seed)
-    for a in range(16): put(im,a,0,g(base+3)); put(im,0,a,g(base+3)); put(im,a,9,g(base-2)); put(im,9,a,g(base-2))
+    for y in range(16):
+        for x in range(16):
+            a,b=min(x,y),max(x,y)
+            if a==0: c=base+6 if b==0 else base+5 if b<9 else base+3
+            elif b==9 or a==9: c=base+2 if a<9 else base+1
+            elif a==1: c=max(0,base-2)
+            elif b==8: c=base-1
+            elif 3<=a and b<=6: c=base+1
+            else: c=base
+            put(im,x,y,g(c))
     return im
 def iso_collar(glow=False,active=True):
     """12x2 collar strip twice: x0..1 / y0..11 (along v) and x4..15 / y0..1 (along u); amber light in the middle."""
@@ -394,7 +407,7 @@ def write_all():
     fiber_models()
     save(anchor_tex(),f'{T}/block/cable_anchor.png'); save(anchor_dense_tex(),f'{T}/block/cable_anchor_dense.png'); save(anchor_icon(),f'{T}/item/cable_anchor.png'); anchor_models()
     save(facade_blank(),f'{T}/block/facade_blank.png'); save(facade_icon(),f'{T}/item/cable_facade.png'); facade_models()
-    save(iso_half(3,71),f'{T}/block/segment_isolator/half_a.png'); save(iso_half(6,72),f'{T}/block/segment_isolator/half_b.png')
+    save(iso_half(2,71),f'{T}/block/segment_isolator/half_a.png'); save(iso_half(4,72),f'{T}/block/segment_isolator/half_b.png')
     save(iso_end(),f'{T}/block/segment_isolator/end.png'); save(iso_collar(active=False),f'{T}/block/segment_isolator/collar_idle.png')
     save(iso_collar(active=True),f'{T}/block/segment_isolator/collar_active.png'); save(iso_collar(glow=True),f'{T}/block/segment_isolator/collar_glow.png'); iso_models()
     cap_gui()

@@ -17,10 +17,13 @@ import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
 // Jade support (only loaded when Jade is installed). Jade's own energy bar reads the controller's FE capability, which
 // reports the whole structure's buffer; this adds the network's status, lanes and structure. The Power Inlet shows what
-// it's receiving and the Segment Isolator whether it's separating two segments (InfrastructureProviders).
+// it's receiving and the Segment Isolator whether it's separating two segments (InfrastructureProviders). Cables and part
+// hosts are named after their pick-block item (the part or facade looked at), which Jade only does for blocks marked
+// to pick; otherwise it would use the block's own name.
 @WailaPlugin
 public class EncodedLogisticsJadePlugin implements IWailaPlugin {
     @Override
@@ -28,6 +31,8 @@ public class EncodedLogisticsJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(NetworkControllerProvider.INSTANCE, NetworkControllerBlockEntity.class);
         registration.registerBlockDataProvider(InfrastructureProviders.PowerInlet.INSTANCE, PowerInletBlockEntity.class);
         registration.registerBlockDataProvider(InfrastructureProviders.LithographyPress.INSTANCE, LithographyPressBlockEntity.class);
+        ModBlocks.allCables().forEach(cable -> registration.blockOperations().pick(cable.getKey()));
+        registration.blockOperations().pick(ModBlocks.PART_HOST.getKey());
     }
 
     @Override

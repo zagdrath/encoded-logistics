@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -116,6 +117,39 @@ final class PlacementGameTests {
                     for (int i = 0; i < types.length; i++) {
                         BlockPos cable = new BlockPos(i, 1, 1);
                         helper.assertTrue(part(helper, cable, Direction.SOUTH) == types[i], types[i] + " not on the cable toward the chest");
+                    }
+                })
+                .thenSucceed();
+    }
+
+    // Every part, used the way the game does it (through the player's game mode, so the cable's own useItemOn is
+    // skipped while sneaking), mounts on the cable face clicked, sneaking or not.
+    static void mountsThroughGameMode(GameTestHelper helper) {
+        PartType[] types = PartType.values();
+        for (int i = 0; i < types.length; i++) {
+            cable(helper, new BlockPos(i, 1, 1));
+            cable(helper, new BlockPos(i, 1, 3));
+        }
+        helper.startSequence()
+                .thenExecute(() -> {
+                    ServerPlayer player = helper.makeMockServerPlayerInLevel();
+                    player.setGameMode(GameType.SURVIVAL);
+                    for (int i = 0; i < types.length; i++) {
+                        for (boolean sneaking : new boolean[] { false, true }) {
+                            ItemStack stack = new ItemStack(types[i].item());
+                            player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                            player.setShiftKeyDown(sneaking);
+                            BlockPos absolute = helper.absolutePos(new BlockPos(i, 1, sneaking ? 3 : 1));
+                            BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute).add(0, 3.0 / 16, 0), Direction.UP, absolute, false);
+                            player.gameMode.useItemOn(player, helper.getLevel(), stack, InteractionHand.MAIN_HAND, hit);
+                        }
+                    }
+                })
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    for (int i = 0; i < types.length; i++) {
+                        helper.assertTrue(part(helper, new BlockPos(i, 1, 1), Direction.UP) == types[i], types[i] + " not mounted");
+                        helper.assertTrue(part(helper, new BlockPos(i, 1, 3), Direction.UP) == types[i], types[i] + " not mounted while sneaking");
                     }
                 })
                 .thenSucceed();
