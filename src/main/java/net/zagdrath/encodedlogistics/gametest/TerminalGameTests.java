@@ -16,10 +16,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
@@ -98,9 +98,9 @@ final class TerminalGameTests {
         helper.startSequence()
                 .thenIdle(12)
                 .thenExecute(() -> {
-                    ServerPlayer player = helper.makeMockServerPlayerInLevel();
-                    player.setGameMode(GameType.SURVIVAL);
-                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    // A fake player: its connection drops the terminal's sync payloads, which a mock player's can't take.
+                    ServerPlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
+                    player.getInventory().clearContent();
                     FabricationTerminalMenu menu = open(helper, player);
                     helper.assertTrue(menu.getSlot(RESULT).getItem().is(Items.GOLD_INGOT), "No ingot in the result");
                     for (int i = 0; i < 4; i++) {
@@ -122,9 +122,9 @@ final class TerminalGameTests {
         helper.startSequence()
                 .thenIdle(12)
                 .thenExecute(() -> {
-                    ServerPlayer player = helper.makeMockServerPlayerInLevel();
-                    player.setGameMode(GameType.SURVIVAL);
-                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    // A fake player: its connection drops the terminal's sync payloads, which a mock player's can't take.
+                    ServerPlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
+                    player.getInventory().clearContent();
                     FabricationTerminalMenu menu = open(helper, player);
                     NetworkStorage storage = storage(helper);
                     storage.insert(INGOT, 100, false);

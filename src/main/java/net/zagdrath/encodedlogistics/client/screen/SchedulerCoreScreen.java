@@ -7,6 +7,8 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import java.util.List;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -142,7 +144,7 @@ public class SchedulerCoreScreen extends AbstractContainerScreen<SchedulerCoreMe
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        JobInfo job = event.button() == 0 ? jobAt(event.x(), event.y()) : null;
+        JobInfo job = event.button() == InputConstants.MOUSE_BUTTON_LEFT ? jobAt(event.x(), event.y()) : null;
         if (job != null) {
             if (event.x() >= cancelX() && event.x() < cancelX() + CANCEL_SIZE) {
                 ClientPacketDistributor.sendToServer(new JobCancelPayload(menu.pos(), job.id()));

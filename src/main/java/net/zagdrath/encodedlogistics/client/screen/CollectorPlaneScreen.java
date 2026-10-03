@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
@@ -157,13 +159,13 @@ public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlane
             popup = null;
             return true;
         }
-        if (event.button() == 1 && fuzzy() && menu.getCarried().isEmpty() && hoveredSlot != null && hoveredSlot.index < PartFilter.SIZE
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && fuzzy() && menu.getCarried().isEmpty() && hoveredSlot != null && hoveredSlot.index < PartFilter.SIZE
                 && hoveredSlot.hasItem()) {
             popup = new FuzzyPopup(font, hoveredSlot.index, hoveredSlot.getItem(), menu.fuzzy(hoveredSlot.index), (int) event.x(), (int) event.y(),
                     width, height);
             return true;
         }
-        if (event.button() == 0 && options()) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && options()) {
             for (int option = 0; option < 3; option++) {
                 if (PartScreens.over(event.x(), event.y(), leftPos + CollectorPlaneMenu.OPTIONS_X, topPos + CollectorPlaneMenu.OPTIONS_Y
                         + option * CollectorPlaneMenu.OPTIONS_STEP, 18, 18)) {

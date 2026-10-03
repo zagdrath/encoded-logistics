@@ -126,9 +126,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
-        // Nothing to sync to a connection that can't take the payload (a gametest's mock player).
-        if (!(player instanceof ServerPlayer serverPlayer) || !serverPlayer.connection.hasChannel(TerminalItemsPayload.TYPE)
-                || --ticksUntilSync > 0) {
+        if (!(player instanceof ServerPlayer serverPlayer) || --ticksUntilSync > 0) {
             return;
         }
         ticksUntilSync = SYNC_INTERVAL;

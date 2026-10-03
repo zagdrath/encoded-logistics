@@ -6,7 +6,7 @@
   "encodedlogistics:silica",
   "encodedlogistics:silica",
   "encodedlogistics:silica",
-  "minecraft:coal"
+  "#minecraft:coals"
  ],
  "result": {
   "id": "encodedlogistics:silica_blend",

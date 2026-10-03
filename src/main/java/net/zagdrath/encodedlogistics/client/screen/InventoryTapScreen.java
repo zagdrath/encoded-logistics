@@ -7,6 +7,8 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -117,7 +119,7 @@ public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             if (PartScreens.over(event.x(), event.y(), leftPos + STEP_X, topPos + UP_Y, STEP_W, STEP_H)) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, InventoryTapMenu.BUTTON_UP);
                 return true;

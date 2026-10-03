@@ -2,15 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
+    "C": "encodedlogistics:circuit_substrate",
     "D": "minecraft:diamond",
     "I": "minecraft:iron_ingot",
-    "Q": "minecraft:quartz",
-    "R": "minecraft:redstone"
+    "L": "encodedlogistics:logic_die"
   },
   "pattern": [
-    "IRI",
-    "QDQ",
-    "IRI"
+    "ICI",
+    "LDL",
+    "ICI"
   ],
   "result": {
     "id": "encodedlogistics:network_controller"

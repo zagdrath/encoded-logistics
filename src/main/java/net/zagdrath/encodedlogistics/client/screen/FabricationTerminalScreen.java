@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -47,7 +49,7 @@ public class FabricationTerminalScreen extends AbstractTerminalScreen<Fabricatio
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && overClear(event.x(), event.y())) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && overClear(event.x(), event.y())) {
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, FabricationTerminalMenu.BUTTON_CLEAR);
             return true;
         }

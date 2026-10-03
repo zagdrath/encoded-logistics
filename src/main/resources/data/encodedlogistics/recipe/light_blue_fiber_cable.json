@@ -7,8 +7,8 @@
     "encodedlogistics:light_blue_dense_network_cable",
     "encodedlogistics:light_blue_dense_network_cable",
     "encodedlogistics:light_blue_dense_network_cable",
-    "minecraft:glass_pane",
-    "minecraft:glowstone_dust"
+    "encodedlogistics:fiberglass",
+    "encodedlogistics:gallium_ingot"
   ],
   "result": {
     "count": 4,

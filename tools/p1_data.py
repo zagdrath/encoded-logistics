@@ -18,24 +18,26 @@ def shapeless(name,ings,result,count=1): w(name,{'type':'minecraft:crafting_shap
 def cook(name,typ,ing,result,xp=0.1,t=200): w(name,{'type':typ,'category':'misc','ingredient':ing,'result':res(result),'experience':xp,'cookingtime':t})
 def cut(name,ing,result,count): w(name,{'type':'minecraft:stonecutting','ingredient':ing,'result':res(result,count)})
 def litho(name,wafer,additive,mask,result,energy=4000,time=100): w(name,{'type':E('lithography'),'wafer':wafer,'additive':additive,'photomask':mask,'result':res(result),'energy':energy,'time':time})
-cook('silica_from_blasting','minecraft:blasting',V('sand'),E('silica'),0.1,100)
-shapeless('silica_blend',[E('silica')]*4+[V('coal')],E('silica_blend'))
+cook('silica_from_blasting','minecraft:blasting',V('sand'),E('silica'),0.1,200)
+shapeless('silica_blend',[E('silica')]*4+['#minecraft:coals'],E('silica_blend'))
 cook('silicon_boule_from_smelting','minecraft:smelting',E('silica_blend'),E('silicon_boule'),0.3,200)
 cut('silicon_wafer_from_stonecutting',E('silicon_boule'),E('silicon_wafer'),4)
 shapeless('ferrite',[V('iron_ingot'),V('redstone')],E('ferrite'))
 cut('copper_foil_from_stonecutting',V('copper_ingot'),E('copper_foil'),2)
 shapeless('fiberglass',[V('glass'),V('string'),V('string')],E('fiberglass'),2)
-shapeless('solder_paste',[V('copper_ingot'),V('slime_ball')],E('solder_paste'),2)
+shapeless('solder_paste',[V('copper_ingot'),'#c:slime_balls'],E('solder_paste'),2)
 shapeless('circuit_substrate',[E('fiberglass'),E('copper_foil'),E('solder_paste')],E('circuit_substrate'))
 shaped('logic_photomask',['GFG','FRF','GFG'],{'G':V('glass'),'F':E('ferrite'),'R':V('redstone')},E('logic_photomask'))
 shaped('storage_photomask',['GFG','FFF','GFG'],{'G':V('glass'),'F':E('ferrite')},E('storage_photomask'))
 litho('logic_die',E('silicon_wafer'),V('redstone'),E('logic_photomask'),E('logic_die'))
 litho('storage_die_8k',E('silicon_wafer'),E('ferrite'),E('storage_photomask'),E('storage_die_8k'))
 tiers=['8k','32k','128k','512k','2m']
-for a,b in zip(tiers,tiers[1:]):
-    shaped(f'storage_die_{b}',['DSD','DLD'],{'D':E(f'storage_die_{a}'),'S':E('solder_paste'),'L':E('logic_die')},E(f'storage_die_{b}'))
-for t in tiers:
+# Each die tier takes three of the one below (as AE2's components do), so a bigger die stores more per material. The
+# later tiers' dies (p2_export, p3_export) follow the same shape with their own metals.
+shaped('storage_die_32k',['RDR','DLD','RSR'],{'R':V('redstone'),'D':E('storage_die_8k'),'L':E('logic_die'),'S':E('solder_paste')},E('storage_die_32k'))
+for t in tiers[:2]:
     shaped(f'storage_drive_{t}',['IFI','IDI','ICI'],{'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
+shaped('drive_bay',['ISI','NCN','ILI'],{'I':V('iron_ingot'),'S':E('circuit_substrate'),'N':E('network_cable'),'C':V('chest'),'L':E('logic_die')},E('drive_bay'))
 shapeless('access_terminal',[E('circuit_substrate'),E('logic_die'),V('glass_pane'),E('network_cable')],E('access_terminal'))
 shaped('lithography_press',['IGI','FRF','ICI'],{'I':V('iron_ingot'),'G':V('glass'),'F':E('ferrite'),'R':V('redstone'),'C':E('circuit_substrate')},E('lithography_press'))
 L='src/main/resources/assets/encodedlogistics/lang/'; os.makedirs(L,exist_ok=True)

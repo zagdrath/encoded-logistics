@@ -7,6 +7,8 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -110,7 +112,7 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         int top = sectionTop();
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             int button = PartScreens.over(event.x(), event.y(), leftPos + MODE_X, top + MODE_Y, 18, 18) ? SchematicEncoderMenu.BUTTON_MODE
                     : PartScreens.over(event.x(), event.y(), leftPos + CLEAR_X, top + CLEAR_Y, CLEAR_SIZE, CLEAR_SIZE) ? SchematicEncoderMenu.BUTTON_CLEAR
                             : PartScreens.over(event.x(), event.y(), leftPos + ENCODE_X, top + ENCODE_Y, ENCODE_W, ENCODE_H) && canEncode()
@@ -121,7 +123,7 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
             }
         }
         Slot slot = hoveredSlot;
-        if (event.button() == 1 && slot != null && isAmountSlot(slot) && slot.hasItem() && menu.getCarried().isEmpty()) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && slot != null && isAmountSlot(slot) && slot.hasItem() && menu.getCarried().isEmpty()) {
             if (menu.processing()) {
                 step(slot, true, event.hasShiftDown());
             }

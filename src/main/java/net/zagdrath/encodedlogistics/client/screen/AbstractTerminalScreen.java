@@ -14,6 +14,8 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -419,7 +421,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             }
         }
         int sx = leftPos + layout.scrollLeft, sy = topPos + layout.scrollTop;
-        if (event.button() == 0 && maxScroll() > 0 && mx >= sx && mx < sx + layout.thumbWidth && my >= sy && my < sy + rows * layout.rowHeight) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && mx >= sx && mx < sx + layout.thumbWidth && my >= sy && my < sy + rows * layout.rowHeight) {
             draggingThumb = true;
             scrollTo(my);
             return true;
@@ -430,24 +432,28 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             ItemKey key = index >= 0 ? view().get(index).getKey() : null;
             // Crafting: middle-click or Ctrl-click a craftable, or click one the network has none of.
             if (key != null && !carrying && menu.craftables().contains(key)
-                    && (event.button() == 2 || event.hasControlDown() || view().get(index).getValue() == 0)) {
+                    && (event.button() == InputConstants.MOUSE_BUTTON_MIDDLE || event.hasControlDown() || view().get(index).getValue() == 0)) {
                 CraftingClient.openAmount(this, menu, key);
                 return true;
             }
+            // Taking and putting in are left and right clicks only; any other button does nothing here.
+            if (event.button() != InputConstants.MOUSE_BUTTON_LEFT && event.button() != InputConstants.MOUSE_BUTTON_RIGHT) {
+                return true;
+            }
             int action;
-            if (event.hasShiftDown() && event.button() == 1) {
+            if (event.hasShiftDown() && event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
                 if (key == null) {
                     return true;
                 }
                 action = AccessTerminalMenu.TAKE_ONE;
             } else if (carrying) {
-                action = event.button() == 1 ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;
+                action = event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;
             } else if (key == null) {
                 return true;
             } else if (event.hasShiftDown()) {
                 action = AccessTerminalMenu.TAKE_TO_INVENTORY;
             } else {
-                action = event.button() == 1 ? AccessTerminalMenu.TAKE_HALF : AccessTerminalMenu.TAKE_STACK;
+                action = event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? AccessTerminalMenu.TAKE_HALF : AccessTerminalMenu.TAKE_STACK;
             }
             ClientPacketDistributor.sendToServer(new TerminalClickPayload(menu.containerId, Optional.ofNullable(key), action));
             return true;

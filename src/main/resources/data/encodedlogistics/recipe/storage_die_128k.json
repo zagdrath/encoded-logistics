@@ -1,12 +1,19 @@
 {
- "type": "encodedlogistics:lithography",
- "wafer": "encodedlogistics:doped_silicon",
- "additive": "encodedlogistics:neodymium_ingot",
- "photomask": "encodedlogistics:storage_photomask",
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "NDN",
+  "DMD",
+  "NSN"
+ ],
+ "key": {
+  "N": "encodedlogistics:neodymium_ingot",
+  "D": "encodedlogistics:storage_die_32k",
+  "M": "encodedlogistics:memory_die",
+  "S": "encodedlogistics:solder_paste"
+ },
  "result": {
   "id": "encodedlogistics:storage_die_128k",
   "count": 1
- },
- "energy": 6000,
- "time": 140
+ }
 }

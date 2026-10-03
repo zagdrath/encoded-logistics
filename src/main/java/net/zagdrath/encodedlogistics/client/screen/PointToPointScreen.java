@@ -8,6 +8,8 @@ package net.zagdrath.encodedlogistics.client.screen;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -123,7 +125,7 @@ public class PointToPointScreen extends AbstractContainerScreen<PointToPointMenu
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             if (locked() && PartScreens.over(event.x(), event.y(), leftPos + UNPAIR_X, topPos + UNPAIR_Y, UNPAIR_W, UNPAIR_H)) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, PointToPointMenu.BUTTON_UNPAIR);
                 return true;

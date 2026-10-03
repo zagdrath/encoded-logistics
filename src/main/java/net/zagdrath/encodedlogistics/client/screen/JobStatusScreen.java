@@ -11,6 +11,8 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -134,7 +136,7 @@ public class JobStatusScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && job != null && PartScreens.over(event.x(), event.y(), left + CANCEL_X, top + CANCEL_Y, CANCEL_W, CANCEL_H)) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && job != null && PartScreens.over(event.x(), event.y(), left + CANCEL_X, top + CANCEL_Y, CANCEL_W, CANCEL_H)) {
             ClientPacketDistributor.sendToServer(new JobCancelPayload(core, id));
             onClose();
             return true;

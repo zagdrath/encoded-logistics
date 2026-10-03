@@ -69,6 +69,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("inventory_tap", Phase2GameTests::inventoryTap);
         TESTS.put("threshold_sensor", Phase2GameTests::thresholdSensor);
         TESTS.put("metal_dusts", MaterialGameTests::dusts);
+        TESTS.put("every_item_craftable", RecipeGameTests::everyItemCraftable);
         TESTS.put("scheduler_forms", Phase3GameTests::schedulerForms);
         TESTS.put("encoder_encodes", Phase3GameTests::encoderEncodes);
         TESTS.put("fabricator_crafts", Phase3GameTests::fabricatorCrafts);

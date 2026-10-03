@@ -4,13 +4,13 @@
   "key": {
     "I": "minecraft:iron_ingot",
     "R": "minecraft:redstone_block",
-    "C": "minecraft:copper_ingot",
-    "Q": "minecraft:quartz"
+    "F": "encodedlogistics:copper_foil",
+    "T": "encodedlogistics:tantalum_capacitor"
   },
   "pattern": [
-    "IQI",
-    "CRC",
-    "IQI"
+    "ITI",
+    "FRF",
+    "ITI"
   ],
   "result": {
     "id": "encodedlogistics:capacitor_bank"

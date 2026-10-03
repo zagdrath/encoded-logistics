@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -68,7 +70,7 @@ public class GatewayScreen extends AbstractContainerScreen<GatewayMenu> {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         Slot slot = hoveredSlot;
-        if (event.button() == 1 && slot != null && isStock(slot) && slot.hasItem() && menu.getCarried().isEmpty()) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && slot != null && isStock(slot) && slot.hasItem() && menu.getCarried().isEmpty()) {
             step(slot, true, event.hasShiftDown());
             return true;
         }

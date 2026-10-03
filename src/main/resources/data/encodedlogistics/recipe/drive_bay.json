@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "ISI",
+  "NCN",
+  "ILI"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "S": "encodedlogistics:circuit_substrate",
+  "N": "encodedlogistics:network_cable",
+  "C": "minecraft:chest",
+  "L": "encodedlogistics:logic_die"
+ },
+ "result": {
+  "id": "encodedlogistics:drive_bay",
+  "count": 1
+ }
+}

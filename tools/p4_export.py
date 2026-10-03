@@ -117,7 +117,7 @@ def recipes():
     shapeless('fuzzy_match_module',[E('circuit_substrate'),E('memory_die'),V('string')],E('fuzzy_match_module'))
     shapeless('redstone_control_module',[E('circuit_substrate'),E('logic_die'),V('redstone_torch')],E('redstone_control_module'))
     shaped('relay_antenna',[' B ','POP','FBF'],{'B':V('iron_bars'),'P':E('processor_die'),'O':E('optical_transceiver'),'F':E('ferrite')},E('relay_antenna'))
-    shaped('network_bridge',['FOF','PCM','FOF'],{'F':E('ferrite'),'O':E('optical_transceiver'),'P':E('processor_die'),'C':E('circuit_substrate'),'M':E('memory_die')},E('network_bridge'))
+    shaped('network_bridge',['TOT','PCM','EOE'],{'T':E('tantalum_ingot'),'E':V('ender_eye'),'O':E('optical_transceiver'),'P':E('processor_die'),'C':E('circuit_substrate'),'M':E('memory_die')},E('network_bridge'))
     shapeless('point_to_point_link',[E('optical_transceiver'),E('logic_die'),E('network_cable')],E('point_to_point_link'),2)
     shapeless('collector_plane',[E('logic_die'),E('circuit_substrate'),V('iron_pickaxe'),V('hopper'),E('ferrite')],E('collector_plane'))
     shapeless('deployer_plane',[E('logic_die'),E('circuit_substrate'),V('dispenser'),E('ferrite')],E('deployer_plane'))

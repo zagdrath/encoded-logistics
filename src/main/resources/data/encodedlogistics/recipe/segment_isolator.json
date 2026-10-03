@@ -4,11 +4,11 @@
   "key": {
     "I": "minecraft:iron_ingot",
     "N": "encodedlogistics:network_cable",
-    "Q": "minecraft:quartz"
+    "F": "encodedlogistics:ferrite"
   },
   "pattern": [
     " I ",
-    "NQN",
+    "NFN",
     " I "
   ],
   "result": {

@@ -2,12 +2,13 @@
  "type": "minecraft:crafting_shaped",
  "category": "misc",
  "pattern": [
-  "FOF",
+  "TOT",
   "PCM",
-  "FOF"
+  "EOE"
  ],
  "key": {
-  "F": "encodedlogistics:ferrite",
+  "T": "encodedlogistics:tantalum_ingot",
+  "E": "minecraft:ender_eye",
   "O": "encodedlogistics:optical_transceiver",
   "P": "encodedlogistics:processor_die",
   "C": "encodedlogistics:circuit_substrate",

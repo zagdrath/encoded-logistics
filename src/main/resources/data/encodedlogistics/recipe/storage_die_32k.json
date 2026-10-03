@@ -2,13 +2,15 @@
  "type": "minecraft:crafting_shaped",
  "category": "misc",
  "pattern": [
-  "DSD",
-  "DLD"
+  "RDR",
+  "DLD",
+  "RSR"
  ],
  "key": {
+  "R": "minecraft:redstone",
   "D": "encodedlogistics:storage_die_8k",
-  "S": "encodedlogistics:solder_paste",
-  "L": "encodedlogistics:logic_die"
+  "L": "encodedlogistics:logic_die",
+  "S": "encodedlogistics:solder_paste"
  },
  "result": {
   "id": "encodedlogistics:storage_die_32k",

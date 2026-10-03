@@ -3,7 +3,7 @@
  "category": "misc",
  "ingredients": [
   "minecraft:copper_ingot",
-  "minecraft:slime_ball"
+  "#c:slime_balls"
  ],
  "result": {
   "id": "encodedlogistics:solder_paste",

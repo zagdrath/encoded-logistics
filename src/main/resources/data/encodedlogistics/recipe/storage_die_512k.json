@@ -2,13 +2,15 @@
  "type": "minecraft:crafting_shaped",
  "category": "misc",
  "pattern": [
-  "DND",
-  "DMD"
+  "NDN",
+  "DMD",
+  "NTN"
  ],
  "key": {
-  "D": "encodedlogistics:storage_die_128k",
   "N": "encodedlogistics:neodymium_ingot",
-  "M": "encodedlogistics:memory_die"
+  "D": "encodedlogistics:storage_die_128k",
+  "M": "encodedlogistics:memory_die",
+  "T": "encodedlogistics:tantalum_capacitor"
  },
  "result": {
   "id": "encodedlogistics:storage_die_512k",

@@ -7,6 +7,8 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -108,7 +110,7 @@ public class CraftAmountScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             for (int[] step : STEPS) {
                 if (PartScreens.over(event.x(), event.y(), left + step[1], top + step[2], STEP_W, STEP_H) && amount != null) {
                     long value = Math.clamp(value() + step[0], 1, CraftRequestPayload.MAX_AMOUNT);

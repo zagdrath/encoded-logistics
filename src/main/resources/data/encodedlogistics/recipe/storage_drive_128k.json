@@ -2,11 +2,12 @@
  "type": "minecraft:crafting_shaped",
  "category": "misc",
  "pattern": [
-  "IFI",
+  "TFT",
   "IDI",
   "ICI"
  ],
  "key": {
+  "T": "encodedlogistics:tantalum_ingot",
   "I": "minecraft:iron_ingot",
   "F": "encodedlogistics:ferrite",
   "D": "encodedlogistics:storage_die_128k",

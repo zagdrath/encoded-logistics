@@ -2,13 +2,15 @@
  "type": "minecraft:crafting_shaped",
  "category": "misc",
  "pattern": [
-  "DGD",
-  "DPD"
+  "GDG",
+  "DPD",
+  "GTG"
  ],
  "key": {
-  "D": "encodedlogistics:storage_die_512k",
   "G": "encodedlogistics:gallium_ingot",
-  "P": "encodedlogistics:processor_die"
+  "D": "encodedlogistics:storage_die_512k",
+  "P": "encodedlogistics:processor_die",
+  "T": "encodedlogistics:tantalum_capacitor"
  },
  "result": {
   "id": "encodedlogistics:storage_die_2m",

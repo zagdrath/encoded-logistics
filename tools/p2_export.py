@@ -121,22 +121,24 @@ def recipes():
     for metal,o in ORES.items():
         for src,tag in ((E(f'raw_{metal}'),'raw'),('#c:ores/'+metal,'ore')):
             cook(f'{metal}_ingot_from_smelting_{tag}','minecraft:smelting',src,E(f'{metal}_ingot'),0.7,200)
-            cook(f'{metal}_ingot_from_blasting_{tag}','minecraft:blasting',src,E(f'{metal}_ingot'),0.7,100)
+            cook(f'{metal}_ingot_from_blasting_{tag}','minecraft:blasting',src,E(f'{metal}_ingot'),0.7,200)
         cook(f'{metal}_ingot_from_smelting_dust','minecraft:smelting','#c:dusts/'+metal,E(f'{metal}_ingot'),0.7,200)
-        cook(f'{metal}_ingot_from_blasting_dust','minecraft:blasting','#c:dusts/'+metal,E(f'{metal}_ingot'),0.7,100)
+        cook(f'{metal}_ingot_from_blasting_dust','minecraft:blasting','#c:dusts/'+metal,E(f'{metal}_ingot'),0.7,200)
         crushing(R,metal)
     shapeless('doped_silicon',[E('silicon_wafer'),V('redstone')],E('doped_silicon'))
     shaped('memory_photomask',['GFG','FDF','GFG'],{'G':V('glass'),'F':E('ferrite'),'D':E('doped_silicon')},E('memory_photomask'))
     litho('memory_die',E('doped_silicon'),E('ferrite'),E('memory_photomask'),E('memory_die'))
     shapeless('tantalum_capacitor',[E('tantalum_ingot'),E('copper_foil'),E('solder_paste')],E('tantalum_capacitor'),2)
-    litho('storage_die_128k',E('doped_silicon'),E('neodymium_ingot'),E('storage_photomask'),E('storage_die_128k'))
-    shaped('storage_die_512k',['DND','DMD'],{'D':E('storage_die_128k'),'N':E('neodymium_ingot'),'M':E('memory_die')},E('storage_die_512k'))
+    # Three of the die below plus neodymium (and, for 512K, a tantalum capacitor), as storage_die_32k in p1_data.
+    shaped('storage_die_128k',['NDN','DMD','NSN'],{'N':E('neodymium_ingot'),'D':E('storage_die_32k'),'M':E('memory_die'),'S':E('solder_paste')},E('storage_die_128k'))
+    shaped('storage_die_512k',['NDN','DMD','NTN'],{'N':E('neodymium_ingot'),'D':E('storage_die_128k'),'M':E('memory_die'),'T':E('tantalum_capacitor')},E('storage_die_512k'))
+    # From 128K up the housing is tantalum-plated.
     for t in ('128k','512k'):
-        shaped(f'storage_drive_{t}',['IFI','IDI','ICI'],{'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
+        shaped(f'storage_drive_{t}',['TFT','IDI','ICI'],{'T':E('tantalum_ingot'),{'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
     shapeless('ingress_port',[E('circuit_substrate'),E('logic_die'),E('tantalum_capacitor'),V('iron_ingot'),V('hopper')],E('ingress_port'))
     shapeless('egress_port',[E('circuit_substrate'),E('logic_die'),E('tantalum_capacitor'),V('iron_ingot'),V('dropper')],E('egress_port'))
-    shapeless('inventory_tap',[E('circuit_substrate'),E('logic_die'),V('chest'),E('ferrite')],E('inventory_tap'))
-    shapeless('threshold_sensor',[E('logic_die'),V('redstone_torch'),V('comparator')],E('threshold_sensor'))
+    shapeless('inventory_tap',[E('circuit_substrate'),E('logic_die'),E('memory_die'),V('chest'),E('ferrite')],E('inventory_tap'))
+    shapeless('threshold_sensor',[E('circuit_substrate'),E('logic_die'),V('redstone_torch'),V('comparator')],E('threshold_sensor'))
     shapeless('filter_module',[E('circuit_substrate'),E('logic_die'),V('paper')],E('filter_module'))
     shapeless('throughput_module',[E('circuit_substrate'),E('memory_die'),E('tantalum_capacitor')],E('throughput_module'))
     shapeless('fabrication_terminal',[E('access_terminal'),V('crafting_table'),E('memory_die')],E('fabrication_terminal'))

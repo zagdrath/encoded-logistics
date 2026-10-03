@@ -7,6 +7,8 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -112,7 +114,7 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && PartScreens.over(event.x(), event.y(), leftPos + MODE_X, topPos + MODE_Y, 18, 18)) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && PartScreens.over(event.x(), event.y(), leftPos + MODE_X, topPos + MODE_Y, 18, 18)) {
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, ThresholdSensorMenu.BUTTON_MODE);
             return true;
         }

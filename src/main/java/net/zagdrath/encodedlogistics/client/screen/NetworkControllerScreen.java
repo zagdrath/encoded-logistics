@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -211,7 +213,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0 && maxScroll() > 0 && inside(event.x(), event.y(), SCROLL_X - 1, SCROLL_Y, THUMB_W + 2, SCROLL_H)) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && inside(event.x(), event.y(), SCROLL_X - 1, SCROLL_Y, THUMB_W + 2, SCROLL_H)) {
             draggingThumb = true;
             scrollTo(event.y());
             return true;
