@@ -10,6 +10,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ModelEvent;
@@ -45,6 +46,7 @@ import net.zagdrath.encodedlogistics.client.screen.RelayAntennaScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchedulerCoreScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
 import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
+import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
@@ -58,6 +60,8 @@ public class EncodedLogisticsClient {
     public EncodedLogisticsClient(ModContainer container) {
         // Config screen is accessed via Mods screen > Encoded Logistics > Config.
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        // The terminals' toolbar settings (encodedlogistics-client.toml).
+        container.registerConfig(ModConfig.Type.CLIENT, TerminalSettings.SPEC);
         // A terminal's grid gets as many rows as fit the window when it opens.
         AccessTerminalMenu.clientRows = section -> TerminalLayout.load(AccessTerminalScreen.LAYOUT)
                 .rowsFor(Minecraft.getInstance().getWindow().getGuiScaledHeight() - section);

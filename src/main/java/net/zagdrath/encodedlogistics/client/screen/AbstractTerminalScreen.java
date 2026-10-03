@@ -39,7 +39,7 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // items (as many rows as fit the window, between the layout's min and max), a scrollbar, the player's inventory, and
 // a toolbar on a tab at the left (sort mode: name / amount / mod; sort direction; craftables shown always or only when
 // searching; grid height: small / medium / tall / fill the window, which re-lays the open screen out; search mode:
-// standard, or synced with JEI's search bar both ways, as AE2's is).
+// standard, or synced with JEI's search bar both ways, as AE2's is). The toolbar settings are saved (TerminalSettings).
 // Counts are drawn at half size and abbreviated (1.2K, 34M, 5.1B); what the network can craft but doesn't have shows with
 // "Craft" instead. Clicks work as in AE2: left click takes a stack, right click half of one, shift-click moves a stack
 // into the inventory, shift-right-click takes one onto the cursor; clicking with an item held puts it in (right click:
@@ -50,16 +50,8 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     // palette.json
     private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ERROR = 0xFFFF6B6B, ACCENT = 0xFF00D992;
 
-    private enum SortMode {
-        NAME, COUNT, MOD
-    }
-
-    // Sort settings last the session, across terminals.
-    private static SortMode sortMode = SortMode.NAME;
-    private static boolean descending;
-    private static boolean craftablesAlways = true;
+    // The search lasts the session, across terminals; the toolbar settings are saved (TerminalSettings).
     private static String lastSearch = "";
-    private static boolean searchSynced;
 
     private final TerminalLayout layout;
     // The grid's rows: the menu's when it opened, until the height button changes them.
@@ -102,10 +94,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     // Without JEI it stays standard.
     private void toggleSearchSync() {
         if (ExternalSearch.field() == null) {
-            searchSynced = false;
             return;
         }
-        searchSynced = !searchSynced;
+        TerminalSettings.searchSynced(!TerminalSettings.searchSynced());
         ExternalSearch.Field jei = syncedField();
         if (jei != null && search != null) {
             jei.setText(search.getValue());
@@ -116,7 +107,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     // below the grid) move with it on the client.
     private void cycleHeight() {
         TerminalLayout.Height[] heights = TerminalLayout.Height.values();
-        TerminalLayout.height = heights[(TerminalLayout.height.ordinal() + 1) % heights.length];
+        TerminalSettings.height(heights[(TerminalSettings.height().ordinal() + 1) % heights.length]);
         int wanted = layout.rowsFor(height);
         if (wanted == rows) {
             return;
@@ -160,7 +151,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     // JEI's search bar while the search mode is synced (and JEI is there), else null.
     private static ExternalSearch.@Nullable Field syncedField() {
-        return searchSynced ? ExternalSearch.field() : null;
+        return TerminalSettings.searchSynced() ? ExternalSearch.field() : null;
     }
 
     // Synced: what's typed into JEI's search bar shows up here too.
@@ -199,7 +190,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             }
         }
         // What the network can make but has none of, with a count of 0.
-        if (craftablesAlways || !needle.isEmpty()) {
+        if (TerminalSettings.craftablesAlways() || !needle.isEmpty()) {
             for (ItemKey key : menu.craftables()) {
                 if (menu.items().containsKey(key)) {
                     continue;
@@ -214,13 +205,13 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         }
         Comparator<Map.Entry<ItemKey, Long>> byName = Comparator.comparing(entry -> entry.getKey().stack().getHoverName().getString(),
                 String.CASE_INSENSITIVE_ORDER);
-        Comparator<Map.Entry<ItemKey, Long>> order = switch (sortMode) {
+        Comparator<Map.Entry<ItemKey, Long>> order = switch (TerminalSettings.sortMode()) {
             case NAME -> byName;
             case COUNT -> Comparator.<Map.Entry<ItemKey, Long>>comparingLong(Map.Entry::getValue).thenComparing(byName);
             case MOD -> Comparator.<Map.Entry<ItemKey, Long>, String>comparing(
                     entry -> BuiltInRegistries.ITEM.getKey(entry.getKey().stack().getItem()).getNamespace()).thenComparing(byName);
         };
-        entries.sort(descending ? order.reversed() : order);
+        entries.sort(TerminalSettings.descending() ? order.reversed() : order);
         return entries;
     }
 
@@ -313,11 +304,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     private static int buttonState(String id) {
         return switch (id) {
-            case "sort_mode" -> sortMode.ordinal();
-            case "craftables" -> craftablesAlways ? 0 : 1;
-            case "height" -> TerminalLayout.height.ordinal();
-            case "search_mode" -> searchSynced ? 1 : 0;
-            default -> descending ? 1 : 0;
+            case "sort_mode" -> TerminalSettings.sortMode().ordinal();
+            case "craftables" -> TerminalSettings.craftablesAlways() ? 0 : 1;
+            case "height" -> TerminalSettings.height().ordinal();
+            case "search_mode" -> syncedField() != null ? 1 : 0;
+            default -> TerminalSettings.descending() ? 1 : 0;
         };
     }
 
@@ -415,12 +406,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 String id = layout.buttonIds.get(button);
                 if (id.equals("height")) {
                     graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.height"),
-                            Component.translatable("gui.encodedlogistics.terminal.height." + TerminalLayout.height.name().toLowerCase(Locale.ROOT))
+                            Component.translatable("gui.encodedlogistics.terminal.height." + TerminalSettings.height().name().toLowerCase(Locale.ROOT))
                                     .withColor(TEXT_MUTED)), mouseX, mouseY);
                     continue;
                 }
                 if (id.equals("search_mode")) {
-                    String mode = searchSynced ? "gui.encodedlogistics.terminal.search_mode.jei" : "gui.encodedlogistics.terminal.search_mode.standard";
+                    String mode = syncedField() != null ? "gui.encodedlogistics.terminal.search_mode.jei" : "gui.encodedlogistics.terminal.search_mode.standard";
                     List<Component> lines = new ArrayList<>(List.of(Component.translatable("gui.encodedlogistics.terminal.search_mode"),
                             Component.translatable(mode).withColor(TEXT_MUTED)));
                     if (ExternalSearch.field() == null) {
@@ -431,12 +422,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 }
                 if (id.equals("craftables")) {
                     graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.craftable"),
-                            Component.translatable(craftablesAlways ? "gui.encodedlogistics.terminal.craftable.always"
+                            Component.translatable(TerminalSettings.craftablesAlways() ? "gui.encodedlogistics.terminal.craftable.always"
                                     : "gui.encodedlogistics.terminal.craftable.search").withColor(TEXT_MUTED)), mouseX, mouseY);
                     continue;
                 }
-                String key = id.equals("sort_mode") ? "gui.encodedlogistics.terminal.sort." + sortMode.name().toLowerCase(Locale.ROOT)
-                        : descending ? "gui.encodedlogistics.terminal.dir.desc" : "gui.encodedlogistics.terminal.dir.asc";
+                String key = id.equals("sort_mode") ? "gui.encodedlogistics.terminal.sort." + TerminalSettings.sortMode().name().toLowerCase(Locale.ROOT)
+                        : TerminalSettings.descending() ? "gui.encodedlogistics.terminal.dir.desc" : "gui.encodedlogistics.terminal.dir.asc";
                 graphics.setTooltipForNextFrame(Component.translatable(key), mouseX, mouseY);
             }
         }
@@ -467,11 +458,14 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             int bx = leftPos + layout.toolbarLeft, by = topPos + layout.toolbarTop + button * layout.toolbarSpacing;
             if (mx >= bx && mx < bx + 18 && my >= by && my < by + 18) {
                 switch (layout.buttonIds.get(button)) {
-                    case "sort_mode" -> sortMode = SortMode.values()[(sortMode.ordinal() + 1) % SortMode.values().length];
-                    case "craftables" -> craftablesAlways = !craftablesAlways;
+                    case "sort_mode" -> {
+                        TerminalSettings.SortMode[] modes = TerminalSettings.SortMode.values();
+                        TerminalSettings.sortMode(modes[(TerminalSettings.sortMode().ordinal() + 1) % modes.length]);
+                    }
+                    case "craftables" -> TerminalSettings.craftablesAlways(!TerminalSettings.craftablesAlways());
                     case "height" -> cycleHeight();
                     case "search_mode" -> toggleSearchSync();
-                    default -> descending = !descending;
+                    default -> TerminalSettings.descending(!TerminalSettings.descending());
                 }
                 viewVersion = -1;
                 return true;

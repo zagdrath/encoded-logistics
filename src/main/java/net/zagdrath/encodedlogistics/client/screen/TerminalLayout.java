@@ -28,13 +28,11 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 // (screens/terminal/base_terminal.json for every terminal): later files override earlier ones key by key. Every number
 // has the kit's default, so a missing or broken file still gives a usable screen.
 public final class TerminalLayout {
-    // The grid's height setting (the toolbar's height button): a fixed number of rows (rows.heights in the layout), or as
-    // many as fit the window. Shared by every terminal; it lasts the session.
+    // The grid's height setting (the toolbar's height button, saved in TerminalSettings): a fixed number of rows
+    // (rows.heights in the layout), or as many as fit the window. Shared by every terminal.
     public enum Height {
         SMALL, MEDIUM, TALL, FILL
     }
-
-    public static Height height = Height.FILL;
 
     public final int width, topHeight, rowHeight, bottomHeight;
     public final Identifier top, row, bottom;
@@ -198,7 +196,7 @@ public final class TerminalLayout {
             int rows = (screenHeight - topHeight - sectionHeight - bottomHeight - 16) / rowHeight;
             fit = Math.max(minRows, Math.min(maxRows, rows));
         }
-        int wanted = switch (height) {
+        int wanted = switch (TerminalSettings.height()) {
             case SMALL -> smallRows;
             case MEDIUM -> mediumRows;
             case TALL -> tallRows;
