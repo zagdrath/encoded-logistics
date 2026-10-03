@@ -46,8 +46,10 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     public static final int TOP = 19, ROW = 18, BOTTOM = 99, COLUMNS = 9, DEFAULT_ROWS = 6;
     private static final int SYNC_INTERVAL = 5;
 
-    // Click actions.
-    public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4;
+    // Click actions, as AE2's terminals have them: left-click takes a stack, right-click half of one, shift-click a stack
+    // into the inventory, shift-right-click (or Shift+wheel down) one onto the cursor; with an item carried, left-click
+    // puts it all in and right-click (or Shift+wheel up) one.
+    public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4, TAKE_ONE = 5;
 
     // The player's inventory slots come first (0-35); terminals with a crafting section add theirs after.
     public static final int INVENTORY_SLOTS = 36;
@@ -124,7 +126,9 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     @Override
     public void broadcastChanges() {
         super.broadcastChanges();
-        if (!(player instanceof ServerPlayer serverPlayer) || --ticksUntilSync > 0) {
+        // Nothing to sync to a connection that can't take the payload (a gametest's mock player).
+        if (!(player instanceof ServerPlayer serverPlayer) || !serverPlayer.connection.hasChannel(TerminalItemsPayload.TYPE)
+                || --ticksUntilSync > 0) {
             return;
         }
         ticksUntilSync = SYNC_INTERVAL;
@@ -158,8 +162,8 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         sentOnline = isOnline;
     }
 
-    // A click on the grid: take the clicked item (a stack, half a stack, or into the inventory) or put the carried
-    // stack (or one of it) in.
+    // A click on the grid: take the clicked item (a stack, half a stack, one, or a stack into the inventory) or put the
+    // carried stack (or one of it) in.
     public void handleClick(ServerPlayer player, @Nullable ItemKey key, int action) {
         NetworkStorage storage = storage();
         if (storage == null) {
@@ -190,6 +194,21 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 if (taken > 0) {
                     setCarried(key.toStack(taken));
                     moved(taken);
+                }
+            }
+            case TAKE_ONE -> {
+                // Onto the cursor: an empty one, or one carrying the same item with room for another.
+                if (key == null || !carried.isEmpty() && (!key.equals(ItemKey.of(carried)) || carried.getCount() >= carried.getMaxStackSize())) {
+                    return;
+                }
+                if (storage.extract(key, 1, false) > 0) {
+                    if (carried.isEmpty()) {
+                        setCarried(key.toStack(1));
+                    } else {
+                        carried.grow(1);
+                        setCarried(carried);
+                    }
+                    moved(1);
                 }
             }
             case TAKE_TO_INVENTORY -> {

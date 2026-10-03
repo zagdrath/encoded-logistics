@@ -55,7 +55,8 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
         this(containerId, inventory, extraData.readBlockPos(), extraData.readEnum(Direction.class), clientRows.applyAsInt(SECTION));
     }
 
-    private FabricationTerminalMenu(int containerId, Inventory inventory, BlockPos pos, Direction side, int rows) {
+    // Server constructor (open() uses it; gametests too).
+    public FabricationTerminalMenu(int containerId, Inventory inventory, BlockPos pos, Direction side, int rows) {
         super(ModMenuTypes.FABRICATION_TERMINAL.get(), containerId, inventory, pos, side, rows, SECTION);
         craftSlots = new TransientCraftingContainer(this, 3, 3);
         int top = TOP + rows * ROW;
@@ -179,6 +180,13 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
             return ItemStack.EMPTY;
         }
         return super.quickMoveStack(player, index);
+    }
+
+    // A double-click while carrying the result's item collects matching stacks - but never from the result, as on a
+    // crafting table: clicking it again quickly would otherwise count as that double-click and take nothing.
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack carried, Slot target) {
+        return target.container != resultSlots && super.canTakeItemForPickAll(carried, target);
     }
 
     private boolean fits(ItemStack stack) {

@@ -37,8 +37,9 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // a toolbar on a tab at the left (sort mode: name / amount / mod; sort direction; craftables shown always or only when
 // searching; grid height: small / medium / tall / fill the window, which re-lays the open screen out).
 // Counts are drawn at half size and abbreviated (1.2K, 34M, 5.1B); what the network can craft but doesn't have shows with
-// "Craft" instead. Left click takes a stack, right click half, shift-click moves one into the inventory; clicking with
-// an item held puts it in (right click: just one). Middle-click or Ctrl-click on a craftable item (or any click on one
+// "Craft" instead. Clicks work as in AE2: left click takes a stack, right click half of one, shift-click moves a stack
+// into the inventory, shift-right-click takes one onto the cursor; clicking with an item held puts it in (right click:
+// just one); Shift+wheel puts one in (up) or takes one (down). Middle-click or Ctrl-click on a craftable item (or any click on one
 // the network has none of) asks how many to craft. Search matches names; "@" searches mod ids. Each terminal adds
 // little more than its layout and title (AccessTerminalScreen).
 public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> extends AbstractContainerScreen<M> {
@@ -434,7 +435,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 return true;
             }
             int action;
-            if (carrying) {
+            if (event.hasShiftDown() && event.button() == 1) {
+                if (key == null) {
+                    return true;
+                }
+                action = AccessTerminalMenu.TAKE_ONE;
+            } else if (carrying) {
                 action = event.button() == 1 ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;
             } else if (key == null) {
                 return true;
@@ -475,6 +481,19 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        // Shift+wheel over the grid, as in AE2: up puts one of the carried item in, down takes one of the item under the
+        // mouse onto the cursor.
+        int index = hoveredIndex(mouseX, mouseY);
+        if (index != -1 && scrollY != 0 && menu.isOnline() && minecraft.hasShiftDown()) {
+            ItemKey key = index >= 0 ? view().get(index).getKey() : null;
+            int action = scrollY > 0 ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.TAKE_ONE;
+            if (action == AccessTerminalMenu.INSERT_ONE ? !menu.getCarried().isEmpty() : key != null) {
+                for (int i = 0; i < Math.max(1, (int) Math.abs(scrollY)); i++) {
+                    ClientPacketDistributor.sendToServer(new TerminalClickPayload(menu.containerId, Optional.ofNullable(key), action));
+                }
+            }
+            return true;
+        }
         double y = mouseY - topPos - layout.topHeight;
         if (y >= 0 && y < rows * layout.rowHeight && mouseX >= leftPos && mouseX < leftPos + layout.width) {
             scrollRow = Mth.clamp(scrollRow - (int) Math.signum(scrollY), 0, maxScroll());
