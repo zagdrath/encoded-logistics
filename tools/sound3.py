@@ -12,9 +12,18 @@ def slide(rng,dur=0.42,out=True):
     return np.concatenate([roll*0.25+ticks*0.35,stop]) if out else np.concatenate([stop[:200]*0,roll*0.25+ticks*0.35,stop])
 def hinge(rng): return click(rng,0.16,(2600,4200,1400))
 def servo(rng,dur=0.5):
-    n=int(SR*dur); t=np.arange(n)/SR; f=520+380*np.sin(np.pi*t/dur)
-    w=np.sin(2*np.pi*np.cumsum(f)/SR)*0.25+np.sin(4*np.pi*np.cumsum(f)/SR)*0.08
-    return w*np.minimum(1,t/0.03)*np.minimum(1,(dur-t)/0.05)
+    # The picker's stepper drive: a low, steady motor buzz (no pitch glide - a sweep up and down reads as a voice),
+    # a quick spin-up and spin-down, the steps ticking through it and a little gear grind.
+    n=int(SR*dur); t=np.arange(n)/SR
+    ramp=np.minimum(1,np.minimum(t/0.06,(dur-t)/0.06))
+    f=95+25*ramp                                                      # 95 Hz idle to 120 Hz at speed
+    ph=2*np.pi*np.cumsum(f)/SR
+    buzz=sum(np.sin(k*ph)/k for k in (1,3,5,7))                       # square-ish, band-limited: electric, not tonal
+    steps=0.7+0.3*np.sin(ph*0.5)                                      # half-rate step pulse
+    grind=np.convolve(rng.normal(0,1,n),np.ones(90)/90,'same')*1.2    # low-passed noise (under ~500 Hz)
+    hum=np.sin(2*np.pi*50*t)*0.25
+    w=(buzz*steps*0.5+grind+hum)*ramp
+    return w*np.minimum(1,t/0.01)*np.minimum(1,(dur-t)/0.02)
 def clunk(rng):
     n=int(SR*0.22); t=np.arange(n)/SR
     return np.sin(2*np.pi*140*t)*env(n,0.001,0.04)*0.9+click(rng,0.22,(900,1700,600))*0.4

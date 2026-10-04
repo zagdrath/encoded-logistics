@@ -229,10 +229,17 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 moved((int) got);
                 want -= got;
             }
-            if (want <= 0 || storage.count(key) <= 0 && storage.cold().count(key) <= 0) {
+            long onTape = storage.cold().count(key);
+            if (want <= 0 || storage.count(key) <= 0 && onTape <= 0 || storage.cold().hotFull(key)) {
+                // Done, gone, or hot storage couldn't take it (the tooltip says so instead of waiting on 0%).
                 waiting.remove(key);
             } else {
                 waiting.put(key, want);
+                // Nothing queued or running for it any more - the rest was on another tape, or another player's
+                // recall took what came back: ask for it again.
+                if (onTape > 0 && storage.cold().progress(key) < 0) {
+                    storage.cold().recall(key, Math.min(want, onTape));
+                }
             }
         }
     }

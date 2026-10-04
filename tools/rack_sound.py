@@ -1,5 +1,5 @@
 # Synthesised door sounds (mono 44.1 kHz) -> .ogg via ffmpeg: sheet-metal latch click + swing.
-import numpy as np, subprocess, os, wave
+import numpy as np, subprocess, os, shutil, tempfile, wave
 SR=44100
 def env(n,a,d): t=np.arange(n)/SR; return np.minimum(1,t/a)*np.exp(-t/d)
 def click(rng,dur=0.18,f=(2300,3900,1250)):
@@ -14,7 +14,12 @@ def swing(rng,dur=0.42,rising=True):
     return (air*0.12+creak)*shape
 def write(name,sig,out):
     sig=sig/np.max(np.abs(sig))*0.85; pcm=(sig*32767).astype(np.int16)
-    wav=f'/tmp/{name}.wav'
+    os.makedirs(out,exist_ok=True)
+    if shutil.which('ffmpeg') is None:
+        import soundfile                                    # no ffmpeg: libsndfile's own Vorbis encoder
+        soundfile.write(f'{out}/{name}.ogg',pcm/32767.0,SR,format='OGG',subtype='VORBIS')
+        return
+    wav=os.path.join(tempfile.gettempdir(),f'{name}.wav')
     with wave.open(wav,'w') as w: w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())
     os.makedirs(out,exist_ok=True)
     subprocess.run(['ffmpeg','-y','-loglevel','error','-i',wav,'-c:a','libvorbis','-q:a','4',f'{out}/{name}.ogg'],check=True)

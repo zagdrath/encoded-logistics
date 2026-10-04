@@ -56,6 +56,8 @@ public final class TapeRecalls {
         long more = run != null ? amount - run.amount : amount;
         if (more > 0) {
             waiting.merge(key, more, Math::max);
+            // Asked for again: an earlier recall's "hot storage full" no longer stands.
+            hotFull.remove(key);
         }
     }
 
