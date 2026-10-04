@@ -30,10 +30,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.CraftingClient;
 import net.zagdrath.encodedlogistics.client.ExternalSearch;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalClickPayload;
+import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 
 // The modular terminal screen, built from a TerminalLayout: a title bar with the search field, a grid of the network's
@@ -320,7 +322,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             int cx = x + layout.gridLeft + (cell % layout.columns) * layout.cell;
             int cy = y + layout.topHeight + layout.gridTopInRow + (cell / layout.columns) * layout.cell;
             if (index < entries.size() && entries.get(index).getValue() >= 0) {
-                graphics.item(entries.get(index).getKey().stack(), cx, cy);
+                ItemKey key = entries.get(index).getKey();
+                graphics.item(key.stack(), cx, cy);
+                coldMarks(graphics, key, cx, cy);
             }
             if (index == hovered || hovered == -2 && cell == cellUnder(mouseX, mouseY)) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, layout.slotHighlight, cx, cy, 16, 16);
@@ -333,6 +337,48 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 && mouseY < y + thumbY() + layout.thumbHeight;
         Identifier thumb = max == 0 ? layout.thumbDisabled : draggingThumb || overThumb ? layout.thumbHover : layout.thumb;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, thumb, x + layout.scrollLeft, y + thumbY(), layout.thumbWidth, layout.thumbHeight);
+    }
+
+    // terminal/cold_items.json: an item on tape has the tape badge at its bottom left; one the player is waiting on from
+    // tape, a progress bar along its bottom and the spinner top right.
+    private static final Identifier TAPE_BADGE = EncodedLogistics.id("terminal/tape_badge"), RECALL_TRACK = EncodedLogistics.id("terminal/recall_track"),
+            RECALL_FILL = EncodedLogistics.id("terminal/recall_fill"), RECALL_SPINNER = EncodedLogistics.id("terminal/recall_spinner");
+
+    private void coldMarks(GuiGraphicsExtractor graphics, ItemKey key, int cx, int cy) {
+        if (menu.cold(key) != null) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TAPE_BADGE, cx, cy + 11, 7, 5);
+        }
+        int recall = menu.recall(key);
+        if (recall >= 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, RECALL_TRACK, cx, cy + 14, 16, 2);
+            int fill = Math.round(16 * Math.min(100, recall) / 100.0F);
+            if (fill > 0) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, RECALL_FILL, 16, 1, 0, 0, cx, cy + 14, fill, 1);
+            }
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, RECALL_SPINNER, cx + 8, cy, 8, 8);
+        }
+    }
+
+    // The tooltip's tape lines: on tape, and how long a recall would take (or how far along the player's is).
+    private void coldLines(ItemKey key, List<Component> lines) {
+        TerminalItemsPayload.Entry cold = menu.cold(key);
+        int recall = menu.recall(key);
+        if (cold == null && recall < 0) {
+            return;
+        }
+        if (cold != null) {
+            lines.add(Component.translatable("tooltip.encodedlogistics.tape.on_tape").withColor(CraftPlanScreen.TAPE_BLUE)
+                    .append(Component.literal(String.format(Locale.ROOT, " (%,d)", cold.cold())).withColor(TEXT_MUTED)));
+        }
+        if (recall >= 0) {
+            lines.add(Component.translatable("tooltip.encodedlogistics.tape.recalling", recall).withColor(ACCENT));
+        } else if (cold.hotFull()) {
+            lines.add(Component.translatable("tooltip.encodedlogistics.tape.hot_full").withColor(ERROR));
+        } else if (cold.eta() < 0) {
+            lines.add(Component.translatable("tooltip.encodedlogistics.tape.no_drive").withColor(ERROR));
+        } else {
+            lines.add(Component.translatable("tooltip.encodedlogistics.tape.recall_eta", CraftPlanScreen.seconds(cold.eta(), true)).withColor(TEXT_MUTED));
+        }
     }
 
     private static int buttonState(String id) {
@@ -427,6 +473,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             if (entry.getValue() > 0) {
                 lines.add(Component.literal(String.format(Locale.ROOT, "%,d", entry.getValue())).withColor(TEXT_MUTED));
             }
+            coldLines(entry.getKey(), lines);
             if (menu.craftables().contains(entry.getKey())) {
                 lines.add(Component.translatable("gui.encodedlogistics.terminal.craft_hint").withColor(ACCENT));
             }

@@ -5,8 +5,10 @@ import mcrender
 from PIL import Image
 def load_tex(rl,frame=0):
     ns,path=rl.split(':'); f=f'assets/{ns}/textures/{path}.png'; im=Image.open(f).convert('RGBA')
-    if im.height>im.width and os.path.exists(f+'.mcmeta'):          # only animated textures are frame strips (as in the game)
-        n=im.height//im.width; im=im.crop((0,im.width*(frame%n),im.width,im.width*(frame%n)+im.width))
+    if os.path.exists(f+'.mcmeta'):                                  # animated strips; frame height from the mcmeta (6U: 256)
+        import json as _j
+        a=_j.load(open(f+'.mcmeta')).get('animation',{}); fh=a.get('height',im.width)
+        if im.height>fh: n=im.height//fh; im=im.crop((0,fh*(frame%n),im.width,fh*(frame%n)+fh))
     return np.array(im)
 mcrender.load_tex=load_tex
 from mcrender import model_quads, block_quads, render

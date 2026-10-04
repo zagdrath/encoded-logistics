@@ -1,0 +1,14 @@
+{
+ "type": "encodedlogistics:tape_upgrade",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:lto_tape_8",
+  "encodedlogistics:neodymium_ingot",
+  "encodedlogistics:neodymium_ingot",
+  "encodedlogistics:tantalum_capacitor"
+ ],
+ "result": {
+  "id": "encodedlogistics:lto_tape_9",
+  "count": 1
+ }
+}

@@ -21,6 +21,7 @@ import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
+import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
@@ -29,6 +30,7 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
+import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
 public final class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(EncodedLogistics.MODID);
@@ -137,6 +139,25 @@ public final class ModItems {
     public static final DeferredItem<RackDeviceItem> SAN = ITEMS.registerItem("san", p -> new RackDeviceItem(p, RackDeviceType.SAN),
             p -> p.stacksTo(1));
 
+    public static final DeferredItem<RackDeviceItem> RACK_CONSOLE = ITEMS.registerItem("rack_console", p -> new RackDeviceItem(p, RackDeviceType.RACK_CONSOLE),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> WIRELESS_CONTROLLER = ITEMS.registerItem("wireless_controller",
+            p -> new RackDeviceItem(p, RackDeviceType.WIRELESS_CONTROLLER), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> TAPE_LIBRARY_4U = ITEMS.registerItem("tape_library_4u",
+            p -> new RackDeviceItem(p, RackDeviceType.TAPE_LIBRARY_4U), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> TAPE_LIBRARY_6U = ITEMS.registerItem("tape_library_6u",
+            p -> new RackDeviceItem(p, RackDeviceType.TAPE_LIBRARY_6U), p -> p.stacksTo(1));
+    public static final DeferredItem<Item> LTO_TAPE_DRIVE = ITEMS.registerSimpleItem("lto_tape_drive", p -> p.stacksTo(16));
+
+    // LTO tapes, one per generation (TapeGeneration).
+    private static final Map<TapeGeneration, DeferredItem<LtoTapeItem>> TAPES = new EnumMap<>(TapeGeneration.class);
+
+    static {
+        for (TapeGeneration generation : TapeGeneration.values()) {
+            TAPES.put(generation, ITEMS.registerItem(generation.id(), p -> new LtoTapeItem(p, generation), p -> p.stacksTo(1)));
+        }
+    }
+
     // Cable parts: terminals, ports, the tap and the sensor (PartType).
     private static final Map<PartType, DeferredItem<PartItem>> PARTS = new EnumMap<>(PartType.class);
 
@@ -184,5 +205,9 @@ public final class ModItems {
 
     public static DeferredItem<StorageDriveItem> storageDrive(StorageTier tier) {
         return DRIVES.get(tier);
+    }
+
+    public static DeferredItem<LtoTapeItem> tape(TapeGeneration generation) {
+        return TAPES.get(generation);
     }
 }

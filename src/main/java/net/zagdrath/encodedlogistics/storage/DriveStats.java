@@ -28,8 +28,8 @@ public record DriveStats(long bytesUsed, long bytesTotal, int typesUsed) {
             ByteBufCodecs.VAR_INT, DriveStats::typesUsed,
             DriveStats::new);
 
-    public static DriveStats empty(StorageTier tier) {
-        return new DriveStats(0, tier.bytes(), 0);
+    public static DriveStats empty(DriveCapacity capacity) {
+        return new DriveStats(0, capacity.bytes(), 0);
     }
 
     // How full the drive is, 0-1: bytes or types, whichever is further along.

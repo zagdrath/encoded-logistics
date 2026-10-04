@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -21,6 +22,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
@@ -58,21 +60,44 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
 
     // Server constructor (open() uses it; gametests too).
     public FabricationTerminalMenu(int containerId, Inventory inventory, BlockPos pos, Direction side, int rows) {
-        super(ModMenuTypes.FABRICATION_TERMINAL.get(), containerId, inventory, pos, side, rows, SECTION);
+        this(ModMenuTypes.FABRICATION_TERMINAL.get(), containerId, inventory, pos, side, rows);
+    }
+
+    // For a terminal elsewhere (the Rack Console's): it loads its grid itself (loadGrid) once it's set up.
+    protected FabricationTerminalMenu(MenuType<?> type, int containerId, Inventory inventory, BlockPos pos, Direction side, int rows) {
+        super(type, containerId, inventory, pos, side, rows, SECTION);
         craftSlots = new TransientCraftingContainer(this, 3, 3);
         int top = TOP + rows * ROW;
         for (int i = 0; i < 9; i++) {
             addSlot(new Slot(craftSlots, i, GRID_X + (i % 3) * 18, top + GRID_Y + (i / 3) * 18));
         }
         addSlot(new RefillingResultSlot(inventory.player, craftSlots, resultSlots, top + RESULT_Y));
-        FabricationTerminalPart part = part();
-        if (part != null) {
+        loadGrid();
+    }
+
+    // Fills the crafting grid from where it's kept.
+    protected final void loadGrid() {
+        NonNullList<ItemStack> grid = savedGrid();
+        if (grid != null) {
             loading = true;
             for (int i = 0; i < 9; i++) {
-                craftSlots.setItem(i, part.grid().get(i).copy());
+                craftSlots.setItem(i, grid.get(i).copy());
             }
             loading = false;
             slotsChanged(craftSlots);
+        }
+    }
+
+    // Where the grid is kept (server): the part's.
+    protected @Nullable NonNullList<ItemStack> savedGrid() {
+        FabricationTerminalPart part = part();
+        return part != null ? part.grid() : null;
+    }
+
+    protected void savedGridChanged() {
+        FabricationTerminalPart part = part();
+        if (part != null) {
+            part.gridChanged();
         }
     }
 
@@ -96,12 +121,12 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
         if (container != craftSlots || loading || !(player.level() instanceof ServerLevel level) || !(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
-        FabricationTerminalPart part = part();
-        if (part != null) {
+        NonNullList<ItemStack> grid = savedGrid();
+        if (grid != null) {
             for (int i = 0; i < 9; i++) {
-                part.grid().set(i, craftSlots.getItem(i).copy());
+                grid.set(i, craftSlots.getItem(i).copy());
             }
-            part.gridChanged();
+            savedGridChanged();
         }
         CraftingInput input = craftSlots.asCraftInput();
         ItemStack result = ItemStack.EMPTY;

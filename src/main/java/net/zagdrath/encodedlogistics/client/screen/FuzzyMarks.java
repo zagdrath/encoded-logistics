@@ -32,6 +32,13 @@ final class FuzzyMarks {
         }
     }
 
+    // One entry's mark, its item at (x, y) on screen.
+    static void mark(GuiGraphicsExtractor graphics, Font font, int code, int x, int y) {
+        if (code != PartFilter.FUZZY_NONE) {
+            graphics.text(font, "~", x + 11, y - 1, PartScreens.ACCENT, true);
+        }
+    }
+
     static void tooltip(ItemStack stack, int code, List<Component> lines) {
         lines.add(stack.getHoverName());
         Component setting;

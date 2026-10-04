@@ -20,5 +20,60 @@
     "name": "encodedlogistics:block/rack/rack_door_close2"
    }
   ]
+ },
+ "block.rack.console_slide_out": {
+  "subtitle": "subtitles.encodedlogistics.rack.console_slide_out",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/console_slide_out1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/console_slide_out2"
+   }
+  ]
+ },
+ "block.rack.console_slide_in": {
+  "subtitle": "subtitles.encodedlogistics.rack.console_slide_in",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/console_slide_in1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/console_slide_in2"
+   }
+  ]
+ },
+ "block.rack.console_hinge": {
+  "subtitle": "subtitles.encodedlogistics.rack.console_hinge",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/console_hinge1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/console_hinge2"
+   }
+  ]
+ },
+ "block.rack.picker_move": {
+  "subtitle": "subtitles.encodedlogistics.rack.picker_move",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/picker_move1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/picker_move2"
+   }
+  ]
+ },
+ "block.rack.tape_load": {
+  "subtitle": "subtitles.encodedlogistics.rack.tape_load",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/tape_load1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/tape_load2"
+   }
+  ]
  }
 }

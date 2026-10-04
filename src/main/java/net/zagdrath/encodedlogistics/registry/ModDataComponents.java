@@ -57,6 +57,10 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<HandheldLinkState>> HANDHELD_LINK_STATE = DATA_COMPONENTS.registerComponentType(
             "handheld_link_state", builder -> builder.persistent(HandheldLinkState.CODEC).networkSynchronized(HandheldLinkState.STREAM_CODEC));
 
+    // The Wireless Controller a Handheld Terminal was linked to (its id): it works anywhere through it.
+    public static final Supplier<DataComponentType<UUID>> WIRELESS_LINK = DATA_COMPONENTS.registerComponentType("wireless_link",
+            builder -> builder.persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC));
+
     // FE in a Handheld Terminal's battery.
     public static final Supplier<DataComponentType<Integer>> ENERGY = DATA_COMPONENTS.registerComponentType("energy",
             builder -> builder.persistent(Codec.intRange(0, Integer.MAX_VALUE)).networkSynchronized(ByteBufCodecs.VAR_INT));

@@ -1,0 +1,176 @@
+ENCODED LOGISTICS - HANDOFF: SERVER RACK DEVICES, BATCH 3 (Rack Console, Wireless Controller, Tape Libraries + tiering)
+====================================================================================================================
+Built on the implemented rack (repo 4212e5e: RackDeviceType with frames()/slots(), RackClientDevices panels +
+RenderExtra, RackDeviceInfo popup, lane pools). Art follows the rack-device conventions: 8 texels/px sheets, smooth
+shading, no flat fills, no speckle, unbranded. Previews were rendered from these files in the repo's rack.
+Paths are relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. API ADDITIONS
+=====================================================================================================
+1.1 6U devices. RackDeviceType allows 1..4 U; raise to 1..6. Sheet layout by size:
+      size <= 4: 128x128 - front (0,0)-(104,8n), back (0,32)-(104,32+8n), chassis (112,0)-(128,16), extras (0,64)
+      size 5-6 : 128x256 - front (0,0)-(104,8n), back (0,64)-(104,64+8n), chassis (112,0)-(128,16), extras (0,128)
+    RackClientDevices.frontQuad/backQuad and the elevation must take the back origin (32 or 64) and the sheet height
+    (128 or 256) from the type (add RackDeviceType#backOrigin() / #sheetHeight()). The 6U models' UVs are already
+    computed for 128x256; its _on/_fault strips declare frame width/height 128x256 in their .mcmeta.
+1.2 Animated multi-part devices. The Rack Console is drawn by a RenderExtra that submits its baked part models
+    (drawer, keyboard, lid) with PoseStack transforms; the device keeps a client-side animation state (open progress,
+    lid progress) synced from a server "open" flag. Register the part models as additional models.
+1.3 Device interaction. RackDevice#use(player, hit) for right-clicking a unit with the front door open (the console
+    uses it; others ignore it). The rack's existing raycast-to-U targeting supplies the device.
+1.4 Cold storage tier (section 4) - a NetworkStorage flag isCold(), recall requests, and the terminal/plan hooks.
+
+=====================================================================================================
+2. RACK CONSOLE - rack_console, 1U, 1 lane
+=====================================================================================================
+An Access Terminal built into the rack. Closed: slim drawer front, recessed pull handle, status LED.
+Right-click it with the front door open: the drawer slides out toward the player, then the screen folds up (spec:
+animation_specs.json -> rack_console). Again, or walking > 4 blocks away, or closing the door: reverses. Opening it
+when open (and the network online) opens the Access Terminal screen (screens/rack_console.json includes
+terminal/base_terminal.json - no new art).
+Models (models/block/rack_device/): rack_console(_on|_fault).json = static body (front face = dark drawer opening);
+  rack_console_drawer(_on|_fault).json = front plate + tray (+ LED glow); rack_console_keyboard.json;
+  rack_console_lid.json and rack_console_lid_on.json (adds the emissive screen, console_screen.png, 4 frames).
+  Lid hinge pivot (8, 0.625, 13.5) moves with the drawer; drawer travel -12.5 px on z; lid +100 deg about X.
+Textures: rack_console.png (front, back, chassis, drawer opening at (0,48)-(104,56)), rack_console_on/_fault.png
+  (+ .mcmeta), rack_console_parts.png (4 texels/px: keyboard (0,0)-(52,48), lid back (56,0)-(108,48), screen bezel
+  (0,52)-(52,100), tray (56,52)-(108,100)), rack_console_screen.png (64x256, 4 frames, terminal-style item grid).
+Sounds: block.rack.console_slide_out / console_slide_in / console_hinge (sounds/block/rack/*.ogg, 2 variants each).
+HUD: Network (Online / Offline); Items stored; Drawer (Open / Closed).
+
+=====================================================================================================
+3. WIRELESS CONTROLLER - wireless_controller, 1U, 1 lane
+=====================================================================================================
+The rack Relay Antenna with infinite range: Handheld Terminals linked to it work anywhere (OPEN 5: dimensions).
+Link: use a Handheld Terminal on the controller's unit (front door open) or on the rack -> stores the controller.
+Front: ears, cyan accent (distinct from the switches' mint), 6 ports, 4 gold antenna connectors, status LEDs
+(animate). Rear: power, 2 antenna connectors, fans.
+Panel (gui/rack/wireless_controller.png, screens/rack/wireless_controller.json): linked terminals (head, player name,
+dimension, connected dot, unlink X), summary line.
+HUD: Linked terminals; Connected (terminals open right now).
+
+=====================================================================================================
+4. TAPE LIBRARIES + AUTOMATIC TIERING
+=====================================================================================================
+4.1 Devices: tape_library_4u (4U, 24 tape slots, 2 drive bays), tape_library_6u (6U, 48 slots, 4 bays); 1 lane each.
+  Front: a large window onto the tape magazine (2 or 4 rows of 12 slots) with the picker gantry, an operator panel with
+  a small LCD (backlit + scrolling status when on) and 4 buttons, a mail slot, status LEDs. Rear: drive bays (sleds
+  drawn when an LTO Tape Drive is installed), power (6U: dual PSUs), network ports, fan.
+  Render extra (texel space, extras origin ex = 64 / 128):
+    - per occupied slot i: the tape edge sprite of its generation (k*5, ex)-(k*5+3, ex+9), k = 0 LTO-6 .. 4 LTO-10,
+      at lib slot (17 + 4*(i%12), 4 + 10*(i//12)); under it a 3x1 fill bar (30 + f*5, ex): f 0 <50%, 1 50-75, 2 75-<100,
+      3 full, 4 empty-tape (dark) - full-bright.
+    - the picker (carriage + cable + head sprites), animated per animation_specs.json -> tape_library; a tape being
+      moved is drawn on the head and hidden from its slot.
+    - per installed drive j (back face): the sled sprite (0, ex+12)-(24, ex+22) at bay (4 + 26*(j%2), 2 + 12*(j//2)),
+      and its LED at (+20, +1): idle (26, ex+12), reading (29, ex+12), writing (32, ex+12) - full-bright.
+  Panel (screens/rack/tape_library_4u|6u.json), two tabs (rack/switch/tab_*):
+    Magazine (gui/rack/tape_library.png): 8 x 3 visible tape slots (scroll: 24 / 48), a fill bar under each
+      (rack/tape/slot_fill_*), drive bays (2 or 4, accept lto_tape_drive) with status chips (rack/tape/drive_idle |
+      read | write | empty), cold-capacity bar, activity lines (Recalling: <item> x<n> / Archiving: N item types / Idle).
+    Policy (gui/rack/tape_library_policy.png): Archive after <n> <min|h|d>; Only above <x>% hot full [On/Off];
+      Keep hot - 9 ghost filters (Fuzzy Match rules allowed); Pinned (always hot) - 9 ghost items; "Hot storage N% full".
+  HUD: Tapes loaded N / slots; Cold used / total (bar); Drives busy / total; Activity (archiving / recalling / idle) -
+  also the status text.
+4.2 Items:
+  lto_tape_6 .. lto_tape_10 (capacity 8M / 32M / 128M / 512M / 2G, same byte model as Storage Drives), colour-coded
+    shells (black, purple, slate blue, green, burgundy) with the generation on the label. Data component: contents
+    (item -> count, last-access tick) + used bytes; tooltip Capacity / Used. Tag #encodedlogistics:lto_tapes.
+  lto_tape_drive: the drive sled.
+  Both: flat icon in GUIs, small 3D model in hand/on the ground (items/<id>.json selects on display_context;
+    models/item/<id>_3d.json).
+4.3 TIERING RULES
+  Tiers: HOT = Storage Drives in Drive Bays, NAS, SAN (instant). COLD = tapes in online Tape Libraries (slow).
+  Every hot stack records its last-access game tick (insert, extract, craft use, terminal view does NOT count).
+  ARCHIVING (each library, every 200 ticks, if it has an idle drive):
+    candidates = hot item types whose last access is older than the library's age threshold,
+      minus keep-hot filter matches, minus pinned items, minus anything a running crafting job has reserved;
+    only if the free-space trigger is off, or hot storage is above its % threshold;
+    oldest first: pick a tape with room (fullest-first to pack tapes), picker loads it into the drive, write time
+    passes (OPEN 1), the stack moves from hot to the tape; the tape stays in the drive while more archiving is queued,
+    then is returned to its slot.
+  RECALL: a request for a cold item (terminal extract, Egress Port, crafting plan, any network extraction):
+    1. the network serves what is hot first; the remainder becomes a recall on the library holding it (oldest tape
+       request first; one tape per idle drive - parallel recalls = drives);
+    2. picker -> load (load time) -> read time -> items go back to HOT storage (stamped as accessed now), then the
+       original request completes from hot storage;
+    3. if hot storage is full, recall what fits and report "Hot storage full" on the request.
+  Pinned items are recalled automatically if found on tape; changing keep-hot/pinned never archives immediately.
+  Libraries with no drive hold tapes but can't read or write them (their items show cold, recall reports "No drive").
+4.4 TERMINAL INTEGRATION (screens/terminal/cold_items.json)
+  - Cold items (any count on tape) list in every terminal with the tape badge (terminal/tape_badge, 7x5) at the slot's
+    bottom-left (offset 0,11), above the item, below the count. Count = hot + cold.
+  - Tooltip adds: (tooltip/tape icon) "On tape" (#7FB3F0) and "Recall in ~Ns" (estimated: queue + load + read);
+    while recalling: "Recalling... N%".
+  - Requesting a cold item shows the recall indicator on that slot: a progress bar along the slot bottom
+    (terminal/recall_track + recall_fill, offset 0,14) and the animated spinner (terminal/recall_spinner, 4 frames,
+    top-right); the items arrive when it completes (and drop to the cursor/inventory as a normal extract).
+  - Craft Plan: cold ingredients count as Have, shown in light blue with the tape marker (rack/craft_plan_recall) in
+    the Have column; the header shows "Recall +Ns" and the summary line "Includes tape recall: +Ns"; the job's ETA and
+    Job Status include the recall. Starting the job starts the recalls immediately.
+  Mockups: previews/terminal_cold_items.png, craft_plan_recall.png.
+
+=====================================================================================================
+5. STATES, POWER, LANES
+=====================================================================================================
+  off / on (_on: 4 frames, frametime 3) / fault (2-frame blink) as all rack devices; console screen and library LCD are
+  part of the _on glow. Power from the rack [config]: console 1 FE/t (+2 open), wireless 4, 4U library 3 (+8 per busy
+  drive, +4 picker moving), 6U 4 (same per drive). Lanes: 1 each (pooled by a switch as usual).
+
+=====================================================================================================
+6. RECIPES (data/encodedlogistics/recipe/*.json; adjust freely)
+=====================================================================================================
+  lto_tape_6           ferrite x2 + copper foil + string + circuit substrate
+  lto_tape_7           LTO-6 tape + ferrite x2 + logic die
+  lto_tape_8           LTO-7 tape + neodymium ingot x2 + memory die
+  lto_tape_9           LTO-8 tape + neodymium ingot x2 + tantalum capacitor
+  lto_tape_10          LTO-9 tape + gallium ingot x2 + processor die
+  lto_tape_drive       circuit substrate + logic die + memory die + neodymium ingot + iron
+  tape_library_4u      circuit substrate + processor die + piston x2 + glass + iron block
+  tape_library_6u      4U tape library + processor die + iron block + piston x2
+  rack_console         access terminal + circuit substrate + iron
+  wireless_controller  relay antenna + processor die + optical transceiver x2
+  (all shapeless; tapes upgrade by consuming the previous generation - contents carry over)
+  Tags: #encodedlogistics:lto_tapes (new); #encodedlogistics:rack_devices (REPLACES, + the 4 devices).
+
+=====================================================================================================
+7. FILES
+=====================================================================================================
+assets/encodedlogistics/
+  textures/block/rack_device/{rack_console,wireless_controller,tape_library_4u,tape_library_6u}.png (+ _on/_fault + .mcmeta)
+  textures/block/rack_device/rack_console_parts.png, rack_console_screen.png (+ .mcmeta)
+  models/block/rack_device/rack_console*.json, wireless_controller*.json, tape_library_4u*.json, tape_library_6u*.json
+  textures/item/{lto_tape_6..10, lto_tape_drive, rack_console, wireless_controller, tape_library_4u, tape_library_6u}.png
+  models/item/<id>.json (+ lto_*_3d.json); items/<id>.json
+  textures/gui/rack/{wireless_controller,tape_library,tape_library_policy}.png; gui/sprites/rack/tape/*,
+    gui/sprites/terminal/{tape_badge,recall_track,recall_fill,recall_spinner(+.mcmeta)}.png, gui/sprites/tooltip/tape.png,
+    gui/sprites/rack/craft_plan_recall.png
+  screens/rack/{wireless_controller,tape_library_4u,tape_library_6u}.json, screens/rack_console.json,
+    screens/terminal/cold_items.json
+  sounds/block/rack/{console_slide_out,console_slide_in,console_hinge,picker_move,tape_load}{1,2}.ogg
+  sounds.rack3.json -> MERGE into sounds.json;  lang/en_us.rack3.json -> MERGE into en_us.json
+data/encodedlogistics/recipe/*.json, tags/item/lto_tapes.json (new), tags/item/rack_devices.json (REPLACES)
+blockbench/ rack_console_{body,drawer,keyboard,lid}.bbmodel (group origins = pivots), rack_device_{wireless_controller,
+  tape_library_4u,tape_library_6u}.bbmodel, lto_tape_6..10.bbmodel, lto_tape_drive.bbmodel
+animation_specs.json - console drawer/lid and picker paths, timing, easing, sounds
+tools/ devices3.py, export3.py, gui3.py, sound3.py, preview3.py, gui3_preview.py + shared helpers
+previews/ device_textures, item_icons, console_parts, rack_console_open, rack_batch3_front, tape_library_close,
+  rack_batch3_rear, gui_wireless_controller, gui_tape_library_magazine, gui_tape_library_policy, terminal_cold_items,
+  craft_plan_recall, hud_mockups
+
+=====================================================================================================
+8. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+1. Timing: load 60 ticks (picker), read/write 2 s + 1 s per 4K items moved; newer generations are faster - each
+   generation above LTO-6 cuts read/write time by 15% (LTO-10 ~ 0.52x).
+2. Defaults: archive after 2 hours (game time) untouched; free-space trigger ON at 80% hot full.
+3. Removing a library or pulling a tape: tapes keep their contents (data component) - a pulled tape or a broken
+   library's tapes become an OFFLINE ARCHIVE (items vanish from terminals); re-inserting a tape into any library
+   brings them back. Ejecting through the mail slot (operator button) is the friendly path. Nothing is ever deleted.
+4. Several libraries on one network form one cold pool; archiving picks the library with the most free tape space,
+   recall uses whichever library holds the item.
+5. Wireless Controller: works across dimensions [config, default on]; more than one per network allowed (handhelds link
+   to a specific controller; any online one on the network can serve it [config]).
+6. Rack Console Fabrication mode: yes, as an option - a crafting-grid toggle in its screen once a Memory Die is applied
+   to the console (shift-use), mirroring the Fabrication Terminal upgrade path.

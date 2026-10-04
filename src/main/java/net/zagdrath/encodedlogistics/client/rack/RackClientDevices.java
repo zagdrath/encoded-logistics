@@ -31,7 +31,9 @@ import net.zagdrath.encodedlogistics.client.screen.RouterPanel;
 import net.zagdrath.encodedlogistics.client.screen.ServerPanel;
 import net.zagdrath.encodedlogistics.client.screen.StoragePanel;
 import net.zagdrath.encodedlogistics.client.screen.SwitchPanel;
+import net.zagdrath.encodedlogistics.client.screen.TapeLibraryPanel;
 import net.zagdrath.encodedlogistics.client.screen.UpsPanel;
+import net.zagdrath.encodedlogistics.client.screen.WirelessControllerPanel;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -43,14 +45,19 @@ import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 // The client side of each rack device type, by type: its settings panel in the rack's screen (none: picking it just
 // shows its name and status) and anything its renderer draws over its model.
 //
-// Render extras draw on the device's front or back, given in texels of its 128x128 texture (8 texels a pixel, the front
-// from (0,0) and the back from (0,32), each 104 texels across, x running right to left across the model on both faces,
-// as their u does).
+// Render extras draw on the device's front or back, given in texels of its texture (8 texels a pixel, 128 across and
+// RackDeviceType#sheetHeight() tall: the front from (0,0) and the back from (0,32) - (0,64) for 5U and 6U - each 104
+// texels across, x running right to left across the model on both faces, as their u does).
 public final class RackClientDevices {
     // What a renderer draws besides the device's model: capture() takes what it needs from the device (on the client
     // copy, when the frame is extracted), submit() draws it in the device's space (its bottom at y = 0).
     public interface RenderExtra {
         int[] capture(RackDevice device);
+
+        // For extras that animate between ticks.
+        default int[] capture(RackDevice device, float partialTick) {
+            return capture(device);
+        }
 
         void submit(RackDeviceType type, RackDeviceInfo.Status status, int[] data, PoseStack poseStack, SubmitNodeCollector collector, int light);
     }
@@ -75,6 +82,12 @@ public final class RackClientDevices {
         EXTRAS.put(RackDeviceType.UPS, new UpsDisplay());
         EXTRAS.put(RackDeviceType.NAS, new DriveBays(false));
         EXTRAS.put(RackDeviceType.SAN, new DriveBays(true));
+        EXTRAS.put(RackDeviceType.RACK_CONSOLE, new RackConsoleRender());
+        EXTRAS.put(RackDeviceType.TAPE_LIBRARY_4U, new TapeLibraryRender());
+        EXTRAS.put(RackDeviceType.TAPE_LIBRARY_6U, new TapeLibraryRender());
+        PANELS.put(RackDeviceType.WIRELESS_CONTROLLER, WirelessControllerPanel::new);
+        PANELS.put(RackDeviceType.TAPE_LIBRARY_4U, TapeLibraryPanel::new);
+        PANELS.put(RackDeviceType.TAPE_LIBRARY_6U, TapeLibraryPanel::new);
     }
 
     private RackClientDevices() {}
@@ -99,7 +112,7 @@ public final class RackClientDevices {
     }
 
     // A quad over the front texels (x, y, w, h) of a device size units tall, showing the texels (u, v, w', h') of a sprite
-    // (both in 128ths), tinted.
+    // (its texture's texels), tinted.
     static void frontQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
             float u, float v, float uw, float vh, int color, int light) {
         frontQuad(buffer, pose, size, x, y, w, h, sprite, u, v, uw, vh, color, light, FRONT_Z);
@@ -110,8 +123,8 @@ public final class RackClientDevices {
             float u, float v, float uw, float vh, int color, int light, float frontZ) {
         float x1 = (RIGHT_X - x / 8) / 16, x0 = (RIGHT_X - (x + w) / 8) / 16;
         float y1 = (size - y / 8) / 16, y0 = (size - (y + h) / 8) / 16;
-        float z = frontZ / 16;
-        float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / 128), v1 = sprite.getV((v + vh) / 128);
+        float z = frontZ / 16, sheet = sheetHeight(size);
+        float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / sheet), v1 = sprite.getV((v + vh) / sheet);
         vertex(buffer, pose, x1, y1, z, u0, v0, color, light);
         vertex(buffer, pose, x1, y0, z, u0, v1, color, light);
         vertex(buffer, pose, x0, y0, z, u1, v1, color, light);
@@ -127,15 +140,26 @@ public final class RackClientDevices {
                 .setNormal(pose, 0, 0, normalZ);
     }
 
-    // The same on the back face (texels from (0,32), the face just behind the chassis's back at z 29.25).
+    // A device's texture height and where its back face starts on it (RackDeviceType#sheetHeight, #backOrigin).
+    static float sheetHeight(int size) {
+        return size > 4 ? 256 : 128;
+    }
+
+    static float backOrigin(int size) {
+        return size > 4 ? 64 : 32;
+    }
+
+    // The same on the back face (y in the texture's texels, the back from backOrigin; the face just behind the chassis's
+    // back at z 29.25).
     private static final float BACK_Z = 29.28F;
 
     static void backQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
             float u, float v, float uw, float vh, int color, int light) {
         float x1 = (RIGHT_X - x / 8) / 16, x0 = (RIGHT_X - (x + w) / 8) / 16;
-        float y1 = (size - (y - 32) / 8) / 16, y0 = (size - (y + h - 32) / 8) / 16;
+        float back = backOrigin(size), sheet = sheetHeight(size);
+        float y1 = (size - (y - back) / 8) / 16, y0 = (size - (y + h - back) / 8) / 16;
         float z = BACK_Z / 16;
-        float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / 128), v1 = sprite.getV((v + vh) / 128);
+        float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / sheet), v1 = sprite.getV((v + vh) / sheet);
         // South-facing: from the low x end; the texel at x (u0) sits at the high x end.
         vertex(buffer, pose, x0, y1, z, u1, v0, color, light, 1);
         vertex(buffer, pose, x0, y0, z, u1, v1, color, light, 1);

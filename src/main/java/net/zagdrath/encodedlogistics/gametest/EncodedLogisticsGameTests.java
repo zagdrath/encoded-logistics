@@ -104,6 +104,12 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_segments", Rack2GameTests::segments);
         TESTS.put("rack_router_wan", Rack2GameTests::routerWan);
         TESTS.put("rack_route_filters", Rack2GameTests::routeFilters);
+        TESTS.put("rack_tape_archives", Rack3GameTests::tapeArchives);
+        TESTS.put("rack_tape_recalls", Rack3GameTests::tapeRecalls);
+        TESTS.put("rack_plan_with_tape", Rack3GameTests::planWithTape);
+        TESTS.put("rack_wireless_controller", Rack3GameTests::wirelessController);
+        TESTS.put("rack_console", Rack3GameTests::rackConsole);
+        TESTS.put("rack_six_units_and_upgrades", Rack3GameTests::sixUnitsAndUpgrades);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));

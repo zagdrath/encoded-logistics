@@ -71,7 +71,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         }
         for (RackDevice device : rack.devices()) {
             RackClientDevices.RenderExtra extra = RackClientDevices.extra(device.type());
-            state.devices.add(new DeviceDraw(device.type(), device.u(), device.shownStatus(), extra != null ? extra.capture(device) : NONE));
+            state.devices.add(new DeviceDraw(device.type(), device.u(), device.shownStatus(), extra != null ? extra.capture(device, partialTicks) : NONE));
         }
     }
 

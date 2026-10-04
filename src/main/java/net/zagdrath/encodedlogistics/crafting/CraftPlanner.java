@@ -24,50 +24,68 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // which schematics, how many times), and what's missing. The requested item itself is always made. Each ingredient is
 // taken first from what the job's own crafts leave over (four planks from a log when two are needed), then from storage,
 // and the rest is made with the first schematic that outputs it - or is missing when there's none, or when making it
-// would need itself.
+// would need itself. What's on tape counts as stored, after what's hot: the plan takes it as a recall.
 public final class CraftPlanner {
     private static final int MAX_DEPTH = 32, MAX_LINES = 2_000;
 
     // One node of the tree: its depth, the item, how many of it the node needs, and of those how many are in storage
-    // (have), will be made (make, which can be more than needed when a craft makes several) and are missing.
-    public record Line(int depth, ItemKey key, long have, long make, long missing) {
+    // (have; of them, cold are on tape), will be made (make, which can be more than needed when a craft makes several)
+    // and are missing.
+    public record Line(int depth, ItemKey key, long have, long make, long missing, long cold) {
+        public Line(int depth, ItemKey key, long have, long make, long missing) {
+            this(depth, key, have, make, missing, 0);
+        }
+
         public static final StreamCodec<RegistryFriendlyByteBuf, Line> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, Line::depth,
                 ItemKey.STREAM_CODEC, Line::key,
                 ByteBufCodecs.VAR_LONG, Line::have,
                 ByteBufCodecs.VAR_LONG, Line::make,
                 ByteBufCodecs.VAR_LONG, Line::missing,
+                ByteBufCodecs.VAR_LONG, Line::cold,
                 Line::new);
     }
 
-    // crafts: each schematic and how many times it runs; take: what comes out of storage when the job starts; memory:
-    // the job memory it needs (every node's amount added up); missing: how many different items are missing.
-    public record Plan(ItemKey target, long amount, List<Line> lines, Map<Schematic, Long> crafts, Map<ItemKey, Long> take, long memory,
-            int missing) {
+    // crafts: each schematic and how many times it runs; take: what comes out of storage when the job starts; recall:
+    // what comes back from tape for it (recallTicks: how long that's expected to take); memory: the job memory it needs
+    // (every node's amount added up); missing: how many different items are missing.
+    public record Plan(ItemKey target, long amount, List<Line> lines, Map<Schematic, Long> crafts, Map<ItemKey, Long> take, Map<ItemKey, Long> recall,
+            int recallTicks, long memory, int missing) {
         public boolean complete() {
             return missing == 0 && !crafts.isEmpty();
         }
+
+        public Plan withRecallTicks(int ticks) {
+            return new Plan(target, amount, lines, crafts, take, recall, ticks, memory, missing);
+        }
     }
 
-    private final Map<ItemKey, Long> stored;
+    private final Map<ItemKey, Long> stored, cold;
     private final Map<ItemKey, List<Schematic>> recipes;
     private final Map<ItemKey, Long> leftover = new HashMap<>();
-    private final Map<ItemKey, Long> take = new LinkedHashMap<>();
+    private final Map<ItemKey, Long> take = new LinkedHashMap<>(), recall = new LinkedHashMap<>();
     private final Map<Schematic, Long> crafts = new LinkedHashMap<>();
     private final List<Line> lines = new ArrayList<>();
     private final Set<ItemKey> missingKeys = new HashSet<>();
     private long memory;
 
-    private CraftPlanner(Map<ItemKey, Long> stored, Map<ItemKey, List<Schematic>> recipes) {
+    private CraftPlanner(Map<ItemKey, Long> stored, Map<ItemKey, Long> cold, Map<ItemKey, List<Schematic>> recipes) {
         this.stored = new HashMap<>(stored);
+        this.cold = new HashMap<>(cold);
         this.recipes = recipes;
     }
 
-    // stored: what the network holds; recipes: every schematic on the network by what it outputs.
+    // stored: what the network holds hot; recipes: every schematic on the network by what it outputs.
     public static Plan plan(Map<ItemKey, Long> stored, Map<ItemKey, List<Schematic>> recipes, ItemKey target, long amount) {
-        CraftPlanner planner = new CraftPlanner(stored, recipes);
+        return plan(stored, Map.of(), recipes, target, amount);
+    }
+
+    // cold: what's on tape.
+    public static Plan plan(Map<ItemKey, Long> stored, Map<ItemKey, Long> cold, Map<ItemKey, List<Schematic>> recipes, ItemKey target, long amount) {
+        CraftPlanner planner = new CraftPlanner(stored, cold, recipes);
         planner.node(target, amount, 0, new ArrayList<>());
-        return new Plan(target, amount, List.copyOf(planner.lines), planner.crafts, planner.take, planner.memory, planner.missingKeys.size());
+        return new Plan(target, amount, List.copyOf(planner.lines), planner.crafts, planner.take, planner.recall, 0, planner.memory,
+                planner.missingKeys.size());
     }
 
     // Every schematic among these, by each item it outputs, in the order given.
@@ -92,7 +110,7 @@ public final class CraftPlanner {
             return;
         }
         lines.add(null);
-        long need = amount, have = 0;
+        long need = amount, have = 0, fromCold = 0;
         if (depth > 0) {
             long fromLeftover = Math.min(need, leftover.getOrDefault(key, 0L));
             leftover.merge(key, -fromLeftover, Long::sum);
@@ -103,16 +121,22 @@ public final class CraftPlanner {
                 take.merge(key, fromStorage, Long::sum);
             }
             need -= fromStorage;
-            have = fromLeftover + fromStorage;
+            fromCold = Math.min(need, cold.getOrDefault(key, 0L));
+            if (fromCold > 0) {
+                cold.merge(key, -fromCold, Long::sum);
+                recall.merge(key, fromCold, Long::sum);
+            }
+            need -= fromCold;
+            have = fromLeftover + fromStorage + fromCold;
         }
         if (need <= 0) {
-            lines.set(at, new Line(depth, key, have, 0, 0));
+            lines.set(at, new Line(depth, key, have, 0, 0, fromCold));
             return;
         }
         Schematic schematic = depth < MAX_DEPTH && !path.contains(key) ? schematicFor(key) : null;
         if (schematic == null) {
             missingKeys.add(key);
-            lines.set(at, new Line(depth, key, have, 0, need));
+            lines.set(at, new Line(depth, key, have, 0, need, fromCold));
             return;
         }
         long perRun = schematic.outputCount(key);
@@ -126,7 +150,7 @@ public final class CraftPlanner {
                 leftover.merge(output.getKey(), extra, Long::sum);
             }
         }
-        lines.set(at, new Line(depth, key, have, made, 0));
+        lines.set(at, new Line(depth, key, have, made, 0, fromCold));
         path.add(key);
         for (Map.Entry<ItemKey, Long> input : schematic.inputTotals().entrySet()) {
             node(input.getKey(), input.getValue() * runs, depth + 1, path);

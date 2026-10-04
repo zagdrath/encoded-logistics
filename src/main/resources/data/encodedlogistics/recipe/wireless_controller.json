@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:relay_antenna",
+  "encodedlogistics:processor_die",
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:optical_transceiver"
+ ],
+ "result": {
+  "id": "encodedlogistics:wireless_controller",
+  "count": 1
+ }
+}

@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.blockentity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -226,6 +227,11 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (frontOpen != open) {
             frontOpen = open;
             doorMoved(open);
+            if (level != null && !level.isClientSide()) {
+                for (RackDevice device : List.copyOf(devices.values())) {
+                    device.frontDoorChanged(open);
+                }
+            }
         }
     }
 
@@ -439,6 +445,9 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         rack.lastRearTicks = rack.rearTicks;
         rack.frontTicks = Math.clamp(rack.frontTicks + (rack.frontOpen ? 1 : -1), 0, DOOR_TICKS);
         rack.rearTicks = Math.clamp(rack.rearTicks + (rack.rearOpen ? 1 : -1), 0, DOOR_TICKS);
+        for (RackDevice device : rack.devices.values()) {
+            device.clientTick();
+        }
     }
 
     private void syncNow() {
@@ -579,9 +588,15 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             rearTicks = lastRearTicks = rearOpen ? DOOR_TICKS : 0;
         }
         online = input.getBooleanOr("online", false);
+        // A device still at its unit keeps its client copy (and so its animations).
+        Map<Integer, RackDevice> old = new HashMap<>(devices);
         devices.clear();
         for (ValueInput child : input.childrenListOrEmpty("devices")) {
             RackDevice device = read(child);
+            RackDevice kept = device != null ? old.get(device.u()) : null;
+            if (kept != null && kept.type() == device.type()) {
+                device = kept;
+            }
             if (device != null) {
                 device.setOnline(child.getBooleanOr("online", false));
                 device.setShownStatus(RackDeviceInfo.Status.byId(child.getIntOr("status", 1)));

@@ -1,0 +1,46 @@
+{
+ "$comment": "Cold (on-tape) items in terminals and the Craft Plan",
+ "slot": {
+  "tape_badge": {
+   "sprite": "terminal/tape_badge",
+   "offset": [
+    0,
+    11
+   ],
+   "note": "bottom-left of the 16x16 item; drawn above the item, below the count"
+  },
+  "recall": {
+   "track": "terminal/recall_track",
+   "fill": "terminal/recall_fill",
+   "offset": [
+    0,
+    14
+   ],
+   "spinner": "terminal/recall_spinner",
+   "spinner_offset": [
+    8,
+    0
+   ],
+   "note": "while a recall the player asked for is running: progress bar across the slot bottom + spinner top-right"
+  }
+ },
+ "tooltip": {
+  "icon": "tooltip/tape",
+  "lines": [
+   "tooltip.encodedlogistics.tape.on_tape",
+   "tooltip.encodedlogistics.tape.recall_eta",
+   "tooltip.encodedlogistics.tape.recalling"
+  ],
+  "colors": {
+   "on_tape": "#7FB3F0",
+   "eta": "TEXT_MUTED",
+   "recalling": "ACCENT"
+  }
+ },
+ "craft_plan": {
+  "row_marker": "rack/craft_plan_recall",
+  "marker_column": "stored",
+  "summary_line": "gui.encodedlogistics.craft.recall_total",
+  "note": "cold items count as Have, marked with the tape icon; the plan adds a \"Includes tape recall: +Ns\" line and the job ETA includes it"
+ }
+}

@@ -8,13 +8,15 @@ package net.zagdrath.encodedlogistics.client.screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.menu.RackConsoleMenu;
 
-// The Access Terminal: the terminal kit as screens/access_terminal.json lays it out, nothing added.
+// The Access Terminal: the terminal kit as screens/access_terminal.json lays it out, nothing added. A Rack Console's
+// terminal is the same, laid out by screens/rack_console.json.
 public class AccessTerminalScreen extends AbstractTerminalScreen<AccessTerminalMenu> {
     public static final String LAYOUT = "access_terminal";
 
     public AccessTerminalScreen(AccessTerminalMenu menu, Inventory inventory, Component title) {
-        this(menu, inventory, TerminalLayout.load(LAYOUT));
+        this(menu, inventory, TerminalLayout.load(menu instanceof RackConsoleMenu ? "rack_console" : LAYOUT));
     }
 
     private AccessTerminalScreen(AccessTerminalMenu menu, Inventory inventory, TerminalLayout layout) {

@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
+import net.zagdrath.encodedlogistics.menu.RackConsoleFabricationMenu;
 
 // The Fabrication Terminal: the terminal kit with its crafting section (screens/fabrication_terminal.json and
 // terminal/crafting_section.json) - the grid and result are the menu's slots; this adds the clear button.
@@ -21,7 +22,7 @@ public class FabricationTerminalScreen extends AbstractTerminalScreen<Fabricatio
     private static final int CLEAR_SIZE = 9;
 
     public FabricationTerminalScreen(FabricationTerminalMenu menu, Inventory inventory, Component title) {
-        this(menu, inventory, TerminalLayout.load(LAYOUT));
+        this(menu, inventory, TerminalLayout.load(menu instanceof RackConsoleFabricationMenu ? "rack_console_fabrication" : LAYOUT));
     }
 
     private FabricationTerminalScreen(FabricationTerminalMenu menu, Inventory inventory, TerminalLayout layout) {

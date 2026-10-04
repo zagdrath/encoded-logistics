@@ -32,12 +32,15 @@ import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
 // The crafting plan (screens/craft_plan.json): the ingredient tree (click the arrow to fold a branch) with, for each
 // item, how many are in storage (Have), will be made (Make) and are missing (Miss); how many are missing, top right;
 // the Scheduler to use (click to cycle: Auto or one of the network's); Start (only with nothing missing and a Scheduler
-// with room for the job) and Cancel, back to the terminal.
+// with room for the job) and Cancel, back to the terminal. What's on tape counts as Have, in light blue with the tape
+// marker (terminal/cold_items.json); the recall time shows top right and under the tree.
 public class CraftPlanScreen extends Screen {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/craft_plan.png");
     private static final Identifier EXPAND = EncodedLogistics.id("common/tree_expand"), COLLAPSE = EncodedLogistics.id("common/tree_collapse"),
             HIGHLIGHT = EncodedLogistics.id("common/row_highlight"), THUMB = EncodedLogistics.id("controller/scroll_thumb"),
-            THUMB_DISABLED = EncodedLogistics.id("controller/scroll_thumb_disabled");
+            THUMB_DISABLED = EncodedLogistics.id("controller/scroll_thumb_disabled"), RECALL = EncodedLogistics.id("rack/craft_plan_recall");
+    // terminal/cold_items.json: on tape.
+    public static final int TAPE_BLUE = 0xFF7FB3F0;
     private static final int WIDTH = 220, HEIGHT = 196, TREE_X = 10, TREE_Y = 44, ROWS = 6, ROW = 18, INDENT = 8, MAX_INDENT = 6;
     private static final int HAVE_X = 112, MAKE_X = 142, MISS_X = 172, HEADER_Y = 31, TREE_WIDTH = 192;
     private static final int SCROLL_X = 205, SCROLL_Y = 29, SCROLL_H = 130, THUMB_W = 6, THUMB_H = 15;
@@ -132,7 +135,13 @@ public class CraftPlanScreen extends Screen {
         graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, left, top, 0.0F, 0.0F, WIDTH, HEIGHT, 256, 256);
         graphics.text(font, title, left + 8, top + 5, PartScreens.TEXT, false);
         Component status = status();
-        graphics.text(font, status, left + 212 - font.width(status), top + 18, plan.canStart() ? PartScreens.ACCENT : PartScreens.ERROR, false);
+        boolean recall = plan.canStart() && plan.recallTicks() > 0;
+        graphics.text(font, status, left + 212 - font.width(status), top + 18, recall ? TAPE_BLUE : plan.canStart() ? PartScreens.ACCENT : PartScreens.ERROR,
+                false);
+        if (plan.recallTicks() > 0) {
+            graphics.text(font, Component.translatable("gui.encodedlogistics.craft.recall_total", seconds(plan.recallTicks(), true)), left + TREE_X,
+                    top + TREE_Y + ROWS * ROW + 3, TAPE_BLUE, false);
+        }
         graphics.text(font, Component.translatable("gui.encodedlogistics.craft.stored"), left + HAVE_X, top + HEADER_Y, PartScreens.TEXT_MUTED, false);
         graphics.text(font, Component.translatable("gui.encodedlogistics.craft.to_craft"), left + MAKE_X, top + HEADER_Y, PartScreens.TEXT_MUTED, false);
         graphics.text(font, Component.translatable("gui.encodedlogistics.craft.missing"), left + MISS_X, top + HEADER_Y, PartScreens.TEXT_MUTED, false);
@@ -154,7 +163,10 @@ public class CraftPlanScreen extends Screen {
             if (room > 8) {
                 graphics.text(font, font.plainSubstrByWidth(line.key().stack().getHoverName().getString(), room), nameX, y + 5, PartScreens.TEXT, false);
             }
-            number(graphics, line.have(), left + HAVE_X, y + 5, PartScreens.TEXT);
+            if (line.cold() > 0) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, RECALL, left + HAVE_X - 12, y + 4, 9, 9);
+            }
+            number(graphics, line.have(), left + HAVE_X, y + 5, line.cold() > 0 ? TAPE_BLUE : PartScreens.TEXT);
             number(graphics, line.make(), left + MAKE_X, y + 5, PartScreens.ACCENT);
             number(graphics, line.missing(), left + MISS_X, y + 5, PartScreens.ERROR);
         }
@@ -189,7 +201,17 @@ public class CraftPlanScreen extends Screen {
         if (!plan.room()) {
             return Component.translatable("gui.encodedlogistics.craft.no_room");
         }
+        if (plan.recallTicks() > 0) {
+            return Component.translatable("gui.encodedlogistics.craft.recall_short", seconds(plan.recallTicks(), false));
+        }
         return Component.translatable("gui.encodedlogistics.craft.ready");
+    }
+
+    // "14s" ("14 s" spaced), "2m 05s" past a minute; ticks rounded up to seconds.
+    public static String seconds(int ticks, boolean spaced) {
+        int seconds = (ticks + 19) / 20;
+        String space = spaced ? " " : "";
+        return seconds < 60 ? seconds + space + "s" : String.format(Locale.ROOT, "%dm%s%02ds", seconds / 60, " ", seconds % 60);
     }
 
     private Component schedulerText() {
@@ -211,7 +233,13 @@ public class CraftPlanScreen extends Screen {
         int row = rowAt(mouseX, mouseY);
         List<Integer> shown = visible();
         if (row >= 0 && scroll + row < shown.size()) {
-            graphics.setTooltipForNextFrame(font, lines().get(shown.get(scroll + row)).key().stack(), mouseX, mouseY);
+            CraftPlanner.Line line = lines().get(shown.get(scroll + row));
+            if (line.cold() > 0 && mouseX >= left + HAVE_X - 12) {
+                graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("tooltip.encodedlogistics.tape.on_tape").withColor(TAPE_BLUE),
+                        Component.literal(String.format(Locale.ROOT, "%,d", line.cold())).withColor(PartScreens.TEXT_MUTED)), mouseX, mouseY);
+                return;
+            }
+            graphics.setTooltipForNextFrame(font, line.key().stack(), mouseX, mouseY);
             return;
         }
         String[] columns = { "stored", "to_craft", "missing" };

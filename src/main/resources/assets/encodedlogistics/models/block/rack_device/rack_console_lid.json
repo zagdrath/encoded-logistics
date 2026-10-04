@@ -1,0 +1,81 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "tex": "encodedlogistics:block/rack_device/rack_console",
+  "parts": "encodedlogistics:block/rack_device/rack_console_parts",
+  "screen": "encodedlogistics:block/rack_device/rack_console_screen",
+  "particle": "encodedlogistics:block/rack_device/rack_console"
+ },
+ "elements": [
+  {
+   "name": "lid",
+   "from": [
+    2.25,
+    0.5,
+    2
+   ],
+   "to": [
+    13.75,
+    0.75,
+    13.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      7.0,
+      0.0,
+      13.5,
+      6.0
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      0.0,
+      6.5,
+      6.5,
+      12.5
+     ]
+    },
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    }
+   }
+  }
+ ]
+}

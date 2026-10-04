@@ -1,0 +1,14 @@
+{
+ "type": "encodedlogistics:tape_upgrade",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:lto_tape_9",
+  "encodedlogistics:gallium_ingot",
+  "encodedlogistics:gallium_ingot",
+  "encodedlogistics:processor_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:lto_tape_10",
+  "count": 1
+ }
+}

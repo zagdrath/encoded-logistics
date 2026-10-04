@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:access_terminal",
+  "encodedlogistics:circuit_substrate",
+  "minecraft:iron_ingot"
+ ],
+ "result": {
+  "id": "encodedlogistics:rack_console",
+  "count": 1
+ }
+}

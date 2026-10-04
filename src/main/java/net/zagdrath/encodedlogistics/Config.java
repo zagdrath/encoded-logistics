@@ -398,6 +398,63 @@ public class Config {
             .comment("FE per tick each Storage Drive in a NAS or SAN drains.")
             .defineInRange("rackDriveDrain", 0.5, 0.0, 1_000.0);
 
+    // Batch 3: the Rack Console, the Wireless Controller, Tape Libraries.
+    public static final ModConfigSpec.DoubleValue RACK_CONSOLE_DRAIN = BUILDER
+            .comment("FE per tick a Rack Console drains while its network runs.")
+            .defineInRange("rackConsoleDrain", 1.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue RACK_CONSOLE_OPEN_DRAIN = BUILDER
+            .comment("FE per tick a Rack Console drains on top of that while its drawer is out.")
+            .defineInRange("rackConsoleOpenDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue WIRELESS_CONTROLLER_DRAIN = BUILDER
+            .comment("FE per tick a Wireless Controller drains while its network runs.")
+            .defineInRange("wirelessControllerDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.BooleanValue WIRELESS_CROSS_DIMENSION = BUILDER
+            .comment("Whether Handheld Terminals linked to a Wireless Controller work in other dimensions too.")
+            .define("wirelessCrossDimension", true);
+
+    public static final ModConfigSpec.BooleanValue WIRELESS_ANY_CONTROLLER = BUILDER
+            .comment("Whether any online Wireless Controller on the network serves a linked Handheld Terminal (else only the one it was linked to).")
+            .define("wirelessAnyController", true);
+
+    public static final ModConfigSpec.DoubleValue TAPE_LIBRARY_4U_DRAIN = BUILDER
+            .comment("FE per tick a 4U Tape Library drains while its network runs, idle.")
+            .defineInRange("tapeLibrary4uDrain", 3.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue TAPE_LIBRARY_6U_DRAIN = BUILDER
+            .comment("FE per tick a 6U Tape Library drains while its network runs, idle.")
+            .defineInRange("tapeLibrary6uDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue TAPE_DRIVE_BUSY_DRAIN = BUILDER
+            .comment("FE per tick a Tape Library drains for each of its drives reading or writing.")
+            .defineInRange("tapeDriveBusyDrain", 8.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue TAPE_PICKER_DRAIN = BUILDER
+            .comment("FE per tick a Tape Library drains while its picker moves.")
+            .defineInRange("tapePickerDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue TAPE_BASE_TICKS = BUILDER
+            .comment("Ticks an LTO-6 tape takes to read or write, before the items (each newer generation is 15% faster).")
+            .defineInRange("tapeBaseTicks", 40, 1, 72_000);
+
+    public static final ModConfigSpec.IntValue TAPE_TICKS_PER_4K = BUILDER
+            .comment("Ticks an LTO-6 tape takes to read or write each 4,096 items.")
+            .defineInRange("tapeTicksPer4k", 20, 0, 72_000);
+
+    public static final ModConfigSpec.IntValue TAPE_ARCHIVE_INTERVAL = BUILDER
+            .comment("Ticks between a Tape Library's looks for items to archive.")
+            .defineInRange("tapeArchiveInterval", 200, 20, 72_000);
+
+    public static final ModConfigSpec.IntValue TAPE_DEFAULT_AGE_HOURS = BUILDER
+            .comment("A new Tape Library's archive age: hours (game time) an item goes untouched before it's archived.")
+            .defineInRange("tapeDefaultAgeHours", 2, 1, 9_999);
+
+    public static final ModConfigSpec.IntValue TAPE_DEFAULT_HOT_PERCENT = BUILDER
+            .comment("A new Tape Library's free-space trigger: it only archives while hot storage is fuller than this (%).")
+            .defineInRange("tapeDefaultHotPercent", 80, 0, 100);
+
     static {
         BUILDER.pop();
     }

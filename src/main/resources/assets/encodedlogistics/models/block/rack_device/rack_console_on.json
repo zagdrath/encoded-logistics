@@ -1,0 +1,81 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "tex": "encodedlogistics:block/rack_device/rack_console",
+  "parts": "encodedlogistics:block/rack_device/rack_console_parts",
+  "screen": "encodedlogistics:block/rack_device/rack_console_screen",
+  "particle": "encodedlogistics:block/rack_device/rack_console"
+ },
+ "elements": [
+  {
+   "name": "chassis",
+   "from": [
+    1.55,
+    0,
+    1.75
+   ],
+   "to": [
+    14.45,
+    1,
+    29.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#tex",
+     "uv": [
+      0.0,
+      6.0,
+      13.0,
+      7.0
+     ]
+    },
+    "south": {
+     "texture": "#tex",
+     "uv": [
+      13.0,
+      4.0,
+      0.0,
+      5.0
+     ]
+    },
+    "east": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "down": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    }
+   }
+  }
+ ]
+}

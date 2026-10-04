@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.block;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -46,6 +47,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.BlockNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
@@ -188,13 +190,22 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
 
     // --- Using it ---
 
-    // A rack device used on the open front mounts at the unit looked at (RackTargeting).
+    // A rack device used on the open front mounts at the unit looked at (RackTargeting). Any other item goes to the
+    // device at that unit (RackDevice#useItem), then to the others in the rack (a Handheld Terminal used anywhere on the
+    // rack links to its Wireless Controller).
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         RackDeviceType type = RackDeviceType.of(stack);
         RackBlockEntity rack = rack(level, pos, state);
-        if (type == null || rack == null || RackGeometry.face(hit.getDirection(), state.getValue(FACING)) != RackGeometry.Face.FRONT) {
+        if (rack == null) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        boolean front = RackGeometry.face(hit.getDirection(), state.getValue(FACING)) == RackGeometry.Face.FRONT;
+        if (type == null && !stack.isEmpty()) {
+            return useItemOnDevice(stack, rack, level, player, hit, front);
+        }
+        if (type == null || !front) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         RackTargeting.Target target = RackTargeting.pick(rack, hit.getDirection(), player.getEyePosition(), player.getViewVector(1.0F));
@@ -207,6 +218,31 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
         return InteractionResult.SUCCESS;
     }
 
+    private static InteractionResult useItemOnDevice(ItemStack stack, RackBlockEntity rack, Level level, Player player, BlockHitResult hit,
+            boolean front) {
+        RackDevice target = front ? targeted(rack, hit, player) : null;
+        if (!(level instanceof ServerLevel) || !(player instanceof ServerPlayer serverPlayer)) {
+            // The server decides; the client just doesn't open the door.
+            return target != null || rack.devices().stream().anyMatch(device -> device.type() == RackDeviceType.WIRELESS_CONTROLLER)
+                    ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (target != null && target.useItem(serverPlayer, stack, true)) {
+            return InteractionResult.SUCCESS;
+        }
+        for (RackDevice device : List.copyOf(rack.devices())) {
+            if (device != target && device.useItem(serverPlayer, stack, false)) {
+                return InteractionResult.SUCCESS;
+            }
+        }
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
+    }
+
+    // The device at the unit looked at through the open front, or null.
+    private static @Nullable RackDevice targeted(RackBlockEntity rack, BlockHitResult hit, Player player) {
+        RackTargeting.Target target = RackTargeting.pick(rack, hit.getDirection(), player.getEyePosition(), player.getViewVector(1.0F));
+        return target != null ? rack.deviceAt(target.u()) : null;
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         RackBlockEntity rack = rack(level, pos, state);
@@ -217,7 +253,12 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
         if (face == RackGeometry.Face.OTHER) {
             return InteractionResult.PASS;
         }
+        // A device used through the open front (the Rack Console's drawer).
+        RackDevice device = face == RackGeometry.Face.FRONT ? targeted(rack, hit, player) : null;
         if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (device != null && device.use(serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
         if (face == RackGeometry.Face.FRONT && player.isSecondaryUseActive()) {

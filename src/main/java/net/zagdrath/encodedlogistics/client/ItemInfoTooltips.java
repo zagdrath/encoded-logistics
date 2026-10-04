@@ -35,11 +35,13 @@ import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
 import net.zagdrath.encodedlogistics.item.LinkAddress;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
+import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
+import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
@@ -75,6 +77,14 @@ public final class ItemInfoTooltips {
             DriveStats stats = StorageDriveItem.stats(stack);
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.bytes", String.format(Locale.ROOT, "%,d", stats.bytesUsed()),
                     String.format(Locale.ROOT, "%,d", stats.bytesTotal())).withStyle(ChatFormatting.GRAY));
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
+                    .withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof LtoTapeItem tape) {
+            DriveStats stats = LtoTapeItem.stats(stack);
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.lto_tape.capacity", StorageDevice.bytes(tape.generation().bytes()))
+                    .withStyle(ChatFormatting.GRAY));
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.lto_tape.used", StorageDevice.bytes(stats.bytesUsed()),
+                    StorageDevice.bytes(stats.bytesTotal())).withStyle(ChatFormatting.GRAY));
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
                     .withStyle(ChatFormatting.GRAY));
         } else if (stack.getItem() instanceof StorageTierItem die) {

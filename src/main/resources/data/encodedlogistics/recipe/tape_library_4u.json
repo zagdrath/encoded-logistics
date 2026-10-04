@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:processor_die",
+  "minecraft:piston",
+  "minecraft:piston",
+  "minecraft:glass",
+  "minecraft:iron_block"
+ ],
+ "result": {
+  "id": "encodedlogistics:tape_library_4u",
+  "count": 1
+ }
+}

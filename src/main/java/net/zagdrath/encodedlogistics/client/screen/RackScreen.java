@@ -120,6 +120,13 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             return false;
         }
 
+        // A drag with the left button, x, y relative to the panel; true when the panel took it.
+        protected boolean mouseDragged(double x, double y) {
+            return false;
+        }
+
+        protected void mouseReleased() {}
+
         protected boolean keyPressed(KeyEvent event) {
             return false;
         }
@@ -352,20 +359,20 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         }
     }
 
-    // A device's real front, from its texture, with its lights for its state (an animated overlay shown frame by frame,
+    // A device's real front, from its texture (128 x sheetHeight, frames that tall), with its lights for its state (an animated overlay shown frame by frame,
     // as the block does: 3 ticks a frame).
     private void front(GuiGraphicsExtractor graphics, RackDevice device, int x, int y) {
-        int height = 8 * device.size();
-        graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, height, 128, 128);
+        int height = 8 * device.size(), sheet = device.type().sheetHeight();
+        graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, height, 128, sheet);
         RackDeviceInfo.Status status = device.shownStatus();
         if (status == RackDeviceInfo.Status.ONLINE) {
             int frames = device.type().frames();
             int frame = (int) (System.currentTimeMillis() / 150 % frames);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_on"), x, y, 0.0F, frame * 128.0F, SLOT_W, height, 128, 128 * frames);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_on"), x, y, 0.0F, frame * sheet, SLOT_W, height, 128, sheet * frames);
         } else if (status == RackDeviceInfo.Status.FAULT) {
             // Two frames, blinking.
             boolean lit = (System.currentTimeMillis() / 500 & 1) == 0;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_fault"), x, y, 0.0F, lit ? 0.0F : 128.0F, SLOT_W, height, 128, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_fault"), x, y, 0.0F, lit ? 0.0F : sheet, SLOT_W, height, 128, sheet * 2);
         }
     }
 
@@ -526,12 +533,18 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             scrollTo(event.y());
             return true;
         }
+        if (showingPanel() && panel != null && panel.mouseDragged(event.x() - leftPos, event.y() - topPos)) {
+            return true;
+        }
         return super.mouseDragged(event, dragX, dragY);
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         draggingThumb = false;
+        if (panel != null) {
+            panel.mouseReleased();
+        }
         return super.mouseReleased(event);
     }
 

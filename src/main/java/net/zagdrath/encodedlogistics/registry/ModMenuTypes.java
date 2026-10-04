@@ -28,6 +28,8 @@ import net.zagdrath.encodedlogistics.menu.NetworkBridgeMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.menu.PointToPointMenu;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
+import net.zagdrath.encodedlogistics.menu.RackConsoleFabricationMenu;
+import net.zagdrath.encodedlogistics.menu.RackConsoleMenu;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
@@ -54,6 +56,12 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<FabricationTerminalMenu>> FABRICATION_TERMINAL = MENU_TYPES.register("fabrication_terminal",
             () -> IMenuTypeExtension.create(FabricationTerminalMenu::new));
+
+    // The Rack Console's terminals: the Access and Fabrication Terminal screens, laid out as the console's.
+    public static final Supplier<MenuType<AccessTerminalMenu>> RACK_CONSOLE = MENU_TYPES.register("rack_console",
+            () -> IMenuTypeExtension.<AccessTerminalMenu>create(RackConsoleMenu::new));
+    public static final Supplier<MenuType<FabricationTerminalMenu>> RACK_CONSOLE_FABRICATION = MENU_TYPES.register("rack_console_fabrication",
+            () -> IMenuTypeExtension.<FabricationTerminalMenu>create(RackConsoleFabricationMenu::new));
 
     public static final Supplier<MenuType<PortMenu>> PORT = MENU_TYPES.register("port", () -> IMenuTypeExtension.create(PortMenu::new));
 

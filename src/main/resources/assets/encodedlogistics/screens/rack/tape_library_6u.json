@@ -1,0 +1,192 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "tabs": {
+  "left": 8,
+  "top": 17,
+  "spacing": 53,
+  "active": "rack/switch/tab_active",
+  "inactive": "rack/switch/tab_inactive",
+  "items": [
+   "gui.encodedlogistics.tape.tab.magazine",
+   "gui.encodedlogistics.tape.tab.policy"
+  ]
+ },
+ "pages": {
+  "magazine": {
+   "top": {
+    "texture": "gui/rack/tape_library.png",
+    "width": 176,
+    "height": 168
+   },
+   "slots": {
+    "left": 9,
+    "top": 33,
+    "columns": 8,
+    "rows_visible": 3,
+    "row_pitch": 20,
+    "total": 48,
+    "accepts": "#encodedlogistics:lto_tapes",
+    "ghost": "rack/tape/ghost_tape",
+    "fill": {
+     "below": 17,
+     "track": "rack/tape/slot_fill_track",
+     "fills": [
+      "rack/tape/slot_fill_low",
+      "rack/tape/slot_fill_mid",
+      "rack/tape/slot_fill_high",
+      "rack/tape/slot_fill_full"
+     ]
+    }
+   },
+   "scrollbar": {
+    "track": [
+     156,
+     32,
+     10,
+     58
+    ],
+    "thumb": "rack/scroll_thumb"
+   },
+   "drives": {
+    "left": [
+     9,
+     49,
+     89,
+     129
+    ],
+    "top": 99,
+    "accepts": "encodedlogistics:lto_tape_drive",
+    "ghost": "rack/tape/ghost_drive",
+    "status": {
+     "offset": [
+      19,
+      1
+     ],
+     "sprites": {
+      "idle": "rack/tape/drive_idle",
+      "reading": "rack/tape/drive_read",
+      "writing": "rack/tape/drive_write",
+      "empty": "rack/tape/drive_empty"
+     }
+    },
+    "unused_bays_hidden": false
+   },
+   "cold_bar": {
+    "left": 9,
+    "top": 125,
+    "width": 158,
+    "sprite": "common/bar_fill_mint"
+   },
+   "activity": {
+    "left": 12,
+    "top": 142,
+    "rows": 2,
+    "line_height": 10
+   }
+  },
+  "policy": {
+   "top": {
+    "texture": "gui/rack/tape_library_policy.png",
+    "width": 176,
+    "height": 168
+   },
+   "age": {
+    "label": [
+     12,
+     36
+    ],
+    "field": {
+     "left": 80,
+     "top": 35,
+     "sprite": "inventory_tap/number_field",
+     "min": 1,
+     "max": 9999
+    },
+    "unit": {
+     "left": 120,
+     "top": 33,
+     "button": "common/button_wide",
+     "width": 40,
+     "height": 14,
+     "cycle": [
+      "min",
+      "h",
+      "d"
+     ]
+    }
+   },
+   "free_space": {
+    "label": [
+     12,
+     50
+    ],
+    "field": {
+     "left": 80,
+     "top": 49,
+     "sprite": "inventory_tap/number_field",
+     "min": 0,
+     "max": 100,
+     "suffix": "%"
+    },
+    "toggle": {
+     "left": 120,
+     "top": 47,
+     "button": "common/button_wide",
+     "width": 40,
+     "height": 14,
+     "cycle": [
+      "on",
+      "off"
+     ]
+    }
+   },
+   "keep_hot": {
+    "label": [
+     8,
+     70
+    ],
+    "slots": {
+     "left": 9,
+     "top": 81,
+     "columns": 9,
+     "ghost_items": true,
+     "tags": "fuzzy rules allowed (Fuzzy Match Module semantics)"
+    }
+   },
+   "pinned": {
+    "label": [
+     8,
+     106
+    ],
+    "slots": {
+     "left": 9,
+     "top": 117,
+     "columns": 9,
+     "ghost_items": true
+    }
+   },
+   "note": {
+    "left": 8,
+    "top": 140,
+    "color": "TEXT_MUTED"
+   }
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.tape_library_6u",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

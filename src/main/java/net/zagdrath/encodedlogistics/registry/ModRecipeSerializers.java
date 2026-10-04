@@ -13,6 +13,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.recipe.FacadeRecipe;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipe;
+import net.zagdrath.encodedlogistics.recipe.TapeUpgradeRecipe;
 
 public final class ModRecipeSerializers {
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER,
@@ -22,6 +23,9 @@ public final class ModRecipeSerializers {
 
     public static final Supplier<RecipeSerializer<LithographyRecipe>> LITHOGRAPHY = RECIPE_SERIALIZERS.register("lithography",
             () -> LithographyRecipe.SERIALIZER);
+
+    public static final Supplier<RecipeSerializer<TapeUpgradeRecipe>> TAPE_UPGRADE = RECIPE_SERIALIZERS.register("tape_upgrade",
+            () -> TapeUpgradeRecipe.SERIALIZER);
 
     private ModRecipeSerializers() {}
 }

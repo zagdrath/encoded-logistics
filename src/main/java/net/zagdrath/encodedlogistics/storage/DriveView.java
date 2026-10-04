@@ -42,6 +42,21 @@ public record DriveView(DriveStorage data, DriveBayBlockEntity bay, int slot, UU
     }
 
     @Override
+    public UUID driveId() {
+        return id;
+    }
+
+    @Override
+    public long lastAccess(ItemKey key) {
+        return data.lastAccess(id, key);
+    }
+
+    @Override
+    public DriveStats stats() {
+        return data.stats(id, tier);
+    }
+
+    @Override
     public long extract(ItemKey key, long amount, boolean simulate) {
         long taken = data.extract(id, key, amount, simulate);
         if (taken > 0 && !simulate) {

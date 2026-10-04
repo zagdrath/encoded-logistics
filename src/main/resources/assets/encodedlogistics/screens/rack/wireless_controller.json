@@ -1,0 +1,65 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/wireless_controller.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "widgets": {
+  "list": {
+   "left": 10,
+   "top": 22,
+   "rows": 9,
+   "row_height": 13,
+   "head": [
+    1,
+    2
+   ],
+   "name": [
+    11,
+    3
+   ],
+   "where": {
+    "right": 130,
+    "top": 3,
+    "color": "TEXT_MUTED",
+    "text": "dimension / \"here\""
+   },
+   "dot": {
+    "right": 140,
+    "top": 4,
+    "sprites": [
+     "hud/dot_online",
+     "hud/dot_offline"
+    ]
+   },
+   "unlink": {
+    "right": 152,
+    "top": 2,
+    "sprite": "common/cancel_small",
+    "tooltip": "gui.encodedlogistics.wireless.unlink"
+   }
+  },
+  "summary": {
+   "left": 12,
+   "top": 148
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.wireless_controller",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

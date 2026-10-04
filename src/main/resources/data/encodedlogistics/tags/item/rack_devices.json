@@ -11,6 +11,10 @@
   "encodedlogistics:fabrication_server",
   "encodedlogistics:monitoring_server",
   "encodedlogistics:nas",
-  "encodedlogistics:san"
+  "encodedlogistics:san",
+  "encodedlogistics:rack_console",
+  "encodedlogistics:wireless_controller",
+  "encodedlogistics:tape_library_4u",
+  "encodedlogistics:tape_library_6u"
  ]
 }

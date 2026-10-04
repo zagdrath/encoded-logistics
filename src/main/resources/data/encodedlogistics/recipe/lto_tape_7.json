@@ -1,0 +1,14 @@
+{
+ "type": "encodedlogistics:tape_upgrade",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:lto_tape_6",
+  "encodedlogistics:ferrite",
+  "encodedlogistics:ferrite",
+  "encodedlogistics:logic_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:lto_tape_7",
+  "count": 1
+ }
+}

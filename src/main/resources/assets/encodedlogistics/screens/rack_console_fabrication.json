@@ -1,0 +1,17 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.rack_console"
+  }
+ },
+ "features": {
+  "crafting_grid": true
+ },
+ "sections": {
+  "crafting": "terminal/crafting_section.json"
+ },
+ "$comment": "Rack Console with a Memory Die applied = Fabrication Terminal screen, opened from the rack"
+}

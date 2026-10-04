@@ -68,7 +68,10 @@ import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.TapeRecalls;
+import net.zagdrath.encodedlogistics.rack.TapeTier;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
+import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
@@ -618,13 +621,22 @@ public class ControllerStructures extends SavedData {
                 }
             }
         }
+        List<TapeLibraryDevice> libraries = new ArrayList<>();
         for (RackDevice device : rackDevicesServing(server, owner.ref)) {
             if (device instanceof StorageDevice storageDevice) {
                 views.addAll(storageDevice.views(server, seen));
+            } else if (device instanceof TapeLibraryDevice library && library.isOnline()) {
+                libraries.add(library);
             }
         }
         Runtime runtime = owner.runtime;
-        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved);
+        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(libraries, drives, runtime.recalls));
+    }
+
+    // A network's tape recall queue (TapeRecalls), or null for an unknown network.
+    public static @Nullable TapeRecalls recalls(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        return owner != null ? owner.runtime.recalls : null;
     }
 
     // --- Racks ---
@@ -714,16 +726,25 @@ public class ControllerStructures extends SavedData {
     // The online, formed Schedulers on the network a device at pos is on, then its racks' Rack Schedulers.
     public List<JobHost> schedulersAt(ServerLevel level, BlockPos device) {
         Owner owner = owner(level, device);
-        List<JobHost> schedulers = new ArrayList<>();
         if (owner == null || !owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device))) {
+            return new ArrayList<>();
+        }
+        return schedulersOf(level.getServer(), owner.ref);
+    }
+
+    // The online, formed Schedulers of a network, then the Rack Schedulers serving it.
+    public static List<JobHost> schedulersOf(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        List<JobHost> schedulers = new ArrayList<>();
+        if (owner == null || owner.runtime.status != NetworkStatus.ONLINE) {
             return schedulers;
         }
         for (NodePos pos : owner.runtime.schedulers) {
-            if (owner.runtime.online.contains(pos) && blockEntity(level.getServer(), pos) instanceof SchedulerCoreBlockEntity core && core.formed()) {
+            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof SchedulerCoreBlockEntity core && core.formed()) {
                 schedulers.add(core);
             }
         }
-        for (RackBlockEntity rack : allRacks(level.getServer())) {
+        for (RackBlockEntity rack : allRacks(server)) {
             if (rack.scheduler().active() && owner.ref.equals(rack.scheduler().network())) {
                 schedulers.add(rack.scheduler());
             }
@@ -983,5 +1004,7 @@ public class ControllerStructures extends SavedData {
         int comparator = -1;
         // Counted for Monitoring Servers: items moved in or out of storage, crafting jobs finished.
         long itemsMoved, jobsDone;
+        // Tape recalls waiting and running, archiving in progress.
+        final TapeRecalls recalls = new TapeRecalls();
     }
 }

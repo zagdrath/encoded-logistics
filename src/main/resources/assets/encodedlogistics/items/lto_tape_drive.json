@@ -1,0 +1,22 @@
+{
+ "model": {
+  "type": "minecraft:select",
+  "property": "minecraft:display_context",
+  "cases": [
+   {
+    "when": [
+     "gui",
+     "fixed"
+    ],
+    "model": {
+     "type": "minecraft:model",
+     "model": "encodedlogistics:item/lto_tape_drive"
+    }
+   }
+  ],
+  "fallback": {
+   "type": "minecraft:model",
+   "model": "encodedlogistics:item/lto_tape_drive_3d"
+  }
+ }
+}

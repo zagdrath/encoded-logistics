@@ -1,0 +1,128 @@
+{
+ "parent": "minecraft:item/handheld",
+ "textures": {
+  "icon": "encodedlogistics:item/lto_tape_drive",
+  "particle": "encodedlogistics:item/lto_tape_drive"
+ },
+ "elements": [
+  {
+   "name": "lto_tape_drive",
+   "from": [
+    2.0,
+    5.5,
+    3.0
+   ],
+   "to": [
+    14.0,
+    10.5,
+    13.0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#icon",
+     "uv": [
+      2,
+      2,
+      14,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#icon",
+     "uv": [
+      2,
+      2,
+      14,
+      14
+     ]
+    },
+    "east": {
+     "texture": "#icon",
+     "uv": [
+      3,
+      11,
+      4,
+      12
+     ]
+    },
+    "west": {
+     "texture": "#icon",
+     "uv": [
+      3,
+      11,
+      4,
+      12
+     ]
+    },
+    "up": {
+     "texture": "#icon",
+     "uv": [
+      3,
+      11,
+      4,
+      12
+     ]
+    },
+    "down": {
+     "texture": "#icon",
+     "uv": [
+      3,
+      11,
+      4,
+      12
+     ]
+    }
+   }
+  }
+ ],
+ "display": {
+  "thirdperson_righthand": {
+   "rotation": [
+    0,
+    90,
+    0
+   ],
+   "translation": [
+    0,
+    1,
+    0
+   ],
+   "scale": [
+    0.55,
+    0.55,
+    0.55
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    -30,
+    0
+   ],
+   "translation": [
+    1,
+    2,
+    0
+   ],
+   "scale": [
+    0.6,
+    0.6,
+    0.6
+   ]
+  },
+  "ground": {
+   "scale": [
+    0.5,
+    0.5,
+    0.5
+   ]
+  },
+  "fixed": {
+   "scale": [
+    0.8,
+    0.8,
+    0.8
+   ]
+  }
+ }
+}

@@ -14,6 +14,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -24,6 +25,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -52,17 +54,18 @@ public record CraftRequestPayload(int containerId, ItemKey key, long amount, int
                 || !(player.containerMenu instanceof AccessTerminalMenu menu) || menu.containerId != payload.containerId() || !menu.stillValid(player)) {
             return;
         }
-        BlockPos device = menu.pos();
-        if (!NetworkAccess.check(level, device, player, RackPermission.CRAFT)) {
+        if (!NetworkAccess.tell(menu.allowed(RackPermission.CRAFT), player, RackPermission.CRAFT)) {
             return;
         }
+        MinecraftServer server = level.getServer();
+        NetworkRef network = menu.network();
         long amount = Math.clamp(payload.amount(), 1, MAX_AMOUNT);
-        CraftPlanner.Plan plan = CraftRequests.plan(level, device, payload.key(), amount);
-        List<JobHost> schedulers = CraftRequests.schedulers(level, device);
+        CraftPlanner.Plan plan = CraftRequests.plan(server, network, payload.key(), amount);
+        List<JobHost> schedulers = CraftRequests.schedulers(server, network);
         Optional<CraftPlanPayload.Started> started = Optional.empty();
         if (plan != null && payload.start()) {
             JobHost scheduler = CraftRequests.choose(schedulers, plan.memory(), payload.scheduler());
-            CraftingJob job = scheduler != null ? CraftRequests.start(level, device, plan, scheduler) : null;
+            CraftingJob job = scheduler != null ? CraftRequests.start(server, network, plan, scheduler) : null;
             if (job != null) {
                 started = Optional.of(new CraftPlanPayload.Started(scheduler.hostPos(), job.id));
             }
@@ -74,6 +77,6 @@ public record CraftRequestPayload(int containerId, ItemKey key, long amount, int
         boolean room = plan != null && CraftRequests.choose(schedulers, plan.memory(), payload.scheduler()) != null;
         PacketDistributor.sendToPlayer(player, new CraftPlanPayload(payload.containerId(), payload.key(), amount,
                 plan != null ? plan.lines() : List.of(), plan != null ? plan.missing() : 0, plan != null ? plan.memory() : 0,
-                plan != null && plan.complete(), positions, room, started));
+                plan != null && plan.complete(), positions, room, started, plan != null ? plan.recallTicks() : 0));
     }
 }

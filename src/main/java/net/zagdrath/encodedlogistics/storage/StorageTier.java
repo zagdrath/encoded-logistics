@@ -7,7 +7,7 @@ package net.zagdrath.encodedlogistics.storage;
 
 // The five storage tiers, by capacity (K = 1,024 bytes), with their colour ramps (deep, shade, base, light) as used on
 // dies, drives, the Drive Bay's sleds and in GUIs. REGISTERED: the tiers with items (all of them since Phase 3).
-public enum StorageTier {
+public enum StorageTier implements DriveCapacity {
     K8("8k", "8K", 8L * 1024, 0x7A3212, 0xB8521F, 0xF07A3C, 0xFFB48A),
     K32("32k", "32K", 32L * 1024, 0x7A5C08, 0xB88E14, 0xF0C030, 0xFFE08A),
     K128("128k", "128K", 128L * 1024, 0x00663F, 0x00A06B, 0x00D992, 0xB5FFE3),
@@ -41,13 +41,9 @@ public enum StorageTier {
         return label;
     }
 
+    @Override
     public long bytes() {
         return bytes;
-    }
-
-    // Bytes each stored type reserves.
-    public long bytesPerType() {
-        return bytes / 128;
     }
 
     public int deep() {

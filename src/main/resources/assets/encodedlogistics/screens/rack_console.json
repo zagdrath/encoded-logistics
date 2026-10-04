@@ -1,0 +1,11 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.rack_console"
+  }
+ },
+ "$comment": "Rack Console = Access Terminal screen, opened from the rack (no new art)"
+}

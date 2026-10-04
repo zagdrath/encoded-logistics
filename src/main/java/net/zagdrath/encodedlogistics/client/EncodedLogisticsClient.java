@@ -85,6 +85,8 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.DRIVE_BAY.get(), DriveBayScreen::new);
         event.register(ModMenuTypes.ACCESS_TERMINAL.get(), AccessTerminalScreen::new);
         event.register(ModMenuTypes.FABRICATION_TERMINAL.get(), FabricationTerminalScreen::new);
+        event.register(ModMenuTypes.RACK_CONSOLE.get(), AccessTerminalScreen::new);
+        event.register(ModMenuTypes.RACK_CONSOLE_FABRICATION.get(), FabricationTerminalScreen::new);
         event.register(ModMenuTypes.PORT.get(), PortScreen::new);
         event.register(ModMenuTypes.INVENTORY_TAP.get(), InventoryTapScreen::new);
         event.register(ModMenuTypes.THRESHOLD_SENSOR.get(), ThresholdSensorScreen::new);

@@ -23,9 +23,9 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 
 // Server to client: a crafting plan for an open terminal - the ingredient tree, how many items are missing, the job
 // memory it needs, whether it can be made (complete), the network's Schedulers and whether the chosen one has room,
-// and the job when it was just started.
+// the job when it was just started, and how long recalling its ingredients from tape should take (ticks, 0 for none).
 public record CraftPlanPayload(int containerId, ItemKey key, long amount, List<CraftPlanner.Line> lines, int missing, long memory, boolean complete,
-        List<BlockPos> schedulers, boolean room, Optional<Started> started) implements CustomPacketPayload {
+        List<BlockPos> schedulers, boolean room, Optional<Started> started, int recallTicks) implements CustomPacketPayload {
     public static final Type<CraftPlanPayload> TYPE = new Type<>(EncodedLogistics.id("craft_plan"));
 
     public record Started(BlockPos core, UUID job) {
@@ -51,9 +51,10 @@ public record CraftPlanPayload(int containerId, ItemKey key, long amount, List<C
         POSITIONS.encode(buf, payload.schedulers());
         ByteBufCodecs.BOOL.encode(buf, payload.room());
         STARTED.encode(buf, payload.started());
+        ByteBufCodecs.VAR_INT.encode(buf, payload.recallTicks());
     }, buf -> new CraftPlanPayload(ByteBufCodecs.VAR_INT.decode(buf), ItemKey.STREAM_CODEC.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf),
             LINES.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.BOOL.decode(buf),
-            POSITIONS.decode(buf), ByteBufCodecs.BOOL.decode(buf), STARTED.decode(buf)));
+            POSITIONS.decode(buf), ByteBufCodecs.BOOL.decode(buf), STARTED.decode(buf), ByteBufCodecs.VAR_INT.decode(buf)));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {

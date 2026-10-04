@@ -17,6 +17,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
+import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
 // Four tabs, one after another: the network's blocks and machines, cables (every tier and colour, with anchors and
 // facades), parts and tools (cable parts, modules, drives, cards, the Handheld Terminal), and materials (ores, raw
@@ -63,8 +64,13 @@ public final class ModCreativeTabs {
                 }
                 for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS, ModItems.L2_SWITCH_24, ModItems.L2_SWITCH_48,
                         ModItems.L3_SWITCH, ModItems.COMPUTE_SERVER, ModItems.MEMORY_SERVER, ModItems.FABRICATION_SERVER, ModItems.MONITORING_SERVER,
-                        ModItems.NAS, ModItems.SAN)) {
+                        ModItems.NAS, ModItems.SAN, ModItems.RACK_CONSOLE, ModItems.WIRELESS_CONTROLLER, ModItems.TAPE_LIBRARY_4U,
+                        ModItems.TAPE_LIBRARY_6U)) {
                     output.accept(device.get());
+                }
+                output.accept(ModItems.LTO_TAPE_DRIVE.get());
+                for (TapeGeneration generation : TapeGeneration.values()) {
+                    output.accept(ModItems.tape(generation).get());
                 }
                 output.accept(ModItems.HANDHELD_TERMINAL.get());
                 output.accept(ModItems.LINK_CARD.get());

@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.client.screen;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -92,8 +93,11 @@ public class JobStatusScreen extends Screen {
             graphics.item(job.item().stack(), left + ITEM_X, top + ITEM_Y);
             Component name = Component.literal(job.amount() + " x ").append(job.item().stack().getHoverName());
             graphics.text(font, font.plainSubstrByWidth(name.getString(), WIDTH - NAME_X - 70), left + NAME_X, top + NAME_Y, PartScreens.TEXT, false);
-            Component progress = Component.translatable("gui.encodedlogistics.craft.progress", job.done(), job.total());
-            graphics.text(font, progress, left + 211 - font.width(progress), top + NAME_Y, PartScreens.TEXT_MUTED, false);
+            // Waiting on tape: how many items are still to come back, else the runs done.
+            Component progress = job.awaiting() > 0 ? Component.translatable("gui.encodedlogistics.craft.awaiting", String.format(Locale.ROOT, "%,d", job.awaiting()))
+                    : Component.translatable("gui.encodedlogistics.craft.progress", job.done(), job.total());
+            graphics.text(font, progress, left + 211 - font.width(progress), top + NAME_Y, job.awaiting() > 0 ? CraftPlanScreen.TAPE_BLUE : PartScreens.TEXT_MUTED,
+                    false);
             PartScreens.bar(graphics, MINT, left + BAR_X, top + BAR_Y, BAR_W, job.progress());
             List<JobInfo.StepInfo> steps = job.steps();
             for (int cell = 0; cell < ROWS * COLUMNS; cell++) {

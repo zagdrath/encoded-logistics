@@ -34,7 +34,7 @@ final class JobAccess {
             return host;
         }
         if (player.containerMenu instanceof AccessTerminalMenu menu) {
-            NetworkRef terminal = ControllerStructures.networkOf(level, menu.pos());
+            NetworkRef terminal = menu.network();
             NetworkRef served = host instanceof RackScheduler rack ? rack.network() : ControllerStructures.networkOf(level, pos);
             return terminal != null && terminal.equals(served) ? host : null;
         }

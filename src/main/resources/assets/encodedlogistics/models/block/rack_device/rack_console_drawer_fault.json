@@ -1,0 +1,171 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "tex": "encodedlogistics:block/rack_device/rack_console",
+  "parts": "encodedlogistics:block/rack_device/rack_console_parts",
+  "screen": "encodedlogistics:block/rack_device/rack_console_screen",
+  "particle": "encodedlogistics:block/rack_device/rack_console",
+  "glow": "encodedlogistics:block/rack_device/rack_console_fault"
+ },
+ "elements": [
+  {
+   "name": "front",
+   "from": [
+    1.55,
+    0,
+    1.25
+   ],
+   "to": [
+    14.45,
+    1,
+    1.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#tex",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      1.0
+     ]
+    },
+    "south": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    },
+    "west": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    },
+    "up": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    },
+    "down": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "tray",
+   "from": [
+    2,
+    0,
+    1.75
+   ],
+   "to": [
+    14,
+    0.25,
+    13.75
+   ],
+   "faces": {
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      7.0,
+      6.5,
+      13.5,
+      12.5
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "led",
+   "from": [
+    1.55,
+    0,
+    1.24
+   ],
+   "to": [
+    14.45,
+    1,
+    1.24
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glow",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      1.0
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

@@ -310,6 +310,21 @@ public abstract class StorageDevice extends RackDevice {
         }
 
         @Override
+        public UUID driveId() {
+            return id;
+        }
+
+        @Override
+        public long lastAccess(ItemKey key) {
+            return data.lastAccess(id, key);
+        }
+
+        @Override
+        public DriveStats stats() {
+            return data.stats(id, tier);
+        }
+
+        @Override
         public long extract(ItemKey key, long amount, boolean simulate) {
             if (access == WRITE) {
                 return 0;

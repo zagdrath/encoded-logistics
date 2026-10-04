@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.menu;
 
+import java.util.UUID;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -23,16 +25,14 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.item.HandheldLinkState;
 import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
-import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
-import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
-import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // A Handheld Terminal's screen: the Access Terminal's, reaching the network through the nearest of its Relay Antennas
-// covering the player (picked again every CHECK_INTERVAL ticks as they move). It's offline while out of range or with an
-// empty battery. The battery pays handheldDrainPerSecond each second and handheldEnergyPerItem per item moved.
+// covering the player (picked again every CHECK_INTERVAL ticks as they move), else through the Wireless Controller it's
+// linked to (full signal, anywhere). It's offline while out of range or with an empty battery. The battery pays handheldDrainPerSecond each second and handheldEnergyPerItem per item moved.
 // data: 0 link state (HandheldLinkState), 1 signal bars, 2-3 energy and 4-5 capacity in 16-bit halves.
 public class HandheldTerminalMenu extends AccessTerminalMenu {
     // The off hand's slot, as the menu names the terminal's place in the inventory.
@@ -44,6 +44,8 @@ public class HandheldTerminalMenu extends AccessTerminalMenu {
     private final ContainerData data;
     private HandheldLinkState state = HandheldLinkState.LINKED;
     private int signal, checkTimer, secondTimer;
+    // The Wireless Controller it goes through (its id), or null while it uses an antenna.
+    private @Nullable UUID wireless;
 
     public static void open(ServerPlayer player, int slot, BlockPos relay) {
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new HandheldTerminalMenu(id, inventory, slot, relay),
@@ -106,23 +108,35 @@ public class HandheldTerminalMenu extends AccessTerminalMenu {
             return;
         }
         RelayAntennaBlockEntity relay = HandheldTerminalItem.access(level, player.position(), network);
+        WirelessControllerDevice controller = relay == null ? HandheldTerminalItem.wireless(level.getServer(), player, stack()) : null;
+        wireless = controller != null ? controller.id() : null;
         if (relay != null) {
             pos = relay.getBlockPos();
+        } else if (controller != null && controller.rack() != null) {
+            pos = controller.rack().getBlockPos();
         }
-        state = network == null ? HandheldLinkState.UNLINKED : relay != null ? HandheldLinkState.LINKED : HandheldLinkState.OUT_OF_RANGE;
-        signal = HandheldTerminalItem.signal(relay, player.position());
+        boolean reached = relay != null || controller != null;
+        state = network == null ? HandheldLinkState.UNLINKED : reached ? HandheldLinkState.LINKED : HandheldLinkState.OUT_OF_RANGE;
+        signal = controller != null ? 4 : HandheldTerminalItem.signal(relay, player.position());
         ItemStack stack = stack();
         if (stack.getItem() instanceof HandheldTerminalItem && stack.get(ModDataComponents.HANDHELD_LINK_STATE.get()) != state) {
             stack.set(ModDataComponents.HANDHELD_LINK_STATE.get(), state);
         }
     }
 
+    // Its network: the one it's linked to, reached while it's in range and charged.
     @Override
-    protected @Nullable NetworkStorage storage() {
-        if (state != HandheldLinkState.LINKED || HandheldTerminalItem.energy(stack()) <= 0 || !allowed(RackPermission.VIEW)) {
-            return null;
-        }
-        return player.level() instanceof ServerLevel level ? ControllerStructures.get(level).storageAt(level, pos) : null;
+    public NetworkIndex.@Nullable NetworkRef homeNetwork() {
+        return network;
+    }
+
+    @Override
+    public NetworkIndex.@Nullable NetworkRef network() {
+        return state == HandheldLinkState.LINKED && HandheldTerminalItem.energy(stack()) > 0 ? network : null;
+    }
+
+    public @Nullable UUID wireless() {
+        return wireless;
     }
 
     @Override

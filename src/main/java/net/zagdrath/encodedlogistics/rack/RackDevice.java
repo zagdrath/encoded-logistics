@@ -137,6 +137,24 @@ public abstract class RackDevice {
     // Every server tick while it's in a loaded rack.
     public void tick(ServerLevel level) {}
 
+    // Every client tick, on the client's copy (animations). The copy lives on across syncs while it stays at its unit.
+    public void clientTick() {}
+
+    // Right-clicked empty-handed with the rack's front door open (the unit looked at, RackTargeting; sneaking or not,
+    // as the player says); true when it did something (else the door toggles, or sneaking opens the rack's screen).
+    public boolean use(ServerPlayer player) {
+        return false;
+    }
+
+    // Used with an item: on its unit with the front door open (atUnit), or anywhere else on the rack; true when it
+    // took the use.
+    public boolean useItem(ServerPlayer player, ItemStack stack, boolean atUnit) {
+        return false;
+    }
+
+    // The rack's front door opened or closed.
+    public void frontDoorChanged(boolean open) {}
+
     // Put into a rack (by a player, or null when loaded or placed some other way).
     public void onInstalled(@Nullable ServerPlayer by) {}
 

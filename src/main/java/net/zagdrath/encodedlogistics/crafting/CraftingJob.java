@@ -21,7 +21,8 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // A crafting job on a Scheduler: the item and amount asked for, the job memory it takes, its steps (each a schematic
 // and how many times to run it), and the items it holds - what it took from storage when it started and what its
 // steps have made so far. A step runs whenever the job holds the inputs for one more run and a Fabricator or Gateway
-// with its schematic is free. Once every step is done, everything the job holds goes into the network.
+// with its schematic is free. Once every step is done, everything the job holds goes into the network. Items the plan
+// found on tape are awaited: recalled when the job starts, taken from storage as they come back (JobRunner).
 public final class CraftingJob {
     public static final class Step {
         static final Codec<Step> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -65,10 +66,13 @@ public final class CraftingJob {
             Codec.LONG.fieldOf("memory").forGetter(job -> job.memory),
             Step.CODEC.listOf().fieldOf("steps").forGetter(job -> job.steps),
             Held.CODEC.listOf().fieldOf("held").forGetter(job -> job.held.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()),
-            Codec.BOOL.fieldOf("running").forGetter(job -> job.running))
-            .apply(i, (id, target, amount, memory, steps, held, running) -> {
+            Codec.BOOL.fieldOf("running").forGetter(job -> job.running),
+            Held.CODEC.listOf().optionalFieldOf("awaiting", List.of())
+                    .forGetter(job -> job.awaiting.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()))
+            .apply(i, (id, target, amount, memory, steps, held, running, awaiting) -> {
                 CraftingJob job = new CraftingJob(id, target, amount, memory, steps);
                 held.forEach(entry -> job.held.put(entry.key(), entry.count()));
+                awaiting.forEach(entry -> job.awaiting.put(entry.key(), entry.count()));
                 job.running = running;
                 return job;
             }));
@@ -79,6 +83,8 @@ public final class CraftingJob {
     public final List<Step> steps;
     // The items the job holds, in the order they arrived.
     public final Map<ItemKey, Long> held = new LinkedHashMap<>();
+    // Items it's still to take from storage, being recalled from tape.
+    public final Map<ItemKey, Long> awaiting = new LinkedHashMap<>();
     // Running (has a thread) or waiting in the queue.
     public boolean running;
 

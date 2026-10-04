@@ -56,6 +56,10 @@ public class RackMenu extends AbstractContainerMenu {
     // Each device type's first slot index.
     private final Map<RackDeviceType, Integer> banks = new LinkedHashMap<>();
     private int ticksUntilSync;
+    // Client: which of the picked device's slots its panel shows - none on a page without them, and of a scrolling list
+    // (RackSlot#scrollRow) the rows from windowFirst, windowRows of them.
+    private boolean slotsShown = true;
+    private int windowFirst, windowRows = Integer.MAX_VALUE;
 
     // Client constructor, with the rack's master position written by the server.
     public RackMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
@@ -104,6 +108,17 @@ public class RackMenu extends AbstractContainerMenu {
     public @Nullable RackDevice pickedDevice() {
         RackBlockEntity at = rack();
         return at != null && picked.get() > 0 ? at.deviceAt(picked.get()) : null;
+    }
+
+    // Client: which of the picked device's slots show (its panel says, as it pages and scrolls).
+    public void setSlotWindow(boolean shown, int first, int rows) {
+        slotsShown = shown;
+        windowFirst = first;
+        windowRows = rows;
+    }
+
+    public void resetSlotWindow() {
+        setSlotWindow(true, 0, Integer.MAX_VALUE);
     }
 
     // The menu slot showing the picked device's i-th item slot, or null.
@@ -321,10 +336,17 @@ public class RackMenu extends AbstractContainerMenu {
             this.spec = type.slots().get(slot);
         }
 
+        // On the client also where the panel shows it (the server takes clicks on any of the picked device's slots).
         @Override
         public boolean isActive() {
             RackDevice device = pickedDevice();
-            return device != null && device.type() == type;
+            if (device == null || device.type() != type) {
+                return false;
+            }
+            if (!player.level().isClientSide()) {
+                return true;
+            }
+            return slotsShown && (spec.scrollRow() < 0 || spec.scrollRow() >= windowFirst && spec.scrollRow() - windowFirst < windowRows);
         }
 
         @Override

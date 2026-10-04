@@ -5,9 +5,14 @@
 
 package net.zagdrath.encodedlogistics.item;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -31,11 +36,13 @@ import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.menu.HandheldTerminalMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
-// The Handheld Terminal: an Access Terminal that works anywhere one of its network's Relay Antennas covers. Use it on a
-// Relay Antenna or a Network Controller to link it to that network; use it in the air to open the terminal (linked, in
-// range and charged). Its battery (handheldCapacity FE) pays handheldDrainPerSecond while the screen is open and
+// The Handheld Terminal: an Access Terminal that works anywhere one of its network's Relay Antennas covers - or anywhere
+// at all once it's linked to a Wireless Controller (used on the controller's rack). Use it on a Relay Antenna or a
+// Network Controller to link it to that network; use it in the air to open the terminal (linked, in range and charged). Its battery (handheldCapacity FE) pays handheldDrainPerSecond while the screen is open and
 // handheldEnergyPerItem per item moved; it charges in any FE charger, or held against a Capacitor Bank (use and hold) at
 // handheldChargeRate FE/t. Its icon shows whether it's in range (HANDHELD_LINK_STATE, updated every second in an
 // inventory).
@@ -89,12 +96,54 @@ public class HandheldTerminalItem extends Item {
         return ratio <= 0.25 ? 4 : ratio <= 0.5 ? 3 : ratio <= 0.75 ? 2 : 1;
     }
 
+    // The online Wireless Controller serving a player's terminal, wherever they are: the one it was linked to, or (with
+    // wirelessAnyController) any on its network, as long as the one it was linked to still lists the player; within
+    // the player's dimension unless wirelessCrossDimension.
+    public static @Nullable WirelessControllerDevice wireless(MinecraftServer server, Player player, ItemStack stack) {
+        UUID linkedTo = stack.get(ModDataComponents.WIRELESS_LINK.get());
+        NetworkIndex.NetworkRef network = network(stack);
+        if (linkedTo == null || network == null) {
+            return null;
+        }
+        List<WirelessControllerDevice> controllers = new ArrayList<>();
+        boolean listed = false;
+        for (RackDevice device : ControllerStructures.rackDevicesServing(server, network)) {
+            if (device instanceof WirelessControllerDevice controller) {
+                controllers.add(controller);
+                listed |= controller.id().equals(linkedTo) && controller.serves(player);
+            }
+        }
+        if (!listed) {
+            return null;
+        }
+        for (WirelessControllerDevice controller : controllers) {
+            if (controller.isOnline() && (Config.WIRELESS_ANY_CONTROLLER.getAsBoolean() || controller.id().equals(linkedTo))
+                    && (Config.WIRELESS_CROSS_DIMENSION.getAsBoolean() || controller.rack() != null && controller.rack().getLevel() != null
+                            && controller.rack().getLevel().dimension() == player.level().dimension())) {
+                return controller;
+            }
+        }
+        return null;
+    }
+
+    // By antennas alone, at a point.
     public static HandheldLinkState state(ServerLevel level, Vec3 point, ItemStack stack) {
         NetworkIndex.NetworkRef network = network(stack);
         if (network == null) {
             return HandheldLinkState.UNLINKED;
         }
         return access(level, point, network) != null ? HandheldLinkState.LINKED : HandheldLinkState.OUT_OF_RANGE;
+    }
+
+    // For whoever holds it: an antenna covering them, or a Wireless Controller serving them.
+    public static HandheldLinkState state(ServerLevel level, Entity holder, ItemStack stack) {
+        NetworkIndex.NetworkRef network = network(stack);
+        if (network == null) {
+            return HandheldLinkState.UNLINKED;
+        }
+        boolean reached = access(level, holder.position(), network) != null
+                || holder instanceof Player player && wireless(level.getServer(), player, stack) != null;
+        return reached ? HandheldLinkState.LINKED : HandheldLinkState.OUT_OF_RANGE;
     }
 
     // --- Linking and charging ---
@@ -126,7 +175,9 @@ public class HandheldTerminalItem extends Item {
             return InteractionResult.SUCCESS;
         }
         stack.set(ModDataComponents.HANDHELD_NETWORK.get(), network);
-        stack.set(ModDataComponents.HANDHELD_LINK_STATE.get(), state(serverLevel, player.position(), stack));
+        // Linked afresh to a network by its antenna or controller: no longer to a Wireless Controller.
+        stack.remove(ModDataComponents.WIRELESS_LINK.get());
+        stack.set(ModDataComponents.HANDHELD_LINK_STATE.get(), state(serverLevel, player, stack));
         player.sendOverlayMessage(Component.translatable("message.encodedlogistics.handheld.linked", network.id()));
         return InteractionResult.SUCCESS;
     }
@@ -173,13 +224,15 @@ public class HandheldTerminalItem extends Item {
             return InteractionResult.FAIL;
         }
         RelayAntennaBlockEntity relay = access(serverLevel, player.position(), network);
-        stack.set(ModDataComponents.HANDHELD_LINK_STATE.get(), relay != null ? HandheldLinkState.LINKED : HandheldLinkState.OUT_OF_RANGE);
-        if (relay == null) {
+        WirelessControllerDevice controller = relay == null ? wireless(serverLevel.getServer(), player, stack) : null;
+        boolean reached = relay != null || controller != null && controller.rack() != null;
+        stack.set(ModDataComponents.HANDHELD_LINK_STATE.get(), reached ? HandheldLinkState.LINKED : HandheldLinkState.OUT_OF_RANGE);
+        if (!reached) {
             player.sendOverlayMessage(Component.translatable("gui.encodedlogistics.handheld.out_of_range"));
             return InteractionResult.FAIL;
         }
         int slot = hand == InteractionHand.OFF_HAND ? HandheldTerminalMenu.OFFHAND_SLOT : player.getInventory().getSelectedSlot();
-        HandheldTerminalMenu.open(serverPlayer, slot, relay.getBlockPos());
+        HandheldTerminalMenu.open(serverPlayer, slot, relay != null ? relay.getBlockPos() : controller.rack().getBlockPos());
         return InteractionResult.SUCCESS;
     }
 
@@ -189,7 +242,7 @@ public class HandheldTerminalItem extends Item {
         if (level.getGameTime() % STATE_INTERVAL != 0) {
             return;
         }
-        HandheldLinkState state = state(level, owner.position(), stack);
+        HandheldLinkState state = state(level, owner, stack);
         if (stack.get(ModDataComponents.HANDHELD_LINK_STATE.get()) != state) {
             stack.set(ModDataComponents.HANDHELD_LINK_STATE.get(), state);
         }

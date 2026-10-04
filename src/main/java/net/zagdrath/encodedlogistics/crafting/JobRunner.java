@@ -20,13 +20,14 @@ import net.minecraft.world.level.block.Block;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
-// Runs a job host's jobs (JobHost). Each job holds the items it took from storage from the moment it's accepted, waits
-// in the queue for a thread, and then runs: every tick each of its steps with the inputs for another run is offered to
+// Runs a job host's jobs (JobHost). Each job holds the items it took from storage from the moment it's accepted (and
+// takes any it awaits from tape as they come back, once a second), waits in the queue for a thread, and then runs: every tick each of its steps with the inputs for another run is offered to
 // the network's Fabricators and Gateways (and Fabrication Servers) holding its schematic. Whatever they make comes back
 // to the job (SchedulerCoreBlockEntity.deliver); when every step is done the job puts all it holds into the network.
 public final class JobRunner {
     // Dispatches tried per job per tick, so a huge job can't stall the server.
     private static final int MAX_OFFERS = 64;
+    private static final int AWAIT_INTERVAL = 20;
 
     private final List<CraftingJob> jobs = new ArrayList<>();
 
@@ -75,6 +76,9 @@ public final class JobRunner {
                 changed = true;
             }
         }
+        if (level.getGameTime() % AWAIT_INTERVAL == 0 && jobs.stream().anyMatch(job -> !job.awaiting.isEmpty())) {
+            changed |= takeAwaited(storage.get());
+        }
         List<CraftingProvider> found = null;
         Iterator<CraftingJob> iterator = jobs.iterator();
         while (iterator.hasNext()) {
@@ -94,6 +98,30 @@ public final class JobRunner {
                 found = providers.get();
             }
             changed |= dispatch(level, host, job, found);
+        }
+        return changed;
+    }
+
+    // Jobs take what they await that's back from tape (taking more than is hot keeps the recall going).
+    private boolean takeAwaited(@Nullable NetworkStorage storage) {
+        if (storage == null) {
+            return false;
+        }
+        boolean changed = false;
+        for (CraftingJob job : jobs) {
+            for (ItemKey key : List.copyOf(job.awaiting.keySet())) {
+                long want = job.awaiting.get(key);
+                long taken = storage.extract(key, want, false);
+                if (taken > 0) {
+                    job.held.merge(key, taken, Long::sum);
+                    changed = true;
+                }
+                if (taken >= want) {
+                    job.awaiting.remove(key);
+                } else {
+                    job.awaiting.put(key, want - taken);
+                }
+            }
         }
         return changed;
     }

@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.menu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,10 +30,12 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -44,6 +47,10 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // the server sends the network's items (what changed since last time, every SYNC_INTERVAL ticks) and the client asks
 // for clicks with TerminalClickPayload. The grid's height (rows) is the client's choice, made when the menu opens, so
 // the inventory slots sit under it; the server doesn't care where they are.
+//
+// Items on tape show with the rest (counted together, marked cold). Taking more of one than is hot takes what's hot
+// and recalls the rest; the player waits on that recall (its progress is sent along), and the items go into their
+// inventory as they come back.
 public class AccessTerminalMenu extends AbstractContainerMenu {
     public static final int TOP = 19, ROW = 18, BOTTOM = 99, COLUMNS = 9, DEFAULT_ROWS = 6;
     private static final int SYNC_INTERVAL = 5;
@@ -68,14 +75,18 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     private final int rows;
     protected final Player player;
 
-    // Server: what the client was last sent.
-    private @Nullable Map<ItemKey, Long> sent;
+    // Server: what the client was last sent; the items the player waits on from tape, and how many.
+    private @Nullable Map<ItemKey, TerminalItemsPayload.Entry> sent;
     private @Nullable Set<ItemKey> sentCraftables;
+    private List<TerminalItemsPayload.Recall> sentRecalls = List.of();
     private boolean sentOnline;
     private int ticksUntilSync;
+    private final Map<ItemKey, Long> waiting = new LinkedHashMap<>();
 
-    // Client: the network's items and craftables as last received.
+    // Client: the network's items and craftables as last received; the cold ones' details; the player's recalls.
     private final Map<ItemKey, Long> items = new HashMap<>();
+    private final Map<ItemKey, TerminalItemsPayload.Entry> cold = new HashMap<>();
+    private final Map<ItemKey, Integer> recalls = new HashMap<>();
     private final Set<ItemKey> craftables = new LinkedHashSet<>();
     private boolean online;
     private int version;
@@ -123,10 +134,22 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // --- Server ---
 
+    // The network the terminal belongs to, online or not (its Firewall decides what the player may do): the network of
+    // the block it's on. A Handheld Terminal's or a Rack Console's says otherwise.
+    public @Nullable NetworkRef homeNetwork() {
+        return player.level() instanceof ServerLevel level ? ControllerStructures.networkOf(level, pos) : null;
+    }
+
+    // The network it reaches right now (server): its home network while the terminal itself is online, else null.
+    public @Nullable NetworkRef network() {
+        return player.level() instanceof ServerLevel level && ControllerStructures.get(level).isDeviceOnline(level, pos) ? homeNetwork() : null;
+    }
+
     // The network's storage as this player may see it: none without the Firewall's view permission.
     protected @Nullable NetworkStorage storage() {
-        return player.level() instanceof ServerLevel level && allowed(RackPermission.VIEW) ? ControllerStructures.get(level).storageAt(level, pos)
-                : null;
+        NetworkRef network = network();
+        return network != null && player.level() instanceof ServerLevel level && allowed(RackPermission.VIEW)
+                ? ControllerStructures.storageOf(level.getServer(), network) : null;
     }
 
     // The storage, for putting items in (INSERT) or taking them out (EXTRACT), if the Firewall allows it.
@@ -135,8 +158,8 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     }
 
     // Whether the network's Firewall (if any) lets this player do that through the terminal.
-    protected boolean allowed(RackPermission permission) {
-        return !(player.level() instanceof ServerLevel level) || NetworkAccess.allowed(level, pos, player, permission);
+    public boolean allowed(RackPermission permission) {
+        return !(player.level() instanceof ServerLevel level) || NetworkAccess.allowed(level.getServer(), homeNetwork(), player, permission);
     }
 
     @Override
@@ -147,16 +170,19 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         }
         ticksUntilSync = SYNC_INTERVAL;
         NetworkStorage storage = storage();
-        Map<ItemKey, Long> now = storage != null ? storage.list() : Map.of();
+        if (storage != null) {
+            deliver(storage);
+        }
+        Map<ItemKey, TerminalItemsPayload.Entry> now = storage != null ? entries(storage) : Map.of();
         boolean isOnline = storage != null;
         List<TerminalItemsPayload.Entry> changes = new ArrayList<>();
         boolean full = sent == null;
         if (full) {
-            now.forEach((key, count) -> changes.add(new TerminalItemsPayload.Entry(key, count)));
+            changes.addAll(now.values());
         } else {
-            now.forEach((key, count) -> {
-                if (!count.equals(sent.get(key))) {
-                    changes.add(new TerminalItemsPayload.Entry(key, count));
+            now.forEach((key, entry) -> {
+                if (!entry.equals(sent.get(key))) {
+                    changes.add(entry);
                 }
             });
             sent.keySet().forEach(key -> {
@@ -165,15 +191,76 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 }
             });
         }
-        Set<ItemKey> craftable = isOnline && player.level() instanceof ServerLevel level ? CraftRequests.craftables(level, pos) : Set.of();
+        List<TerminalItemsPayload.Recall> recallsNow = new ArrayList<>();
+        if (storage != null) {
+            waiting.keySet().forEach(key -> recallsNow.add(new TerminalItemsPayload.Recall(key, Math.max(0, storage.cold().progress(key)))));
+        }
+        Set<ItemKey> craftable = isOnline && player.level() instanceof ServerLevel level ? CraftRequests.craftables(level.getServer(), network()) : Set.of();
         boolean craftablesChanged = !craftable.equals(sentCraftables);
-        if (full || !changes.isEmpty() || isOnline != sentOnline || craftablesChanged) {
+        if (full || !changes.isEmpty() || isOnline != sentOnline || craftablesChanged || !recallsNow.equals(sentRecalls)) {
             PacketDistributor.sendToPlayer(serverPlayer, new TerminalItemsPayload(containerId, isOnline, full, changes,
-                    craftablesChanged ? Optional.of(List.copyOf(craftable)) : Optional.empty()));
+                    craftablesChanged ? Optional.of(List.copyOf(craftable)) : Optional.empty(), recallsNow));
         }
         sent = new HashMap<>(now);
         sentCraftables = craftable;
+        sentRecalls = recallsNow;
         sentOnline = isOnline;
+    }
+
+    // Every item, hot and cold, as the grid shows it.
+    private static Map<ItemKey, TerminalItemsPayload.Entry> entries(NetworkStorage storage) {
+        Map<ItemKey, Long> hot = storage.list();
+        Map<ItemKey, TerminalItemsPayload.Entry> entries = new HashMap<>();
+        hot.forEach((key, count) -> entries.put(key, new TerminalItemsPayload.Entry(key, count)));
+        storage.coldList().forEach((key, count) -> entries.put(key, new TerminalItemsPayload.Entry(key, hot.getOrDefault(key, 0L) + count, count,
+                storage.cold().eta(key), storage.cold().hotFull(key))));
+        return entries;
+    }
+
+    // What the player waits on that's back from tape goes into their inventory (or drops at their feet); a wait with
+    // nothing left to come is given up.
+    private void deliver(NetworkStorage storage) {
+        for (ItemKey key : List.copyOf(waiting.keySet())) {
+            long want = waiting.get(key);
+            long hot = storage.count(key);
+            if (hot > 0) {
+                long got = storage.extract(key, Math.min(hot, want), false);
+                give(key, got);
+                moved((int) got);
+                want -= got;
+            }
+            if (want <= 0 || storage.count(key) <= 0 && storage.cold().count(key) <= 0) {
+                waiting.remove(key);
+            } else {
+                waiting.put(key, want);
+            }
+        }
+    }
+
+    private void give(ItemKey key, long count) {
+        long left = count;
+        while (left > 0) {
+            ItemStack stack = key.toStack((int) Math.min(left, key.maxStackSize()));
+            left -= stack.getCount();
+            moveItemStackTo(stack, 0, INVENTORY_SLOTS, true);
+            if (!stack.isEmpty()) {
+                Block.popResource(player.level(), player.blockPosition(), stack);
+            }
+        }
+    }
+
+    // Takes up to amount of an item out; what's short of it on tape is recalled, and the player waits on it.
+    private long takeOrRecall(NetworkStorage storage, ItemKey key, long amount) {
+        long taken = amount > 0 ? storage.extract(key, amount, false) : 0;
+        if (taken < amount && storage.cold().count(key) > 0) {
+            waiting.merge(key, amount - taken, Long::sum);
+        }
+        return taken;
+    }
+
+    // How many of an item a take can ask for: hot and cold.
+    private static long available(NetworkStorage storage, ItemKey key) {
+        return storage.count(key) + storage.cold().count(key);
     }
 
     // A click on the grid: take the clicked item (a stack, half a stack, one, or a stack into the inventory) or put the
@@ -201,12 +288,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 if (key == null || !carried.isEmpty()) {
                     return;
                 }
-                long available = storage.count(key);
-                int amount = (int) Math.min(available, key.maxStackSize());
+                int amount = (int) Math.min(available(storage, key), key.maxStackSize());
                 if (action == TAKE_HALF) {
                     amount = (amount + 1) / 2;
                 }
-                int taken = (int) storage.extract(key, amount, false);
+                int taken = (int) takeOrRecall(storage, key, amount);
                 if (taken > 0) {
                     setCarried(key.toStack(taken));
                     moved(taken);
@@ -237,7 +323,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 if (key == null || !carried.isEmpty() && (!key.equals(ItemKey.of(carried)) || carried.getCount() >= carried.getMaxStackSize())) {
                     return;
                 }
-                if (storage.extract(key, 1, false) > 0) {
+                if (takeOrRecall(storage, key, 1) > 0) {
                     if (carried.isEmpty()) {
                         setCarried(key.toStack(1));
                     } else {
@@ -251,8 +337,8 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                 if (key == null) {
                     return;
                 }
-                int amount = (int) Math.min(storage.count(key), key.maxStackSize());
-                ItemStack stack = key.toStack((int) storage.extract(key, amount, false));
+                int amount = (int) Math.min(available(storage, key), key.maxStackSize());
+                ItemStack stack = key.toStack((int) takeOrRecall(storage, key, amount));
                 int taken = stack.getCount();
                 moveItemStackTo(stack, 0, INVENTORY_SLOTS, true);
                 if (!stack.isEmpty()) {
@@ -293,7 +379,8 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // --- Client ---
 
-    public void applyUpdate(boolean online, boolean full, List<TerminalItemsPayload.Entry> entries, @Nullable List<ItemKey> craftables) {
+    public void applyUpdate(boolean online, boolean full, List<TerminalItemsPayload.Entry> entries, @Nullable List<ItemKey> craftables,
+            List<TerminalItemsPayload.Recall> recalls) {
         this.online = online;
         if (craftables != null) {
             this.craftables.clear();
@@ -301,6 +388,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         }
         if (full) {
             items.clear();
+            cold.clear();
         }
         for (TerminalItemsPayload.Entry entry : entries) {
             if (entry.count() <= 0) {
@@ -308,8 +396,25 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
             } else {
                 items.put(entry.key(), entry.count());
             }
+            if (entry.cold() > 0) {
+                cold.put(entry.key(), entry);
+            } else {
+                cold.remove(entry.key());
+            }
         }
+        this.recalls.clear();
+        recalls.forEach(recall -> this.recalls.put(recall.key(), recall.percent()));
         version++;
+    }
+
+    // An item's cold details (on tape: how many, recall time, whether hot storage was full), or null.
+    public TerminalItemsPayload.@Nullable Entry cold(ItemKey key) {
+        return cold.get(key);
+    }
+
+    // How far along the player's recall of an item is (0-100), or -1 when they aren't waiting on one.
+    public int recall(ItemKey key) {
+        return recalls.getOrDefault(key, -1);
     }
 
     public Map<ItemKey, Long> items() {

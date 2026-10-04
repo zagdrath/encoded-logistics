@@ -1,0 +1,76 @@
+{
+ "$comment": "Device space: model px, bottom of the device at y = 0, front plate at z = 1.75, front faces -z (toward the player).",
+ "rack_console": {
+  "requires": "rack front door open; right-click the console (or its U) - again, or walking > 4 blocks away / closing the door, reverses",
+  "parts": {
+   "body": "rack_device/rack_console (static, its front is the dark drawer opening)",
+   "drawer": "rack_device/rack_console_drawer(_on|_fault)  - front plate + tray, carries the status LED glow",
+   "keyboard": "rack_device/rack_console_keyboard - moves with the drawer",
+   "lid": "rack_device/rack_console_lid(_on) - the fold-up screen; _on adds the emissive screen when open and online"
+  },
+  "open": [
+   {
+    "part": [
+     "drawer",
+     "keyboard",
+     "lid"
+    ],
+    "translate": [
+     0,
+     0,
+     -12.5
+    ],
+    "ticks": 8,
+    "easing": "ease_out_cubic",
+    "sound_at_start": "block.rack.console_slide_out"
+   },
+   {
+    "part": [
+     "lid"
+    ],
+    "pivot": [
+     8,
+     0.625,
+     13.5
+    ],
+    "pivot_moves_with": "drawer",
+    "axis": "X",
+    "degrees": 100,
+    "ticks": 6,
+    "easing": "ease_out_back (small overshoot)",
+    "sound_at_end": "block.rack.console_hinge"
+   }
+  ],
+  "close": "the reverse: lid 100 -> 0 deg over 6 ticks (hinge click at start), then drawer back over 8 ticks (console_slide_in)",
+  "screen": "lid_on (emissive, animated console_screen.png) only while the lid is past 60 deg and the network is online"
+ },
+ "tape_library": {
+  "window": "picker drawn by the device render extra in front of the magazine (z 1.69-1.70, texel space)",
+  "sprites": {
+   "carriage": "(60, ex)-(68, ex+2) on the rail at y = 2",
+   "head": "(60, ex)-(68, ex+6)",
+   "cable": "2 px wide strip from the carriage down to the head (chassis texel)",
+   "ex": "64 for the 4U sheet, 128 for the 6U sheet"
+  },
+  "path": [
+   "home: head at (62, 4) parked by the vertical guide x = 66",
+   "move X along the rail to the target column (slot x + -2)",
+   "drop Y to the slot row",
+   "grab: 4 ticks (tape sprite hides from the slot and is drawn on the head)",
+   "rise to y = 4",
+   "move X to x = 66 (the drive chute at the window edge)",
+   "drop to the drive level (bottom of the window), insert: 4 ticks",
+   "return home"
+  ],
+  "speed": {
+   "x": "3 texels per tick",
+   "y": "4 texels per tick",
+   "easing": "ease_in_out on each leg"
+  },
+  "sounds": {
+   "each_leg_start": "block.rack.picker_move (pitch 0.9-1.1)",
+   "grab_and_insert": "block.rack.tape_load"
+  },
+  "rear": "the drive sled in that bay shows its reading (blue) or writing (amber) LED while the tape is in it"
+ }
+}
