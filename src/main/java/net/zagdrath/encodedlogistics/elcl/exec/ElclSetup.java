@@ -18,5 +18,6 @@ public final class ElclSetup {
         done = true;
         RedstoneCommands.bind();
         OsCommands.bind();
+        ModCommands.bind();
     }
 }

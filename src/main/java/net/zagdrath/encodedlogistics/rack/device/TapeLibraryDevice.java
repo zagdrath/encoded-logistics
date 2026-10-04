@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.rack.device;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -107,6 +108,8 @@ public class TapeLibraryDevice extends RackDevice {
     private boolean pickerLoad;
     private int archiveTimer, assignTimer, backlog, lastBusy;
     private final List<ItemKey> toArchive = new ArrayList<>();
+    // Items sent to tape now (CHGITMTIER *COLD): archived next, whatever their age or the trigger.
+    private final Set<ItemKey> forced = new LinkedHashSet<>();
     // Tests: the archive age in ticks, overriding the setting.
     private long ageTicksOverride = -1;
 
@@ -166,6 +169,14 @@ public class TapeLibraryDevice extends RackDevice {
     }
 
     // Looks for items to archive on its next tick (tests: instead of waiting for tapeArchiveInterval).
+    // Archives an item on the next go, whatever its age and the free-space trigger (not saved: a restart forgets it).
+    public void archiveNow(ItemKey key) {
+        forced.add(key);
+        if (!toArchive.contains(key)) {
+            toArchive.addFirst(key);
+        }
+    }
+
     public void scanSoon() {
         archiveTimer = Integer.MAX_VALUE - 1;
     }
@@ -274,6 +285,11 @@ public class TapeLibraryDevice extends RackDevice {
             count += data.count(tape.id(), key);
         }
         return count;
+    }
+
+    // Its keep-hot or pinned list was changed from outside its panel (CHGITMTIER): saved and synced.
+    public void policyChanged() {
+        changed(false);
     }
 
     @Override
@@ -576,7 +592,8 @@ public class TapeLibraryDevice extends RackDevice {
             backlog = toArchive.size();
             long last = storage.lastAccess(key);
             long amount = storage.extractFromDrives(key, Long.MAX_VALUE, true);
-            if (last < 0 || amount <= 0 || !archivable(key, last, data.clock()) || recalls.busy(key)) {
+            boolean force = forced.remove(key);
+            if (last < 0 || amount <= 0 || !force && !archivable(key, last, data.clock()) || recalls.busy(key)) {
                 continue;
             }
             Tape tape = tapeFor(data, key, used);
@@ -625,7 +642,8 @@ public class TapeLibraryDevice extends RackDevice {
     // Lists what's due for archiving, oldest first, if this library should archive now.
     private void scanForArchive(MinecraftServer server, TapeRecalls recalls) {
         toArchive.clear();
-        backlog = 0;
+        toArchive.addAll(forced);
+        backlog = toArchive.size();
         NetworkStorage storage = storage(server);
         if (storage == null || !anyIdleBay() || tapeCount() == 0 || trigger && storage.hotFill() * 100 < percent || !mostFreeSpace(server)) {
             return;
@@ -639,7 +657,11 @@ public class TapeLibraryDevice extends RackDevice {
             }
         }
         due.sort(Map.Entry.comparingByValue());
-        due.forEach(entry -> toArchive.add(entry.getKey()));
+        due.forEach(entry -> {
+            if (!forced.contains(entry.getKey())) {
+                toArchive.add(entry.getKey());
+            }
+        });
         backlog = toArchive.size();
     }
 

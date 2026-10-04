@@ -11,12 +11,19 @@ import java.util.Locale;
 
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
+import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.JobEvents;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 
-// Trigger events from the game (COMMANDS.md 9): what happened, on which network, its device and &DATA. Each event is
-// handed to the listeners; the trigger service (WRKTRGEVT's entries, debounced) is one of them.
+// Trigger events from the game (COMMANDS.md 9): what happened, on which network, its device or item and &DATA. Each
+// event is handed to the listeners; the trigger service (WRKTRGEVT's entries, debounced) is one of them.
 public final class ElclEvents {
-    public record Event(NetworkRef network, String event, String device, String data) {}
+    public record Event(NetworkRef network, String event, String device, String item, String data) {
+        public Event(NetworkRef network, String event, String device, String data) {
+            this(network, event, device, "", data);
+        }
+    }
 
     public interface Listener {
         void fired(MinecraftServer server, Event event);
@@ -50,6 +57,17 @@ public final class ElclEvents {
     // *RSCHANGE: a Control Interface's input on a face changed. &DATA = "*NORTH 7".
     public static void redstoneChanged(MinecraftServer server, NetworkRef network, String device, Direction side, int level) {
         fire(server, new Event(network, "*RSCHANGE", device, side(side) + " " + level));
+    }
+
+    // *CRAFTEND: a crafting job ended. &DATA = "C0042 *DONE" (*DONE, *FAILED or *CANCELLED); its item for ITEM().
+    public static void craftEnded(MinecraftServer server, NetworkRef network, CraftingJob job, JobEvents.Outcome outcome) {
+        String status = switch (outcome) {
+            case COMPLETED -> "*DONE";
+            case FAILED -> "*FAILED";
+            case CANCELLED -> "*CANCELLED";
+        };
+        String id = String.format(Locale.ROOT, "C%04d", ControllerStructures.jobNumber(server, network, job.id));
+        fire(server, new Event(network, "*CRAFTEND", "", ElclItems.id(job.target.stack().getItem()), id + " " + status));
     }
 
     // A face as ELCL names it: *NORTH ... *UP, *DOWN.

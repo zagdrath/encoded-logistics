@@ -21,4 +21,9 @@ public interface ElclContext {
     String user();
 
     boolean allowed(RackPermission permission);
+
+    // The job a command runs in, by number; null: the user's interactive job.
+    default @Nullable String job() {
+        return null;
+    }
 }

@@ -424,6 +424,16 @@ public final class StoredLibraryService implements LibraryService {
     }
 
     @Override
+    public synchronized List<SourceLine> programSource(ElclSystem system, String library, String program) throws ElclException {
+        SystemData.Library lib = find(system, library);
+        SystemData.Program found = lib.programs.get(upper(program));
+        if (found == null) {
+            throw new ElclException("ELC0203", upper(program), lib.name);
+        }
+        return found.source;
+    }
+
+    @Override
     public synchronized void deleteProgram(ElclSystem system, String user, String library, String program) throws ElclException {
         SystemData.Library lib = find(system, library);
         writable(system, lib, user);

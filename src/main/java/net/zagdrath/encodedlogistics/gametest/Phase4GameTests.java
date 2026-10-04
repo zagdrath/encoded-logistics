@@ -86,7 +86,7 @@ final class Phase4GameTests {
     }
 
     // Mounts a part on a side of a cable, as a player using its item on that side would.
-    private static void mount(GameTestHelper helper, BlockPos cable, Direction side, PartType type) {
+    static void mount(GameTestHelper helper, BlockPos cable, Direction side, PartType type) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         ItemStack stack = new ItemStack(type.item());
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);

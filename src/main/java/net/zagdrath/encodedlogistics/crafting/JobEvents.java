@@ -60,6 +60,10 @@ public final class JobEvents {
     }
 
     public static void ended(MinecraftServer server, @Nullable NetworkRef network, CraftingJob job, Outcome outcome, String reason) {
+        CraftHistory.record(server, job, outcome);
+        if (network != null) {
+            net.zagdrath.encodedlogistics.elcl.exec.ElclEvents.craftEnded(server, network, job, outcome);
+        }
         long duration = job.started >= 0 ? Math.max(0, server.overworld().getGameTime() - job.started) : 0;
         JobToastPayload theirs = new JobToastPayload(job.target, job.amount, outcome.ordinal(), job.processing(), reason, duration, true);
         JobToastPayload others = new JobToastPayload(job.target, job.amount, outcome.ordinal(), job.processing(), reason, duration, false);

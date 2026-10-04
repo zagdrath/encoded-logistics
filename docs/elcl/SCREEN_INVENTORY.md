@@ -91,7 +91,14 @@ The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-test
   `StoredSpoolService`, `StoredSysvalService`, `StoredUserService`, `ElclConfig` (the config's `elcl` section)
 - `elcl.device` - `PrinterDevice`, `Printers` (see INTERFACES.md)
 
-Not in place yet: `elcl.vm`, `elcl.job`, `elcl.sync`. See IMPLEMENTATION_STATUS.md.
+- `elcl.vm` - `Values` (types, conversions, expressions, built-ins), `Lowerer` (statements to flat code), `VmProgram`, `Vm`
+  (budgeted, resumable, NBT), `VmHost`
+- `elcl.job` (so far) - `JobManager` (runs programs each server tick within the budgets), `JobVmHost`, `Waits` (RECALL,
+  CRAFT), `InteractiveCalls` (CALL on a command line)
+- `elcl.exec` - `ModCommands` (COMMANDS.md 3-8), `ElclItems` (item IDs)
+- `elcl.device` - `DisplayDevice`, `Displays` (SNDDSPTXT)
+
+Not in place yet: batch jobs and job hosts (the rest of `elcl.job`), `elcl.sync`. See IMPLEMENTATION_STATUS.md.
 
 ## Stubs waiting on ELCL packages
 
@@ -103,18 +110,11 @@ system (network) for as long as the server runs: **nothing here survives a resta
 |---|---|---|
 | `StubJobService` | jobs, job, interactive, endInteractive, hold, release, end, change, log, logCommand, logMessage, scheduleEntries, addScheduleEntry, removeScheduleEntry, holdScheduleEntry, triggers, addTrigger, removeTrigger, holdTrigger | `elcl.job`: job hosts, the job queue, tick budgets, persistence; schedule entries and triggers never fire yet |
 | `StubJobService.submit` | SBMJOB, WRKJOBSCDE 10=Submit now | `elcl.job` job hosts: always ELC0301 |
-| `StubJobService.callStack` | WRKJOB 11 | `elcl.vm` |
 | `ScreenQueries.jobs` | WRKACTJOB row 2 | `elcl.job`: hosts busy / total are 0/0, budget the jobs' sum |
 | `ElclEvents` | `*RSCHANGE` (fired by the Control Interface) | `elcl.job` triggers listening (nothing listens yet) |
 
-Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this;
-not in MESSAGES.md):
-
-| Commands | Wait for |
-|---|---|
-| CALL, DLYJOB | `elcl.vm` |
-| RTVITMCNT, RTVITMLST, MOVITM, IMPITM, CHGITMTIER, RTVSTGSTS, STRCRAFT, RTVCRFSTS, ENDCRAFT, RTVDEVSTS, RTVDEVLST, CHGDEVSTS, CHGDEVFTR, RTVLANES, RTVPWRSTS, SNDDSPTXT, PRTRPT | the mod commands (ELCL HANDOFF order 5) |
-| SAVLIB, RSTLIB | `elcl.sync` and the 8" Diskette |
+Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this):
+only SAVLIB and RSTLIB remain (the 8" Diskette interface, Part 7).
 
 The language statements (PGM, DCL, IF, DO, MONMSG and the rest, 29 in all) are program-only: on the command line
 they're ELC0106.

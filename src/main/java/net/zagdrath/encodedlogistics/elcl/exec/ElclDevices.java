@@ -16,8 +16,10 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
@@ -26,11 +28,13 @@ import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 
-// The devices scripts name (COMMANDS.md 5): CTLIF01 (Control Interfaces), ELDESK01 (Terminal Desks), and rack devices by
+// The devices scripts name (COMMANDS.md 5): CTLIF01 (Control Interfaces), ELDESK01 (Terminal Desks), rack devices by
 // kind - FIREWALL01, ROUTER01, UPS01, SWITCH01, L3SWITCH01, CMPSRV01, MEMSRV01, FABSRV01, MONSRV01, NAS01, SAN01,
-// RACKCON01, WLC01, TAPELIB01.
+// RACKCON01, WLC01, TAPELIB01 - and the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
+// DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01.
 //
 // A device's name is stored with the device (a rack device's goes with its item; a desk's or Control Interface's with
 // its block item) and given once, the first time it's on a network: its type plus the lowest number free there. It
@@ -41,13 +45,17 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 // had when they were counted. Work with Devices' display order doesn't affect them.
 public final class ElclDevices {
     // A named device: its name and type code, where it is, and the block entity or rack device behind it.
-    public record Device(String name, String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, boolean online) {}
+    public record Device(String name, String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, @Nullable CablePart part,
+            boolean online) {}
 
     // A device that can carry a name, before naming: where its name is kept.
-    private record Candidate(String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, boolean online) {
+    private record Candidate(String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, @Nullable CablePart part, boolean online) {
         String stored() {
             if (rack != null) {
                 return rack.deviceName();
+            }
+            if (part != null) {
+                return part.deviceName();
             }
             if (entity instanceof ControlInterfaceBlockEntity ci) {
                 return ci.name();
@@ -58,6 +66,8 @@ public final class ElclDevices {
         void store(String name) {
             if (rack != null) {
                 rack.setDeviceName(name);
+            } else if (part != null) {
+                part.setDeviceName(name);
             } else if (entity instanceof ControlInterfaceBlockEntity ci) {
                 ci.setName(name);
             } else if (entity instanceof TerminalDeskBlockEntity desk) {
@@ -67,11 +77,12 @@ public final class ElclDevices {
 
         // Which device this is on its system: its block, and a rack device's unit.
         String identity() {
-            return identity(pos, rack);
+            return identity(pos, rack, part);
         }
 
-        static String identity(NodePos pos, @Nullable RackDevice rack) {
-            return pos.dimension().identifier() + "@" + pos.pos().asLong() + (rack != null ? "/U" + rack.u() : "");
+        static String identity(NodePos pos, @Nullable RackDevice rack, @Nullable CablePart part) {
+            return pos.dimension().identifier() + "@" + pos.pos().asLong() + (rack != null ? "/U" + rack.u() : "")
+                    + (part != null ? "/" + part.side().getSerializedName() : "");
         }
     }
 
@@ -94,6 +105,22 @@ public final class ElclDevices {
         };
     }
 
+    // A cable part's type code.
+    public static String code(CablePart part) {
+        return switch (part.type()) {
+            case INGRESS_PORT -> "INGRESS";
+            case EGRESS_PORT -> "EGRESS";
+            case INVENTORY_TAP -> "TAP";
+            case THRESHOLD_SENSOR -> "SENSOR";
+            case COLLECTOR_PLANE -> "COLLECTOR";
+            case DEPLOYER_PLANE -> "DEPLOYER";
+            case POINT_TO_POINT_LINK -> "P2P";
+            case ACCESS_TERMINAL -> "TERM";
+            case FABRICATION_TERMINAL -> "FABTERM";
+            case SCHEMATIC_ENCODER -> "ENCODER";
+        };
+    }
+
     // The devices that take names, in the order they're named in: rack by rack, each rack's from its lowest unit up
     // (Work with Devices lists them top unit first).
     private static List<Candidate> candidates(MinecraftServer server, @Nullable NetworkRef network) {
@@ -109,16 +136,25 @@ public final class ElclDevices {
             }
         }
         List<Candidate> candidates = new ArrayList<>();
+        Set<NodePos> partHosts = new HashSet<>();
         for (ControllerStructures.DeviceRow row : rows) {
             if (row.rackDevice() != null) {
-                candidates.add(new Candidate(code(row.rackDevice()), row.pos(), null, row.rackDevice(), row.online()));
+                candidates.add(new Candidate(code(row.rackDevice()), row.pos(), null, row.rackDevice(), null, row.online()));
                 continue;
             }
             BlockEntity entity = ControllerStructures.blockEntity(server, row.pos());
             if (entity instanceof ControlInterfaceBlockEntity ci) {
-                candidates.add(new Candidate(ControlInterfaceBlockEntity.TYPE, row.pos(), ci, null, ci.isOnline()));
+                candidates.add(new Candidate(ControlInterfaceBlockEntity.TYPE, row.pos(), ci, null, null, ci.isOnline()));
             } else if (entity instanceof TerminalDeskBlockEntity && row.type().equals("Terminal")) {
-                candidates.add(new Candidate("DESK", row.pos(), entity, null, row.online()));
+                candidates.add(new Candidate("DESK", row.pos(), entity, null, null, row.online()));
+            } else if (entity instanceof CableBlockEntity cable && row.type().equals("Part") && partHosts.add(row.pos())) {
+                // Each part on it, in side order.
+                for (Direction side : Direction.values()) {
+                    CablePart part = cable.part(side);
+                    if (part != null) {
+                        candidates.add(new Candidate(code(part), row.pos(), cable, null, part, part.isOnline()));
+                    }
+                }
             }
         }
         return candidates;
@@ -138,7 +174,8 @@ public final class ElclDevices {
         assign(ElclStore.get(server).system(network), candidates);
         List<Device> devices = new ArrayList<>(candidates.size());
         for (Candidate candidate : candidates) {
-            devices.add(new Device(candidate.stored(), candidate.type(), candidate.pos(), candidate.entity(), candidate.rack(), candidate.online()));
+            devices.add(new Device(candidate.stored(), candidate.type(), candidate.pos(), candidate.entity(), candidate.rack(), candidate.part(),
+                    candidate.online()));
         }
         return devices;
     }
@@ -204,10 +241,14 @@ public final class ElclDevices {
         return null;
     }
 
-    // The name of the device at a block (and rack unit), or "" for none.
+    // The name of the device at a block (and rack unit), or "" for none; a part's (side given) by its side.
     public static String nameAt(List<Device> devices, NodePos pos, @Nullable RackDevice rack) {
+        return nameAt(devices, pos, rack, null);
+    }
+
+    public static String nameAt(List<Device> devices, NodePos pos, @Nullable RackDevice rack, @Nullable Direction side) {
         for (Device device : devices) {
-            if (device.pos().equals(pos) && device.rack() == rack) {
+            if (device.pos().equals(pos) && device.rack() == rack && (device.part() == null ? side == null : device.part().side() == side)) {
                 return device.name();
             }
         }
@@ -229,7 +270,7 @@ public final class ElclDevices {
             return;
         }
         SystemData system = ElclStore.get(server).system(network);
-        String identity = Candidate.identity(device.pos(), device.rack());
+        String identity = Candidate.identity(device.pos(), device.rack(), device.part());
         String holder = system.deviceNames.get(wanted);
         if (holder != null && !holder.equals(identity) || find(server, network, wanted) != null) {
             throw new ElclException("ELC1308", wanted, system.sysvals.getOrDefault("SYSNAME", "the system"));
@@ -237,6 +278,6 @@ public final class ElclDevices {
         system.deviceNames.values().remove(identity);
         system.deviceNames.put(wanted, identity);
         system.changed();
-        new Candidate(device.type(), device.pos(), device.entity(), device.rack(), device.online()).store(wanted);
+        new Candidate(device.type(), device.pos(), device.entity(), device.rack(), device.part(), device.online()).store(wanted);
     }
 }

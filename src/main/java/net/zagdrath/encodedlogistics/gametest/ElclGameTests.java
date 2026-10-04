@@ -75,7 +75,7 @@ final class ElclGameTests {
                     expect(helper, context, "RLSJOB JOB(" + job + ")", "ELC0309");
                     expect(helper, context, "ENDJOB JOB(" + job + ") OPTION(*IMMED)", "ELC0311");
                     expect(helper, context, "SBMJOB CMD(CALL PGM(ZAGLIB/RESTOCK)) JOB(RESTOCK)", "ELC0301");
-                    expect(helper, context, "CALL PGM(ZAGLIB/RESTOCK)", "ELC0107");
+                    expect(helper, context, "CALL PGM(ZAGLIB/RESTOCK)", "ELC0203");
                     expect(helper, context, "DLTLIB LIB(ZAGLIB)", "ELC0211");
                     helper.assertTrue(ElclServices.sysvals().get(system, "PHOSPHOR").equals("*AMBER"), "PHOSPHOR not changed");
                     try {

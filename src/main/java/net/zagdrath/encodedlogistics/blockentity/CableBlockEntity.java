@@ -280,7 +280,9 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         syncParts();
         ValueInput saved = input.childOrEmpty("parts");
         for (Map.Entry<Direction, CablePart> entry : parts.entrySet()) {
-            entry.getValue().load(saved.childOrEmpty(entry.getKey().getSerializedName()));
+            ValueInput part = saved.childOrEmpty(entry.getKey().getSerializedName());
+            entry.getValue().loadCommon(part);
+            entry.getValue().load(part);
         }
         // Only sent to clients (getUpdateTag); the server works these out as it runs.
         online = input.getBooleanOr("online", false);
@@ -296,7 +298,11 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         }
         if (!parts.isEmpty()) {
             ValueOutput saved = output.child("parts");
-            parts.forEach((side, part) -> part.save(saved.child(side.getSerializedName())));
+            parts.forEach((side, part) -> {
+                ValueOutput child = saved.child(side.getSerializedName());
+                part.saveCommon(child);
+                part.save(child);
+            });
         }
     }
 

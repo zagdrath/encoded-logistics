@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.elcl.exec;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.jspecify.annotations.Nullable;
@@ -14,6 +15,8 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.ElclMessages;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
+import net.zagdrath.encodedlogistics.elcl.job.InteractiveCalls;
+import net.zagdrath.encodedlogistics.elcl.job.JobManager;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.JobService;
@@ -27,6 +30,11 @@ public final class OsCommands {
     public static final String[] LIBRARY_LIST = { "ELGPL", "ELSYS" };
 
     private OsCommands() {}
+
+    // A user's library list (OS.md 2): where *LIBL looks, in order.
+    public static List<String> libraryList(ElclSystem system, String user) {
+        return List.of(LIBRARY_LIST);
+    }
 
     // The system the command runs on: the context's network (ELC1302 on *NETWORK while there's none).
     static ElclSystem system(Invocation call) throws ElclException {
@@ -133,6 +141,10 @@ public final class OsCommands {
             call.send(ElclMessage.of("ELC0219", pgm[1], pgm[0]));
         });
 
+        CommandRegistry.bind("CALL", InteractiveCalls::call);
+        // In a program the VM waits; typed on a command line there's nothing to hold up, so it's done at once.
+        CommandRegistry.bind("DLYJOB", call -> {});
+
         JobService jobs = ElclServices.jobs();
         CommandRegistry.bind("SBMJOB", call -> {
             String name = call.text("JOB").equals("*JOBD") ? "QDFTJOBD" : call.text("JOB");
@@ -140,7 +152,12 @@ public final class OsCommands {
         });
         CommandRegistry.bind("HLDJOB", call -> call.send(jobs.hold(system(call), user(call), call.text("JOB"))));
         CommandRegistry.bind("RLSJOB", call -> call.send(jobs.release(system(call), user(call), call.text("JOB"))));
-        CommandRegistry.bind("ENDJOB", call -> call.send(jobs.end(system(call), user(call), call.text("JOB"), call.text("OPTION"))));
+        CommandRegistry.bind("ENDJOB", call -> {
+            ElclSystem system = system(call);
+            JobService.Job job = jobs.job(system, call.text("JOB"));
+            call.send(jobs.end(system, user(call), call.text("JOB"), call.text("OPTION")));
+            JobManager.of(system.server()).end(system, job.number());
+        });
         CommandRegistry.bind("CHGJOB", call -> jobs.change(system(call), user(call), call.text("JOB"),
                 call.text("JOBPTY").equals("*SAME") ? 0 : (int) call.integer("JOBPTY"), call.text("LOG")));
         CommandRegistry.bind("ADDJOBSCDE", call -> call.send(jobs.addScheduleEntry(system(call), user(call), call.text("JOB"), call.text("CMD"),
@@ -156,7 +173,7 @@ public final class OsCommands {
         CommandRegistry.bind("RLSTRGEVT", call -> jobs.holdTrigger(system(call), user(call), call.text("TRG"), false));
         CommandRegistry.bind("RTVJOBA", call -> {
             ElclSystem system = system(call);
-            JobService.Job job = interactiveJob(call, system);
+            JobService.Job job = currentJob(call, system);
             call.returns("RTNUSR", job.user());
             call.returns("RTNJOB", job.name());
             call.returns("RTNTYPE", call.interactive() ? "*INTER" : "*BATCH");
@@ -181,15 +198,19 @@ public final class OsCommands {
         });
         CommandRegistry.bind("PRTTXT", call -> {
             ElclSystem system = system(call);
-            JobService.Job job = interactiveJob(call, system);
+            JobService.Job job = currentJob(call, system);
             String file = call.text("SPLF").equals("*JOB") ? "QPRINT" : call.text("SPLF").toUpperCase(Locale.ROOT);
             ElclServices.spool().append(system, file, job.number(), job.name(), user(call), call.text("TEXT"));
         });
     }
 
-    // The job a command runs in: the user's interactive one.
-    static JobService.Job interactiveJob(Invocation call, ElclSystem system) throws ElclException {
-        return interactiveJob(system, user(call));
+    // The job a command runs in: its context's (a batch job), else the user's interactive one.
+    public static JobService.Job currentJob(Invocation call, ElclSystem system) throws ElclException {
+        ElclContext context = context(call);
+        if (context.job() != null) {
+            return ElclServices.jobs().job(system, context.job());
+        }
+        return interactiveJob(system, context.user());
     }
 
     public static JobService.Job interactiveJob(ElclSystem system, String user) {

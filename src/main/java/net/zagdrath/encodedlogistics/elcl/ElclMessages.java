@@ -50,6 +50,10 @@ public final class ElclMessages {
         define("ELC0106", SEVERE, "Command &1 is not allowed in an interactive job.");
         // Not in MESSAGES.md: a command whose ELCL package hasn't landed yet (SCREEN_INVENTORY.md).
         define("ELC0107", SEVERE, "Command &1 is not available yet.");
+        // Not in MESSAGES.md originally: a program called on a command line runs in the interactive job.
+        define("ELC0108", INFO, "Program &1 running in job &2.");
+        define("ELC0109", SEVERE, "Job &1 is already running program &2.");
+        define("ELC0110", INFO, "Program &1 ended normally.");
         // Objects.
         define("ELC0201", SEVERE, "Library &1 not found.");
         define("ELC0202", SEVERE, "Member &1 not found in library &2.");

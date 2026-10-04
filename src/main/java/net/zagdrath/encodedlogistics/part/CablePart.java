@@ -26,11 +26,14 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // A part's behaviour and state on one side of a cable (or part host): what it saves, what it drops besides itself, how it
 // ticks, whether it's lit (its model's lit state), the menu it opens. A part works only while its host is online (on a
-// powered network with its lanes); offline, ports idle and lights go out.
+// powered network with its lanes) and it's enabled (scripts can disable it: CHGDEVSTS); otherwise ports idle and lights
+// go out. It also keeps the name scripts know it by (INGRESS01, ElclDevices).
 public abstract class CablePart {
     protected final PartType type;
     protected final CableBlockEntity host;
     protected final Direction side;
+    private boolean enabled = true;
+    private String deviceName = "";
 
     protected CablePart(PartType type, CableBlockEntity host, Direction side) {
         this.type = type;
@@ -56,7 +59,44 @@ public abstract class CablePart {
     }
 
     public boolean isOnline() {
-        return host.isOnline();
+        return host.isOnline() && enabled;
+    }
+
+    public boolean enabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (this.enabled != enabled) {
+            this.enabled = enabled;
+            changed();
+        }
+    }
+
+    public String deviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String name) {
+        if (!deviceName.equals(name)) {
+            deviceName = name;
+            changed();
+        }
+    }
+
+    // The part's own state is loaded and saved by its type; the name and switch for every part (CableBlockEntity).
+    public final void loadCommon(ValueInput input) {
+        enabled = input.getBooleanOr("enabled", true);
+        deviceName = input.getStringOr("device_name", "");
+    }
+
+    public final void saveCommon(ValueOutput output) {
+        if (!enabled) {
+            output.putBoolean("enabled", false);
+        }
+        if (!deviceName.isEmpty()) {
+            output.putString("device_name", deviceName);
+        }
     }
 
     // Whether the model shows its lit state.

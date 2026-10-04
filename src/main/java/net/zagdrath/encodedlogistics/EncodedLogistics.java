@@ -19,8 +19,10 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclSetup;
+import net.zagdrath.encodedlogistics.elcl.job.JobManager;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
@@ -61,6 +63,7 @@ public class EncodedLogistics {
 
         modEventBus.addListener(EncodedLogistics::registerTicketControllers);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(EncodedLogistics::onServerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
         FirewallEvents.register();
         ElclSetup.init();
@@ -91,6 +94,11 @@ public class EncodedLogistics {
     // Clients get the lithography recipes (the press's slots and JEI need them).
     private static void onDatapackSync(OnDatapackSyncEvent event) {
         event.sendRecipes(ModRecipeTypes.LITHOGRAPHY.get());
+    }
+
+    // ELCL jobs run their budgets once per server tick, after the levels.
+    private static void onServerTick(ServerTickEvent.Post event) {
+        JobManager.of(event.getServer()).tick(event.getServer());
     }
 
     // Scheduler and controller structures revalidate (and controllers tick) once per level tick.

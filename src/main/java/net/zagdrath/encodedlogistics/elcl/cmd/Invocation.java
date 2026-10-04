@@ -39,4 +39,17 @@ public interface Invocation {
 
     // The game side of the run (a TerminalContext on the server), or null when it isn't that type.
     <T> @Nullable T context(Class<T> type);
+
+    // An async command waits: its job goes to *WAIT until the wait is done, then the command runs again (resumed()
+    // gives the wait). On a command line, where nothing can wait, it ends there (canWait() is false).
+    default void await(Wait wait) {}
+
+    default boolean canWait() {
+        return false;
+    }
+
+    // The wait this run is coming back from, or null on its first run.
+    default @Nullable Wait resumed() {
+        return null;
+    }
 }

@@ -67,5 +67,8 @@ public interface LibraryService {
     // A program to run (ELC0203 when there's none, or it no longer compiles).
     CompiledProgram program(ElclSystem system, String library, String program) throws ElclException;
 
+    // A program's source as it was compiled (what a job runs): ELC0201 / ELC0203 when there's none.
+    List<SourceLine> programSource(ElclSystem system, String library, String program) throws ElclException;
+
     void deleteProgram(ElclSystem system, String user, String library, String program) throws ElclException;
 }

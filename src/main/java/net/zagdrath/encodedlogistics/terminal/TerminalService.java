@@ -5,8 +5,10 @@
 
 package net.zagdrath.encodedlogistics.terminal;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
+import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
@@ -29,6 +32,7 @@ import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
+import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
@@ -239,6 +243,7 @@ public final class TerminalService {
         List<ControllerStructures.DeviceRow> all = ControllerStructures.deviceRows(context.server(), context.network());
         // The names scripts use (UPS01), shown before the device's kind; display order doesn't affect them.
         List<ElclDevices.Device> named = ElclDevices.list(context.server(), context.network());
+        Map<NodePos, Integer> partRows = new HashMap<>();
         for (int i = 0; i < all.size(); i++) {
             ControllerStructures.DeviceRow row = all.get(i);
             RackDevice device = row.rackDevice();
@@ -265,8 +270,19 @@ public final class TerminalService {
                 status = Component.translatable(row.online() ? "gui.encodedlogistics.status.online" : "gui.encodedlogistics.status.offline");
                 attr = row.online() ? TerminalLine.NORMAL : TerminalLine.DIM;
             }
-            // Cell 3 is the device's name (empty when it has none): Work with Devices' 2=Change reads it.
-            String name = ElclDevices.nameAt(named, row.pos(), device);
+            // Cell 3 is the device's name (empty when it has none): Work with Devices' 2=Change reads it. A block's parts
+            // come in side order, so its nth Part row is its nth part.
+            Direction side = null;
+            if (row.type().equals("Part") && ControllerStructures.blockEntity(context.server(), row.pos()) instanceof CableBlockEntity cable) {
+                int nth = partRows.merge(row.pos(), 1, Integer::sum) - 1;
+                for (Direction candidate : Direction.values()) {
+                    if (cable.part(candidate) != null && nth-- == 0) {
+                        side = candidate;
+                        break;
+                    }
+                }
+            }
+            String name = ElclDevices.nameAt(named, row.pos(), device, side);
             out.line(TerminalLine.builder().text(screen ? "" : "    ").left(type, 10).text("  ").left(name, name.isEmpty() ? 0 : 11)
                     .left(row.name(), name.isEmpty() ? 22 : 11).text("  ").left(location, 17).text("  ").left(lanes, 7).text("  ").text(status).attr(attr)
                     .build());

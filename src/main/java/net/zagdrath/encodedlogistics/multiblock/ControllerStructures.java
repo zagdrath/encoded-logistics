@@ -953,7 +953,7 @@ public class ControllerStructures extends SavedData {
             if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof CableBlockEntity host
                     && host.getLevel() instanceof ServerLevel hostLevel) {
                 for (CablePart part : host.parts()) {
-                    if (part instanceof InventoryTapPart tap) {
+                    if (part instanceof InventoryTapPart tap && tap.enabled()) {
                         StorageView view = tap.view(hostLevel);
                         if (view != null) {
                             views.add(view);

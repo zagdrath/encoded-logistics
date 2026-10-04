@@ -35,6 +35,10 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC0104 | 30 | Parameter &1 specified more than once. |
 | ELC0105 | 30 | Command &1 is not allowed in a batch job. |
 | ELC0106 | 30 | Command &1 is not allowed in an interactive job. |
+| ELC0107 | 30 | Command &1 is not available yet. | *(added: a command with no implementation)*
+| ELC0108 | 00 | Program &1 running in job &2. | *(added: CALL on a command line)*
+| ELC0109 | 30 | Job &1 is already running program &2. | *(added)*
+| ELC0110 | 00 | Program &1 ended normally. | *(added: an interactive CALL's end)*
 
 ## ELC02xx — Objects
 

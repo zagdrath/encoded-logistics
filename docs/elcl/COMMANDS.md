@@ -19,7 +19,7 @@ general errors ELC0101–ELC0106 and ELC0401.
 | `RCVMSG` | `MSGTYPE(*EXCP\|*LAST)` `RTNMSGID` `RTNMSG` `RTNMSGDTA` | IB | |
 | `SNDPGMMSG` | `MSG` `MSGID(USRnnnn)` `MSGTYPE(*INFO\|*ESCAPE)` | IB | |
 | `CALL` | `PGM`(P1, Req, qualified) `PARM`(P2, list) | IB | Spec §7 |
-| `DLYJOB` | `DLY`(P1, seconds, 1–86400) or `RSMTIME(HHMMSS)` (game clock) | IB | Async |
+| `DLYJOB` | `DLY`(P1, seconds, 1–86400) or `RSMTIME(HHMMSS)` (game clock) | IB | Async (seconds are game ticks / 20); on a command line it's done at once |
 | `RTVJOBA` | `RTNUSR` `RTNJOB` `RTNTYPE` (*CHAR: `*INTER`/`*BATCH`) `RTNHOST` | IB | Current job |
 
 ## 2. Lists [EXT]
@@ -43,6 +43,12 @@ general errors ELC0101–ELC0106 and ELC0401.
 
 `*DESK` = the drawer of the Terminal Desk running the job (interactive only).
 Cold items requested by `MOVITM` trigger a recall; the job waits (async).
+*(Implemented: a device for `MOVITM`/`IMPITM` is a cable part facing an inventory - an
+Egress or Ingress Port, an Inventory Tap. The mod has no per-item tier, so
+`CHGITMTIER` works through the Tape Libraries' lists: `*HOT` adds the item to a
+library's keep-hot filter and recalls what's on tape, `*PIN` pins it, `*COLD`
+archives it on the next pass whatever its age, `*AUTO` takes it off those lists;
+ELC1305 when the list is full.)*
 
 ## 4. Crafting
 
@@ -71,6 +77,13 @@ Control Interfaces, Terminal Desks and rack devices; the mod has no Label Maker.
 | `RNMDEV` **[EXT]** | `DEV`(P1, Req) `NEWNAME`(P2, Req) | configure | ELC1301, ELC0103, ELC1308 (name in use); ELC1309 on success |
 | `RTVLANES` | `RTNUSED` `RTNTOTAL` (*INT) | view | — |
 
+*(Implemented: device types for `TYPE()` and `RTNTYPE` are the name prefixes -
+CTLIF, DESK, the rack devices' (UPS, NAS, TAPELIB, ...) and the cable parts'
+(INGRESS, EGRESS, TAP, SENSOR, COLLECTOR, DEPLOYER, P2P, TERM, FABTERM,
+ENCODER). Only cable parts can be enabled / disabled (a disabled part works as
+if offline) and only ports, taps and planes have filters; anything else is
+ELC1303.)*
+
 ## 6. Power
 
 | Command | Parameters | Auth |
@@ -90,7 +103,7 @@ Control Interfaces, Terminal Desks and rack devices; the mod has no Label Maker.
 |---------|-----------|---------|-------|
 | `SNDMSG` | `MSG`(P1, Req) `TOUSR(*REQUESTER\|*SYSOPR\|*ALL\|user)` `TOTRM(name)` | IB | `*SYSOPR` = network owner. Also shows a chat notice to online recipients (config). |
 | `DSPMSG` | `USR(*CURRENT\|user)` | I | Opens Display Messages screen |
-| `SNDDSPTXT` | `DEV`(P1, Req) `TEXT`(P2, Req) `LINE(*NEXT\|n)` `CLEAR(*NO\|*YES)` | IB | Status Display, NOC Video Wall, Rack Console. ELC1301, ELC1303 |
+| `SNDDSPTXT` | `DEV`(P1, Req) `TEXT`(P2, Req) `LINE(*NEXT\|n)` `CLEAR(*NO\|*YES)` | IB | Status Display, NOC Video Wall, Rack Console. ELC1301, ELC1303. *(Implemented against `elcl.device.DisplayDevice`; the mod has none of these displays yet)* |
 | `PRTTXT` | `TEXT`(P1, Req) `SPLF(*JOB\|name)` | IB | Writes a line to a spooled file |
 | `PRTRPT` | `RPT`(P1, Req: `*INV\|*DEV\|*JOBLOG\|*SPLF`) `SPLF(name)` `DEV(*DFT\|printer)` | IB | Line Printer. ELC1301, ELC1306 (out of paper) |
 
