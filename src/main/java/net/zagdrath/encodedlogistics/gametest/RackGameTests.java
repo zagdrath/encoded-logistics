@@ -409,7 +409,7 @@ final class RackGameTests {
                 .thenSucceed();
     }
 
-    private static CompoundTag upsState(GameTestHelper helper, long stored) {
+    static CompoundTag upsState(GameTestHelper helper, long stored) {
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
         output.putInt("mode", UpsDevice.Mode.ONLINE.ordinal());
         output.putLong("stored", stored);

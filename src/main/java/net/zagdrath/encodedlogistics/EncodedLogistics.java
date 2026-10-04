@@ -23,7 +23,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclSetup;
 import net.zagdrath.encodedlogistics.elcl.job.JobManager;
+import net.zagdrath.encodedlogistics.elcl.job.Schedules;
 import net.zagdrath.encodedlogistics.elcl.job.StoredJobService;
+import net.zagdrath.encodedlogistics.elcl.job.Triggers;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -100,6 +102,8 @@ public class EncodedLogistics {
 
     // ELCL jobs run their budgets once per server tick, after the levels.
     private static void onServerTick(ServerTickEvent.Post event) {
+        Schedules.tick(event.getServer());
+        Triggers.tick(event.getServer());
         if (ElclServices.jobs() instanceof StoredJobService jobs) {
             jobs.tick(event.getServer());
         }

@@ -822,6 +822,14 @@ public class ControllerStructures extends SavedData {
         return NetworkIndex.get(level.getServer()).members.get(NetworkGraph.at(level.dimension(), pos));
     }
 
+    // Whether a network is loaded and running: its structure exists, its controllers' chunk is loaded and it has been
+    // worked out (scripts' schedule entries and triggers only fire then).
+    public static boolean loaded(MinecraftServer server, @Nullable NetworkRef ref) {
+        Owner owner = owner(server, ref);
+        return owner != null && owner.runtime.discovered != null && !owner.structure.members().isEmpty()
+                && owner.home().isLoaded(owner.structure.members().getFirst());
+    }
+
     // Whether a network (its structure) still exists.
     public static boolean exists(MinecraftServer server, @Nullable NetworkRef ref) {
         return owner(server, ref) != null;

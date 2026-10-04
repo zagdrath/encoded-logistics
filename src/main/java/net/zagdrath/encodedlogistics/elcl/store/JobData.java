@@ -67,12 +67,12 @@ public final class JobData {
         }
     }
 
-    // A trigger: what JobService shows, who made it, whether its condition held last time it was looked at (edge
-    // triggering) and when it last fired (epoch ms, the debounce).
+    // A trigger: what JobService shows, who made it, whether its condition has been looked at yet (primed) and held last
+    // time (edge triggering), and when it last fired (epoch ms, the debounce).
     public static final class Trigger {
         public JobService.Trigger trigger;
         public @Nullable UUID player;
-        public boolean armed = true, wasTrue;
+        public boolean primed, wasTrue;
         public long lastFired;
 
         public Trigger(JobService.Trigger trigger, @Nullable UUID player) {
@@ -207,6 +207,7 @@ public final class JobData {
             j.putString("program", trigger.program());
             j.putString("status", trigger.status());
             j.putString("user", trigger.user());
+            j.putBoolean("primed", t.primed);
             j.putBoolean("was_true", t.wasTrue);
             j.putLong("last_fired", t.lastFired);
             uuid(j, t.player);
@@ -256,6 +257,7 @@ public final class JobData {
                     j.getStringOr("device", ""), j.getStringOr("value", ""), j.getStringOr("program", ""), j.getStringOr("status", "*ACTIVE"),
                     j.getStringOr("user", ""));
             Trigger t = new Trigger(trigger, uuid(j));
+            t.primed = j.getBooleanOr("primed", true);
             t.wasTrue = j.getBooleanOr("was_true", false);
             t.lastFired = j.getLongOr("last_fired", 0);
             data.triggers.put(trigger.name(), t);

@@ -100,7 +100,10 @@ The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-test
 - `elcl.exec` - `ModCommands` (COMMANDS.md 3-8), `ElclItems` (item IDs)
 - `elcl.device` - `DisplayDevice`, `Displays` (SNDDSPTXT)
 
-Not in place yet: schedule entries and triggers firing (Part 5), `elcl.sync`. See IMPLEMENTATION_STATUS.md.
+- `elcl.job` (Part 5) - `Schedules` (due times and firing), `Triggers` (polled conditions, events, edge and debounce),
+  `RealTime` (the real-time clock INTERVAL and the debounce use)
+
+Not in place yet: `elcl.sync`. See IMPLEMENTATION_STATUS.md.
 
 ## Stubs waiting on ELCL packages
 
@@ -110,7 +113,6 @@ system (network) for as long as the server runs: **nothing here survives a resta
 
 | Stub | Methods | Waits for |
 |---|---|---|
-| `ElclEvents` | `*RSCHANGE` (fired by the Control Interface) | `elcl.job` triggers listening (nothing listens yet) |
 
 Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this):
 only SAVLIB and RSTLIB remain (the 8" Diskette interface, Part 7).

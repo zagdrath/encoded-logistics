@@ -140,6 +140,16 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 Triggers are edge-triggered (fire once per crossing) and debounced
 (minimum 1 second between firings of the same trigger).
 
+*(Implemented: the triggered program runs as a batch job, as the trigger's
+user - so it needs a job host; without one ELC0301 goes to that user's message
+queue, as it does for a schedule entry. Item counts, storage use and power are
+looked at every half second; a crossing during the debounce fires when it's
+over, if it still holds. `*STGFULL` without a VALUE is 100%. A disabled part
+counts as offline for `*DEVOFFLINE`. With `&EVENT` declared `*CHAR 10` as
+above, the longer event names arrive cut to 10 characters: `*DEVOFFLIN`,
+`*PWRRESTOR`. Schedule entries: `*ONCE` is removed once it has run; a `*DAILY`
+entry missed while its network was unloaded runs once when it's loaded again.)*
+
 ## 10. Aliases for the existing CLI
 
 The existing Terminal Desk CLI commands stay as aliases:

@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.elcl.exec;
 
+import net.zagdrath.encodedlogistics.elcl.job.Triggers;
+
 // Binds the game side's executors to the built-in commands' schemas (CommandRegistry), once at startup.
 public final class ElclSetup {
     private static boolean done;
@@ -19,5 +21,6 @@ public final class ElclSetup {
         RedstoneCommands.bind();
         OsCommands.bind();
         ModCommands.bind();
+        ElclEvents.listen(Triggers::fired);
     }
 }

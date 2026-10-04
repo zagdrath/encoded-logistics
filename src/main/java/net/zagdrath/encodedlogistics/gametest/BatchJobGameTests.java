@@ -75,7 +75,7 @@ final class BatchJobGameTests {
         }
     }
 
-    private record Rig(TerminalContext[] contexts, ElclSystem[] systems, List<FakeHost> hosts) {
+    record Rig(TerminalContext[] contexts, ElclSystem[] systems, List<FakeHost> hosts) {
         TerminalContext context() {
             return contexts[0];
         }
@@ -90,15 +90,18 @@ final class BatchJobGameTests {
     }
 
     @FunctionalInterface
-    private interface Body {
+    interface Body {
         void accept(GameTestHelper helper, GameTestSequence sequence, Rig rig);
     }
 
     // The desk rig, programs TST/NAP, TST/LONG, TST/FOREVER and TST/RESUME, and the fake hosts given (this system's
     // only, taken away after).
     @SuppressWarnings("removal")
-    private static void rig(GameTestHelper helper, List<FakeHost> hosts, Body body) {
+    static void rig(GameTestHelper helper, List<FakeHost> hosts, Body body) {
         ElclGameTests.desk(helper);
+        // Real seconds as ticks at 50 ms (this server runs them as fast as it can).
+        var server = helper.getLevel().getServer();
+        net.zagdrath.encodedlogistics.elcl.job.RealTime.set(() -> server.getTickCount() * 50L);
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         TerminalContext[] context = new TerminalContext[1];
         ElclSystem[] system = new ElclSystem[1];
@@ -125,7 +128,7 @@ final class BatchJobGameTests {
         sequence.thenExecute(() -> JobHosts.unregister(source)).thenSucceed();
     }
 
-    private static void program(ElclSystem system, String user, String name, String... lines) {
+    static void program(ElclSystem system, String user, String name, String... lines) {
         try {
             try {
                 ElclServices.libraries().createLibrary(system, user, "TST", "*PROD", "");
@@ -140,12 +143,12 @@ final class BatchJobGameTests {
         }
     }
 
-    private static String run(TerminalContext context, String line) {
+    static String run(TerminalContext context, String line) {
         TerminalOutput out = TerminalCommands.execute(context, line);
         return out.message() != null ? out.message().getString() : "";
     }
 
-    private static void expect(GameTestHelper helper, TerminalContext context, String line, String wanted) {
+    static void expect(GameTestHelper helper, TerminalContext context, String line, String wanted) {
         String out = run(context, line);
         helper.assertTrue(out.startsWith(wanted), line + " -> " + out + ", wanted " + wanted);
     }
@@ -173,7 +176,7 @@ final class BatchJobGameTests {
         return ElclServices.messages().messages(rig.system(), rig.user()).stream().anyMatch(m -> m.msgId().equals(messageId));
     }
 
-    private static boolean said(Rig rig, String text) {
+    static boolean said(Rig rig, String text) {
         return ElclServices.messages().messages(rig.system(), rig.user()).stream().anyMatch(m -> m.text().contains(text));
     }
 

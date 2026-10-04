@@ -104,7 +104,7 @@ public final class ModCommands {
     }
 
     // *ONLINE, *OFFLINE, *FAULT or *DISABLED.
-    static String status(ElclDevices.Device device) {
+    public static String status(ElclDevices.Device device) {
         if (device.part() != null && !device.part().enabled()) {
             return "*DISABLED";
         }

@@ -133,6 +133,11 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("batch_restart", BatchJobGameTests::restart);
         TESTS.put("batch_budget", BatchJobGameTests::budget);
         TESTS.put("batch_logs", BatchJobGameTests::logs);
+        TESTS.put("schedule_entries", SchedulingGameTests::schedules);
+        TESTS.put("trigger_items", SchedulingGameTests::itemTrigger);
+        TESTS.put("trigger_events", SchedulingGameTests::eventTriggers);
+        TESTS.put("trigger_power", SchedulingGameTests::powerTriggers);
+        TESTS.put("trigger_storage", SchedulingGameTests::storageTrigger);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);
