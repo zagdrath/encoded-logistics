@@ -914,6 +914,30 @@ public class ControllerStructures extends SavedData {
         return link != null ? owner.runtime.lanes.usage(link) : 0;
     }
 
+    // Lanes running through a cable as last solved, and how many it carries: the busiest of its links (the one toward
+    // the controller carries everything beyond it). Null off a controlled network, or for a node that isn't a cable.
+    public static int @Nullable [] cableLanes(MinecraftServer server, NodePos pos) {
+        Owner owner = owner(server, NetworkIndex.get(server).members.get(pos));
+        if (owner == null || owner.runtime.discovered == null || owner.runtime.lanes == null || owner.runtime.lanes.adHoc()) {
+            return null;
+        }
+        NetworkNode node = owner.runtime.discovered.graph().node(pos);
+        if (node == null || node.laneCapacity() == NetworkNode.UNLIMITED) {
+            return null;
+        }
+        int used = 0;
+        for (Direction side : Direction.values()) {
+            NetworkLink link = owner.runtime.discovered.graph().link(pos, side);
+            if (link != null) {
+                used = Math.max(used, owner.runtime.lanes.usage(link));
+            }
+        }
+        for (NetworkLink link : owner.runtime.discovered.graph().remoteLinks(pos)) {
+            used = Math.max(used, owner.runtime.lanes.usage(link));
+        }
+        return new int[] { used, node.laneCapacity() };
+    }
+
     // Whether the remote link between two nodes is part of a network right now.
     public static boolean remoteLinked(MinecraftServer server, NodePos a, NodePos b) {
         Owner owner = owner(server, NetworkIndex.get(server).members.get(a));

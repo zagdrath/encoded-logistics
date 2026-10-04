@@ -25,6 +25,7 @@ import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
+import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
 // Network Cables: connections and colours, the controller flange, lanes and drain on the network, dyeing, shapes.
@@ -86,6 +87,10 @@ final class CableGameTests {
                             .filter(entry -> entry.item().getPath().equals("network_cable")).findFirst().orElse(null);
                     helper.assertTrue(cables != null && cables.count() == 4, "Cables on the screen: " + cables);
                     helper.assertTrue(Math.abs(cables.drain() - 4 * 0.05) < 1e-9, "Cable drain is " + cables.drain());
+                    // What Jade shows on a cable: the lanes through it (none, nothing uses one) of the 8 it carries.
+                    int[] lanes = ControllerStructures.cableLanes(helper.getLevel().getServer(),
+                            NodePos.of(helper.getLevel().dimension(), helper.absolutePos(new BlockPos(2, 1, 0))));
+                    helper.assertTrue(lanes != null && lanes[0] == 0 && lanes[1] == 8, "Cable lanes " + java.util.Arrays.toString(lanes));
                 })
                 // Breaking the cable next to the controller takes the rest off the network.
                 .thenExecute(() -> helper.destroyBlock(new BlockPos(1, 1, 0)))

@@ -935,5 +935,7 @@
   "crt.encodedlogistics.msg.at_top": "Already at the top of the list.",
   "encodedlogistics.configuration.phosphor": "Terminal Desk Phosphor",
   "crt.encodedlogistics.signon.type_user": "Type your user name.",
-  "crt.encodedlogistics.signon.bad_user": "User %s not valid at this terminal."
+  "crt.encodedlogistics.signon.bad_user": "User %s not valid at this terminal.",
+  "jade.encodedlogistics.cable.lanes": "Lanes %s / %s",
+  "config.jade.plugin_encodedlogistics.cable_lanes": "Cable Lanes"
 }
