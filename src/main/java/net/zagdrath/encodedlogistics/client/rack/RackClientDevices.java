@@ -91,7 +91,8 @@ public final class RackClientDevices {
     // --- Drawing on a front ---
 
     // Where the front face is, a hair in front of the glow layer.
-    private static final float FRONT_Z = 1.72F, RIGHT_X = 14.5F;
+    // Quads just in front of the chassis's front (z 1.75), and a layer above them for anything drawn over another quad.
+    private static final float FRONT_Z = 1.72F, OVER_Z = 1.69F, RIGHT_X = 14.5F;
 
     static TextureAtlasSprite sprite(Identifier texture) {
         return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(texture);
@@ -101,9 +102,15 @@ public final class RackClientDevices {
     // (both in 128ths), tinted.
     static void frontQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
             float u, float v, float uw, float vh, int color, int light) {
+        frontQuad(buffer, pose, size, x, y, w, h, sprite, u, v, uw, vh, color, light, FRONT_Z);
+    }
+
+    // The same at depth frontZ (OVER_Z over another front quad).
+    static void frontQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
+            float u, float v, float uw, float vh, int color, int light, float frontZ) {
         float x1 = (RIGHT_X - x / 8) / 16, x0 = (RIGHT_X - (x + w) / 8) / 16;
         float y1 = (size - y / 8) / 16, y0 = (size - (y + h) / 8) / 16;
-        float z = FRONT_Z / 16;
+        float z = frontZ / 16;
         float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / 128), v1 = sprite.getV((v + vh) / 128);
         vertex(buffer, pose, x1, y1, z, u0, v0, color, light);
         vertex(buffer, pose, x1, y0, z, u0, v1, color, light);
@@ -262,7 +269,7 @@ public final class RackClientDevices {
                     int x = san ? 14 + 6 * (i % 12) : 15 + 12 * i, y = san ? 1 + 15 * (i / 12) : 1;
                     frontQuad(buffer, pose, type.size(), x, y, w, h, sprite, tier * (w + 1), sledRow, w, h, -1, light);
                     frontQuad(buffer, pose, type.size(), x + w - 3, y + h - 4, 2, 2, sprite, 70 + 3 * lit, sledRow, 2, 2, -1,
-                            lit == 4 ? light : LightCoordsUtil.FULL_BRIGHT);
+                            lit == 4 ? light : LightCoordsUtil.FULL_BRIGHT, OVER_Z);
                 }
                 int cages = data[bays];
                 for (int j = 0; j < SanDevice.CAGES; j++) {
