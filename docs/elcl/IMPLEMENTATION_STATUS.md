@@ -1,19 +1,140 @@
 # ELCL and Terminal OS: implementation status
 
-The gap check (Step 0) of the "complete the Terminal OS and ELCL" task: the code compared with HANDOFF.txt's
-implementation order, every command in COMMANDS.md, every message in MESSAGES.md and every screen in OS.md §8.
+The final status of every item in the ELCL handoff: HANDOFF.txt's implementation order, every command in
+COMMANDS.md, every message in MESSAGES.md and every screen in OS.md §8. The gap check (Step 0) found most of it
+partial or missing. The task's Parts 1-8 closed those gaps; the table by part, at the end, says how.
 
-**Done**: works as specified. **Partial**: exists but falls short (the gap is named). **Missing**: not there.
-**Blocked**: needs hardware from the Midrange line or the Mainframe, which isn't in the mod yet. These are built
-against an interface with a fake for tests (Part 7).
+**Done**: works as specified, or as the notes in COMMANDS.md / OS.md say where the mod differs. **Blocked**: works
+against an interface (docs/elcl/INTERFACES.md), tested with a fake. The real device comes with the Midrange line or
+the Mainframe, which aren't in the mod yet.
 
-Paths are under `src/main/java/net/zagdrath/encodedlogistics/` unless they start with `src/test`, `docs` or `client/`
-(`client/crt/`). The "Part" column says which part of the task closes the gap.
+Paths are under `src/main/java/net/zagdrath/encodedlogistics/` unless they start with `src/test` or `docs`; `client/`
+means `client/crt/`.
 
-*Sections 1-5 are the status as of the gap check, before any of Parts 1-8. Progress since then is below and replaces
-those rows where they differ.*
+## 1. HANDOFF.txt implementation order
 
-## Progress
+| # | Step | Status | Where |
+|---|---|---|---|
+| 1 | Command registry; existing CLI ported, kept as aliases | Done | `elcl/cmd/CommandRegistry`, `BuiltinCommands`, `CommandDefinition`, `ParamDef`; `terminal/TerminalCommands` |
+| 2 | Lexer, parser, compiler, compile listing; tests from examples | Done | `elcl/lex`, `elcl/parse`, `elcl/compile` (`Compiler`, `Listing`); `CompilerTest`, `LexerParserTest` |
+| 3 | VM: variables, expressions, control flow, MONMSG, subroutines, CALL | Done | `elcl/vm/Vm`, `Values`, `Lowerer`, `VmProgram`; `VmTest` |
+| 4 | Libraries/members storage, WRKLIB/WRKMBR, editor, option 14 | Done | `elcl/store/StoredLibraryService`, `SystemData`, `ElclStore`; `client/WrkLibPanel`, `WrkMbrPanel`, `EditorPanel` |
+| 5 | Mod commands; the Control Interface | Done | `elcl/exec/ModCommands`, `RedstoneCommands`, `ElclDevices`, `ElclItems`; `block/ControlInterfaceBlock` |
+| 6 | Batch jobs: SBMJOB, job hosts, tick budget, WRKACTJOB, job logs | Done | `elcl/job/StoredJobService`, `JobManager`, `JobHost`, `JobHosts`, `BatchContext` |
+| 7 | Job schedule entries and event triggers | Done | `elcl/job/Schedules`, `Triggers`, `RealTime`; `elcl/exec/ElclEvents` |
+| 8 | Message queues, spooled output, Line Printer printing | Done; printer Blocked | `elcl/store/StoredMessageService`, `StoredSpoolService`; printing through `elcl/device/PrinterDevice` |
+| 9 | Folder sync; SAVLIB/RSTLIB to 8" Diskette | Done; diskette Blocked | `elcl/sync/FolderSync`, `Resequence`; SAVLIB/RSTLIB through `elcl/device/DisketteDevice` |
+| 10 | Sign-on, user profiles, Firewall authority everywhere | Done | `elcl/store/StoredUserService`, `elcl/exec/Authority`, `client/SignOnPanel`, `menu/TerminalDeskMenu` |
+
+## 2. Commands (COMMANDS.md)
+
+Every command has its schema in `elcl/cmd/BuiltinCommands` and an executor. The language statements run in the VM;
+the rest are bound in `elcl/exec/OsCommands`, `ModCommands` and `RedstoneCommands`. The only ELC0107 left is a screen
+command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
+
+| Section | Commands | Status | Where / notes |
+|---|---|---|---|
+| §1 Program control | PGM, ENDPGM, DCL, CHGVAR, IF, ELSE, DO, ENDDO, DOWHILE, DOUNTIL, DOFOR, FOREACH, ENDFOR, LEAVE, ITERATE, SELECT, WHEN, OTHERWISE, ENDSELECT, GOTO, RETURN, SUBR, ENDSUBR, CALLSUBR, MONMSG, RCVMSG, SNDPGMMSG, CALL, DLYJOB | Done | `elcl/vm`. CALL on a command line runs in the interactive job (`elcl/job/InteractiveCalls`); DLYJOB typed there completes at once |
+| §1 | RTVJOBA | Done | The job the command runs in (interactive or batch) |
+| §2 Lists | ADDLSTE, RMVLSTE, CLRLST | Done | `elcl/vm/Vm` |
+| §3 Inventory | RTVITMCNT, RTVITMLST, MOVITM, IMPITM, CHGITMTIER, RTVSTGSTS | Done | `ModCommands`. MOVITM / IMPITM work on a cable part's faced inventory or `*DESK`; CHGITMTIER through the Tape Libraries' keep-hot and pinned lists |
+| §4 Crafting | STRCRAFT, RTVCRFSTS, ENDCRAFT | Done | `ModCommands`; ended jobs from `crafting/CraftHistory` |
+| §5 Devices | RTVDEVSTS, RTVDEVLST, CHGDEVSTS, CHGDEVFTR, RTVLANES; RNMDEV (added) | Done | `ModCommands`, `RedstoneCommands`. Cable parts can be disabled and have filters; other devices answer ELC1303 |
+| §6 Power | RTVPWRSTS | Done | `ModCommands` |
+| §7 Redstone | RTVRSIN, CHGRSOUT | Done | `RedstoneCommands` |
+| §8 Messages, displays, output | SNDMSG, DSPMSG, PRTTXT | Done | SNDMSG's TOTRM is accepted but not used |
+| §8 | SNDDSPTXT | Blocked | `elcl/device/DisplayDevice`: the mod has no Status Display, NOC Video Wall or Rack Console screen yet |
+| §8 | PRTRPT | Blocked | `elcl/device/PrinterDevice` (the Line Printer) |
+| §9 OS | WRKLIB, CRTLIB, CHGLIB, DLTLIB, WRKMBR, EDTMBR, CRTMBR, CPYMBR, RNMMBR, DLTMBR, CRTELPGM, DLTPGM | Done | `OsCommands`, `StoredLibraryService` |
+| §9 | SBMJOB, WRKACTJOB, WRKJOB, DSPJOBLOG, HLDJOB, RLSJOB, ENDJOB, CHGJOB | Done | `StoredJobService` |
+| §9 | ADDJOBSCDE, RMVJOBSCDE, WRKJOBSCDE, HLDJOBSCDE, RLSJOBSCDE | Done | `StoredJobService`, `Schedules` |
+| §9 | ADDTRGEVT, RMVTRGEVT, WRKTRGEVT, HLDTRGEVT, RLSTRGEVT; all ten events | Done | `StoredJobService`, `Triggers` |
+| §9 | WRKSYSVAL, RTVSYSVAL, CHGSYSVAL | Done | `StoredSysvalService` (SYSNAME, DATFMT, SECLVL, QMAXJOB, LOGRTN, PHOSPHOR all take effect; DATFMT in the dates the system writes, not the screens' header clock) |
+| §9 | SAVLIB, RSTLIB | Blocked | `elcl/device/DisketteDevice` (the Midrange System's drive, the Card Reader) |
+| §9 | WRKDEV, WRKINV, DSPNETSTS, WRKCRFJOB, SIGNOFF, GO, CLEAR | Done | Client screens (`client/ScreenCommands`) |
+| §10 | The old CLI's aliases | Done | `terminal/TerminalCommands` |
+
+## 3. Messages (MESSAGES.md)
+
+| IDs | Status | Raised by |
+|---|---|---|
+| ELC0000 (monitor everything) | Done | `VmProgram.matches` |
+| ELC0001-0005, 0007-0010, 0014, 0016 | Done | Compiler, command line, VM |
+| ELC0006, 0011, 0012, 0013, 0015 | Done | VM (list index, call depth, parameter count, called program failed, list limit) |
+| ELC0101-0106 | Done | Command line and VM (0105: interactive-only commands in a batch job) |
+| ELC0107-0110 (added) | Done | ELC0107 only for a screen command inside a program; 0108-0110 are an interactive CALL's |
+| ELC0201-0208, 0210-0219, 0222 | Done | Library service, OS commands; ELC0207 when members don't fit the network's storage |
+| ELC0220, 0221 | Done (Blocked: diskette) | SAVLIB / RSTLIB |
+| ELC0301-0315 | Done | Job service: no host (0301), not found (0302), ended by operator (0303), submitted (0304), host lost (0310), schedule entries and triggers |
+| ELC0401 | Done | Every Auth check (command line, VM, screens), library authority, CHGSYSVAL, others' jobs / entries / triggers |
+| ELC0402 | Done | Sign-on (`StoredUserService.signOn`, the desk refusing an unsigned session) |
+| ELC1201-1206 | Done | Inventory commands (ELC1203 when a recall starts) |
+| ELC1301-1305 | Done | Device commands |
+| ELC1306, 1307 (added) | Done (Blocked: printer) | Printing |
+| ELC1308, 1309 (added) | Done | RNMDEV |
+| ELC1310, 1311 (added) | Done (Blocked: diskette) | SAVLIB / RSTLIB |
+| ELC1401-1404 | Done | Crafting commands |
+| USRnnnn | Done | SNDPGMMSG |
+
+## 4. Screens (OS.md §8)
+
+| # | Screen | Status | Where |
+|---|---|---|---|
+| 1 | Sign On | Done | `client/SignOnPanel`, signing on through the server |
+| 2 | Main Menu | Done | `client/MainMenu`, `MainMenuPanel` |
+| 3 | Work with Libraries | Done | `client/WrkLibPanel` |
+| 4 | Work with Members | Done | `client/WrkMbrPanel` |
+| 5 | Source Editor | Done | `client/EditorPanel`, `EditorModel` |
+| 6 | Command Prompter | Done | `client/PrompterPanel`, `ValueListWindow` |
+| 7 | Compile Listing | Done | `elcl/compile/Listing`, `client/DspSplfPanel` |
+| 8 | Work with Active Jobs | Done | `client/WrkActJobPanel`: interactive and batch jobs, host, *WAIT, budget, hosts busy / total |
+| 9 | Work with Job / Display Job Log | Done | `client/WrkJobPanel`, `DspJobLogPanel`; the VM's call stack; ended jobs' logs |
+| 10 | Work with Job Schedule Entries | Done | `client/WrkJobScdePanel` |
+| 11 | Work with Trigger Events | Done | `client/WrkTrgEvtPanel` |
+| 12 | Display Messages | Done | `client/DspMsgPanel`, MW indicator |
+| 13 | Work with Output | Done (6=Print Blocked: printer) | `client/WrkSplfPanel`, `DspSplfPanel` |
+| 14 | Work with System Values | Done | `client/WrkSysvalPanel` |
+| 15 | Help panels (F1) | Done | `CrtTerminal.help()` |
+| 16 | Command Entry | Done | `client/CommandEntryPanel` |
+| - | Work with Devices (names, 2=Change, 8=Locate) | Done | `client/DevicesPanel`, `client/CrtLocate` |
+| - | Control Interface block | Done | `block/ControlInterfaceBlock` |
+
+## 5. Blocked on hardware not in the mod
+
+| Hardware | What waits on it | Interface |
+|---|---|---|
+| Midrange System (+ Expansion Cabinet), Integrated Midrange System | Batch jobs on them; the diskette drive; a recipe library for Schedulers | `JobHost`, `DisketteDevice`, `RecipeLibrarySource` |
+| Mainframe | Batch jobs that resume after a restart | `JobHost` (`resumes()` true) |
+| Card Reader | SAVLIB / RSTLIB | `DisketteDevice` |
+| 8" Diskette | Library images | `Diskette`, `LibraryImage` |
+| Line Printer | PRTRPT, Work with Output 6=Print | `PrinterDevice` |
+| Status Display, NOC Video Wall, Rack Console screen (not the Midrange line) | SNDDSPTXT | `DisplayDevice` |
+| Label Maker (not in the mod) | Renaming devices with it | none needed: `ElclDevices.rename` |
+| Keypunch | Nothing in ELCL | - |
+
+Compute Servers are batch job hosts already (4 jobs each), so batch jobs, schedule entries and triggers work today.
+
+## 6. Known limits and decisions
+
+- **Storage:** members count against free drive space and block saves when it's full (ELC0207), but don't stop items
+  going into the drives.
+- **No per-item tier:** the mod has none, so CHGITMTIER works through the Tape Libraries' lists.
+- **Crafting history:** crafting jobs leave their Scheduler as soon as they end. Their outcomes are kept in memory
+  (`CraftHistory`) for RTVCRFSTS, STRCRAFT WAIT(*YES) and *CRAFTEND, but not across a restart.
+- **Sign-on:** needed at SECLVL 30 only on a network with a Firewall; without one everyone has full authority anyway.
+  SECLVL 10 also stops the OS asking the Firewall (it still guards the blocks).
+- **Job control:** holding, ending or changing another user's job, schedule entry or trigger needs *SECOFR or full
+  authority (ELC0401 *JOBCTL).
+- **Triggers need a host:** triggered programs and schedule entries run as batch jobs, so they need a job host;
+  without one the creator gets ELC0301 in their message queue.
+- **Edge state:** triggers' edge state is saved, but device status changes are first recorded (not fired) after a
+  restart.
+- **Item names:** `%NAME` and device type names come from the server's language, so mod items may show translation keys
+  on a dedicated server.
+- **Real time in tests:** INTERVAL() and the triggers' debounce are real time (`RealTime`); the game tests count ticks
+  at 50 ms instead.
+
+## By part
 
 | Part | Status | Where |
 |---|---|---|
@@ -25,175 +146,3 @@ those rows where they differ.*
 | 6. Security and sign-on | Done | `elcl/screen/UserService` + `elcl/store/StoredUserService`: profiles saved with the system (library list ELGPL ELSYS, current library first on it, made at first use or sign-on), *SECOFR = the Firewall's owner and server operators, `signOn` (ELC0402 for another player's name, ELC0201 for a library that isn't there). Sign-on through the server (`signon` screen query; `SignOnPanel` waits for its answer); `TerminalDeskMenu` refuses anything but info and the sign-on until then, at SECLVL 30 with a Firewall. `elcl/exec/Authority` is the one check for terminals and batch jobs: the Firewall's permissions (by player, or by the submitter's id), full authority with no Firewall or at SECLVL 10. ELC0401 on screens too, and when managing another user's jobs, schedule entries or triggers (`mayManage`). CHGSYSVAL: *SECOFR or no Firewall. *LIBL and *CURLIB use the profile. DATFMT changes the date shown. Tests: game tests `security_authority`, `security_signon` |
 | 7. Interfaces for the Midrange line | Done | `docs/elcl/INTERFACES.md` says what each Midrange device and the Mainframe implement. `elcl/job/JobHost` (Part 4); `elcl/device/DisketteDevice`, `Diskette`, `LibraryImage` (NBT), `Diskettes` - SAVLIB / RSTLIB (ELC0220 / ELC0221; ELC1301, ELC1302, ELC1310, ELC1311 added, ELC0201, ELC0205), with the size limit (disketteBytes, 64 KB); `elcl/device/PrinterDevice`, `Printers` - PRTRPT and WRKSPLF 6=Print (ELC1301, ELC1306, ELC1307); `crafting/RecipeLibrarySource`, `RecipeLibraries` - a library's recipes count as the network's (`CraftRequests.schematics`), steps run on a provider that `accepts` them (`CraftingProvider.accepts`, used by `JobRunner` and the Fabricator, Gateway and Fabrication Server); `elcl/device/DisplayDevice` too. Tests: game tests `diskette_save_restore`, `printer_print`, `recipe_library` (fakes) |
 | 8. Folder sync | Done | `elcl/sync/FolderSync`: `<world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.elclp`. Out: the library service's listener writes a member's file on every save, create, copy, rename and restore. In: polled every 2 s on loaded networks; changed files become members (`elcl/sync/Resequence`: unchanged lines keep their sequence numbers and dates), new folders libraries (owner QSYS, *CHANGE). Conflicts: last write wins, the loser kept as `.bak` (`SystemData.syncHashes` remembers what was last synced). Deleting a file keeps the member; deleting a member moves its file to `.deleted/`. ELSYS never synced. `allowFolderSync` AUTO (on in single-player, off on dedicated servers), TRUE, FALSE. Tests: `ResequenceTest`, game test `folder_sync` |
-
-## 1. HANDOFF.txt implementation order
-
-| # | Step | Status | Where / gap | Part |
-|---|---|---|---|---|
-| 1 | Command registry; existing CLI ported, kept as aliases | Done | `elcl/cmd/CommandRegistry`, `BuiltinCommands`, `CommandDefinition`, `ParamDef`; `terminal/TerminalCommands` (aliases, COMMANDS.md §10) | - |
-| 2 | Lexer, parser, compiler, compile listing; tests from examples | Done | `elcl/lex/Lexer`, `elcl/parse/Parser`, `elcl/compile/Compiler`, `elcl/compile/Listing`; `src/test/.../elcl/CompilerTest`, `LexerParserTest` (examples compile clean, one test per compile-time message) | - |
-| 3 | VM with interactive CALL: variables, expressions, control flow, MONMSG, subroutines | Missing | No `elcl.vm`. `CompiledProgram` holds checked statements but nothing runs them; CALL answers ELC0107. `exec/CommandRunner` evaluates literal expressions for the command line only | 3 |
-| 4 | Library/member storage, WRKLIB/WRKMBR, editor logic, option 14 compile | Partial | Screens and rules done (`client/WrkLibPanel`, `WrkMbrPanel`, `EditorPanel`, `EditorModel`; `elcl/screen/StubLibraryService`), but everything is kept in memory and lost on restart. Compiled programs aren't kept as runnable objects. No storage cost (ELC0207 never raised) | 1 |
-| 5 | Mod commands (inventory, devices, power, storage, display, redstone); Control Interface | Partial | Control Interface and RTVRSIN/CHGRSOUT done (`block/ControlInterfaceBlock`, `blockentity/ControlInterfaceBlockEntity`, `elcl/exec/RedstoneCommands`). Every other mod command answers ELC0107. Device names come from list position (`elcl/exec/ElclDevices.list`) | 2, 3 |
-| 6 | Batch jobs: SBMJOB, job hosts, tick budget, WRKACTJOB, job logs | Missing | `elcl/screen/StubJobService`: interactive jobs only, SBMJOB always ELC0301, no hosts, no budget, logs in memory | 4 |
-| 7 | Job schedule entries and event triggers | Partial | Entries and triggers are stored and listed (`StubJobService`, `client/WrkJobScdePanel`, `WrkTrgEvtPanel`) but never fire and aren't saved. `elcl/exec/ElclEvents` fires only `*RSCHANGE` and nothing listens | 5 |
-| 8 | Message queues, spooled output, Line Printer printing | Partial | `StubMessageService`, `StubSpoolService` work in memory. No caps, no chat notice. Printing always ELC1301 (no printer interface) | 1, 7 |
-| 9 | Folder sync, SAVLIB/RSTLIB to 8" Diskette | Missing | No `elcl.sync`. SAVLIB/RSTLIB answer ELC0107 | 7, 8 |
-| 10 | Sign-on, user profiles, Firewall authority everywhere | Partial | Sign-on is client-side only (`client/SignOnPanel`: shown with a Firewall unless SECLVL is 10). No server-side user profiles; the library list is a constant (`OsCommands.LIBRARY_LIST`). Command Auth checked on the command line (`CommandRunner`); the *SECOFR class is approximated by the Firewall's build permission. ELC0402 never raised | 6 |
-
-## 2. Commands (COMMANDS.md)
-
-"Compiles" means the schema is registered and the compiler checks it; "runs" means it has an executor.
-
-### §1 Program control
-
-| Command | Status | Where / gap | Part |
-|---|---|---|---|
-| PGM, ENDPGM, DCL, CHGVAR | Partial | Compiles (`Compiler`); no VM to run them | 3 |
-| IF, ELSE, DO, ENDDO, DOWHILE, DOUNTIL, DOFOR, FOREACH, ENDFOR, LEAVE, ITERATE, SELECT, WHEN, OTHERWISE, ENDSELECT, GOTO, RETURN | Partial | Compiles with block matching and GOTO rules; no VM | 3 |
-| SUBR, ENDSUBR, CALLSUBR | Partial | Compiles; no VM | 3 |
-| MONMSG (command and program level, range IDs) | Partial | Compiles (placement, up to 50 IDs); no VM to monitor anything | 3 |
-| RCVMSG | Partial | Compiles; no VM | 3 |
-| SNDPGMMSG | Partial | Runs on the command line (`OsCommands`); programs need the VM | 3 |
-| CALL | Missing | ELC0107 | 3 |
-| DLYJOB | Missing | ELC0107 | 3 |
-| RTVJOBA | Partial | Runs for the interactive job only (`OsCommands`) | 4 |
-
-### §2 Lists
-
-| Command | Status | Where / gap | Part |
-|---|---|---|---|
-| ADDLSTE, RMVLSTE, CLRLST | Partial | Compile; program-only and no VM | 3 |
-
-### §3-6 Inventory, crafting, devices, power
-
-| Command | Status | Where / gap | Part |
-|---|---|---|---|
-| RTVITMCNT, RTVITMLST, MOVITM, IMPITM, CHGITMTIER, RTVSTGSTS | Missing | ELC0107 | 3 |
-| STRCRAFT, RTVCRFSTS, ENDCRAFT | Missing | ELC0107 | 3 |
-| RTVDEVSTS, RTVDEVLST, CHGDEVSTS, CHGDEVFTR, RTVLANES | Missing | ELC0107 | 3 |
-| RTVPWRSTS | Missing | ELC0107 | 3 |
-
-### §7 Redstone
-
-| Command | Status | Where / gap | Part |
-|---|---|---|---|
-| RTVRSIN, CHGRSOUT | Done | `elcl/exec/RedstoneCommands`, game test `control_interface`. Device lookup moves to stored names in Part 2 | 2 |
-
-### §8 Messages, displays and output
-
-| Command | Status | Where / gap | Part |
-|---|---|---|---|
-| SNDMSG | Partial | `OsCommands`; in memory, TOTRM ignored, no chat notice | 1 |
-| DSPMSG | Done | Screen `client/DspMsgPanel` (data in memory until Part 1) | 1 |
-| SNDDSPTXT | Missing | ELC0107 (Status Display, NOC Video Wall, Rack Console) | 3 |
-| PRTTXT | Partial | `OsCommands`; spooled file in memory | 1 |
-| PRTRPT | Missing / Blocked | ELC0107; needs the Line Printer (PrinterDevice interface) | 3, 7 |
-
-### §9 OS commands
-
-| Command | Status | Where / gap | Part |
-|---|---|---|---|
-| WRKLIB, CRTLIB, CHGLIB, DLTLIB | Partial | `OsCommands`, `StubLibraryService`; library authority done; not persisted | 1 |
-| WRKMBR, EDTMBR | Done | Screens (data in memory until Part 1) | 1 |
-| CRTMBR, CPYMBR, RNMMBR, DLTMBR | Partial | Not persisted; no storage cost; no folder sync | 1, 8 |
-| CRTELPGM, DLTPGM | Partial | Listing spooled; program kept only as a name (nothing runnable, not persisted) | 1, 3 |
-| SBMJOB | Missing | Always ELC0301 | 4 |
-| WRKACTJOB, WRKJOB, DSPJOBLOG | Partial | Interactive jobs only; hosts shown 0/0; call stack stubbed | 4 |
-| HLDJOB, RLSJOB, ENDJOB, CHGJOB | Partial | Flip a status flag only; nothing runs | 4 |
-| ADDJOBSCDE, RMVJOBSCDE, WRKJOBSCDE (+ HLDJOBSCDE, RLSJOBSCDE) | Partial | Stored and listed; never fire; not persisted; 10=Submit now gives ELC0301 | 5 |
-| ADDTRGEVT, RMVTRGEVT, WRKTRGEVT (+ HLDTRGEVT, RLSTRGEVT) | Partial | Stored and listed; never fire; not persisted; only `*RSCHANGE` is detected | 5 |
-| WRKSYSVAL, RTVSYSVAL, CHGSYSVAL | Partial | `StubSysvalService`; rules right; not persisted | 1, 6 |
-| SAVLIB, RSTLIB | Missing / Blocked | ELC0107; needs the 8" Diskette (DisketteDevice interface) | 7 |
-| WRKDEV, WRKINV, DSPNETSTS, WRKCRFJOB | Done | Existing screens | - |
-| SIGNOFF, GO, CLEAR | Done | Client `ScreenCommands` | - |
-
-### §9 Trigger events
-
-| Event | Status | Part |
-|---|---|---|
-| `*RSCHANGE` | Partial: fired by the Control Interface (`ElclEvents.redstoneChanged`); nothing listens | 5 |
-| `*ITMBELOW`, `*ITMABOVE`, `*STGFULL`, `*DEVFAULT`, `*DEVONLINE`, `*DEVOFFLINE`, `*PWRUPS`, `*PWRRESTORED`, `*CRAFTEND` | Missing: not detected | 5 |
-
-### §10 Aliases
-
-All Done (`terminal/TerminalCommands`).
-
-## 3. Messages (MESSAGES.md)
-
-"Raised" means some code path throws or sends it with the spec's meaning.
-
-| IDs | Status | Where / gap | Part |
-|---|---|---|---|
-| ELC0001-0005, 0007-0010, 0014, 0016 | Done | Compiler / command line; one negative test each (`CompilerTest`) | - |
-| ELC0006 (list index), 0011 (call depth), 0012 (parm count), 0013 (called program failed), 0015 (list limit) | Missing | Runtime errors: need the VM | 3 |
-| ELC0000 (monitor all) | Missing | Monitoring: needs the VM | 3 |
-| ELC0101-0104, 0106 | Done | `CommandRunner`, `Compiler` | - |
-| ELC0105 (not allowed in batch) | Missing | No batch context | 4 |
-| ELC0201-0206, 0208 | Done | `StubLibraryService` (in memory) | 1 |
-| ELC0207 (storage full) | Missing | No storage cost | 1 |
-| ELC0210-0219, 0222 | Done | `OsCommands` completion messages | - |
-| ELC0220, 0221 (library saved / restored) | Missing / Blocked | SAVLIB/RSTLIB | 7 |
-| ELC0301 | Partial | Always raised (no hosts) | 4 |
-| ELC0302, 0304-0309, 0311-0315 | Partial | Raised by the stub; ELC0304 never sent (nothing is ever submitted) | 4, 5 |
-| ELC0303 (ended by operator), 0310 (host unloaded / lost power) | Missing | No running jobs | 4 |
-| ELC0401 | Partial | Command line (Auth column), library authority, CHGSYSVAL; not on programs, jobs, schedule entries or triggers | 6 |
-| ELC0402 (sign-on failed) | Missing | Sign-on is client-side; a wrong name only shows a message | 6 |
-| ELC1201-1206 | Missing | Inventory commands | 3 |
-| ELC1301-1303 | Partial | Redstone commands only | 2, 3 |
-| ELC1304, 1305 | Missing | MOVITM / IMPITM / CHGDEVFTR | 3 |
-| ELC1306 (out of paper) | Missing / Blocked | PrinterDevice | 7 |
-| ELC1401-1404 | Missing | Crafting commands | 3 |
-| USRnnnn | Done | SNDPGMMSG (command line) | 3 |
-| ELC0107 (not available yet; not in MESSAGES.md) | Temporary | Every command without an executor; should end up unused | 3 |
-
-## 4. Screens (OS.md §8)
-
-| # | Screen | Status | Where / gap | Part |
-|---|---|---|---|---|
-| 1 | Sign On | Partial | `client/SignOnPanel`; client-side only, no user profile, no library list, ELC0402 missing | 6 |
-| 2 | Main Menu | Done | `client/MainMenu`, `MainMenuPanel` | - |
-| 3 | Work with Libraries | Partial | `client/WrkLibPanel`; data not persisted | 1 |
-| 4 | Work with Members | Partial | `client/WrkMbrPanel`; data not persisted | 1 |
-| 5 | Source Editor | Done | `client/EditorPanel`, `EditorModel` (saves go to the stub until Part 1) | 1 |
-| 6 | Command Prompter | Done | `client/PrompterPanel`, `ValueListWindow` | - |
-| 7 | Compile Listing | Done | `elcl/compile/Listing`, `client/DspSplfPanel` | - |
-| 8 | Work with Active Jobs | Partial | `client/WrkActJobPanel`; no batch jobs, hosts 0/0, budget not measured | 4 |
-| 9 | Work with Job / Display Job Log | Partial | `client/WrkJobPanel`, `DspJobLogPanel`; call stack stubbed, logs in memory | 3, 4 |
-| 10 | Work with Job Schedule Entries | Partial | `client/WrkJobScdePanel`; entries never fire, 10=Submit now gives ELC0301 | 5 |
-| 11 | Work with Trigger Events | Partial | `client/WrkTrgEvtPanel`; triggers never fire | 5 |
-| 12 | Display Messages | Partial | `client/DspMsgPanel`, MW indicator done; queues not persisted | 1 |
-| 13 | Work with Output | Partial | `client/WrkSplfPanel`, `DspSplfPanel`; not persisted; 6=Print always ELC1301 | 1, 7 |
-| 14 | Work with System Values | Partial | `client/WrkSysvalPanel`; values not persisted | 1 |
-| 15 | Help panels (F1) | Done | `CrtTerminal.help()`, lang `crt.encodedlogistics.help.*` | - |
-| 16 | Command Entry | Done | `client/CommandEntryPanel` | - |
-| - | Control Interface block | Done | `block/ControlInterfaceBlock` | - |
-
-## 5. The task's parts against what exists
-
-| Part | Item | Status |
-|---|---|---|
-| 1 | Persistence (`elcl.store`): libraries, members, programs, message queues, spooled files, system values | Missing: all five services are in-memory stubs (`elcl/screen/Stub*`) |
-| 1 | Storage cost, ELC0207 | Missing |
-| 1 | ELSYS rebuilt from the bundled examples on load | Partial: built from `data/encodedlogistics/elcl/ELSYS/` when a system is first touched |
-| 1 | Retention caps (spooled files, messages per user) | Missing |
-| 1 | Library authority (owner; others read-only unless *CHANGE) | Done (stub rules) |
-| 2 | Stable device names, migration, renaming, uniqueness, moving networks | Missing: names come from list position (`ElclDevices.list`). There's no Label Maker in the mod, so renaming is through Work with Devices only |
-| 3 | VM (budgets, async waits, NBT state) | Missing |
-| 3 | Mod commands §2-8 | Missing, apart from §7 and parts of §8 |
-| 3 | Examples compile clean | Done; running them needs the VM and mod commands |
-| 4 | JobHost, JobManager, Compute Server host, SBMJOB, job queue, logs, persistence, global budget | Missing. The crafting system's `crafting/JobHost` is unrelated; the ELCL one goes in `elcl.job` |
-| 5 | Schedule entries and triggers firing, persisted, run as creator | Missing (only stored, in memory) |
-| 6 | Server-side sign-on and profiles, library list, *SECOFR owner, SECLVL, ELC0401 everywhere | Partial (see step 10) |
-| 7 | JobHost, DisketteDevice, PrinterDevice, RecipeLibrarySource interfaces + fakes + INTERFACES.md | Missing |
-| 8 | Folder sync (`elcl.sync`) and allowFolderSync | Missing |
-
-## 6. Hardware not in the mod
-
-Built against interfaces (Part 7) with fakes in tests. Real implementations come with the Midrange line task:
-
-- Midrange System (1 batch job, +1 with an Expansion Cabinet), Integrated Midrange System (4): JobHost.
-- Mainframe (resumes jobs): JobHost.
-- Line Printer: PrinterDevice (PRTRPT, WRKSPLF 6=Print).
-- 8" Diskette in a Midrange System or Card Reader: DisketteDevice (SAVLIB / RSTLIB), RecipeLibrarySource.
-- Keypunch: nothing in ELCL depends on it.

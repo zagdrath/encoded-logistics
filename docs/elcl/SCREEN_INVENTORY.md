@@ -75,65 +75,52 @@ Every screen also opens from its command on any command line (`ScreenCommands`):
 WRKACTJOB, WRKJOB JOB(), DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF JOB(), WRKSYSVAL, WRKINV, WRKDEV,
 DSPNETSTS, WRKCRFJOB; GO MAIN / GO HELP, SIGNOFF.
 
-## ELCL core in place
+## ELCL packages
 
-The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-tested:
+Every package in the ELCL handoff is in place (status per item: IMPLEMENTATION_STATUS.md):
 
-- `elcl` - `ElclMessages` (MESSAGES.md + ELC0107, below), `ElclMessage`, `ElclException`, `Diagnostic`, `SourceLine`
+- `elcl` - `ElclMessages` (MESSAGES.md, with the added IDs marked there), `ElclMessage`, `ElclException`, `Diagnostic`,
+  `SourceLine`
 - `elcl.cmd` - `CommandRegistry`, `CommandDefinition`, `ParamDef`, `BuiltinCommands` (every COMMANDS.md schema, plus
-  CHGLIB, CRTMBR, CHGJOB, HLDJOBSCDE / RLSJOBSCDE, HLDTRGEVT / RLSTRGEVT, WRKCRFJOB, GO, CLEAR), `Invocation`,
-  `CommandExecutor`
+  CHGLIB, CRTMBR, CHGJOB, HLDJOBSCDE / RLSJOBSCDE, HLDTRGEVT / RLSTRGEVT, RNMDEV, WRKCRFJOB, GO, CLEAR), `Invocation`,
+  `CommandExecutor`, `Wait`
 - `elcl.lex` / `elcl.parse` / `elcl.compile` - lexer, parser, compiler (checks, cross reference), `Listing`
-- `elcl.exec` (game side) - `CommandRunner` (interactive command line), `ElclCommandLine`, `ElclContext`, `OsCommands`,
-  `RedstoneCommands`, `ElclDevices`, `ElclEvents`, `ElclSetup`
+- `elcl.vm` - `Values` (types, conversions, expressions, built-ins), `Lowerer` (statements to flat code), `VmProgram`,
+  `Vm` (budgeted, resumable, NBT), `VmHost`
+- `elcl.exec` (game side) - `CommandRunner` (command lines), `ElclCommandLine`, `ElclContext`, `Authority`, `OsCommands`,
+  `ModCommands` (COMMANDS.md 3-8), `RedstoneCommands`, `ElclDevices` (device names), `ElclItems`, `ElclEvents`,
+  `ElclSetup`
+- `elcl.store` - `ElclStore` (saved data, one `SystemData` per network), `JobData`, `StoredLibraryService`,
+  `StoredMessageService`, `StoredSpoolService`, `StoredSysvalService`, `StoredUserService`, `ElclConfig` (the config's
+  `elcl` section)
+- `elcl.job` - `StoredJobService` (interactive and batch jobs, the job queue, logs, schedule entries, triggers),
+  `JobManager` (runs programs each server tick within the budgets), `JobHost` / `JobHosts`, `BatchContext`,
+  `JobVmHost`, `Waits`, `InteractiveCalls`, `Schedules`, `Triggers`, `RealTime`
+- `elcl.sync` - `FolderSync`, `Resequence`
+- `elcl.device` - `PrinterDevice` / `Printers`, `DisketteDevice` / `Diskette` / `Diskettes` / `LibraryImage`,
+  `DisplayDevice` / `Displays`, `DeviceSources`; `crafting.RecipeLibrarySource` / `RecipeLibraries` (INTERFACES.md)
+- `elcl.screen` - the screens' services (`ElclServices`, `LibraryService`, `JobService`, `MessageService`,
+  `SpoolService`, `SysvalService`, `UserService`), `ScreenQueries`, `ElclSystem`
 
-- `elcl.store` - `ElclStore` (saved data, one `SystemData` per network), `StoredLibraryService`, `StoredMessageService`,
-  `StoredSpoolService`, `StoredSysvalService`, `StoredUserService`, `ElclConfig` (the config's `elcl` section)
-- `elcl.device` - `PrinterDevice`, `Printers` (see INTERFACES.md)
-
-- `elcl.vm` - `Values` (types, conversions, expressions, built-ins), `Lowerer` (statements to flat code), `VmProgram`, `Vm`
-  (budgeted, resumable, NBT), `VmHost`
-- `elcl.job` - `StoredJobService` (interactive and batch jobs, the job queue, hosts, logs, schedule entries and triggers,
-  saved with the system), `JobHost` / `JobHosts` (Compute Servers built in; see INTERFACES.md), `BatchContext`,
-  `JobManager` (runs programs each server tick within the budgets), `JobVmHost`, `Waits` (RECALL, CRAFT),
-  `InteractiveCalls` (CALL on a command line), `Schedules`; `elcl.store.JobData` (what's saved)
-- `elcl.exec` - `ModCommands` (COMMANDS.md 3-8), `ElclItems` (item IDs)
-- `elcl.device` - `DisplayDevice`, `Displays` (SNDDSPTXT), `DisketteDevice`, `Diskette`, `Diskettes`, `LibraryImage` (SAVLIB /
-  RSTLIB); `crafting.RecipeLibrarySource`, `RecipeLibraries` (see INTERFACES.md)
-
-- `elcl.job` (Part 5) - `Schedules` (due times and firing), `Triggers` (polled conditions, events, edge and debounce),
-  `RealTime` (the real-time clock INTERVAL and the debounce use)
-
-- `elcl.sync` - `FolderSync` (the world-folder sync, both ways), `Resequence` (sequence numbers kept for unchanged lines)
-
-Every package in the ELCL handoff is now in place. See IMPLEMENTATION_STATUS.md.
-
-## Stubs waiting on ELCL packages
-
-Each stub class and method is marked `// STUB: waiting on <package>` in the code. They keep their data in memory per
-system (network) for as long as the server runs: **nothing here survives a restart.** They're replaced through
-`elcl.screen.ElclServices.set*()`.
-
-| Stub | Methods | Waits for |
-|---|---|---|
-
-Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this).
-None is left: SAVLIB and RSTLIB run against the 8" Diskette interface (`elcl.device.DisketteDevice`, INTERFACES.md).
-
-The language statements (PGM, DCL, IF, DO, MONMSG and the rest, 29 in all) are program-only: on the command line
-they're ELC0106.
+No stubs are left. ELC0107 "Command &1 is not available yet." is only answered by a screen command (WRKLIB, DSPMSG...)
+run inside a program, which has no screen to open. The language
+statements (PGM, DCL, IF, DO, MONMSG and the rest) are program-only: on a command line they're ELC0106.
 
 ## Tests
 
 - Unit (`gradlew test`): `elcl.CompilerTest`, `elcl.LexerParserTest` (examples compile clean; one test per
-  compile-time message; schemas), `client.crt.CrtGridFieldTest`, `client.crt.LayoutTest` (every screen composed and
-  compared with `src/test/resources/layouts/*.txt`), `client.crt.EditorTest` (round trip, line commands, editor
-  commands, syntax check per message ID, F4 rewrite, SBMJOB prompting).
-- Game tests (`gradlew runGameTestServer`): `control_interface`, `elcl_os_commands` (each D.1 completion message, job
-  log, screen queries, MW), and the updated `desk_commands`.
-- Not automated: rendering in each phosphor at GUI scales 1-4 and small windows (`CrtScreen` drawing is unchanged
-  apart from the sheet sizes and glyph map), and per-screen game tests (the screens are client-side; `LayoutTest`
-  composes each one instead).
+  compile-time message; schemas), `elcl.VmTest` (arithmetic, strings, lists, every loop, SELECT, GOTO, subroutines,
+  CALL by reference, monitors, runtime errors, budget, save and load mid-run, examples start), `elcl.SystemDataTest`,
+  `elcl.ResequenceTest`, `client.crt.CrtGridFieldTest`, `client.crt.LayoutTest` (every screen composed and compared
+  with `src/test/resources/layouts/*.txt`), `client.crt.EditorTest`, `client.crt.MainMenuTest`.
+- Game tests (`gradlew runGameTestServer`): `control_interface`, `elcl_os_commands`, `desk_commands`; `elcl_persistence`,
+  `elcl_storage_full`, `elcl_retention`, `elcl_library_authority`; `device_names_migration`, `device_names_stable`,
+  `device_names_moved`, `device_locate_box`; `elcl_mod_commands`, `elcl_interactive_call`, `elcl_examples`;
+  `batch_compute_server`, `batch_queue_and_hosts`, `batch_restart`, `batch_budget`, `batch_logs`; `schedule_entries`,
+  `trigger_items`, `trigger_events`, `trigger_power`, `trigger_storage`; `security_authority`, `security_signon`;
+  `diskette_save_restore`, `printer_print`, `recipe_library`; `folder_sync`.
+- Not automated: rendering in each phosphor at GUI scales 1-4 and small windows, the blinking locate box and the
+  facade preview (client rendering), and the screens themselves in a running client (`LayoutTest` composes each one).
 
 ## Deviations from the layouts
 
