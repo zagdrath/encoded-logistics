@@ -5,7 +5,6 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,9 +25,9 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 
 // The Router's panel (screens/rack/router.json): its networks (its own first; a green dot when it's reachable; click a
-// name to rename it, right-click a linked one to unlink it), its routes (click the source or the
-// destination to step through the segments, click the filter with an item to set it or empty-handed to clear it,
-// right-click to remove), "+ Add route", the three transceiver cages and the throughput.
+// name to rename it, right-click a linked one to unlink it), its routes (click the source or the destination to step
+// through the networks, the filter box to edit the route's filter over the list - RouteFilterEditor, with "Done" in place
+// of "+ Add route" - right-click to remove), "+ Add route", the three transceiver cages and the throughput.
 public class RouterPanel extends RackScreen.Panel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/router.png");
     private static final Identifier DOT = EncodedLogistics.id("rack/router/segment_dot"), ARROW = EncodedLogistics.id("rack/router/arrow"),
@@ -39,9 +38,12 @@ public class RouterPanel extends RackScreen.Panel {
 
     private @Nullable EditBox rename;
     private int renaming = -1;
+    private final RouteFilterEditor editor;
 
     public RouterPanel(RackScreen screen) {
         super(screen);
+        editor = new RouteFilterEditor(this, ROUTES_X - 1, LIST_Y - 1, ROUTES_W + 1, ROWS * ROW_H + 1, RouterDevice.ACTION_SET_FILTER,
+                RouterDevice.ACTION_FILTER_OPTION);
     }
 
     @Override
@@ -75,22 +77,20 @@ public class RouterPanel extends RackScreen.Panel {
                         reachable(i) ? 0xFFFFFFFF : 0xFF505050);
             }
             List<ItemRouting.Route> routes = router.routes();
-            for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
-                int rowY = y + LIST_Y + i * ROW_H;
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
-                RackScreen.filterBox(graphics, x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2 && mouseX < x + ROUTES_X + ROUTES_W
-                        && mouseY >= rowY && mouseY < rowY + ROW_H);
-                if (!routes.get(i).filter().isEmpty()) {
-                    graphics.pose().pushMatrix();
-                    graphics.pose().translate(x + FILTER_X, rowY + 1);
-                    graphics.pose().scale(0.75F, 0.75F);
-                    graphics.item(routes.get(i).filter(), 0, 0);
-                    graphics.pose().popMatrix();
+            ItemRouting.Route editing = editor.current(routes);
+            if (editing != null) {
+                editor.extractBackground(graphics, editing, x, y, mouseX, mouseY);
+            } else {
+                for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
+                    int rowY = y + LIST_Y + i * ROW_H;
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
+                    RackScreen.routeBox(graphics, routes.get(i).filter(), x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2
+                            && mouseX < x + ROUTES_X + ROUTES_W && mouseY >= rowY && mouseY < rowY + ROW_H);
                 }
             }
             boolean full = routes.size() >= RouterDevice.MAX_ROUTES;
-            PartScreens.wideButton(graphics, font(), x + ADD_X, y + ADD_Y, ADD_W, ADD_H, Component.translatable("gui.encodedlogistics.router.add_rule"),
-                    !full, mouseX, mouseY);
+            PartScreens.wideButton(graphics, font(), x + ADD_X, y + ADD_Y, ADD_W, ADD_H, Component.translatable(editing != null
+                    ? "gui.encodedlogistics.route.done" : "gui.encodedlogistics.router.add_rule"), editing != null || !full, mouseX, mouseY);
             for (int i = 0; i < RouterDevice.CAGES; i++) {
                 if (screen.getMenu().deviceSlot(i) == null || screen.getMenu().deviceSlot(i).getItem().isEmpty()) {
                     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GHOST, x + RackDeviceType.ROUTER.slots().get(i).x(), y + RackDeviceType.ROUTER.slots().get(i).y(), 16, 16);
@@ -119,12 +119,18 @@ public class RouterPanel extends RackScreen.Panel {
             }
         }
         List<ItemRouting.Route> routes = router.routes();
-        for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
+        ItemRouting.Route editing = editor.current(routes);
+        if (editing != null) {
+            editor.extractLabels(graphics, routeName(router, editing));
+        }
+        for (int i = 0; editing == null && i < Math.min(ROWS, routes.size()); i++) {
             ItemRouting.Route route = routes.get(i);
             int rowY = LIST_Y + i * ROW_H + 3;
-            text(graphics, router.endpointName(route.source()).getString(), SOURCE_X, rowY, ARROW_X - SOURCE_X - 1, RackScreen.TEXT);
-            text(graphics, router.endpointName(route.dest()).getString(), DEST_X, rowY, FILTER_X - DEST_X - 2, RackScreen.TEXT);
-            if (route.filter().isEmpty()) {
+            // An empty allow list moves nothing: dimmed.
+            int color = route.idle() ? RackScreen.TEXT_DISABLED : RackScreen.TEXT;
+            text(graphics, router.endpointName(route.source()).getString(), SOURCE_X, rowY, ARROW_X - SOURCE_X - 1, color);
+            text(graphics, router.endpointName(route.dest()).getString(), DEST_X, rowY, FILTER_X - DEST_X - 2, color);
+            if (route.filter().isEmpty() && route.filter().deny()) {
                 graphics.text(font(), "*", FILTER_X + 4, rowY, RackScreen.TEXT_MUTED, false);
             }
         }
@@ -134,6 +140,10 @@ public class RouterPanel extends RackScreen.Panel {
                     String.format(Locale.ROOT, "%.1f", data.getDoubleOr("throughput", 0))).append(" / " + data.getIntOr("rate", 0)), 68, RATE_Y,
                     RackScreen.TEXT_MUTED, false);
         }
+    }
+
+    private static Component routeName(RouterDevice router, ItemRouting.Route route) {
+        return Component.translatable("gui.encodedlogistics.router.route", router.endpointName(route.source()), router.endpointName(route.dest()));
     }
 
     private void text(GuiGraphicsExtractor graphics, String text, int x, int y, int width, int color) {
@@ -159,14 +169,16 @@ public class RouterPanel extends RackScreen.Panel {
             }
             return;
         }
+        ItemRouting.Route editing = editor.current(router.routes());
+        if (editing != null) {
+            editor.extractTooltip(graphics, editing, screen.left(), screen.top(), mouseX, mouseY);
+            return;
+        }
         int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
         if (screen.over(mouseX, mouseY, ROUTES_X, LIST_Y, ROUTES_W, ROWS * ROW_H) && row < router.routes().size()) {
             ItemRouting.Route route = router.routes().get(row);
-            Component filter = route.filter().isEmpty() ? Component.translatable("gui.encodedlogistics.router.filter_any")
-                    : route.filter().getHoverName();
-            graphics.setComponentTooltipForNextFrame(font(), List.of(
-                    Component.translatable("gui.encodedlogistics.router.route", router.endpointName(route.source()), router.endpointName(route.dest())),
-                    Component.translatable("gui.encodedlogistics.router.filter", filter).withColor(RackScreen.TEXT_MUTED),
+            graphics.setComponentTooltipForNextFrame(font(), List.of(routeName(router, route),
+                    RouteFilterEditor.summary(route.filter()).copy().withColor(RackScreen.TEXT_MUTED),
                     Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         }
     }
@@ -174,13 +186,12 @@ public class RouterPanel extends RackScreen.Panel {
     @Override
     protected List<RackScreen.GhostTarget> ghostTargets() {
         RouterDevice router = router();
-        List<RackScreen.GhostTarget> targets = new ArrayList<>();
-        for (int i = 0; router != null && i < Math.min(ROWS, router.routes().size()); i++) {
-            int row = i;
-            targets.add(new RackScreen.GhostTarget(screen.left() + FILTER_X - 1, screen.top() + LIST_Y + i * ROW_H, 14, 14,
-                    stack -> sendItem(RouterDevice.ACTION_SET_FILTER, row, stack)));
+        if (router == null) {
+            return List.of();
         }
-        return targets;
+        return editor.current(router.routes()) != null ? editor.ghostTargets(screen.left(), screen.top())
+                : RouteFilterEditor.rowTargets(this, router.routes(), ROWS, screen.left() + FILTER_X - 1, screen.top() + LIST_Y, ROW_H,
+                        RouterDevice.ACTION_SET_FILTER);
     }
 
     // --- Input ---
@@ -195,8 +206,16 @@ public class RouterPanel extends RackScreen.Panel {
         if (rename != null && !in(x, y, SEGMENTS_X, LIST_Y + renaming * ROW_H, SEGMENTS_W, ROW_H)) {
             submitRename();
         }
+        boolean editing = editor.current(router.routes()) != null;
         if (left && in(x, y, ADD_X, ADD_Y, ADD_W, ADD_H)) {
-            send(RouterDevice.ACTION_ADD_ROUTE, 0, "");
+            if (editing) {
+                editor.close();
+            } else {
+                send(RouterDevice.ACTION_ADD_ROUTE, 0, "");
+            }
+            return true;
+        }
+        if (editing && editor.mouseClicked(x, y, button)) {
             return true;
         }
         int row = (int) Math.floor((y - LIST_Y) / ROW_H);
@@ -216,7 +235,7 @@ public class RouterPanel extends RackScreen.Panel {
             } else if (left && x < FILTER_X - 2) {
                 send(RouterDevice.ACTION_CYCLE_DEST, row, "");
             } else if (left) {
-                send(RouterDevice.ACTION_SET_FILTER, row, "");
+                editor.open(row);
             }
             return true;
         }

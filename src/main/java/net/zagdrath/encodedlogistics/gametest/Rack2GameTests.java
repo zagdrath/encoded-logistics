@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
@@ -29,6 +30,8 @@ import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
+import net.zagdrath.encodedlogistics.part.PartFilter;
+import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
@@ -213,7 +216,7 @@ final class Rack2GameTests {
                     helper.assertTrue(ControllerStructures.rackDevicesServing(helper.getLevel().getServer(), network(helper, bayA)).stream()
                             .noneMatch(device -> device == nas), "NAS still serves the first network");
                     RackGameTests.storage(helper, bayA).insert(COBBLESTONE, 20, false);
-                    helper.assertTrue(l3.addRoute(0, 1, ItemStack.EMPTY), "Route not added");
+                    helper.assertTrue(l3.addRoute(0, 1, ItemRouting.everything()), "Route not added");
                 })
                 .thenIdle(45)
                 .thenExecute(() -> {
@@ -239,11 +242,77 @@ final class Rack2GameTests {
                             "Network not linked");
                     helper.assertTrue(router.network(helper.getLevel().getServer(), 1) != null, "Linked network not found");
                     RackGameTests.storage(helper, master).insert(COBBLESTONE, 10, false);
-                    helper.assertTrue(router.addRoute(0, 1, ItemStack.EMPTY), "Route not added");
+                    helper.assertTrue(router.addRoute(0, 1, ItemRouting.everything()), "Route not added");
                 })
                 .thenIdle(25)
                 .thenExecute(() -> helper.assertTrue(RackGameTests.storage(helper, bayB).count(COBBLESTONE) == 10,
                         "Linked network has " + RackGameTests.storage(helper, bayB).count(COBBLESTONE)))
+                .thenSucceed();
+    }
+
+    // A route's filter: a new route (an empty allow list) moves nothing; an allow list moves only its items; a deny list
+    // everything but its items. Routes saved with the old single filter load as an allow list of it, or (none) as
+    // everything.
+    static void routeFilters(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        BlockPos controllerB = new BlockPos(7, 1, 4), bayB = new BlockPos(7, 1, 5);
+        RackGameTests.controller(helper, controllerB, 20_000);
+        RackGameTests.driveBay(helper, bayB);
+        storageDevice(helper, master, RackDeviceType.NAS, 1, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        RouterDevice router = RackGameTests.install(helper, master, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(router.link(GlobalPos.of(helper.getLevel().dimension(), helper.absolutePos(controllerB))) == RouterDevice.LinkResult.LINKED,
+                            "Network not linked");
+                    NetworkStorage a = RackGameTests.storage(helper, master);
+                    a.insert(COBBLESTONE, 10, false);
+                    a.insert(LOG, 10, false);
+                    a.insert(PLANKS, 10, false);
+                    helper.assertTrue(router.addRoute(0, 1, new PartFilter()), "Route not added");
+                    helper.assertTrue(router.routes().getFirst().idle(), "New route not idle");
+                })
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    NetworkStorage b = RackGameTests.storage(helper, bayB);
+                    helper.assertTrue(b.count(COBBLESTONE) + b.count(LOG) + b.count(PLANKS) == 0, "A new route moved items");
+                    helper.assertTrue(ItemRouting.setEntry(router.routes(), 0, new ItemStack(Items.OAK_LOG)), "Entry not set");
+                })
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    NetworkStorage b = RackGameTests.storage(helper, bayB);
+                    helper.assertTrue(b.count(LOG) == 10 && b.count(COBBLESTONE) == 0 && b.count(PLANKS) == 0,
+                            "Allow list moved logs " + b.count(LOG) + ", cobblestone " + b.count(COBBLESTONE) + ", planks " + b.count(PLANKS));
+                    ItemRouting.setEntry(router.routes(), 0, new ItemStack(Items.COBBLESTONE));
+                    ItemRouting.toggleOption(router.routes(), ItemRouting.OPTION_DENY);
+                })
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    NetworkStorage b = RackGameTests.storage(helper, bayB);
+                    helper.assertTrue(b.count(PLANKS) == 10 && b.count(COBBLESTONE) == 0,
+                            "Deny list moved planks " + b.count(PLANKS) + ", cobblestone " + b.count(COBBLESTONE));
+
+                    TagValueOutput old = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+                    ValueOutput.ValueOutputList list = old.childrenList("routes");
+                    ValueOutput filtered = list.addChild();
+                    filtered.putInt("source", 0);
+                    filtered.putInt("dest", 1);
+                    filtered.store("filter", ItemStack.CODEC, new ItemStack(Items.OAK_LOG));
+                    ValueOutput any = list.addChild();
+                    any.putInt("source", 1);
+                    any.putInt("dest", 0);
+                    List<ItemRouting.Route> loaded = ItemRouting.load(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(),
+                            old.buildResult()), "routes", 2, 8);
+                    helper.assertTrue(loaded.size() == 2, "Old routes: " + loaded.size());
+                    helper.assertTrue(loaded.get(0).matches(LOG) && !loaded.get(0).matches(COBBLESTONE), "Old filtered route");
+                    helper.assertTrue(loaded.get(1).matches(LOG) && loaded.get(1).matches(COBBLESTONE), "Old any-item route");
+
+                    TagValueOutput saved = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());
+                    ItemRouting.save(saved, "routes", router.routes());
+                    ItemRouting.Route reloaded = ItemRouting.load(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(),
+                            saved.buildResult()), "routes", 2, 8).getFirst();
+                    helper.assertTrue(reloaded.filter().deny() && !reloaded.matches(COBBLESTONE) && reloaded.matches(PLANKS), "Saved deny list");
+                })
                 .thenSucceed();
     }
 

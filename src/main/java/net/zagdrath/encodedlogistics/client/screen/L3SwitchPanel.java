@@ -22,8 +22,8 @@ import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
 
 // The L3 Switch's panel (screens/rack/l3_switch.json): three tabs. Devices: the L2 list (lanes and segments). Routes:
-// source segment -> destination segment and the filter (click a segment to step through them, the filter with an item to
-// set it or empty-handed to clear it, right-click to remove; "+ Add route"). QoS: each rule's priority and the items it
+// source segment -> destination segment and the filter (click a segment to step through them, the filter box to edit the
+// route's filter over the list - RouteFilterEditor, with "Done" in place of "+ Add route" - right-click to remove). QoS: each rule's priority and the items it
 // covers (click the priority to step through High / Normal / Low, the items with an item to set them; right-click to
 // remove; "+ Add QoS rule").
 public class L3SwitchPanel extends SwitchPanel {
@@ -38,9 +38,21 @@ public class L3SwitchPanel extends SwitchPanel {
     private static final String[] LEVELS = { "high", "normal", "low" };
 
     private int tab;
+    private final RouteFilterEditor editor;
 
     public L3SwitchPanel(RackScreen screen) {
         super(screen);
+        editor = new RouteFilterEditor(this, LIST_X - 1, LIST_Y - 1, 157, ROWS * ROW_H + 1, L3SwitchDevice.ACTION_SET_FILTER,
+                L3SwitchDevice.ACTION_FILTER_OPTION);
+    }
+
+    // The route being edited (on the Routes tab), or null.
+    private ItemRouting.@Nullable Route editing(@Nullable L3SwitchDevice l3) {
+        return l3 != null && tab == 1 ? editor.current(l3.routes()) : null;
+    }
+
+    private Component routeName(ItemRouting.Route route) {
+        return Component.translatable("gui.encodedlogistics.router.route", segment(route.source()), segment(route.dest()));
     }
 
     @Override
@@ -82,19 +94,21 @@ public class L3SwitchPanel extends SwitchPanel {
             extractDevices(graphics, mouseX, mouseY);
             return;
         }
-        PartScreens.wideButton(graphics, font(), x + ADD_X, y + ADD_Y, ADD_W, ADD_H, Component.translatable(tab == 1 ? "gui.encodedlogistics.l3.add_route"
-                : "gui.encodedlogistics.l3.add_qos"), l3 != null && (tab == 1 ? l3.routes().size() < L3SwitchDevice.MAX_ROUTES
-                        : l3.qos().size() < L3SwitchDevice.MAX_QOS), mouseX, mouseY);
+        ItemRouting.Route editing = editing(l3);
+        PartScreens.wideButton(graphics, font(), x + ADD_X, y + ADD_Y, ADD_W, ADD_H, Component.translatable(editing != null ? "gui.encodedlogistics.route.done"
+                : tab == 1 ? "gui.encodedlogistics.l3.add_route" : "gui.encodedlogistics.l3.add_qos"), editing != null || l3 != null
+                        && (tab == 1 ? l3.routes().size() < L3SwitchDevice.MAX_ROUTES : l3.qos().size() < L3SwitchDevice.MAX_QOS), mouseX, mouseY);
         if (l3 == null) {
             return;
         }
-        if (tab == 1) {
+        if (editing != null) {
+            editor.extractBackground(graphics, editing, x, y, mouseX, mouseY);
+        } else if (tab == 1) {
             for (int i = 0; i < Math.min(ROWS, l3.routes().size()); i++) {
                 int rowY = y + LIST_Y + i * ROW_H;
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
-                RackScreen.filterBox(graphics, x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2 && mouseX < x + FILTER_X + 14
-                        && mouseY >= rowY && mouseY < rowY + ROW_H);
-                item(graphics, l3.routes().get(i).filter(), x + FILTER_X, rowY + 1);
+                RackScreen.routeBox(graphics, l3.routes().get(i).filter(), x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2
+                        && mouseX < x + FILTER_X + 14 && mouseY >= rowY && mouseY < rowY + ROW_H);
             }
         } else {
             for (int i = 0; i < Math.min(ROWS, l3.qos().size()); i++) {
@@ -134,15 +148,18 @@ public class L3SwitchPanel extends SwitchPanel {
         if (l3 == null) {
             return;
         }
-        if (tab == 1) {
+        ItemRouting.Route editing = editing(l3);
+        if (editing != null) {
+            editor.extractLabels(graphics, routeName(editing));
+        } else if (tab == 1) {
             for (int i = 0; i < Math.min(ROWS, l3.routes().size()); i++) {
                 ItemRouting.Route route = l3.routes().get(i);
                 int rowY = LIST_Y + i * ROW_H + 3;
-                graphics.text(font(), font().plainSubstrByWidth(segment(route.source()).getString(), ARROW_X - SOURCE_X - 2), SOURCE_X, rowY,
-                        RackScreen.TEXT, false);
-                graphics.text(font(), font().plainSubstrByWidth(segment(route.dest()).getString(), FILTER_X - DEST_X - 2), DEST_X, rowY, RackScreen.TEXT,
-                        false);
-                if (route.filter().isEmpty()) {
+                // An empty allow list moves nothing: dimmed.
+                int color = route.idle() ? RackScreen.TEXT_DISABLED : RackScreen.TEXT;
+                graphics.text(font(), font().plainSubstrByWidth(segment(route.source()).getString(), ARROW_X - SOURCE_X - 2), SOURCE_X, rowY, color, false);
+                graphics.text(font(), font().plainSubstrByWidth(segment(route.dest()).getString(), FILTER_X - DEST_X - 2), DEST_X, rowY, color, false);
+                if (route.filter().isEmpty() && route.filter().deny()) {
                     graphics.text(font(), "*", FILTER_X + 4, rowY, RackScreen.TEXT_MUTED, false);
                 }
             }
@@ -171,11 +188,19 @@ public class L3SwitchPanel extends SwitchPanel {
         }
         int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
         L3SwitchDevice l3 = l3();
+        ItemRouting.Route editing = editing(l3);
+        if (editing != null) {
+            editor.extractTooltip(graphics, editing, screen.left(), screen.top(), mouseX, mouseY);
+            return;
+        }
         if (l3 == null || !screen.over(mouseX, mouseY, LIST_X, LIST_Y, 156, ROWS * ROW_H) || mouseY - screen.top() < LIST_Y) {
             return;
         }
         if (tab == 1 && row < l3.routes().size()) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.route_hint"), mouseX, mouseY);
+            ItemRouting.Route route = l3.routes().get(row);
+            graphics.setComponentTooltipForNextFrame(font(), List.of(routeName(route),
+                    RouteFilterEditor.summary(route.filter()).copy().withColor(RackScreen.TEXT_MUTED),
+                    Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         } else if (tab == 2 && row < l3.qos().size()) {
             graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.l3.qos_hint"), mouseX, mouseY);
         }
@@ -189,8 +214,17 @@ public class L3SwitchPanel extends SwitchPanel {
         for (int i = 0; i < TABS.length; i++) {
             if (left && x >= TABS_X + i * TAB_STEP && x < TABS_X + i * TAB_STEP + TAB_W && y >= TABS_Y && y < TABS_Y + 13) {
                 tab = i;
+                editor.close();
                 return true;
             }
+        }
+        boolean editing = editing(l3()) != null;
+        if (editing && left && x >= ADD_X && x < ADD_X + ADD_W && y >= ADD_Y && y < ADD_Y + ADD_H) {
+            editor.close();
+            return true;
+        }
+        if (editing && editor.mouseClicked(x, y, button)) {
+            return true;
         }
         if (tab == 0) {
             return clickDevices(x, y, button);
@@ -212,7 +246,7 @@ public class L3SwitchPanel extends SwitchPanel {
             } else if (left && x < FILTER_X - 2) {
                 send(L3SwitchDevice.ACTION_CYCLE_DEST, row, "");
             } else if (left) {
-                send(L3SwitchDevice.ACTION_SET_FILTER, row, "");
+                editor.open(row);
             }
             return true;
         }
@@ -236,13 +270,15 @@ public class L3SwitchPanel extends SwitchPanel {
         if (l3 == null || tab == 0) {
             return targets;
         }
-        int count = Math.min(ROWS, tab == 1 ? l3.routes().size() : l3.qos().size());
-        for (int i = 0; i < count; i++) {
-            int row = i, rowY = screen.top() + LIST_Y + i * ROW_H;
-            targets.add(tab == 1
-                    ? new RackScreen.GhostTarget(screen.left() + FILTER_X - 1, rowY, 14, 14, stack -> sendItem(L3SwitchDevice.ACTION_SET_FILTER, row, stack))
-                    : new RackScreen.GhostTarget(screen.left() + LIST_X, rowY, LEVEL_X - LIST_X, ROW_H,
-                            stack -> sendItem(L3SwitchDevice.ACTION_SET_QOS_FILTER, row, stack)));
+        if (tab == 1) {
+            return editing(l3) != null ? editor.ghostTargets(screen.left(), screen.top())
+                    : RouteFilterEditor.rowTargets(this, l3.routes(), ROWS, screen.left() + FILTER_X - 1, screen.top() + LIST_Y, ROW_H,
+                            L3SwitchDevice.ACTION_SET_FILTER);
+        }
+        for (int i = 0; i < Math.min(ROWS, l3.qos().size()); i++) {
+            int row = i;
+            targets.add(new RackScreen.GhostTarget(screen.left() + LIST_X, screen.top() + LIST_Y + i * ROW_H, LEVEL_X - LIST_X, ROW_H,
+                    stack -> sendItem(L3SwitchDevice.ACTION_SET_QOS_FILTER, row, stack)));
         }
         return targets;
     }

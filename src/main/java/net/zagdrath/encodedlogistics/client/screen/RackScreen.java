@@ -39,6 +39,7 @@ import net.zagdrath.encodedlogistics.client.rack.RackClientDevices;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.net.RackActionPayload;
 import net.zagdrath.encodedlogistics.net.RackPanelPayload;
+import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -304,8 +305,32 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
     // A route's filter box (the 12x12 item at x+1, y+1 inside it): a dark well, its border lit while hovered.
     public static void filterBox(GuiGraphicsExtractor graphics, int x, int y, boolean hovered) {
-        graphics.fill(x, y, x + 14, y + 14, hovered ? ACCENT : 0xFF5A5A5A);
-        graphics.fill(x + 1, y + 1, x + 13, y + 13, 0xFF1C1C1C);
+        filterBox(graphics, x, y, 14, hovered);
+    }
+
+    // The same, size square (18 for a full-size item).
+    public static void filterBox(GuiGraphicsExtractor graphics, int x, int y, int size, boolean hovered) {
+        filterBox(graphics, x, y, size, hovered ? ACCENT : 0xFF5A5A5A);
+    }
+
+    // With its border in a colour.
+    public static void filterBox(GuiGraphicsExtractor graphics, int x, int y, int size, int border) {
+        graphics.fill(x, y, x + size, y + size, border);
+        graphics.fill(x + 1, y + 1, x + size - 1, y + size - 1, 0xFF1C1C1C);
+    }
+
+    // A route's filter box in its row (the Router's, the L3 Switch's): its first entry, a "*" (drawn with the labels) for
+    // an empty deny list, nothing for an empty allow list; a deny list's border red. Screen coordinates.
+    public static void routeBox(GuiGraphicsExtractor graphics, PartFilter filter, int x, int y, boolean hovered) {
+        filterBox(graphics, x, y, 14, hovered ? ACCENT : filter.deny() ? 0xFF9A4040 : 0xFF5A5A5A);
+        List<ItemStack> entries = filter.nonEmpty();
+        if (!entries.isEmpty()) {
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(x + 1, y + 1);
+            graphics.pose().scale(0.75F, 0.75F);
+            graphics.item(entries.getFirst(), 0, 0);
+            graphics.pose().popMatrix();
+        }
     }
 
     // The selection and drop-target outlines drawn for devices taller than the 1U and 2U sprites (3U, 4U): the same

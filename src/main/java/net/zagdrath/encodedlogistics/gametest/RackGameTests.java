@@ -48,6 +48,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -404,7 +405,7 @@ final class RackGameTests {
                     storage(helper, bayA).insert(COBBLESTONE, 40, false);
                     helper.assertTrue(router.link(GlobalPos.of(helper.getLevel().dimension(), helper.absolutePos(cableB))) == RouterDevice.LinkResult.LINKED,
                             "Segment not linked");
-                    helper.assertTrue(router.addRoute(0, 1, ItemStack.EMPTY), "Route not added");
+                    helper.assertTrue(router.addRoute(0, 1, ItemRouting.everything()), "Route not added");
                 })
                 .thenIdle(25)
                 .thenExecute(() -> {

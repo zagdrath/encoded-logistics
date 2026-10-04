@@ -20,6 +20,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -29,12 +30,12 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // The L3 Switch (1U): an L2 Switch's lane pool (32 lanes), plus routing between the segments its rack knows (the rack's
 // own network and the networks beyond Segment Isolators it's linked to): each route moves items from one segment's
 // storage to another's, optionally only one item. Once a second it moves up to l3SwitchRate items, shared between its
-// active routes; QoS rules mark items high, normal or low priority, and each route moves its high-priority items
+// active routes (each with a port's filter: ItemRouting); QoS rules mark items high, normal or low priority, and each route moves its high-priority items
 // first, then normal, then low.
 public class L3SwitchDevice extends SwitchDevice {
     public static final int MAX_ROUTES = 8, MAX_QOS = 8;
     public static final int ACTION_ADD_ROUTE = 0, ACTION_REMOVE_ROUTE = 1, ACTION_CYCLE_SOURCE = 2, ACTION_CYCLE_DEST = 3, ACTION_SET_FILTER = 4,
-            ACTION_ADD_QOS = 10, ACTION_REMOVE_QOS = 11, ACTION_CYCLE_QOS_LEVEL = 12, ACTION_SET_QOS_FILTER = 13;
+            ACTION_FILTER_OPTION = 7, ACTION_ADD_QOS = 10, ACTION_REMOVE_QOS = 11, ACTION_CYCLE_QOS_LEVEL = 12, ACTION_SET_QOS_FILTER = 13;
     private static final int WINDOW = 5;
 
     // Items matching filter (any item when empty) have this priority level.
@@ -96,12 +97,13 @@ public class L3SwitchDevice extends SwitchDevice {
         return (double) total / WINDOW;
     }
 
-    // Adds a route between two of the rack's segments (by index); false when it's full or a segment doesn't exist.
-    public boolean addRoute(int source, int dest, ItemStack filter) {
+    // Adds a route between two of the rack's segments (by index) for the items filter passes; false when it's full or a
+    // segment doesn't exist.
+    public boolean addRoute(int source, int dest, PartFilter filter) {
         if (routes.size() >= MAX_ROUTES || source < 0 || source >= endpoints() || dest < 0 || dest >= endpoints()) {
             return false;
         }
-        routes.add(new ItemRouting.Route(source, dest, filter.isEmpty() ? ItemStack.EMPTY : filter.copyWithCount(1)));
+        routes.add(new ItemRouting.Route(source, dest, filter));
         changed(false);
         return true;
     }
@@ -166,7 +168,8 @@ public class L3SwitchDevice extends SwitchDevice {
                 if (routes.size() >= MAX_ROUTES) {
                     return;
                 }
-                routes.add(new ItemRouting.Route(0, n > 1 ? 1 : 0, ItemStack.EMPTY));
+                // An empty allow list: it moves nothing until it's set up.
+                routes.add(new ItemRouting.Route(0, n > 1 ? 1 : 0));
             }
             case ACTION_REMOVE_ROUTE -> {
                 if (value < 0 || value >= routes.size()) {
@@ -179,15 +182,17 @@ public class L3SwitchDevice extends SwitchDevice {
                     return;
                 }
                 ItemRouting.Route route = routes.get(value);
-                routes.set(value, action == ACTION_CYCLE_SOURCE ? new ItemRouting.Route((route.source() + 1) % n, route.dest(), route.filter())
-                        : new ItemRouting.Route(route.source(), (route.dest() + 1) % n, route.filter()));
+                routes.set(value, action == ACTION_CYCLE_SOURCE ? route.withSource((route.source() + 1) % n) : route.withDest((route.dest() + 1) % n));
             }
             case ACTION_SET_FILTER -> {
-                if (value < 0 || value >= routes.size()) {
+                if (!ItemRouting.setEntry(routes, value, filter)) {
                     return;
                 }
-                ItemRouting.Route route = routes.get(value);
-                routes.set(value, new ItemRouting.Route(route.source(), route.dest(), filter));
+            }
+            case ACTION_FILTER_OPTION -> {
+                if (!ItemRouting.toggleOption(routes, value)) {
+                    return;
+                }
             }
             case ACTION_ADD_QOS -> {
                 if (qos.size() >= MAX_QOS) {

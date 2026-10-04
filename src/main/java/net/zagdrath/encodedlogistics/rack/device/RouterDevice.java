@@ -23,6 +23,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
@@ -33,13 +34,14 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // The Router (1U): the WAN edge. It moves items between separate networks, however far apart or whichever dimension
 // they're in: the network it serves (endpoint 0) and every network linked to it with a Link Card (sneak-use the card on
 // any block of that network, then use it on the Router's unit in an open rack). Each route moves items from one
-// network's storage to another's, optionally only one item (a ghost filter). Once a second it moves up to its rate
+// network's storage to another's, the items its filter passes (ItemRouting). Once a second it moves up to its rate
 // (routerBaseRate items/s, routerRatePerTransceiver more for each Optical Transceiver in its three cages), shared
 // between its active routes in turn. (Routing between the segments of one installation is the L3 Switch's.)
 public class RouterDevice extends RackDevice {
     public static final int MAX_NETWORKS = 6, MAX_ROUTES = 6, CAGES = 3;
+    // ACTION_SET_FILTER: value is route * PartFilter.SIZE + entry; ACTION_FILTER_OPTION: route * ItemRouting.OPTIONS + option.
     public static final int ACTION_ADD_ROUTE = 0, ACTION_REMOVE_ROUTE = 1, ACTION_CYCLE_SOURCE = 2, ACTION_CYCLE_DEST = 3, ACTION_SET_FILTER = 4,
-            ACTION_RENAME = 5, ACTION_UNLINK = 6;
+            ACTION_RENAME = 5, ACTION_UNLINK = 6, ACTION_FILTER_OPTION = 7;
     private static final int WINDOW = 5;
 
     // A network linked to the Router, found through a block on it (its controller, or anything else on it).
@@ -141,13 +143,13 @@ public class RouterDevice extends RackDevice {
         return LinkResult.LINKED;
     }
 
-    // Adds a route from one endpoint to another (by index), for any item or just the filter's; false when it's full or
-    // an endpoint doesn't exist.
-    public boolean addRoute(int source, int dest, ItemStack filter) {
+    // Adds a route from one endpoint to another (by index) for the items filter passes; false when it's full or an
+    // endpoint doesn't exist.
+    public boolean addRoute(int source, int dest, PartFilter filter) {
         if (routes.size() >= MAX_ROUTES || source < 0 || source >= endpointCount() || dest < 0 || dest >= endpointCount()) {
             return false;
         }
-        routes.add(new ItemRouting.Route(source, dest, filter.isEmpty() ? ItemStack.EMPTY : filter.copyWithCount(1)));
+        routes.add(new ItemRouting.Route(source, dest, filter));
         changed(false);
         return true;
     }
@@ -227,7 +229,8 @@ public class RouterDevice extends RackDevice {
     public void handleAction(ServerPlayer player, int action, int value, String text) {
         switch (action) {
             case ACTION_ADD_ROUTE -> {
-                if (!addRoute(0, endpointCount() > 1 ? 1 : 0, ItemStack.EMPTY)) {
+                // An empty allow list: it moves nothing until it's set up.
+                if (!addRoute(0, endpointCount() > 1 ? 1 : 0, new PartFilter())) {
                     return;
                 }
             }
@@ -243,15 +246,17 @@ public class RouterDevice extends RackDevice {
                 }
                 ItemRouting.Route route = routes.get(value);
                 int n = endpointCount();
-                routes.set(value, action == ACTION_CYCLE_SOURCE ? new ItemRouting.Route((route.source() + 1) % n, route.dest(), route.filter())
-                        : new ItemRouting.Route(route.source(), (route.dest() + 1) % n, route.filter()));
+                routes.set(value, action == ACTION_CYCLE_SOURCE ? route.withSource((route.source() + 1) % n) : route.withDest((route.dest() + 1) % n));
             }
             case ACTION_SET_FILTER -> {
-                if (value < 0 || value >= routes.size()) {
+                if (!ItemRouting.setEntry(routes, value, filter(player, text))) {
                     return;
                 }
-                ItemRouting.Route route = routes.get(value);
-                routes.set(value, new ItemRouting.Route(route.source(), route.dest(), filter(player, text)));
+            }
+            case ACTION_FILTER_OPTION -> {
+                if (!ItemRouting.toggleOption(routes, value)) {
+                    return;
+                }
             }
             case ACTION_RENAME -> {
                 String name = (text.length() > 24 ? text.substring(0, 24) : text).trim();
