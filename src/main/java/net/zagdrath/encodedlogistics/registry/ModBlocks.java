@@ -19,6 +19,7 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
+import net.zagdrath.encodedlogistics.block.ControlInterfaceBlock;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
 import net.zagdrath.encodedlogistics.block.FabricatorBlock;
 import net.zagdrath.encodedlogistics.block.GatewayBlock;
@@ -89,6 +90,10 @@ public final class ModBlocks {
     // Reach (Phase 4): wireless coverage for Handheld Terminals, and long-range links between networks.
     public static final DeferredBlock<RelayAntennaBlock> RELAY_ANTENNA = BLOCKS.registerBlock("relay_antenna", RelayAntennaBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+
+    // Scripts (the Terminal OS): redstone in and out.
+    public static final DeferredBlock<ControlInterfaceBlock> CONTROL_INTERFACE = BLOCKS.registerBlock("control_interface", ControlInterfaceBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
 
     public static final DeferredBlock<NetworkBridgeBlock> NETWORK_BRIDGE = BLOCKS.registerBlock("network_bridge", NetworkBridgeBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)

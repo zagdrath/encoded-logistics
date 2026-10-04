@@ -48,6 +48,8 @@ public final class ElclMessages {
         define("ELC0104", SEVERE, "Parameter &1 specified more than once.");
         define("ELC0105", SEVERE, "Command &1 is not allowed in a batch job.");
         define("ELC0106", SEVERE, "Command &1 is not allowed in an interactive job.");
+        // Not in MESSAGES.md: a command whose ELCL package hasn't landed yet (SCREEN_INVENTORY.md).
+        define("ELC0107", SEVERE, "Command &1 is not available yet.");
         // Objects.
         define("ELC0201", SEVERE, "Library &1 not found.");
         define("ELC0202", SEVERE, "Member &1 not found in library &2.");

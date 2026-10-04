@@ -205,6 +205,10 @@ public class Config {
             .comment("FE per tick a Relay Antenna drains while its network runs.")
             .defineInRange("relayDrain", 2.0, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.DoubleValue CONTROL_INTERFACE_DRAIN = BUILDER
+            .comment("FE per tick a Control Interface drains while its network runs.")
+            .defineInRange("controlInterfaceDrain", 1.0, 0.0, 1_000.0);
+
     public static final ModConfigSpec.IntValue HANDHELD_CAPACITY = BUILDER
             .comment("FE a Handheld Terminal's battery holds.")
             .defineInRange("handheldCapacity", 200_000, 1, Integer.MAX_VALUE);

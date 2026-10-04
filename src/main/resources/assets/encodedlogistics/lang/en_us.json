@@ -366,6 +366,7 @@
   "item.encodedlogistics.link_card": "Link Card",
   "item.encodedlogistics.handheld_terminal": "Handheld Terminal",
   "block.encodedlogistics.relay_antenna": "Relay Antenna",
+  "block.encodedlogistics.control_interface": "Control Interface",
   "block.encodedlogistics.network_bridge": "Network Bridge",
   "item.encodedlogistics.point_to_point_link": "Point-to-Point Link",
   "item.encodedlogistics.collector_plane": "Collector Plane",

@@ -1,0 +1,125 @@
+{
+ "multipart": [
+  {
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/base"
+   }
+  },
+  {
+   "when": {
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/online"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "north": "dim"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_north_dim"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "north": "bright"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_north_bright"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "south": "dim"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_south_dim"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "south": "bright"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_south_bright"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "east": "dim"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_east_dim"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "east": "bright"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_east_bright"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "west": "dim"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_west_dim"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "west": "bright"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_west_bright"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "up": "dim"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_up_dim"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "up": "bright"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_up_bright"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "down": "dim"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_down_dim"
+   }
+  },
+  {
+   "when": {
+    "online": "true",
+    "down": "bright"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/control_interface/led_down_bright"
+   }
+  }
+ ]
+}

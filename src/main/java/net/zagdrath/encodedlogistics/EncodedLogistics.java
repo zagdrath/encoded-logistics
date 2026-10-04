@@ -20,6 +20,7 @@ import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclSetup;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
@@ -62,6 +63,7 @@ public class EncodedLogistics {
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
         FirewallEvents.register();
+        ElclSetup.init();
 
         modContainer.registerConfig(localConfigType(), Config.SPEC);
     }

@@ -43,6 +43,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
+import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
@@ -531,7 +532,7 @@ public class ControllerStructures extends SavedData {
     }
 
     // The block entity at a position in any dimension, if that's loaded.
-    private static @Nullable BlockEntity blockEntity(MinecraftServer server, NodePos pos) {
+    public static @Nullable BlockEntity blockEntity(MinecraftServer server, NodePos pos) {
         ServerLevel level = server.getLevel(pos.dimension());
         return level != null && level.isLoaded(pos.pos()) ? level.getBlockEntity(pos.pos()) : null;
     }
@@ -867,7 +868,13 @@ public class ControllerStructures extends SavedData {
             }
             String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.SERVER_RACK.get() ? "Rack"
                     : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
-            rows.add(new DeviceRow(type, item.getName(item.getDefaultInstance()), pos, node.laneCost(), online, missing, null, 0));
+            Component name = item.getName(item.getDefaultInstance());
+            // A Control Interface goes by the name scripts use for it.
+            if (blockEntity(server, pos) instanceof ControlInterfaceBlockEntity ci && !ci.name().isEmpty()) {
+                type = ControlInterfaceBlockEntity.TYPE;
+                name = Component.literal(ci.name());
+            }
+            rows.add(new DeviceRow(type, name, pos, node.laneCost(), online, missing, null, 0));
             if (runtime.racks.contains(pos) && blockEntity(server, pos) instanceof RackBlockEntity rack) {
                 for (RackDevice device : rack.devices()) {
                     rows.add(new DeviceRow("Unit", device.name(), pos, device.laneCost(), device.isOnline(), false, device, 1));

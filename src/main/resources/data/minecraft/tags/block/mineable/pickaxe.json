@@ -19,6 +19,7 @@
   "encodedlogistics:relay_antenna",
   "encodedlogistics:network_bridge",
   "encodedlogistics:server_rack",
-  "encodedlogistics:terminal_desk"
+  "encodedlogistics:terminal_desk",
+  "encodedlogistics:control_interface"
  ]
 }

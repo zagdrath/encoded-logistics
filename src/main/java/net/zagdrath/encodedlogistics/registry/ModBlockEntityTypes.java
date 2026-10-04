@@ -15,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
@@ -51,6 +52,9 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<TerminalDeskBlockEntity>> TERMINAL_DESK = BLOCK_ENTITY_TYPES.register(
             "terminal_desk", () -> new BlockEntityType<>(TerminalDeskBlockEntity::new, ModBlocks.TERMINAL_DESK.get()));
+
+    public static final Supplier<BlockEntityType<ControlInterfaceBlockEntity>> CONTROL_INTERFACE = BLOCK_ENTITY_TYPES.register(
+            "control_interface", () -> new BlockEntityType<>(ControlInterfaceBlockEntity::new, ModBlocks.CONTROL_INTERFACE.get()));
 
     public static final Supplier<BlockEntityType<SwivelChairBlockEntity>> SWIVEL_CHAIR = BLOCK_ENTITY_TYPES.register(
             "swivel_chair", () -> new BlockEntityType<>(SwivelChairBlockEntity::new, ModBlocks.SWIVEL_CHAIR.get()));

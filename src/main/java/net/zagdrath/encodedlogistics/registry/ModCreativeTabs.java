@@ -34,7 +34,7 @@ public final class ModCreativeTabs {
                 for (var block : List.of(ModItems.NETWORK_CONTROLLER, ModItems.POWER_INLET, ModItems.CAPACITOR_BANK, ModItems.SEGMENT_ISOLATOR,
                         ModItems.LITHOGRAPHY_PRESS, ModItems.DRIVE_BAY, ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE,
                         ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.SERVER_RACK,
-                        ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR)) {
+                        ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR, ModItems.CONTROL_INTERFACE)) {
                     output.accept(block.get());
                 }
             })

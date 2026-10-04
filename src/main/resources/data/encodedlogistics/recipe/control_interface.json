@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  " C ",
+  "RLR",
+  "ISI"
+ ],
+ "key": {
+  "C": "minecraft:comparator",
+  "R": "minecraft:redstone",
+  "L": "encodedlogistics:logic_die",
+  "I": "minecraft:iron_ingot",
+  "S": "encodedlogistics:circuit_substrate"
+ },
+ "result": {
+  "id": "encodedlogistics:control_interface",
+  "count": 1
+ }
+}

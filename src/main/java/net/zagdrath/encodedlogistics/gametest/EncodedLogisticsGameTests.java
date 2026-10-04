@@ -113,6 +113,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("desk_screen", DeskGameTests::deskScreen);
         TESTS.put("desk_withdraws", DeskGameTests::deskWithdraws);
         TESTS.put("desk_commands", DeskGameTests::deskCommands);
+        TESTS.put("control_interface", ControlInterfaceGameTests::controlInterface);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);
