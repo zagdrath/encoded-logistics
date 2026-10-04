@@ -43,10 +43,15 @@ import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
 import net.zagdrath.encodedlogistics.network.RackLanes;
 import net.zagdrath.encodedlogistics.network.RackNode;
@@ -96,6 +101,16 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     private RackLanes rackLanes = RackLanes.NONE;
     // Its controller structure (ControllerStructures) while it holds rack Network Controllers, else 0.
     private long controllerStructure;
+    // The network it joined first (kept across reloads): a connection point cabled to another one is a mismatch and
+    // carries nothing (no network, no power). Points checked by search are cached until the topology changes.
+    private @Nullable NetworkRef home;
+    private final Map<RackGeometry.Point, Long> beyond = new java.util.EnumMap<>(RackGeometry.Point.class);
+    private int beyondGeneration = -1;
+    // A search beyond a point runs into other racks, which mustn't search in turn.
+    private static boolean searching;
+    // FE taken in through its connection points this tick (rackPowerMaxInput a tick, across them all).
+    private int powerThisTick;
+    private final PowerPort powerPort = new PowerPort();
     private boolean syncPending;
     private int syncCooldown;
     // Client: door animation, 0 (closed) to DOOR_TICKS (open), this tick and last.
@@ -324,11 +339,172 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         return PointState.UNUSED;
     }
 
-    // A cable from another network than the rack's at a point (it carries nothing). Filled in with the rack's power and
-    // network checks.
+    // A cable from another network than the rack's at a point: it carries nothing. Its network is what the index says
+    // the block there is on, or else the controller a search beyond it finds. A rack with its own controllers never has
+    // one (two controller systems meeting there are a conflict, or a pair). Before it has joined a network, the lowest
+    // network found at its points is the one it'll join, and the others are mismatches.
     public boolean isMismatched(ServerLevel level, RackGeometry.Point point) {
-        return false;
+        if (!controllers().isEmpty()) {
+            return false;
+        }
+        NetworkRef joined = home != null && ControllerStructures.exists(level.getServer(), home) ? home : null;
+        if (joined == null) {
+            NetworkRef lowest = null;
+            for (RackGeometry.Point each : RackGeometry.Point.values()) {
+                NetworkRef there = networkAt(level, each);
+                if (there != null && (lowest == null || there.id() < lowest.id())) {
+                    lowest = there;
+                }
+            }
+            joined = lowest;
+        }
+        NetworkRef there = networkAt(level, point);
+        return joined != null && there != null && !there.equals(joined);
     }
+
+    // The network a cable at a point leads to, if any.
+    private @Nullable NetworkRef networkAt(ServerLevel level, RackGeometry.Point point) {
+        BlockPos outside = point.outside(worldPosition, facing());
+        if (!level.isLoaded(outside)) {
+            return null;
+        }
+        NetworkRef indexed = ControllerStructures.networkOf(level, outside);
+        if (indexed != null) {
+            return indexed;
+        }
+        int generation = ControllerStructures.generation(level.getServer());
+        if (generation != beyondGeneration) {
+            beyond.clear();
+            beyondGeneration = generation;
+        }
+        Long id = beyond.get(point);
+        if (id == null) {
+            if (searching) {
+                return null;
+            }
+            Set<BlockPos> own = new HashSet<>();
+            for (int index = 0; index < RackGeometry.PARTS; index++) {
+                own.add(RackGeometry.partPos(worldPosition, facing(), index));
+            }
+            searching = true;
+            try {
+                Long found = NetworkDiscovery.controllerBeyond(level, outside, point.side(facing()), own);
+                id = found != null ? found : 0L;
+            } finally {
+                searching = false;
+            }
+            beyond.put(point, id);
+        }
+        return id > 0 ? ControllerStructures.networkOfStructure(level.getServer(), new NetworkRef(level.dimension(), id)) : null;
+    }
+
+    // Whether a cable on that side of one of its blocks joins it (a connection point, and not a mismatch).
+    public boolean joins(int index, Direction side) {
+        RackGeometry.Point point = RackGeometry.Point.at(index, facing(), side);
+        return point == null || !(level instanceof ServerLevel serverLevel) || !isMismatched(serverLevel, point);
+    }
+
+    // Keeps the network it joined, once it's on one.
+    private void checkHome(ServerLevel level) {
+        NetworkRef current = ControllerStructures.networkOf(level, worldPosition);
+        if (current != null && !current.equals(home)) {
+            home = current;
+            setChanged();
+        } else if (current == null && home != null && !ControllerStructures.exists(level.getServer(), home)) {
+            home = null;
+            setChanged();
+            ControllerStructures.get(level).markTopologyChanged();
+        }
+    }
+
+    // --- Power ---
+
+    // FE into the rack at a connection point (any mod's cable): it goes to its network's energy, as a Power Inlet's does.
+    // Not on a point (or at a mismatched one), nothing.
+    public @Nullable EnergyHandler energyHandler(int index, @Nullable Direction side) {
+        if (side == null) {
+            return null;
+        }
+        RackGeometry.Point point = RackGeometry.Point.at(index, facing(), side);
+        return point != null && level instanceof ServerLevel serverLevel && !isMismatched(serverLevel, point) ? powerPort : null;
+    }
+
+    private static int powerMaxInput() {
+        int max = Config.RACK_POWER_MAX_INPUT.getAsInt();
+        return max < 0 ? Config.INLET_MAX_INPUT.getAsInt() : max;
+    }
+
+    private final class PowerPort implements EnergyHandler {
+        private final SnapshotJournal<Integer> journal = new SnapshotJournal<>() {
+            @Override
+            protected Integer createSnapshot() {
+                return powerThisTick;
+            }
+
+            @Override
+            protected void revertToSnapshot(Integer snapshot) {
+                powerThisTick = snapshot;
+            }
+        };
+
+        @Override
+        public long getAmountAsLong() {
+            return 0;
+        }
+
+        @Override
+        public long getCapacityAsLong() {
+            return 0;
+        }
+
+        @Override
+        public int insert(int amount, TransactionContext transaction) {
+            if (amount <= 0 || !(level instanceof ServerLevel serverLevel)) {
+                return 0;
+            }
+            NetworkRef network = ControllerStructures.networkOf(serverLevel, worldPosition);
+            int allowed = Math.min(amount, Math.max(0, powerMaxInput() - powerThisTick));
+            if (network == null || allowed <= 0) {
+                return 0;
+            }
+            int filled = ControllerStructures.fill(serverLevel.getServer(), network, allowed, transaction);
+            if (filled > 0) {
+                journal.updateSnapshots(transaction);
+                powerThisTick += filled;
+            }
+            return filled;
+        }
+
+        @Override
+        public int extract(int amount, TransactionContext transaction) {
+            return 0;
+        }
+    }
+
+    // --- The popup's header ---
+
+    // Above every device's popup: the rack, its lanes over its working uplinks and how many there are; amber and
+    // "Degraded" while a device is shed, an uplink is down or a point is mismatched. Nothing while it isn't on a network.
+    public RackDeviceInfo.@Nullable Header header() {
+        if (!(level instanceof ServerLevel serverLevel) || rackLanes.equals(RackLanes.NONE)) {
+            return null;
+        }
+        Component name = getBlockState().getBlock().getName();
+        int mismatched = 0;
+        for (RackGeometry.Point point : RackGeometry.Point.values()) {
+            if (isMismatched(serverLevel, point)) {
+                mismatched++;
+            }
+        }
+        int uplinks = rackLanes.uplinks().size() + mismatched, active = rackLanes.activeUplinks();
+        if (rackLanes.degraded() || mismatched > 0) {
+            return new RackDeviceInfo.Header(Component.translatable("hud.encodedlogistics.rack.degraded", rackLanes.available(), rackLanes.total(), active,
+                    uplinks), true);
+        }
+        return new RackDeviceInfo.Header(Component.translatable("hud.encodedlogistics.rack.uplinks", name, rackLanes.available(), rackLanes.total(), active),
+                false);
+    }
+
 
     // --- Rack Network Controllers ---
 
@@ -571,6 +747,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             return;
         }
         rack.checkControllerStructure(serverLevel);
+        rack.checkHome(serverLevel);
+        rack.powerThisTick = 0;
         for (RackDevice device : List.copyOf(rack.devices.values())) {
             device.tick(serverLevel);
         }
@@ -644,6 +822,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         frontOpen = input.getBooleanOr("front_open", false);
         rearOpen = input.getBooleanOr("rear_open", false);
         controllerStructure = input.getLongOr("controller_structure", 0L);
+        home = input.read("home", NetworkRef.CODEC).orElse(null);
         segments.clear();
         input.read("segments", GlobalPos.CODEC.listOf()).ifPresent(segments::addAll);
         devices.clear();
@@ -679,6 +858,9 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         output.putBoolean("rear_open", rearOpen);
         if (controllerStructure > 0) {
             output.putLong("controller_structure", controllerStructure);
+        }
+        if (home != null) {
+            output.store("home", NetworkRef.CODEC, home);
         }
         ValueOutput.ValueOutputList list = output.childrenList("devices");
         for (RackDevice device : devices.values()) {

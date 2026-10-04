@@ -189,7 +189,11 @@ public class RackMenu extends AbstractContainerMenu {
         if (!(device instanceof FirewallDevice) && !NetworkAccess.check(player.level(), pos, player, RackPermission.BUILD)) {
             return;
         }
-        device.handleAction(player, action, value, text);
+        if (action == RackDevice.ACTION_PRIORITY) {
+            device.setLanePriority(device.lanePriority().next());
+        } else {
+            device.handleAction(player, action, value, text);
+        }
         ticksUntilSync = 0;
     }
 

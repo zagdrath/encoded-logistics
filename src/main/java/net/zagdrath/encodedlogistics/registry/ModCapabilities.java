@@ -11,12 +11,16 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.zagdrath.encodedlogistics.Config;
+import net.minecraft.core.BlockPos;
+import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.block.TerminalDeskBlock;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 
 public final class ModCapabilities {
@@ -38,6 +42,12 @@ public final class ModCapabilities {
         event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, blockEntity, side) -> state.getValue(TerminalDeskBlock.PART) == TerminalDeskBlock.Part.DUMMY
                 && level.getBlockEntity(TerminalDeskBlock.master(state, pos)) instanceof TerminalDeskBlockEntity desk ? VanillaContainerWrapper.of(desk) : null,
                 ModBlocks.TERMINAL_DESK.get());
+        // A Server Rack's power ports: FE into any connection point feeds its network.
+        event.registerBlock(Capabilities.Energy.BLOCK, (level, pos, state, blockEntity, side) -> {
+            int index = state.getValue(ServerRackBlock.PART_INDEX);
+            BlockPos master = RackGeometry.masterPos(pos, state.getValue(ServerRackBlock.FACING), index);
+            return level.getBlockEntity(master) instanceof RackBlockEntity rack ? rack.energyHandler(index, side) : null;
+        }, ModBlocks.SERVER_RACK.get());
         // The Handheld Terminal's battery charges in any FE charger.
         event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new ItemAccessEnergyHandler(access, ModDataComponents.ENERGY.get(),
                 Config.HANDHELD_CAPACITY.getAsInt(), Config.HANDHELD_CHARGE_RATE.getAsInt(), 0), ModItems.HANDHELD_TERMINAL.get());

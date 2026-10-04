@@ -9,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -150,6 +151,43 @@ public final class NetworkDiscovery {
             }
         }
         return new Discovered(graph, items);
+    }
+
+    // The controller structure reachable from a node (start, linked toward the side it was reached from), without passing
+    // the excluded positions: a controller block's structure, or a rack's whose rack holds controllers; null for none.
+    // What a Server Rack checks its cables against (RackBlockEntity#isMismatched).
+    public static @Nullable Long controllerBeyond(ServerLevel level, BlockPos start, Direction from, Set<BlockPos> excluded) {
+        NetworkNode first = level.isLoaded(start) ? nodeAt(level, start, 0) : null;
+        if (first == null || !first.connections().contains(from.getOpposite())) {
+            return null;
+        }
+        ArrayDeque<NetworkNode> queue = new ArrayDeque<>();
+        Set<BlockPos> seen = new HashSet<>(excluded);
+        seen.add(start);
+        queue.add(first);
+        while (!queue.isEmpty() && seen.size() < MAX_NODES) {
+            NetworkNode node = queue.poll();
+            if (node.isController()) {
+                return node.controllerGroup();
+            }
+            if (node instanceof RackNode rack && !rack.controllers().isEmpty() && rack.structure() > 0) {
+                return rack.structure();
+            }
+            if (!node.passesThrough() && node != first) {
+                continue;
+            }
+            for (Direction side : node.connections()) {
+                BlockPos next = node.pos().relative(side);
+                if (!seen.add(next) || !level.isLoaded(next)) {
+                    continue;
+                }
+                NetworkNode neighbour = nodeAt(level, next, 0);
+                if (neighbour != null && neighbour.connections().contains(side.getOpposite())) {
+                    queue.add(neighbour);
+                }
+            }
+        }
+        return null;
     }
 
     private static @Nullable RemoteLink linkTo(NetworkNode node, NodePos target) {

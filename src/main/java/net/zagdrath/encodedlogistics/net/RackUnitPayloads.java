@@ -50,7 +50,7 @@ public final class RackUnitPayloads {
             }
             RackDevice device = rack.deviceAt(query.u());
             if (device != null) {
-                PacketDistributor.sendToPlayer(player, new Info(query.rack(), device.u(), device.describe(player)));
+                PacketDistributor.sendToPlayer(player, new Info(query.rack(), device.u(), device.describe(player).withHeader(rack.header())));
             }
         }
     }

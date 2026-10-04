@@ -286,8 +286,10 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
         for (Direction side : RackGeometry.internalSides(index, facing)) {
             sides.add(side);
         }
+        RackBlockEntity master = level.getBlockEntity(RackGeometry.masterPos(pos, facing, index)) instanceof RackBlockEntity found ? found : null;
         for (Direction side : Direction.values()) {
-            if (RackGeometry.connectsOn(index, facing, side)) {
+            // A cable from another network than the rack's doesn't join it.
+            if (RackGeometry.connectsOn(index, facing, side) && (master == null || master.joins(index, side))) {
                 sides.add(side);
             }
         }

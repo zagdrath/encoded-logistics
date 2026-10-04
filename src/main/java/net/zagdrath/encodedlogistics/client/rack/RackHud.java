@@ -55,10 +55,12 @@ public final class RackHud {
 
     private static final Identifier PANEL = EncodedLogistics.id("hud/panel"), DIVIDER = EncodedLogistics.id("hud/divider"),
             DOT_ONLINE = EncodedLogistics.id("hud/dot_online"), DOT_OFFLINE = EncodedLogistics.id("hud/dot_offline"),
-            DOT_FAULT = EncodedLogistics.id("hud/dot_fault"), DOT_WARNING = EncodedLogistics.id("hud/dot_warning"), BAR_TRACK = EncodedLogistics.id("hud/bar_track"),
+            DOT_FAULT = EncodedLogistics.id("hud/dot_fault"), DOT_WARNING = EncodedLogistics.id("hud/dot_warning"),
+            WARNING_SIGN = EncodedLogistics.id("rack/controller/warning"), BAR_TRACK = EncodedLogistics.id("hud/bar_track"),
             BAR_FILL = EncodedLogistics.id("hud/bar_fill"), BAR_WARN = EncodedLogistics.id("hud/bar_fill_warn"),
             BAR_LOW = EncodedLogistics.id("hud/bar_fill_low");
     private static final int OFFSET_X = 12, OFFSET_Y = -8, PAD_X = 5, PAD_Y = 4, MIN_W = 96, MAX_W = 180;
+    private static final int HEADER_STRIP_H = 14;
     private static final int HEADER_H = 18, DIVIDER_TOP = 2, DIVIDER_BOTTOM = 3, LINE_H = 10, BAR_H = 6, GAP = 8;
     private static final int PANEL_COLOR = ARGB.color(Math.round(0.92F * 255), 0xFFFFFF);
     private static final int OUTLINE_COLOR = ARGB.color(Math.round(0.85F * 255), 0x5CF0B8);
@@ -162,6 +164,8 @@ public final class RackHud {
         if (info == null) {
             info = new RackDeviceInfo(device.name(), device.shownStatus(), device.shownStatus().text(), List.of());
         }
+        // The rack's strip goes above the popup, so the popup starts lower.
+        int headerH = info.header().isPresent() ? HEADER_STRIP_H + 2 : 0;
         Component units = RackScreen.unitRange(device);
         Component badge = Component.translatable("hud.encodedlogistics.rack.scheduler");
         int badgeWidth = info.schedulerBadge() ? 8 + BADGE + 2 + font.width(badge) : 0;
@@ -174,7 +178,10 @@ public final class RackHud {
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             height += LINE_H + (line.bar().isPresent() ? BAR_H : 0);
         }
-        int x = clampX(graphics, centerX + OFFSET_X, width), y = clampY(graphics, centerY + OFFSET_Y, height);
+        int x = clampX(graphics, centerX + OFFSET_X, width), y = clampY(graphics, centerY + OFFSET_Y, height + headerH) + headerH;
+        if (info.header().isPresent()) {
+            header(graphics, font, info.header().get(), x, y - headerH);
+        }
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, height, PANEL_COLOR);
         int left = x + PAD_X, lineY = y + PAD_Y;
 
@@ -220,6 +227,17 @@ public final class RackHud {
                 lineY += BAR_H;
             }
         }
+    }
+
+    // The rack's strip: as wide as its text; degraded, amber behind a warning sign.
+    private static void header(GuiGraphicsExtractor graphics, Font font, RackDeviceInfo.Header header, int x, int y) {
+        int icon = header.degraded() ? 9 + 3 : 0;
+        int width = PAD_X + icon + font.width(header.text()) + PAD_X;
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, HEADER_STRIP_H, PANEL_COLOR);
+        if (header.degraded()) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, WARNING_SIGN, x + PAD_X, y + (HEADER_STRIP_H - 8) / 2, 9, 8);
+        }
+        graphics.text(font, header.text(), x + PAD_X + icon, y + (HEADER_STRIP_H - 8) / 2, header.degraded() ? RackScreen.AMBER : RackScreen.TEXT_MUTED, false);
     }
 
     private static int clampX(GuiGraphicsExtractor graphics, int x, int width) {

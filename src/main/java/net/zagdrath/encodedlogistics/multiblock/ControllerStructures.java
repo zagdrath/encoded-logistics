@@ -808,6 +808,24 @@ public class ControllerStructures extends SavedData {
         return NetworkIndex.get(level.getServer()).members.get(NetworkGraph.at(level.dimension(), pos));
     }
 
+    // Whether a network (its structure) still exists.
+    public static boolean exists(MinecraftServer server, @Nullable NetworkRef ref) {
+        return owner(server, ref) != null;
+    }
+
+    // The network a controller structure's devices are on: its own, or (a rack controller paired with another) the one
+    // its partner's structure runs.
+    public static NetworkRef networkOfStructure(MinecraftServer server, NetworkRef structure) {
+        ServerLevel home = server.getLevel(structure.dimension());
+        Runtime runtime = home != null ? get(home).runtimes.get(structure.id()) : null;
+        return runtime != null && runtime.lead > 0 && runtime.lead != structure.id() ? new NetworkRef(structure.dimension(), runtime.lead) : structure;
+    }
+
+    // Goes up whenever any network's topology changes (NetworkIndex).
+    public static int generation(MinecraftServer server) {
+        return NetworkIndex.get(server).generation;
+    }
+
     // A network's status as of the last tick (NO_POWER for an unknown one).
     public static NetworkStatus statusOf(MinecraftServer server, @Nullable NetworkRef ref) {
         Owner owner = owner(server, ref);

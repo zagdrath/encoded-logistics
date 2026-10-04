@@ -1222,6 +1222,7 @@
   "gui.encodedlogistics.rack.priority.high": "High",
   "gui.encodedlogistics.rack.priority.normal": "Normal",
   "gui.encodedlogistics.rack.priority.low": "Low",
+  "gui.encodedlogistics.rack.priority.hint": "Click to change. When the rack is short of lanes, Low devices go offline first and High ones last.",
   "gui.encodedlogistics.ups.alarm": "Alarm: %s",
   "gui.encodedlogistics.ups.alarm.on": "On",
   "gui.encodedlogistics.ups.alarm.muted": "Muted (this outage)",

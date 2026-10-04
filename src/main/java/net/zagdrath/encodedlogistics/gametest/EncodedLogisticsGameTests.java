@@ -123,6 +123,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_controller_conflict_sizes", RackControllerGameTests::conflictBetweenSizes);
         TESTS.put("rack_controller_pair_failover", RackControllerGameTests::pairFailover);
         TESTS.put("rack_bottom_entry", RackControllerGameTests::bottomEntry);
+        TESTS.put("rack_power_port", RackCablingGameTests::powerPort);
+        TESTS.put("rack_bonding_and_shedding", RackCablingGameTests::bondingAndShedding);
+        TESTS.put("rack_mismatch", RackCablingGameTests::mismatch);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

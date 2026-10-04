@@ -60,6 +60,9 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             SELECT_2U = EncodedLogistics.id("rack/select_2u"), DROP_1U = EncodedLogistics.id("rack/drop_target_1u"),
             DROP_2U = EncodedLogistics.id("rack/drop_target_2u"), DROP_BLOCKED = EncodedLogistics.id("rack/drop_blocked"),
             BACK = EncodedLogistics.id("rack/back");
+    private static final Identifier[] PRIORITY = { EncodedLogistics.id("rack/priority/high"), EncodedLogistics.id("rack/priority/normal"),
+            EncodedLogistics.id("rack/priority/low") };
+    private static final Identifier MARK_HIGH = EncodedLogistics.id("rack/priority/mark_high"), MARK_LOW = EncodedLogistics.id("rack/priority/mark_low");
     // The controller's scrollbar, as on the other screens: an 8 px track, its 6x15 thumb one in from the left.
     private static final Identifier THUMB = EncodedLogistics.id("controller/scroll_thumb"),
             THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
@@ -72,7 +75,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     private static final int STRIP_Y = FIRST_ROW_Y + 9 * ROW_H;
     // Panels' backgrounds: this row (plain body and sides) stretches over the extra height.
     private static final int PANEL_FILL_Y = 166;
-    static final int BACK_X = 150, BACK_Y = 2;
+    static final int BACK_X = 150, BACK_Y = 2, PRIORITY_X = 132;
 
     // The rows shown (16 to RackMenu.MAX_ROWS, as the window has room) and the extra height they add.
     private final int rows, extra;
@@ -279,6 +282,13 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             boolean hover = over(mouseX, mouseY, BACK_X, BACK_Y, 16, 16);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACK, leftPos + BACK_X, topPos + BACK_Y, 16, 16, hover ? 0xFFFFFFFF : 0xFFC8C8C8);
             if (panel != null) {
+                RackDevice picked = menu.pickedDevice();
+                if (picked != null) {
+                    boolean overPriority = over(mouseX, mouseY, PRIORITY_X, BACK_Y, 16, 16);
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, overPriority ? PartScreens.BUTTON_HOVER : PartScreens.BUTTON, leftPos + PRIORITY_X - 1,
+                            topPos + BACK_Y - 1, 18, 18);
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PRIORITY[picked.lanePriority().ordinal()], leftPos + PRIORITY_X, topPos + BACK_Y, 16, 16);
+                }
                 panel.extractBackground(graphics, mouseX, mouseY, partialTick);
             }
             return;
@@ -303,6 +313,10 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
                     continue;
                 }
                 front(graphics, device, x + SLOT_X, y + rowY(topRow));
+                if (device.lanePriority() != RackDevice.Priority.NORMAL) {
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, device.lanePriority() == RackDevice.Priority.HIGH ? MARK_HIGH : MARK_LOW, x + SLOT_X,
+                            y + rowY(topRow), 2, 7);
+                }
                 if (device.u() == menu.picked() || hoveredDevice(mouseX, mouseY) == device) {
                     if (device.size() <= 2) {
                         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, device.size() > 1 ? SELECT_2U : SELECT_1U, x + SLOT_X - 1,
@@ -443,8 +457,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
         if (showingPanel()) {
+            RackDevice picked = menu.pickedDevice();
             if (over(mouseX, mouseY, BACK_X, BACK_Y, 16, 16)) {
                 graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.rack.back"), mouseX, mouseY);
+            } else if (panel != null && picked != null && over(mouseX, mouseY, PRIORITY_X, BACK_Y, 16, 16)) {
+                graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.rack.priority", picked.lanePriority().label()),
+                        Component.translatable("gui.encodedlogistics.rack.priority.hint").withColor(TEXT_MUTED)), mouseX, mouseY);
             } else if (panel != null) {
                 panel.extractTooltip(graphics, mouseX, mouseY);
             }
@@ -534,6 +552,10 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         if (showingPanel()) {
             if (button == InputConstants.MOUSE_BUTTON_LEFT && over(mouseX, mouseY, BACK_X, BACK_Y, 16, 16)) {
                 buttonClick(RackMenu.PICK);
+                return true;
+            }
+            if (button == InputConstants.MOUSE_BUTTON_LEFT && panel != null && menu.pickedDevice() != null && over(mouseX, mouseY, PRIORITY_X, BACK_Y, 16, 16)) {
+                ClientPacketDistributor.sendToServer(new RackActionPayload(menu.containerId, panelU, RackDevice.ACTION_PRIORITY, 0, ""));
                 return true;
             }
             if (panel != null && mouseY < topPos + menu.topHeight() && panel.mouseClicked(mouseX - leftPos, mouseY - topPos, button, shift)) {

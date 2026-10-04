@@ -134,6 +134,9 @@ public abstract class RackDevice {
     // FE per tick it drains while its network runs.
     public abstract double drain();
 
+    // The rack screen's priority button (every panel's header) cycles it; RackMenu handles it before the device sees it.
+    public static final int ACTION_PRIORITY = -1;
+
     // Which devices keep their lanes when the rack is short of them: High first, Low shed first (LaneSolver). Saved with
     // the device (it goes with the item), set in its settings panel's header.
     public enum Priority {
