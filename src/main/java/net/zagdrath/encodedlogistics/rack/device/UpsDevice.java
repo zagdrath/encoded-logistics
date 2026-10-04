@@ -63,6 +63,11 @@ public class UpsDevice extends RackDevice {
         super(type);
     }
 
+    @Override
+    protected Priority defaultPriority() {
+        return Priority.HIGH;
+    }
+
     public static long capacity() {
         return Config.UPS_CAPACITY.getAsInt();
     }

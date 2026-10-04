@@ -40,7 +40,9 @@ public class RackDeviceItem extends Item {
         RackDevice device = type.create();
         CustomData data = stack.get(ModDataComponents.RACK_DEVICE_STATE.get());
         if (data != null && !data.isEmpty()) {
-            device.loadSettings(TagValueInput.create(ProblemReporter.DISCARDING, registries, data.copyTag()));
+            var input = TagValueInput.create(ProblemReporter.DISCARDING, registries, data.copyTag());
+            device.loadSettings(input);
+            input.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
         }
         return device;
     }
@@ -50,6 +52,9 @@ public class RackDeviceItem extends Item {
         ItemStack stack = new ItemStack(device.type().item());
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
         device.saveSettings(output);
+        if (device.lanePriority() != device.defaultPriority()) {
+            output.putInt("priority", device.lanePriority().ordinal());
+        }
         CompoundTag tag = output.buildResult();
         if (!tag.isEmpty()) {
             stack.set(ModDataComponents.RACK_DEVICE_STATE.get(), CustomData.of(tag));

@@ -46,9 +46,10 @@ import net.minecraft.world.phys.AABB;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
-import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
+import net.zagdrath.encodedlogistics.network.RackLanes;
+import net.zagdrath.encodedlogistics.network.RackNode;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
@@ -65,9 +66,10 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 
 // The Server Rack's master block entity: the devices by the unit they sit at (bottom U), the doors, and the rack's place
-// on its network. It's one network device, draining what its devices drain; its devices go online and offline with it.
-// Its lanes: each switch's uplink, plus a lane for each device its switches don't pool (Lanes) - all or none, as they
-// share the rack's connection.
+// on its network. It's one network device (RackNode), draining what its devices drain. Its lanes: each switch's uplink,
+// plus a lane for each device its switches don't pool (Lanes), each its own demand with the device's priority; the
+// LaneSolver grants them over any of the rack's uplinks (RackLanes), and a device is online while the rack is and it has
+// its lanes (hasLanes: granted, or pooled by a granted switch, or using none).
 //
 // It also knows the segments its devices can serve (networks beyond Segment Isolators, linked with a Link Card): a
 // pooled device set to segment i serves that network instead of the rack's own (network(device)). And it runs the
@@ -89,6 +91,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     private final RackScheduler scheduler = new RackScheduler(this);
     private boolean frontOpen, rearOpen;
     private boolean online;
+    // As last solved: which units got their lanes, and the rack's uplinks.
+    private RackLanes rackLanes = RackLanes.NONE;
     private boolean syncPending;
     private int syncCooldown;
     // Client: door animation, 0 (closed) to DOOR_TICKS (open), this tick and last.
@@ -149,7 +153,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     public void install(RackDevice device, int u, @Nullable ServerPlayer by) {
         device.attach(this, u);
         devices.put(u, device);
-        device.setOnline(online);
+        device.setOnline(online && hasLanes(device));
         device.onInstalled(by);
         deviceChanged(true);
     }
@@ -262,14 +266,58 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
 
     // --- Network ---
 
-    public DeviceNode networkNode(Set<Direction> sides) {
+    public RackNode networkNode(Set<Direction> sides) {
         double drain = 0;
         List<NetworkPart> parts = new ArrayList<>();
         for (RackDevice device : devices.values()) {
             drain += device.drain();
             parts.add(new NetworkPart(device.type().item(), device.drain()));
         }
-        return new DeviceNode(worldPosition.immutable(), sides, lanes().networkLanes(), drain, parts, true);
+        return new RackNode(worldPosition.immutable(), sides, drain, parts, demands(), List.of(), 0);
+    }
+
+    // What each device needs from the network: each switch its uplink, each device no switch pools its own lanes.
+    public List<RackNode.LaneDemand> demands() {
+        Lanes lanes = lanes();
+        List<RackNode.LaneDemand> demands = new ArrayList<>();
+        for (RackDevice device : devices.values()) {
+            int cost = device.lanePool() != null ? device.lanePool().uplinkCost() : lanes.isPooled(device) ? 0 : device.laneCost();
+            if (cost > 0) {
+                demands.add(new RackNode.LaneDemand(device.u(), cost, device.lanePriority().ordinal()));
+            }
+        }
+        return demands;
+    }
+
+    // The rack's lanes as last solved (server).
+    public RackLanes rackLanes() {
+        return rackLanes;
+    }
+
+    public void setRackLanes(RackLanes lanes) {
+        if (!rackLanes.equals(lanes)) {
+            rackLanes = lanes;
+            refreshDevices();
+            syncPending = true;
+        }
+    }
+
+    // Whether a device has what it needs from the network: its own lanes granted, or a place in the pool of the switches
+    // that got theirs, or no lanes to need.
+    public boolean hasLanes(RackDevice device) {
+        if (device.lanePool() != null) {
+            return device.lanePool().uplinkCost() <= 0 || rackLanes.granted().contains(device.u());
+        }
+        if (lanes(rackLanes.granted()).isPooled(device)) {
+            return true;
+        }
+        return device.laneCost() <= 0 || rackLanes.granted().contains(device.u());
+    }
+
+    private void refreshDevices() {
+        for (RackDevice device : List.copyOf(devices.values())) {
+            device.setOnline(online && hasLanes(device));
+        }
     }
 
     // How the rack's lanes work out: the switches' pool (its capacity and how much of it is used), which devices it
@@ -289,9 +337,14 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     // The switches pool their capacity for the other devices, in unit order until it's used; each switch costs its
     // uplink on the network, every device it doesn't pool its own lanes.
     public Lanes lanes() {
+        return lanes(null);
+    }
+
+    // The same with only the switches at the given units (null: all of them) pooling.
+    private Lanes lanes(@Nullable Set<Integer> switches) {
         int capacity = 0, network = 0;
         for (RackDevice device : devices.values()) {
-            if (device.lanePool() != null) {
+            if (device.lanePool() != null && (switches == null || switches.contains(device.u()))) {
                 capacity += device.lanePool().capacity();
                 network += device.lanePool().uplinkCost();
             }
@@ -415,7 +468,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     public void setNetworkOnline(boolean online) {
         if (this.online != online) {
             this.online = online;
-            devices.values().forEach(device -> device.setOnline(online));
+            refreshDevices();
         }
     }
 
@@ -505,6 +558,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             if (device != null) {
                 device.load(child.childOrEmpty("data"));
                 device.setSegment(child.getIntOr("segment", 0));
+                child.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
                 devices.put(device.u(), device);
             }
         }
@@ -537,6 +591,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             if (device.segment() > 0) {
                 child.putInt("segment", device.segment());
             }
+            child.putInt("priority", device.lanePriority().ordinal());
             device.save(child.child("data"));
         }
         if (!segments.isEmpty()) {
@@ -558,6 +613,11 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             child.putInt("u", device.u());
             child.putInt("status", device.status().ordinal());
             child.putBoolean("online", device.isOnline());
+            child.putInt("priority", device.lanePriority().ordinal());
+            String variant = device.modelVariant();
+            if (variant != null) {
+                child.putString("variant", variant);
+            }
             device.writeClient(child.child("client"));
         }
         return output.buildResult();
@@ -600,6 +660,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             if (device != null) {
                 device.setOnline(child.getBooleanOr("online", false));
                 device.setShownStatus(RackDeviceInfo.Status.byId(child.getIntOr("status", 1)));
+                device.setLanePriority(RackDevice.Priority.byId(child.getIntOr("priority", 1)));
+                device.setShownVariant(child.getString("variant").orElse(null));
                 device.readClient(child.childOrEmpty("client"));
                 devices.put(device.u(), device);
             }

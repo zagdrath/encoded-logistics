@@ -8,6 +8,8 @@ package net.zagdrath.encodedlogistics.network;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
@@ -40,6 +42,16 @@ public interface NetworkNode {
 
     default boolean isController() {
         return controllerGroup() != NO_CONTROLLER;
+    }
+
+    // Whether it's a device the network turns on and off: anything using lanes, and every Server Rack.
+    default boolean isDevice() {
+        return laneCost() > 0;
+    }
+
+    // The Server Rack this node is part of (its master's position), or null.
+    default @Nullable BlockPos rackMaster() {
+        return null;
     }
 
     // Devices mounted on this node (terminals on a cable), each listed on its own on the network's screen.

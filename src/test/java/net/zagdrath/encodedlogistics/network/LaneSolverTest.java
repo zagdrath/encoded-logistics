@@ -243,4 +243,115 @@ class LaneSolverTest {
         // Same distance: the lower position (y=0 before y=1) wins.
         assertTrue(result.hasLane(NodePos.of(OTHER, new BlockPos(2, 1, 0))) != result.hasLane(NodePos.of(OTHER, new BlockPos(3, 0, 0))));
     }
+
+    // --- Server Racks ---
+
+    private static RackNode rack(int x, int y, int z, List<RackNode.LaneDemand> demands, RackNode.RackController... controllers) {
+        return new RackNode(new BlockPos(x, y, z), ALL, 0, List.of(), demands, List.of(controllers), controllers.length > 0 ? 1 : 0);
+    }
+
+    private static RackPartNode part(int x, int y, int z, BlockPos master) {
+        return new RackPartNode(new BlockPos(x, y, z), ALL, master);
+    }
+
+    private static List<RackNode.LaneDemand> demands(int count, int cost, int priority) {
+        List<RackNode.LaneDemand> list = new java.util.ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            list.add(new RackNode.LaneDemand(1 + i, cost, priority));
+        }
+        return list;
+    }
+
+    @Test
+    void rackControllerIsASourceForItsOwnRackAndCables() {
+        // A rack with a 192-lane controller and three devices; an 8-lane cable to a device outside.
+        RackNode source = rack(0, 0, 0, demands(3, 1, 1), new RackNode.RackController(20, 2, 192, true));
+        NetworkNode[] nodes = { source, part(0, 1, 0, source.pos()), cable(0, 2, 0, CABLE), device(0, 3, 0) };
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
+        assertEquals(NetworkStatus.ONLINE, result.status());
+        assertEquals(192, result.capacity());
+        assertEquals(4, result.used());
+        assertTrue(result.rack(at(source.pos())).source());
+        assertEquals(Set.of(1, 2, 3), result.rack(at(source.pos())).granted());
+        assertTrue(result.hasLane(at(new BlockPos(0, 3, 0))));
+    }
+
+    @Test
+    void rackBudgetLimitsEverythingDrawingFromIt() {
+        RackNode source = rack(0, 0, 0, demands(3, 1, 1), new RackNode.RackController(20, 2, 3, true));
+        NetworkNode[] nodes = { source, part(0, 1, 0, source.pos()), cable(0, 2, 0, CABLE), device(0, 3, 0) };
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
+        assertEquals(3, result.used());
+        assertFalse(result.hasLane(at(new BlockPos(0, 3, 0))));
+    }
+
+    @Test
+    void bondedUplinksAddUpAndShedLowPriorityFirst() {
+        // Controller block at x=0; two 8-lane cables, each into its own block of a rack at x=2 (master y=0, part y=1).
+        RackNode bonded = rack(2, 0, 0, List.of(new RackNode.LaneDemand(1, 8, 2), new RackNode.LaneDemand(2, 8, 1), new RackNode.LaneDemand(3, 8, 0)));
+        NetworkNode[] both = { controller(0, 0, 0, 1), controller(0, 1, 0, 1), cable(1, 0, 0, CABLE), cable(1, 1, 0, CABLE), bonded,
+                part(2, 1, 0, bonded.pos()) };
+        LaneResult result = LaneSolver.solve(graph(both), AD_HOC);
+        RackLanes lanes = result.rack(at(bonded.pos()));
+        assertEquals(16, lanes.available());
+        assertEquals(2, lanes.activeUplinks());
+        // Two of three fit; the Low one is shed.
+        assertEquals(Set.of(2, 3), lanes.granted());
+        assertTrue(lanes.degraded());
+
+        // One cable gone: only the High one is left.
+        NetworkNode[] one = { controller(0, 0, 0, 1), controller(0, 1, 0, 1), cable(1, 0, 0, CABLE), bonded, part(2, 1, 0, bonded.pos()) };
+        assertEquals(Set.of(3), LaneSolver.solve(graph(one), AD_HOC).rack(at(bonded.pos())).granted());
+    }
+
+    @Test
+    void sameKindShedsTheLowestUnitFirst() {
+        RackNode bonded = rack(2, 0, 0, demands(3, 4, 1));
+        NetworkNode[] nodes = { controller(0, 0, 0, 1), cable(1, 0, 0, CABLE), bonded };
+        assertEquals(Set.of(2, 3), LaneSolver.solve(graph(nodes), AD_HOC).rack(at(bonded.pos())).granted());
+    }
+
+    @Test
+    void cutCableStubIsADownUplink() {
+        RackNode bonded = rack(2, 0, 0, demands(1, 1, 1));
+        // The cable at (1,1,0) leads nowhere (its other end was cut).
+        NetworkNode[] nodes = { controller(0, 0, 0, 1), cable(1, 0, 0, CABLE), bonded, part(2, 1, 0, bonded.pos()), cable(3, 1, 0, CABLE) };
+        RackLanes lanes = LaneSolver.solve(graph(nodes), AD_HOC).rack(at(bonded.pos()));
+        assertEquals(2, lanes.uplinks().size());
+        assertEquals(1, lanes.activeUplinks());
+        assertTrue(lanes.degraded());
+        assertEquals(Set.of(1), lanes.granted());
+    }
+
+    @Test
+    void rackControllerConflicts() {
+        RackNode.RackController two = new RackNode.RackController(20, 2, 192, true), four = new RackNode.RackController(20, 4, 384, true);
+        // With a controller block.
+        RackNode a = rack(2, 0, 0, List.of(), two);
+        assertEquals(NetworkStatus.CONFLICT, LaneSolver.solve(graph(controller(0, 0, 0, 1), cable(1, 0, 0, CABLE), a), AD_HOC).status());
+        // A 2U with a 4U.
+        RackNode b = rack(4, 0, 0, List.of(), four);
+        assertEquals(NetworkStatus.CONFLICT, LaneSolver.solve(graph(a, cable(3, 0, 0, CABLE), b), AD_HOC).status());
+        // Two 2Us pair up; a third is a conflict.
+        RackNode c = rack(4, 0, 0, List.of(), two);
+        assertEquals(NetworkStatus.ONLINE, LaneSolver.solve(graph(a, cable(3, 0, 0, CABLE), c), AD_HOC).status());
+        RackNode d = rack(6, 0, 0, List.of(), two);
+        assertEquals(NetworkStatus.CONFLICT, LaneSolver.solve(graph(a, cable(3, 0, 0, CABLE), c, cable(5, 0, 0, CABLE), d), AD_HOC).status());
+    }
+
+    @Test
+    void pairSharesOneBudget() {
+        RackNode.RackController two = new RackNode.RackController(20, 2, 3, true);
+        RackNode a = rack(0, 0, 0, demands(2, 1, 1), two), b = rack(2, 0, 0, demands(2, 1, 1), two);
+        LaneResult result = LaneSolver.solve(graph(a, cable(1, 0, 0, CABLE), b), AD_HOC);
+        assertEquals(3, result.capacity());
+        assertEquals(3, result.used());
+    }
+
+    @Test
+    void adHocRackIsAllOrNone() {
+        RackNode fits = rack(0, 0, 0, demands(8, 1, 1)), over = rack(0, 0, 0, demands(9, 1, 1));
+        assertEquals(8, LaneSolver.solve(graph(fits), AD_HOC).rack(at(fits.pos())).granted().size());
+        assertTrue(LaneSolver.solve(graph(over), AD_HOC).rack(at(over.pos())).granted().isEmpty());
+    }
 }

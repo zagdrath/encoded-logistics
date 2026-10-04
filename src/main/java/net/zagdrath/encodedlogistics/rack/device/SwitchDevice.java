@@ -28,6 +28,11 @@ public class SwitchDevice extends RackDevice implements RackDevice.LanePool {
     }
 
     @Override
+    protected Priority defaultPriority() {
+        return Priority.HIGH;
+    }
+
+    @Override
     public LanePool lanePool() {
         return this;
     }

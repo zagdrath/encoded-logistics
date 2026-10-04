@@ -40,11 +40,13 @@ public abstract class RackDevice {
     private @Nullable RackBlockEntity rack;
     private boolean online;
     private int segment;
+    private Priority priority;
     private final NonNullList<ItemStack> items;
 
     protected RackDevice(RackDeviceType type) {
         this.type = type;
         this.items = NonNullList.withSize(type.slots().size(), ItemStack.EMPTY);
+        this.priority = defaultPriority();
     }
 
     public final RackDeviceType type() {
@@ -132,6 +134,42 @@ public abstract class RackDevice {
     // FE per tick it drains while its network runs.
     public abstract double drain();
 
+    // Which devices keep their lanes when the rack is short of them: High first, Low shed first (LaneSolver). Saved with
+    // the device (it goes with the item), set in its settings panel's header.
+    public enum Priority {
+        HIGH, NORMAL, LOW;
+
+        private static final Priority[] VALUES = values();
+
+        public static Priority byId(int id) {
+            return id >= 0 && id < VALUES.length ? VALUES[id] : NORMAL;
+        }
+
+        public Priority next() {
+            return VALUES[(ordinal() + 1) % VALUES.length];
+        }
+
+        public Component label() {
+            return Component.translatable("gui.encodedlogistics.rack.priority." + name().toLowerCase(java.util.Locale.ROOT));
+        }
+    }
+
+    public final Priority lanePriority() {
+        return priority;
+    }
+
+    public final void setLanePriority(Priority priority) {
+        if (this.priority != priority) {
+            this.priority = priority;
+            changed(true);
+        }
+    }
+
+    // What a new one starts with: Normal; Network Controllers, UPSes and switches High.
+    protected Priority defaultPriority() {
+        return Priority.NORMAL;
+    }
+
     // --- Behaviour ---
 
     // Every server tick while it's in a loaded rack.
@@ -167,6 +205,23 @@ public abstract class RackDevice {
 
     public Component statusText() {
         return status().text();
+    }
+
+    // A model other than its status's (RackDeviceType#model): a suffix like "_standby" or "_battery", or null. Synced with
+    // the rest of what clients see.
+    public @Nullable String modelVariant() {
+        return null;
+    }
+
+    // The client's copy of modelVariant(), as synced.
+    private @Nullable String shownVariant;
+
+    public final @Nullable String shownVariant() {
+        return shownVariant;
+    }
+
+    public final void setShownVariant(@Nullable String variant) {
+        shownVariant = variant;
     }
 
     // The status as clients see it: what the server last synced, or status() on the server.

@@ -19,7 +19,10 @@ public enum NetworkStatus {
     // Two or more separate controller structures on one network: all of it offline until one goes.
     CONFLICT("conflict"),
     // No controller and more ad-hoc devices than allowed.
-    ADHOC_OVERLOAD("adhoc_overload");
+    ADHOC_OVERLOAD("adhoc_overload"),
+    // A rack controller pair switching over (at most 20 ticks): devices keep their lanes, but storage access, crafting
+    // steps and item moves wait until the standby has taken over. Not an error.
+    FAILOVER("failover");
 
     private static final NetworkStatus[] VALUES = values();
 
@@ -35,7 +38,7 @@ public enum NetworkStatus {
 
     // Errors show red: the LED, the status text and the error overlay on the controller blocks.
     public boolean isError() {
-        return this != ONLINE && this != NO_POWER;
+        return this != ONLINE && this != NO_POWER && this != FAILOVER;
     }
 
     public Component description() {

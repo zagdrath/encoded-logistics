@@ -44,7 +44,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
-import net.zagdrath.encodedlogistics.network.BlockNode;
+import net.zagdrath.encodedlogistics.network.RackPartNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
@@ -294,7 +294,7 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
         if (isMaster(state) && level.getBlockEntity(pos) instanceof RackBlockEntity rack) {
             return rack.networkNode(sides);
         }
-        return new BlockNode(pos.immutable(), sides, 0, true);
+        return new RackPartNode(pos.immutable(), sides, RackGeometry.masterPos(pos, facing, index));
     }
 
     // --- Block entity ---

@@ -375,6 +375,11 @@ public class ControllerStructures extends SavedData {
                 runtime.dirty = false;
                 setNetworkNodes(level, index, structure.id(), runtime,
                         runtime.lanes.status() == NetworkStatus.CONFLICT ? null : runtime.discovered);
+                for (NodePos pos : runtime.racks) {
+                    if (blockEntity(level.getServer(), pos) instanceof RackBlockEntity rack) {
+                        rack.setRackLanes(runtime.lanes.rack(pos));
+                    }
+                }
             }
             if (runtime.lanes.status() == NetworkStatus.CONFLICT) {
                 status = NetworkStatus.CONFLICT;
@@ -460,7 +465,7 @@ public class ControllerStructures extends SavedData {
         for (NodePos pos : runtime.racks) {
             if (runtime.lanes != null && runtime.lanes.hasLane(pos) && blockEntity(server, pos) instanceof RackBlockEntity rack) {
                 for (RackDevice device : rack.devices()) {
-                    if (device instanceof UpsDevice ups) {
+                    if (device instanceof UpsDevice ups && rack.hasLanes(ups)) {
                         upses.add(ups);
                     }
                 }
@@ -485,7 +490,7 @@ public class ControllerStructures extends SavedData {
                 }
                 members.add(pos);
                 index.members.put(pos, ref);
-                if (node.laneCost() > 0) {
+                if (node.isDevice()) {
                     devices.add(pos);
                 }
                 BlockEntity blockEntity = blockEntity(level.getServer(), pos);
@@ -858,7 +863,8 @@ public class ControllerStructures extends SavedData {
                 continue;
             }
             boolean online = runtime.online.contains(pos);
-            boolean missing = networkOnline && node.laneCost() > 0 && runtime.lanes != null && !runtime.lanes.hasLane(pos);
+            boolean missing = networkOnline && node.isDevice() && runtime.lanes != null
+                    && (!runtime.lanes.hasLane(pos) || runtime.lanes.rack(pos).shed());
             for (NetworkPart part : node.parts()) {
                 rows.add(new DeviceRow("Part", part.item().getName(part.item().getDefaultInstance()), pos, 0, online, missing, null, 0));
             }
@@ -1058,7 +1064,7 @@ public class ControllerStructures extends SavedData {
                 if (node.isController()) {
                     return;
                 }
-                boolean missingLane = online && node.laneCost() > 0 && !lanes.hasLane(pos);
+                boolean missingLane = online && node.isDevice() && (!lanes.hasLane(pos) || lanes.rack(pos).shed());
                 // Parts (terminals) are listed on their own; the block they're on keeps the rest of the drain.
                 double partsDrain = 0;
                 for (NetworkPart part : node.parts()) {
