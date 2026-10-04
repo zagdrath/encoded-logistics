@@ -176,8 +176,13 @@ public final class RackHud {
     // with an optional muted line at the bottom (the rack screen's hint). The HUD's and the rack screen's hover.
     public static void popup(GuiGraphicsExtractor graphics, Font font, RackDevice device, RackDeviceInfo info, int anchorX, int anchorY,
             @Nullable Component footer) {
+        popup(graphics, font, new ItemStack(device.type().item()), RackScreen.unitRange(device), info, anchorX, anchorY, footer);
+    }
+
+    // Any device's popup: its icon and the line under its name (a rack device's units, a block's device name).
+    public static void popup(GuiGraphicsExtractor graphics, Font font, ItemStack icon, Component units, RackDeviceInfo info, int anchorX, int anchorY,
+            @Nullable Component footer) {
         // As wide as its content needs, up to MAX_W: anything longer goes on to the next line.
-        Component units = RackScreen.unitRange(device);
         Component badge = Component.translatable("hud.encodedlogistics.rack.scheduler");
         int badgeWidth = info.schedulerBadge() ? 8 + BADGE + 2 + font.width(badge) : 0;
         int content = Math.max(20 + Math.max(font.width(info.name()), font.width(units) + badgeWidth), 8 + font.width(info.statusText()));
@@ -219,7 +224,7 @@ public final class RackHud {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, height, PANEL_COLOR);
         int left = x + PAD_X, lineY = y + PAD_Y;
 
-        graphics.item(new ItemStack(device.type().item()), left, lineY);
+        graphics.item(icon, left, lineY);
         for (int i = 0; i < name.size(); i++) {
             graphics.text(font, name.get(i), left + 20, lineY + 9 * i, RackScreen.TEXT, false);
         }

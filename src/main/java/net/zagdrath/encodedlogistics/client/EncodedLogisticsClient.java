@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
+import net.zagdrath.encodedlogistics.client.rack.WirelessHud;
 import net.zagdrath.encodedlogistics.client.rack.RackModels;
 import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
@@ -147,11 +148,13 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, RackHud.LAYER, RackHud::render);
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, WirelessHud.LAYER, WirelessHud::render);
     }
 
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         RackHud.tick(event);
+        WirelessHud.tick(event);
         CrtLocate.tick();
     }
 

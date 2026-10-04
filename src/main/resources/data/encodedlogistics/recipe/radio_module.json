@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:gallium_ingot",
+  "encodedlogistics:logic_die",
+  "encodedlogistics:copper_foil",
+  "encodedlogistics:circuit_substrate"
+ ],
+ "result": {
+  "id": "encodedlogistics:radio_module",
+  "count": 1
+ }
+}

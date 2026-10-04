@@ -24,6 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -57,6 +58,11 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
 
     public CableBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.CABLE.get(), pos, state);
+    }
+
+    // A block of its own that holds a part this way (a Wireless Port).
+    protected CableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public CableAttachments getAttachments() {

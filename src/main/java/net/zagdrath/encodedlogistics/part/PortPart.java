@@ -48,6 +48,9 @@ public class PortPart extends CablePart {
     private int timer, roundRobin;
     private double energyCredit;
     private boolean active, wasPowered;
+    // Items moved in each of the last 60 seconds (by game second), for "Moved per minute".
+    private final int[] movedLog = new int[60];
+    private final long[] movedAt = new long[60];
 
     public PortPart(PartType type, CableBlockEntity host, Direction side) {
         super(type, host, side);
@@ -147,10 +150,33 @@ public class PortPart extends CablePart {
             int moved = ingress() ? pull(target, storage, budget) : push(target, storage, budget);
             energyCredit -= moved * Config.PORT_ENERGY_PER_ITEM.getAsDouble();
             active = moved > 0;
+            logMoved(level.getGameTime(), moved);
         }
         if (active != wasActive) {
             changed();
         }
+    }
+
+    private void logMoved(long gameTime, int moved) {
+        long second = gameTime / 20;
+        int slot = (int) (second % movedLog.length);
+        if (movedAt[slot] != second) {
+            movedAt[slot] = second;
+            movedLog[slot] = 0;
+        }
+        movedLog[slot] += moved;
+    }
+
+    // Items moved in the last minute.
+    public int movedPerMinute(long gameTime) {
+        long now = gameTime / 20;
+        int sum = 0;
+        for (int i = 0; i < movedLog.length; i++) {
+            if (now - movedAt[i] < movedLog.length) {
+                sum += movedLog[i];
+            }
+        }
+        return sum;
     }
 
     private void setActive(boolean active) {

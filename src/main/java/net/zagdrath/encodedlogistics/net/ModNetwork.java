@@ -42,5 +42,7 @@ public final class ModNetwork {
         registrar.playToServer(RackActionPayload.TYPE, RackActionPayload.STREAM_CODEC, RackActionPayload::handle);
         registrar.playToServer(RackUnitPayloads.Query.TYPE, RackUnitPayloads.Query.STREAM_CODEC, RackUnitPayloads.Query::handle);
         registrar.playToClient(RackUnitPayloads.Info.TYPE, RackUnitPayloads.Info.STREAM_CODEC, RackUnitPayloads.Info::handle);
+        registrar.playToServer(WirelessInfoPayloads.Query.TYPE, WirelessInfoPayloads.Query.STREAM_CODEC, WirelessInfoPayloads.Query::handle);
+        registrar.playToClient(WirelessInfoPayloads.Info.TYPE, WirelessInfoPayloads.Info.STREAM_CODEC, WirelessInfoPayloads.Info::handle);
     }
 }

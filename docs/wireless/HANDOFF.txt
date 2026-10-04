@@ -1,0 +1,128 @@
+ENCODED LOGISTICS - HANDOFF: WIRELESS (Access Point, Wireless Bridge, Wireless Ingress / Egress Ports, Wireless Controller update)
+====================================================================================================================================
+REPLACES the earlier wireless package (never implemented). Scope as decided: ONE Access Point; the existing rack Wireless
+Controller keeps its infinite range and Handheld Terminal linking; a Wireless Bridge block with infinite range, linked to the
+controller, that brings whatever is cabled to it onto the controller's network; wireless versions of the Ingress and Egress
+Ports only (QIO-style). The other wireless devices, the Wireless Remote and the Handheld Fabrication Terminal are dropped.
+
+HOW WIRELESS WORKS
+------------------
+- Wireless Controller (rack device, rack/device/WirelessControllerDevice.java): the brain. Infinite range in its dimension
+  (wirelessCrossDimension as today for other dimensions). Links Handheld Terminals exactly as now (use the terminal on its
+  rack). New: links Wireless Bridges and Wireless Ports with a Link Card (use the card on the controller's unit, then on the
+  block). Its wireless clients (bridges and ports) work only while at least one Access Point is online on its network;
+  with none it faults "No access points" and its bridges and ports go offline. Handheld Terminals keep working as today
+  (no AP needed - see open question 1).
+- Access Point (block): the radio. Cabled to the network like any device (1 lane uplink). Each online AP adds 8 client
+  slots for that network's controller; bridges and ports beyond the total disconnect (most recently linked first) until
+  slots free up.
+- Wireless Bridge (block): a remote network segment. Linked to a controller, anything cabled to the bridge (devices,
+  storage, terminals) is part of the controller's network, anywhere in range (infinite). Carries up to 32 lanes [config];
+  counts as 1 client.
+- Wireless Ingress / Egress Port (block): mounted on an inventory face (like Mekanism's QIO Importer / Exporter): pulls
+  from / pushes into that inventory for the controller's network, no cable. Same filters, modules and redstone modes as
+  the cabled ports (part/PortPart.java logic, the port GUI), with a link header. 1 lane each, 1 client each.
+- Energy: bridges and ports draw over the air at wirelessEnergyMultiplier [config 2.0] x their cabled equivalent's
+  drain; APs [2 FE/t].
+Reviewed against repo HEAD (pulled this session). Paths relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. REVIEW FINDINGS
+=====================================================================================================
+  rack/device/WirelessControllerDevice.java + client/screen/WirelessControllerPanel.java - "a Relay Antenna with no range":
+    links Handheld Terminals used on its rack, cross-dimension behind wirelessCrossDimension, any controller of the
+    network behind wirelessAnyController. EXTEND: Link Card linking for bridges/ports, AP requirement, the panel tabs.
+  item/LinkCardItem.java + blockentity/NetworkBridgeBlockEntity.java - Link Card pairing (write on one block, apply on the
+    other). REUSE for controller -> bridge / port linking (the card stores the controller's id + network).
+  part/PortPart.java (Ingress / Egress Ports, cable parts) + its menu/screen (gui/port.png) - REUSE the transfer logic,
+    filters, modules and menu in the wireless port block entities (no copy).
+  network/DeviceNode.java (laneCost, passiveDrain, remoteLinks) + network/LaneSolver.java - a linked bridge or port is a
+    node with a remoteLink to the controller's rack node (capacity: 32 for a bridge, 1 for a port), so the controller's
+    network lanes serve them. elcl/exec/ElclDevices.java - add type codes AP, WBRIDGE, WINGRESS, WEGRESS.
+  Item/Handheld Terminal (item/HandheldTerminalItem.java) - unchanged.
+
+=====================================================================================================
+2. BLOCKS (models/block/wireless/, textures/block/wireless/, blockstates/)
+=====================================================================================================
+Art follows docs/TEXTURE_STYLE.md: the 11-step steel ramp only (casing faces are the shipped network_casing.png), no specks,
+and no large single-tone fields: fields carry stepped falloff from the top-left in whole ramp steps (the way vanilla shades a
+face), the puck a stepped dome highlight, the mast cylindrical columns, recess walls two steps; plus structural shading (bevel frame with the 6-7 glint and inner lip, recesses with a step-0 shadow line and step-6
+lip, raised detail 7/8 with a step-0 shadow), top-left light, two-tone glow from the cable dye ramps (light_blue online,
+yellow linking / no controller, red fault), accents from the dye ramps (ingress light_blue, egress orange). Item icons
+outlined in their material's darkest step. Checked: every grey a ramp step; largest single-tone region <= 52 px per 16x16 (the shipped network_casing.png: 51), except the
+AP top's mounting recess (73), which the puck covers; brightness 33-214.
+  access_point - casing body 16 x 13 x 16 (cables connect on its full sides and bottom) with a steel puck (stepped disc, 10
+    across, steps 8-10) on the facing side; LED ring in the puck's groove. BlockState facing (6; the puck's face) + state
+    off | linking | online | fault. Ring: online light blue steady; linking (no controller) yellow blink 2 x 10; fault red blink.
+  wireless_bridge - casing body 16 x 10 x 16 (status window + raised feed ribs on its sides, mast socket on top) with an
+    antenna mast and lit tip. state off | linking | online | active (window pulses with traffic, 2 x 4) | fault.
+  wireless_ingress_port / wireless_egress_port - a 12 x 12 x 4 panel against the inventory it faces (facing = toward it, 6
+    ways): contact face with a transfer slot toward the inventory, the outward face framed with the cabled port's
+    slat-railed mouth and an accent inlay, accent-ticked sides, an antenna nub, an LED. state off | linking | online | fault.
+Collision/selection: shapes/collision_shapes.json (from the models; rotate by facing).
+
+=====================================================================================================
+3. LINKING, CAPACITY, LANES
+=====================================================================================================
+  - Link: use a Link Card on the Wireless Controller's rack unit (stores the controller), then on a bridge or port (it
+    stores the controller id; state linking -> online once an AP is up). Unlink from the controller's Linked tab, or by
+    applying a card from another controller. Requires the configure permission (Firewall) on the controller's network.
+  - Capacity: clients = linked bridges + ports; slots = 8 x online APs [config wirelessApClients 8]; over capacity the most
+    recently linked disconnect (state fault, HUD "Over capacity") and reconnect automatically.
+  - Lanes: port 1, bridge up to 32 (what its cabled side uses) - remote links to the controller's rack node.
+  - No AP online: controller fault NO_ACCESS_POINTS; bridges and ports offline (fault).
+
+=====================================================================================================
+4. GUI, HUD, TERMINAL OS - consistent with the game's current screens (reviewed in the repo)
+=====================================================================================================
+In-game convention (PortScreen, NetworkBridgeScreen, RelayAntennaScreen, L3SwitchPanel, TapeLibraryPanel,
+WirelessControllerPanel): one dark-kit panel; status lives INSIDE the panel (insets / free space), never as an extra strip
+above it; colours from PartScreens / RackScreen (TEXT F0F0F0, TEXT_MUTED B4B4B4, TEXT_DISABLED 7A7A7A, ACCENT 00D992,
+WARNING E8C24A); tabs from rack/switch/tab_active|tab_inactive. No new GUI sprites are added.
+  Wireless Ingress / Egress Port - the cabled PortScreen unchanged (title (8,5), redstone button (8,18), options x30 from y18,
+    module slots, filter grid) - title "Wireless Ingress Port" / "Wireless Egress Port". Link status in the free column under
+    the redstone button: status light bridge/status_linked | status_unlinked at (9,42), signal bars handheld/signal_0..4 at
+    (17,41); tooltip over them: "Linked to <controller> - signal n/4" or "Not linked - use a Link Card from a Wireless
+    Controller". previews/gui_wireless_ingress_port.png, gui_wireless_egress_port_unlinked.png.
+  Wireless Controller - the L3SwitchPanel layout: gui/rack/wireless_controller.png REPLACES its panel and is the same panel
+    as gui/rack/l3_switch.png (title band, tab row, list inset, bottom row); tabs at (8,17), step 53, width 52, labels "APs"
+    and "Linked"; list x10 y31, 8 rows of 14; rows drawn as WirelessControllerPanel draws them today (dot hud/dot_online |
+    dot_offline, name TEXT / TEXT_DISABLED cut to fit, where/kind TEXT_MUTED right-aligned at 130, unlink common/cancel_small
+    at 152 on the Linked tab); summary at (12,148). APs tab: AP name, "n / 8 clients" / "8 / 8 - full" / "no uplink".
+    Linked tab: bridges, ports and the handhelds it already lists (kind: bridge / ingress / egress / handheld).
+    previews/gui_wireless_controller_aps.png, _linked.png.
+  HUD (previews/hud_mockups.png): AP - Clients n/8 (bar), Controller, Uplink; Bridge - Controller, Devices behind it,
+    Lanes n/32 (bar); Ports - Controller, Inventory, Moved per minute; Controller - APs online, Clients n/slots (bar),
+    Linked. WARNING (amber) for linking / no controller, FAULT for no access points / over capacity.
+  Terminal OS: WRKDEV lists APs, bridges and wireless ports with their controller; default names AP01, WBRIDGE01,
+    WINGRESS01, WEGRESS01; ELCL treats wireless ports exactly as cabled ports.
+
+=====================================================================================================
+5. RECIPES (adjust freely)
+=====================================================================================================
+  radio_module           gallium ingot + logic die + copper foil + circuit substrate
+  access_point           radio module x2 + circuit substrate + logic die + quartz block
+  wireless_bridge        radio module x2 + optical transceiver + processor die + iron x2
+  wireless_ingress_port  ingress port + radio module;   wireless_egress_port  egress port + radio module
+  wireless_controller    shaped RPR / AMH / OPO: relay antenna, processor die x2, memory die, radio module x2, heatsink,
+                         optical transceiver x2 (REPLACES; the earlier 11-ingredient proposal can't fit a 3x3 grid)
+
+=====================================================================================================
+6. FILES
+=====================================================================================================
+assets/encodedlogistics/ blockstates/{access_point,wireless_bridge,wireless_ingress_port,wireless_egress_port}.json;
+  models/block/wireless/*.json (base + glow overlays per state); textures/block/wireless/*.png (+ .mcmeta for the blinks);
+  textures/item/{access_point,wireless_bridge,wireless_ingress_port,wireless_egress_port,radio_module}.png, models/item/*,
+  items/*; textures/gui/rack/wireless_controller.png (REPLACES; = l3_switch.png's panel); lang/en_us.wireless.json -> MERGE
+data/encodedlogistics/recipe/*.json, loot_table/blocks/*.json; minecraft mineable tag
+shapes/collision_shapes.json; blockbench/*.bbmodel; previews/; tools/ (w2_tex.py, w2_export.py, w2_mock.py, w2_preview.py)
+
+=====================================================================================================
+7. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+  1. Do Handheld Terminals need an online AP too? Proposal: no - they keep working through the controller exactly as today.
+  2. Cross-dimension: unchanged (wirelessCrossDimension, default off) - also for bridges and ports.
+  3. AP slots (8 each) and the bridge's lane cap (32): config.
+  4. Over-the-air energy multiplier: 2.0 [config].
+  5. Several controllers on one network: a bridge / port belongs to the controller it was linked to; with
+     wirelessAnyController, any online controller of that network can serve it.

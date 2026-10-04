@@ -1,3 +1,4 @@
+import math
 # Renders blocks by loading the exported blockstate/model JSON and PNG textures, following vanilla model rules:
 # multipart 'when' (AND/OR, '|' and '!' values), parent models + #texture variables, per-face uv,
 # blockstate x-then-y rotation about the block centre, directional face shading, neoforge_data full-bright.
@@ -72,6 +73,13 @@ def model_quads(rl,rx,ry,origin,frame=0):
             rot=fd.get('rotation',0)//90
             for (p,(s,tt)) in face_corners(face,e['from'],e['to']):
                 for _ in range(rot): s,tt=tt,1-s                # face texture rotation, 90 deg steps (clockwise)
+                er=e.get('rotation')
+                if er and er.get('angle'):                      # element rotation about its origin (MC: +angle = counter-clockwise looking down the +axis)
+                    o=er['origin']; a=math.radians(er['angle']); c_,s_=math.cos(a),math.sin(a); px,py,pz=p[0]-o[0],p[1]-o[1],p[2]-o[2]
+                    if er['axis']=='y': px,pz=px*c_+pz*s_,-px*s_+pz*c_
+                    elif er['axis']=='x': py,pz=py*c_-pz*s_,py*s_+pz*c_
+                    else: px,py=px*c_-py*s_,px*s_+py*c_
+                    p=(px+o[0],py+o[1],pz+o[2])
                 q=(p[0]-8,p[1]-8,p[2]-8); q=rot_x(q,rx); q=rot_y(q,ry)
                 verts.append((origin[0]+(q[0]+8)/16,origin[1]+(q[1]+8)/16,origin[2]+(q[2]+8)/16))
                 uvs.append((u1+s*(u2-u1),v1+tt*(v2-v1)))
@@ -91,12 +99,18 @@ def block_quads(block_id,state,origin,frame=0):
         a=part['apply']; out+=model_quads(a['model'],a.get('x',0),a.get('y',0),origin,frame)
     return out
 
+BG=None          # callable(H, W) -> float32 (H, W, 3) background, or None for the default sky
+AMBIENT=1.0      # multiplier for non-emissive quads (dark rooms); emissive (bright) quads keep full colour
+GLOW_PASS=False  # True: non-emissive quads render black (but still occlude) - for a bloom layer
 def render(quads,cam,target,W=1600,Hh=900,fov=70,ss=2):
     W2,H2=W*ss,Hh*ss; cam=np.array(cam,float); tgt=np.array(target,float)
     f=tgt-cam; f/=np.linalg.norm(f); r=np.cross(f,[0,1,0]); r/=np.linalg.norm(r); u=np.cross(r,f)
     fl=(H2/2)/math.tan(math.radians(fov/2))
     img=np.zeros((H2,W2,3),np.float32)
-    for y in range(H2): img[y,:]=np.array((120,167,255))*(1-y/H2)+np.array((196,218,255))*(y/H2)
+    if BG is not None: img[:]=BG(H2,W2)
+    elif GLOW_PASS: pass
+    else:
+        for y in range(H2): img[y,:]=np.array((120,167,255))*(1-y/H2)+np.array((196,218,255))*(y/H2)
     zb=np.full((H2,W2),np.inf,np.float32)
     def proj(p):
         d=p-cam; return np.array([W2/2+fl*(d@r)/(d@f), H2/2-fl*(d@u)/(d@f), d@f])
@@ -126,7 +140,8 @@ def render(quads,cam,target,W=1600,Hh=900,fov=70,ss=2):
             ui=np.clip((uu*tw/16).astype(int),0,tw-1); vi=np.clip((vv*th/16).astype(int),0,th-1)
             px=tex[vi,ui]; m&=px[...,3]>0
             if not m.any(): continue
-            col=px[...,:3].astype(np.float32)*shade
+            col=px[...,:3].astype(np.float32)*(shade if bright else shade*AMBIENT)
+            if GLOW_PASS and not bright: col=col*0
             reg=img[y0:y1+1,x0:x1+1]
             if blend:                                   # translucent: blend, no depth write (like the game's translucent layer)
                 a=(px[...,3:4].astype(np.float32)/255.0)

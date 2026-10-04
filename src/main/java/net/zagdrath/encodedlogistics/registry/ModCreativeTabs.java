@@ -33,7 +33,8 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 for (var block : List.of(ModItems.NETWORK_CONTROLLER, ModItems.POWER_INLET, ModItems.CAPACITOR_BANK, ModItems.SEGMENT_ISOLATOR,
                         ModItems.LITHOGRAPHY_PRESS, ModItems.DRIVE_BAY, ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE,
-                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.SERVER_RACK,
+                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.ACCESS_POINT,
+                        ModItems.WIRELESS_BRIDGE, ModItems.WIRELESS_INGRESS_PORT, ModItems.WIRELESS_EGRESS_PORT, ModItems.SERVER_RACK,
                         ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR, ModItems.CONTROL_INTERFACE)) {
                     output.accept(block.get());
                 }
@@ -96,7 +97,7 @@ public final class ModCreativeTabs {
                 }
                 for (var material : List.of(ModItems.SILICA, ModItems.SILICA_BLEND, ModItems.SILICON_BOULE, ModItems.SILICON_WAFER,
                         ModItems.DOPED_SILICON, ModItems.FERRITE, ModItems.COPPER_FOIL, ModItems.FIBERGLASS, ModItems.SOLDER_PASTE,
-                        ModItems.CIRCUIT_SUBSTRATE, ModItems.TANTALUM_CAPACITOR, ModItems.HEATSINK, ModItems.OPTICAL_TRANSCEIVER,
+                        ModItems.CIRCUIT_SUBSTRATE, ModItems.TANTALUM_CAPACITOR, ModItems.HEATSINK, ModItems.OPTICAL_TRANSCEIVER, ModItems.RADIO_MODULE,
                         ModItems.LOGIC_PHOTOMASK, ModItems.STORAGE_PHOTOMASK, ModItems.MEMORY_PHOTOMASK, ModItems.PROCESSOR_PHOTOMASK,
                         ModItems.LOGIC_DIE, ModItems.MEMORY_DIE, ModItems.PROCESSOR_DIE)) {
                     output.accept(material.get());

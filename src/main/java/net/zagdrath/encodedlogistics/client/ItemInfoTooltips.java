@@ -182,6 +182,8 @@ public final class ItemInfoTooltips {
             case "memory_server" -> new Object[] { MemoryServerDevice.memory(Config.MEMORY_SERVER_MEMORY.getAsInt()) };
             case "relay_antenna" -> new Object[] { Config.RELAY_BASE_RANGE.getAsInt() };
             case "network_bridge" -> new Object[] { Config.BRIDGE_LANES.getAsInt() };
+            case "access_point" -> new Object[] { Config.WIRELESS_AP_CLIENTS.getAsInt() };
+            case "wireless_bridge" -> new Object[] { Config.WIRELESS_BRIDGE_LANES.getAsInt() };
             default -> new Object[0];
         };
     }

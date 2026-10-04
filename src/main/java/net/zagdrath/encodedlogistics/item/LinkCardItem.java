@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.item;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -14,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -46,7 +48,10 @@ import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
+import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
+import net.zagdrath.encodedlogistics.wireless.Wireless;
+import net.zagdrath.encodedlogistics.wireless.WirelessClient;
 
 // The Link Card pairs Network Bridges and Point-to-Point Link endpoints. Sneak-use it on one to store its address (a
 // card taken off a stack of blank ones gets it); use it on the partner to pair the two - Bridge with Bridge, or a
@@ -56,6 +61,10 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 // In a Server Rack: sneak-use it on a Segment Isolator to store the segment on the half clicked, then use it on a switch's
 // unit in an open rack to let the rack's devices serve that segment (again to unlink it); sneak-use it on any other block
 // of a network to store that network, then use it on a Router's unit to link the Router to it.
+//
+// Wireless: use it on a Wireless Controller's unit in an open rack to take the controller, then on a Wireless Bridge or
+// Wireless Port to link it to that controller (build permission on the controller's network). A card from another
+// controller relinks it there.
 public class LinkCardItem extends Item {
     public LinkCardItem(Item.Properties properties) {
         super(properties);
@@ -87,6 +96,10 @@ public class LinkCardItem extends Item {
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
+        InteractionResult wireless = wireless(stack, context);
+        if (wireless != null) {
+            return wireless;
+        }
         InteractionResult segment = segment(stack, context);
         if (segment != null) {
             return segment;
@@ -129,6 +142,78 @@ public class LinkCardItem extends Item {
                     || level.getBlockEntity(pos) instanceof NetworkNodeHost;
         }
         return level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity || ControllerStructures.networkOf(serverLevel, pos) != null;
+    }
+
+    // A Wireless Controller's unit in an open rack (take the controller), or a Wireless Bridge or Port (link it to the
+    // controller on the card). Null when the use is about neither.
+    private static @Nullable InteractionResult wireless(ItemStack stack, UseOnContext context) {
+        Level level = context.getLevel();
+        Player player = context.getPlayer();
+        BlockPos pos = context.getClickedPos();
+        if (player == null) {
+            return null;
+        }
+        if (level.getBlockEntity(pos) instanceof WirelessClient client) {
+            if (!(level instanceof ServerLevel serverLevel)) {
+                return InteractionResult.SUCCESS;
+            }
+            LinkAddress stored = address(stack);
+            if (stored == null || stored.kind() != LinkAddress.Kind.WIRELESS || stored.controller().isEmpty()) {
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.wireless_hint"));
+                return InteractionResult.SUCCESS;
+            }
+            WirelessControllerDevice controller = wirelessController(serverLevel.getServer(), stored);
+            if (controller == null) {
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.gone"));
+                return InteractionResult.SUCCESS;
+            }
+            if (!NetworkAccess.check(serverLevel.getServer(), controller.network(), player, RackPermission.BUILD)) {
+                return InteractionResult.SUCCESS;
+            }
+            if (!controller.link(client)) {
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.handheld.no_network"));
+                return InteractionResult.SUCCESS;
+            }
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.wireless_linked", Wireless.name(controller)));
+            level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.5F, 1.8F);
+            return InteractionResult.SUCCESS;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof ServerRackBlock)) {
+            return null;
+        }
+        RackBlockEntity rack = ServerRackBlock.rack(level, pos, state);
+        if (rack == null || RackGeometry.face(context.getClickedFace(), state.getValue(ServerRackBlock.FACING)) != RackGeometry.Face.FRONT) {
+            return null;
+        }
+        RackTargeting.Target target = RackTargeting.pick(rack, context.getClickedFace(), player.getEyePosition(), player.getViewVector(1.0F));
+        if (target == null || !(target.device() instanceof WirelessControllerDevice controller)) {
+            return null;
+        }
+        if (level instanceof ServerLevel serverLevel && NetworkAccess.check(serverLevel, rack.getBlockPos(), player, RackPermission.BUILD)) {
+            store(stack, player, context.getHand(), LinkAddress.wireless(GlobalPos.of(level.dimension(), rack.getBlockPos()), controller.id()));
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.wireless_stored"));
+            level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    // The controller a wireless card names: in the rack it was taken from (loading it), else anywhere on its network.
+    private static @Nullable WirelessControllerDevice wirelessController(MinecraftServer server, LinkAddress address) {
+        UUID id = address.controller().orElse(null);
+        ServerLevel there = server.getLevel(address.pos().dimension());
+        if (id == null || there == null) {
+            return null;
+        }
+        there.getChunkAt(address.pos().pos());
+        if (there.getBlockEntity(address.pos().pos()) instanceof RackBlockEntity rack) {
+            for (RackDevice device : rack.devices()) {
+                if (device instanceof WirelessControllerDevice controller && controller.id().equals(id)) {
+                    return controller;
+                }
+            }
+        }
+        return null;
     }
 
     // A Segment Isolator (sneak-use: store the segment on that half), or a switch or Router in an open rack (use with a

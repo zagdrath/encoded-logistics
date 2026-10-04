@@ -18,6 +18,7 @@ import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
 import net.zagdrath.encodedlogistics.block.ControlInterfaceBlock;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
@@ -36,6 +37,8 @@ import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.block.SwivelChairBlock;
 import net.zagdrath.encodedlogistics.block.TerminalDeskBlock;
 import net.zagdrath.encodedlogistics.block.ThreadUnitBlock;
+import net.zagdrath.encodedlogistics.block.WirelessBridgeBlock;
+import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
@@ -98,6 +101,20 @@ public final class ModBlocks {
     public static final DeferredBlock<NetworkBridgeBlock> NETWORK_BRIDGE = BLOCKS.registerBlock("network_bridge", NetworkBridgeBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .lightLevel(NetworkBridgeBlock::lightLevel));
+
+    // Wireless: the Access Point (the radio), the Wireless Bridge and the Wireless Ingress / Egress Ports (its clients).
+    public static final DeferredBlock<AccessPointBlock> ACCESS_POINT = BLOCKS.registerBlock("access_point", AccessPointBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .lightLevel(AccessPointBlock::lightLevel));
+    public static final DeferredBlock<WirelessBridgeBlock> WIRELESS_BRIDGE = BLOCKS.registerBlock("wireless_bridge", WirelessBridgeBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .lightLevel(WirelessBridgeBlock::lightLevel));
+    public static final DeferredBlock<WirelessPortBlock> WIRELESS_INGRESS_PORT = BLOCKS.registerBlock("wireless_ingress_port",
+            p -> new WirelessPortBlock(true, p), p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .noOcclusion().lightLevel(WirelessPortBlock::lightLevel));
+    public static final DeferredBlock<WirelessPortBlock> WIRELESS_EGRESS_PORT = BLOCKS.registerBlock("wireless_egress_port",
+            p -> new WirelessPortBlock(false, p), p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .noOcclusion().lightLevel(WirelessPortBlock::lightLevel));
 
     // The Server Rack (a 1x3x2 multiblock: ServerRackBlock) and the devices that mount in it.
     public static final DeferredBlock<ServerRackBlock> SERVER_RACK = BLOCKS.registerBlock("server_rack", ServerRackBlock::new,

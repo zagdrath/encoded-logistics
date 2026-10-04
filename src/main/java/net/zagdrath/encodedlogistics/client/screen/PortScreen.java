@@ -24,9 +24,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
 import net.zagdrath.encodedlogistics.net.MenuValuePayload;
 import net.zagdrath.encodedlogistics.part.PartFilter;
+import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // An Ingress or Egress Port's screen (screens/ingress_port.json, egress_port.json): the redstone mode button (it cycles
 // once a Redstone Control Module is in), the 3x3 ghost filter, four module slots and the inventory. With a Filter Module
@@ -40,6 +42,9 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
             EncodedLogistics.id("port/redstone_low"), EncodedLogistics.id("port/redstone_pulse") };
     private static final String[] REDSTONE_KEYS = { "ignore", "high", "low", "pulse" };
     private static final int REDSTONE_X = 8, REDSTONE_Y = 18, OPTIONS_X = 30, OPTIONS_Y = 18, OPTIONS_STEP = 20;
+    // A Wireless Port's link, under the redstone button: the status light and the signal bars.
+    private static final int LINK_X = 9, LINK_Y = 42, SIGNAL_X = 17, SIGNAL_Y = 41;
+    private static final Identifier LINKED = EncodedLogistics.id("bridge/status_linked"), UNLINKED = EncodedLogistics.id("bridge/status_unlinked");
 
     private @Nullable FuzzyPopup popup;
 
@@ -61,6 +66,11 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
         int x = leftPos, y = topPos;
         graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x, y, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
         PartScreens.button(graphics, x + REDSTONE_X, y + REDSTONE_Y, REDSTONE[Math.min(menu.redstoneMode(), REDSTONE.length - 1)], mouseX, mouseY);
+        if (menu.flag(PortMenu.FLAG_WIRELESS)) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, menu.signal() > 0 ? LINKED : UNLINKED, x + LINK_X, y + LINK_Y, 6, 6);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EncodedLogistics.id("handheld/signal_" + Math.min(4, menu.signal())), x + SIGNAL_X, y + SIGNAL_Y,
+                    12, 10);
+        }
         for (int i = 0; i < 4; i++) {
             if (menu.getSlot(PartFilter.SIZE + i).getItem().isEmpty()) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GHOST_MODULE, x + PortMenu.MODULE_X, y + PortMenu.MODULE_Y[i], 16, 16);
@@ -97,6 +107,20 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
         };
     }
 
+    // "Linked to WLC01 - signal 4/4", what's wrong, or how to link it.
+    private Component linkTooltip() {
+        WirelessPortBlockEntity port = menu.pos() != null && minecraft != null && minecraft.level != null
+                && minecraft.level.getBlockEntity(menu.pos()) instanceof WirelessPortBlockEntity found ? found : null;
+        if (!menu.flag(PortMenu.FLAG_LINKED) || port == null) {
+            return Component.translatable("gui.encodedlogistics.wireless.port.not_linked");
+        }
+        if (port.shownProblem() != Wireless.Problem.NONE) {
+            return Component.translatable("gui.encodedlogistics.wireless.port.problem", port.shownController().isEmpty() ? "-" : port.shownController(),
+                    port.shownProblem().text());
+        }
+        return Component.translatable("gui.encodedlogistics.wireless.port.linked", port.shownController(), menu.signal());
+    }
+
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, title, titleLabelX, titleLabelY, PartScreens.TEXT, false);
@@ -123,7 +147,9 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
         }
         super.extractTooltip(graphics, mouseX, mouseY);
         List<Component> lines = new ArrayList<>();
-        if (PartScreens.over(mouseX, mouseY, leftPos + REDSTONE_X, topPos + REDSTONE_Y, 18, 18)) {
+        if (menu.flag(PortMenu.FLAG_WIRELESS) && PartScreens.over(mouseX, mouseY, leftPos + LINK_X, topPos + SIGNAL_Y, SIGNAL_X + 12 - LINK_X, 10)) {
+            lines.add(linkTooltip());
+        } else if (PartScreens.over(mouseX, mouseY, leftPos + REDSTONE_X, topPos + REDSTONE_Y, 18, 18)) {
             lines.add(Component.translatable("gui.encodedlogistics.redstone." + REDSTONE_KEYS[Math.min(menu.redstoneMode(), 3)]));
             if (!menu.flag(PortMenu.FLAG_REDSTONE_MODULE)) {
                 lines.add(Component.translatable("gui.encodedlogistics.redstone.needs_module").withColor(PartScreens.TEXT_MUTED));

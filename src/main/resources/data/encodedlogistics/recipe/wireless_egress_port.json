@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:egress_port",
+  "encodedlogistics:radio_module"
+ ],
+ "result": {
+  "id": "encodedlogistics:wireless_egress_port",
+  "count": 1
+ }
+}

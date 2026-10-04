@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.blockentity.AccessPointBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
@@ -28,6 +29,8 @@ import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SwivelChairBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.WirelessBridgeBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -76,6 +79,16 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<NetworkBridgeBlockEntity>> NETWORK_BRIDGE = BLOCK_ENTITY_TYPES.register(
             "network_bridge", () -> new BlockEntityType<>(NetworkBridgeBlockEntity::new, ModBlocks.NETWORK_BRIDGE.get()));
+
+    public static final Supplier<BlockEntityType<AccessPointBlockEntity>> ACCESS_POINT = BLOCK_ENTITY_TYPES.register(
+            "access_point", () -> new BlockEntityType<>(AccessPointBlockEntity::new, ModBlocks.ACCESS_POINT.get()));
+
+    public static final Supplier<BlockEntityType<WirelessBridgeBlockEntity>> WIRELESS_BRIDGE = BLOCK_ENTITY_TYPES.register(
+            "wireless_bridge", () -> new BlockEntityType<>(WirelessBridgeBlockEntity::new, ModBlocks.WIRELESS_BRIDGE.get()));
+
+    public static final Supplier<BlockEntityType<WirelessPortBlockEntity>> WIRELESS_PORT = BLOCK_ENTITY_TYPES.register(
+            "wireless_port", () -> new BlockEntityType<>(WirelessPortBlockEntity::new, ModBlocks.WIRELESS_INGRESS_PORT.get(),
+                    ModBlocks.WIRELESS_EGRESS_PORT.get()));
 
     // On the rack's master block only.
     public static final Supplier<BlockEntityType<RackBlockEntity>> SERVER_RACK = BLOCK_ENTITY_TYPES.register(

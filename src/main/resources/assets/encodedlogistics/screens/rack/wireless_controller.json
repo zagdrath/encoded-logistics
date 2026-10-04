@@ -15,43 +15,58 @@
   "tooltip": "gui.encodedlogistics.rack.back"
  },
  "widgets": {
+  "tabs": {
+   "left": 8,
+   "top": 17,
+   "step": 53,
+   "width": 52,
+   "sprites": [
+    "rack/switch/tab_active",
+    "rack/switch/tab_inactive"
+   ],
+   "labels": [
+    "gui.encodedlogistics.wireless.tab.aps",
+    "gui.encodedlogistics.wireless.tab.linked"
+   ]
+  },
   "list": {
    "left": 10,
-   "top": 22,
-   "rows": 9,
-   "row_height": 13,
-   "head": [
-    1,
-    2
-   ],
-   "name": [
-    11,
-    3
-   ],
-   "where": {
-    "right": 130,
-    "top": 3,
-    "color": "TEXT_MUTED",
-    "text": "dimension / \"here\""
-   },
+   "top": 31,
+   "rows": 8,
+   "row_height": 14,
    "dot": {
-    "right": 140,
+    "left": 2,
     "top": 4,
     "sprites": [
      "hud/dot_online",
      "hud/dot_offline"
     ]
    },
+   "name": [
+    10,
+    3
+   ],
+   "right": {
+    "right": 130,
+    "top": 3,
+    "color": "TEXT_MUTED",
+    "text": "APs: n / 8 clients, n / 8 - full, no uplink; Linked: bridge, ingress, egress, handheld"
+   },
    "unlink": {
     "right": 152,
     "top": 2,
     "sprite": "common/cancel_small",
-    "tooltip": "gui.encodedlogistics.wireless.unlink"
+    "tooltip": "gui.encodedlogistics.wireless.unlink",
+    "note": "Linked tab only"
    }
   },
   "summary": {
    "left": 12,
-   "top": 148
+   "top": 148,
+   "keys": [
+    "gui.encodedlogistics.wireless.summary.aps",
+    "gui.encodedlogistics.wireless.summary.linked"
+   ]
   }
  },
  "text": {

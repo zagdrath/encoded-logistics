@@ -1244,8 +1244,9 @@ public class ControllerStructures extends SavedData {
                 others.add(new DeviceRow("Part", part.item().getName(part.item().getDefaultInstance()), pos, 0, online, missing, null, 0));
             }
             Item item = runtime.discovered.items().get(pos);
-            // A cable (lanes through it, none of its own) or a part host (its parts are listed instead).
-            if (item == null || item == Items.AIR || node.laneCost() <= 0) {
+            // A cable (lanes through it, none of its own) or a part host (its parts are listed instead); a Wireless Bridge,
+            // with no lanes of its own either, is listed all the same.
+            if (item == null || item == Items.AIR || node.laneCost() <= 0 && item != ModItems.WIRELESS_BRIDGE.get()) {
                 continue;
             }
             String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
@@ -1256,7 +1257,7 @@ public class ControllerStructures extends SavedData {
                 name = Component.literal(ci.name());
             }
             if (node.parts().isEmpty()) {
-                others.add(new DeviceRow(type, name, pos, node.laneCost(), online, missing, null, 0));
+                others.add(new DeviceRow(type, name, pos, node.laneCost(), online || item == ModItems.WIRELESS_BRIDGE.get() && networkOnline, missing, null, 0));
             }
         }
         rows.addAll(others);
@@ -1275,6 +1276,56 @@ public class ControllerStructures extends SavedData {
     }
 
     // --- Wireless and links ---
+
+    // The block entities of a kind on a network (as last worked out), online ones only when asked.
+    public static <T> List<T> onNetwork(MinecraftServer server, @Nullable NetworkRef ref, Class<T> kind, boolean onlineOnly) {
+        Owner owner = owner(server, ref);
+        List<T> found = new ArrayList<>();
+        if (owner == null) {
+            return found;
+        }
+        for (NodePos pos : owner.runtime.members) {
+            if ((!onlineOnly || owner.runtime.online.contains(pos)) && kind.isInstance(blockEntity(server, pos))) {
+                found.add(kind.cast(blockEntity(server, pos)));
+            }
+        }
+        return found;
+    }
+
+    // Whether the device at pos has its lanes on a running network.
+    public static boolean deviceOnline(ServerLevel level, BlockPos pos) {
+        return onlineRuntime(level, pos) != null;
+    }
+
+    // The devices reached from a node through its cables alone, not its remote links (what a Wireless Bridge brings).
+    public static int devicesBehind(MinecraftServer server, NodePos start) {
+        Owner owner = owner(server, NetworkIndex.get(server).members.get(start));
+        if (owner == null || owner.runtime.discovered == null) {
+            return 0;
+        }
+        NetworkGraph graph = owner.runtime.discovered.graph();
+        Set<NodePos> seen = new HashSet<>(Set.of(start));
+        ArrayDeque<NodePos> queue = new ArrayDeque<>(seen);
+        int devices = 0;
+        while (!queue.isEmpty()) {
+            NodePos at = queue.poll();
+            for (Direction side : Direction.values()) {
+                NetworkLink link = graph.link(at, side);
+                if (link == null) {
+                    continue;
+                }
+                NodePos next = link.other(at);
+                if (seen.add(next)) {
+                    NetworkNode node = graph.node(next);
+                    if (node != null && node.isDevice()) {
+                        devices++;
+                    }
+                    queue.add(next);
+                }
+            }
+        }
+        return devices;
+    }
 
     // The online Relay Antennas of a network, wherever they are.
     public static List<RelayAntennaBlockEntity> relays(MinecraftServer server, @Nullable NetworkRef ref) {

@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.menu;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -24,44 +25,56 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.part.PortPart;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
+import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // An Ingress or Egress Port's screen: the 3x3 ghost filter, four module slots (#encodedlogistics:port_modules; one
 // Filter Module, up to three Throughput Modules, one Fuzzy Match Module, one Redstone Control Module) and the player's
 // inventory. Buttons: 0 redstone mode (needs a Redstone Control Module), 1-3 the Filter Module's deny / tag / component
 // options. With a Fuzzy Match Module, a filter entry's fuzzy setting comes as a value (key: the entry, value: the code).
 // data: 0 redstone mode, 1 flags (1 filter module, 2 deny, 4 tags, 8 components, 16 ingress, 32 fuzzy module,
-// 64 redstone module), 2-10 the entries' fuzzy codes (PartFilter.fuzzy).
+// 64 redstone module, 128 wireless, 256 linked; bits 9-11 a Wireless Port's signal, 0-4), 2-10 the entries' fuzzy codes
+// (PartFilter.fuzzy). A Wireless Port's screen is the same, titled with its block and with its link shown.
 public class PortMenu extends AbstractContainerMenu implements ValueMenu {
     public static final TagKey<Item> PORT_MODULES = TagKey.create(Registries.ITEM, EncodedLogistics.id("port_modules"));
     public static final int FILTER_X = 62, FILTER_Y = 19, MODULE_X = 152, INVENTORY_Y = 94;
     public static final int[] MODULE_Y = { 19, 37, 55, 73 };
     public static final int BUTTON_REDSTONE = 0, BUTTON_DENY = 1, BUTTON_TAGS = 2, BUTTON_COMPONENTS = 3;
     public static final int FLAG_FILTER_MODULE = 1, FLAG_DENY = 2, FLAG_TAGS = 4, FLAG_COMPONENTS = 8, FLAG_INGRESS = 16, FLAG_FUZZY_MODULE = 32,
-            FLAG_REDSTONE_MODULE = 64;
+            FLAG_REDSTONE_MODULE = 64, FLAG_WIRELESS = 128, FLAG_LINKED = 256, SIGNAL_SHIFT = 9;
     private static final int DATA = 2 + PartFilter.SIZE;
     private static final int FILTER = 0, MODULES = PartFilter.SIZE, INVENTORY = MODULES + PortPart.MODULE_SLOTS;
 
     private final @Nullable PortPart port;
+    // Where it is (on the client too: the menu's data names it), for a Wireless Port's link details.
+    private final @Nullable BlockPos pos;
     private final Container filter, modules;
     private final ContainerData data;
 
     public static void open(ServerPlayer player, PortPart port) {
-        PartMenus.open(player, port, Component.translatable(port.type().item().getDescriptionId()),
+        Component title = port.host() instanceof WirelessPortBlockEntity wireless ? wireless.getBlockState().getBlock().getName()
+                : Component.translatable(port.type().item().getDescriptionId());
+        PartMenus.open(player, port, title,
                 (id, inventory, part) -> new PortMenu(id, inventory, (PortPart) part));
     }
 
     // Client constructor (the menu data names the part; the client works from the synced slots and data).
     public PortMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
-        this(containerId, inventory, (PortPart) null);
+        this(containerId, inventory, (PortPart) null, extraData.readBlockPos());
     }
 
-    private PortMenu(int containerId, Inventory inventory, @Nullable PortPart port) {
+    private PortMenu(int containerId, Inventory inventory, PortPart port) {
+        this(containerId, inventory, port, port.host().getBlockPos());
+    }
+
+    private PortMenu(int containerId, Inventory inventory, @Nullable PortPart port, @Nullable BlockPos pos) {
         super(ModMenuTypes.PORT.get(), containerId);
         this.port = port;
+        this.pos = pos;
         if (port != null) {
             filter = new ListContainer(port.filter().entries(), port::settingsChanged);
             modules = new ListContainer(port.modules(), port::settingsChanged);
@@ -77,7 +90,7 @@ public class PortMenu extends AbstractContainerMenu implements ValueMenu {
                     }
                     return (port.hasFilterModule() ? FLAG_FILTER_MODULE : 0) | (f.deny() ? FLAG_DENY : 0) | (f.tags() ? FLAG_TAGS : 0)
                             | (f.components() ? FLAG_COMPONENTS : 0) | (port.ingress() ? FLAG_INGRESS : 0)
-                            | (port.hasFuzzyModule() ? FLAG_FUZZY_MODULE : 0) | (port.hasRedstoneModule() ? FLAG_REDSTONE_MODULE : 0);
+                            | (port.hasFuzzyModule() ? FLAG_FUZZY_MODULE : 0) | (port.hasRedstoneModule() ? FLAG_REDSTONE_MODULE : 0) | wireless(port);
                 }
 
                 @Override
@@ -126,6 +139,23 @@ public class PortMenu extends AbstractContainerMenu implements ValueMenu {
         }
         int limit = stack.is(ModItems.FILTER_MODULE.get()) ? 1 : stack.is(ModItems.THROUGHPUT_MODULE.get()) ? 3 : 1;
         return same < limit;
+    }
+
+    // A Wireless Port's flags: wireless, linked, and its signal (4 while it's on its controller's network).
+    private static int wireless(PortPart port) {
+        if (!(port.host() instanceof WirelessPortBlockEntity wireless)) {
+            return 0;
+        }
+        boolean serving = wireless.shownProblem() == Wireless.Problem.NONE;
+        return FLAG_WIRELESS | (wireless.link() != null ? FLAG_LINKED : 0) | (serving ? 4 << SIGNAL_SHIFT : 0);
+    }
+
+    public @Nullable BlockPos pos() {
+        return pos;
+    }
+
+    public int signal() {
+        return (data.get(1) >> SIGNAL_SHIFT) & 7;
     }
 
     public int redstoneMode() {

@@ -69,7 +69,8 @@ Devices are addressed by name (Label Maker or Work with Devices); defaults are
 type + number: `INGRESS01`, `EGRESS02`, `NAS01`, `UPS01`, `CTLIF01`. A name is
 stored with the device, given once (type + the lowest number free on the
 system) and kept until renamed; it goes with the device's item. *(Implemented:
-Control Interfaces, Terminal Desks and rack devices; the mod has no Label Maker.)*
+Control Interfaces, Terminal Desks, rack devices, cable parts and wireless - `AP01`, `WBRIDGE01`, `WINGRESS01`,
+`WEGRESS01`, the Wireless Ports working exactly as cabled ports; the mod has no Label Maker.)*
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|

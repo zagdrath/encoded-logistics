@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:radio_module",
+  "encodedlogistics:radio_module",
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:quartz_block"
+ ],
+ "result": {
+  "id": "encodedlogistics:access_point",
+  "count": 1
+ }
+}

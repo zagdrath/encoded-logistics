@@ -19,9 +19,12 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.AccessPointBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.WirelessBridgeBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
 import net.zagdrath.encodedlogistics.elcl.store.SystemData;
@@ -30,11 +33,13 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
 // The devices scripts name (COMMANDS.md 5): CTLIF01 (Control Interfaces), ELDESK01 (Terminal Desks), rack devices by
 // kind - FIREWALL01, ROUTER01, UPS01, SWITCH01, L3SWITCH01, CMPSRV01, MEMSRV01, FABSRV01, MONSRV01, NAS01, SAN01,
-// RACKCON01, WLC01, TAPELIB01 - and the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
-// DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01.
+// RACKCON01, WLC01, TAPELIB01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
+// DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01 - and wireless: AP01 (Access Points), WBRIDGE01 (Wireless Bridges),
+// WINGRESS01 / WEGRESS01 (Wireless Ports: a port in every other way).
 //
 // A device's name is stored with the device (a rack device's goes with its item; a desk's or Control Interface's with
 // its block item) and given once, the first time it's on a network: its type plus the lowest number free there. It
@@ -57,6 +62,9 @@ public final class ElclDevices {
             if (part != null) {
                 return part.deviceName();
             }
+            if (entity instanceof WirelessDevice wireless) {
+                return wireless.deviceName();
+            }
             if (entity instanceof ControlInterfaceBlockEntity ci) {
                 return ci.name();
             }
@@ -68,6 +76,8 @@ public final class ElclDevices {
                 rack.setDeviceName(name);
             } else if (part != null) {
                 part.setDeviceName(name);
+            } else if (entity instanceof WirelessDevice wireless) {
+                wireless.setDeviceName(name);
             } else if (entity instanceof ControlInterfaceBlockEntity ci) {
                 ci.setName(name);
             } else if (entity instanceof TerminalDeskBlockEntity desk) {
@@ -107,9 +117,10 @@ public final class ElclDevices {
 
     // A cable part's type code.
     public static String code(CablePart part) {
+        boolean wireless = part.host() instanceof WirelessPortBlockEntity;
         return switch (part.type()) {
-            case INGRESS_PORT -> "INGRESS";
-            case EGRESS_PORT -> "EGRESS";
+            case INGRESS_PORT -> wireless ? "WINGRESS" : "INGRESS";
+            case EGRESS_PORT -> wireless ? "WEGRESS" : "EGRESS";
             case INVENTORY_TAP -> "TAP";
             case THRESHOLD_SENSOR -> "SENSOR";
             case COLLECTOR_PLANE -> "COLLECTOR";
@@ -143,7 +154,11 @@ public final class ElclDevices {
                 continue;
             }
             BlockEntity entity = ControllerStructures.blockEntity(server, row.pos());
-            if (entity instanceof ControlInterfaceBlockEntity ci) {
+            if (entity instanceof AccessPointBlockEntity ap) {
+                candidates.add(new Candidate("AP", row.pos(), ap, null, null, ap.isOnline()));
+            } else if (entity instanceof WirelessBridgeBlockEntity bridge) {
+                candidates.add(new Candidate("WBRIDGE", row.pos(), bridge, null, null, row.online()));
+            } else if (entity instanceof ControlInterfaceBlockEntity ci) {
                 candidates.add(new Candidate(ControlInterfaceBlockEntity.TYPE, row.pos(), ci, null, null, ci.isOnline()));
             } else if (entity instanceof TerminalDeskBlockEntity && row.type().equals("Terminal")) {
                 candidates.add(new Candidate("DESK", row.pos(), entity, null, null, row.online()));

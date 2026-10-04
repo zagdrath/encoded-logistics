@@ -110,6 +110,11 @@ public final class ModItems {
             p -> p.stacksTo(1));
     public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);
     public static final DeferredItem<BlockItem> NETWORK_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_BRIDGE);
+    public static final DeferredItem<Item> RADIO_MODULE = ITEMS.registerSimpleItem("radio_module");
+    public static final DeferredItem<BlockItem> ACCESS_POINT = ITEMS.registerSimpleBlockItem(ModBlocks.ACCESS_POINT);
+    public static final DeferredItem<BlockItem> WIRELESS_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_BRIDGE);
+    public static final DeferredItem<BlockItem> WIRELESS_INGRESS_PORT = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_INGRESS_PORT);
+    public static final DeferredItem<BlockItem> WIRELESS_EGRESS_PORT = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_EGRESS_PORT);
 
     // The Server Rack and its devices (RackDeviceType).
     public static final DeferredItem<BlockItem> SERVER_RACK = ITEMS.registerSimpleBlockItem(ModBlocks.SERVER_RACK);
