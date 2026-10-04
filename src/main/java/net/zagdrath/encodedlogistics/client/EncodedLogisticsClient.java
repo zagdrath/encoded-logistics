@@ -157,6 +157,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void onBlockOutline(ExtractBlockOutlineRenderStateEvent event) {
         RackHud.outline(event);
+        FacadePreview.outline(event);
     }
 
     @SubscribeEvent

@@ -33,6 +33,7 @@ import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.network.RemoteLink;
+import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -114,7 +115,13 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
     public List<ItemStack> drops(Direction side) {
         List<ItemStack> drops = new ArrayList<>();
         CableAttachments.Attachment attachment = attachments.get(side);
-        if (attachment.kind() != CableAttachments.Kind.NONE) {
+        if (attachment.isFacade()) {
+            // A facade drops blank, with the block it was dressed in beside it.
+            drops.add(new ItemStack(ModItems.CABLE_FACADE.get()));
+            if (attachment.target() != null) {
+                drops.add(new ItemStack(attachment.target().getBlock()));
+            }
+        } else if (attachment.kind() != CableAttachments.Kind.NONE) {
             drops.add(attachment.toItem());
         }
         CablePart part = parts.get(side);

@@ -59,6 +59,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("fiber_cable", InfrastructureGameTests::fiberCable);
         TESTS.put("anchor_blocks_side", InfrastructureGameTests::anchorBlocksSide);
         TESTS.put("facades", InfrastructureGameTests::facades);
+        TESTS.put("facade_dressing", InfrastructureGameTests::facadeDressing);
         TESTS.put("inlet_fills_controller_then_bank", InfrastructureGameTests::inletFillsControllerThenBank);
         TESTS.put("isolator_splits_network", InfrastructureGameTests::isolatorSplitsNetwork);
         TESTS.put("lithography_press_etches", Phase1GameTests::lithographyPressEtches);

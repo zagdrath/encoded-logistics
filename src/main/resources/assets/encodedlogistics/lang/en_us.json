@@ -99,7 +99,7 @@
   "tooltip.encodedlogistics.info.capacitor_bank": "Buffers network energy. Holds %s FE.",
   "tooltip.encodedlogistics.info.fiber_cable": "Carries 32 lanes in a slim cable.",
   "tooltip.encodedlogistics.info.cable_anchor": "Mount on a cable face to stop it connecting that way.",
-  "tooltip.encodedlogistics.info.cable_facade": "Covers one face of a cable. Combine with a block to copy its look.",
+  "tooltip.encodedlogistics.info.cable_facade": "Covers any face of a cable. Use a block on a placed facade to give it that block's look; sneak-use it with an empty hand to take the block back off.",
   "tooltip.encodedlogistics.info.segment_isolator": "Splits a network: lanes and storage do not pass through.",
   "tooltip.encodedlogistics.cable_facade.target": "Looks like: %s",
   "tooltip.encodedlogistics.cable_facade.blank": "Blank",

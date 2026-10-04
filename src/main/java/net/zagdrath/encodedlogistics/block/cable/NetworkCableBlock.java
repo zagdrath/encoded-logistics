@@ -260,9 +260,20 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
-        if (stack.is(ModItems.CABLE_ANCHOR.get()) || stack.is(ModItems.CABLE_FACADE.get()) || PartType.byItem(stack.getItem()) != null) {
+        if (stack.is(ModItems.CABLE_FACADE.get())) {
+            // Any of the six sides, connected or not: the one the crosshair is toward (facadeSide).
+            Direction side = facadeSide(level, pos, hit.getLocation(), hit.getDirection());
+            return side != null ? attach(stack, level, pos, player, side) : InteractionResult.FAIL;
+        }
+        if (stack.is(ModItems.CABLE_ANCHOR.get()) || PartType.byItem(stack.getItem()) != null) {
             // The face clicked: a cable's arm or cube side, never the arm's direction.
             return attach(stack, level, pos, player, hit.getDirection());
+        }
+        // A block used on a facade dresses the facade in it (handing back the block it had).
+        Direction facade = facadeAt(level, pos, hit.getLocation());
+        BlockState dress = facade != null ? CableFacadeItem.targetFor(stack) : null;
+        if (dress != null) {
+            return dress(level, pos, player, facade, dress, stack);
         }
         if (stack.is(Tags.Items.TOOLS_WRENCH)) {
             return detach(level, pos, player, sideAt(hit.getLocation(), pos)) ? InteractionResult.SUCCESS
@@ -290,7 +301,12 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         Direction side = sideAt(hit.getLocation(), pos);
-        if (player.isSecondaryUseActive() && detach(level, pos, player, side)) {
+        // On a dressed facade, the first sneak-use takes its block off; the next takes the facade.
+        Direction facade = facadeAt(level, pos, hit.getLocation());
+        if (player.isSecondaryUseActive() && facade != null && attachments(level, pos).get(facade).target() != null) {
+            return dress(level, pos, player, facade, null, ItemStack.EMPTY);
+        }
+        if (player.isSecondaryUseActive() && detach(level, pos, player, facade != null ? facade : side)) {
             return InteractionResult.SUCCESS;
         }
         if (!player.isSecondaryUseActive() && attachments(level, pos).part(side) != null) {
@@ -324,6 +340,57 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
             stack.consume(1, player);
             refreshConnections(level, pos, side);
             level.playSound(null, pos, SoundEvents.METAL_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    // Where a facade used at a point on the cable goes: the side the point lies toward from the middle (an arm's side
+    // too, so a connected side can take one), else the face clicked; null when both have something on them.
+    public static @Nullable Direction facadeSide(BlockGetter level, BlockPos pos, Vec3 hit, Direction face) {
+        CableAttachments attachments = attachments(level, pos);
+        Direction toward = sideAt(hit, pos);
+        if (attachments.get(toward).kind() == CableAttachments.Kind.NONE) {
+            return toward;
+        }
+        return attachments.get(face).kind() == CableAttachments.Kind.NONE ? face : null;
+    }
+
+    // The facade a point on the cable lies on, or null.
+    public static @Nullable Direction facadeAt(BlockGetter level, BlockPos pos, Vec3 hit) {
+        CableAttachments attachments = attachments(level, pos);
+        Vec3 local = hit.subtract(pos.getX(), pos.getY(), pos.getZ());
+        for (Direction side : Direction.values()) {
+            if (attachments.facade(side) && CableShapes.facade(side).bounds().inflate(1.0E-4).contains(local)) {
+                return side;
+            }
+        }
+        return null;
+    }
+
+    // Dresses the facade on a side in a block (one taken from the stack), or undresses it (block null); the block it
+    // had goes back to the player.
+    private static InteractionResult dress(Level level, BlockPos pos, Player player, Direction side, @Nullable BlockState block, ItemStack stack) {
+        if (!(level.getBlockEntity(pos) instanceof CableBlockEntity cable)) {
+            return InteractionResult.FAIL;
+        }
+        BlockState old = cable.getAttachments().get(side).target();
+        if (block != null && old != null && old.getBlock() == block.getBlock()) {
+            return InteractionResult.FAIL;
+        }
+        if (!level.isClientSide()) {
+            cable.setAttachment(side, CableAttachments.Attachment.facade(block));
+            if (!player.isCreative()) {
+                if (block != null) {
+                    stack.consume(1, player);
+                }
+                if (old != null) {
+                    ItemStack back = new ItemStack(old.getBlock());
+                    if (!player.getInventory().add(back)) {
+                        Block.popResourceFromFace(level, pos, side, back);
+                    }
+                }
+            }
+            level.playSound(null, pos, (block != null ? block : old).getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
         }
         return InteractionResult.SUCCESS;
     }

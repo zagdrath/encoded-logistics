@@ -211,6 +211,45 @@ final class InfrastructureGameTests {
                 .thenSucceed();
     }
 
+    // A facade goes on the side the crosshair is toward, a connected side too (the cable still connects through it);
+    // a block used on it dresses it (one taken), sneak-use with an empty hand takes the block back, then the facade.
+    static void facadeDressing(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1), next = new BlockPos(1, 1, 2);
+        cable(helper, pos, CableTier.NORMAL, CableColor.NEUTRAL);
+        cable(helper, next, CableTier.NORMAL, CableColor.NEUTRAL);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        helper.startSequence()
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    BlockPos at = helper.absolutePos(pos);
+                    // On the east face of the south arm, toward the south (connected) side.
+                    BlockHitResult armSide = new BlockHitResult(Vec3.atLowerCornerOf(at).add(0.69, 0.5, 0.9), Direction.EAST, at, false);
+                    helper.assertTrue(NetworkCableBlock.facadeSide(helper.getLevel(), at, armSide.getLocation(), Direction.EAST) == Direction.SOUTH,
+                            "Facade not aimed at the connected side");
+                    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.CABLE_FACADE.get()));
+                    helper.getBlockState(pos).useItemOn(player.getMainHandItem(), helper.getLevel(), player, InteractionHand.MAIN_HAND, armSide);
+                    CableBlockEntity cable = helper.getBlockEntity(pos, CableBlockEntity.class);
+                    helper.assertTrue(cable.getAttachments().facade(Direction.SOUTH), "No facade on the south side");
+                    assertSide(helper, pos, Direction.SOUTH, CableConnection.CABLE);
+
+                    BlockHitResult onFacade = new BlockHitResult(Vec3.atLowerCornerOf(at).add(0.5, 0.5, 0.97), Direction.SOUTH, at, false);
+                    player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE, 2));
+                    helper.getBlockState(pos).useItemOn(player.getMainHandItem(), helper.getLevel(), player, InteractionHand.MAIN_HAND, onFacade);
+                    helper.assertTrue(cable.getAttachments().get(Direction.SOUTH).target() == Blocks.STONE.defaultBlockState(), "Facade not dressed");
+                    helper.assertTrue(player.getMainHandItem().getCount() == 1, "Stone not taken");
+
+                    player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                    player.setShiftKeyDown(true);
+                    helper.getBlockState(pos).useWithoutItem(helper.getLevel(), player, onFacade);
+                    helper.assertTrue(cable.getAttachments().facade(Direction.SOUTH) && cable.getAttachments().get(Direction.SOUTH).target() == null,
+                            "Block not taken off the facade");
+                    helper.assertTrue(player.getInventory().countItem(Items.STONE) == 1, "Stone not given back");
+                    helper.getBlockState(pos).useWithoutItem(helper.getLevel(), player, onFacade);
+                    helper.assertFalse(cable.getAttachments().facade(Direction.SOUTH), "Facade not taken off");
+                })
+                .thenSucceed();
+    }
+
     // --- Power Inlet and Capacitor Bank ---
 
     // FE goes in through the inlet's front only and fills the controller first, then the bank; the inlet lights up and
