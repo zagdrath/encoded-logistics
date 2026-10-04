@@ -44,7 +44,7 @@ class TextPanel extends CrtPanel {
 
     @Override
     String keys() {
-        return "F3=Exit   F5=Refresh   F12=Cancel";
+        return tr("crt.encodedlogistics.fkeys.text");
     }
 
     @Override

@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
+import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
+import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
 import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
 import net.zagdrath.encodedlogistics.elcl.vm.Vm;
 import net.zagdrath.encodedlogistics.elcl.vm.VmHost;
@@ -110,6 +112,18 @@ class VmTest {
         @Override
         public int maxList() {
             return maxList;
+        }
+    }
+
+    // Registered commands as executors see their values: TSTSAY says MSG(), TSTSBM says CMD() as it would be submitted.
+    static {
+        if (CommandRegistry.get("TSTSAY") == null) {
+            CommandRegistry.register(CommandDefinition.of("TSTSAY", "Test say").positional(1)
+                    .p(ParamDef.of("MSG", "Message", ParamDef.Kind.CHAR)).build());
+            CommandRegistry.bind("TSTSAY", call -> call.send(ElclMessage.user("USR0001", 0, call.text("MSG"))));
+            CommandRegistry.register(CommandDefinition.of("TSTSBM", "Test submit").positional(1)
+                    .p(ParamDef.of("CMD", "Command", ParamDef.Kind.COMMAND)).build());
+            CommandRegistry.bind("TSTSBM", call -> call.send(ElclMessage.user("USR0001", 0, call.text("CMD"))));
         }
     }
 
@@ -288,6 +302,56 @@ class VmTest {
         }
         assertEquals(Vm.State.ENDED, loaded.state());
         assertEquals(List.of("3 3 1.5"), host.said);
+    }
+
+    // A registered command's value that fails is its escape message, not the expression's source.
+    @Test
+    void aCommandsValueThatFailsIsItsEscape() throws ElclException {
+        List<String> said = run("PGM", "DCL VAR(&S) TYPE(*CHAR) LEN(4) VALUE('abcd')", "DCL VAR(&Z) TYPE(*INT)", "DCL VAR(&ID) TYPE(*CHAR) LEN(7)",
+                "TSTSAY MSG(%SST(&S 2 2))",
+                "TSTSAY MSG(%SST(&S 1 99))", "MONMSG MSGID(ELC0000) EXEC(DO)", "RCVMSG RTNMSGID(&ID)", "TSTSAY MSG(&ID)", "ENDDO",
+                "TSTSAY MSG(%CHAR(1 / &Z))", "MONMSG MSGID(ELC0000) EXEC(DO)", "RCVMSG RTNMSGID(&ID)", "TSTSAY MSG(&ID)", "ENDDO",
+                "ENDPGM");
+        assertEquals(List.of("bc", "ELC0004", "ELC0005"), said);
+    }
+
+    // A submitted command takes the variables' values now: text quoted, numbers as they are, a special value as one.
+    @Test
+    void aNestedCommandTakesItsVariablesValues() throws ElclException {
+        List<String> said = run("PGM", "DCL VAR(&ITEM) TYPE(*CHAR) LEN(16) VALUE('IRON_INGOT')", "DCL VAR(&N) TYPE(*INT) VALUE(-5)",
+                "DCL VAR(&M) TYPE(*CHAR) LEN(9) VALUE('*partial')", "DCL VAR(&Q) TYPE(*CHAR) LEN(8) VALUE('it''s')",
+                "TSTSBM CMD(STRCRAFT ITEM(&ITEM) QTY(&N * -2))",
+                "TSTSBM CMD(STRCRAFT ITEM(&Q) QTY(1) MISSING(&M))", "ENDPGM");
+        assertEquals(List.of("STRCRAFT ITEM('IRON_INGOT') QTY((-5) * -2)", "STRCRAFT ITEM('it''s') QTY(1) MISSING(*PARTIAL)"), said);
+    }
+
+    @Test
+    void numericEdges() throws ElclException {
+        Host host = new Host().program("MAIN", "PGM", "DCL VAR(&I) TYPE(*INT)",
+                // // is an integer remainder, of *DEC operands too.
+                "CHGVAR VAR(&I) VALUE(7.5 // 2)", say("%CHAR(&I)"),
+                // %DEC with one argument is LEN(15 5).
+                say("%CHAR(%DEC(1.123456))"),
+                "CHGVAR VAR(&I) VALUE(-9223372036854775807 - 1)",
+                say("%CHAR(%ABS(&I))"), "MONMSG MSGID(ELC0007) EXEC(" + say("'abs overflow'") + ")",
+                "CALL PGM(BYZERO)", "MONMSG MSGID(ELC0013) EXEC(" + say("'by zero'") + ")",
+                "CALL PGM(LGL) PARM('x')", "MONMSG MSGID(ELC0003) EXEC(" + say("'not a logical'") + ")",
+                "CALL PGM(LGL) PARM('1')", "ENDPGM")
+                .program("LGL", "PGM PARM(&L)", "DCL VAR(&L) TYPE(*LGL)", "IF COND(&L) THEN(" + say("'true'") + ")", "ENDPGM")
+                // DOFOR BY(0) would never end: ELC0004.
+                .program("BYZERO", "PGM", "DCL VAR(&I) TYPE(*INT)", "DCL VAR(&Z) TYPE(*INT)", "DOFOR VAR(&I) FROM(1) TO(3) BY(&Z)", say("'never'"),
+                        "ENDDO", "ENDPGM");
+        assertEquals(List.of("1", "1.12346", "abs overflow", "by zero", "not a logical", "true"), run(host));
+        assertTrue(host.escaped.contains("TEST/BYZERO ELC0004"), host.escaped.toString());
+    }
+
+    // Labels alone on two lines both name the statement after them; a label on ENDSUBR or ENDPGM is that end.
+    @Test
+    void labels() throws ElclException {
+        List<String> said = run("PGM", "DCL VAR(&I) TYPE(*INT)", "GOTO CMDLBL(SECOND)", "FIRST:", "SECOND:", "CHGVAR VAR(&I) VALUE(&I + 1)",
+                "IF COND(&I *LT 2) THEN(GOTO CMDLBL(FIRST))", say("%CHAR(&I)"), "CALLSUBR SUBR(S)", "GOTO CMDLBL(DONE)", say("'skipped'"),
+                "SUBR SUBR(S)", "GOTO CMDLBL(OUT)", say("'skipped'"), "OUT: ENDSUBR", "DONE: ENDPGM");
+        assertEquals(List.of("2"), said);
     }
 
     // Every shipped example lowers (and starts) without trouble.

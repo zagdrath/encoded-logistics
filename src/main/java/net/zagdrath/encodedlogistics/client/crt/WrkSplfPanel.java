@@ -73,6 +73,7 @@ final class WrkSplfPanel extends OsListPanel {
             List<TerminalLine> lines = new ArrayList<>(response.lines());
             lines.sort(sort == Sort.FILE ? Comparator.comparing((TerminalLine line) -> cell(line, 1)) : Comparator.comparing((TerminalLine line) -> cell(line, 5)));
             setRows(lines);
+            response.message().ifPresent(screen::message);
             return;
         }
         super.receive(response);

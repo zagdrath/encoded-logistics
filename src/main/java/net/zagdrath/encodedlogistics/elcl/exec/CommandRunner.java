@@ -119,7 +119,7 @@ public final class CommandRunner {
         }
 
         @Override
-        public String text(String keyword) {
+        public String text(String keyword) throws ElclException {
             List<String> values = list(keyword);
             return values.isEmpty() ? "" : values.getFirst();
         }
@@ -140,8 +140,9 @@ public final class CommandRunner {
             return value;
         }
 
+        // A value that fails (%SST out of range, %SIZE here...) is that escape message.
         @Override
-        public List<String> list(String keyword) {
+        public List<String> list(String keyword) throws ElclException {
             Stmt.Param param = statement.param(keyword);
             if (param == null) {
                 ParamDef def = command.param(keyword);
@@ -149,11 +150,7 @@ public final class CommandRunner {
             }
             List<String> values = new ArrayList<>();
             for (Expr value : param.values()) {
-                try {
-                    values.add(evaluate(value));
-                } catch (ElclException e) {
-                    values.add(value.toString());
-                }
+                values.add(evaluate(value));
             }
             return values;
         }
@@ -207,6 +204,11 @@ public final class CommandRunner {
         }
     }
 
+    // Toward zero, as *INT takes it.
+    private static BigDecimal whole(BigDecimal value) {
+        return value.setScale(0, RoundingMode.DOWN);
+    }
+
     private static boolean truth(String text) {
         return text.equals("1") || text.equalsIgnoreCase("*TRUE") || text.equalsIgnoreCase("*YES");
     }
@@ -224,10 +226,10 @@ public final class CommandRunner {
                     case "-" -> left.subtract(right);
                     case "*" -> left.multiply(right);
                     default -> {
-                        if (right.signum() == 0) {
+                        if ((binary.op().equals("//") ? whole(right) : right).signum() == 0) {
                             throw new ElclException("ELC0005");
                         }
-                        yield binary.op().equals("//") ? left.remainder(right)
+                        yield binary.op().equals("//") ? whole(left).remainder(whole(right))
                                 : left.scale() <= 0 && right.scale() <= 0 ? left.divide(right, 0, RoundingMode.DOWN) : left.divide(right, 10, RoundingMode.HALF_UP);
                     }
                 };
@@ -277,12 +279,28 @@ public final class CommandRunner {
             case "%UPPER" -> evaluate(args.getFirst()).toUpperCase(Locale.ROOT);
             case "%LOWER" -> evaluate(args.getFirst()).toLowerCase(Locale.ROOT);
             case "%LEN" -> Integer.toString(evaluate(args.getFirst()).stripTrailing().length());
-            case "%CHAR", "%DEC" -> number(args.getFirst()).toPlainString();
-            case "%INT" -> number(args.getFirst()).setScale(0, RoundingMode.DOWN).toPlainString();
+            case "%CHAR" -> number(args.getFirst()).toPlainString();
+            case "%DEC" -> {
+                // LEN(15 5) unless given; a length alone has no decimals.
+                int digits = args.size() > 1 ? number(args.get(1)).intValue() : 15, decimals = args.size() > 2 ? number(args.get(2)).intValue() : args.size() > 1 ? 0 : 5;
+                BigDecimal value = number(args.getFirst()).setScale(decimals, RoundingMode.HALF_UP);
+                if (value.signum() != 0 && value.precision() - value.scale() > digits - decimals) {
+                    throw new ElclException("ELC0007");
+                }
+                yield value.toPlainString();
+            }
+            case "%INT" -> whole(number(args.getFirst())).toPlainString();
             case "%ABS" -> number(args.getFirst()).abs().toPlainString();
             case "%MIN" -> number(args.get(0)).min(number(args.get(1))).toPlainString();
             case "%MAX" -> number(args.get(0)).max(number(args.get(1))).toPlainString();
-            case "%SCAN" -> Integer.toString(evaluate(args.get(1)).indexOf(evaluate(args.get(0))) + 1);
+            case "%SCAN" -> {
+                String find = evaluate(args.get(0)).stripTrailing(), in = evaluate(args.get(1));
+                int start = args.size() > 2 ? number(args.get(2)).intValue() : 1;
+                if (start < 1) {
+                    throw new ElclException("ELC0004", start);
+                }
+                yield find.isEmpty() || start > in.length() ? "0" : Integer.toString(in.indexOf(find, start - 1) + 1);
+            }
             case "%SST" -> {
                 String text = evaluate(args.get(0));
                 int start = number(args.get(1)).intValue(), length = number(args.get(2)).intValue();

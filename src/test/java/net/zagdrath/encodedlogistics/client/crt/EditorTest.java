@@ -281,6 +281,17 @@ class EditorTest {
         assertEquals(List.of("", "PGM", "ENDPGM"), editor.model().texts());
     }
 
+    // A click anywhere on "F11=Full screen" (its second word too) presses F11.
+    @Test
+    void clickingAKeyLabel() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "TEST", numbered("PGM", "ENDPGM"), false);
+        terminal.push(editor);
+        String keys = editor.keys();
+        terminal.click(23, 1 + keys.indexOf("screen"), false);
+        assertEquals(terminal.current().title(), CrtPanel.tr("crt.encodedlogistics.edit.title_full"));
+    }
+
     @Test
     void promptedStatementIsWrittenBack() {
         CrtTerminal terminal = LayoutTest.terminal();

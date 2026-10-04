@@ -144,16 +144,17 @@ final class SchedulingGameTests {
                     expect(h, rig, "ADDTRGEVT TRG(CRAFT) EVENT(*CRAFTEND) PGM(TST/NOTE) ITEM(IRON_BLOCK)", "ELC0314");
                     expect(h, rig, "ADDTRGEVT TRG(OFF) EVENT(*DEVOFFLINE) PGM(TST/NOTE) DEV(EGRESS01)", "ELC0314");
                     expect(h, rig, "ADDTRGEVT TRG(ON) EVENT(*DEVONLINE) PGM(TST/NOTE) DEV(EGRESS01)", "ELC0314");
-                    // Twice in a moment: one firing (the debounce).
+                    // Twice in a moment: one firing now, the second once the debounce is over.
                     ElclEvents.redstoneChanged(rig.system().server(), rig.system().network(), "CTLIF01", Direction.NORTH, 7);
                     ElclEvents.redstoneChanged(rig.system().server(), rig.system().network(), "CTLIF01", Direction.NORTH, 8);
                     ElclEvents.fire(rig.system().server(), new ElclEvents.Event(rig.system().network(), "*CRAFTEND", "", "IRON_BLOCK", "C0001 *DONE"));
                     ElclEvents.fire(rig.system().server(), new ElclEvents.Event(rig.system().network(), "*CRAFTEND", "", "GOLD_BLOCK", "C0002 *DONE"));
                 })
                 .thenWaitUntil(() -> h.assertTrue(said(rig, "*RSCHANGE *NORTH 7") == 1 && said(rig, "*CRAFTEND C0001 *DONE") == 1, "Events didn't fire"))
+                .thenWaitUntil(() -> h.assertTrue(said(rig, "*RSCHANGE *NORTH 8") == 1, "The change in the debounce never fired"))
                 .thenIdle(25)
                 .thenExecute(() -> {
-                    h.assertTrue(said(rig, "*RSCHANGE") == 1 && said(rig, "*CRAFTEND") == 1, "Debounce or ITEM() let more through");
+                    h.assertTrue(said(rig, "*RSCHANGE") == 2 && said(rig, "*CRAFTEND") == 1, "Debounce or ITEM() let more through");
                     ElclEvents.redstoneChanged(rig.system().server(), rig.system().network(), "CTLIF01", Direction.NORTH, 9);
                     expect(h, rig, "CHGDEVSTS EGRESS01 *DISABLE", "");
                 })

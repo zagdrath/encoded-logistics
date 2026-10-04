@@ -50,7 +50,7 @@ final class InventoryPanel extends ListPanel<ItemKey> {
 
     @Override
     String keys() {
-        return "F3=Exit   F5=Refresh   F9=Command Entry   F11=Sort   F12=Cancel";
+        return tr("crt.encodedlogistics.fkeys.wrkinv");
     }
 
     @Override

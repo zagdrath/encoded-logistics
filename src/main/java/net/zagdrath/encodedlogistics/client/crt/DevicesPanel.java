@@ -56,10 +56,16 @@ final class DevicesPanel extends ListPanel<DevicesPanel.Row> {
     @Override
     void shown() {
         screen.send(TerminalService.QUERY, "devices");
+        next();
     }
 
     @Override
     void receive(CrtResponsePayload response) {
+        if (response.kind() == TerminalService.COMMAND) {
+            // A rename done: the list again, and the next option.
+            shown();
+            return;
+        }
         if (response.kind() != TerminalService.QUERY) {
             return;
         }
@@ -92,35 +98,38 @@ final class DevicesPanel extends ListPanel<DevicesPanel.Row> {
         grid.put(screenRow, 5, row.line().text(), (byte) row.line().attr());
     }
 
+    // The options in turn (an unknown one put back on its row, nothing done).
     @Override
     boolean process(List<Option<Row>> chosen) {
+        pending.clear();
         for (Option<Row> option : chosen) {
             int index = option.row().index();
-            switch (option.option()) {
-                case "5" -> {
-                    screen.push(new TextPanel(screen, "DSPDEV", tr("crt.encodedlogistics.dev.display"), "device " + index));
-                    return true;
-                }
-                case "8" -> screen.send(TerminalService.QUERY, "locate " + index);
+            switch (option.option().trim()) {
+                case "5" -> then(() -> screen.push(new TextPanel(screen, "DSPDEV", tr("crt.encodedlogistics.dev.display"), "device " + index)));
+                case "8" -> then(() -> {
+                    screen.send(TerminalService.QUERY, "locate " + index);
+                    next();
+                });
                 case "2" -> {
                     String name = name(option.row());
-                    if (name.isEmpty()) {
-                        screen.message(tr("crt.encodedlogistics.dev.no_name"));
-                        return true;
-                    }
-                    screen.openWindow(new FormWindow(screen, tr("crt.encodedlogistics.dev.change", name), tr("crt.encodedlogistics.dev.change_text"),
-                            values -> {
-                                screen.runCommand("RNMDEV DEV(" + name + ") NEWNAME(" + values.getFirst().trim() + ")");
-                                shown();
-                            }).field(tr("crt.encodedlogistics.dev.new_name"), 10, name, tr("crt.encodedlogistics.dev.name_hint")));
-                    return true;
+                    then(() -> {
+                        if (name.isEmpty()) {
+                            screen.message(tr("crt.encodedlogistics.dev.no_name"));
+                            next();
+                            return;
+                        }
+                        window(new FormWindow(screen, tr("crt.encodedlogistics.dev.change", name), tr("crt.encodedlogistics.dev.change_text"),
+                                values -> screen.runCommand("RNMDEV DEV(" + name + ") NEWNAME(" + values.getFirst().trim() + ")"))
+                                .field(tr("crt.encodedlogistics.dev.new_name"), 10, name, tr("crt.encodedlogistics.dev.name_hint")));
+                    });
                 }
                 default -> {
-                    screen.message(tr("crt.encodedlogistics.msg.invalid_option", option.option()));
-                    return true;
+                    pending.clear();
+                    return invalid(option);
                 }
             }
         }
+        next();
         return true;
     }
 }

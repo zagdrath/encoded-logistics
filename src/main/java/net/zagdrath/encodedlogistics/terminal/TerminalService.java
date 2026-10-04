@@ -188,13 +188,16 @@ public final class TerminalService {
         TerminalOutput out = new TerminalOutput();
         if (!screen) {
             out.line(TerminalLine.builder().text("    ").left("JOB", 6).left("ITEM", 26).right("QTY", 5).text("  ").left("STATUS", 9).text(" ")
-                    .left("PROGRESS", 14).text("  SCHEDULER").attr(TerminalLine.BRIGHT).build());
+                    .left("PROGRESS", 13).text(" SCHEDULER").attr(TerminalLine.BRIGHT).build());
         }
         for (TerminalActions.JobRow row : TerminalActions.jobs(context)) {
-            String bar = "#".repeat(row.percent() / 10);
+            // The bar: eight cells, "#" done and "." to do; on the screen the scheduler by number (its name won't fit).
+            int filled = Math.clamp(row.percent() * 8 / 100, 0, 8);
+            String bar = "#".repeat(filled) + ".".repeat(8 - filled);
             out.line(TerminalLine.builder().text(screen ? "" : "    ").left(row.number(), 6).left(row.item().stack().getHoverName(), 26)
-                    .right(TerminalItems.count(row.amount()), 5).text("  ").left(row.status(), 9).text(" ").left(bar, 10).right(row.percent() + "%", 4)
-                    .text("  ").text(row.scheduler()).attr(row.status().equals("Active") ? TerminalLine.BRIGHT : TerminalLine.NORMAL).build());
+                    .right(TerminalItems.count(row.amount()), 5).text("  ").left(row.status(), 9).text(" ").text(bar).right(row.percent() + "%", 5)
+                    .text(" ").text(screen ? row.schedulerShort() : row.scheduler())
+                    .attr(row.status().equals("Active") ? TerminalLine.BRIGHT : TerminalLine.NORMAL).build());
         }
         if (!screen && out.lines().size() == 1) {
             out.setMessage(Component.translatable("crt.encodedlogistics.msg.no_jobs"));

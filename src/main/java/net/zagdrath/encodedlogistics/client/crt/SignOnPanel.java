@@ -23,7 +23,7 @@ final class SignOnPanel extends CrtPanel {
     SignOnPanel(CrtTerminal screen) {
         super(screen);
         user = new CrtField(8, 34, 16, "");
-        program = new CrtField(10, 34, 10, "").uppercase();
+        program = new CrtField(10, 34, 21, "").uppercase();
         menu = new CrtField(11, 34, 10, "MAIN").uppercase();
         library = new CrtField(12, 34, 10, "*USRPRF").uppercase();
         fields.add(user);
@@ -101,8 +101,13 @@ final class SignOnPanel extends CrtPanel {
         }
         if (response.message().isPresent() || response.lines().isEmpty()) {
             response.message().ifPresent(screen::message);
-            user.set("");
-            screen.focus(user);
+            // ELC0201: the current library; anything else (ELC0402) the user.
+            if (response.message().map(m -> m.getString().startsWith("ELC0201")).orElse(false)) {
+                screen.focus(library);
+            } else {
+                user.set("");
+                screen.focus(user);
+            }
             return;
         }
         // Back: the profile's class, current library and library list.

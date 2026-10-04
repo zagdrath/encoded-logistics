@@ -80,6 +80,12 @@ final class PrompterPanel extends CrtPanel {
         return word.isEmpty() ? null : CommandRegistry.get(word);
     }
 
+    // A parameter's value set after the fact (WRKMBR F6: the library, the name still to type), the cursor at its end.
+    void preset(String keyword, String value) {
+        values.put(keyword, value);
+        rebuild();
+    }
+
     // A parameter's values as the field shows them: strings without their quotes when that's all there is.
     private static String shown(Stmt.Param param) {
         if (param.values().size() == 1 && param.values().getFirst() instanceof Expr.Str str) {
@@ -284,6 +290,7 @@ final class PrompterPanel extends CrtPanel {
                 return true;
             }
             case 5 -> {
+                screen.message((String) null);
                 for (ParamDef param : definition.params()) {
                     values.put(param.keyword(), param.defaultValue() != null ? param.defaultValue() : "");
                 }

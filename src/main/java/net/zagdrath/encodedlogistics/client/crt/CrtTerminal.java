@@ -72,6 +72,9 @@ final class CrtTerminal {
     // Opened and waiting for the session's details: the glass stays blank (and takes no input) until they say whether
     // it's Sign On or the main menu, or CONNECT_TICKS pass without an answer.
     boolean connecting;
+    private static final java.util.regex.Pattern FKEY = java.util.regex.Pattern.compile("F(\\d+)=");
+    // Commands sent and not answered yet (a screen's queued options wait for them).
+    int outstanding;
     private static final int CONNECT_TICKS = 40;
 
     CrtTerminal(Host host) {
@@ -280,6 +283,7 @@ final class CrtTerminal {
         if (ScreenCommands.open(this, line)) {
             return;
         }
+        outstanding++;
         send(TerminalService.COMMAND, line);
     }
 
@@ -291,6 +295,9 @@ final class CrtTerminal {
     }
 
     void receive(CrtResponsePayload response) {
+        if (response.kind() == TerminalService.COMMAND && outstanding > 0) {
+            outstanding--;
+        }
         if (response.unread() >= 0) {
             unread = response.unread();
         }
@@ -480,6 +487,11 @@ final class CrtTerminal {
                     return;
                 }
                 Component prompt = focused != null ? current().prompt(focused) : null;
+                if (prompt == null && focused == command) {
+                    // Not a command: what F4 does here.
+                    prompt = command.trimmed().isEmpty() ? Component.translatable("crt.encodedlogistics.msg.f4_empty")
+                            : Component.translatable("crt.encodedlogistics.msg.f4_not_command", command.trimmed().split("[\\s(]", 2)[0]);
+                }
                 if (prompt != null) {
                     message(prompt);
                 }
@@ -489,6 +501,9 @@ final class CrtTerminal {
                 current().refresh();
             }
             case 9 -> {
+                if (current() instanceof SignOnPanel) {
+                    return;
+                }
                 if (current() instanceof CommandEntryPanel entry) {
                     entry.retrieve();
                 } else {
@@ -500,10 +515,11 @@ final class CrtTerminal {
             case 13 -> {
                 if (current() instanceof CommandEntryPanel) {
                     history.clear();
+                    message(Component.translatable("crt.encodedlogistics.msg.cleared"));
                 }
             }
             case 24 -> {
-                if (!(current() instanceof MoreKeysPanel)) {
+                if (!(current() instanceof MoreKeysPanel) && !(current() instanceof SignOnPanel)) {
                     push(new MoreKeysPanel(this));
                 }
             }
@@ -554,16 +570,16 @@ final class CrtTerminal {
     // then the window or screen has it.
     void click(int row, int col, boolean doubleClick) {
         if (row == 23 && window() == null) {
-            // A function key's label: "F3=Exit" pressed.
+            // A function key's label: "F3=Exit" (or anywhere in "F11=Full screen") pressed - the last "Fn=" starting at
+            // or before the column.
             String keys = " " + current().keys();
-            int start = keys.lastIndexOf('F', col + 1);
-            if (start >= 0) {
-                int end = keys.indexOf('=', start);
-                if (end > start && (keys.indexOf(' ', start) < 0 || keys.indexOf(' ', start) > end)) {
-                    try {
-                        functionKey(Integer.parseInt(keys.substring(start + 1, end)));
-                    } catch (NumberFormatException ignored) {}
-                }
+            java.util.regex.Matcher label = FKEY.matcher(keys);
+            int key = 0;
+            while (label.find() && label.start() <= col + 1) {
+                key = Integer.parseInt(label.group(1));
+            }
+            if (key > 0) {
+                functionKey(key);
             }
             return;
         }

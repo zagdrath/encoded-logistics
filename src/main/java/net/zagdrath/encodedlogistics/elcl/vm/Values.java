@@ -13,8 +13,10 @@ import java.util.List;
 import java.util.Locale;
 
 import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
 import net.zagdrath.encodedlogistics.elcl.compile.VarDecl;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
+import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 
 // ELCL values at run time (ELCL_SPEC.md 4-5) and the expressions that make them. A value is a String (*CHAR), a Long
 // (*INT), a BigDecimal (*DEC), a Boolean (*LGL) or a List<String> (*LIST); a variable holds its declared type's:
@@ -50,7 +52,7 @@ public final class Values {
             case CHAR -> fit(text(value), decl.length());
             case INT -> integer(value);
             case DEC -> decimal(value, decl.length(), decl.decimals());
-            case LGL -> truth(value);
+            case LGL -> logical(value);
             case LIST -> {
                 List<String> list = value instanceof List<?> l ? new ArrayList<>((List<String>) l) : new ArrayList<>(List.of(text(value).stripTrailing()));
                 if (list.size() > maxList) {
@@ -141,6 +143,19 @@ public final class Values {
         };
     }
 
+    // A value a *LGL variable takes: a logical, '1' / '0' or *TRUE / *FALSE (ELC0003 for anything else).
+    public static boolean logical(Object value) throws ElclException {
+        if (value instanceof Boolean b) {
+            return b;
+        }
+        String text = text(value).trim().toUpperCase(Locale.ROOT);
+        return switch (text) {
+            case "1", "*TRUE" -> true;
+            case "0", "*FALSE" -> false;
+            default -> throw new ElclException("ELC0003", text, "*LGL");
+        };
+    }
+
     private static boolean numeric(Object value) {
         return value instanceof Long || value instanceof BigDecimal;
     }
@@ -156,11 +171,56 @@ public final class Values {
             case Expr.Special special -> special.name().equals("*TRUE") ? Boolean.TRUE : special.name().equals("*FALSE") ? Boolean.FALSE : special.name();
             case Expr.Path path -> path.toString();
             case Expr.Group group -> eval(group.inner(), scope);
-            case Expr.Nested nested -> nested.command().toSource();
+            case Expr.Nested nested -> bind(nested.command(), scope).toSource();
             case Expr.Var var -> scope.get(var.name());
             case Expr.Unary unary -> unary.op().equals("-") ? negate(eval(unary.operand(), scope)) : !truth(eval(unary.operand(), scope));
             case Expr.Binary binary -> binary(binary, scope);
             case Expr.Builtin builtin -> builtin(builtin, scope);
+        };
+    }
+
+    // A nested command (SBMJOB CMD(), ADDJOBSCDE CMD()) to run on its own, away from this program's variables: each
+    // variable in it replaced by its value now - *CHAR quoted (trailing blanks dropped; a special value in a SPECIAL
+    // parameter as it is), numbers as they are.
+    static Stmt bind(Stmt command, Scope scope) throws ElclException {
+        List<Stmt.Param> params = new ArrayList<>();
+        for (Stmt.Param param : command.params()) {
+            ParamDef def = command.definition() != null && param.keyword() != null ? command.definition().param(param.keyword()) : null;
+            boolean special = def != null && def.kind() == ParamDef.Kind.SPECIAL;
+            List<Expr> values = new ArrayList<>();
+            for (Expr value : param.values()) {
+                values.add(bind(value, scope, special));
+            }
+            params.add(new Stmt.Param(param.keyword(), List.copyOf(values), param.line()));
+        }
+        return new Stmt(command.label(), command.name(), List.copyOf(params), command.firstLine(), command.lastLine(), command.definition(), command.broken());
+    }
+
+    private static Expr bind(Expr expr, Scope scope, boolean special) throws ElclException {
+        return switch (expr) {
+            case Expr.Var var -> {
+                Object value = scope.get(var.name());
+                int line = var.line();
+                if (value instanceof Long || value instanceof BigDecimal) {
+                    Expr num = new Expr.Num(number(value), text(value), line);
+                    // A negative one in brackets, so a "-" before it can't run into it.
+                    yield number(value).signum() < 0 ? new Expr.Group(num, line) : num;
+                }
+                String text = text(value).stripTrailing();
+                yield special && text.matches("\\*[A-Za-z][A-Za-z0-9_@#$]*") ? new Expr.Special(text.toUpperCase(Locale.ROOT), line) : new Expr.Str(text, line);
+            }
+            case Expr.Group group -> new Expr.Group(bind(group.inner(), scope, false), group.line());
+            case Expr.Unary unary -> new Expr.Unary(unary.op(), bind(unary.operand(), scope, false), unary.line());
+            case Expr.Binary binary -> new Expr.Binary(binary.op(), bind(binary.left(), scope, false), bind(binary.right(), scope, false), binary.line());
+            case Expr.Builtin builtin -> {
+                List<Expr> args = new ArrayList<>();
+                for (Expr arg : builtin.args()) {
+                    args.add(bind(arg, scope, false));
+                }
+                yield new Expr.Builtin(builtin.function(), List.copyOf(args), builtin.line());
+            }
+            case Expr.Nested nested -> new Expr.Nested(bind(nested.command(), scope), nested.line());
+            default -> expr;
         };
     }
 
@@ -230,7 +290,15 @@ public final class Values {
     }
 
     private static Object arithmetic(String op, Object left, Object right) throws ElclException {
-        if ((op.equals("/") || op.equals("//")) && number(right).signum() == 0) {
+        if (op.equals("//")) {
+            // Integer remainder: of the operands as *INT.
+            long a = integer(left), b = integer(right);
+            if (b == 0) {
+                throw new ElclException("ELC0005");
+            }
+            return b == -1 ? 0L : a % b;
+        }
+        if (op.equals("/") && number(right).signum() == 0) {
             throw new ElclException("ELC0005");
         }
         if (left instanceof Long a && right instanceof Long b) {
@@ -240,13 +308,12 @@ public final class Values {
                     case "-" -> Math.subtractExact(a, b);
                     case "*" -> Math.multiplyExact(a, b);
                     // Toward zero.
-                    case "/" -> {
+                    default -> {
                         if (a == Long.MIN_VALUE && b == -1) {
                             throw new ArithmeticException();
                         }
                         yield a / b;
                     }
-                    default -> a % b;
                 };
             } catch (ArithmeticException e) {
                 throw new ElclException("ELC0007");
@@ -257,8 +324,7 @@ public final class Values {
             case "+" -> a.add(b);
             case "-" -> a.subtract(b);
             case "*" -> a.multiply(b);
-            case "/" -> a.divide(b, DIVISION);
-            default -> a.remainder(b);
+            default -> a.divide(b, DIVISION);
         };
     }
 
@@ -278,8 +344,18 @@ public final class Values {
             case "%LEN" -> (long) text(values.get(0)).stripTrailing().length();
             case "%CHAR" -> numeric(values.get(0)) ? text(values.get(0)) : text(values.get(0)).stripTrailing();
             case "%INT" -> integer(values.get(0));
-            case "%DEC" -> values.size() >= 3 ? decimal(values.get(0), (int) integer(values.get(1)), (int) integer(values.get(2))) : number(values.get(0));
-            case "%ABS" -> values.get(0) instanceof Long l ? (Object) Math.abs(l) : number(values.get(0)).abs();
+            // LEN(15 5) unless given, as DCL; a length alone has no decimals.
+            case "%DEC" -> decimal(values.get(0), values.size() > 1 ? (int) integer(values.get(1)) : 15,
+                    values.size() > 2 ? (int) integer(values.get(2)) : values.size() > 1 ? 0 : 5);
+            case "%ABS" -> {
+                if (values.get(0) instanceof Long l) {
+                    if (l == Long.MIN_VALUE) {
+                        throw new ElclException("ELC0007");
+                    }
+                    yield Math.abs(l);
+                }
+                yield number(values.get(0)).abs();
+            }
             case "%MIN" -> compare(values.get(0), values.get(1)) <= 0 ? values.get(0) : values.get(1);
             case "%MAX" -> compare(values.get(0), values.get(1)) >= 0 ? values.get(0) : values.get(1);
             case "%SCAN" -> {

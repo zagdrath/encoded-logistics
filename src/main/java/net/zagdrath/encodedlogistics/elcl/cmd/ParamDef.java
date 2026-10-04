@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.elcl.cmd;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.IntSupplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -63,6 +64,19 @@ public record ParamDef(String keyword, String label, Kind kind, boolean required
         return maxValues > 1;
     }
 
+    // A range up to the list limit (ADDLSTE / RMVLSTE POS): its top is the server's maxListSize, bound at setup.
+    private static final long LIST_LIMIT = Long.MAX_VALUE - 1;
+    private static volatile IntSupplier listLimit = () -> 4_096;
+
+    public static void listLimit(IntSupplier limit) {
+        listLimit = limit;
+    }
+
+    @Override
+    public long max() {
+        return max == LIST_LIMIT ? listLimit.getAsInt() : max;
+    }
+
     public boolean hasRange() {
         return min != Long.MIN_VALUE || max != Long.MAX_VALUE;
     }
@@ -96,7 +110,7 @@ public record ParamDef(String keyword, String label, Kind kind, boolean required
             case LGL -> "Logical expression";
             case VARIABLE -> "Variable";
             case TIME -> "HHMM or HHMMSS";
-            case INT, DEC -> hasRange() ? min + "-" + max : kind == Kind.INT ? "Number" : "Decimal";
+            case INT, DEC -> hasRange() ? min + "-" + max() : kind == Kind.INT ? "Number" : "Decimal";
             case CHAR, VALUE -> "Character value";
             case SPECIAL -> "";
         };
@@ -153,6 +167,11 @@ public record ParamDef(String keyword, String label, Kind kind, boolean required
             this.min = min;
             this.max = max;
             return this;
+        }
+
+        // 1 to the list limit.
+        public Builder listPosition() {
+            return range(1, LIST_LIMIT);
         }
 
         public Builder len(int length) {

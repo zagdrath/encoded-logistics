@@ -75,7 +75,7 @@ final class WrkLibPanel extends OsListPanel {
         switch (code) {
             case "2" -> then(() -> window(new FormWindow(screen, tr("crt.encodedlogistics.wrklib.change", lib), tr("crt.encodedlogistics.wrklib.change_text"),
                     values -> screen.runCommand("CHGLIB LIB(" + lib + ") TEXT('" + values.get(0).replace("'", "''") + "') AUT(" + values.get(1) + ")"))
-                    .field(tr("crt.encodedlogistics.wrklib.text"), 50 - 18, cell(row, 2), "")
+                    .field(tr("crt.encodedlogistics.wrklib.text"), 50 - 18, 50, cell(row, 2), "")
                     .field(tr("crt.encodedlogistics.wrklib.authority"), 8, cell(row, 4), "*USE, *CHANGE")));
             case "5" -> then(() -> screen.push(new InfoPanel(screen, "DSPLIB", tr("crt.encodedlogistics.dsplib.title"), List.of(
                     new InfoPanel.Line(tr("crt.encodedlogistics.dsplib.library"), lib),

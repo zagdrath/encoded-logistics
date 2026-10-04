@@ -37,7 +37,7 @@ final class CraftPanel extends CrtPanel {
 
     @Override
     String id() {
-        return "";
+        return "CRAFT";
     }
 
     @Override
@@ -47,7 +47,7 @@ final class CraftPanel extends CrtPanel {
 
     @Override
     String keys() {
-        return "F3=Exit   F4=Prompt   F5=Refresh   F12=Cancel";
+        return tr("crt.encodedlogistics.fkeys.form");
     }
 
     @Override

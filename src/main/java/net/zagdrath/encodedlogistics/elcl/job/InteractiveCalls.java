@@ -65,7 +65,10 @@ public final class InteractiveCalls {
     private static void reply(JobManager.Run run, ServerPlayer player, int containerId) {
         Vm vm = run.vm();
         ElclMessage end = vm != null && vm.failure() != null ? vm.failure() : ElclMessage.of("ELC0110", run.program);
-        ElclServices.jobs().logMessage(run.system, run.job, end);
+        // An escape that ended it is in the log already (JobVmHost.escaped).
+        if (vm == null || vm.failure() == null) {
+            ElclServices.jobs().logMessage(run.system, run.job, end);
+        }
         if (!(player.containerMenu instanceof TerminalDeskMenu) || player.containerMenu.containerId != containerId) {
             return;
         }

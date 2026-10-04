@@ -20,14 +20,15 @@ public interface Invocation {
     // Whether the parameter was given (not just defaulted).
     boolean given(String keyword);
 
-    // The value as text ("" when not given and no default): names and special values upper-cased, text as typed.
-    String text(String keyword);
+    // The value as text ("" when not given and no default): names and special values upper-cased, text as typed. A
+    // value that can't be worked out is its escape message (ELC0004 from %SST, ELC0005...).
+    String text(String keyword) throws ElclException;
 
     // A whole number; text that isn't one is ELC0003, outside the schema's range ELC0004.
     long integer(String keyword) throws ElclException;
 
     // Every value of a list parameter.
-    List<String> list(String keyword);
+    List<String> list(String keyword) throws ElclException;
 
     // Sets a RTN* parameter's variable (ignored when it wasn't given).
     void returns(String keyword, Object value);

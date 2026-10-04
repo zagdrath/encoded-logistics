@@ -6,11 +6,13 @@
 package net.zagdrath.encodedlogistics.elcl.compile;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,6 +156,10 @@ public final class Compiler {
         final List<Jump> calls = new ArrayList<>();
         int nextFrame;
         boolean elseAllowed;
+        // A SUBR has come: from there on only subroutines, then ENDPGM.
+        boolean subroutinesBegun;
+        // The SELECTs (by frame id) whose OTHERWISE has come.
+        final Set<Integer> otherwiseSeen = new HashSet<>();
         @Nullable Stmt lastCommand;
 
         Checker(boolean interactive) {
@@ -198,8 +204,8 @@ public final class Compiler {
                     }
                     report(s.firstLine(), "ELC0009", s.name(), "PGM");
                 }
-                if (s.label() != null) {
-                    label(s, index);
+                for (String name : s.labels()) {
+                    label(s, name, index);
                 }
                 switch (s.name()) {
                     case "PGM" -> report(s.firstLine(), "ELC0001", s.name());
@@ -280,8 +286,7 @@ public final class Compiler {
             return path;
         }
 
-        private void label(Stmt s, int index) {
-            String name = s.label();
+        private void label(Stmt s, String name, int index) {
             if (labels.containsKey(name)) {
                 report(s.firstLine(), "ELC0001", name + ":");
                 return;
@@ -304,6 +309,18 @@ public final class Compiler {
             String name = s.name();
             if (top != null && top.kind().equals("SELECT") && !name.equals("WHEN") && !name.equals("OTHERWISE") && !name.equals("ENDSELECT")) {
                 report(s.firstLine(), "ELC0009", name, "WHEN");
+            }
+            // Subroutines go after the main body, before ENDPGM: nothing else between or after them.
+            if (subroutinesBegun && frames.isEmpty() && !name.equals("SUBR")) {
+                report(s.firstLine(), "ELC0001", name);
+            }
+            // A SELECT's OTHERWISE comes once, after its WHENs.
+            if (top != null && top.kind().equals("SELECT") && (name.equals("WHEN") || name.equals("OTHERWISE"))) {
+                if (otherwiseSeen.contains(top.id())) {
+                    report(s.firstLine(), "ELC0001", name);
+                } else if (name.equals("OTHERWISE")) {
+                    otherwiseSeen.add(top.id());
+                }
             }
             statement(s, null);
             // A MONMSG after it monitors it (opening a block clears that: nothing to monitor inside it yet).
@@ -334,6 +351,7 @@ public final class Compiler {
                         report(s.firstLine(), "ELC0103", subrName, "SUBR");
                     }
                     subroutines.put(subrName, -1);
+                    subroutinesBegun = true;
                     subroutineRefs.computeIfAbsent(subrName, k -> new ArrayList<>()).add(new Ref(s.firstLine(), false));
                     push("SUBR", null, null, s.firstLine(), null);
                 }
@@ -607,7 +625,9 @@ public final class Compiler {
                     boolean modified = def.isReturn() || s.is("CHGVAR") && keyword.equals("VAR");
                     variableRefs.get(var.name()).add(new Ref(line, modified));
                     VarType wanted = def.returns() != null ? def.returns() : keyword.equals("IN") ? VarType.LIST : null;
-                    if (wanted != null && !compatible(wanted, decl.type())) {
+                    // DOFOR's control variable and CALLSUBR's RTNVAL are *INT, not *DEC.
+                    boolean exact = s.is("DOFOR") || s.is("CALLSUBR");
+                    if (wanted != null && (exact ? wanted != decl.type() : !compatible(wanted, decl.type()))) {
                         report(line, "ELC0103", var.name(), keyword);
                     }
                 }
@@ -629,6 +649,9 @@ public final class Compiler {
                             report(line, "ELC0003", value, "*INT");
                         } else if (def.hasRange() && (literal.compareTo(BigDecimal.valueOf(def.min())) < 0 || literal.compareTo(BigDecimal.valueOf(def.max())) > 0)) {
                             report(line, "ELC0004", value);
+                        } else if (s.is("DOFOR") && keyword.equals("BY") && literal.signum() == 0) {
+                            // A loop that would never end.
+                            report(line, "ELC0004", value);
                         }
                     }
                 }
@@ -642,8 +665,9 @@ public final class Compiler {
                     }
                 }
                 case CHAR -> {
+                    // A literal number is taken as text (VALUE(500)); a number worked out goes through %CHAR.
                     Type type = type(value);
-                    if (value instanceof Expr.Var && type.numeric() && type != Type.ANY || type == Type.LIST) {
+                    if ((type == Type.INT || type == Type.DEC) && literal(value) == null || type == Type.LIST) {
                         report(line, "ELC0103", value, keyword);
                     }
                 }
@@ -752,17 +776,64 @@ public final class Compiler {
             return null;
         }
 
+        // The value of an expression of literals alone, worked out as the VM would; null when it isn't one (or it's a
+        // whole number past 64 bits, already reported).
+        private static @Nullable BigDecimal constant(Expr expr) {
+            BigDecimal value = switch (expr) {
+                case Expr.Num num -> num.value();
+                case Expr.Group group -> constant(group.inner());
+                case Expr.Unary unary when unary.op().equals("-") -> {
+                    BigDecimal operand = constant(unary.operand());
+                    yield operand != null ? operand.negate() : null;
+                }
+                case Expr.Binary binary -> fold(binary);
+                default -> null;
+            };
+            return value != null && whole(value) && !fits(value) ? null : value;
+        }
+
+        private static @Nullable BigDecimal fold(Expr.Binary binary) {
+            BigDecimal left = constant(binary.left()), right = constant(binary.right());
+            if (left == null || right == null) {
+                return null;
+            }
+            boolean ints = whole(left) && whole(right);
+            return switch (binary.op()) {
+                case "+" -> left.add(right);
+                case "-" -> left.subtract(right);
+                case "*" -> left.multiply(right);
+                case "/" -> ints && right.signum() != 0 ? left.divide(right, 0, RoundingMode.DOWN) : null;
+                case "//" -> {
+                    BigDecimal divisor = right.setScale(0, RoundingMode.DOWN);
+                    yield divisor.signum() != 0 ? left.setScale(0, RoundingMode.DOWN).remainder(divisor) : null;
+                }
+                default -> null;
+            };
+        }
+
+        private static boolean whole(BigDecimal value) {
+            return value.stripTrailingZeros().scale() <= 0;
+        }
+
+        // Within 64 bits.
+        private static boolean fits(BigDecimal value) {
+            return value.compareTo(BigDecimal.valueOf(Long.MIN_VALUE)) >= 0 && value.compareTo(BigDecimal.valueOf(Long.MAX_VALUE)) <= 0;
+        }
+
+        // Within a *DEC's LEN(digits decimals), once rounded to its decimals.
+        private static boolean fits(BigDecimal value, int digits, int decimals) {
+            BigDecimal rounded = value.setScale(decimals, RoundingMode.HALF_UP);
+            return rounded.signum() == 0 || rounded.precision() - rounded.scale() <= digits - decimals;
+        }
+
         // An assignment (CHGVAR, DCL VALUE): the value's type against the variable's; a literal too long for a *CHAR
         // is a warning (ELC0008).
         private void assign(VarDecl decl, Expr value, int line, boolean literalOnly) {
             Type type = type(value);
             switch (decl.type()) {
                 case CHAR -> {
-                    if (type == Type.INT || type == Type.DEC) {
-                        if (!(value instanceof Expr.Num)) {
-                            report(line, "ELC0003", value, "*CHAR");
-                        }
-                    } else if (type == Type.LGL || type == Type.LIST) {
+                    // Numbers only through %CHAR, a literal one too.
+                    if (type == Type.INT || type == Type.DEC || type == Type.LGL || type == Type.LIST) {
                         report(line, "ELC0003", value, "*CHAR");
                     } else if (value instanceof Expr.Str str && str.value().length() > decl.length()) {
                         report(line, "ELC0008", decl.length());
@@ -773,6 +844,15 @@ public final class Compiler {
                         report(line, "ELC0003", value instanceof Expr.Str str ? str.value() : value.toString(), decl.type().special());
                     } else if (decl.type() == VarType.INT && literalOnly && literal(value) != null && literal(value).stripTrailingZeros().scale() > 0) {
                         report(line, "ELC0003", value, "*INT");
+                    } else if (constant(value) != null) {
+                        // A value known now that the variable can't hold (a whole number past 64 bits is reported
+                        // where it is).
+                        BigDecimal known = constant(value);
+                        boolean over = decl.type() == VarType.DEC ? !fits(known, decl.length(), decl.decimals())
+                                : !whole(known) && !fits(known.setScale(0, RoundingMode.DOWN));
+                        if (over) {
+                            report(line, "ELC0007");
+                        }
                     }
                 }
                 case LGL -> {
@@ -856,6 +936,11 @@ public final class Compiler {
                     if ((op.equals("/") || op.equals("//")) && divisor != null && divisor.signum() == 0) {
                         report(binary.line(), "ELC0005");
                     }
+                    // Whole numbers worked out now past 64 bits.
+                    BigDecimal a = constant(binary.left()), b = constant(binary.right()), folded = fold(binary);
+                    if (a != null && b != null && whole(a) && whole(b) && folded != null && !fits(folded)) {
+                        report(binary.line(), "ELC0007");
+                    }
                     if (op.equals("//")) {
                         return Type.INT;
                     }
@@ -895,7 +980,9 @@ public final class Compiler {
 
         private Type builtin(Expr.Builtin builtin) {
             Builtin def = BUILTINS.get(builtin.function());
-            if (def == null || builtin.args().size() < def.min() || builtin.args().size() > def.max()) {
+            // A command line has only literals: no lists, and no items' names.
+            boolean program = !interactive || !Set.of("%SIZE", "%ELEM", "%NAME").contains(builtin.function());
+            if (def == null || !program || builtin.args().size() < def.min() || builtin.args().size() > def.max()) {
                 report(builtin.line(), "ELC0001", builtin.function());
                 builtin.args().forEach(this::type);
                 return Type.ANY;
@@ -921,8 +1008,24 @@ public final class Compiler {
                     }
                 }
                 case "%SST" -> {
+                    text(builtin, args, 0);
                     if (!args.get(1).numeric() || !args.get(2).numeric()) {
                         report(builtin.line(), "ELC0003", builtin.args().get(!args.get(1).numeric() ? 1 : 2), "*INT");
+                    }
+                }
+                case "%SCAN" -> {
+                    text(builtin, args, 0);
+                    text(builtin, args, 1);
+                    if (args.size() > 2 && !args.get(2).numeric()) {
+                        report(builtin.line(), "ELC0003", builtin.args().get(2), "*INT");
+                    }
+                }
+                case "%TRIM", "%TRIML", "%TRIMR", "%UPPER", "%LOWER", "%LEN", "%NAME" -> text(builtin, args, 0);
+                case "%INT", "%DEC" -> {
+                    for (int i = 1; i < args.size(); i++) {
+                        if (!args.get(i).numeric()) {
+                            report(builtin.line(), "ELC0003", builtin.args().get(i), "*INT");
+                        }
                     }
                 }
                 default -> {}
@@ -931,6 +1034,13 @@ public final class Compiler {
                 return Type.of(def.result());
             }
             return args.stream().anyMatch(type -> type == Type.DEC) ? Type.DEC : Type.INT;
+        }
+
+        // A built-in's text argument: *CHAR (a number goes through %CHAR first).
+        private void text(Expr.Builtin builtin, List<Type> args, int index) {
+            if (!args.get(index).text()) {
+                report(builtin.line(), "ELC0003", builtin.args().get(index), "*CHAR");
+            }
         }
     }
 }

@@ -233,6 +233,10 @@ public final class Vm {
             case FOR_TEST -> {
                 BigDecimal value = Values.number(f.vars.get(in.var)), to = Values.number(eval(f, in.expr));
                 BigDecimal by = in.expr2 != null ? Values.number(eval(f, in.expr2)) : BigDecimal.ONE;
+                // BY(0) would never get there.
+                if (by.signum() == 0) {
+                    throw new ElclException("ELC0004", by.toPlainString());
+                }
                 boolean past = by.signum() >= 0 ? value.compareTo(to) > 0 : value.compareTo(to) < 0;
                 f.pc = past ? in.target : f.pc + 1;
             }
@@ -571,7 +575,7 @@ public final class Vm {
         }
 
         @Override
-        public String text(String keyword) {
+        public String text(String keyword) throws ElclException {
             List<String> values = list(keyword);
             return values.isEmpty() ? "" : values.getFirst();
         }
@@ -593,8 +597,9 @@ public final class Vm {
             return value;
         }
 
+        // A value that fails (%SST out of range, a division by zero...) is that escape message.
         @Override
-        public List<String> list(String keyword) {
+        public List<String> list(String keyword) throws ElclException {
             Stmt.Param param = statement.param(keyword);
             if (param == null) {
                 ParamDef def = command.param(keyword);
@@ -602,15 +607,11 @@ public final class Vm {
             }
             List<String> values = new ArrayList<>();
             for (Expr value : param.values()) {
-                try {
-                    Object v = Values.eval(value, scope(frame));
-                    if (v instanceof List<?> l) {
-                        l.forEach(element -> values.add(String.valueOf(element)));
-                    } else {
-                        values.add(value instanceof Expr.Var ? Values.text(v).stripTrailing() : Values.text(v));
-                    }
-                } catch (ElclException e) {
-                    values.add(value.toString());
+                Object v = Values.eval(value, scope(frame));
+                if (v instanceof List<?> l) {
+                    l.forEach(element -> values.add(String.valueOf(element)));
+                } else {
+                    values.add(value instanceof Expr.Var ? Values.text(v).stripTrailing() : Values.text(v));
                 }
             }
             return values;

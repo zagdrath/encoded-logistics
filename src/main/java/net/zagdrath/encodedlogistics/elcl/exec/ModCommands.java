@@ -741,7 +741,8 @@ public final class ModCommands {
                         throw new ElclException("ELC0103", name, "SPLF");
                     }
                     title = found.name();
-                    lines = new ArrayList<>(found.lines());
+                    // Under the heading, as every report.
+                    lines.addAll(found.lines());
                 }
             }
             call.send(Printers.print(system, call.text("DEV"), title, lines));

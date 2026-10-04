@@ -6,9 +6,11 @@
 package net.zagdrath.encodedlogistics.elcl.store;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
@@ -243,9 +245,7 @@ public final class StoredLibraryService implements LibraryService {
         if (target.locker != null && !target.locker.equalsIgnoreCase(user)) {
             throw new ElclException("ELC0208", target.name);
         }
-        if (lines.size() > ElclConfig.maxSourceLines()) {
-            throw new ElclException("ELC0004", lines.size());
-        }
+        lineLimit(lines);
         if (!target.lines.equals(lines)) {
             room(system, target.name, cost(lines) - cost(target.lines));
             target.lines = List.copyOf(lines);
@@ -253,6 +253,13 @@ public final class StoredLibraryService implements LibraryService {
             target.updated = system.nowShort();
             ElclStore.of(system).changed();
             listener.saved(system, lib.name, target.name, target.lines);
+        }
+    }
+
+    // A member may have at most maxSourceLines lines (ELC0004), however it comes: saved, synced, copied, restored.
+    private static void lineLimit(List<SourceLine> lines) throws ElclException {
+        if (lines.size() > ElclConfig.maxSourceLines()) {
+            throw new ElclException("ELC0004", lines.size());
         }
     }
 
@@ -273,6 +280,7 @@ public final class StoredLibraryService implements LibraryService {
         if (lib.system()) {
             throw new ElclException("ELC0205", library);
         }
+        lineLimit(lines);
         SystemData.Member target = lib.members.get(member);
         if (target == null) {
             room(system, member, cost(lines));
@@ -312,6 +320,7 @@ public final class StoredLibraryService implements LibraryService {
         if (to.members.containsKey(name)) {
             throw new ElclException("ELC0204", name, to.name);
         }
+        lineLimit(from.lines);
         room(system, name, cost(from.lines));
         to.members.put(name, new SystemData.Member(name, from.text, List.copyOf(from.lines), 0, system.nowShort()));
         ElclStore.of(system).changed();
@@ -450,11 +459,16 @@ public final class StoredLibraryService implements LibraryService {
         if (lib != null) {
             writable(system, lib, user);
         }
-        // What it'll take of the network's storage, less what the members it replaces took.
+        // What it'll take of the network's storage, less what the library's members took: they're all replaced.
         long more = 0;
         for (LibraryImage.MemberImage member : image.members()) {
-            SystemData.Member old = lib != null ? lib.members.get(upper(member.name())) : null;
-            more += cost(member.lines()) - (old != null ? cost(old.lines) : 0);
+            lineLimit(member.lines());
+            more += cost(member.lines());
+        }
+        if (lib != null) {
+            for (SystemData.Member old : lib.members.values()) {
+                more -= cost(old.lines);
+            }
         }
         room(system, name, more);
         if (lib == null) {
@@ -462,6 +476,16 @@ public final class StoredLibraryService implements LibraryService {
             stored(system).put(name, lib);
             listener.libraryCreated(system, name);
         }
+        // Its members and programs become the diskette's: those not on it go.
+        Set<String> kept = new HashSet<>();
+        image.members().forEach(member -> kept.add(upper(member.name())));
+        for (String mbr : List.copyOf(lib.members.keySet())) {
+            if (!kept.contains(mbr)) {
+                lib.members.remove(mbr);
+                listener.deleted(system, name, mbr);
+            }
+        }
+        lib.programs.clear();
         for (LibraryImage.MemberImage member : image.members()) {
             String mbr = upper(member.name());
             SystemData.Member old = lib.members.get(mbr);

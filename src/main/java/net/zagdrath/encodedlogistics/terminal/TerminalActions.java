@@ -202,15 +202,20 @@ public final class TerminalActions {
     // --- Jobs ---
 
     // A job as Work with Jobs lists it.
-    public record JobRow(String number, UUID id, ItemKey item, long amount, String status, int percent, String scheduler, CraftingJob job) {}
+    // scheduler: its full name ("Rack 12, 64, -30"); schedulerShort: its number (as CRAFT's scheduler takes it) and kind.
+    public record JobRow(String number, UUID id, ItemKey item, long amount, String status, int percent, String scheduler, String schedulerShort,
+            CraftingJob job) {}
 
     public static List<JobRow> jobs(TerminalContext context) {
         List<JobRow> rows = new ArrayList<>();
-        for (JobHost host : CraftRequests.schedulers(context.server(), context.network())) {
+        List<JobHost> schedulers = CraftRequests.schedulers(context.server(), context.network());
+        for (int i = 0; i < schedulers.size(); i++) {
+            JobHost host = schedulers.get(i);
+            String brief = (i + 1) + (host instanceof RackScheduler ? " Rack" : " Core");
             for (CraftingJob job : host.jobs()) {
                 String status = !job.awaiting.isEmpty() ? "Recall" : job.running ? "Active" : "Waiting";
                 int percent = job.total() <= 0 ? 0 : job.done() * 100 / job.total();
-                rows.add(new JobRow(context.jobNumber(job.id), job.id, job.target, job.amount, status, percent, schedulerName(host), job));
+                rows.add(new JobRow(context.jobNumber(job.id), job.id, job.target, job.amount, status, percent, schedulerName(host), brief, job));
             }
         }
         rows.sort((a, b) -> a.number().compareTo(b.number()));

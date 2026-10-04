@@ -46,7 +46,7 @@ final class MoreKeysPanel extends CrtPanel {
 
     @Override
     String keys() {
-        return "F3=Exit   F4=Prompt   F12=Cancel";
+        return tr("crt.encodedlogistics.fkeys.morekeys");
     }
 
     @Override

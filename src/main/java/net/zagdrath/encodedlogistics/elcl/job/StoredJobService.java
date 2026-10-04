@@ -40,6 +40,9 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 // release; ENDJOB ends (ELC0303 in the log). Ended jobs keep their logs, the last LOGRTN of them. Job IDs are
 // nnnnnn/USER/NAME; commands take the number, the name if unique, or the whole ID.
 public final class StoredJobService implements JobService {
+    // What a batch job's command runs as: a program of that one command.
+    static final String QCMD = "QSYS/QCMD";
+
     // A system's interactive jobs: by number, which session each is, and their logs.
     private static final class Interactive {
         final Map<String, Job> jobs = new LinkedHashMap<>();
@@ -414,10 +417,9 @@ public final class StoredJobService implements JobService {
         Vm vm = saved;
         if (vm == null) {
             try {
-                vm = Vm.start(new JobVmHost(run), new VmHost.Loaded("QSYS/QCMD", List.of("PGM", job.command, "ENDPGM")), List.of());
+                vm = Vm.start(new JobVmHost(run), new VmHost.Loaded(QCMD, List.of("PGM", job.command, "ENDPGM")), List.of());
             } catch (ElclException e) {
-                logMessage(system, job.number, e.elclMessage());
-                finish(system, job, e.elclMessage());
+                finish(system, job, e.elclMessage(), false);
                 return;
             }
         }
@@ -427,7 +429,9 @@ public final class StoredJobService implements JobService {
         JobManager.of(system.server()).start(run, live, ended -> {
             synchronized (this) {
                 ElclMessage reason = endReason.remove(job.number);
-                finish(system, job, reason != null ? reason : live.failure() != null ? live.failure() : ElclMessage.of("ELC0307", job.qualified()));
+                // An escape that ended it is in its log already (JobVmHost.escaped).
+                boolean failed = reason == null && live.failure() != null;
+                finish(system, job, reason != null ? reason : failed ? live.failure() : ElclMessage.of("ELC0307", job.qualified()), failed);
             }
         });
     }
@@ -443,20 +447,25 @@ public final class StoredJobService implements JobService {
         try {
             start(system, job, Vm.load(new JobVmHost(run), job.vm));
         } catch (ElclException e) {
-            logMessage(system, job.number, e.elclMessage());
-            finish(system, job, e.elclMessage());
+            finish(system, job, e.elclMessage(), false);
         }
     }
 
-    // A batch job is over: its last message logged (and, for a lost host or an operator's end, sent to its user), its
-    // log kept with the ended jobs.
+    // A batch job is over: its last message logged (unless it is already) and, for a lost host or an operator's end,
+    // sent to its user; its log kept with the ended jobs.
     private void finish(ElclSystem system, JobData.Batch job, ElclMessage message) {
+        finish(system, job, message, false);
+    }
+
+    private void finish(ElclSystem system, JobData.Batch job, ElclMessage message, boolean logged) {
         JobData data = data(system);
         if (data.batch.remove(job.number) == null) {
             return;
         }
         job.live = null;
-        job.entries.add(entry(system, message));
+        if (!logged) {
+            job.entries.add(entry(system, message));
+        }
         if (message.id().equals("ELC0310") || message.id().equals("ELC0303")) {
             ElclServices.messages().send(system, "QSYS", job.user, message.id(), message.severity(), job.qualified() + ": " + message.text());
         }

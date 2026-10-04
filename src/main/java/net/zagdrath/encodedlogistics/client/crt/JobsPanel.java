@@ -5,9 +5,8 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import org.jspecify.annotations.Nullable;
 
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
@@ -15,11 +14,12 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // WRKCRFJOB (Main Menu option 2; WRKJOB until the Terminal OS took that name for its Work with Job): the network's
 // crafting jobs, active and queued - Opt, Job, Item, Qty, Status (Active, Waiting, Recall), Progress (bar
-// and %), Scheduler - refreshed every two seconds. Options: 4=Cancel (Enter again to confirm), 5=Display.
+// and %), Scheduler - refreshed every two seconds. Options: 4=Cancel (Enter again, with no other option typed, to
+// confirm; F5 or any other option forgets it), 5=Display; several are done in turn, an unknown one put back.
 final class JobsPanel extends ListPanel<TerminalLine> {
     private static final int REFRESH = 40;
     private int timer;
-    private @Nullable String confirming;
+    private final List<String> cancelling = new ArrayList<>();
 
     JobsPanel(CrtTerminal screen) {
         super(screen);
@@ -62,6 +62,11 @@ final class JobsPanel extends ListPanel<TerminalLine> {
 
     @Override
     void shown() {
+        reload();
+        next();
+    }
+
+    private void reload() {
         screen.send(TerminalService.QUERY, "jobs");
     }
 
@@ -69,8 +74,15 @@ final class JobsPanel extends ListPanel<TerminalLine> {
     void tick() {
         if (++timer >= REFRESH) {
             timer = 0;
-            shown();
+            reload();
         }
+    }
+
+    // F5: the list again, any cancel waiting for Enter forgotten.
+    @Override
+    void refresh() {
+        cancelling.clear();
+        reload();
     }
 
     @Override
@@ -86,7 +98,8 @@ final class JobsPanel extends ListPanel<TerminalLine> {
     void drawHead(CrtGrid grid) {
         grid.put(3, 0, tr("crt.encodedlogistics.type_options"));
         grid.put(4, 0, tr("crt.encodedlogistics.jobs.opts"));
-        grid.put(6, 0, "Opt  Job   Item                        Qty  Status    Progress  Scheduler", CrtGrid.BRIGHT);
+        // Over the rows' columns (drawn from 5): Progress the bar and %, Scheduler its number and kind.
+        grid.put(6, 0, "Opt  Job   Item                        Qty  Status    Progress      Scheduler", CrtGrid.BRIGHT);
         if (rows.isEmpty()) {
             grid.put(8, 5, tr("crt.encodedlogistics.msg.no_jobs"), CrtGrid.DIM);
         }
@@ -99,35 +112,40 @@ final class JobsPanel extends ListPanel<TerminalLine> {
 
     @Override
     boolean enter() {
-        if (confirming != null) {
-            String job = confirming;
-            confirming = null;
-            screen.runCommand("cancel job " + job);
+        if (!cancelling.isEmpty() && !anyOptions()) {
+            for (String job : cancelling) {
+                screen.runCommand("cancel job " + job);
+            }
+            cancelling.clear();
             return true;
         }
+        cancelling.clear();
         return super.enter();
     }
 
     @Override
     boolean process(List<Option<TerminalLine>> chosen) {
+        pending.clear();
+        List<String> cancel = new ArrayList<>();
         for (Option<TerminalLine> option : chosen) {
             String job = number(option.row());
-            switch (option.option()) {
-                case "4" -> {
-                    confirming = job;
-                    screen.message(tr("crt.encodedlogistics.jobs.confirm", job));
-                    return true;
-                }
-                case "5" -> {
-                    screen.push(new TextPanel(screen, "DSPJOB", tr("crt.encodedlogistics.job.title"), "job " + job));
-                    return true;
-                }
+            switch (option.option().trim()) {
+                case "4" -> cancel.add(job);
+                case "5" -> then(() -> screen.push(new TextPanel(screen, "DSPJOB", tr("crt.encodedlogistics.job.title"), "job " + job)));
                 default -> {
-                    screen.message(tr("crt.encodedlogistics.msg.invalid_option", option.option()));
-                    return true;
+                    pending.clear();
+                    return invalid(option);
                 }
             }
         }
-        return false;
+        // The cancels last: Enter again confirms them.
+        if (!cancel.isEmpty()) {
+            then(() -> {
+                cancelling.addAll(cancel);
+                screen.message(tr("crt.encodedlogistics.jobs.confirm", String.join(", ", cancel)));
+            });
+        }
+        next();
+        return true;
     }
 }

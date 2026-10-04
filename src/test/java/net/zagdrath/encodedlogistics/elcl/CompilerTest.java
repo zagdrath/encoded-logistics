@@ -109,6 +109,44 @@ class CompilerTest {
     }
 
     @Test
+    void overflowWorkedOutNow() {
+        expect("ELC0007", 1, "DCL VAR(&P) TYPE(*DEC) LEN(5 1) VALUE(12345)");
+        expect("ELC0007", 2, "DCL VAR(&P) TYPE(*DEC) LEN(5 1)", "CHGVAR VAR(&P) VALUE(-9999.96)");
+        expect("ELC0007", 2, "DCL VAR(&N) TYPE(*INT)", "CHGVAR VAR(&N) VALUE(9223372036854775807 + 1)");
+        expect("ELC0007", 2, "DCL VAR(&N) TYPE(*INT)", "CHGVAR VAR(&N) VALUE((4611686018427387904 * 2) - 5)");
+        assertTrue(Compiler.compileTexts(program("DCL VAR(&P) TYPE(*DEC) LEN(5 1) VALUE(9999.94)", "DCL VAR(&N) TYPE(*INT)",
+                "CHGVAR VAR(&N) VALUE(-9223372036854775807 - 1)")).ok());
+    }
+
+    // Numbers become *CHAR only through %CHAR (a literal one is taken as text in a *CHAR parameter: VALUE(500)).
+    @Test
+    void numbersToChar() {
+        expect("ELC0003", 2, "DCL VAR(&S) TYPE(*CHAR)", "CHGVAR VAR(&S) VALUE(5)");
+        expect("ELC0103", 2, "DCL VAR(&N) TYPE(*INT)", "SNDMSG MSG(&N + 1) TOUSR(*REQUESTER)");
+        expect("ELC0003", 2, "DCL VAR(&N) TYPE(*INT)", "SNDMSG MSG(%TRIM(&N)) TOUSR(*REQUESTER)");
+        expect("ELC0003", 2, "DCL VAR(&N) TYPE(*INT)", "CHGVAR VAR(&N) VALUE(%SCAN('a' 'abc' 'x'))");
+        assertTrue(Compiler.compileTexts(program("ADDTRGEVT TRG(LOW) EVENT(*ITMBELOW) ITEM(IRON_INGOT) VALUE(500) PGM(A/B)")).ok());
+    }
+
+    @Test
+    void controlVariablesAreInt() {
+        expect("ELC0103", 2, "DCL VAR(&D) TYPE(*DEC)", "DOFOR VAR(&D) FROM(1) TO(3)", "ENDDO");
+        expect("ELC0103", 2, "DCL VAR(&D) TYPE(*DEC)", "CALLSUBR SUBR(S) RTNVAL(&D)", "RETURN", "SUBR SUBR(S)", "ENDSUBR");
+        expect("ELC0004", 2, "DCL VAR(&I) TYPE(*INT)", "DOFOR VAR(&I) FROM(1) TO(3) BY(0)", "ENDDO");
+    }
+
+    @Test
+    void placement() {
+        // Only subroutines after the first SUBR.
+        expect("ELC0001", 4, "CALLSUBR SUBR(S)", "SUBR SUBR(S)", "ENDSUBR", "RETURN");
+        // OTHERWISE once, last.
+        expect("ELC0001", 3, "SELECT", "OTHERWISE CMD(RETURN)", "WHEN COND(*TRUE) THEN(RETURN)", "ENDSELECT");
+        expect("ELC0001", 3, "SELECT", "OTHERWISE CMD(RETURN)", "OTHERWISE CMD(RETURN)", "ENDSELECT");
+        // Two labels alone on their lines both name the next statement.
+        assertTrue(Compiler.compileTexts(program("GOTO CMDLBL(A)", "A:", "B:", "RETURN", "GOTO CMDLBL(B)")).ok());
+    }
+
+    @Test
     void truncatedIsOnlyAWarning() {
         Compiler.Result result = Compiler.compileTexts(program("DCL VAR(&S) TYPE(*CHAR) LEN(3) VALUE('abcdef')"));
         assertEquals("ELC0008", result.diagnostics().getFirst().message().id());

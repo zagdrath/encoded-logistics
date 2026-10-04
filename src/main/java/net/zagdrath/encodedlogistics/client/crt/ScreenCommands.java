@@ -95,10 +95,13 @@ final class ScreenCommands {
     private static void act(CrtTerminal screen, Stmt statement) {
         switch (statement.name()) {
             case "GO" -> {
-                if (value(statement, "MENU", "MAIN").equals("HELP")) {
+                String menu = value(statement, "MENU", "MAIN");
+                if (menu.equals("HELP")) {
                     screen.help();
-                } else {
+                } else if (menu.equals("MAIN")) {
                     screen.home();
+                } else {
+                    screen.message(CrtPanel.tr("crt.encodedlogistics.msg.no_menu", menu));
                 }
             }
             default -> screen.onClose();

@@ -5,8 +5,10 @@
 
 package net.zagdrath.encodedlogistics.elcl.exec;
 
+import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
 import net.zagdrath.encodedlogistics.elcl.job.Triggers;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
+import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.elcl.sync.FolderSync;
 
@@ -24,6 +26,7 @@ public final class ElclSetup {
         RedstoneCommands.bind();
         OsCommands.bind();
         ModCommands.bind();
+        ParamDef.listLimit(ElclConfig::maxListSize);
         ElclEvents.listen(Triggers::fired);
         if (ElclServices.libraries() instanceof StoredLibraryService libraries) {
             libraries.setListener(new FolderSync());

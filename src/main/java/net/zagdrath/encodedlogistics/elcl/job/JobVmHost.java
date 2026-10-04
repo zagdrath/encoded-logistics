@@ -26,7 +26,11 @@ import net.zagdrath.encodedlogistics.rack.RackPermission;
 // waits (Waits), item names, the run's context and authority, and its messages - the job log, the run's output, and
 // the user's message queue when its program ends abnormally.
 public final class JobVmHost implements VmHost {
+    private record Escape(String program, ElclMessage message) {}
+
     private final JobManager.Run run;
+    // The last two programs ended by an escape (newest last), so a batch job's QCMD can name the program it called.
+    private @Nullable Escape last, before;
 
     public JobVmHost(JobManager.Run run) {
         this.run = run;
@@ -95,12 +99,21 @@ public final class JobVmHost implements VmHost {
 
     @Override
     public void escaped(String program, ElclMessage message) {
+        before = last;
+        last = new Escape(program, message);
         ElclServices.jobs().logMessage(run.system, run.job, message);
     }
 
+    // To the user's message queue, from the program it ended. A batch job's command runs as QSYS/QCMD: when that's a
+    // CALL whose program failed (ELC0013), the message is that program's own.
     @Override
     public void failed(ElclMessage message) {
-        ElclServices.messages().send(run.system, run.program, run.user, message.id(), message.severity(), message.text());
+        Escape from = last != null ? last : new Escape(run.program, message);
+        if (from.program().equals(StoredJobService.QCMD) && message.id().equals("ELC0013") && before != null) {
+            from = before;
+        }
+        ElclMessage sent = from.message();
+        ElclServices.messages().send(run.system, from.program(), run.user, sent.id(), sent.severity(), sent.text());
     }
 
     @Override

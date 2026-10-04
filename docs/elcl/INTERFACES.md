@@ -69,7 +69,7 @@ Tested by `gametest/BatchJobGameTests` with `FakeHost`: `batch_queue_and_hosts` 
 | Method | Meaning |
 |---|---|
 | `String label()` | Its volume label, shown in the completion message. |
-| `long capacity()` | Bytes of source it holds. Use `ElclConfig.disketteBytes()` (default 65,536, OS.md 4's 64 KB). |
+| `long capacity()` | Bytes of source it holds. By default `ElclConfig.disketteBytes()` (65,536 unless configured, OS.md 4's 64 KB). |
 | `List<LibraryImage> libraries()` | The libraries saved on it. |
 | `void write(LibraryImage)` | Saves a library, replacing one of the same name. SAVLIB calls it only once the image fits (ELC1311 otherwise). |
 

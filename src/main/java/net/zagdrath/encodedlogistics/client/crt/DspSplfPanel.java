@@ -71,6 +71,13 @@ final class DspSplfPanel extends CrtPanel {
         }
     }
 
+    // F5: the file again.
+    @Override
+    void refresh() {
+        loaded = false;
+        shown();
+    }
+
     @Override
     void receive(CrtResponsePayload response) {
         if (answers(response, "splf")) {
@@ -109,7 +116,8 @@ final class DspSplfPanel extends CrtPanel {
     @Override
     boolean functionKey(int f) {
         if (f == 19 || f == 20) {
-            offset = Math.max(0, offset + (f == 19 ? -SHIFT : SHIFT));
+            int widest = lines.stream().mapToInt(String::length).max().orElse(0);
+            offset = Math.max(0, Math.min(Math.max(0, widest - WIDTH), offset + (f == 19 ? -SHIFT : SHIFT)));
             return true;
         }
         return false;

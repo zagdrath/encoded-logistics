@@ -37,7 +37,8 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // Trigger events (COMMANDS.md 9): a trigger runs its program as a batch job, as the user who added it, with &EVENT and
 // &DATA, whenever its event happens on a loaded network - edge-triggered (once per crossing) and debounced (at least a
-// second between two firings of one trigger; a crossing in that second fires when it's over, if it still holds).
+// second between two firings of one trigger; a crossing in that second fires when it's over, if it still holds, and
+// an event in it fires then once, with the last &DATA).
 //  *ITMBELOW / *ITMABOVE  ITEM's count (hot and cold) drops below / rises above VALUE    &DATA: item ID and count
 //  *STGFULL               storage use reaches VALUE % (100 without one)                 &DATA: % used
 //  *PWRUPS / *PWRRESTORED the network goes onto UPS power / back off it                 &DATA: UPS charge %
@@ -73,6 +74,11 @@ public final class Triggers {
             for (JobData.Trigger trigger : List.copyOf(data.triggers.values())) {
                 String event = trigger.trigger.event();
                 devices |= event.startsWith("*DEV");
+                if (trigger.pending != null && (!trigger.trigger.status().equals("*ACTIVE") || fire(system, trigger, trigger.pending))) {
+                    // Fired now its debounce is over (or held meanwhile: dropped).
+                    trigger.pending = null;
+                    entry.getValue().changed();
+                }
                 Condition condition = condition(system, trigger.trigger);
                 if (condition == null) {
                     continue;
@@ -187,8 +193,10 @@ public final class Triggers {
         }
         ElclSystem system = new ElclSystem(server, event.network());
         for (JobData.Trigger trigger : List.copyOf(data.jobs.triggers.values())) {
-            if (matches(trigger.trigger, event)) {
-                fire(system, trigger, event.data());
+            if (matches(trigger.trigger, event) && !fire(system, trigger, event.data()) && trigger.trigger.status().equals("*ACTIVE")) {
+                // Within the debounce: it fires when that's over.
+                trigger.pending = event.data();
+                data.changed();
             }
         }
     }

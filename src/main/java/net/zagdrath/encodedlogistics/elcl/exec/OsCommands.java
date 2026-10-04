@@ -164,8 +164,9 @@ public final class OsCommands {
         CommandRegistry.bind("SAVLIB", call -> {
             ElclSystem system = system(call);
             String lib = call.text("LIB").toUpperCase(Locale.ROOT);
-            LibraryImage image = libraries.image(system, lib);
+            // The device first, as RSTLIB: without the hardware, ELC1301 whatever the library.
             DisketteDevice device = Diskettes.find(system, call.text("DEV"));
+            LibraryImage image = libraries.image(system, lib);
             Diskette diskette = device.mounted().getFirst();
             long free = diskette.capacity() - diskette.used(lib);
             if (image.bytes() > free) {

@@ -134,10 +134,10 @@ final class BuiltinCommands {
         add(CommandDefinition.of("ADDLSTE", "Add List Element").context(PROGRAM).positional(2)
                 .p(rtn("LIST", "List", VarType.LIST).req())
                 .p(p("VALUE", "Value", Kind.CHAR).req())
-                .p(p("POS", "Position", Kind.INT).sv("*END").dft("*END").range(1, 4_096)));
+                .p(p("POS", "Position", Kind.INT).sv("*END").dft("*END").listPosition()));
         add(CommandDefinition.of("RMVLSTE", "Remove List Element").context(PROGRAM).positional(2)
                 .p(rtn("LIST", "List", VarType.LIST).req())
-                .p(p("POS", "Position", Kind.INT).req().range(1, 4_096)));
+                .p(p("POS", "Position", Kind.INT).req().listPosition()));
         add(CommandDefinition.of("CLRLST", "Clear List").context(PROGRAM).positional(1)
                 .p(rtn("LIST", "List", VarType.LIST).req()));
 

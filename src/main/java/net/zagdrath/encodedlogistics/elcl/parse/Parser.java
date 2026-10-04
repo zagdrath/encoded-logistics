@@ -65,7 +65,8 @@ public final class Parser {
     public static Result parse(List<String> lines) {
         Parser parser = new Parser(Lexer.tokens(lines));
         List<Stmt> statements = new ArrayList<>();
-        String label = null;
+        // Labels alone on their lines, waiting for the statement they belong to.
+        List<String> labels = new ArrayList<>();
         int labelLine = 0;
         while (parser.peek().kind() != Kind.EOF) {
             if (parser.peek().kind() == Kind.EOL) {
@@ -76,16 +77,22 @@ public final class Parser {
             if (parser.labelOnly()) {
                 Token name = parser.next();
                 parser.next();
-                label = name.text();
-                labelLine = name.line();
+                if (labels.isEmpty()) {
+                    labelLine = name.line();
+                }
+                labels.add(name.text());
                 parser.checkLabel(name);
                 continue;
             }
             Stmt statement = parser.statement();
-            if (label != null) {
-                statement = new Stmt(statement.label() != null ? statement.label() : label, statement.name(), statement.params(), labelLine,
-                        statement.lastLine(), statement.definition(), statement.broken());
-                label = null;
+            if (!labels.isEmpty()) {
+                // The first is its label (unless it has its own); the rest are aliases.
+                if (statement.label() != null) {
+                    labels.addFirst(statement.label());
+                }
+                statement = new Stmt(labels.getFirst(), statement.name(), statement.params(), labelLine, statement.lastLine(), statement.definition(),
+                        statement.broken(), List.copyOf(labels.subList(1, labels.size())));
+                labels.clear();
             }
             statements.add(statement);
         }

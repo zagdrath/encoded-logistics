@@ -122,6 +122,10 @@ final class WrkJobPanel extends CrtPanel {
     @Override
     boolean option(String text) {
         if (info == null) {
+            if (text.matches("\\d+")) {
+                screen.message(tr("crt.encodedlogistics.msg.loading"));
+                return true;
+            }
             return false;
         }
         String number = cell(info, 0);

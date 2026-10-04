@@ -5,9 +5,7 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
@@ -20,11 +18,10 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // A Terminal OS "Work with" screen (screens handoff C.3, screens 3, 4, 8, 10-14): its rows from a screen query (a
 // line of cells each, the first cell its key), " Type options, press Enter." on row 3, the option legend on row 4 at
 // column 3, the column headings bright on row 6, the list from row 7. The options chosen are done one after another:
-// one that opens a window or a screen waits for it to finish (next()); 4=Delete-style ones are confirmed together.
+// one that opens a window or a screen waits for it to finish (next()), and every step waits for the answers to the
+// commands sent before it (however many a step ran); 4=Delete-style ones are confirmed together.
 // Commands it runs come back as their message, and the list refreshes.
 abstract class OsListPanel extends ListPanel<TerminalLine> {
-    private final Deque<Runnable> pending = new ArrayDeque<>();
-
     OsListPanel(CrtTerminal screen) {
         super(screen);
     }
@@ -90,24 +87,6 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
     void drawTop(CrtGrid grid) {}
 
     // --- Doing the options ---
-
-    // Queues what an option does; the queue runs as each step finishes.
-    void then(Runnable step) {
-        pending.add(step);
-    }
-
-    // The next queued step (after a window or a screen it opened is done with).
-    void next() {
-        Runnable step = pending.poll();
-        if (step != null) {
-            step.run();
-        }
-    }
-
-    // A window for one option: the queue goes on when it closes, either way.
-    void window(CrtWindow window) {
-        screen.openWindow(new Chained(window));
-    }
 
     // The confirmation for every row given the deleting option: Enter deletes each (F11, where the screen has it,
     // its other way: ENDJOB *IMMED).
@@ -177,46 +156,5 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
         confirmAll(deleting);
         next();
         return true;
-    }
-
-    // A window that carries the queue on when it's done.
-    private final class Chained extends CrtWindow {
-        private final CrtWindow inner;
-
-        Chained(CrtWindow inner) {
-            super(inner.screen, inner.row, inner.col, inner.height, inner.width, inner.title);
-            this.inner = inner;
-            fields.addAll(inner.fields);
-        }
-
-        @Override
-        void draw(CrtGrid grid) {
-            inner.draw(grid);
-        }
-
-        @Override
-        void page(int direction) {
-            inner.page(direction);
-        }
-
-        @Override
-        boolean enter() {
-            boolean done = inner.enter();
-            if (screen.window() != this) {
-                next();
-            }
-            return done;
-        }
-
-        @Override
-        boolean functionKey(int f) {
-            return inner.functionKey(f);
-        }
-
-        @Override
-        void cancelled() {
-            inner.cancelled();
-            next();
-        }
     }
 }

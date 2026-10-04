@@ -38,7 +38,7 @@ abstract class CrtPanel {
     }
 
     String keys() {
-        return "F3=Exit   F5=Refresh   F9=Command Entry   F12=Cancel";
+        return tr("crt.encodedlogistics.fkeys.default");
     }
 
     // Shown (pushed, or come back to): fetch what it shows.

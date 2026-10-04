@@ -26,8 +26,13 @@ class FormWindow extends CrtWindow {
 
     // A labelled field on the window's next row (under its text).
     FormWindow field(String label, int length, String value, String hint) {
+        return field(label, length, length, value, hint);
+    }
+
+    // A field showing `length` of up to `capacity` characters (it scrolls).
+    FormWindow field(String label, int length, int capacity, String value, String hint) {
         int fieldRow = row + 5 + rows.size();
-        CrtField field = new CrtField(fieldRow, col + 32, length, value);
+        CrtField field = new CrtField(fieldRow, col + 32, length, capacity, value);
         rows.add(new Row(label, field, hint));
         fields.add(field);
         return this;

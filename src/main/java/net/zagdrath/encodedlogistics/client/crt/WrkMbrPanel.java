@@ -126,7 +126,9 @@ final class WrkMbrPanel extends OsListPanel {
     @Override
     boolean functionKey(int f) {
         if (f == 6) {
-            screen.prompter("CRTMBR MBR(" + library + "/)", false, screen::runCommand);
+            if (screen.prompter("CRTMBR", false, screen::runCommand) && screen.current() instanceof PrompterPanel prompter) {
+                prompter.preset("MBR", library + "/");
+            }
             return true;
         }
         return false;
@@ -178,6 +180,10 @@ final class WrkMbrPanel extends OsListPanel {
     @Override
     boolean process(List<Option<TerminalLine>> chosen) {
         if (readOnly() && chosen.stream().anyMatch(option -> option.option().trim().equals("4"))) {
+            List<Option<TerminalLine>> rest = chosen.stream().filter(option -> !option.option().trim().equals("4")).toList();
+            if (!rest.isEmpty()) {
+                super.process(rest);
+            }
             readOnlyRefused();
             return true;
         }

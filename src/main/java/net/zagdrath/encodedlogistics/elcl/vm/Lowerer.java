@@ -95,15 +95,25 @@ final class Lowerer {
             skip.target = code.size();
         }
         statementsUntil(Set.of());
+        int main = code.size();
         emit(Op.RETURN, peek() != null ? peek().firstLine() : 0);
+        // Only subroutines follow the main body (the compiler reports anything else).
         while (at("SUBR")) {
             Stmt subr = statements.get(index++);
             Expr name = subr.value("SUBR");
+            label(subr, code.size());
             subroutines.put(name != null ? name.toString() : "", code.size());
             statementsUntil(Set.of("ENDSUBR"));
             Stmt end = at("ENDSUBR") ? statements.get(index++) : subr;
+            if (end != subr) {
+                label(end, code.size());
+            }
             Insn ret = emit(Op.END_SUBR, end.firstLine());
             ret.expr = end.is("ENDSUBR") ? end.value("RTNVAL") : null;
+        }
+        // A label on ENDPGM: the main body's end.
+        if (at("ENDPGM")) {
+            label(statements.get(index), main);
         }
         for (Insn jump : gotos) {
             jump.target = labels.getOrDefault(jump.var, code.size() - 1);
@@ -121,23 +131,26 @@ final class Lowerer {
         }
     }
 
+    // A statement's labels are at `at`.
+    private void label(Stmt s, int at) {
+        for (String name : s.labels()) {
+            labels.put(name, at);
+        }
+    }
+
     // ENDDO / ENDFOR / ENDSELECT: taken (a label on it marks where it is).
     private void closer() {
         Stmt s = peek();
         if (s != null && (s.is("ENDDO") || s.is("ENDFOR") || s.is("ENDSELECT"))) {
             index++;
-            if (s.label() != null) {
-                labels.put(s.label(), code.size());
-            }
+            label(s, code.size());
         }
     }
 
     private void statement() {
         Stmt s = statements.get(index++);
         int start = code.size();
-        if (s.label() != null) {
-            labels.put(s.label(), start);
-        }
+        label(s, start);
         switch (s.name()) {
             case "IF" -> ifStatement(s);
             case "DO" -> {
@@ -218,9 +231,7 @@ final class Lowerer {
             Insn skip = emit(Op.JUMP, s.firstLine());
             test.target = code.size();
             Stmt otherwise = statements.get(index++);
-            if (otherwise.label() != null) {
-                labels.put(otherwise.label(), code.size());
-            }
+            label(otherwise, code.size());
             nested(otherwise.nested("CMD"));
             skip.target = code.size();
         } else {
@@ -300,6 +311,7 @@ final class Lowerer {
         List<Insn> ends = new ArrayList<>();
         while (at("WHEN") || at("OTHERWISE")) {
             Stmt branch = statements.get(index++);
+            label(branch, code.size());
             if (branch.is("WHEN")) {
                 Insn test = emit(Op.JUMP_IF_NOT, branch.firstLine());
                 test.expr = branch.value("COND");

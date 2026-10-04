@@ -68,12 +68,14 @@ public final class JobData {
     }
 
     // A trigger: what JobService shows, who made it, whether its condition has been looked at yet (primed) and held last
-    // time (edge triggering), and when it last fired (epoch ms, the debounce).
+    // time (edge triggering), when it last fired (epoch ms, the debounce) and the &DATA of an event that came during
+    // the debounce, to fire with once it's over.
     public static final class Trigger {
         public JobService.Trigger trigger;
         public @Nullable UUID player;
         public boolean primed, wasTrue;
         public long lastFired;
+        public @Nullable String pending;
 
         public Trigger(JobService.Trigger trigger, @Nullable UUID player) {
             this.trigger = trigger;
@@ -210,6 +212,9 @@ public final class JobData {
             j.putBoolean("primed", t.primed);
             j.putBoolean("was_true", t.wasTrue);
             j.putLong("last_fired", t.lastFired);
+            if (t.pending != null) {
+                j.putString("pending", t.pending);
+            }
             uuid(j, t.player);
             triggers.add(j);
         }
@@ -260,6 +265,7 @@ public final class JobData {
             t.primed = j.getBooleanOr("primed", true);
             t.wasTrue = j.getBooleanOr("was_true", false);
             t.lastFired = j.getLongOr("last_fired", 0);
+            t.pending = j.getString("pending").orElse(null);
             data.triggers.put(trigger.name(), t);
         }
         return data;

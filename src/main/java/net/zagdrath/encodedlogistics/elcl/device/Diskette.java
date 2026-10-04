@@ -9,12 +9,17 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-// An 8" Diskette in a drive: its label, how much source it holds (OS.md 4 proposes 64 KB: disketteBytes) and the
-// libraries saved on it. The Midrange line keeps these in the diskette item's data (LibraryImage.save()).
+import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
+
+// An 8" Diskette in a drive: its label, how much source it holds (OS.md 4 proposes 64 KB: config disketteBytes, unless
+// the diskette says otherwise) and the libraries saved on it. The Midrange line keeps these in the diskette item's data
+// (LibraryImage.save()).
 public interface Diskette {
     String label();
 
-    long capacity();
+    default long capacity() {
+        return ElclConfig.disketteBytes();
+    }
 
     List<LibraryImage> libraries();
 
