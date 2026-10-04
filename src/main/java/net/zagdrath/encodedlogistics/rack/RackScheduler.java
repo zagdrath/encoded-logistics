@@ -92,7 +92,7 @@ public final class RackScheduler implements JobHost {
         }
         MinecraftServer server = level.getServer();
         NetworkRef served = network;
-        if (runner.tick(level, rack.getBlockPos(), threads, () -> providers(server), () -> ControllerStructures.storageOf(server, served),
+        if (runner.tick(level, rack.getBlockPos(), threads, () -> providers(server), () -> ControllerStructures.sharedStorageOf(server, served, true),
                 () -> ControllerStructures.jobFinished(server, served))) {
             rack.setChanged();
         }

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.LongConsumer;
 
+import net.minecraft.network.chat.Component;
+
 // A network's storage as its parts see it: every drive in its online Drive Bays (and NAS / SAN devices) and every
 // inventory its online Inventory Taps face - the hot tier. Items go in by priority (highest first; drives before taps
 // on a tie), and within a priority to the places already holding that item first; they come out lowest priority first
@@ -54,10 +56,12 @@ public final class NetworkStorage {
         this.moved = moved;
         this.cold = cold;
         this.claim = claim;
+        // Shared storage (another segment's, through a Share route) comes after all of the network's own, both ways.
         fillOrder = new ArrayList<>(views);
-        fillOrder.sort(Comparator.comparingInt(StorageView::priority).reversed().thenComparing(StorageView::isTap));
+        fillOrder.sort(Comparator.comparing(StorageView::isShared).thenComparing(Comparator.comparingInt(StorageView::priority).reversed())
+                .thenComparing(StorageView::isTap));
         emptyOrder = new ArrayList<>(views);
-        emptyOrder.sort(Comparator.comparingInt(StorageView::priority).thenComparing(view -> !view.isTap()));
+        emptyOrder.sort(Comparator.comparing(StorageView::isShared).thenComparingInt(StorageView::priority).thenComparing(view -> !view.isTap()));
     }
 
     // Everything stored hot, added up.
@@ -75,6 +79,22 @@ public final class NetworkStorage {
             count += view.count(key);
         }
         return count;
+    }
+
+    // How much of each item is shared in (SharedView), and from where (the first place sharing it).
+    public record Shared(long count, Component from) {}
+
+    public Map<ItemKey, Shared> shared() {
+        Map<ItemKey, Shared> all = new LinkedHashMap<>();
+        for (StorageView view : fillOrder) {
+            if (!view.isShared()) {
+                continue;
+            }
+            Map<ItemKey, Long> mine = new LinkedHashMap<>();
+            view.listInto(mine);
+            mine.forEach((key, count) -> all.merge(key, new Shared(count, view.sharedFrom()), (a, b) -> new Shared(a.count() + b.count(), a.from())));
+        }
+        return all;
     }
 
     // --- The cold tier ---
@@ -111,10 +131,12 @@ public final class NetworkStorage {
         int start = 0;
         while (start < fillOrder.size() && left > 0) {
             int priority = fillOrder.get(start).priority(), end = start;
-            while (end < fillOrder.size() && fillOrder.get(end).priority() == priority) {
+            boolean shared = fillOrder.get(start).isShared();
+            while (end < fillOrder.size() && fillOrder.get(end).priority() == priority && fillOrder.get(end).isShared() == shared) {
                 end++;
             }
-            // Within a priority: where it already is, then anywhere else (each place once, so a simulation adds up).
+            // Within a priority (shared storage on its own, after all of the network's): where it already is, then
+            // anywhere else (each place once, so a simulation adds up).
             boolean[] holds = new boolean[end - start];
             for (int i = start; i < end; i++) {
                 holds[i - start] = fillOrder.get(i).count(key) > 0;

@@ -66,7 +66,7 @@ public final class CraftRequests {
     }
 
     public static CraftPlanner.@Nullable Plan plan(MinecraftServer server, @Nullable NetworkRef network, ItemKey target, long amount) {
-        NetworkStorage storage = network != null ? ControllerStructures.storageOf(server, network) : null;
+        NetworkStorage storage = network != null ? ControllerStructures.sharedStorageOf(server, network, true) : null;
         if (storage == null) {
             return null;
         }
@@ -112,7 +112,7 @@ public final class CraftRequests {
     // Takes the plan's hot items out of storage, starts the recalls of its cold ones, and gives the job to the
     // scheduler; null (and nothing taken) when storage no longer has them all.
     public static @Nullable CraftingJob start(MinecraftServer server, @Nullable NetworkRef network, CraftPlanner.Plan plan, JobHost scheduler) {
-        NetworkStorage storage = network != null ? ControllerStructures.storageOf(server, network) : null;
+        NetworkStorage storage = network != null ? ControllerStructures.sharedStorageOf(server, network, true) : null;
         if (storage == null || !plan.complete()) {
             return null;
         }

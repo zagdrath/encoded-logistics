@@ -86,7 +86,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // Client: the network's items and craftables as last received; the cold ones' details; the player's recalls.
     private final Map<ItemKey, Long> items = new HashMap<>();
-    private final Map<ItemKey, TerminalItemsPayload.Entry> cold = new HashMap<>();
+    private final Map<ItemKey, TerminalItemsPayload.Entry> cold = new HashMap<>(), shared = new HashMap<>();
     private final Map<ItemKey, Integer> recalls = new HashMap<>();
     private final Set<ItemKey> craftables = new LinkedHashSet<>();
     private boolean online, failover;
@@ -150,7 +150,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     protected @Nullable NetworkStorage storage() {
         NetworkRef network = network();
         return network != null && player.level() instanceof ServerLevel level && allowed(RackPermission.VIEW)
-                ? ControllerStructures.storageOf(level.getServer(), network) : null;
+                ? ControllerStructures.sharedStorageOf(level.getServer(), network, false) : null;
     }
 
     // The storage, for putting items in (INSERT) or taking them out (EXTRACT), if the Firewall allows it.
@@ -218,6 +218,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         hot.forEach((key, count) -> entries.put(key, new TerminalItemsPayload.Entry(key, count)));
         storage.coldList().forEach((key, count) -> entries.put(key, new TerminalItemsPayload.Entry(key, hot.getOrDefault(key, 0L) + count, count,
                 storage.cold().eta(key), storage.cold().hotFull(key))));
+        storage.shared().forEach((key, shared) -> entries.computeIfPresent(key, (k, entry) -> entry.withShared(shared.count(), shared.from().getString())));
         return entries;
     }
 
@@ -401,6 +402,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         if (full) {
             items.clear();
             cold.clear();
+            shared.clear();
         }
         for (TerminalItemsPayload.Entry entry : entries) {
             if (entry.count() <= 0) {
@@ -413,6 +415,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
             } else {
                 cold.remove(entry.key());
             }
+            if (entry.shared() > 0) {
+                shared.put(entry.key(), entry);
+            } else {
+                shared.remove(entry.key());
+            }
         }
         this.recalls.clear();
         recalls.forEach(recall -> this.recalls.put(recall.key(), recall.percent()));
@@ -422,6 +429,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // An item's cold details (on tape: how many, recall time, whether hot storage was full), or null.
     public TerminalItemsPayload.@Nullable Entry cold(ItemKey key) {
         return cold.get(key);
+    }
+
+    // How many of an item are shared in from another segment, and from where, or null.
+    public TerminalItemsPayload.@Nullable Entry shared(ItemKey key) {
+        return shared.get(key);
     }
 
     // How far along the player's recall of an item is (0-100), or -1 when they aren't waiting on one.

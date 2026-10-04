@@ -131,6 +131,13 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("job_returned_through_gateway", CraftingCompletionGameTests::returnedThroughGateway);
         TESTS.put("job_cancel_while_waiting", CraftingCompletionGameTests::cancelWhileWaiting);
         TESTS.put("job_survives_reload", CraftingCompletionGameTests::survivesReload);
+        TESTS.put("share_read", SharingGameTests::shareRead);
+        TESTS.put("share_read_write", SharingGameTests::shareReadWrite);
+        TESTS.put("share_crafting", SharingGameTests::shareCrafting);
+        TESTS.put("share_bidirectional", SharingGameTests::shareBidirectional);
+        TESTS.put("share_not_transitive", SharingGameTests::shareNotTransitive);
+        TESTS.put("share_stops_with_switch", SharingGameTests::shareStopsWithSwitch);
+        TESTS.put("share_old_routes_move", SharingGameTests::oldRoutesMove);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

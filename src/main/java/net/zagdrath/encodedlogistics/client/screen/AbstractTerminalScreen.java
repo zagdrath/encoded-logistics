@@ -52,7 +52,7 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // little more than its layout and title (AccessTerminalScreen).
 public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> extends AbstractContainerScreen<M> {
     // palette.json
-    private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ERROR = 0xFFFF6B6B, ACCENT = 0xFF00D992;
+    private static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, ERROR = 0xFFFF6B6B, ACCENT = 0xFF00D992, SHARED = 0xFF8FB8F0;
 
     // The search lasts the session, across terminals; the toolbar settings are saved (TerminalSettings).
     private static String lastSearch = "";
@@ -477,6 +477,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 lines.add(Component.literal(String.format(Locale.ROOT, "%,d", entry.getValue())).withColor(TEXT_MUTED));
             }
             coldLines(entry.getKey(), lines);
+            TerminalItemsPayload.Entry shared = menu.shared(entry.getKey());
+            if (shared != null) {
+                lines.add(Component.translatable("tooltip.encodedlogistics.shared.from", shared.sharedFrom(), String.format(Locale.ROOT, "%,d", shared.shared()))
+                        .withColor(SHARED));
+            }
             if (menu.craftables().contains(entry.getKey())) {
                 lines.add(Component.translatable("gui.encodedlogistics.terminal.craft_hint").withColor(ACCENT));
             }

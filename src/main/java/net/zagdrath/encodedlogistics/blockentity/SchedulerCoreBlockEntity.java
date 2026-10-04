@@ -163,7 +163,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         }
         ControllerStructures structures = ControllerStructures.get(serverLevel);
         if (runner.tick(serverLevel, worldPosition, threads(), () -> structures.providersAt(serverLevel, worldPosition),
-                () -> structures.storageAt(serverLevel, worldPosition), () -> ControllerStructures.jobFinished(serverLevel, worldPosition))) {
+                () -> structures.sharedStorageAt(serverLevel, worldPosition, true), () -> ControllerStructures.jobFinished(serverLevel, worldPosition))) {
             setChanged();
         }
         updateActive(false);

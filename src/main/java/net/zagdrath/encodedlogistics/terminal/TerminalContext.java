@@ -24,7 +24,7 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // drawer; null for a desk-less caller), and the player at it. Jobs are known on a network by a 4-digit number.
 public record TerminalContext(MinecraftServer server, @Nullable NetworkRef network, @Nullable TerminalDeskBlockEntity desk, ServerPlayer player) implements ElclContext {
     public @Nullable NetworkStorage storage() {
-        return network != null ? ControllerStructures.storageOf(server, network) : null;
+        return network != null ? ControllerStructures.sharedStorageOf(server, network, false) : null;
     }
 
     // The user commands run as: the player's name, upper case (ZAGDRATH).

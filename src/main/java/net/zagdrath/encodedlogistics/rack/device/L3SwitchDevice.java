@@ -31,11 +31,13 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // own network and the networks beyond Segment Isolators it's linked to): each route moves items from one segment's
 // storage to another's, optionally only one item. Once a second it moves up to l3SwitchRate items, shared between its
 // active routes (each with a port's filter: ItemRouting); QoS rules mark items high, normal or low priority, and each route moves its high-priority items
-// first, then normal, then low.
-public class L3SwitchDevice extends SwitchDevice {
+// first, then normal, then low. A Share route moves nothing: the source segment's items are part of the destination's
+// storage instead, while the switch is online (ItemRouting.ShareSource; QoS has nothing to order there).
+public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSource {
     public static final int MAX_ROUTES = 8, MAX_QOS = 8;
     public static final int ACTION_ADD_ROUTE = 0, ACTION_REMOVE_ROUTE = 1, ACTION_CYCLE_SOURCE = 2, ACTION_CYCLE_DEST = 3, ACTION_SET_FILTER = 4,
-            ACTION_FILTER_OPTION = 7, ACTION_ADD_QOS = 10, ACTION_REMOVE_QOS = 11, ACTION_CYCLE_QOS_LEVEL = 12, ACTION_SET_QOS_FILTER = 13;
+            ACTION_FILTER_OPTION = 7, ACTION_ADD_QOS = 10, ACTION_REMOVE_QOS = 11, ACTION_CYCLE_QOS_LEVEL = 12, ACTION_SET_QOS_FILTER = 13,
+            ACTION_SHARE_OPTION = 14;
     private static final int WINDOW = 5;
 
     // Items matching filter (any item when empty) have this priority level.
@@ -47,7 +49,7 @@ public class L3SwitchDevice extends SwitchDevice {
 
     private final List<ItemRouting.Route> routes = new ArrayList<>();
     private final List<QosRule> qos = new ArrayList<>();
-    private int cursor, activeRoutes, movedIndex;
+    private int cursor, activeRoutes, activeShares, movedIndex;
     private final int[] moved = new int[WINDOW];
 
     public L3SwitchDevice(RackDeviceType type) {
@@ -122,8 +124,15 @@ public class L3SwitchDevice extends SwitchDevice {
 
     private int route(MinecraftServer server) {
         List<ItemRouting.Leg> legs = new ArrayList<>();
+        int shares = 0;
         for (ItemRouting.Route route : routes) {
             NetworkRef source = rack().segmentNetwork(route.source()), dest = rack().segmentNetwork(route.dest());
+            if (route.shares()) {
+                if (source != null && dest != null && !source.equals(dest)) {
+                    shares++;
+                }
+                continue;
+            }
             if (source == null || dest == null || source.equals(dest)) {
                 continue;
             }
@@ -132,8 +141,9 @@ public class L3SwitchDevice extends SwitchDevice {
                 legs.add(new ItemRouting.Leg(route, from, to));
             }
         }
-        if (activeRoutes != legs.size()) {
+        if (activeRoutes != legs.size() || activeShares != shares) {
             activeRoutes = legs.size();
+            activeShares = shares;
             changed(false);
         }
         int total = ItemRouting.move(legs, Config.L3_SWITCH_RATE.getAsInt(), cursor, this::level);
@@ -147,10 +157,21 @@ public class L3SwitchDevice extends SwitchDevice {
         // Lanes, then routes and QoS, then the uplink last.
         RackDeviceInfo.InfoLine uplink = lines.removeLast();
         lines.removeLast();
-        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.l3.routes"), Component.literal(activeRoutes + " / " + routes.size())));
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.l3.routes"), ItemRouting.split(activeRoutes, activeShares)));
         lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.l3.qos"), Component.literal(Integer.toString(qos.size()))));
         lines.add(uplink);
         return lines;
+    }
+
+    // --- Sharing ---
+
+    @Override
+    public List<ItemRouting.ShareLink> shareLinks(MinecraftServer server) {
+        RackBlockEntity rack = rack();
+        if (rack == null || !isOnline()) {
+            return List.of();
+        }
+        return ItemRouting.shareLinks(routes, rack::segmentNetwork, rack::segmentName);
     }
 
     // --- Panel ---
@@ -191,6 +212,11 @@ public class L3SwitchDevice extends SwitchDevice {
             }
             case ACTION_FILTER_OPTION -> {
                 if (!ItemRouting.toggleOption(routes, value)) {
+                    return;
+                }
+            }
+            case ACTION_SHARE_OPTION -> {
+                if (!ItemRouting.toggleShare(routes, value)) {
                     return;
                 }
             }

@@ -36,12 +36,13 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // any block of that network, then use it on the Router's unit in an open rack). Each route moves items from one
 // network's storage to another's, the items its filter passes (ItemRouting). Once a second it moves up to its rate
 // (routerBaseRate items/s, routerRatePerTransceiver more for each Optical Transceiver in its three cages), shared
-// between its active routes in turn. (Routing between the segments of one installation is the L3 Switch's.)
-public class RouterDevice extends RackDevice {
+// between its active routes in turn. (Routing between the segments of one installation is the L3 Switch's.) A Share route
+// moves nothing: the source network's items are part of the destination's storage instead (ItemRouting.ShareSource).
+public class RouterDevice extends RackDevice implements ItemRouting.ShareSource {
     public static final int MAX_NETWORKS = 6, MAX_ROUTES = 6, CAGES = 3;
     // ACTION_SET_FILTER: value is route * PartFilter.SIZE + entry; ACTION_FILTER_OPTION: route * ItemRouting.OPTIONS + option.
     public static final int ACTION_ADD_ROUTE = 0, ACTION_REMOVE_ROUTE = 1, ACTION_CYCLE_SOURCE = 2, ACTION_CYCLE_DEST = 3, ACTION_SET_FILTER = 4,
-            ACTION_RENAME = 5, ACTION_UNLINK = 6, ACTION_FILTER_OPTION = 7;
+            ACTION_RENAME = 5, ACTION_UNLINK = 6, ACTION_FILTER_OPTION = 7, ACTION_SHARE_OPTION = 14;
     private static final int WINDOW = 5;
 
     // A network linked to the Router, found through a block on it (its controller, or anything else on it).
@@ -54,7 +55,7 @@ public class RouterDevice extends RackDevice {
     // Items moved in each of the last WINDOW seconds.
     private final int[] moved = new int[WINDOW];
     private int movedIndex;
-    private int activeRoutes;
+    private int activeRoutes, activeShares;
     // Client: transceivers fitted, as synced.
     private int shownTransceivers;
 
@@ -193,9 +194,14 @@ public class RouterDevice extends RackDevice {
     // One second's work: up to rate() items, shared between the active routes in turn. Returns how many moved.
     private int route(MinecraftServer server) {
         List<ItemRouting.Leg> legs = new ArrayList<>();
+        int shares = 0;
         for (ItemRouting.Route route : routes) {
             NetworkRef source = network(server, route.source()), dest = network(server, route.dest());
             if (source == null || dest == null || source.equals(dest)) {
+                continue;
+            }
+            if (route.shares()) {
+                shares++;
                 continue;
             }
             NetworkStorage from = ControllerStructures.storageOf(server, source), to = ControllerStructures.storageOf(server, dest);
@@ -203,8 +209,9 @@ public class RouterDevice extends RackDevice {
                 legs.add(new ItemRouting.Leg(route, from, to));
             }
         }
-        if (activeRoutes != legs.size()) {
+        if (activeRoutes != legs.size() || activeShares != shares) {
             activeRoutes = legs.size();
+            activeShares = shares;
             changed(false);
         }
         int total = ItemRouting.move(legs, rate(), cursor, key -> ItemRouting.HIGH);
@@ -216,11 +223,17 @@ public class RouterDevice extends RackDevice {
     protected List<RackDeviceInfo.InfoLine> lines(ServerPlayer viewer) {
         return List.of(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.router.networks"),
                         Component.literal(Integer.toString(networks.size()))),
-                new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.router.routes"),
-                        Component.literal(activeRoutes + " / " + routes.size())),
+                new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.router.routes"), ItemRouting.split(activeRoutes, activeShares)),
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.router.throughput"),
                         Component.translatable("gui.encodedlogistics.router.throughput", String.format(Locale.ROOT, "%.1f", throughput())),
                         new RackDeviceInfo.Bar((float) Math.min(1, throughput() / Math.max(1, rate())), RackDeviceInfo.BarStyle.NORMAL)));
+    }
+
+    // --- Sharing ---
+
+    @Override
+    public List<ItemRouting.ShareLink> shareLinks(MinecraftServer server) {
+        return rack() != null && isOnline() ? ItemRouting.shareLinks(routes, index -> network(server, index), this::endpointName) : List.of();
     }
 
     // --- Panel ---
@@ -255,6 +268,11 @@ public class RouterDevice extends RackDevice {
             }
             case ACTION_FILTER_OPTION -> {
                 if (!ItemRouting.toggleOption(routes, value)) {
+                    return;
+                }
+            }
+            case ACTION_SHARE_OPTION -> {
+                if (!ItemRouting.toggleShare(routes, value)) {
                     return;
                 }
             }

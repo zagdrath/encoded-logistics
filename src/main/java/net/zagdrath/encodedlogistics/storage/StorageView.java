@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.network.chat.Component;
+
 // One piece of a network's storage: a Storage Drive (in a Drive Bay, NAS or SAN), or the inventory an Inventory Tap
 // faces. Higher priority is filled first and emptied last; on a tie drives fill before taps. Drives are the hot tier
 // archiving to tape works on (driveId, lastAccess, stats).
@@ -41,6 +43,16 @@ public interface StorageView {
 
     // A drive's fill, or null.
     default @Nullable DriveStats stats() {
+        return null;
+    }
+
+    // Another segment's storage seen through a Share route (SharedView): after the network's own, and named for where
+    // it's from.
+    default boolean isShared() {
+        return false;
+    }
+
+    default @Nullable Component sharedFrom() {
         return null;
     }
 }

@@ -71,6 +71,7 @@ import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.network.RackNode;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
+import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.TapeRecalls;
@@ -83,6 +84,7 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.DriveView;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.SharedView;
 import net.zagdrath.encodedlogistics.storage.StorageView;
 
 // Every Network Controller structure in a level, by id, saved with the level. Each controller block entity holds its
@@ -865,10 +867,67 @@ public class ControllerStructures extends SavedData {
     }
 
     private static NetworkStorage storage(MinecraftServer server, Owner owner) {
+        return storage(server, owner, null);
+    }
+
+    // crafting: null for the network's own storage alone; false with everything Share routes share into it; true with
+    // only the shares that allow crafting.
+    private static NetworkStorage storage(MinecraftServer server, Owner owner, @Nullable Boolean crafting) {
         List<StorageView> views = new ArrayList<>();
         DriveStorage drives = DriveStorage.get(server);
         // A copied drive (creative pick-block) shares its id, and so its contents, with the original: each id counts once.
+        // So does a drive reached both here and through a share.
         Set<UUID> seen = new HashSet<>();
+        List<TapeLibraryDevice> libraries = new ArrayList<>();
+        views(server, owner, seen, views, libraries);
+        if (crafting != null) {
+            // Only the source's own storage, not what's shared into it: shares don't chain.
+            for (ItemRouting.ShareLink link : shareLinks(server)) {
+                Owner source = owner(server, link.from());
+                if (!link.into().equals(owner.ref) || crafting && !link.route().crafting() || source == null || source.runtime.status != NetworkStatus.ONLINE) {
+                    continue;
+                }
+                List<StorageView> theirs = new ArrayList<>();
+                views(server, source, seen, theirs, new ArrayList<>());
+                for (StorageView view : theirs) {
+                    views.add(new SharedView(view, link.route()::matches, link.route().readWrite(), link.fromName()));
+                }
+            }
+        }
+        Runtime runtime = owner.runtime;
+        // Gateways' runs waiting for outputs claim them as they come in, whatever way they come.
+        NetworkStorage.Claim claim = (key, amount, simulate) -> {
+            long taken = 0;
+            for (NodePos pos : runtime.providers) {
+                if (taken >= amount) {
+                    break;
+                }
+                if (runtime.online.contains(pos) && blockEntity(server, pos) instanceof GatewayBlockEntity gateway) {
+                    taken += gateway.claim(key, amount - taken, simulate);
+                }
+            }
+            return taken;
+        };
+        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(libraries, drives, runtime.recalls), claim);
+    }
+
+    // Every active Share on any network: the online L3 Switches' and Routers' Share routes.
+    private static List<ItemRouting.ShareLink> shareLinks(MinecraftServer server) {
+        List<ItemRouting.ShareLink> links = new ArrayList<>();
+        for (RackBlockEntity rack : allRacks(server)) {
+            for (RackDevice device : rack.devices()) {
+                if (device.isOnline() && device instanceof ItemRouting.ShareSource source) {
+                    links.addAll(source.shareLinks(server));
+                }
+            }
+        }
+        return links;
+    }
+
+    // A network's own storage: its online Drive Bays' drives, its online Inventory Taps' inventories, its rack storage
+    // devices; and its Tape Libraries.
+    private static void views(MinecraftServer server, Owner owner, Set<UUID> seen, List<StorageView> views, List<TapeLibraryDevice> libraries) {
+        DriveStorage drives = DriveStorage.get(server);
         for (NodePos pos : owner.runtime.driveBays) {
             if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveBayBlockEntity bay) {
                 for (int slot = 0; slot < DriveBayBlockEntity.SLOTS; slot++) {
@@ -892,7 +951,6 @@ public class ControllerStructures extends SavedData {
                 }
             }
         }
-        List<TapeLibraryDevice> libraries = new ArrayList<>();
         for (RackDevice device : rackDevicesServing(server, owner.ref)) {
             if (device instanceof StorageDevice storageDevice) {
                 views.addAll(storageDevice.views(server, seen));
@@ -900,21 +958,23 @@ public class ControllerStructures extends SavedData {
                 libraries.add(library);
             }
         }
-        Runtime runtime = owner.runtime;
-        // Gateways' runs waiting for outputs claim them as they come in, whatever way they come.
-        NetworkStorage.Claim claim = (key, amount, simulate) -> {
-            long taken = 0;
-            for (NodePos pos : runtime.providers) {
-                if (taken >= amount) {
-                    break;
-                }
-                if (runtime.online.contains(pos) && blockEntity(server, pos) instanceof GatewayBlockEntity gateway) {
-                    taken += gateway.claim(key, amount - taken, simulate);
-                }
-            }
-            return taken;
-        };
-        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(libraries, drives, runtime.recalls), claim);
+    }
+
+    // A network's storage with what Share routes share into it, for terminals (crafting false) and crafting (true: only
+    // shares that allow it). Its own storage comes first; null while it's down.
+    public static @Nullable NetworkStorage sharedStorageOf(MinecraftServer server, @Nullable NetworkRef network, boolean crafting) {
+        Owner owner = owner(server, network);
+        return owner != null && owner.runtime.status == NetworkStatus.ONLINE ? storage(server, owner, crafting) : null;
+    }
+
+    // The same for a device at pos, while it's online.
+    public @Nullable NetworkStorage sharedStorageAt(ServerLevel level, BlockPos device, boolean crafting) {
+        Owner owner = owner(level, device);
+        if (owner == null || !owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device))
+                || owner.runtime.status == NetworkStatus.FAILOVER) {
+            return null;
+        }
+        return storage(level.getServer(), owner, crafting);
     }
 
     // A network's tape recall queue (TapeRecalls), or null for an unknown network.

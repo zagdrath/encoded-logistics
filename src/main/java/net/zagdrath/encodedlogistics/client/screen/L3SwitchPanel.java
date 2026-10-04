@@ -43,7 +43,7 @@ public class L3SwitchPanel extends SwitchPanel {
     public L3SwitchPanel(RackScreen screen) {
         super(screen);
         editor = new RouteFilterEditor(this, LIST_X - 1, LIST_Y - 1, 157, ROWS * ROW_H + 1, L3SwitchDevice.ACTION_SET_FILTER,
-                L3SwitchDevice.ACTION_FILTER_OPTION);
+                L3SwitchDevice.ACTION_FILTER_OPTION, L3SwitchDevice.ACTION_SHARE_OPTION);
     }
 
     // The route being edited (on the Routes tab), or null.
@@ -106,7 +106,7 @@ public class L3SwitchPanel extends SwitchPanel {
         } else if (tab == 1) {
             for (int i = 0; i < Math.min(ROWS, l3.routes().size()); i++) {
                 int rowY = y + LIST_Y + i * ROW_H;
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12, RouteFilterEditor.arrowColor(l3.routes().get(i)));
                 RackScreen.routeBox(graphics, l3.routes().get(i).filter(), x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2
                         && mouseX < x + FILTER_X + 14 && mouseY >= rowY && mouseY < rowY + ROW_H);
             }
@@ -199,6 +199,7 @@ public class L3SwitchPanel extends SwitchPanel {
         if (tab == 1 && row < l3.routes().size()) {
             ItemRouting.Route route = l3.routes().get(row);
             graphics.setComponentTooltipForNextFrame(font(), List.of(routeName(route),
+                    RouteFilterEditor.modeLine(route).copy().withColor(route.shares() ? 0xFF8FB8F0 : RackScreen.TEXT_MUTED),
                     RouteFilterEditor.summary(route.filter()).copy().withColor(RackScreen.TEXT_MUTED),
                     Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         } else if (tab == 2 && row < l3.qos().size()) {

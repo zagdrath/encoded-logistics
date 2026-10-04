@@ -156,7 +156,7 @@ public class RackConsoleDevice extends RackDevice {
 
     @Override
     protected List<RackDeviceInfo.InfoLine> lines(ServerPlayer viewer) {
-        NetworkStorage storage = rack() != null && isOnline() ? ControllerStructures.storageOf(viewer.level().getServer(), rack().network(this)) : null;
+        NetworkStorage storage = rack() != null && isOnline() ? ControllerStructures.sharedStorageOf(viewer.level().getServer(), rack().network(this), false) : null;
         long items = storage != null ? storage.list().values().stream().mapToLong(Long::longValue).sum() : 0;
         return List.of(
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.console.network"),

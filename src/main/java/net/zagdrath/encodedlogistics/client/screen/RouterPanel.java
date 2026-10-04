@@ -43,7 +43,7 @@ public class RouterPanel extends RackScreen.Panel {
     public RouterPanel(RackScreen screen) {
         super(screen);
         editor = new RouteFilterEditor(this, ROUTES_X - 1, LIST_Y - 1, ROUTES_W + 1, ROWS * ROW_H + 1, RouterDevice.ACTION_SET_FILTER,
-                RouterDevice.ACTION_FILTER_OPTION);
+                RouterDevice.ACTION_FILTER_OPTION, RouterDevice.ACTION_SHARE_OPTION);
     }
 
     @Override
@@ -83,7 +83,7 @@ public class RouterPanel extends RackScreen.Panel {
             } else {
                 for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
                     int rowY = y + LIST_Y + i * ROW_H;
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12, RouteFilterEditor.arrowColor(routes.get(i)));
                     RackScreen.routeBox(graphics, routes.get(i).filter(), x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2
                             && mouseX < x + ROUTES_X + ROUTES_W && mouseY >= rowY && mouseY < rowY + ROW_H);
                 }
@@ -178,6 +178,7 @@ public class RouterPanel extends RackScreen.Panel {
         if (screen.over(mouseX, mouseY, ROUTES_X, LIST_Y, ROUTES_W, ROWS * ROW_H) && row < router.routes().size()) {
             ItemRouting.Route route = router.routes().get(row);
             graphics.setComponentTooltipForNextFrame(font(), List.of(routeName(router, route),
+                    RouteFilterEditor.modeLine(route).copy().withColor(route.shares() ? 0xFF8FB8F0 : RackScreen.TEXT_MUTED),
                     RouteFilterEditor.summary(route.filter()).copy().withColor(RackScreen.TEXT_MUTED),
                     Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         }

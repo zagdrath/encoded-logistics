@@ -25,10 +25,19 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean fail
     public static final Type<TerminalItemsPayload> TYPE = new Type<>(EncodedLogistics.id("terminal_items"));
 
     // An item: how many there are, hot and cold; of them how many are on tape; for those, the ticks a recall would take
-    // (-1: it can't, no drive) and whether the last one found hot storage full.
-    public record Entry(ItemKey key, long count, long cold, int eta, boolean hotFull) {
+    // (-1: it can't, no drive) and whether the last one found hot storage full; and how many are shared in from another
+    // segment (a Share route), from where.
+    public record Entry(ItemKey key, long count, long cold, int eta, boolean hotFull, long shared, String sharedFrom) {
         public Entry(ItemKey key, long count) {
-            this(key, count, 0, -1, false);
+            this(key, count, 0, -1, false, 0, "");
+        }
+
+        public Entry(ItemKey key, long count, long cold, int eta, boolean hotFull) {
+            this(key, count, cold, eta, hotFull, 0, "");
+        }
+
+        public Entry withShared(long shared, String from) {
+            return new Entry(key, count, cold, eta, hotFull, shared, from);
         }
 
         static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC = StreamCodec.composite(
@@ -37,6 +46,8 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean fail
                 ByteBufCodecs.VAR_LONG, Entry::cold,
                 ByteBufCodecs.VAR_INT, Entry::eta,
                 ByteBufCodecs.BOOL, Entry::hotFull,
+                ByteBufCodecs.VAR_LONG, Entry::shared,
+                ByteBufCodecs.STRING_UTF8, Entry::sharedFrom,
                 Entry::new);
     }
 
