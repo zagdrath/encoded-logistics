@@ -30,6 +30,8 @@ public class SwitchPanel extends RackScreen.Panel {
             LANE_FILL = EncodedLogistics.id("rack/switch/lane_bar_fill"), POOL_FILL = EncodedLogistics.id("common/bar_fill_mint"),
             DOT_ONLINE = EncodedLogistics.id("hud/dot_online"), DOT_OFFLINE = EncodedLogistics.id("hud/dot_offline");
     private static final int POOL_X = 9, POOL_Y = 21, POOL_W = 98, UPLINK_Y = 144;
+    // Each row's segment button: inside the row, clear of its edges.
+    private static final int SEGMENT_X = 114, SEGMENT_W = 40, SEGMENT_H = 10;
 
     // A device in the list, as the server sent it.
     protected record Row(int u, RackDeviceType type, boolean pooled, int segment) {}
@@ -131,7 +133,7 @@ public class SwitchPanel extends RackScreen.Panel {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LANE_FILL, x + listX() + 77, rowY + 5, 30, 2);
             }
             String segment = row.segment() < segments.size() ? segments.get(row.segment()) : "-";
-            PartScreens.wideButton(graphics, font(), x + listX() + 112, rowY, 44, rowHeight() - 1, Component.literal(segment), row.pooled(),
+            PartScreens.wideButton(graphics, font(), x + listX() + SEGMENT_X, rowY + 1, SEGMENT_W, SEGMENT_H, Component.literal(segment), row.pooled(),
                     mouseX, mouseY);
         }
     }
@@ -168,7 +170,7 @@ public class SwitchPanel extends RackScreen.Panel {
                         : "gui.encodedlogistics.switch.unpooled"), mouseX, mouseY);
                 return;
             }
-            if (screen.over(mouseX, mouseY, listX() + 112, rowY, 44, rowHeight() - 1)) {
+            if (screen.over(mouseX, mouseY, listX() + SEGMENT_X, rowY + 1, SEGMENT_W, SEGMENT_H)) {
                 graphics.setComponentTooltipForNextFrame(font(), List.of(Component.translatable("gui.encodedlogistics.switch.segment"),
                         Component.translatable(row.pooled() ? "gui.encodedlogistics.switch.segment_hint" : "gui.encodedlogistics.switch.segment_unpooled")
                                 .withColor(RackScreen.TEXT_MUTED),
@@ -190,7 +192,7 @@ public class SwitchPanel extends RackScreen.Panel {
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
             int rowY = listY() + i * rowHeight();
-            if (x >= listX() + 112 && x < listX() + 156 && y >= rowY && y < rowY + rowHeight() - 1 && row.pooled()) {
+            if (x >= listX() + SEGMENT_X && x < listX() + SEGMENT_X + SEGMENT_W && y >= rowY + 1 && y < rowY + 1 + SEGMENT_H && row.pooled()) {
                 send(SwitchDevice.ACTION_CYCLE_SEGMENT, row.u(), button == InputConstants.MOUSE_BUTTON_RIGHT ? "back" : "");
                 return true;
             }

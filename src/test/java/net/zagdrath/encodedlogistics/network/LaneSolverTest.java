@@ -354,4 +354,28 @@ class LaneSolverTest {
         assertEquals(8, LaneSolver.solve(graph(fits), AD_HOC).rack(at(fits.pos())).granted().size());
         assertTrue(LaneSolver.solve(graph(over), AD_HOC).rack(at(over.pos())).granted().isEmpty());
     }
+
+    @Test
+    void cableOnToTheNextDeviceIsNotAnUplink() {
+        // Controller - cable - rack (master y=0, part y=1) - cable from its top - a device beyond: the rack isn't degraded.
+        RackNode bonded = rack(2, 0, 0, demands(1, 1, 1));
+        NetworkNode[] nodes = { controller(0, 0, 0, 1), cable(1, 0, 0, CABLE), bonded, part(2, 1, 0, bonded.pos()), cable(2, 2, 0, CABLE),
+                device(2, 3, 0) };
+        LaneResult result = LaneSolver.solve(graph(nodes), AD_HOC);
+        RackLanes lanes = result.rack(at(bonded.pos()));
+        assertEquals(1, lanes.uplinks().size());
+        assertFalse(lanes.degraded());
+        assertTrue(result.hasLane(at(new BlockPos(2, 3, 0))), "Device beyond the rack lost its lane");
+    }
+
+    @Test
+    void secondCableCountsEvenWhenItsShortestWayIsThroughTheRack() {
+        // A second cable from the rack's top runs the long way round to the controller: still an uplink, bonded.
+        RackNode bonded = rack(2, 0, 0, demands(3, 8, 1));
+        NetworkNode[] nodes = { controller(0, 0, 0, 1), cable(1, 0, 0, CABLE), bonded, part(2, 1, 0, bonded.pos()), cable(2, 2, 0, CABLE),
+                cable(1, 2, 0, CABLE), cable(0, 2, 0, CABLE), cable(0, 1, 0, CABLE) };
+        RackLanes lanes = LaneSolver.solve(graph(nodes), AD_HOC).rack(at(bonded.pos()));
+        assertEquals(2, lanes.activeUplinks());
+        assertEquals(2, lanes.granted().size());
+    }
 }

@@ -5,6 +5,10 @@
 
 package net.zagdrath.encodedlogistics.net;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -20,6 +24,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 
 // The rack popup's numbers. The client asks for the unit its crosshair settles on (Query, then every few ticks while it
 // stays there); the server answers with the device's description (Info), so the popup can show server-side figures
@@ -50,36 +55,49 @@ public final class RackUnitPayloads {
             }
             RackDevice device = rack.deviceAt(query.u());
             if (device != null) {
-                PacketDistributor.sendToPlayer(player, new Info(query.rack(), device.u(), device.describe(player).withHeader(rack.header())));
+                PacketDistributor.sendToPlayer(player, new Info(query.rack(), device.u(), device.type().id().toString(),
+                        device.describe(player).withHeader(rack.header())));
             }
         }
     }
 
-    public record Info(BlockPos rack, int u, RackDeviceInfo info) implements CustomPacketPayload {
+    public record Info(BlockPos rack, int u, String deviceType, RackDeviceInfo info) implements CustomPacketPayload {
         public static final Type<Info> TYPE = new Type<>(EncodedLogistics.id("rack_unit_info"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, Info> STREAM_CODEC = StreamCodec.composite(
                 BlockPos.STREAM_CODEC, Info::rack,
                 ByteBufCodecs.VAR_INT, Info::u,
+                ByteBufCodecs.STRING_UTF8, Info::deviceType,
                 RackDeviceInfo.STREAM_CODEC, Info::info,
                 Info::new);
 
-        // Client side: the last answer.
-        private static volatile @Nullable Info latest;
+        // Client side: the answers so far, by rack and unit (the most recently seen kept), with the device type each was
+        // about (a device swapped at that unit isn't shown the old one's).
+        private static final int KEPT = 128;
+        private static final Map<String, Info> ANSWERS = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, Info> eldest) {
+                return size() > KEPT;
+            }
+        });
 
         @Override
         public Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
 
-        // The last answer about the device at u in the rack at pos, or null.
-        public static @Nullable RackDeviceInfo forUnit(BlockPos rack, int u) {
-            Info last = latest;
-            return last != null && last.rack().equals(rack) && last.u() == u ? last.info() : null;
+        private static String key(BlockPos rack, int u) {
+            return rack.asLong() + ":" + u;
+        }
+
+        // The latest answer about the device at u in the rack at pos (still the same kind of device), or null.
+        public static @Nullable RackDeviceInfo forUnit(BlockPos rack, int u, RackDeviceType type) {
+            Info answer = ANSWERS.get(key(rack, u));
+            return answer != null && answer.deviceType().equals(type.id().toString()) ? answer.info() : null;
         }
 
         static void handle(Info info, IPayloadContext context) {
-            latest = info;
+            ANSWERS.put(key(info.rack(), info.u()), info);
         }
     }
 }

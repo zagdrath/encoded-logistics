@@ -284,10 +284,11 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (panel != null) {
                 RackDevice picked = menu.pickedDevice();
                 if (picked != null) {
+                    // Like the back button: the icon alone, brighter when hovered (its glyph is in the sprite's top half,
+                    // so it sits 4 lower to line up with the back arrow).
                     boolean overPriority = over(mouseX, mouseY, PRIORITY_X, BACK_Y, 16, 16);
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, overPriority ? PartScreens.BUTTON_HOVER : PartScreens.BUTTON, leftPos + PRIORITY_X - 1,
-                            topPos + BACK_Y - 1, 18, 18);
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PRIORITY[picked.lanePriority().ordinal()], leftPos + PRIORITY_X, topPos + BACK_Y, 16, 16);
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PRIORITY[picked.lanePriority().ordinal()], leftPos + PRIORITY_X, topPos + BACK_Y + 4, 16, 16,
+                            overPriority ? 0xFFFFFFFF : 0xFFC8C8C8);
                 }
                 panel.extractBackground(graphics, mouseX, mouseY, partialTick);
             }

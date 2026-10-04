@@ -1292,6 +1292,7 @@
   "hud.encodedlogistics.status.mismatch": "Network mismatch",
   "hud.encodedlogistics.status.paused": "paused",
   "hud.encodedlogistics.rack.uplinks": "%s   %s / %s lanes   %s uplinks",
+  "hud.encodedlogistics.rack.uplinks.one": "%s   %s / %s lanes   %s uplink",
   "hud.encodedlogistics.rack.degraded": "Degraded: %s / %s lanes, %s of %s uplinks",
   "hud.encodedlogistics.ups.status": "Status",
   "hud.encodedlogistics.ups.online": "Online",

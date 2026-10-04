@@ -31,9 +31,12 @@ import net.minecraft.core.Direction;
 // a lane (still connected, but inactive).
 //
 // A Server Rack is bonded: its demands (RackNode) go one by one, by priority (High first; within one, the highest unit
-// first, so the lowest units are shed first), each whole on the first of the rack's uplinks that leads toward a source
-// without coming back through the rack and has room along its path. A rack source's own demands take lanes straight
-// from the budget. Lanes passing through a rack to something beyond it go along the tree as before.
+// first, so the lowest units are shed first), each whole on the first of the rack's uplinks that has room along its
+// path. An uplink is a link from the rack to something outside it that reaches a source without coming back through
+// the rack (its own shortest path, worked out with the rack left out); a link that only leads on to other devices (a
+// cable on to the next rack) isn't one, and a link that leads to nothing at all (a cut cable's stub) is a down uplink.
+// A rack source's own demands take lanes straight from the budget. Lanes passing through a rack to something beyond it
+// go along the tree as before.
 //
 // With no controller the network is ad hoc: up to adHocLimit lanes work with no routing limits; more and none do.
 // Conflict (no device gets a lane): controller blocks from two or more structures; a controller structure and a rack
@@ -157,7 +160,7 @@ public final class LaneSolver {
             NetworkNode node = graph.node(device);
             if (node instanceof RackNode rack) {
                 RackLanes result = rackSources.contains(device) ? sourceRack(rack, budget, budgetUsed)
-                        : bondedRack(graph, device, rack, rackOf, rackSources, parent, distance, usage, budget, budgetUsed);
+                        : bondedRack(graph, device, rack, rackOf, rackSources, distance, usage, budget, budgetUsed);
                 rackLanes.put(device, result);
                 lanes.put(device, result.source() || result.activeUplinks() > 0);
                 used += result.used();
@@ -231,12 +234,43 @@ public final class LaneSolver {
     }
 
     private static RackLanes bondedRack(NetworkGraph graph, NodePos master, RackNode rack, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources,
-            Map<NodePos, NetworkLink> parent, Map<NodePos, Integer> distance, Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed) {
-        // The rack's uplinks, each with its way to a source if it has one.
+            Map<NodePos, Integer> distance, Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed) {
+        // Shortest paths to the sources with this rack left out.
+        Map<NodePos, NetworkLink> parent = new HashMap<>();
+        Map<NodePos, Integer> without = new HashMap<>();
+        ArrayDeque<NodePos> queue = new ArrayDeque<>();
+        List<NodePos> sources = new ArrayList<>();
+        distance.forEach((pos, d) -> {
+            if (d == 0 && !master.equals(rackOf.get(pos))) {
+                sources.add(pos);
+            }
+        });
+        sources.sort(NetworkGraph.ORDER);
+        for (NodePos source : sources) {
+            without.put(source, 0);
+            queue.add(source);
+        }
+        while (!queue.isEmpty()) {
+            NodePos at = queue.poll();
+            for (NetworkLink link : links(graph, at)) {
+                NodePos next = link.other(at);
+                NetworkNode node = graph.node(next);
+                if (node == null || node.isController() || without.containsKey(next) || master.equals(rackOf.get(next))) {
+                    continue;
+                }
+                without.put(next, without.get(at) + 1);
+                parent.put(next, link);
+                queue.add(next);
+            }
+        }
+        // The rack's uplinks, each with its way to a source (null: down); links leading only on to other devices left out.
         record Candidate(NetworkLink link, NodePos outside, @Nullable Path path) {}
         List<Candidate> candidates = new ArrayList<>();
         for (RackLink link : rackLinks(graph, master, rackOf)) {
-            candidates.add(new Candidate(link.link(), link.outside(), towardSource(link.outside(), master, rackOf, parent, distance)));
+            Path path = pathToSource(link.outside(), parent, without);
+            if (path != null || !leadsToDevices(graph, link.outside(), master, rackOf)) {
+                candidates.add(new Candidate(link.link(), link.outside(), path));
+            }
         }
 
         Map<NetworkLink, Integer> own = new HashMap<>();
@@ -288,21 +322,27 @@ public final class LaneSolver {
         return ordered;
     }
 
-    // The tree path from a node outside a rack back to a source, unless it runs back through that rack.
-    private static @Nullable Path towardSource(NodePos outside, NodePos rack, Map<NodePos, NodePos> rackOf, Map<NodePos, NetworkLink> parent,
-            Map<NodePos, Integer> distance) {
-        Path path = pathToSource(outside, parent, distance);
-        if (path == null) {
-            return null;
-        }
-        NodePos at = outside;
-        for (NetworkLink link : path.links()) {
-            at = link.other(at);
-            if (rack.equals(rackOf.get(at))) {
-                return null;
+    // Whether anything that uses the network lies beyond a node, the rack left out: then a link to it carries the network
+    // on (to the next rack, a device), rather than being a stub that leads nowhere.
+    private static boolean leadsToDevices(NetworkGraph graph, NodePos start, NodePos rack, Map<NodePos, NodePos> rackOf) {
+        Set<NodePos> seen = new HashSet<>();
+        ArrayDeque<NodePos> queue = new ArrayDeque<>();
+        seen.add(start);
+        queue.add(start);
+        while (!queue.isEmpty()) {
+            NodePos at = queue.poll();
+            NetworkNode node = graph.node(at);
+            if (node != null && (node.isDevice() || !node.parts().isEmpty())) {
+                return true;
+            }
+            for (NetworkLink link : links(graph, at)) {
+                NodePos next = link.other(at);
+                if (!rack.equals(rackOf.get(next)) && seen.add(next)) {
+                    queue.add(next);
+                }
             }
         }
-        return path;
+        return false;
     }
 
     private static boolean fits(Path path, int cost, Map<NetworkLink, Integer> usage, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources, int budget,

@@ -501,8 +501,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             return new RackDeviceInfo.Header(Component.translatable("hud.encodedlogistics.rack.degraded", rackLanes.available(), rackLanes.total(), active,
                     uplinks), true);
         }
-        return new RackDeviceInfo.Header(Component.translatable("hud.encodedlogistics.rack.uplinks", name, rackLanes.available(), rackLanes.total(), active),
-                false);
+        return new RackDeviceInfo.Header(Component.translatable(active == 1 ? "hud.encodedlogistics.rack.uplinks.one" : "hud.encodedlogistics.rack.uplinks",
+                name, rackLanes.available(), rackLanes.total(), active), false);
     }
 
 

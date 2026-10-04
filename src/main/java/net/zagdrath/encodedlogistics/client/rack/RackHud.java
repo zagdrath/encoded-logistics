@@ -48,8 +48,10 @@ import net.zagdrath.encodedlogistics.rack.RackTargeting;
 // that side's door open, it points at a unit (RackTargeting: followed in to the devices, not the outer face): the
 // device there, or the empty unit, is outlined (instead of the block outline, which a rack never shows), and the
 // popup by the crosshair shows the device's icon, name, units, status and its own lines (RackDeviceInfo, asked of the
-// server when the crosshair settles, then every QUERY_INTERVAL ticks); an empty unit just says so. With the doors
-// closed there's neither. Hidden with F1 and while a screen is open.
+// server as soon as the crosshair lands on it, then every QUERY_INTERVAL ticks; answers are kept per unit, so going back
+// to one shows it at once). Until a device's answer is in, only its outline shows: the popup is always the whole thing.
+// Above it, as wide as it, the rack's strip (lanes and uplinks). An empty unit just says so. With the doors closed
+// there's neither. Hidden with F1 and while a screen is open.
 public final class RackHud {
     public static final Identifier LAYER = EncodedLogistics.id("rack_unit_popup");
 
@@ -65,7 +67,7 @@ public final class RackHud {
     private static final int PANEL_COLOR = ARGB.color(Math.round(0.92F * 255), 0xFFFFFF);
     private static final int OUTLINE_COLOR = ARGB.color(Math.round(0.85F * 255), 0x5CF0B8);
     private static final float OUTLINE_WIDTH = 2.0F, OUTLINE_INFLATE = 0.15F;
-    private static final int SETTLE_TICKS = 2, QUERY_INTERVAL = 10;
+    private static final int QUERY_INTERVAL = 10;
     private static final Identifier BADGE_SPRITE = EncodedLogistics.id("hud/badge_scheduler");
     private static final int BADGE = 9, SCHEDULER = 0xFFE8C24A;
 
@@ -107,7 +109,7 @@ public final class RackHud {
                 ? target(minecraft.level, hit) : null;
         steadyTicks = now != null && now.sameUnit(target) ? steadyTicks + 1 : 0;
         target = now;
-        if (now != null && now.device() != null && steadyTicks >= SETTLE_TICKS && (steadyTicks - SETTLE_TICKS) % QUERY_INTERVAL == 0) {
+        if (now != null && now.device() != null && steadyTicks % QUERY_INTERVAL == 0) {
             ClientPacketDistributor.sendToServer(new RackUnitPayloads.Query(now.master(), now.device().u()));
         }
     }
@@ -160,9 +162,10 @@ public final class RackHud {
             graphics.text(font, text, x + PAD_X, y + PAD_Y, RackScreen.TEXT_MUTED, false);
             return;
         }
-        RackDeviceInfo info = RackUnitPayloads.Info.forUnit(at.master(), device.u());
+        RackDeviceInfo info = RackUnitPayloads.Info.forUnit(at.master(), device.u(), device.type());
         if (info == null) {
-            info = new RackDeviceInfo(device.name(), device.shownStatus(), device.shownStatus().text(), List.of());
+            // Not in yet (a moment at most): no half popup.
+            return;
         }
         // The rack's strip goes above the popup, so the popup starts lower.
         int headerH = info.header().isPresent() ? HEADER_STRIP_H + 2 : 0;
@@ -173,14 +176,16 @@ public final class RackHud {
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             content = Math.max(content, font.width(line.label()) + GAP + font.width(line.value()));
         }
-        int width = Mth.clamp(content + 2 * PAD_X, MIN_W, MAX_W), inner = width - 2 * PAD_X;
+        // As wide as the rack's strip above it, if that's wider.
+        int headerWidth = info.header().map(header -> headerWidth(font, header)).orElse(0);
+        int width = Math.max(Mth.clamp(content + 2 * PAD_X, MIN_W, MAX_W), headerWidth), inner = width - 2 * PAD_X;
         int height = PAD_Y + HEADER_H + DIVIDER_TOP + 1 + DIVIDER_BOTTOM + LINE_H + PAD_Y;
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             height += LINE_H + (line.bar().isPresent() ? BAR_H : 0);
         }
         int x = clampX(graphics, centerX + OFFSET_X, width), y = clampY(graphics, centerY + OFFSET_Y, height + headerH) + headerH;
         if (info.header().isPresent()) {
-            header(graphics, font, info.header().get(), x, y - headerH);
+            header(graphics, font, info.header().get(), x, y - headerH, width);
         }
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, height, PANEL_COLOR);
         int left = x + PAD_X, lineY = y + PAD_Y;
@@ -229,10 +234,13 @@ public final class RackHud {
         }
     }
 
-    // The rack's strip: as wide as its text; degraded, amber behind a warning sign.
-    private static void header(GuiGraphicsExtractor graphics, Font font, RackDeviceInfo.Header header, int x, int y) {
+    // The rack's strip, as wide as the popup under it; degraded, amber behind a warning sign.
+    private static int headerWidth(Font font, RackDeviceInfo.Header header) {
+        return PAD_X + (header.degraded() ? 9 + 3 : 0) + font.width(header.text()) + PAD_X;
+    }
+
+    private static void header(GuiGraphicsExtractor graphics, Font font, RackDeviceInfo.Header header, int x, int y, int width) {
         int icon = header.degraded() ? 9 + 3 : 0;
-        int width = PAD_X + icon + font.width(header.text()) + PAD_X;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, HEADER_STRIP_H, PANEL_COLOR);
         if (header.degraded()) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, WARNING_SIGN, x + PAD_X, y + (HEADER_STRIP_H - 8) / 2, 9, 8);
