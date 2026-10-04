@@ -1,0 +1,118 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "tex": "encodedlogistics:block/rack_device/memory_server",
+  "particle": "encodedlogistics:block/rack_device/memory_server",
+  "glow": "encodedlogistics:block/rack_device/memory_server_fault"
+ },
+ "elements": [
+  {
+   "name": "chassis",
+   "from": [
+    1.55,
+    0,
+    1.75
+   ],
+   "to": [
+    14.45,
+    1,
+    29.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#tex",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      1.0
+     ]
+    },
+    "south": {
+     "texture": "#tex",
+     "uv": [
+      13.0,
+      4.0,
+      0.0,
+      5.0
+     ]
+    },
+    "east": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "west": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "up": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    },
+    "down": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      2.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "leds",
+   "from": [
+    1.55,
+    0,
+    1.74
+   ],
+   "to": [
+    14.45,
+    1,
+    29.26
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glow",
+     "uv": [
+      0.0,
+      0.0,
+      13.0,
+      1.0
+     ]
+    },
+    "south": {
+     "texture": "#glow",
+     "uv": [
+      13.0,
+      4.0,
+      0.0,
+      5.0
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

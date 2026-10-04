@@ -1,0 +1,9 @@
+{
+ "values": [
+  "encodedlogistics:storage_drive_8k",
+  "encodedlogistics:storage_drive_32k",
+  "encodedlogistics:storage_drive_128k",
+  "encodedlogistics:storage_drive_512k",
+  "encodedlogistics:storage_drive_2m"
+ ]
+}

@@ -23,6 +23,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.CraftPlanPayload;
@@ -196,7 +197,12 @@ public class CraftPlanScreen extends Screen {
             return Component.translatable("gui.encodedlogistics.craft.scheduler.auto");
         }
         BlockPos pos = plan.schedulers().get(scheduler);
-        return Component.translatable("gui.encodedlogistics.craft.scheduler", pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
+        String at = pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
+        // A rack's Scheduler is known by its rack.
+        if (minecraft.level != null && minecraft.level.getBlockEntity(pos) instanceof RackBlockEntity) {
+            return Component.translatable("gui.encodedlogistics.craft.scheduler", Component.translatable("gui.encodedlogistics.craft.scheduler.rack", at));
+        }
+        return Component.translatable("gui.encodedlogistics.craft.scheduler", at);
     }
 
     @Override

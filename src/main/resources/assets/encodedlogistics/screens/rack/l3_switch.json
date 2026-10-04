@@ -1,0 +1,84 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/l3_switch.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "tabs": {
+  "left": 8,
+  "top": 17,
+  "spacing": 53,
+  "active": "rack/switch/tab_active",
+  "inactive": "rack/switch/tab_inactive",
+  "items": [
+   "gui.encodedlogistics.l3.tab.devices",
+   "gui.encodedlogistics.l3.tab.routes",
+   "gui.encodedlogistics.l3.tab.qos"
+  ]
+ },
+ "pages": {
+  "devices": "as l2_switch_48.json devices list, inside (10,32)",
+  "routes": {
+   "rows": 8,
+   "row_height": 14,
+   "columns": {
+    "source": 2,
+    "arrow": 44,
+    "dest": 62,
+    "filter": 112
+   },
+   "arrow": "rack/router/arrow",
+   "filter_ghost": true,
+   "add": {
+    "left": 8,
+    "top": 146,
+    "width": 160,
+    "height": 14,
+    "button": "common/button_wide",
+    "text": "gui.encodedlogistics.l3.add_route"
+   }
+  },
+  "qos": {
+   "rows": 8,
+   "row_height": 14,
+   "columns": {
+    "icon": 2,
+    "kind": 14,
+    "target": 70,
+    "level": 130
+   },
+   "icon": "rack/switch/qos_high",
+   "kinds": [
+    "crafting_jobs",
+    "port",
+    "item_filter"
+   ],
+   "add": {
+    "left": 8,
+    "top": 146,
+    "width": 160,
+    "height": 14,
+    "button": "common/button_wide",
+    "text": "gui.encodedlogistics.l3.add_qos"
+   }
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.l3_switch",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

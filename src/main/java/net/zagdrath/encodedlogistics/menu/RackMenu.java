@@ -5,6 +5,9 @@
 
 package net.zagdrath.encodedlogistics.menu;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -28,13 +31,14 @@ import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RackSlot;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
-import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
 // The Server Rack's screen: the elevation (or the settings panel of the device picked in it) above the player's
-// inventory. Which unit is picked (0: none, the elevation shows) is a data slot. The Router's three transceiver cages
-// are real slots, there only while a Router is picked.
+// inventory. Which unit is picked (0: none, the elevation shows) is a data slot. Each device type with item slots
+// (RackDeviceType#slots) has a bank of real slots here, at its panel's positions, there only while a device of that
+// type is picked and holding its items.
 //
 // Buttons (clickMenuButton): PICK + u picks the device at u (PICK alone goes back), TAKE + u takes the device at u out
 // into the inventory, PUT + u mounts the carried device at u. A picked device's panel gets its state every
@@ -42,15 +46,15 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 public class RackMenu extends AbstractContainerMenu {
     public static final int WIDTH = 176, TOP_HEIGHT = 168, HEIGHT = TOP_HEIGHT + 100;
     public static final int PICK = 0, TAKE = 100, PUT = 200;
-    public static final int[] CAGE_X = { 9, 27, 45 };
-    public static final int CAGE_Y = 129;
     private static final int SYNC_INTERVAL = 10;
-    private static final int INVENTORY_SLOTS = 36;
+    public static final int INVENTORY_SLOTS = 36;
 
     private final BlockPos pos;
     private final Player player;
     private final @Nullable RackBlockEntity rack;
     private final DataSlot picked = DataSlot.standalone();
+    // Each device type's first slot index.
+    private final Map<RackDeviceType, Integer> banks = new LinkedHashMap<>();
     private int ticksUntilSync;
 
     // Client constructor, with the rack's master position written by the server.
@@ -68,9 +72,15 @@ public class RackMenu extends AbstractContainerMenu {
         this.player = inventory.player;
         this.rack = serverRack;
         addStandardInventorySlots(inventory, 8, TOP_HEIGHT + 17);
-        Container cages = serverRack != null ? new Cages() : new SimpleContainer(RouterDevice.CAGES);
-        for (int i = 0; i < RouterDevice.CAGES; i++) {
-            addSlot(new CageSlot(cages, i, CAGE_X[i], CAGE_Y));
+        for (RackDeviceType type : RackDeviceType.all()) {
+            if (type.slots().isEmpty()) {
+                continue;
+            }
+            banks.put(type, slots.size());
+            Container container = serverRack != null ? new DeviceItems(type) : new SimpleContainer(type.slots().size());
+            for (int i = 0; i < type.slots().size(); i++) {
+                addSlot(new DeviceSlot(container, i, type));
+            }
         }
         addDataSlot(picked);
     }
@@ -96,8 +106,11 @@ public class RackMenu extends AbstractContainerMenu {
         return at != null && picked.get() > 0 ? at.deviceAt(picked.get()) : null;
     }
 
-    private @Nullable RouterDevice pickedRouter() {
-        return pickedDevice() instanceof RouterDevice router ? router : null;
+    // The menu slot showing the picked device's i-th item slot, or null.
+    public @Nullable Slot deviceSlot(int i) {
+        RackDevice device = pickedDevice();
+        Integer start = device != null ? banks.get(device.type()) : null;
+        return start != null && i < device.type().slots().size() ? slots.get(start + i) : null;
     }
 
     // --- Buttons ---
@@ -170,8 +183,8 @@ public class RackMenu extends AbstractContainerMenu {
 
     // --- Moving items ---
 
-    // From the inventory: a rack device goes to the lowest place it fits, a transceiver into a free cage of the picked
-    // Router. From a cage: back to the inventory.
+    // From the inventory: a rack device goes to the lowest place it fits, anything else into the picked device's slots
+    // that take it. From a device's slot: back to the inventory.
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = slots.get(index);
@@ -195,9 +208,11 @@ public class RackMenu extends AbstractContainerMenu {
             }
             return ItemStack.EMPTY;
         }
-        if (RouterDevice.isTransceiver(stack) && pickedRouter() != null) {
+        RackDevice device = pickedDevice();
+        Integer start = device != null ? banks.get(device.type()) : null;
+        if (start != null) {
             ItemStack copy = stack.copy();
-            if (moveItemStackTo(stack, INVENTORY_SLOTS, INVENTORY_SLOTS + RouterDevice.CAGES, false)) {
+            if (moveItemStackTo(stack, start, start + device.type().slots().size(), false)) {
                 slot.setChanged();
                 return copy;
             }
@@ -211,72 +226,79 @@ public class RackMenu extends AbstractContainerMenu {
         return at != null && !at.isRemoved() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64;
     }
 
-    // --- The Router's cages ---
+    // --- Devices' item slots ---
 
-    // The picked Router's transceivers (server side).
-    private final class Cages implements Container {
-        private @Nullable RouterDevice router() {
-            return pickedRouter();
+    // The picked device's items when it's of this type (server side).
+    private final class DeviceItems implements Container {
+        private final RackDeviceType type;
+
+        DeviceItems(RackDeviceType type) {
+            this.type = type;
+        }
+
+        private @Nullable RackDevice device() {
+            RackDevice device = pickedDevice();
+            return device != null && device.type() == type ? device : null;
         }
 
         @Override
         public int getContainerSize() {
-            return RouterDevice.CAGES;
+            return type.slots().size();
         }
 
         @Override
         public boolean isEmpty() {
-            RouterDevice router = router();
-            return router == null || router.transceivers().stream().allMatch(ItemStack::isEmpty);
+            RackDevice device = device();
+            return device == null || device.items().stream().allMatch(ItemStack::isEmpty);
         }
 
         @Override
         public ItemStack getItem(int slot) {
-            RouterDevice router = router();
-            return router != null ? router.transceivers().get(slot) : ItemStack.EMPTY;
+            RackDevice device = device();
+            return device != null ? device.items().get(slot) : ItemStack.EMPTY;
         }
 
         @Override
         public ItemStack removeItem(int slot, int count) {
-            RouterDevice router = router();
-            if (router == null || router.transceivers().get(slot).isEmpty()) {
+            RackDevice device = device();
+            if (device == null || device.items().get(slot).isEmpty()) {
                 return ItemStack.EMPTY;
             }
-            ItemStack taken = router.transceivers().get(slot).split(count);
-            router.transceiversChanged();
+            ItemStack taken = device.items().get(slot).split(count);
+            device.itemsChanged();
             return taken;
         }
 
         @Override
         public ItemStack removeItemNoUpdate(int slot) {
-            RouterDevice router = router();
-            if (router == null) {
+            RackDevice device = device();
+            if (device == null) {
                 return ItemStack.EMPTY;
             }
-            ItemStack taken = router.transceivers().get(slot);
-            router.transceivers().set(slot, ItemStack.EMPTY);
+            ItemStack taken = device.items().get(slot);
+            device.items().set(slot, ItemStack.EMPTY);
             return taken;
         }
 
         @Override
         public void setItem(int slot, ItemStack stack) {
-            RouterDevice router = router();
-            if (router != null) {
-                router.transceivers().set(slot, stack);
-                router.transceiversChanged();
+            RackDevice device = device();
+            if (device != null) {
+                device.items().set(slot, stack);
+                device.itemsChanged();
             }
         }
 
         @Override
         public int getMaxStackSize() {
-            return 1;
+            return 64;
         }
 
         @Override
         public void setChanged() {
-            RouterDevice router = router();
-            if (router != null) {
-                router.transceiversChanged();
+            RackDevice device = device();
+            if (device != null) {
+                device.itemsChanged();
             }
         }
 
@@ -289,19 +311,25 @@ public class RackMenu extends AbstractContainerMenu {
         public void clearContent() {}
     }
 
-    private final class CageSlot extends Slot {
-        CageSlot(Container container, int slot, int x, int y) {
-            super(container, slot, x, y);
+    private final class DeviceSlot extends Slot {
+        private final RackDeviceType type;
+        private final RackSlot spec;
+
+        DeviceSlot(Container container, int slot, RackDeviceType type) {
+            super(container, slot, type.slots().get(slot).x(), type.slots().get(slot).y());
+            this.type = type;
+            this.spec = type.slots().get(slot);
         }
 
         @Override
         public boolean isActive() {
-            return pickedRouter() != null;
+            RackDevice device = pickedDevice();
+            return device != null && device.type() == type;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return isActive() && RouterDevice.isTransceiver(stack);
+            return isActive() && spec.accepts().test(stack);
         }
 
         @Override
@@ -311,7 +339,12 @@ public class RackMenu extends AbstractContainerMenu {
 
         @Override
         public int getMaxStackSize() {
-            return 1;
+            return spec.maxStack();
+        }
+
+        @Override
+        public int getMaxStackSize(ItemStack stack) {
+            return Math.min(spec.maxStack(), stack.getMaxStackSize());
         }
     }
 }

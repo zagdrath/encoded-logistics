@@ -64,6 +64,8 @@ public final class RackHud {
     private static final int OUTLINE_COLOR = ARGB.color(Math.round(0.85F * 255), 0x5CF0B8);
     private static final float OUTLINE_WIDTH = 2.0F, OUTLINE_INFLATE = 0.15F;
     private static final int SETTLE_TICKS = 2, QUERY_INTERVAL = 10;
+    private static final Identifier BADGE_SPRITE = EncodedLogistics.id("hud/badge_scheduler");
+    private static final int BADGE = 9, SCHEDULER = 0xFFE8C24A;
 
     // What the crosshair points at in a rack: its master, the unit, and the device there (if any).
     public record Target(BlockPos master, Direction facing, int u, @Nullable RackDevice device) {
@@ -161,7 +163,9 @@ public final class RackHud {
             info = new RackDeviceInfo(device.name(), device.shownStatus(), device.shownStatus().text(), List.of());
         }
         Component units = RackScreen.unitRange(device);
-        int content = Math.max(20 + Math.max(font.width(info.name()), font.width(units)), 8 + font.width(info.statusText()));
+        Component badge = Component.translatable("hud.encodedlogistics.rack.scheduler");
+        int badgeWidth = info.schedulerBadge() ? 8 + BADGE + 2 + font.width(badge) : 0;
+        int content = Math.max(20 + Math.max(font.width(info.name()), font.width(units) + badgeWidth), 8 + font.width(info.statusText()));
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             content = Math.max(content, font.width(line.label()) + GAP + font.width(line.value()));
         }
@@ -177,6 +181,12 @@ public final class RackHud {
         graphics.item(new ItemStack(device.type().item()), left, lineY);
         graphics.text(font, font.substrByWidth(info.name(), inner - 20).getString(), left + 20, lineY, RackScreen.TEXT, false);
         graphics.text(font, units, left + 20, lineY + 9, RackScreen.TEXT_MUTED, false);
+        if (info.schedulerBadge()) {
+            // Part of its rack's Scheduler: the badge and "Scheduler", right-aligned opposite the units.
+            int textX = left + inner - font.width(badge);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BADGE_SPRITE, textX - 2 - BADGE, lineY + 8, BADGE, BADGE);
+            graphics.text(font, badge, textX, lineY + 9, SCHEDULER, false);
+        }
         lineY += HEADER_H + DIVIDER_TOP;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DIVIDER, left, lineY, inner, 1);
         lineY += 1 + DIVIDER_BOTTOM;

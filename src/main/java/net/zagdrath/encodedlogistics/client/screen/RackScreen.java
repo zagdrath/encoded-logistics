@@ -250,8 +250,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
                 }
                 front(graphics, device, x + SLOT_X, y + rowY(topRow));
                 if (device.u() == menu.picked() || hoveredDevice(mouseX, mouseY) == device) {
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, device.size() > 1 ? SELECT_2U : SELECT_1U, x + SLOT_X - 1, y + rowY(topRow) - 1,
-                            SLOT_W + 2, device.size() * ROW_H + 1);
+                    if (device.size() <= 2) {
+                        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, device.size() > 1 ? SELECT_2U : SELECT_1U, x + SLOT_X - 1,
+                                y + rowY(topRow) - 1, SLOT_W + 2, device.size() * ROW_H + 1);
+                    } else {
+                        outline(graphics, x + SLOT_X - 1, y + rowY(topRow) - 1, SLOT_W + 2, device.size() * ROW_H + 1, SELECT, false);
+                    }
                 }
             }
             // Where the carried device would go.
@@ -260,9 +264,11 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (carried != null && u > 0 && rack.deviceAt(u) == null) {
                 int topU = Math.min(u + carried.size() - 1, RackGeometry.UNITS);
                 int drawY = y + rowY(rowOf(topU)) - 1;
-                if (rack.fits(u, carried.size())) {
+                if (rack.fits(u, carried.size()) && carried.size() <= 2) {
                     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, carried.size() > 1 ? DROP_2U : DROP_1U, x + SLOT_X - 1, drawY, SLOT_W + 2,
                             carried.size() * ROW_H + 1);
+                } else if (rack.fits(u, carried.size())) {
+                    outline(graphics, x + SLOT_X - 1, drawY, SLOT_W + 2, carried.size() * ROW_H + 1, DROP, true);
                 } else {
                     for (int unit = u; unit <= topU; unit++) {
                         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DROP_BLOCKED, x + SLOT_X - 1, y + rowY(rowOf(unit)) - 1, SLOT_W + 2, 10);
@@ -277,13 +283,35 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? THUMB_HOVER : THUMB, x + SCROLL_X + 1, thumbY, THUMB_W, THUMB_H);
     }
 
-    // A device's real front, from its texture, with its lights for its state.
+    // The selection and drop-target outlines drawn for devices taller than the 1U and 2U sprites (3U, 4U): the same
+    // 1 px line, solid or dashed.
+    private static final int SELECT = 0xFF5CF0B8, DROP = 0xFFF5B23A;
+
+    private static void outline(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int color, boolean dashed) {
+        for (int i = 0; i < width; i++) {
+            if (!dashed || i % 2 == 0) {
+                graphics.fill(x + i, y, x + i + 1, y + 1, color);
+                graphics.fill(x + i, y + height - 1, x + i + 1, y + height, color);
+            }
+        }
+        for (int i = 1; i < height - 1; i++) {
+            if (!dashed || i % 2 == 0) {
+                graphics.fill(x, y + i, x + 1, y + i + 1, color);
+                graphics.fill(x + width - 1, y + i, x + width, y + i + 1, color);
+            }
+        }
+    }
+
+    // A device's real front, from its texture, with its lights for its state (an animated overlay shown frame by frame,
+    // as the block does: 3 ticks a frame).
     private void front(GuiGraphicsExtractor graphics, RackDevice device, int x, int y) {
         int height = 8 * device.size();
         graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, height, 128, 128);
         RackDeviceInfo.Status status = device.shownStatus();
         if (status == RackDeviceInfo.Status.ONLINE) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_on"), x, y, 0.0F, 0.0F, SLOT_W, height, 128, 128);
+            int frames = device.type().frames();
+            int frame = (int) (System.currentTimeMillis() / 150 % frames);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_on"), x, y, 0.0F, frame * 128.0F, SLOT_W, height, 128, 128 * frames);
         } else if (status == RackDeviceInfo.Status.FAULT) {
             // Two frames, blinking.
             boolean lit = (System.currentTimeMillis() / 500 & 1) == 0;

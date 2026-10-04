@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:l2_switch_24",
+  "encodedlogistics:logic_die",
+  "encodedlogistics:dense_network_cable",
+  "encodedlogistics:dense_network_cable"
+ ],
+ "result": {
+  "id": "encodedlogistics:l2_switch_48",
+  "count": 1
+ }
+}

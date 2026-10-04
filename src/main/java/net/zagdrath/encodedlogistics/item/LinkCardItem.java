@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.item;
 
+import java.util.Locale;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -31,7 +33,11 @@ import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
@@ -39,6 +45,7 @@ import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
+import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
 // The Link Card pairs Network Bridges and Point-to-Point Link endpoints. Sneak-use it on one to store its address (a
@@ -46,8 +53,9 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 // Point-to-Point Link input with an output carrying the same thing. The card keeps the address, so more outputs can be
 // paired to the same input. Sneak-use in the air clears it. Blank cards stack; written ones don't.
 //
-// It also links network segments to a Router: sneak-use it on one end of a Segment Isolator to store the segment on
-// that side, then use it on the Router's unit in an open rack.
+// In a Server Rack: sneak-use it on a Segment Isolator to store the segment on the half clicked, then use it on a switch's
+// unit in an open rack to let the rack's devices serve that segment (again to unlink it); sneak-use it on any other block
+// of a network to store that network, then use it on a Router's unit to link the Router to it.
 public class LinkCardItem extends Item {
     public LinkCardItem(Item.Properties properties) {
         super(properties);
@@ -84,6 +92,14 @@ public class LinkCardItem extends Item {
             return segment;
         }
         Target target = target(level, context.getClickedPos(), context.getClickLocation());
+        if (target == null && player != null && player.isSecondaryUseActive() && onNetwork(level, context.getClickedPos())) {
+            if (level instanceof ServerLevel) {
+                store(stack, player, context.getHand(), LinkAddress.network(GlobalPos.of(level.dimension(), context.getClickedPos())));
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.network_stored"));
+                level.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (target == null || player == null) {
             return InteractionResult.PASS;
         }
@@ -106,8 +122,17 @@ public class LinkCardItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
-    // A Segment Isolator's end (sneak-use: store the segment there) or a Router in an open rack (use with a stored
-    // segment: link it). Null when the use is about neither.
+    // Whether a block is part of a network (a controller, or a node on one); the client can't tell, so it says yes.
+    private static boolean onNetwork(Level level, BlockPos pos) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity || level.getBlockState(pos).getBlock() instanceof NetworkNodeBlock
+                    || level.getBlockEntity(pos) instanceof NetworkNodeHost;
+        }
+        return level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity || ControllerStructures.networkOf(serverLevel, pos) != null;
+    }
+
+    // A Segment Isolator (sneak-use: store the segment on that half), or a switch or Router in an open rack (use with a
+    // stored segment or network: link it). Null when the use is about neither.
     private static @Nullable InteractionResult segment(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
@@ -117,20 +142,22 @@ public class LinkCardItem extends Item {
             return null;
         }
         if (state.getBlock() instanceof SegmentIsolatorBlock && player.isSecondaryUseActive()) {
-            Direction side = context.getClickedFace();
+            // The segment on the half clicked: its ends are usually against cables or blocks, so anywhere on the housing
+            // will do, the side of its middle the click was on deciding which end.
+            Direction.Axis axis = state.getValue(SegmentIsolatorBlock.AXIS);
+            double along = context.getClickLocation().get(axis) - pos.get(axis) - 0.5;
+            Direction side = context.getClickedFace().getAxis() == axis ? context.getClickedFace()
+                    : Direction.fromAxisAndDirection(axis, along >= 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
             if (level instanceof ServerLevel) {
-                if (side.getAxis() != state.getValue(SegmentIsolatorBlock.AXIS)) {
-                    player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_end"));
-                } else {
-                    store(stack, player, context.getHand(), LinkAddress.segment(GlobalPos.of(level.dimension(), pos.relative(side)), side));
-                    player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_stored"));
-                    level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
-                }
+                store(stack, player, context.getHand(), LinkAddress.segment(GlobalPos.of(level.dimension(), pos.relative(side)), side));
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_stored"));
+                level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
             }
             return InteractionResult.SUCCESS;
         }
         LinkAddress stored = address(stack);
-        if (!(state.getBlock() instanceof ServerRackBlock) || stored == null || stored.kind() != LinkAddress.Kind.SEGMENT) {
+        if (!(state.getBlock() instanceof ServerRackBlock) || stored == null
+                || stored.kind() != LinkAddress.Kind.SEGMENT && stored.kind() != LinkAddress.Kind.NETWORK) {
             return null;
         }
         RackBlockEntity rack = ServerRackBlock.rack(level, pos, state);
@@ -143,9 +170,18 @@ public class LinkCardItem extends Item {
             return null;
         }
         RackDevice device = target.device();
+        if (device instanceof SwitchDevice && stored.kind() == LinkAddress.Kind.SEGMENT) {
+            if (level instanceof ServerLevel serverLevel && NetworkAccess.check(serverLevel, rack.getBlockPos(), player, RackPermission.BUILD)) {
+                RackBlockEntity.SegmentResult result = rack.toggleSegment(stored.pos());
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_" + result.name().toLowerCase(Locale.ROOT)));
+                level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.8F);
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (!(device instanceof RouterDevice router)) {
             if (level instanceof ServerLevel) {
-                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.not_router"));
+                player.sendOverlayMessage(Component.translatable(stored.kind() == LinkAddress.Kind.SEGMENT
+                        ? "message.encodedlogistics.link_card.not_switch" : "message.encodedlogistics.link_card.not_router"));
             }
             return InteractionResult.SUCCESS;
         }
@@ -164,7 +200,7 @@ public class LinkCardItem extends Item {
     }
 
     private static Component pair(ServerLevel level, LinkAddress stored, Target target) {
-        if (stored.kind() != target.address().kind() || stored.kind() == LinkAddress.Kind.SEGMENT) {
+        if (stored.kind() != target.address().kind() || stored.kind() == LinkAddress.Kind.SEGMENT || stored.kind() == LinkAddress.Kind.NETWORK) {
             return Component.translatable("message.encodedlogistics.link_card.mismatch");
         }
         if (target.bridge() != null) {

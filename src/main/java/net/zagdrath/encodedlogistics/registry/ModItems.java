@@ -118,6 +118,25 @@ public final class ModItems {
     public static final DeferredItem<RackDeviceItem> UPS = ITEMS.registerItem("ups", p -> new RackDeviceItem(p, RackDeviceType.UPS),
             p -> p.stacksTo(1));
 
+    public static final DeferredItem<RackDeviceItem> L2_SWITCH_24 = ITEMS.registerItem("l2_switch_24", p -> new RackDeviceItem(p, RackDeviceType.L2_SWITCH_24),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> L2_SWITCH_48 = ITEMS.registerItem("l2_switch_48", p -> new RackDeviceItem(p, RackDeviceType.L2_SWITCH_48),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> L3_SWITCH = ITEMS.registerItem("l3_switch", p -> new RackDeviceItem(p, RackDeviceType.L3_SWITCH),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> COMPUTE_SERVER = ITEMS.registerItem("compute_server", p -> new RackDeviceItem(p, RackDeviceType.COMPUTE_SERVER),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> MEMORY_SERVER = ITEMS.registerItem("memory_server", p -> new RackDeviceItem(p, RackDeviceType.MEMORY_SERVER),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> FABRICATION_SERVER = ITEMS.registerItem("fabrication_server", p -> new RackDeviceItem(p, RackDeviceType.FABRICATION_SERVER),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> MONITORING_SERVER = ITEMS.registerItem("monitoring_server", p -> new RackDeviceItem(p, RackDeviceType.MONITORING_SERVER),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> NAS = ITEMS.registerItem("nas", p -> new RackDeviceItem(p, RackDeviceType.NAS),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> SAN = ITEMS.registerItem("san", p -> new RackDeviceItem(p, RackDeviceType.SAN),
+            p -> p.stacksTo(1));
+
     // Cable parts: terminals, ports, the tap and the sensor (PartType).
     private static final Map<PartType, DeferredItem<PartItem>> PARTS = new EnumMap<>(PartType.class);
 

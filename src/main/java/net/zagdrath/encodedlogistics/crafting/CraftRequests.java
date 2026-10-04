@@ -16,7 +16,6 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -53,20 +52,20 @@ public final class CraftRequests {
         return CraftPlanner.plan(storage.list(), CraftPlanner.byOutput(schematics(level, device)), target, amount);
     }
 
-    public static List<SchedulerCoreBlockEntity> schedulers(ServerLevel level, BlockPos device) {
+    public static List<JobHost> schedulers(ServerLevel level, BlockPos device) {
         return ControllerStructures.get(level).schedulersAt(level, device);
     }
 
-    public static @Nullable SchedulerCoreBlockEntity choose(List<SchedulerCoreBlockEntity> schedulers, long memory, int index) {
+    public static @Nullable JobHost choose(List<JobHost> schedulers, long memory, int index) {
         if (index >= 0) {
             return index < schedulers.size() && schedulers.get(index).memoryFree() >= memory ? schedulers.get(index) : null;
         }
-        for (SchedulerCoreBlockEntity scheduler : schedulers) {
+        for (JobHost scheduler : schedulers) {
             if (scheduler.memoryFree() >= memory && scheduler.threadsUsed() < scheduler.threads()) {
                 return scheduler;
             }
         }
-        for (SchedulerCoreBlockEntity scheduler : schedulers) {
+        for (JobHost scheduler : schedulers) {
             if (scheduler.memoryFree() >= memory) {
                 return scheduler;
             }
@@ -76,7 +75,7 @@ public final class CraftRequests {
 
     // Takes the plan's items out of storage and gives the job to the scheduler; null (and nothing taken) when storage
     // no longer has them all.
-    public static @Nullable CraftingJob start(ServerLevel level, BlockPos device, CraftPlanner.Plan plan, SchedulerCoreBlockEntity scheduler) {
+    public static @Nullable CraftingJob start(ServerLevel level, BlockPos device, CraftPlanner.Plan plan, JobHost scheduler) {
         NetworkStorage storage = ControllerStructures.get(level).storageAt(level, device);
         if (storage == null || !plan.complete()) {
             return null;

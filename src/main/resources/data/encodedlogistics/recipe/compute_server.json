@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "HPH",
+  "ISI",
+  "IPI"
+ ],
+ "key": {
+  "H": "encodedlogistics:heatsink",
+  "P": "encodedlogistics:processor_die",
+  "S": "encodedlogistics:circuit_substrate",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:compute_server",
+  "count": 1
+ }
+}

@@ -22,28 +22,37 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
+import net.zagdrath.encodedlogistics.client.screen.FabricationServerPanel;
 import net.zagdrath.encodedlogistics.client.screen.FirewallPanel;
+import net.zagdrath.encodedlogistics.client.screen.L3SwitchPanel;
+import net.zagdrath.encodedlogistics.client.screen.MonitoringPanel;
 import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.client.screen.RouterPanel;
+import net.zagdrath.encodedlogistics.client.screen.ServerPanel;
+import net.zagdrath.encodedlogistics.client.screen.StoragePanel;
+import net.zagdrath.encodedlogistics.client.screen.SwitchPanel;
 import net.zagdrath.encodedlogistics.client.screen.UpsPanel;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
+import net.zagdrath.encodedlogistics.rack.device.SanDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 
 // The client side of each rack device type, by type: its settings panel in the rack's screen (none: picking it just
 // shows its name and status) and anything its renderer draws over its model.
 //
-// Render extras draw on the device's front, given in texels of its 128x128 texture (8 texels a pixel, the front from
-// (0,0) across 104 texels, x running right to left across the model as the north face's u does).
+// Render extras draw on the device's front or back, given in texels of its 128x128 texture (8 texels a pixel, the front
+// from (0,0) and the back from (0,32), each 104 texels across, x running right to left across the model on both faces,
+// as their u does).
 public final class RackClientDevices {
     // What a renderer draws besides the device's model: capture() takes what it needs from the device (on the client
     // copy, when the frame is extracted), submit() draws it in the device's space (its bottom at y = 0).
     public interface RenderExtra {
-        int capture(RackDevice device);
+        int[] capture(RackDevice device);
 
-        void submit(RackDeviceType type, RackDeviceInfo.Status status, int data, PoseStack poseStack, SubmitNodeCollector collector, int light);
+        void submit(RackDeviceType type, RackDeviceInfo.Status status, int[] data, PoseStack poseStack, SubmitNodeCollector collector, int light);
     }
 
     private static final Map<RackDeviceType, RenderExtra> EXTRAS = new HashMap<>();
@@ -53,8 +62,19 @@ public final class RackClientDevices {
         PANELS.put(RackDeviceType.FIREWALL, FirewallPanel::new);
         PANELS.put(RackDeviceType.ROUTER, RouterPanel::new);
         PANELS.put(RackDeviceType.UPS, UpsPanel::new);
+        PANELS.put(RackDeviceType.L2_SWITCH_24, SwitchPanel::new);
+        PANELS.put(RackDeviceType.L2_SWITCH_48, SwitchPanel::new);
+        PANELS.put(RackDeviceType.L3_SWITCH, L3SwitchPanel::new);
+        PANELS.put(RackDeviceType.COMPUTE_SERVER, ServerPanel::new);
+        PANELS.put(RackDeviceType.MEMORY_SERVER, ServerPanel::new);
+        PANELS.put(RackDeviceType.FABRICATION_SERVER, FabricationServerPanel::new);
+        PANELS.put(RackDeviceType.MONITORING_SERVER, MonitoringPanel::new);
+        PANELS.put(RackDeviceType.NAS, StoragePanel::new);
+        PANELS.put(RackDeviceType.SAN, StoragePanel::new);
         EXTRAS.put(RackDeviceType.ROUTER, new RouterCages());
         EXTRAS.put(RackDeviceType.UPS, new UpsDisplay());
+        EXTRAS.put(RackDeviceType.NAS, new DriveBays(false));
+        EXTRAS.put(RackDeviceType.SAN, new DriveBays(true));
     }
 
     private RackClientDevices() {}
@@ -92,14 +112,35 @@ public final class RackClientDevices {
     }
 
     private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color, int light) {
-        buffer.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(pose, 0, 0, -1);
+        vertex(buffer, pose, x, y, z, u, v, color, light, -1);
+    }
+
+    private static void vertex(VertexConsumer buffer, PoseStack.Pose pose, float x, float y, float z, float u, float v, int color, int light, int normalZ) {
+        buffer.addVertex(pose, x, y, z).setColor(color).setUv(u, v).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light)
+                .setNormal(pose, 0, 0, normalZ);
+    }
+
+    // The same on the back face (texels from (0,32), the face just behind the chassis's back at z 29.25).
+    private static final float BACK_Z = 29.28F;
+
+    static void backQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
+            float u, float v, float uw, float vh, int color, int light) {
+        float x1 = (RIGHT_X - x / 8) / 16, x0 = (RIGHT_X - (x + w) / 8) / 16;
+        float y1 = (size - (y - 32) / 8) / 16, y0 = (size - (y + h - 32) / 8) / 16;
+        float z = BACK_Z / 16;
+        float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / 128), v1 = sprite.getV((v + vh) / 128);
+        // South-facing: from the low x end; the texel at x (u0) sits at the high x end.
+        vertex(buffer, pose, x0, y1, z, u1, v0, color, light, 1);
+        vertex(buffer, pose, x0, y0, z, u1, v1, color, light, 1);
+        vertex(buffer, pose, x1, y0, z, u0, v1, color, light, 1);
+        vertex(buffer, pose, x1, y1, z, u0, v0, color, light, 1);
     }
 
     // --- The Router: transceivers in its cages ---
 
     private static final class RouterCages implements RenderExtra {
         @Override
-        public int capture(RackDevice device) {
+        public int[] capture(RackDevice device) {
             int cages = 0;
             if (device instanceof RouterDevice router) {
                 for (int i = 0; i < RouterDevice.CAGES; i++) {
@@ -108,12 +149,13 @@ public final class RackClientDevices {
                     }
                 }
             }
-            return cages;
+            return new int[] { cages };
         }
 
         @Override
-        public void submit(RackDeviceType type, RackDeviceInfo.Status status, int cages, PoseStack poseStack, SubmitNodeCollector collector,
+        public void submit(RackDeviceType type, RackDeviceInfo.Status status, int[] data, PoseStack poseStack, SubmitNodeCollector collector,
                 int light) {
+            int cages = data[0];
             if (cages == 0) {
                 return;
             }
@@ -134,16 +176,17 @@ public final class RackClientDevices {
         private static final int GREEN = 0xFF66FF77, AMBER = 0xFFFFB040, RED = 0xFFFF4848;
 
         @Override
-        public int capture(RackDevice device) {
-            return device instanceof UpsDevice ups ? Math.clamp(ups.shownPercent(), 0, 100) | Math.clamp(ups.shownLeds(), 0, 10) << 8 : 0;
+        public int[] capture(RackDevice device) {
+            return new int[] { device instanceof UpsDevice ups ? Math.clamp(ups.shownPercent(), 0, 100) | Math.clamp(ups.shownLeds(), 0, 10) << 8 : 0 };
         }
 
         @Override
-        public void submit(RackDeviceType type, RackDeviceInfo.Status status, int data, PoseStack poseStack, SubmitNodeCollector collector,
+        public void submit(RackDeviceType type, RackDeviceInfo.Status status, int[] packed, PoseStack poseStack, SubmitNodeCollector collector,
                 int light) {
             if (status == RackDeviceInfo.Status.OFFLINE) {
                 return;
             }
+            int data = packed[0];
             int percent = data & 0xFF, leds = data >> 8 & 0xFF;
             TextureAtlasSprite sprite = sprite(type.id().withPath("block/rack_device/" + type.id().getPath()));
             String text = percent + "%";
@@ -163,6 +206,68 @@ public final class RackClientDevices {
                         frontQuad(buffer, pose, type.size(), x, 6, 2, 3, sprite, 1, 64, 1, 1, color, LightCoordsUtil.FULL_BRIGHT);
                     } else {
                         frontQuad(buffer, pose, type.size(), x, 6, 2, 3, sprite, x, 6, 2, 3, -1, light);
+                    }
+                }
+            });
+        }
+    }
+
+    // --- The NAS and SAN: drives in their bays, the SAN's transceivers in its rear cages ---
+
+    // Each occupied bay shows its drive's tier sled, and the drive's fill light (full-bright) at the sled's lower right:
+    // NAS bays are 12x14 from (15 + 12i, 1), sleds at (13t, 64); SAN bays 6x14 in a 12 x 2 grid from (14, 1), sleds at
+    // (7t, 80); the 2x2 lights at (70 + 3k, sled row), k 0 green, 1 yellow, 2 orange, 3 red, 4 off.
+    private static final class DriveBays implements RenderExtra {
+        private final boolean san;
+
+        DriveBays(boolean san) {
+            this.san = san;
+        }
+
+        @Override
+        public int[] capture(RackDevice device) {
+            if (!(device instanceof StorageDevice storage)) {
+                return new int[0];
+            }
+            int[] data = new int[storage.drives() + 1];
+            for (int i = 0; i < storage.drives(); i++) {
+                data[i] = storage.shownBay(i);
+            }
+            int cages = 0;
+            if (device instanceof SanDevice sanDevice) {
+                for (int i = 0; i < SanDevice.CAGES; i++) {
+                    if (sanDevice.hasTransceiver(i)) {
+                        cages |= 1 << i;
+                    }
+                }
+            }
+            data[storage.drives()] = cages;
+            return data;
+        }
+
+        @Override
+        public void submit(RackDeviceType type, RackDeviceInfo.Status status, int[] data, PoseStack poseStack, SubmitNodeCollector collector,
+                int light) {
+            if (data.length == 0) {
+                return;
+            }
+            TextureAtlasSprite sprite = sprite(type.id().withPath("block/rack_device/" + type.id().getPath()));
+            int bays = data.length - 1, w = san ? 6 : 12, h = 14, sledRow = san ? 80 : 64;
+            collector.submitCustomGeometry(poseStack, Sheets.cutoutBlockItemSheet(), (pose, buffer) -> {
+                for (int i = 0; i < bays; i++) {
+                    if (data[i] < 0) {
+                        continue;
+                    }
+                    int tier = data[i] / 8, lit = Math.min(4, data[i] % 8);
+                    int x = san ? 14 + 6 * (i % 12) : 15 + 12 * i, y = san ? 1 + 15 * (i / 12) : 1;
+                    frontQuad(buffer, pose, type.size(), x, y, w, h, sprite, tier * (w + 1), sledRow, w, h, -1, light);
+                    frontQuad(buffer, pose, type.size(), x + w - 3, y + h - 4, 2, 2, sprite, 70 + 3 * lit, sledRow, 2, 2, -1,
+                            lit == 4 ? light : LightCoordsUtil.FULL_BRIGHT);
+                }
+                int cages = data[bays];
+                for (int j = 0; j < SanDevice.CAGES; j++) {
+                    if ((cages >> j & 1) != 0) {
+                        backQuad(buffer, pose, type.size(), 57 + 10 * j, 35, 6, 2, sprite, 0, 112, 6, 2, -1, light);
                     }
                 }
             });

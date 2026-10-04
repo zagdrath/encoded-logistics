@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:nas",
+  "encodedlogistics:nas",
+  "encodedlogistics:processor_die",
+  "encodedlogistics:optical_transceiver"
+ ],
+ "result": {
+  "id": "encodedlogistics:san",
+  "count": 1
+ }
+}

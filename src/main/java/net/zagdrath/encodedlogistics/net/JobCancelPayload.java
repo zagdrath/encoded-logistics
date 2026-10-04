@@ -15,7 +15,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
-import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 
 // Client to server: cancel a job (from the Scheduler Core or Job Status screen).
 public record JobCancelPayload(BlockPos core, UUID job) implements CustomPacketPayload {
@@ -33,7 +33,7 @@ public record JobCancelPayload(BlockPos core, UUID job) implements CustomPacketP
 
     static void handle(JobCancelPayload payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player) {
-            SchedulerCoreBlockEntity core = JobAccess.core(player, payload.core());
+            JobHost core = JobAccess.core(player, payload.core());
             if (core != null) {
                 core.cancel(payload.job());
             }

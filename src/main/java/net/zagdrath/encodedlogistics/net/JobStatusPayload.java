@@ -18,7 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
-import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.client.CraftingClient;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobInfo;
@@ -41,7 +41,7 @@ public record JobStatusPayload(BlockPos core, UUID id, Optional<JobInfo> job) im
 
     static void handleServer(JobStatusPayload payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player) {
-            SchedulerCoreBlockEntity core = JobAccess.core(player, payload.core());
+            JobHost core = JobAccess.core(player, payload.core());
             CraftingJob job = core != null ? core.job(payload.id()) : null;
             PacketDistributor.sendToPlayer(player, new JobStatusPayload(payload.core(), payload.id(),
                     Optional.ofNullable(job).map(found -> JobInfo.of(found, true))));

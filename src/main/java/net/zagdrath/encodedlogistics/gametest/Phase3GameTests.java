@@ -35,6 +35,7 @@ import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
@@ -190,7 +191,7 @@ final class Phase3GameTests {
                     helper.assertTrue(tooFew != null && tooFew.missing() == 1 && !tooFew.complete(), "12 planks plan: " + tooFew);
                     CraftPlanner.Plan plan = CraftRequests.plan(helper.getLevel(), device, PLANKS, 8);
                     helper.assertTrue(plan != null && plan.complete() && plan.take().get(LOG) == 2, "8 planks plan: " + plan);
-                    List<SchedulerCoreBlockEntity> schedulers = CraftRequests.schedulers(helper.getLevel(), device);
+                    List<JobHost> schedulers = CraftRequests.schedulers(helper.getLevel(), device);
                     helper.assertTrue(schedulers.size() == 1, "Schedulers: " + schedulers.size());
                     helper.assertTrue(CraftRequests.start(helper.getLevel(), device, plan, schedulers.getFirst()) != null, "Job didn't start");
                     helper.assertTrue(storage(helper).count(LOG) == 0, "Logs not taken");

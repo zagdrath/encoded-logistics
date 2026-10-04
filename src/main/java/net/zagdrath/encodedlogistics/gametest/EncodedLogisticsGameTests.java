@@ -97,6 +97,12 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_ups", RackGameTests::upsCoversAndRecharges);
         TESTS.put("rack_ups_full_buffers", RackGameTests::upsOnFullBuffers);
         TESTS.put("rack_router", RackGameTests::routerMovesItems);
+        TESTS.put("rack_lane_pool", Rack2GameTests::lanePool);
+        TESTS.put("rack_storage_devices", Rack2GameTests::storageDevices);
+        TESTS.put("rack_scheduler", Rack2GameTests::rackScheduler);
+        TESTS.put("rack_segments", Rack2GameTests::segments);
+        TESTS.put("rack_router_wan", Rack2GameTests::routerWan);
+        TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

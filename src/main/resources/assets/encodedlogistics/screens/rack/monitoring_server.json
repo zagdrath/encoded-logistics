@@ -1,0 +1,90 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/monitoring_server.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "widgets": {
+  "stats": {
+   "left": 8,
+   "top": 18,
+   "spacing": 20,
+   "button": "terminal/button",
+   "icons": [
+    "rack/monitor/stat_items",
+    "rack/monitor/stat_energy",
+    "rack/monitor/stat_lanes",
+    "rack/monitor/stat_jobs"
+   ]
+  },
+  "ranges": {
+   "left": 92,
+   "top": 21,
+   "spacing": 19,
+   "width": 18,
+   "height": 12,
+   "button": "common/button_wide",
+   "labels": [
+    "1m",
+    "10m",
+    "1h",
+    "1d"
+   ]
+  },
+  "graph": {
+   "inset": [
+    8,
+    44,
+    160,
+    104
+   ],
+   "plot": [
+    10,
+    46,
+    156,
+    100
+   ],
+   "line": {
+    "items": "rack/monitor/line_items",
+    "energy": "rack/monitor/line_energy",
+    "lanes": "rack/monitor/line_lanes",
+    "jobs": "rack/monitor/line_jobs"
+   },
+   "grid": "3 horizontal + 5 vertical dotted lines baked in",
+   "axis_labels": {
+    "max": [
+     12,
+     48
+    ],
+    "now": [
+     150,
+     150
+    ]
+   },
+   "hover": "tooltip with time + value"
+  },
+  "current": {
+   "left": 8,
+   "top": 152,
+   "color": "TEXT"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.monitoring_server",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

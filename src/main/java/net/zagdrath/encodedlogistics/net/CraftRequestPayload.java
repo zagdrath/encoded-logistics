@@ -19,10 +19,10 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
-import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -58,18 +58,18 @@ public record CraftRequestPayload(int containerId, ItemKey key, long amount, int
         }
         long amount = Math.clamp(payload.amount(), 1, MAX_AMOUNT);
         CraftPlanner.Plan plan = CraftRequests.plan(level, device, payload.key(), amount);
-        List<SchedulerCoreBlockEntity> schedulers = CraftRequests.schedulers(level, device);
+        List<JobHost> schedulers = CraftRequests.schedulers(level, device);
         Optional<CraftPlanPayload.Started> started = Optional.empty();
         if (plan != null && payload.start()) {
-            SchedulerCoreBlockEntity scheduler = CraftRequests.choose(schedulers, plan.memory(), payload.scheduler());
+            JobHost scheduler = CraftRequests.choose(schedulers, plan.memory(), payload.scheduler());
             CraftingJob job = scheduler != null ? CraftRequests.start(level, device, plan, scheduler) : null;
             if (job != null) {
-                started = Optional.of(new CraftPlanPayload.Started(scheduler.getBlockPos(), job.id));
+                started = Optional.of(new CraftPlanPayload.Started(scheduler.hostPos(), job.id));
             }
         }
         List<BlockPos> positions = new ArrayList<>();
-        for (SchedulerCoreBlockEntity scheduler : schedulers) {
-            positions.add(scheduler.getBlockPos());
+        for (JobHost scheduler : schedulers) {
+            positions.add(scheduler.hostPos());
         }
         boolean room = plan != null && CraftRequests.choose(schedulers, plan.memory(), payload.scheduler()) != null;
         PacketDistributor.sendToPlayer(player, new CraftPlanPayload(payload.containerId(), payload.key(), amount,

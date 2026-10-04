@@ -20,11 +20,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.ValueInput;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
-import net.zagdrath.encodedlogistics.menu.RackMenu;
+import net.zagdrath.encodedlogistics.rack.ItemRouting;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 
-// The Router's panel (screens/rack/router.json): its segments (the rack's own network first; a green dot when it's
-// reachable; click a name to rename it, right-click a linked one to unlink it), its routes (click the source or the
+// The Router's panel (screens/rack/router.json): its networks (its own first; a green dot when it's reachable; click a
+// name to rename it, right-click a linked one to unlink it), its routes (click the source or the
 // destination to step through the segments, click the filter with an item to set it or empty-handed to clear it,
 // right-click to remove), "+ Add route", the three transceiver cages and the throughput.
 public class RouterPanel extends RackScreen.Panel {
@@ -68,11 +69,11 @@ public class RouterPanel extends RackScreen.Panel {
         int x = screen.left(), y = screen.top();
         RouterDevice router = router();
         if (router != null) {
-            for (int i = 0; i < Math.min(ROWS, router.segmentCount()); i++) {
+            for (int i = 0; i < Math.min(ROWS, router.endpointCount()); i++) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DOT, x + SEGMENTS_X + 2, y + LIST_Y + i * ROW_H + 4, 5, 5,
                         reachable(i) ? 0xFFFFFFFF : 0xFF505050);
             }
-            List<RouterDevice.Route> routes = router.routes();
+            List<ItemRouting.Route> routes = router.routes();
             for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
                 int rowY = y + LIST_Y + i * ROW_H;
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
@@ -88,8 +89,8 @@ public class RouterPanel extends RackScreen.Panel {
             PartScreens.wideButton(graphics, font(), x + ADD_X, y + ADD_Y, ADD_W, ADD_H, Component.translatable("gui.encodedlogistics.router.add_rule"),
                     !full, mouseX, mouseY);
             for (int i = 0; i < RouterDevice.CAGES; i++) {
-                if (screen.getMenu().getSlot(36 + i).getItem().isEmpty()) {
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GHOST, x + RackMenu.CAGE_X[i], y + RackMenu.CAGE_Y, 16, 16);
+                if (screen.getMenu().deviceSlot(i) == null || screen.getMenu().deviceSlot(i).getItem().isEmpty()) {
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GHOST, x + RackDeviceType.ROUTER.slots().get(i).x(), y + RackDeviceType.ROUTER.slots().get(i).y(), 16, 16);
                 }
             }
             ValueInput data = data();
@@ -102,24 +103,24 @@ public class RouterPanel extends RackScreen.Panel {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.segments"), 8, 20, RackScreen.TEXT_MUTED, false);
-        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.rules"), 68, 20, RackScreen.TEXT_MUTED, false);
+        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.networks"), 8, 20, RackScreen.TEXT_MUTED, false);
+        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.wan_rules"), 68, 20, RackScreen.TEXT_MUTED, false);
         RouterDevice router = router();
         if (router == null) {
             return;
         }
-        for (int i = 0; i < Math.min(ROWS, router.segmentCount()); i++) {
+        for (int i = 0; i < Math.min(ROWS, router.endpointCount()); i++) {
             if (i != renaming) {
-                text(graphics, router.segmentName(i).getString(), SEGMENTS_X + 10, LIST_Y + i * ROW_H + 3, SEGMENTS_W - 10,
+                text(graphics, router.endpointName(i).getString(), SEGMENTS_X + 10, LIST_Y + i * ROW_H + 3, SEGMENTS_W - 10,
                         reachable(i) ? RackScreen.TEXT : RackScreen.TEXT_DISABLED);
             }
         }
-        List<RouterDevice.Route> routes = router.routes();
+        List<ItemRouting.Route> routes = router.routes();
         for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
-            RouterDevice.Route route = routes.get(i);
+            ItemRouting.Route route = routes.get(i);
             int rowY = LIST_Y + i * ROW_H + 3;
-            text(graphics, router.segmentName(route.source()).getString(), SOURCE_X, rowY, ARROW_X - SOURCE_X - 1, RackScreen.TEXT);
-            text(graphics, router.segmentName(route.dest()).getString(), DEST_X, rowY, FILTER_X - DEST_X - 2, RackScreen.TEXT);
+            text(graphics, router.endpointName(route.source()).getString(), SOURCE_X, rowY, ARROW_X - SOURCE_X - 1, RackScreen.TEXT);
+            text(graphics, router.endpointName(route.dest()).getString(), DEST_X, rowY, FILTER_X - DEST_X - 2, RackScreen.TEXT);
         }
         ValueInput data = data();
         if (data != null) {
@@ -141,11 +142,11 @@ public class RouterPanel extends RackScreen.Panel {
         }
         if (screen.over(mouseX, mouseY, SEGMENTS_X, LIST_Y, SEGMENTS_W, ROWS * ROW_H)) {
             int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
-            if (row < router.segmentCount()) {
-                graphics.setComponentTooltipForNextFrame(font(), List.of(router.segmentName(row),
+            if (row < router.endpointCount()) {
+                graphics.setComponentTooltipForNextFrame(font(), List.of(router.endpointName(row),
                         Component.translatable(reachable(row) ? "gui.encodedlogistics.router.reachable" : "gui.encodedlogistics.router.unreachable")
                                 .withColor(RackScreen.TEXT_MUTED),
-                        Component.translatable(row == 0 ? "gui.encodedlogistics.router.rename_hint" : "gui.encodedlogistics.router.segment_hint")
+                        Component.translatable(row == 0 ? "gui.encodedlogistics.router.rename_hint" : "gui.encodedlogistics.router.network_hint")
                                 .withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
             } else {
                 graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.link_hint"), mouseX, mouseY);
@@ -154,11 +155,11 @@ public class RouterPanel extends RackScreen.Panel {
         }
         int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
         if (screen.over(mouseX, mouseY, ROUTES_X, LIST_Y, ROUTES_W, ROWS * ROW_H) && row < router.routes().size()) {
-            RouterDevice.Route route = router.routes().get(row);
+            ItemRouting.Route route = router.routes().get(row);
             Component filter = route.filter().isEmpty() ? Component.translatable("gui.encodedlogistics.router.filter_any")
                     : route.filter().getHoverName();
             graphics.setComponentTooltipForNextFrame(font(), List.of(
-                    Component.translatable("gui.encodedlogistics.router.route", router.segmentName(route.source()), router.segmentName(route.dest())),
+                    Component.translatable("gui.encodedlogistics.router.route", router.endpointName(route.source()), router.endpointName(route.dest())),
                     Component.translatable("gui.encodedlogistics.router.filter", filter).withColor(RackScreen.TEXT_MUTED),
                     Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         }
@@ -181,7 +182,7 @@ public class RouterPanel extends RackScreen.Panel {
             return true;
         }
         int row = (int) Math.floor((y - LIST_Y) / ROW_H);
-        if (in(x, y, SEGMENTS_X, LIST_Y, SEGMENTS_W, ROWS * ROW_H) && row < router.segmentCount()) {
+        if (in(x, y, SEGMENTS_X, LIST_Y, SEGMENTS_W, ROWS * ROW_H) && row < router.endpointCount()) {
             if (right && row > 0) {
                 send(RouterDevice.ACTION_UNLINK, row, "");
             } else if (left) {
@@ -214,7 +215,7 @@ public class RouterPanel extends RackScreen.Panel {
         rename.setBordered(false);
         rename.setMaxLength(24);
         rename.setTextColor(RackScreen.TEXT);
-        rename.setValue(router.segmentName(row).getString());
+        rename.setValue(router.endpointName(row).getString());
         screen.addPanelWidget(rename);
         rename.setFocused(true);
         screen.setFocused(rename);

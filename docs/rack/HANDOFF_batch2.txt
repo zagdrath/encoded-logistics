@@ -1,0 +1,164 @@
+ENCODED LOGISTICS - HANDOFF: SERVER RACK DEVICES, BATCH 2
+=========================================================
+L2 Switch (24 / 48 port), L3 Switch, Compute / Memory / Fabrication / Monitoring Servers, NAS, SAN, the Rack Scheduler,
+and the Router's move to WAN routing. Built on the implemented Server Rack (repo 8061f09): RackDeviceType, RackDevice,
+RackDeviceInfo, RackClientDevices, rack screens and popup - nothing in the rack, its screen, popup or outline changes
+except the three API additions in section 1.
+Art: the existing rack-device conventions (128x128 sheets at 8 texels/px; front (0,0)-(104,8n), rear (0,32)-(104,32+8n),
+chassis texels (112,0)-(128,16), extras from (0,64)), smoothly shaded, no flat fills, no speckle, unbranded. Models come
+from the same device_model builder. Previews were rendered from these files inside the repo's rack.
+Paths are relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. API ADDITIONS
+=====================================================================================================
+1.1 Sizes up to 4U. RackDeviceType currently documents 1 or 2 U; the SAN is 4U. Allow size 1..4 (placement already
+    checks consecutive free U; the elevation draws (0,0)-(104,8*size) of the front, so a 4U front is 104x32 - fits the
+    sheet; the 4U model's front/rear UVs are already in its JSON).
+1.2 Rack-local lanes. RackDevice gains laneCost() (exists) plus an optional LanePool capability:
+      interface LanePool { int capacity(); int uplinkCost(); }      // switches
+    RackBlockEntity, when computing its network node:
+      - pools = online switches in the rack; poolCapacity = sum(capacity()) (OPEN 1), uplinkLanes = sum(uplinkCost()).
+      - devices are assigned to the pool in U order until poolCapacity is used; each assigned device costs 0 network
+        lanes; devices beyond the pool fall back to their own laneCost() on the network (OPEN 2).
+      - node lanes = uplinkLanes + sum(laneCost of unpooled devices).
+    Expose per-device {pooled, lanesUsed} for the switch panel.
+1.3 Segment per device. Each pooled device carries an optional segment id (the Segment Isolator segment system). A device
+    on segment S only sees network storage / devices of segment S; "-" = the rack's own segment.
+1.4 Popup header badge. RackDeviceInfo gains `boolean schedulerBadge` (default false). When true the popup draws
+    hud/badge_scheduler (9x9) + "Scheduler" (gold, lang hud.encodedlogistics.rack.scheduler) right-aligned on the
+    header's second line, opposite the U position (mockup: previews/hud_header_scheduler.png).
+
+=====================================================================================================
+2. NETWORKING DEVICES
+=====================================================================================================
+2.1 L2 SWITCH - l2_switch_24 (16 rack-local lanes), l2_switch_48 (32), 1U, uplinkCost 1.
+  Front: ears, mint accent, copper port rows (24: 2 x 12 larger ports; 48: 2 x 24 dense ports - visibly different),
+  2 SFP uplink cages, status LED; activity LEDs animate (_on.png 4 frames, frametime 3). Rear: power + fans.
+  Panel (gui/rack/switch.png, screens/rack/l2_switch_24|48.json): pool bar + "N / M lanes", device list (icon, name,
+  lane bar rack/switch/lane_bar_*, segment button cycling known segments), uplink status line.
+  HUD: Lanes used/available; Devices (count pooled); Uplink (Linked (1 lane) / No uplink lane).
+2.2 L3 SWITCH - l3_switch, 1U, 32 rack-local lanes, uplinkCost 1. Everything the 48-port does, plus:
+  - Routing between segments of the SAME network: rules source segment -> destination segment + item filter; moves
+    matching items from source-segment storage to destination-segment storage each tick budget (OPEN: shares the
+    Router's budget numbers, proposed 32 items/s base).
+  - QoS: rules marking traffic high priority - crafting jobs, a specific Ingress/Egress Port (pick with a Link Card or
+    from a list), or an item filter. When the network is busy (transfer budget exhausted), high-priority requests are
+    serviced first (OPEN 3).
+  Front: same family, indigo accent, an extra column of 4 status LEDs. Rear: power + fans.
+  Panel (gui/rack/l3_switch.png, screens/rack/l3_switch.json): tabs Devices / Routes / QoS (rack/switch/tab_active,
+  tab_inactive); Devices = the L2 list; Routes = source -> dest + filter ghost, "+ Add route"; QoS = icon
+  (rack/switch/qos_high), kind, target, level, "+ Add QoS rule".
+  HUD: Lanes; Active routes; QoS rules; Uplink.
+2.3 ROUTER (behaviour change, no new art): routes between SEPARATE networks joined by Network Bridges (WAN edge).
+  Known remote networks = networks reachable through any Bridge from this network. Rules: source network -> destination
+  network + item filter. Segment-to-segment routing moves to the L3 Switch.
+  Panel: screens/rack/router.json (same texture) - left list is now "Networks" (remote networks, click to rename),
+  rules are network -> network. HUD: Remote networks; Active routes; Throughput (replaces segment wording).
+
+=====================================================================================================
+3. SERVERS (shared chassis: ears, bezel, accent stripe per type)
+=====================================================================================================
+3.1 COMPUTE SERVER - compute_server, 2U, orange accent. Adds crafting threads (OPEN 4: proposed 2 per server).
+  Front: 8 drive blanks, vent grille, power button, status LEDs (drive activity animates). Rear: dual PSUs, 2 network
+  ports, fans. Panel (gui/rack/server.png, screens/rack/compute_server.json): readouts threads provided / in use /
+  rack scheduler, usage bar, jobs using the rack scheduler. HUD: Threads provided; Threads in use (+ Scheduler badge).
+3.2 MEMORY SERVER - memory_server, 1U, magenta accent. Adds job buffer (OPEN 4: proposed 32K per server).
+  Front: slim bezel, 16 memory-activity LEDs (animate), vent. Rear: power + fans. Panel: server.png (memory lines).
+  HUD: Buffer; In use (+ Scheduler badge).
+3.3 FABRICATION SERVER - fabrication_server, 2U, gold accent. A rack Fabricator: 9 Crafting Schematics, crafts
+  crafting-table recipes for the scheduler, ingredients from the network, results back.
+  Front: schematic window with 6 card slots (cards shown), 6 activity LEDs (animate), power button. Rear: power + fans.
+  Panel (gui/rack/fabrication_server.png): 3x3 schematic slots (31,23), progress (92,40), 2 module slots (141,33/51)
+  accepting throughput_module, job lines. HUD: Schematics; Job; Progress.
+3.4 MONITORING SERVER - monitoring_server, 1U, teal accent. Samples network stats: item flow (items/min), energy use
+  (FE/t), lane usage, crafting throughput (jobs/min) - OPEN 6 for interval/retention.
+  Front: small LCD with a live trace (animates), 4 status LEDs. Rear: power + fans.
+  Panel (gui/rack/monitoring_server.png): 4 stat buttons (rack/monitor/stat_*), range buttons 1m / 10m / 1h / 1d,
+  graph plot (10,46)-(166,146) with baked dotted grid; plot each stat as a 2x2-pixel line (rack/monitor/line_*);
+  max label top-left, "Now: ..." line under the graph, hover tooltip time + value.
+  HUD: Items; Energy; Lanes; Active jobs.
+
+RACK SCHEDULER: a rack with >= 1 online Compute Server and >= 1 online Memory Server is a Scheduler (no multiblock).
+  threads = sum over Compute Servers, buffer = sum over Memory Servers in that rack; it appears on the Craft Plan
+  screen's Scheduler selector as "Rack <name or x,y,z>" (lang gui.encodedlogistics.craft.scheduler.rack). Fabrication
+  Servers in the same rack are preferred for its crafting-table steps. While active, every Compute / Memory /
+  Fabrication Server in that rack sets schedulerBadge (1.4). One rack = one Rack Scheduler (OPEN 5).
+
+=====================================================================================================
+4. STORAGE DEVICES
+=====================================================================================================
+4.1 NAS - nas, 2U, 1 lane. Holds 6 Storage Drives (8K-2M, tag #encodedlogistics:storage_drives - new). Network storage
+  with priority (-999..999) and access mode (read-write / read-only / write-only), same semantics as the Inventory Tap.
+  Front: 6 front-loaded 3.5" bays (empty = dark bay). Renderer extra per occupied bay i: the tier sled sprite
+  (12x14 at (t*13, 64), t = 0 8K .. 4 2M) over bay rect nas_bays()[i] = (15 + 12i, 1) size 12x14, then the 2x2
+  fullness LED from (70 + 3k, 64) (k: 0 green <50%, 1 yellow 50-75, 2 orange 75-<100, 3 red full, 4 off) at the
+  sled's lower right (bay x+w-3, y+h-4), full-bright - same colours as the Drive Bay. Rear: power, 4 network ports, fan.
+  Panel (gui/rack/nas.png): 6 drive slots (35+18i, 23), priority field + steppers, access mode, capacity bar.
+  HUD: Capacity used/total (with bar: NORMAL <75%, WARN 75-95%, LOW >95%); Drives N / 6.
+4.2 SAN - san, 4U, 1 lane. Holds 24 drives. Needs >= 1 Optical Transceiver in its 4 rear uplink cages to come online
+  (else FAULT "Offline - no uplink"); each extra transceiver raises priority and speed (OPEN 7).
+  Front: 24 2.5" bays in a 12 x 2 grid (san_bays()[i] = (14 + 6*(i%12), 1 + 15*(i//12)), 6x14) + status panel
+  (LCD + 4 LEDs). Renderer extra per bay: sled sprite 6x14 at (t*7, 80); fullness LED from (70 + 3k, 80); per
+  installed transceiver j, the 6x2 sprite (0,112) into rear cage j. Rear: 4 SFP cages, dual PSUs, fans.
+  Panel (gui/rack/san.png): 24 drive slots 6x4 at (9,23), 4 transceiver slots 2x2 at (125,23), priority, access,
+  capacity bar, uplink line. HUD: Capacity (bar); Drives N / 24; Uplink (N transceivers / No transceiver).
+
+=====================================================================================================
+5. STATES, POWER, LANES
+=====================================================================================================
+  States (all devices): off -> <id>.json, on -> <id>_on.json (activity LEDs animate: _on.png = 4 frames, frametime 3),
+  fault -> <id>_fault.json (2-frame blink, frametime 10). Full-bright glow elements as on the existing devices.
+  Power: devices drain from the rack (which draws over the network) [config]: switches 2 FE/t (L3 3), Compute 6,
+  Memory 3, Fabrication 4 + 50 per craft, Monitoring 2, NAS 2 + 0.5 per drive, SAN 4 + 0.5 per drive.
+  Lanes: switches 1 uplink each; every other device 1 lane unless pooled by a switch (1.2).
+
+=====================================================================================================
+6. RECIPES (data/encodedlogistics/recipe/*.json; adjust freely)
+=====================================================================================================
+  l2_switch_24        shaped "LCL"/"NSN"/"NIN": logic die x2, copper foil, network cable x4, circuit substrate, iron
+  l2_switch_48        shapeless: 24-port switch + logic die + dense network cable x2
+  l3_switch           shapeless: 48-port switch + processor die + memory die
+  compute_server      shaped HPH/ISI/IPI: heatsink x2, processor die x2, circuit substrate, iron x4
+  memory_server       shaped "M M"/"MSM"/"III": memory die x4, circuit substrate, iron x3
+  fabrication_server  shapeless: fabricator + circuit substrate + processor die
+  monitoring_server   shapeless: circuit substrate + processor die + memory die + threshold sensor
+  nas                 shaped FLF/ISI/IMI: ferrite x2, logic die, iron x4, circuit substrate, memory die
+  san                 shapeless: NAS x2 + processor die + optical transceiver
+  Tags: #encodedlogistics:storage_drives (new, 5 drives); #encodedlogistics:rack_devices (+ the 9 new devices).
+
+=====================================================================================================
+7. FILES
+=====================================================================================================
+assets/encodedlogistics/
+  textures/block/rack_device/<id>.png, <id>_on.png (+ .mcmeta, 4 frames), <id>_fault.png (+ .mcmeta) for
+    l2_switch_24, l2_switch_48, l3_switch, compute_server, memory_server, fabrication_server, monitoring_server, nas, san
+    (nas/san sheets also hold the drive sled + fullness LED sprites; san the transceiver-in-cage sprite)
+  models/block/rack_device/<id>(_on|_fault).json; models/item/<id>.json; items/<id>.json; textures/item/<id>.png
+  textures/gui/rack/{switch,l3_switch,server,fabrication_server,monitoring_server,nas,san}.png
+  textures/gui/sprites/rack/switch/*, rack/monitor/*, rack/storage/ghost_drive.png, hud/badge_scheduler.png
+  screens/rack/{l2_switch_24,l2_switch_48,l3_switch,compute_server,memory_server,fabrication_server,
+    monitoring_server,nas,san,router}.json   (router.json REPLACES the existing one)
+  lang/en_us.rack2.json -> MERGE into en_us.json
+data/encodedlogistics/recipe/*.json, tags/item/storage_drives.json (new), tags/item/rack_devices.json (REPLACES)
+blockbench/rack_device_<id>.bbmodel - sources for all 9 devices (textures embedded)
+tools/devices2.py (painters + icons), export2.py (python tools/export2.py), gui2.py (python tools/gui2.py
+  src/main/resources/assets/encodedlogistics/), preview2.py, gui2_preview.py + shared helpers
+previews/ device_textures (fronts on + rears), item_icons, rack_batch2_front, rack_storage_close (drives in bays),
+  rack_batch2_overview, rack_batch2_rear, gui_* (7 panels), hud_mockups (all devices + SAN fault), hud_header_scheduler,
+  hud_san_inworld
+
+=====================================================================================================
+8. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+1. Several switches per rack: allowed; lane pools combine (sum of capacities), each switch costs 1 uplink lane.
+2. No switch / pool full: yes - devices fall back to consuming 1 network lane each (current behaviour), so switches are
+   an optimisation, never a requirement.
+3. QoS: 3 levels (High / Normal / Low); when the transfer budget is exhausted, High requests are served first, then
+   Normal, then Low, round-robin within a level; crafting jobs default Normal.
+4. Compute Server = 2 threads (a Thread Unit is 1, so 1U-equivalent density matches); Memory Server = 32K buffer
+   (two Job Buffers' worth, 16K each).
+5. One rack = one Rack Scheduler (all servers in it pooled); several racks = several schedulers.
+6. Monitoring: sample every 20 ticks; keep 1 min / 10 min at full resolution, 1 h at 1 sample per 10 s, 1 day at 1 per
+   2 min (ring buffers, ~1,700 samples per stat, saved with the device).
+7. SAN: +25% access speed and +1 storage priority per transceiver beyond the first (max +75% / +3).

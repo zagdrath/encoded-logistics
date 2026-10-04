@@ -338,6 +338,66 @@ public class Config {
             .comment("FE per tick a UPS in Standby mode drains while its network runs.")
             .defineInRange("upsDrainStandby", 1.0, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.IntValue L2_SWITCH_24_LANES = BUILDER
+            .comment("Rack-local lanes a 24-Port L2 Switch gives the other devices in its rack.")
+            .defineInRange("l2Switch24Lanes", 16, 0, 1024);
+
+    public static final ModConfigSpec.IntValue L2_SWITCH_48_LANES = BUILDER
+            .comment("Rack-local lanes a 48-Port L2 Switch gives the other devices in its rack.")
+            .defineInRange("l2Switch48Lanes", 32, 0, 1024);
+
+    public static final ModConfigSpec.IntValue L3_SWITCH_LANES = BUILDER
+            .comment("Rack-local lanes an L3 Switch gives the other devices in its rack.")
+            .defineInRange("l3SwitchLanes", 32, 0, 1024);
+
+    public static final ModConfigSpec.DoubleValue SWITCH_DRAIN = BUILDER
+            .comment("FE per tick an L2 Switch drains while its network runs.")
+            .defineInRange("switchDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue L3_SWITCH_DRAIN = BUILDER
+            .comment("FE per tick an L3 Switch drains while its network runs.")
+            .defineInRange("l3SwitchDrain", 3.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue L3_SWITCH_RATE = BUILDER
+            .comment("Items per second an L3 Switch routes between segments, shared between its routes.")
+            .defineInRange("l3SwitchRate", 32, 0, 4096);
+
+    public static final ModConfigSpec.IntValue COMPUTE_SERVER_THREADS = BUILDER
+            .comment("Crafting threads each Compute Server gives its rack's scheduler.")
+            .defineInRange("computeServerThreads", 2, 0, 1024);
+
+    public static final ModConfigSpec.IntValue MEMORY_SERVER_MEMORY = BUILDER
+            .comment("Job memory each Memory Server gives its rack's scheduler.")
+            .defineInRange("memoryServerMemory", 32_768, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.DoubleValue COMPUTE_SERVER_DRAIN = BUILDER
+            .comment("FE per tick a Compute Server drains while its network runs.")
+            .defineInRange("computeServerDrain", 6.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue MEMORY_SERVER_DRAIN = BUILDER
+            .comment("FE per tick a Memory Server drains while its network runs.")
+            .defineInRange("memoryServerDrain", 3.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue FABRICATION_SERVER_DRAIN = BUILDER
+            .comment("FE per tick a Fabrication Server drains while its network runs (each craft also costs fabricatorEnergyPerCraft).")
+            .defineInRange("fabricationServerDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue MONITORING_SERVER_DRAIN = BUILDER
+            .comment("FE per tick a Monitoring Server drains while its network runs.")
+            .defineInRange("monitoringServerDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue NAS_DRAIN = BUILDER
+            .comment("FE per tick a NAS drains while its network runs, on top of its drives.")
+            .defineInRange("nasDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue SAN_DRAIN = BUILDER
+            .comment("FE per tick a SAN drains while its network runs, on top of its drives.")
+            .defineInRange("sanDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue RACK_DRIVE_DRAIN = BUILDER
+            .comment("FE per tick each Storage Drive in a NAS or SAN drains.")
+            .defineInRange("rackDriveDrain", 0.5, 0.0, 1_000.0);
+
     static {
         BUILDER.pop();
     }

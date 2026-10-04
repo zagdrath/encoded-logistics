@@ -5,10 +5,12 @@
 
 package net.zagdrath.encodedlogistics.rack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,8 +20,13 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 
 // A device mounted in a Server Rack at U u (taking size U from there up). The rack is its network node: each device
-// uses laneCost lanes and drains drain() FE/t from the network, and goes online when the rack has its lanes on a
-// powered network.
+// uses laneCost lanes (none while a switch in the rack pools it: LanePool) and drains drain() FE/t from the network,
+// and goes online when the rack has its lanes on a powered network. A pooled device can be put on another segment
+// (segment > 0: one the rack links to with a Link Card), and then serves that segment's network instead of the rack's
+// own (RackBlockEntity#network).
+//
+// Devices with item slots (RackDeviceType#slots) hold them in items(); the rack's screen shows them while the device
+// is picked, and they come out with it (contents()).
 //
 // What a device keeps comes in three layers: its settings (saveSettings: what the item carries when it's taken out),
 // its full state in the rack (save: settings plus anything else, like its own inventory), and what clients see
@@ -30,9 +37,12 @@ public abstract class RackDevice {
     private int u;
     private @Nullable RackBlockEntity rack;
     private boolean online;
+    private int segment;
+    private final NonNullList<ItemStack> items;
 
     protected RackDevice(RackDeviceType type) {
         this.type = type;
+        this.items = NonNullList.withSize(type.slots().size(), ItemStack.EMPTY);
     }
 
     public final RackDeviceType type() {
@@ -95,6 +105,28 @@ public abstract class RackDevice {
         return 1;
     }
 
+    // A switch's rack-local lanes, or null for any other device.
+    public @Nullable LanePool lanePool() {
+        return null;
+    }
+
+    // What a switch offers the rack: lanes for the other devices in it, and what it costs on the network itself.
+    public interface LanePool {
+        int capacity();
+
+        int uplinkCost();
+    }
+
+    // The segment it serves: 0 the rack's own network, i (1+) the rack's i-th linked segment. Only pooled devices can
+    // be on another segment.
+    public final int segment() {
+        return segment;
+    }
+
+    public final void setSegment(int segment) {
+        this.segment = Math.max(0, segment);
+    }
+
     // FE per tick it drains while its network runs.
     public abstract double drain();
 
@@ -130,20 +162,56 @@ public abstract class RackDevice {
 
     // The popup's lines. Called on the server, for the player looking at it.
     public RackDeviceInfo describe(ServerPlayer viewer) {
-        return new RackDeviceInfo(name(), status(), statusText(), lines(viewer));
+        return new RackDeviceInfo(name(), status(), statusText(), lines(viewer), rack != null && rack.scheduler().badges(this));
     }
 
     protected List<RackDeviceInfo.InfoLine> lines(ServerPlayer viewer) {
         return List.of();
     }
 
-    // Items it holds besides itself (dropped with it, or given back when it's taken out).
+    // Its item slots (RackDeviceType#slots), in order.
+    public final NonNullList<ItemStack> items() {
+        return items;
+    }
+
+    // A slot's item was put in or taken out.
+    public void itemsChanged() {
+        changed(false);
+    }
+
+    // Items it holds besides itself (dropped with it, or given back when it's taken out): its slots, by default.
     public List<ItemStack> contents() {
-        return List.of();
+        List<ItemStack> stacks = new ArrayList<>();
+        items.stream().filter(stack -> !stack.isEmpty()).forEach(stack -> stacks.add(stack.copy()));
+        return stacks;
     }
 
     // Empties what contents() listed, once they've been dropped or given back.
-    public void clearContents() {}
+    public void clearContents() {
+        items.replaceAll(stack -> ItemStack.EMPTY);
+    }
+
+    // Saves and loads its slots (for devices with any).
+    protected final void saveItems(ValueOutput output) {
+        ValueOutput.ValueOutputList list = output.childrenList("items");
+        for (int i = 0; i < items.size(); i++) {
+            if (!items.get(i).isEmpty()) {
+                ValueOutput child = list.addChild();
+                child.putInt("slot", i);
+                child.store("item", ItemStack.CODEC, items.get(i));
+            }
+        }
+    }
+
+    protected final void loadItems(ValueInput input) {
+        clearContents();
+        for (ValueInput child : input.childrenListOrEmpty("items")) {
+            int slot = child.getIntOr("slot", -1);
+            if (slot >= 0 && slot < items.size()) {
+                items.set(slot, child.read("item", ItemStack.CODEC).orElse(ItemStack.EMPTY));
+            }
+        }
+    }
 
     // An action from its settings panel. The player is allowed to use the rack's screen.
     public void handleAction(ServerPlayer player, int action, int value, String text) {}

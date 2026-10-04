@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "FLF",
+  "ISI",
+  "IMI"
+ ],
+ "key": {
+  "F": "encodedlogistics:ferrite",
+  "L": "encodedlogistics:logic_die",
+  "S": "encodedlogistics:circuit_substrate",
+  "M": "encodedlogistics:memory_die",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:nas",
+  "count": 1
+ }
+}

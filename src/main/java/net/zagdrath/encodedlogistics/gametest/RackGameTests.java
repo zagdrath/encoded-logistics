@@ -65,7 +65,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // its local geometry, and its devices on a network: the Firewall's permissions, the UPS covering and recharging, the
 // Router moving items across a Segment Isolator.
 final class RackGameTests {
-    private static final BlockPos CONTROLLER = new BlockPos(0, 1, 0);
+    static final BlockPos CONTROLLER = new BlockPos(0, 1, 0);
     private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE));
 
     private RackGameTests() {}
@@ -73,7 +73,7 @@ final class RackGameTests {
     // --- Helpers ---
 
     // The six blocks of a rack, as placing it does; returns the master.
-    private static BlockPos rack(GameTestHelper helper, BlockPos bottomFront, Direction facing) {
+    static BlockPos rack(GameTestHelper helper, BlockPos bottomFront, Direction facing) {
         BlockPos master = RackGeometry.masterPos(bottomFront, facing, RackGeometry.BOTTOM_FRONT);
         for (int index = 0; index < RackGeometry.PARTS; index++) {
             helper.setBlock(RackGeometry.partPos(master, facing, index), part(facing, index));
@@ -81,24 +81,24 @@ final class RackGameTests {
         return master;
     }
 
-    private static BlockState part(Direction facing, int index) {
+    static BlockState part(Direction facing, int index) {
         return ModBlocks.SERVER_RACK.get().defaultBlockState().setValue(ServerRackBlock.FACING, facing).setValue(ServerRackBlock.PART_INDEX, index)
                 .setValue(ServerRackBlock.PART, index == RackGeometry.MASTER ? ServerRackBlock.Part.MASTER : ServerRackBlock.Part.DUMMY);
     }
 
-    private static <T extends RackDevice> T install(GameTestHelper helper, BlockPos master, RackDeviceType type, int u, Class<T> kind) {
+    static <T extends RackDevice> T install(GameTestHelper helper, BlockPos master, RackDeviceType type, int u, Class<T> kind) {
         RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
         RackDevice device = type.create();
         rack.install(device, u, null);
         return kind.cast(device);
     }
 
-    private static void controller(GameTestHelper helper, BlockPos pos, int energy) {
+    static void controller(GameTestHelper helper, BlockPos pos, int energy) {
         helper.setBlock(pos, ModBlocks.NETWORK_CONTROLLER.get());
         insert(helper, pos, energy);
     }
 
-    private static int insert(GameTestHelper helper, BlockPos pos, int amount) {
+    static int insert(GameTestHelper helper, BlockPos pos, int amount) {
         EnergyHandler energy = helper.getLevel().getCapability(Capabilities.Energy.BLOCK, helper.absolutePos(pos), Direction.UP);
         try (Transaction transaction = Transaction.openRoot()) {
             int inserted = energy.insert(amount, transaction);
@@ -107,19 +107,19 @@ final class RackGameTests {
         }
     }
 
-    private static void cable(GameTestHelper helper, BlockPos pos) {
+    static void cable(GameTestHelper helper, BlockPos pos) {
         NetworkCableBlock block = ModBlocks.cable(CableTier.NORMAL, CableColor.NEUTRAL).get();
         helper.setBlock(pos, block.withConnections(block.defaultBlockState(), helper.getLevel(), helper.absolutePos(pos)));
     }
 
-    private static void driveBay(GameTestHelper helper, BlockPos pos) {
+    static void driveBay(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModBlocks.DRIVE_BAY.get().defaultBlockState().setValue(DriveBayBlock.FACING, Direction.EAST));
         helper.getBlockEntity(pos, DriveBayBlockEntity.class).setItem(0, new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
     }
 
     // A powered controller and a rack facing north at (3, 1, 0), cabled to it at its back (its back blocks are at z 1,
     // their back faces south). Returns the master.
-    private static BlockPos networkedRack(GameTestHelper helper) {
+    static BlockPos networkedRack(GameTestHelper helper) {
         controller(helper, CONTROLLER, 20_000);
         BlockPos master = rack(helper, new BlockPos(3, 1, 0), Direction.NORTH);
         for (BlockPos pos : new BlockPos[] { new BlockPos(1, 1, 0), new BlockPos(1, 1, 1), new BlockPos(1, 1, 2), new BlockPos(2, 1, 2),
@@ -129,7 +129,7 @@ final class RackGameTests {
         return master;
     }
 
-    private static NetworkStorage storage(GameTestHelper helper, BlockPos device) {
+    static NetworkStorage storage(GameTestHelper helper, BlockPos device) {
         NetworkStorage storage = ControllerStructures.get(helper.getLevel()).storageAt(helper.getLevel(), helper.absolutePos(device));
         helper.assertTrue(storage != null, "Network offline at " + device);
         return storage;
@@ -408,8 +408,9 @@ final class RackGameTests {
                 })
                 .thenIdle(25)
                 .thenExecute(() -> {
+                    // Once or twice a second has gone by (depending on when the test started), not enough for all 40.
                     long moved = storage(helper, bayB).count(COBBLESTONE);
-                    helper.assertTrue(moved > 0 && moved <= router.rate(), "Moved " + moved + " in the first second (rate " + router.rate() + ")");
+                    helper.assertTrue(moved > 0 && moved <= 2L * router.rate() && moved < 40, "Moved " + moved + " (rate " + router.rate() + ")");
                 })
                 .thenIdle(60)
                 .thenExecute(() -> {

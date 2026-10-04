@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "LCL",
+  "NSN",
+  "NIN"
+ ],
+ "key": {
+  "L": "encodedlogistics:logic_die",
+  "C": "encodedlogistics:copper_foil",
+  "N": "encodedlogistics:network_cable",
+  "S": "encodedlogistics:circuit_substrate",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:l2_switch_24",
+  "count": 1
+ }
+}

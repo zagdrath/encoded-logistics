@@ -15,13 +15,6 @@
   "tooltip": "gui.encodedlogistics.rack.back"
  },
  "widgets": {
-  "segments": {
-   "left": 10,
-   "top": 32,
-   "rows": 6,
-   "row_height": 14,
-   "dot": "rack/router/segment_dot"
-  },
   "rules": {
    "left": 70,
    "top": 32,
@@ -34,7 +27,8 @@
     "filter": 80
    },
    "arrow": "rack/router/arrow",
-   "filter_ghost": true
+   "filter_ghost": true,
+   "note": "source network -> destination network + item filter"
   },
   "add_rule": {
    "left": 68,
@@ -59,6 +53,14 @@
    "top": 144,
    "width": 98,
    "sprite": "common/bar_fill_mint"
+  },
+  "networks": {
+   "left": 10,
+   "top": 32,
+   "rows": 6,
+   "row_height": 14,
+   "dot": "rack/router/segment_dot",
+   "note": "known remote networks (linked with a Link Card); click to rename"
   }
  },
  "text": {
@@ -68,14 +70,8 @@
    "top": 5,
    "color": "TEXT"
   },
-  "segments": {
-   "key": "gui.encodedlogistics.router.segments",
-   "left": 8,
-   "top": 20,
-   "color": "TEXT_MUTED"
-  },
   "rules": {
-   "key": "gui.encodedlogistics.router.rules",
+   "key": "gui.encodedlogistics.router.wan_rules",
    "left": 68,
    "top": 20,
    "color": "TEXT_MUTED"
@@ -83,6 +79,12 @@
   "throughput": {
    "left": 68,
    "top": 132,
+   "color": "TEXT_MUTED"
+  },
+  "networks": {
+   "key": "gui.encodedlogistics.router.networks",
+   "left": 8,
+   "top": 20,
    "color": "TEXT_MUTED"
   }
  }

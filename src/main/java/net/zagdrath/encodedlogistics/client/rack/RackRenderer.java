@@ -38,7 +38,7 @@ import net.zagdrath.encodedlogistics.rack.RackGeometry;
 // Everything is in the master's local space turned by the rack's facing, as the frame model is. With both doors shut
 // the devices aren't drawn beyond rackCullDistance.
 public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRenderer.State> {
-    private static final int[] NO_TINTS = new int[0];
+    private static final int[] NO_TINTS = new int[0], NONE = new int[0];
     private static final float OPEN_DEGREES = 110;
 
     public static class State extends BlockEntityRenderState {
@@ -47,7 +47,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         final List<DeviceDraw> devices = new ArrayList<>();
     }
 
-    record DeviceDraw(RackDeviceType type, int u, RackDeviceInfo.Status status, int extra) {}
+    record DeviceDraw(RackDeviceType type, int u, RackDeviceInfo.Status status, int[] extra) {}
 
     public RackRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -71,7 +71,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         }
         for (RackDevice device : rack.devices()) {
             RackClientDevices.RenderExtra extra = RackClientDevices.extra(device.type());
-            state.devices.add(new DeviceDraw(device.type(), device.u(), device.shownStatus(), extra != null ? extra.capture(device) : 0));
+            state.devices.add(new DeviceDraw(device.type(), device.u(), device.shownStatus(), extra != null ? extra.capture(device) : NONE));
         }
     }
 

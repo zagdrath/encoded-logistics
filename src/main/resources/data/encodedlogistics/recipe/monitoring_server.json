@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:processor_die",
+  "encodedlogistics:memory_die",
+  "encodedlogistics:threshold_sensor"
+ ],
+ "result": {
+  "id": "encodedlogistics:monitoring_server",
+  "count": 1
+ }
+}

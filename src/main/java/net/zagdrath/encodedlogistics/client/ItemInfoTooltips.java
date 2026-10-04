@@ -40,6 +40,7 @@ import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
+import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -92,6 +93,7 @@ public final class ItemInfoTooltips {
                     case BRIDGE -> "block.encodedlogistics.network_bridge";
                     case P2P -> "item.encodedlogistics.point_to_point_link";
                     case SEGMENT -> "tooltip.encodedlogistics.link_card.segment";
+                    case NETWORK -> "tooltip.encodedlogistics.link_card.network";
                 });
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.link_card.address", kind, address.pos().pos().getX(),
                         address.pos().pos().getY(), address.pos().pos().getZ()).withStyle(ChatFormatting.GRAY));
@@ -162,6 +164,11 @@ public final class ItemInfoTooltips {
             case "optical_transceiver" -> new Object[] { Config.RELAY_RANGE_PER_TRANSCEIVER.getAsInt(), Config.ROUTER_RATE_PER_TRANSCEIVER.getAsInt() };
             case "router" -> new Object[] { Config.ROUTER_BASE_RATE.getAsInt(), Config.ROUTER_RATE_PER_TRANSCEIVER.getAsInt() };
             case "ups" -> new Object[] { String.format(Locale.ROOT, "%,d", Config.UPS_CAPACITY.getAsInt()) };
+            case "l2_switch_24" -> new Object[] { Config.L2_SWITCH_24_LANES.getAsInt() };
+            case "l2_switch_48" -> new Object[] { Config.L2_SWITCH_48_LANES.getAsInt() };
+            case "l3_switch" -> new Object[] { Config.L3_SWITCH_LANES.getAsInt() };
+            case "compute_server" -> new Object[] { Config.COMPUTE_SERVER_THREADS.getAsInt() };
+            case "memory_server" -> new Object[] { MemoryServerDevice.memory(Config.MEMORY_SERVER_MEMORY.getAsInt()) };
             case "relay_antenna" -> new Object[] { Config.RELAY_BASE_RANGE.getAsInt() };
             case "network_bridge" -> new Object[] { Config.BRIDGE_LANES.getAsInt() };
             default -> new Object[0];

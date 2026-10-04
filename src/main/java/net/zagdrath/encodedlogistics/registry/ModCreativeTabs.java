@@ -61,7 +61,9 @@ public final class ModCreativeTabs {
                         ModItems.REDSTONE_CONTROL_MODULE)) {
                     output.accept(item.get());
                 }
-                for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS)) {
+                for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS, ModItems.L2_SWITCH_24, ModItems.L2_SWITCH_48,
+                        ModItems.L3_SWITCH, ModItems.COMPUTE_SERVER, ModItems.MEMORY_SERVER, ModItems.FABRICATION_SERVER, ModItems.MONITORING_SERVER,
+                        ModItems.NAS, ModItems.SAN)) {
                     output.accept(device.get());
                 }
                 output.accept(ModItems.HANDHELD_TERMINAL.get());

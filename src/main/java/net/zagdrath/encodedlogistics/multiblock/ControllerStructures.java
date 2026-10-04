@@ -50,6 +50,7 @@ import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.LaneResult;
@@ -66,6 +67,7 @@ import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -284,6 +286,7 @@ public class ControllerStructures extends SavedData {
                     runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
                     NetworkRef ref = new NetworkRef(level.dimension(), id);
                     runtime.members.forEach(pos -> index.members.remove(pos, ref));
+                    runtime.racks.forEach(index.racks::remove);
                 }
             }
         }
@@ -466,6 +469,7 @@ public class ControllerStructures extends SavedData {
     private void setNetworkNodes(ServerLevel level, NetworkIndex index, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
         NetworkRef ref = new NetworkRef(level.dimension(), id);
         runtime.members.forEach(pos -> index.members.remove(pos, ref));
+        runtime.racks.forEach(index.racks::remove);
         List<NodePos> members = new ArrayList<>(), banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(),
                 partHosts = new ArrayList<>(), providers = new ArrayList<>(), schedulers = new ArrayList<>(), relays = new ArrayList<>(),
                 racks = new ArrayList<>();
@@ -509,6 +513,7 @@ public class ControllerStructures extends SavedData {
         runtime.schedulers = List.copyOf(schedulers);
         runtime.relays = List.copyOf(relays);
         runtime.racks = List.copyOf(racks);
+        index.racks.addAll(racks);
     }
 
     private static List<CapacitorBankBlockEntity> banks(MinecraftServer server, Runtime runtime) {
@@ -613,7 +618,13 @@ public class ControllerStructures extends SavedData {
                 }
             }
         }
-        return new NetworkStorage(views);
+        for (RackDevice device : rackDevicesServing(server, owner.ref)) {
+            if (device instanceof StorageDevice storageDevice) {
+                views.addAll(storageDevice.views(server));
+            }
+        }
+        Runtime runtime = owner.runtime;
+        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved);
     }
 
     // --- Racks ---
@@ -632,59 +643,121 @@ public class ControllerStructures extends SavedData {
         return racks;
     }
 
-    // The Firewall a network uses: the first in its racks (by rack position, then unit), or null.
+    // Every loaded Server Rack on any network, in a stable order.
+    public static List<RackBlockEntity> allRacks(MinecraftServer server) {
+        List<NodePos> positions = new ArrayList<>(NetworkIndex.get(server).racks);
+        positions.sort(NetworkGraph.ORDER);
+        List<RackBlockEntity> racks = new ArrayList<>();
+        for (NodePos pos : positions) {
+            if (blockEntity(server, pos) instanceof RackBlockEntity rack) {
+                racks.add(rack);
+            }
+        }
+        return racks;
+    }
+
+    // The rack devices serving a network: in racks on it, or on a segment of another rack set to it (online or not),
+    // by rack then unit.
+    public static List<RackDevice> rackDevicesServing(MinecraftServer server, @Nullable NetworkRef network) {
+        List<RackDevice> devices = new ArrayList<>();
+        if (network != null) {
+            for (RackBlockEntity rack : allRacks(server)) {
+                devices.addAll(rack.devicesServing(network));
+            }
+        }
+        return devices;
+    }
+
+    // The Firewall a network uses: the first serving it (by rack position, then unit), or null.
     public static @Nullable FirewallDevice firewall(MinecraftServer server, @Nullable NetworkRef network) {
-        for (RackBlockEntity rack : racks(server, network)) {
-            for (RackDevice device : rack.devices()) {
-                if (device instanceof FirewallDevice firewall) {
-                    return firewall;
-                }
+        for (RackDevice device : rackDevicesServing(server, network)) {
+            if (device instanceof FirewallDevice firewall) {
+                return firewall;
             }
         }
         return null;
     }
 
     public static int firewalls(MinecraftServer server, @Nullable NetworkRef network) {
-        int count = 0;
-        for (RackBlockEntity rack : racks(server, network)) {
-            for (RackDevice device : rack.devices()) {
-                if (device instanceof FirewallDevice) {
-                    count++;
-                }
-            }
-        }
-        return count;
+        return (int) rackDevicesServing(server, network).stream().filter(device -> device instanceof FirewallDevice).count();
     }
 
     // --- Autocrafting ---
 
     // The online Fabricators and Gateways on the network a device at pos is on (empty while it's offline).
     public List<CraftingProvider> providersAt(ServerLevel level, BlockPos device) {
-        Runtime runtime = onlineRuntime(level, device);
+        Owner owner = owner(level, device);
+        return owner != null && owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device)) ? providersOf(level.getServer(), owner.ref)
+                : new ArrayList<>();
+    }
+
+    // The online Fabricators, Gateways and Fabrication Servers of a network.
+    public static List<CraftingProvider> providersOf(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
         List<CraftingProvider> providers = new ArrayList<>();
-        if (runtime != null) {
-            for (NodePos pos : runtime.providers) {
-                if (runtime.online.contains(pos) && blockEntity(level.getServer(), pos) instanceof CraftingProvider provider) {
-                    providers.add(provider);
-                }
+        if (owner == null || owner.runtime.status != NetworkStatus.ONLINE) {
+            return providers;
+        }
+        for (NodePos pos : owner.runtime.providers) {
+            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof CraftingProvider provider) {
+                providers.add(provider);
+            }
+        }
+        for (RackDevice device : rackDevicesServing(server, network)) {
+            if (device.isOnline() && device instanceof CraftingProvider provider) {
+                providers.add(provider);
             }
         }
         return providers;
     }
 
-    // The online, formed Schedulers on the network a device at pos is on.
-    public List<SchedulerCoreBlockEntity> schedulersAt(ServerLevel level, BlockPos device) {
-        Runtime runtime = onlineRuntime(level, device);
-        List<SchedulerCoreBlockEntity> schedulers = new ArrayList<>();
-        if (runtime != null) {
-            for (NodePos pos : runtime.schedulers) {
-                if (runtime.online.contains(pos) && blockEntity(level.getServer(), pos) instanceof SchedulerCoreBlockEntity core && core.formed()) {
-                    schedulers.add(core);
-                }
+    // The online, formed Schedulers on the network a device at pos is on, then its racks' Rack Schedulers.
+    public List<JobHost> schedulersAt(ServerLevel level, BlockPos device) {
+        Owner owner = owner(level, device);
+        List<JobHost> schedulers = new ArrayList<>();
+        if (owner == null || !owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device))) {
+            return schedulers;
+        }
+        for (NodePos pos : owner.runtime.schedulers) {
+            if (owner.runtime.online.contains(pos) && blockEntity(level.getServer(), pos) instanceof SchedulerCoreBlockEntity core && core.formed()) {
+                schedulers.add(core);
+            }
+        }
+        for (RackBlockEntity rack : allRacks(level.getServer())) {
+            if (rack.scheduler().active() && owner.ref.equals(rack.scheduler().network())) {
+                schedulers.add(rack.scheduler());
             }
         }
         return schedulers;
     }
+
+    // A crafting job finished on the network a job host at pos is on (counted for Monitoring Servers).
+    public static void jobFinished(ServerLevel level, BlockPos host) {
+        jobFinished(level.getServer(), networkOf(level, host));
+    }
+
+    public static void jobFinished(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        if (owner != null) {
+            owner.runtime.jobsDone++;
+        }
+    }
+
+    // What a Monitoring Server samples: cumulative items moved in or out of storage and jobs finished, and the drain
+    // and lane use as of the last tick.
+    public record NetworkStats(boolean online, long itemsMoved, double usage, int lanesUsed, int laneCapacity, long jobsDone) {}
+
+    public static @Nullable NetworkStats stats(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        if (owner == null) {
+            return null;
+        }
+        Runtime runtime = owner.runtime;
+        LaneResult lanes = runtime.lanes;
+        return new NetworkStats(runtime.status == NetworkStatus.ONLINE, runtime.itemsMoved, runtime.usage, lanes != null ? lanes.used() : 0,
+                lanes != null ? lanes.capacity() : 0, runtime.jobsDone);
+    }
+
 
     // Whether two nodes in this level are on the same network.
     public boolean sameNetwork(ServerLevel level, BlockPos a, BlockPos b) {
@@ -734,12 +807,17 @@ public class ControllerStructures extends SavedData {
     // Takes up to amount FE from the energy of the network a device at pos is on (banks first, then controllers), for
     // work beyond its passive drain. Returns what it got.
     public int drawEnergy(ServerLevel level, BlockPos device, int amount) {
-        Owner owner = owner(level, device);
+        return drawEnergy(level.getServer(), networkOf(level, device), amount);
+    }
+
+    // The same, from a network found some other way (a rack device serving a segment).
+    public static int drawEnergy(MinecraftServer server, @Nullable NetworkRef network, int amount) {
+        Owner owner = owner(server, network);
         if (owner == null || owner.runtime.status != NetworkStatus.ONLINE || amount <= 0) {
             return 0;
         }
         int left = amount;
-        for (CapacitorBankBlockEntity bank : banks(level.getServer(), owner.runtime)) {
+        for (CapacitorBankBlockEntity bank : banks(server, owner.runtime)) {
             if (left <= 0) {
                 break;
             }
@@ -903,5 +981,7 @@ public class ControllerStructures extends SavedData {
         long stored, capacity;
         double usage, generation;
         int comparator = -1;
+        // Counted for Monitoring Servers: items moved in or out of storage, crafting jobs finished.
+        long itemsMoved, jobsDone;
     }
 }

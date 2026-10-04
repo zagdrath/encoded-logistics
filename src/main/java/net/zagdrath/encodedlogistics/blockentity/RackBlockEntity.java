@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.blockentity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -46,6 +48,8 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
@@ -53,12 +57,20 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RackScheduler;
+import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
+import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 
 // The Server Rack's master block entity: the devices by the unit they sit at (bottom U), the doors, and the rack's place
-// on its network. It's one network device using a lane per device (all or none: they share the rack's connection),
-// draining what its devices drain; its devices go online and offline with it.
+// on its network. It's one network device, draining what its devices drain; its devices go online and offline with it.
+// Its lanes: each switch's uplink, plus a lane for each device its switches don't pool (Lanes) - all or none, as they
+// share the rack's connection.
+//
+// It also knows the segments its devices can serve (networks beyond Segment Isolators, linked with a Link Card): a
+// pooled device set to segment i serves that network instead of the rack's own (network(device)). And it runs the
+// rack's Scheduler (RackScheduler) when it has Compute and Memory Servers.
 //
 // Clients get the doors, whether each device is on, off or faulted, and what each device's front shows (writeClient).
 // Door changes are sent at once; device changes at most every SYNC_INTERVAL ticks. The doors animate on the client
@@ -67,7 +79,13 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     public static final int DOOR_TICKS = 10;
     private static final int SYNC_INTERVAL = 10;
 
+    // Segments it can link beyond its own network.
+    public static final int MAX_SEGMENTS = 5;
+
     private final TreeMap<Integer, RackDevice> devices = new TreeMap<>();
+    // Linked segments, each found through a block on it (the one next to a Segment Isolator's end).
+    private final List<GlobalPos> segments = new ArrayList<>();
+    private final RackScheduler scheduler = new RackScheduler(this);
     private boolean frontOpen, rearOpen;
     private boolean online;
     private boolean syncPending;
@@ -143,6 +161,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         devices.remove(device.u());
         device.onRemoved();
         device.detach();
+        device.setSegment(0);
         deviceChanged(true);
         return device;
     }
@@ -238,15 +257,152 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     // --- Network ---
 
     public DeviceNode networkNode(Set<Direction> sides) {
-        int lanes = 0;
         double drain = 0;
         List<NetworkPart> parts = new ArrayList<>();
         for (RackDevice device : devices.values()) {
-            lanes += device.laneCost();
             drain += device.drain();
             parts.add(new NetworkPart(device.type().item(), device.drain()));
         }
-        return new DeviceNode(worldPosition.immutable(), sides, lanes, drain, parts, true);
+        return new DeviceNode(worldPosition.immutable(), sides, lanes().networkLanes(), drain, parts, true);
+    }
+
+    // How the rack's lanes work out: the switches' pool (its capacity and how much of it is used), which devices it
+    // pools, and the lanes the rack needs from the network.
+    public record Lanes(int poolCapacity, int poolUsed, Set<RackDevice> pooledDevices, int networkLanes) {
+        public static final Lanes NONE = new Lanes(0, 0, Set.of(), 0);
+
+        public boolean isPooled(RackDevice device) {
+            return pooledDevices.contains(device);
+        }
+
+        public int pooled() {
+            return pooledDevices.size();
+        }
+    }
+
+    // The switches pool their capacity for the other devices, in unit order until it's used; each switch costs its
+    // uplink on the network, every device it doesn't pool its own lanes.
+    public Lanes lanes() {
+        int capacity = 0, network = 0;
+        for (RackDevice device : devices.values()) {
+            if (device.lanePool() != null) {
+                capacity += device.lanePool().capacity();
+                network += device.lanePool().uplinkCost();
+            }
+        }
+        int used = 0;
+        Set<RackDevice> pooled = new HashSet<>();
+        for (RackDevice device : devices.values()) {
+            if (device.lanePool() != null) {
+                continue;
+            }
+            if (used + device.laneCost() <= capacity) {
+                used += device.laneCost();
+                pooled.add(device);
+            } else {
+                network += device.laneCost();
+            }
+        }
+        return new Lanes(capacity, used, pooled, network);
+    }
+
+    // --- Segments ---
+
+    // Segments: 0 the rack's own network, then the linked ones.
+    public int segmentCount() {
+        return 1 + segments.size();
+    }
+
+    public Component segmentName(int index) {
+        return index == 0 ? Component.translatable("gui.encodedlogistics.switch.segment.default")
+                : Component.translatable("gui.encodedlogistics.rack.segment", index);
+    }
+
+    // The network a segment is, if it's on one right now.
+    public @Nullable NetworkRef segmentNetwork(int index) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return null;
+        }
+        if (index == 0) {
+            return ControllerStructures.networkOf(serverLevel, worldPosition);
+        }
+        return index - 1 < segments.size() ? RouterDevice.networkAt(serverLevel.getServer(), segments.get(index - 1)) : null;
+    }
+
+    public enum SegmentResult {
+        LINKED, UNLINKED, FULL
+    }
+
+    // Links a segment (a Link Card's); linking one it already has unlinks it.
+    public SegmentResult toggleSegment(GlobalPos node) {
+        int index = segments.indexOf(node);
+        if (index >= 0) {
+            unlinkSegment(index + 1);
+            return SegmentResult.UNLINKED;
+        }
+        if (segments.size() >= MAX_SEGMENTS) {
+            return SegmentResult.FULL;
+        }
+        segments.add(node);
+        deviceChanged(false);
+        return SegmentResult.LINKED;
+    }
+
+    // Devices on it go back to the rack's own network; later segments move down one, as do L3 routes through them.
+    private void unlinkSegment(int index) {
+        segments.remove(index - 1);
+        for (RackDevice device : devices.values()) {
+            if (device.segment() == index) {
+                device.setSegment(0);
+            } else if (device.segment() > index) {
+                device.setSegment(device.segment() - 1);
+            }
+            if (device instanceof L3SwitchDevice l3) {
+                List<ItemRouting.Route> kept = ItemRouting.withoutEndpoint(l3.routes(), index);
+                l3.routes().clear();
+                l3.routes().addAll(kept);
+            }
+        }
+        deviceChanged(false);
+    }
+
+    // The next (or previous) segment for the device at u, if a switch pools it.
+    public void cycleSegment(int u, int step) {
+        RackDevice device = deviceAt(u);
+        if (device == null || device.lanePool() != null || !lanes().isPooled(device)) {
+            return;
+        }
+        device.setSegment(Math.floorMod(device.segment() + step, segmentCount()));
+        deviceChanged(false);
+    }
+
+    // The network a device serves: its segment's while a switch pools it, otherwise the rack's own.
+    public @Nullable NetworkRef network(RackDevice device) {
+        if (device.segment() > 0 && device.segment() < segmentCount() && lanes().isPooled(device)) {
+            return segmentNetwork(device.segment());
+        }
+        return segmentNetwork(0);
+    }
+
+    // Its devices serving a network.
+    public List<RackDevice> devicesServing(NetworkRef network) {
+        List<RackDevice> serving = new ArrayList<>();
+        NetworkRef own = segmentNetwork(0);
+        Lanes lanes = lanes();
+        for (RackDevice device : devices.values()) {
+            NetworkRef served = device.segment() > 0 && device.segment() < segmentCount() && lanes.isPooled(device) ? segmentNetwork(device.segment())
+                    : own;
+            if (network.equals(served)) {
+                serving.add(device);
+            }
+        }
+        return serving;
+    }
+
+    // --- The rack's Scheduler ---
+
+    public RackScheduler scheduler() {
+        return scheduler;
     }
 
     @Override
@@ -270,6 +426,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         for (RackDevice device : List.copyOf(rack.devices.values())) {
             device.tick(serverLevel);
         }
+        rack.scheduler.tick(serverLevel);
         if (rack.syncCooldown > 0) {
             rack.syncCooldown--;
         } else if (rack.syncPending) {
@@ -320,6 +477,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 device.onRemoved();
             }
             devices.clear();
+            scheduler.dropAll(serverLevel);
         }
     }
 
@@ -330,14 +488,18 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         super.loadAdditional(input);
         frontOpen = input.getBooleanOr("front_open", false);
         rearOpen = input.getBooleanOr("rear_open", false);
+        segments.clear();
+        input.read("segments", GlobalPos.CODEC.listOf()).ifPresent(segments::addAll);
         devices.clear();
         for (ValueInput child : input.childrenListOrEmpty("devices")) {
             RackDevice device = read(child);
             if (device != null) {
                 device.load(child.childOrEmpty("data"));
+                device.setSegment(child.getIntOr("segment", 0));
                 devices.put(device.u(), device);
             }
         }
+        scheduler.load(input);
     }
 
     // A device's type and place from a saved or synced entry, or null if it's unknown or doesn't fit.
@@ -363,8 +525,15 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             ValueOutput child = list.addChild();
             child.putString("type", device.type().id().toString());
             child.putInt("u", device.u());
+            if (device.segment() > 0) {
+                child.putInt("segment", device.segment());
+            }
             device.save(child.child("data"));
         }
+        if (!segments.isEmpty()) {
+            output.store("segments", GlobalPos.CODEC.listOf(), segments);
+        }
+        scheduler.save(output);
     }
 
     @Override

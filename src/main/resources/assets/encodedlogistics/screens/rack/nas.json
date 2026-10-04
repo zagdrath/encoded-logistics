@@ -1,0 +1,77 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/nas.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "slots": {
+  "drives": {
+   "left": [
+    35,
+    53,
+    71,
+    89,
+    107,
+    125
+   ],
+   "top": 23,
+   "accepts": "#encodedlogistics:storage_drives",
+   "ghost": "rack/storage/ghost_drive",
+   "fill_led": true
+  }
+ },
+ "widgets": {
+  "priority": {
+   "field": {
+    "sprite": "inventory_tap/number_field",
+    "sprite_focused": "inventory_tap/number_field_focused",
+    "min": -999,
+    "max": 999
+   },
+   "up": "inventory_tap/step_up",
+   "down": "inventory_tap/step_down",
+   "left": 12,
+   "top": 60
+  },
+  "access": {
+   "button": "terminal/button",
+   "icons": [
+    "inventory_tap/access_read_write",
+    "inventory_tap/access_read",
+    "inventory_tap/access_write"
+   ],
+   "left": 60,
+   "top": 56
+  },
+  "capacity": {
+   "left": 12,
+   "top": 78,
+   "width": 152,
+   "sprite": "common/bar_fill_mint"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.nas",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "priority": {
+   "key": "gui.encodedlogistics.tap.priority",
+   "left": 12,
+   "top": 55,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

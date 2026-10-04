@@ -6,7 +6,9 @@
 package net.zagdrath.encodedlogistics.multiblock;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -45,6 +47,8 @@ public final class NetworkIndex extends SavedData {
             MapCodec.unit(NetworkIndex::new).codec());
 
     final Map<NodePos, NetworkRef> members = new HashMap<>();
+    // Every Server Rack on any network (their devices may serve another network than the rack's: a segment).
+    final Set<NodePos> racks = new HashSet<>();
     int generation;
 
     public NetworkIndex() {}

@@ -18,9 +18,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 // What the rack's unit popup shows for a device: its name, status (a dot and coloured text) and any number of
-// label / value lines, each with an optional bar under it. Every device describes itself with one of these
-// (RackDevice#describe), so the popup never changes for a new device.
-public record RackDeviceInfo(Component name, Status status, Component statusText, List<InfoLine> lines) {
+// label / value lines, each with an optional bar under it, and whether it's part of its rack's Scheduler (a badge in
+// the header). Every device describes itself with one of these (RackDevice#describe), so the popup never changes for
+// a new device.
+public record RackDeviceInfo(Component name, Status status, Component statusText, List<InfoLine> lines, boolean schedulerBadge) {
+    public RackDeviceInfo(Component name, Status status, Component statusText, List<InfoLine> lines) {
+        this(name, status, statusText, lines, false);
+    }
+
     public enum Status {
         ONLINE, OFFLINE, FAULT;
 
@@ -68,5 +73,6 @@ public record RackDeviceInfo(Component name, Status status, Component statusText
             ByteBufCodecs.idMapper(Status::byId, Status::ordinal), RackDeviceInfo::status,
             ComponentSerialization.TRUSTED_STREAM_CODEC, RackDeviceInfo::statusText,
             InfoLine.STREAM_CODEC.apply(ByteBufCodecs.list(16)), RackDeviceInfo::lines,
+            ByteBufCodecs.BOOL, RackDeviceInfo::schedulerBadge,
             RackDeviceInfo::new);
 }

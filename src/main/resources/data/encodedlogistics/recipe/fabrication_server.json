@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:fabricator",
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:processor_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:fabrication_server",
+  "count": 1
+ }
+}

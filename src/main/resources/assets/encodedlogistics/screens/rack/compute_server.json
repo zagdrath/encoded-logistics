@@ -1,0 +1,50 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/server.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "widgets": {
+  "readouts": {
+   "left": 12,
+   "top": 26,
+   "line_height": 12,
+   "lines": [
+    "threads_provided",
+    "threads_in_use",
+    "scheduler"
+   ]
+  },
+  "bar": {
+   "left": 9,
+   "top": 101,
+   "width": 158,
+   "sprite": "common/bar_fill_gold"
+  },
+  "jobs": {
+   "left": 12,
+   "top": 122,
+   "rows": 3,
+   "row_height": 12,
+   "note": "jobs using this rack scheduler"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.compute_server",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

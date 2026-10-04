@@ -10,14 +10,22 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongConsumer;
 
 // A network's storage as its parts see it: every drive in its online Drive Bays and every inventory its online
 // Inventory Taps face. Items go in by priority (highest first; drives before taps on a tie), and within a priority to the
 // places already holding that item first; they come out lowest priority first (taps before drives on a tie).
 public final class NetworkStorage {
     private final List<StorageView> fillOrder, emptyOrder;
+    // Told how many items really went in or came out (not simulations): the network's item flow.
+    private final LongConsumer moved;
 
     public NetworkStorage(List<StorageView> views) {
+        this(views, count -> {});
+    }
+
+    public NetworkStorage(List<StorageView> views, LongConsumer moved) {
+        this.moved = moved;
         fillOrder = new ArrayList<>(views);
         fillOrder.sort(Comparator.comparingInt(StorageView::priority).reversed().thenComparing(StorageView::isTap));
         emptyOrder = new ArrayList<>(views);
@@ -64,6 +72,9 @@ public final class NetworkStorage {
             }
             start = end;
         }
+        if (!simulate && amount - left > 0) {
+            moved.accept(amount - left);
+        }
         return amount - left;
     }
 
@@ -75,6 +86,9 @@ public final class NetworkStorage {
                 break;
             }
             left -= view.extract(key, left, simulate);
+        }
+        if (!simulate && amount - left > 0) {
+            moved.accept(amount - left);
         }
         return amount - left;
     }
