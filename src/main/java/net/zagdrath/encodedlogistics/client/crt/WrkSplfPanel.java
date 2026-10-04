@@ -117,6 +117,11 @@ final class WrkSplfPanel extends OsListPanel {
     }
 
     @Override
+    String rowLabel(TerminalLine row) {
+        return cell(row, 1) + "  " + cell(row, 2);
+    }
+
+    @Override
     void delete(TerminalLine row) {
         screen.query("deletesplf " + cell(row, 0));
         screen.query(query());

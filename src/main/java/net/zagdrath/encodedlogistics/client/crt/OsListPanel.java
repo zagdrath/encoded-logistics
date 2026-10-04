@@ -11,6 +11,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
@@ -107,21 +109,41 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
         screen.openWindow(new Chained(window));
     }
 
-    // The confirmation for every row given a deleting option: Enter runs each row's command.
-    void confirmAll(String option, List<TerminalLine> rows, java.util.function.Function<TerminalLine, String> command) {
+    // The confirmation for every row given the deleting option: Enter deletes each (F11, where the screen has it,
+    // its other way: ENDJOB *IMMED).
+    void confirmAll(List<TerminalLine> rows) {
         if (rows.isEmpty()) {
             return;
         }
-        StringBuilder text = new StringBuilder(tr("crt.encodedlogistics.confirm.option", option)).append("\n");
+        StringBuilder text = new StringBuilder(tr("crt.encodedlogistics.confirm.option", deleteLabel())).append("\n");
         for (TerminalLine row : rows) {
-            text.append("\n   ").append(cell(row, 0));
+            text.append("\n   ").append(rowLabel(row));
         }
+        Runnable f11 = immediate(rows);
         then(() -> screen.confirm(text.toString(), () -> {
             for (TerminalLine row : rows) {
                 delete(row);
             }
             next();
-        }, null));
+        }, f11 == null ? null : () -> {
+            f11.run();
+            next();
+        }));
+    }
+
+    // The deleting option as the confirmation names it ("4=Delete").
+    String deleteLabel() {
+        return tr("crt.encodedlogistics.confirm.delete");
+    }
+
+    // A row as the confirmation lists it.
+    String rowLabel(TerminalLine row) {
+        return cell(row, 0);
+    }
+
+    // F11 in the confirmation, for screens with a second way to delete; null for none.
+    @Nullable Runnable immediate(List<TerminalLine> rows) {
+        return null;
     }
 
     // Runs the rows' options in order: each option code to a step (false: not an option this screen has).
@@ -152,7 +174,7 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
                 return invalid(option);
             }
         }
-        confirmAll(deleteOption(), deleting, this::deleteCommand);
+        confirmAll(deleting);
         next();
         return true;
     }

@@ -34,6 +34,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // The screens against their layouts (screens handoff E): each composed into the grid - in the real lang file's words,
 // with the layouts' sample data - and its fixed rows (headings, legends, labels, keys) compared with
@@ -254,6 +255,103 @@ class LayoutTest {
         CrtGrid grid = terminal.compose();
         // Rows 3 and 4 hold fields (the layout draws them as underscores); the listing below is the real one's.
         compare("07_compile_listing", grid, 0, 2, 5, 6, 23);
+    }
+
+    @Test
+    void workWithActiveJobs() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("WRKACTJOB");
+        answer(terminal, "jobs", cells("37", "5", "2", "2"), cells("000101", "QINTER", "ZAGDRATH", "INT", "ELDESK01", "*ACTIVE", "12", "5", "1"),
+                cells("000123", "RESTOCK", "ZAGDRATH", "BCH", "MIDRANGE01", "*ACTIVE", "31", "5", "1"),
+                cells("000118", "NOCWALL", "ZAGDRATH", "BCH", "CMPSRV01", "*WAIT", "0", "5", "0"),
+                cells("000124", "ARCHIVE", "OPERATOR", "BCH", "CMPSRV01", "*JOBQ", "0", "5", "0"),
+                cells("000125", "UPSALERT", "ZAGDRATH", "BCH", "CMPSRV01", "*HELD", "0", "5", "0"));
+        option(terminal, 8, "5");
+        CrtGrid grid = terminal.compose();
+        compare("08_wrkactjob", grid, 0, 3, 4, 6, 7, 8, 9, 10, 11, 20, 21, 23);
+        // Elapsed counts from when the screen opened.
+        assertEquals(" Budget used:   37%    Elapsed:  00:00:00    Active jobs:   5    Hosts:  2/2", row(grid, 2).stripTrailing());
+    }
+
+    @Test
+    void workWithJob() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("WRKJOB JOB(RESTOCK)");
+        answer(terminal, "job", cells("000123", "RESTOCK", "ZAGDRATH", "BCH", "MIDRANGE01", "*ACTIVE", "31", "5", "1"));
+        CrtGrid grid = terminal.compose();
+        compare("09_wrkjob", grid, 0, 2, 3, 5, 7, 8, 9, 10, 11, 12, 20, 21, 23);
+        terminal.command.set("10");
+        terminal.submit();
+        assertEquals("DSPJOBLOG", terminal.current().id());
+    }
+
+    @Test
+    void displayJobLog() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("DSPJOBLOG JOB(RESTOCK)");
+        answer(terminal, "joblog", cells("000123", "RESTOCK", "ZAGDRATH", "BCH", "MIDRANGE01", "*ACTIVE", "31", "5", "1"),
+                cells("1", "", "0", "CALL PGM(ZAGLIB/RESTOCK) PARM(LOGIC_DIE 64)", "", ""),
+                cells("0", "ELC1203", "0", "Item LOGIC_DIE is being recalled from tape.", "QCMD", ""),
+                cells("1", "", "0", "STRCRAFT ITEM(&ITEM) QTY(64) RTNCRFJOB(&JOB)", "", ""),
+                cells("0", "ELC1403", "30", "Missing ingredients for LOGIC_DIE.", "RESTOCK", ""));
+        CrtGrid grid = terminal.compose();
+        compare("09b_dspjoblog", grid, 0, 2, 3, 4, 5, 6, 7, 20, 23);
+    }
+
+    @Test
+    void workWithScheduleEntries() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("WRKJOBSCDE");
+        answer(terminal, "schedules", cells("NOCWALL", "*SCD", "*INTERVAL", "Day 2  07:15:00", "CALL PGM(ZAGLIB/NOCWALL)", "ZAGDRATH", "*CURRENT", "30"),
+                cells("ARCHIVE", "*SCD", "*DAILY", "Day 3  02:00:00", "CALL PGM(ZAGLIB/ARCHIVE)", "ZAGDRATH", "0200", "0"),
+                cells("RESTOCK", "*HLD", "*ONCE", "Day 2  12:00:00", "CALL PGM(ZAGLIB/RESTOCK)", "ZAGDRATH", "1200", "0"));
+        CrtGrid grid = terminal.compose();
+        compare("10_wrkjobscde", grid, 0, 3, 4, 6, 7, 8, 9, 20, 21, 23);
+    }
+
+    @Test
+    void workWithTriggers() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("WRKTRGEVT");
+        answer(terminal, "triggers", cells("LOWDIES", "*ITMBELOW", "LOGIC_DIE", "*ANY", "64", "ZAGLIB/RESTOCK", "*ACTIVE", "ZAGDRATH"),
+                cells("UPSPWR", "*PWRUPS", "*ANY", "UPS01", "", "ZAGLIB/UPSALERT", "*ACTIVE", "ZAGDRATH"),
+                cells("LEVER", "*RSCHANGE", "*ANY", "CTLIF01", "*UP", "ZAGLIB/DOORS", "*HELD", "ZAGDRATH"));
+        CrtGrid grid = terminal.compose();
+        compare("11_wrktrgevt", grid, 0, 3, 4, 6, 7, 8, 9, 20, 21, 23);
+    }
+
+    @Test
+    void displayMessages() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("DSPMSG");
+        answer(terminal, "messages", cells("3", "ELC0013", "30", "RESTOCK", "Day 2  07:10:44", "Called program ZAGLIB/RESTOCK ended abnormally.", "1"),
+                cells("2", "", "00", "UPSALERT", "Day 2  06:58:02", "Utility power restored. UPS charge 82%.", "0"),
+                cells("1", "", "10", "QSYSOPR", "Day 2  06:40:15", "Storage 91% used (hot tier).", "0"));
+        CrtGrid grid = terminal.compose();
+        compare("12_dspmsg", grid, 0, 2, 3, 4, 6, 7, 8, 9, 11, 20, 21, 23);
+        assertEquals(CrtGrid.BRIGHT, grid.attrs[7][39], "Unread not bright");
+        assertTrue(((Host) hostOf(terminal)).sent.contains(TerminalService.SCREEN + " readmessages"), "Not marked read");
+    }
+
+    @Test
+    void workWithSystemValues() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("WRKSYSVAL");
+        answer(terminal, "sysvals", cells("SYSNAME", "ELNET01", "ELNET01", "System name", ""), cells("DATFMT", "*DAY", "*DAY", "Date display format", ""),
+                cells("SECLVL", "30", "30", "Security level (10 / 30)", ""), cells("QMAXJOB", "16", "16", "Maximum batch jobs", ""),
+                cells("LOGRTN", "50", "50", "Job logs retained", ""), cells("PHOSPHOR", "*GREEN", "*GREEN", "Default screen colour", ""));
+        CrtGrid grid = terminal.compose();
+        compare("14_wrksysval", grid, 0, 3, 4, 6, 7, 8, 9, 10, 11, 12, 20, 21, 23);
+    }
+
+    static CrtTerminal.Host hostOf(CrtTerminal terminal) {
+        try {
+            var field = CrtTerminal.class.getDeclaredField("host");
+            field.setAccessible(true);
+            return (CrtTerminal.Host) field.get(terminal);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 
     @Test

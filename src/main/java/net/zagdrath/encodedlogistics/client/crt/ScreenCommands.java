@@ -11,7 +11,6 @@ import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 
 import net.zagdrath.encodedlogistics.elcl.Diagnostic;
-import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
 import net.zagdrath.encodedlogistics.elcl.parse.Parser;
@@ -67,6 +66,13 @@ final class ScreenCommands {
             case "WRKDEV" -> new DevicesPanel(screen);
             case "DSPNETSTS" -> new StatusPanel(screen);
             case "WRKCRFJOB" -> new JobsPanel(screen);
+            case "WRKACTJOB" -> new WrkActJobPanel(screen);
+            case "WRKJOB" -> new WrkJobPanel(screen, value(statement, "JOB", "*"));
+            case "DSPJOBLOG" -> new DspJobLogPanel(screen, value(statement, "JOB", "*"));
+            case "WRKJOBSCDE" -> new WrkJobScdePanel(screen);
+            case "WRKTRGEVT" -> new WrkTrgEvtPanel(screen);
+            case "DSPMSG" -> new DspMsgPanel(screen);
+            case "WRKSYSVAL" -> new WrkSysvalPanel(screen);
             case "WRKSPLF" -> {
                 String job = value(statement, "JOB", "*ALL");
                 yield new WrkSplfPanel(screen, job.equals("*ALL") ? null : job);
@@ -81,12 +87,9 @@ final class ScreenCommands {
         };
     }
 
-    // The screen commands without a screen yet, and GO / SIGNOFF.
+    // GO and SIGNOFF.
     private static boolean handled(CrtTerminal screen, Stmt statement) {
-        return switch (statement.name()) {
-            case "GO", "SIGNOFF", "WRKACTJOB", "WRKJOB", "DSPJOBLOG", "WRKJOBSCDE", "WRKTRGEVT", "DSPMSG", "WRKSYSVAL" -> true;
-            default -> false;
-        };
+        return statement.is("GO") || statement.is("SIGNOFF");
     }
 
     private static void act(CrtTerminal screen, Stmt statement) {
@@ -98,8 +101,7 @@ final class ScreenCommands {
                     screen.home();
                 }
             }
-            case "SIGNOFF" -> screen.onClose();
-            default -> screen.message(ElclMessage.of("ELC0107", statement.name()).toString());
+            default -> screen.onClose();
         }
     }
 }

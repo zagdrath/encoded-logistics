@@ -90,9 +90,9 @@ public final class ScreenQueries {
                 case "savepart" -> savePart(context, text.substring(text.indexOf(' ') + 1));
                 case "savecommit" -> saveCommit(context, system, user);
                 case "jobs" -> jobs(system);
-                case "job" -> job(system, arg(words, 1));
+                case "job" -> job(system, own(system, user, arg(words, 1)));
                 case "joblog" -> jobLog(system, user, arg(words, 1));
-                case "callstack" -> callStack(system, arg(words, 1));
+                case "callstack" -> callStack(system, own(system, user, arg(words, 1)));
                 case "schedules" -> schedules(system);
                 case "triggers" -> triggers(system);
                 case "messages" -> messages(system, user);
@@ -125,6 +125,11 @@ public final class ScreenQueries {
         } catch (NumberFormatException e) {
             return failed(ElclMessage.of("ELC0001", text));
         }
+    }
+
+    // A job named "*" (or not named): the user's own interactive job.
+    private static String own(ElclSystem system, String user, String id) {
+        return id.equals("*") || id.isEmpty() ? OsCommands.interactiveJob(system, user).number() : id;
     }
 
     private static String arg(List<String> words, int index) {
