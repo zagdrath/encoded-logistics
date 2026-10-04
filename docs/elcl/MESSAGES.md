@@ -110,6 +110,7 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC1304 | 30 | Device &1 is not facing an inventory. |
 | ELC1305 | 30 | Filter on device &1 is full. |
 | ELC1306 | 30 | Printer &1 is out of paper. |
+| ELC1307 | 00 | Spooled file &1 printed on &2. | *(added: the completion message of printing)*
 
 ## ELC14xx — Crafting
 

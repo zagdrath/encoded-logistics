@@ -116,6 +116,10 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("desk_commands", DeskGameTests::deskCommands);
         TESTS.put("control_interface", ControlInterfaceGameTests::controlInterface);
         TESTS.put("elcl_os_commands", ElclGameTests::osCommands);
+        TESTS.put("elcl_persistence", ElclStoreGameTests::persistence);
+        TESTS.put("elcl_storage_full", ElclStoreGameTests::storageFull);
+        TESTS.put("elcl_retention", ElclStoreGameTests::retention);
+        TESTS.put("elcl_library_authority", ElclStoreGameTests::libraryAuthority);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);

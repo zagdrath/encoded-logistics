@@ -19,6 +19,7 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.OsCommands;
+import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
@@ -169,7 +170,7 @@ public final class ScreenQueries {
     private static TerminalOutput source(ElclSystem system, String user, String library, String member, int from) throws ElclException {
         List<SourceLine> lines = ElclServices.libraries().source(system, library, member);
         LibraryService.Library lib = ElclServices.libraries().library(system, library);
-        boolean readOnly = lib.type().equals("*SYS") || !lib.owner().equalsIgnoreCase(user) && !lib.authority().equals("*CHANGE");
+        boolean readOnly = !StoredLibraryService.canChange(system, lib, user);
         TerminalOutput out = new TerminalOutput();
         out.line(row(lines.size(), from, readOnly ? "1" : "0"));
         for (int i = Math.max(0, from); i < Math.min(lines.size(), from + SOURCE_PAGE); i++) {

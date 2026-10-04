@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 import net.zagdrath.encodedlogistics.elcl.Diagnostic;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
+import net.zagdrath.encodedlogistics.elcl.compile.CompiledProgram;
 
 // Libraries, source members and programs (OS.md 2-3): what Work with Libraries, Work with Members, the editor and
 // compile (option 14 / CRTELPGM) work on. Failures are ELCL escape messages (ELC0201-ELC0208, ELC0401).
@@ -62,6 +63,9 @@ public interface LibraryService {
     CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember) throws ElclException;
 
     List<String> programs(ElclSystem system, String library) throws ElclException;
+
+    // A program to run (ELC0203 when there's none, or it no longer compiles).
+    CompiledProgram program(ElclSystem system, String library, String program) throws ElclException;
 
     void deleteProgram(ElclSystem system, String user, String library, String program) throws ElclException;
 }

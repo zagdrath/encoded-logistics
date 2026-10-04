@@ -22,18 +22,22 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // The OS commands on Command Entry (screens handoff D.1, E): each returns its completion message (and puts it in the
 // job log); ELSYS is read-only; the screens' queries answer; SNDMSG leaves a message waiting.
 final class ElclGameTests {
-    private static final BlockPos DESK = new BlockPos(1, 1, 3);
+    static final BlockPos DESK = new BlockPos(1, 1, 3);
 
     private ElclGameTests() {}
 
-    private static void desk(GameTestHelper helper) {
+    static final BlockPos BAY = new BlockPos(2, 1, 3);
+
+    // A networked rack, a Terminal Desk on it and a Drive Bay with an 8K drive (members take storage).
+    static void desk(GameTestHelper helper) {
         RackGameTests.networkedRack(helper);
+        RackGameTests.driveBay(helper, BAY);
         var state = ModBlocks.TERMINAL_DESK.get().defaultBlockState().setValue(TerminalDeskBlock.FACING, Direction.SOUTH);
         helper.setBlock(DESK, state);
         helper.setBlock(TerminalDeskBlock.other(state, DESK), state.setValue(TerminalDeskBlock.PART, TerminalDeskBlock.Part.DUMMY));
     }
 
-    private static void expect(GameTestHelper helper, TerminalContext context, String line, String id) {
+    static void expect(GameTestHelper helper, TerminalContext context, String line, String id) {
         TerminalOutput out = TerminalCommands.execute(context, line);
         String message = out.message() != null ? out.message().getString() : "(none)";
         helper.assertTrue(message.startsWith(id), line + ": " + message + ", wanted " + id);

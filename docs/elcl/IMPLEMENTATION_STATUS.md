@@ -10,7 +10,14 @@ against an interface with a fake for tests (Part 7).
 Paths are under `src/main/java/net/zagdrath/encodedlogistics/` unless they start with `src/test`, `docs` or `client/`
 (`client/crt/`). The "Part" column says which part of the task closes the gap.
 
-*Status as of the gap check, before any of Parts 1-8.*
+*Sections 1-5 are the status as of the gap check, before any of Parts 1-8. Progress since then is below and replaces
+those rows where they differ.*
+
+## Progress
+
+| Part | Status | Where |
+|---|---|---|
+| 1. Persistence | Done | `elcl/store/`: `ElclStore` (saved data, one `SystemData` per network), `StoredLibraryService`, `StoredMessageService`, `StoredSpoolService`, `StoredSysvalService`, `StoredUserService` (*SECOFR = the Firewall's owner), `ElclConfig`. ELSYS rebuilt and its samples compiled on every load; programs keep their source, compile date and source version and compile again on load; members cost a byte per 64 characters of drive space (DSPNETSTS counts them; ELC0207); caps of 200 spooled files and 500 messages per user (config `elcl`); SNDMSG chat notice. Tests: `SystemDataTest`; game tests `elcl_persistence`, `elcl_storage_full`, `elcl_retention`, `elcl_library_authority`. Members count against free drive space but don't stop items going in |
 
 ## 1. HANDOFF.txt implementation order
 

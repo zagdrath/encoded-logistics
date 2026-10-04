@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-package net.zagdrath.encodedlogistics.elcl.screen;
+package net.zagdrath.encodedlogistics.elcl.store;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,10 +13,12 @@ import java.util.Map;
 
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.elcl.screen.SysvalService;
 
-// STUB: waiting on elcl.store (system values kept in the network's saved data). In memory per system; the rules
-// (defaults, allowed values, *SECOFR-class to change) are the real ones (OS.md 7).
-final class StubSysvalService implements SysvalService {
+// System values in the system's saved data (OS.md 7): the defaults, allowed values and *SECOFR-class to change. A
+// system keeps only the values changed from their defaults.
+public final class StoredSysvalService implements SysvalService {
     private record Definition(String name, String description, List<String> allowed) {}
 
     private static final List<Definition> DEFINITIONS = List.of(new Definition("SYSNAME", "System name", List.of("Name, 1-8 characters")),
@@ -26,9 +28,6 @@ final class StubSysvalService implements SysvalService {
             new Definition("LOGRTN", "Job logs retained", List.of("0-999")),
             new Definition("PHOSPHOR", "Default screen colour", List.of("*GREEN", "*AMBER", "*WHITE")));
 
-    private final ElclServices.Store<Map<String, String>> store = new ElclServices.Store<>(system -> new LinkedHashMap<>(defaults(system)));
-
-    // STUB: waiting on elcl.store
     private static Map<String, String> defaults(ElclSystem system) {
         Map<String, String> values = new LinkedHashMap<>();
         values.put("SYSNAME", system.defaultName());
@@ -40,10 +39,12 @@ final class StubSysvalService implements SysvalService {
         return values;
     }
 
-    // STUB: waiting on elcl.store
     @Override
     public List<Sysval> values(ElclSystem system) {
-        Map<String, String> values = store.of(system), defaults = defaults(system);
+        Map<String, String> defaults = defaults(system), values = new LinkedHashMap<>(defaults);
+        synchronized (this) {
+            values.putAll(ElclStore.of(system).sysvals);
+        }
         List<Sysval> list = new ArrayList<>();
         for (Definition definition : DEFINITIONS) {
             list.add(new Sysval(definition.name(), values.get(definition.name()), defaults.get(definition.name()), definition.description(),
@@ -52,7 +53,6 @@ final class StubSysvalService implements SysvalService {
         return list;
     }
 
-    // STUB: waiting on elcl.store
     @Override
     public Sysval value(ElclSystem system, String name) throws ElclException {
         for (Sysval sysval : values(system)) {
@@ -63,13 +63,18 @@ final class StubSysvalService implements SysvalService {
         throw new ElclException("ELC0103", name, "SYSVAL");
     }
 
-    // STUB: waiting on elcl.store
     @Override
     public String get(ElclSystem system, String name) {
-        return store.of(system).getOrDefault(name.toUpperCase(Locale.ROOT), "");
+        String key = name.toUpperCase(Locale.ROOT);
+        synchronized (this) {
+            String value = ElclStore.of(system).sysvals.get(key);
+            if (value != null) {
+                return value;
+            }
+        }
+        return defaults(system).getOrDefault(key, "");
     }
 
-    // STUB: waiting on elcl.store
     @Override
     public ElclMessage change(ElclSystem system, String user, boolean securityOfficer, String name, String value) throws ElclException {
         Sysval sysval = value(system, name);
@@ -80,7 +85,11 @@ final class StubSysvalService implements SysvalService {
         if (!valid(sysval.name(), upper)) {
             throw new ElclException("ELC0103", value, sysval.name());
         }
-        store.of(system).put(sysval.name(), upper);
+        synchronized (this) {
+            SystemData data = ElclStore.of(system);
+            data.sysvals.put(sysval.name(), upper);
+            data.changed();
+        }
         return ElclMessage.of("ELC0222", sysval.name());
     }
 

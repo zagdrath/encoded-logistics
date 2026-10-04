@@ -497,6 +497,62 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("elcl");
+    }
+
+    // The Terminal OS and ELCL (docs/elcl).
+    public static final ModConfigSpec.IntValue ELCL_SPOOLED_FILE_CAP = BUILDER
+            .comment("Spooled files a system keeps; past this the oldest is removed.")
+            .defineInRange("spooledFileCap", 200, 1, 100_000);
+
+    public static final ModConfigSpec.IntValue ELCL_MESSAGE_CAP = BUILDER
+            .comment("Messages each user's message queue keeps; past this the oldest is removed.")
+            .defineInRange("messageCap", 500, 1, 100_000);
+
+    public static final ModConfigSpec.IntValue ELCL_CHARS_PER_STORAGE_BYTE = BUILDER
+            .comment("Characters of source member text that take one byte of the network's drive storage (rounded up per member).")
+            .defineInRange("charsPerStorageByte", 64, 1, 1_000_000);
+
+    public static final ModConfigSpec.BooleanValue ELCL_MESSAGE_CHAT_NOTICE = BUILDER
+            .comment("Whether SNDMSG also tells online recipients in chat that a message is waiting.")
+            .define("messageChatNotice", true);
+
+    public static final ModConfigSpec.IntValue ELCL_INTERACTIVE_BUDGET = BUILDER
+            .comment("VM instructions an interactive job runs per tick before it yields.")
+            .defineInRange("interactiveBudget", 200, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue ELCL_BATCH_BUDGET = BUILDER
+            .comment("VM instructions each batch job runs per tick before it yields.")
+            .defineInRange("batchBudget", 100, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue ELCL_GLOBAL_BUDGET = BUILDER
+            .comment("VM instructions all jobs on the server run per tick, together.")
+            .defineInRange("globalBudget", 2_000, 1, 10_000_000);
+
+    public static final ModConfigSpec.IntValue ELCL_MAX_SOURCE_LINES = BUILDER
+            .comment("Lines a source member may have.")
+            .defineInRange("maxSourceLines", 5_000, 1, 100_000);
+
+    public static final ModConfigSpec.IntValue ELCL_MAX_LIST_SIZE = BUILDER
+            .comment("Elements a *LIST variable may hold.")
+            .defineInRange("maxListSize", 4_096, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue ELCL_COMPUTE_SERVER_JOBS = BUILDER
+            .comment("Batch jobs each Compute Server runs at once.")
+            .defineInRange("computeServerJobs", 4, 0, 64);
+
+    public static final ModConfigSpec.IntValue ELCL_DISKETTE_BYTES = BUILDER
+            .comment("Bytes of library source an 8\" Diskette holds (SAVLIB).")
+            .defineInRange("disketteBytes", 65_536, 1, 16_777_216);
+
+    public enum FolderSync { AUTO, TRUE, FALSE }
+
+    public static final ModConfigSpec.EnumValue<FolderSync> ELCL_ALLOW_FOLDER_SYNC = BUILDER
+            .comment("Whether libraries sync with <world>/encodedlogistics/libraries/: AUTO is on in single-player and off on dedicated servers.")
+            .defineEnum("allowFolderSync", FolderSync.AUTO);
+
+    static {
+        BUILDER.pop();
     }
 
     public static final ModConfigSpec SPEC = BUILDER.build();

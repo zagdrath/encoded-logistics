@@ -11,16 +11,22 @@ import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import net.minecraft.server.MinecraftServer;
+import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
+import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
+import net.zagdrath.encodedlogistics.elcl.store.StoredSpoolService;
+import net.zagdrath.encodedlogistics.elcl.store.StoredSysvalService;
+import net.zagdrath.encodedlogistics.elcl.store.StoredUserService;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 
-// The services behind the Terminal OS screens. Each starts as a stub (in memory, per system: gone when the server
-// stops) and is replaced by the ELCL package that implements it when that lands (see docs/elcl/SCREEN_INVENTORY.md).
+// The services behind the Terminal OS screens: libraries, messages, spooled files, system values and users are kept in
+// each system's saved data (elcl.store); jobs are still the stub until elcl.job lands (docs/elcl/SCREEN_INVENTORY.md).
 public final class ElclServices {
-    private static LibraryService libraries = new StubLibraryService();
+    private static LibraryService libraries = new StoredLibraryService();
     private static JobService jobs = new StubJobService();
-    private static MessageService messages = new StubMessageService();
-    private static SpoolService spool = new StubSpoolService();
-    private static SysvalService sysvals = new StubSysvalService();
+    private static MessageService messages = new StoredMessageService();
+    private static SpoolService spool = new StoredSpoolService();
+    private static SysvalService sysvals = new StoredSysvalService();
+    private static UserService users = new StoredUserService();
 
     private ElclServices() {}
 
@@ -42,6 +48,14 @@ public final class ElclServices {
 
     public static SysvalService sysvals() {
         return sysvals;
+    }
+
+    public static UserService users() {
+        return users;
+    }
+
+    public static void setUsers(UserService service) {
+        users = service;
     }
 
     public static void setLibraries(LibraryService service) {

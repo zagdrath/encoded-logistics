@@ -64,10 +64,10 @@ on the message line; a number not on the menu shows "Option n is not on this men
 | 2 | Work with Jobs | WRKCRFJOB | `JobsPanel` | Available | crafting jobs (real) |
 | 3 | Work with Devices | WRKDEV | `DevicesPanel` | Available | the network's topology (real) |
 | 4 | Display Network Status | DSPNETSTS | `StatusPanel` | Available | the network's status (real) |
-| 5 | Work with Libraries | WRKLIB | `WrkLibPanel` | Available | `StubLibraryService`: real libraries and members, kept in memory (lost on restart until `elcl.store`) |
+| 5 | Work with Libraries | WRKLIB | `WrkLibPanel` | Available | `elcl.store.StoredLibraryService`: libraries, members and programs in the system's saved data |
 | 6 | Work with Active Jobs | WRKACTJOB | `WrkActJobPanel` | Available | `StubJobService`: each session's interactive job; batch jobs never appear until `elcl.job` / `elcl.vm` |
-| 7 | Display Messages | DSPMSG | `DspMsgPanel` | Available | `StubMessageService`: messages sent with SNDMSG and job notices, in memory until `elcl.job` |
-| 8 | Work with Output | WRKSPLF | `WrkSplfPanel` | Available | `StubSpoolService`: compile listings, in memory until `elcl.job`; 6=Print waits on the Line Printer (ELC1301) |
+| 7 | Display Messages | DSPMSG | `DspMsgPanel` | Available | `elcl.store.StoredMessageService`: message queues in the system's saved data (500 per user by default) |
+| 8 | Work with Output | WRKSPLF | `WrkSplfPanel` | Available | `elcl.store.StoredSpoolService`: spooled files in the system's saved data (200 by default); 6=Print through `elcl.device.Printers` (ELC1301 with no printer) |
 | 90 | Sign Off | SIGNOFF | - | Available | - |
 
 Every screen also opens from its command on any command line (`ScreenCommands`): WRKLIB, WRKMBR LIB(), EDTMBR MBR(),
@@ -86,24 +86,23 @@ The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-test
 - `elcl.exec` (game side) - `CommandRunner` (interactive command line), `ElclCommandLine`, `ElclContext`, `OsCommands`,
   `RedstoneCommands`, `ElclDevices`, `ElclEvents`, `ElclSetup`
 
-Not in place (the rest of the ELCL handoff): `elcl.vm`, `elcl.job`, `elcl.store` (persistence), `elcl.sync`.
+- `elcl.store` - `ElclStore` (saved data, one `SystemData` per network), `StoredLibraryService`, `StoredMessageService`,
+  `StoredSpoolService`, `StoredSysvalService`, `StoredUserService`, `ElclConfig` (the config's `elcl` section)
+- `elcl.device` - `PrinterDevice`, `Printers` (see INTERFACES.md)
+
+Not in place yet: `elcl.vm`, `elcl.job`, `elcl.sync`. See IMPLEMENTATION_STATUS.md.
 
 ## Stubs waiting on ELCL packages
 
 Each stub class and method is marked `// STUB: waiting on <package>` in the code. They keep their data in memory per
-system (network) for as long as the server runs: **nothing here survives a restart yet.** They're replaced through
+system (network) for as long as the server runs: **nothing here survives a restart.** They're replaced through
 `elcl.screen.ElclServices.set*()`.
 
 | Stub | Methods | Waits for |
 |---|---|---|
-| `StubLibraryService` | all: libraries, library, createLibrary, changeLibrary, deleteLibrary, members, member, source, save, createMember, copyMember, renameMember, deleteMember, lock, unlock, unlockAll, compile, programs, deleteProgram | `elcl.store`: saved data, storage cost (ELC0207 is never raised), folder sync (`.deleted/`), program objects for `elcl.vm` |
 | `StubJobService` | jobs, job, interactive, endInteractive, hold, release, end, change, log, logCommand, logMessage, scheduleEntries, addScheduleEntry, removeScheduleEntry, holdScheduleEntry, triggers, addTrigger, removeTrigger, holdTrigger | `elcl.job`: job hosts, the job queue, tick budgets, persistence; schedule entries and triggers never fire yet |
 | `StubJobService.submit` | SBMJOB, WRKJOBSCDE 10=Submit now | `elcl.job` job hosts: always ELC0301 |
 | `StubJobService.callStack` | WRKJOB 11 | `elcl.vm` |
-| `StubMessageService` | messages, unread, markRead, send, remove, removeAll | `elcl.job`: queues in system data, chat notices to online recipients, replies (no message needs one yet) |
-| `StubSpoolService` | files, file, create, append, delete | `elcl.job`: spooled files in system data |
-| `StubSpoolService.print` | WRKSPLF 6=Print | the Line Printer (not in the mod): always ELC1301 |
-| `StubSysvalService` | values, value, get, change | `elcl.store`: system values in saved data |
 | `ScreenQueries.jobs` | WRKACTJOB row 2 | `elcl.job`: hosts busy / total are 0/0, budget the jobs' sum |
 | `ElclEvents` | `*RSCHANGE` (fired by the Control Interface) | `elcl.job` triggers listening (nothing listens yet) |
 

@@ -18,6 +18,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries;
+import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -325,6 +326,10 @@ public final class TerminalService {
         NetworkSnapshot snapshot = ControllerStructures.snapshotOf(context.server(), context.network());
         NetworkStorage storage = context.storage();
         long[] hot = storage != null ? storage.hotBytes() : new long[2];
+        // Source members take drive space too (OS.md 3).
+        if (context.network() != null) {
+            hot[0] += StoredLibraryService.storageBytes(new ElclSystem(context.server(), context.network()));
+        }
         long coldUsed = 0, coldTotal = 0;
         for (RackDevice device : ControllerStructures.rackDevicesServing(context.server(), context.network())) {
             if (device instanceof TapeLibraryDevice library && library.isOnline()) {
