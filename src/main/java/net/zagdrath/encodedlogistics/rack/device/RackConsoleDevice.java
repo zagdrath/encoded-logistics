@@ -35,7 +35,8 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // The Rack Console (1U): an Access Terminal in a rack drawer. Right-click it through the open front door and the
 // drawer slides out (8 ticks) and its screen folds up (6 ticks); right-click it open (its network online) for the
 // terminal - a Fabrication Terminal's once a Memory Die has been applied (sneak-use the die on it). Sneak-right-click,
-// closing the door, or nobody within 4 blocks folds it away again, screen first. Its crafting grid stays in it.
+// closing the door, or nobody within 4 blocks folds it away again, screen first - snapped shut together in 2 ticks when
+// the door is closing, ahead of the door. Its crafting grid stays in it.
 public class RackConsoleDevice extends RackDevice {
     public static final int DRAWER_TICKS = 8, LID_TICKS = 6;
     private static final double REACH = 4.0;
@@ -127,8 +128,10 @@ public class RackConsoleDevice extends RackDevice {
 
     @Override
     public void frontDoorChanged(boolean open) {
-        if (!open) {
+        if (!open && this.open) {
             setOpen(false);
+            // Snapped shut with the door: the slide straight after the hinge.
+            soundIn = 2;
         }
     }
 
@@ -234,6 +237,10 @@ public class RackConsoleDevice extends RackDevice {
             } else if (lid < LID_TICKS) {
                 lid++;
             }
+        } else if (rack() != null && !rack().isFrontOpen()) {
+            // The door is swinging shut: fold and slide in at once, fast, before it gets there.
+            lid = Math.max(0, lid - LID_TICKS / 2);
+            drawer = Math.max(0, drawer - DRAWER_TICKS / 2);
         } else if (lid > 0) {
             lid--;
         } else if (drawer > 0) {

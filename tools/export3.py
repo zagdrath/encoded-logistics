@@ -34,7 +34,7 @@ def console_models():
        body  - the fixed chassis; its front face is the dark drawer opening (texture (0,48)-(104,56))
        drawer - front plate (z 1.25-1.75) + tray (z 1.75-13.75); slides along -z
        keyboard - on the tray; moves with the drawer
-       lid - the fold-up screen, hinged at (8, 0.625, 13.5) on the drawer; rotates about +X"""
+       lid - the fold-up screen (10 x 7 px, keyboard-sized), hinged at (8, 0.625, 13.5) on the drawer; rotates about +X"""
     tex=RL('block/rack_device/rack_console'); parts=RL('block/rack_device/rack_console_parts'); scr=RL('block/rack_device/rack_console_screen')
     T128=lambda r: uvf(r,128,128)
     body=[el('chassis',(1.55,0,1.75),(14.45,1,29.25),{'north':face('#tex',T128((0,48,104,56))),'south':face('#tex',T128((104,32,0,40))),
@@ -45,9 +45,9 @@ def console_models():
                 'east':face('#parts',T128((112,0,128,2))),'west':face('#parts',T128((112,0,128,2))),'south':face('#parts',T128((112,0,128,2)))})]
     kb=[el('keyboard',(2.5,0.25,2),(13.5,0.5,8),{'up':face('#parts',T128((0,0,52,48))),'north':face('#parts',T128((0,46,52,48))),
             'east':face('#parts',T128((0,0,2,48))),'west':face('#parts',T128((0,0,2,48)))})]
-    lid=[el('lid',(2.25,0.5,2),(13.75,0.75,13.5),{'up':face('#parts',T128((56,0,108,48))),'down':face('#parts',T128((0,52,52,100))),
+    lid=[el('lid',(3,0.5,6.5),(13,0.75,13.5),{'up':face('#parts',T128((62,10,102,38))),'down':face('#parts',T128((6,62,46,90))),
              'north':face('#parts',T128((112,0,128,1))),'east':face('#parts',T128((112,0,128,1))),'west':face('#parts',T128((112,0,128,1))),'south':face('#parts',T128((112,0,128,1)))})]
-    lid_on=lid+[el('screen',(3.25,0.49,3),(12.75,0.49,12.5),{'down':face('#screen',[1,1,13,13])},**GLOW)]
+    lid_on=lid+[el('screen',(3.75,0.49,7.25),(12.25,0.49,12.75),{'down':face('#screen',[1,3.1,13,10.9])},**GLOW)]
     base={'parent':'minecraft:block/block','render_type':'minecraft:cutout'}
     tx={'tex':tex,'parts':parts,'screen':scr,'particle':tex}
     out={'rack_console':{**base,'textures':tx,'elements':body},

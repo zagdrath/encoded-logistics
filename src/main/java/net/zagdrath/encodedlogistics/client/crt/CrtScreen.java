@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.InputConstants;
 
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -92,6 +93,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     protected void init() {
         // Typed characters only arrive while something has text input focus.
         minecraft.onTextInputFocusChange(this, true);
+        borrowFunctionKeys();
         palette = loadPalette(TerminalSettings.phosphor());
         if (panels.isEmpty()) {
             push(new MainMenuPanel(this));
@@ -111,9 +113,9 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         panel.shown();
     }
 
-    // Back one screen (F12); off the main menu, exit.
+    // Back one screen (F12, Esc); off the main menu, or from Sign On (it guards the rest), exit.
     void back() {
-        if (panels.size() <= 1) {
+        if (panels.size() <= 1 || current() instanceof SignOnPanel) {
             onClose();
             return;
         }
@@ -585,8 +587,44 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         return false;
     }
 
+    // Fullscreen and screenshot (F11, F2) are taken before any screen sees the key: while the terminal is open, the
+    // ones bound to function keys are unbound, so the terminal gets them. Given back when it closes.
+    private final List<KeyMapping> borrowed = new ArrayList<>();
+    private final List<InputConstants.Key> borrowedKeys = new ArrayList<>();
+
+    private void borrowFunctionKeys() {
+        if (!borrowed.isEmpty()) {
+            return;
+        }
+        for (KeyMapping mapping : List.of(minecraft.options.keyFullscreen, minecraft.options.keyScreenshot)) {
+            InputConstants.Key key = mapping.getKey();
+            int code = key.getValue();
+            if (key.getType() == InputConstants.Type.KEYBOARD
+                    && (code >= InputConstants.KEY_F1 && code <= InputConstants.KEY_F12 || code >= InputConstants.KEY_F13 && code <= InputConstants.KEY_F24)) {
+                borrowed.add(mapping);
+                borrowedKeys.add(key);
+                mapping.setKey(InputConstants.UNKNOWN);
+            }
+        }
+    }
+
+    private void returnFunctionKeys() {
+        for (int i = 0; i < borrowed.size(); i++) {
+            borrowed.get(i).setKey(borrowedKeys.get(i));
+        }
+        borrowed.clear();
+        borrowedKeys.clear();
+    }
+
+    // Releases too: F3's debug overlay toggles on release.
+    @Override
+    public boolean keyReleased(KeyEvent event) {
+        return true;
+    }
+
     @Override
     public void removed() {
+        returnFunctionKeys();
         minecraft.onTextInputFocusChange(this, false);
         super.removed();
     }
