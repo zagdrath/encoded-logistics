@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.elcl.exec;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +54,20 @@ public final class ElclDevices {
     public static List<Device> list(MinecraftServer server, @Nullable NetworkRef network) {
         List<Device> devices = new ArrayList<>();
         Map<String, Integer> numbers = new HashMap<>();
-        for (ControllerStructures.DeviceRow row : ControllerStructures.deviceRows(server, network)) {
+        // Numbered in the order they always have been: rack by rack, each rack's devices from its lowest unit up (Work
+        // with Devices lists them top unit first).
+        List<ControllerStructures.DeviceRow> rows = new ArrayList<>(ControllerStructures.deviceRows(server, network));
+        for (int start = 0; start < rows.size(); start++) {
+            int end = start;
+            while (end < rows.size() && rows.get(end).rackDevice() != null) {
+                end++;
+            }
+            if (end > start) {
+                rows.subList(start, end).sort(Comparator.comparingInt(row -> row.rackDevice().u()));
+                start = end - 1;
+            }
+        }
+        for (ControllerStructures.DeviceRow row : rows) {
             if (row.rackDevice() != null) {
                 String code = code(row.rackDevice());
                 devices.add(new Device(numbered(code, numbers), code, row.pos(), null, row.rackDevice(), row.online()));

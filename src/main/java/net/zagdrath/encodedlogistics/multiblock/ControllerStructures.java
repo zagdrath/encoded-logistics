@@ -69,6 +69,7 @@ import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.network.RackNode;
+import net.zagdrath.encodedlogistics.network.RackPartNode;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
@@ -1179,6 +1180,10 @@ public class ControllerStructures extends SavedData {
     public record DeviceRow(String type, Component name, NodePos pos, int lanes, boolean online, boolean laneMissing, @Nullable RackDevice rackDevice,
             int depth) {}
 
+    // The network's topology as the Terminal Desk lists it: each Server Rack (depth 0) with the devices in it under it
+    // (depth 1, top unit first; a rack's Network Controllers among them), then everything else on the network beside
+    // the racks (depth 0): a controller structure, Drive Bays, terminals, parts on cables, other devices. Each device
+    // once; cables and a rack's other blocks aren't listed.
     public static List<DeviceRow> deviceRows(MinecraftServer server, @Nullable NetworkRef network) {
         Owner owner = owner(server, network);
         List<DeviceRow> rows = new ArrayList<>();
@@ -1186,16 +1191,10 @@ public class ControllerStructures extends SavedData {
             return rows;
         }
         Runtime runtime = owner.runtime;
-        boolean networkOnline = runtime.status == NetworkStatus.ONLINE;
-        if (owner.structure.rack()) {
-            for (NetworkControllerDevice controller : runtime.pair) {
-                if (controller.rack() != null) {
-                    rows.add(new DeviceRow("Controller", controller.name(), NetworkGraph.at(controller.rack().getLevel().dimension(), controller.rack().getBlockPos()), 0,
-                            networkOnline, false, controller, 0));
-                }
-            }
-        } else if (!owner.structure.members().isEmpty()) {
-            rows.add(new DeviceRow("Controller", ModItems.NETWORK_CONTROLLER.get().getName(ModItems.NETWORK_CONTROLLER.get().getDefaultInstance()),
+        boolean networkOnline = runtime.status == NetworkStatus.ONLINE || runtime.status == NetworkStatus.FAILOVER;
+        List<DeviceRow> others = new ArrayList<>();
+        if (!owner.structure.rack() && !owner.structure.members().isEmpty()) {
+            others.add(new DeviceRow("Controller", ModItems.NETWORK_CONTROLLER.get().getName(ModItems.NETWORK_CONTROLLER.get().getDefaultInstance()),
                     NetworkGraph.at(owner.ref.dimension(), owner.structure.members().getFirst()), 0, networkOnline, false, null, 0));
         }
         List<Map.Entry<NodePos, NetworkNode>> entries = new ArrayList<>(runtime.discovered.graph().entries().entrySet());
@@ -1203,34 +1202,41 @@ public class ControllerStructures extends SavedData {
         for (Map.Entry<NodePos, NetworkNode> entry : entries) {
             NodePos pos = entry.getKey();
             NetworkNode node = entry.getValue();
-            if (node.isController() || node.laneCost() <= 0 && node.parts().isEmpty() && !runtime.racks.contains(pos)) {
+            if (node.isController() || node instanceof RackPartNode) {
                 continue;
             }
             boolean online = runtime.online.contains(pos);
             boolean missing = networkOnline && node.isDevice() && runtime.lanes != null
                     && (!runtime.lanes.hasLane(pos) || runtime.lanes.rack(pos).shed());
-            for (NetworkPart part : node.parts()) {
-                rows.add(new DeviceRow("Part", part.item().getName(part.item().getDefaultInstance()), pos, 0, online, missing, null, 0));
-            }
-            Item item = runtime.discovered.items().get(pos);
-            if (item == null || item == Items.AIR || !node.parts().isEmpty() && node.laneCost() <= 0) {
+            if (node instanceof RackNode && blockEntity(server, pos) instanceof RackBlockEntity rack) {
+                rows.add(new DeviceRow("Rack", rack.getBlockState().getBlock().getName(), pos, rack.rackLanes().used(), online, missing, null, 0));
+                List<RackDevice> devices = new ArrayList<>(rack.devices());
+                devices.sort(Comparator.comparingInt(RackDevice::u).reversed());
+                for (RackDevice device : devices) {
+                    rows.add(new DeviceRow("Unit", device.name(), pos, device.laneCost(), device.isOnline(), false, device, 1));
+                }
                 continue;
             }
-            String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.SERVER_RACK.get() ? "Rack"
-                    : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
+            for (NetworkPart part : node.parts()) {
+                others.add(new DeviceRow("Part", part.item().getName(part.item().getDefaultInstance()), pos, 0, online, missing, null, 0));
+            }
+            Item item = runtime.discovered.items().get(pos);
+            // A cable (lanes through it, none of its own) or a part host (its parts are listed instead).
+            if (item == null || item == Items.AIR || node.laneCost() <= 0) {
+                continue;
+            }
+            String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
             Component name = item.getName(item.getDefaultInstance());
             // A Control Interface goes by the name scripts use for it.
             if (blockEntity(server, pos) instanceof ControlInterfaceBlockEntity ci && !ci.name().isEmpty()) {
                 type = ControlInterfaceBlockEntity.TYPE;
                 name = Component.literal(ci.name());
             }
-            rows.add(new DeviceRow(type, name, pos, node.laneCost(), online, missing, null, 0));
-            if (runtime.racks.contains(pos) && blockEntity(server, pos) instanceof RackBlockEntity rack) {
-                for (RackDevice device : rack.devices()) {
-                    rows.add(new DeviceRow("Unit", device.name(), pos, device.laneCost(), device.isOnline(), false, device, 1));
-                }
+            if (node.parts().isEmpty()) {
+                others.add(new DeviceRow(type, name, pos, node.laneCost(), online, missing, null, 0));
             }
         }
+        rows.addAll(others);
         return rows;
     }
 

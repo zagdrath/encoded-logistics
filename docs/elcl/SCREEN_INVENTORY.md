@@ -32,7 +32,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | # | Screen | Status | Class |
 |---|---|---|---|
 | 1 | Sign On | EXTENDED | `SignOnPanel` |
-| 2 | Main Menu | EXTENDED | `MainMenuPanel` |
+| 2 | Main Menu | EXTENDED | `MainMenuPanel`, from the option definition `MainMenu` (see below) |
 | 3 | Work with Libraries | NEW | `WrkLibPanel` (+ `InfoPanel` for 5=Display) |
 | 4 | Work with Members | NEW | `WrkMbrPanel` |
 | 5 | Source Editor (+ full screen) | NEW | `EditorPanel`, `EditorModel` |
@@ -49,6 +49,26 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | 16 | Command Entry | EXTENDED | `CommandEntryPanel` (F4 prompts, Tab completes) |
 | - | Work with Jobs (crafting) | EXTENDED | `JobsPanel`: id and command WRKCRFJOB (amendment 1) |
 | - | WRKINV, WRKDEV, DSPNETSTS, Withdraw, Craft, More keys | EXISTS | `InventoryPanel`, `DevicesPanel`, `StatusPanel`, `WithdrawPanel`, `CraftPanel`, `MoreKeysPanel` (phosphor choice extended) |
+| - | Work with Devices topology | EXTENDED | `ControllerStructures.deviceRows`: each rack, its devices under it (top unit first, tree lines), then the rest of the network beside the racks; each device once |
+
+### Main Menu options
+
+The menu and its F1 help panel come from one definition, `client/crt/MainMenu.java` (number, screen command,
+availability, label and description in `crt.encodedlogistics.menu.<n>` / `.<n>.help`), so they can't drift apart. The help
+lists all nine options in two columns on its first page. An option marked NOT_AVAILABLE shows "Option n not available."
+on the message line; a number not on the menu shows "Option n is not on this menu." (`MainMenuTest`).
+
+| Option | Label | Command | Screen | Status | Data behind it |
+|---|---|---|---|---|---|
+| 1 | Work with Inventory | WRKINV | `InventoryPanel` | Available | the network's storage (real) |
+| 2 | Work with Jobs | WRKCRFJOB | `JobsPanel` | Available | crafting jobs (real) |
+| 3 | Work with Devices | WRKDEV | `DevicesPanel` | Available | the network's topology (real) |
+| 4 | Display Network Status | DSPNETSTS | `StatusPanel` | Available | the network's status (real) |
+| 5 | Work with Libraries | WRKLIB | `WrkLibPanel` | Available | `StubLibraryService`: real libraries and members, kept in memory (lost on restart until `elcl.store`) |
+| 6 | Work with Active Jobs | WRKACTJOB | `WrkActJobPanel` | Available | `StubJobService`: each session's interactive job; batch jobs never appear until `elcl.job` / `elcl.vm` |
+| 7 | Display Messages | DSPMSG | `DspMsgPanel` | Available | `StubMessageService`: messages sent with SNDMSG and job notices, in memory until `elcl.job` |
+| 8 | Work with Output | WRKSPLF | `WrkSplfPanel` | Available | `StubSpoolService`: compile listings, in memory until `elcl.job`; 6=Print waits on the Line Printer (ELC1301) |
+| 90 | Sign Off | SIGNOFF | - | Available | - |
 
 Every screen also opens from its command on any command line (`ScreenCommands`): WRKLIB, WRKMBR LIB(), EDTMBR MBR(),
 WRKACTJOB, WRKJOB JOB(), DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF JOB(), WRKSYSVAL, WRKINV, WRKDEV,

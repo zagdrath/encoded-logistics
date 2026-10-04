@@ -120,4 +120,41 @@ final class RackCablingGameTests {
                 })
                 .thenSucceed();
     }
+
+    // Work with Devices' topology: the rack, then its devices under it (top unit first, each once, though the switch pools
+    // them so the rack takes no network lanes for them), then the controller beside it.
+    static void deviceTopology(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        RackGameTests.install(helper, master, RackDeviceType.UPS, 1, net.zagdrath.encodedlogistics.rack.device.UpsDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.NAS, 3, net.zagdrath.encodedlogistics.rack.device.NasDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.L2_SWITCH_48, 5, net.zagdrath.encodedlogistics.rack.device.SwitchDevice.class);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    var rows = ControllerStructures.deviceRows(helper.getLevel().getServer(),
+                            ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(master)));
+                    java.util.List<String> shown = rows.stream().map(row -> row.type() + (row.rackDevice() != null ? " U" + row.rackDevice().u() : "")).toList();
+                    helper.assertTrue(shown.equals(java.util.List.of("Rack", "Unit U5", "Unit U3", "Unit U1", "Controller")), "Rows " + shown);
+                    helper.assertTrue(rows.get(1).depth() == 1 && rows.get(0).depth() == 0 && rows.get(4).depth() == 0, "Depths");
+                })
+                .thenSucceed();
+    }
+
+    // A rack controller pair: each controller listed once, in its own rack, not again at the top.
+    static void deviceTopologyPair(GameTestHelper helper) {
+        BlockPos a = RackGameTests.rack(helper, new BlockPos(1, 1, 0), Direction.NORTH), b = RackGameTests.rack(helper, new BlockPos(5, 1, 0), Direction.NORTH);
+        for (int x = 1; x <= 5; x++) {
+            RackGameTests.cable(helper, new BlockPos(x, 1, 2));
+        }
+        RackControllerGameTests.controller(helper, a, RackDeviceType.NETWORK_CONTROLLER_2U, 1, 100_000);
+        RackControllerGameTests.controller(helper, b, RackDeviceType.NETWORK_CONTROLLER_2U, 1, 100_000);
+        helper.startSequence()
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    var rows = ControllerStructures.deviceRows(helper.getLevel().getServer(), ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(a)));
+                    java.util.List<String> shown = rows.stream().map(row -> row.type()).toList();
+                    helper.assertTrue(shown.equals(java.util.List.of("Rack", "Unit", "Rack", "Unit")), "Rows " + shown);
+                })
+                .thenSucceed();
+    }
 }

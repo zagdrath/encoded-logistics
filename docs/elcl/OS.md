@@ -108,7 +108,11 @@ Per-system folder in the world save:
 New screens, all in the existing green-screen style:
 
 1. **Sign On** — system name, user, (no password needed by default), program/menu, current library.
-2. **Main Menu** additions — 5. Work with Libraries, 6. Work with Active Jobs, 7. Display Messages, 8. Work with Output.
+2. **Main Menu** — 1. Work with Inventory (WRKINV), 2. Work with Jobs (WRKCRFJOB), 3. Work with Devices (WRKDEV),
+   4. Display Network Status (DSPNETSTS), 5. Work with Libraries (WRKLIB), 6. Work with Active Jobs (WRKACTJOB),
+   7. Display Messages (DSPMSG), 8. Work with Output (WRKSPLF), 90. Sign Off (SIGNOFF). The menu and its F1 help are
+   drawn from one definition (`client/crt/MainMenu.java`); an option whose screen isn't available says "Option n not
+   available." on the message line, and a number not on the menu says so.
 3. **Work with Libraries** — options 2=Change 4=Delete 5=Display 12=Work with members.
 4. **Work with Members** — options 2=Edit 3=Copy 4=Delete 5=Display 6=Print 7=Rename 14=Compile; columns: member, type, text, changed-since-compile flag.
 5. **Source Editor** — sequence-number margin with line commands (I, In, D, Dn, DD…DD, C/CC, M/MM with A/B, R/Rn repeat, X exclude); command line supporting FIND, CHANGE, TOP, BOTTOM, SAVE, FILE, CANCEL; syntax check on Enter that highlights the bad line and shows the message on the message line; F4 on a command line opens the prompter.

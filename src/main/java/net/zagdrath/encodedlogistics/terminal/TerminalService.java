@@ -218,16 +218,22 @@ public final class TerminalService {
 
     // --- Devices ---
 
-    // Work with Devices' rows (cells: type, device, location, lanes, status); for the command line with a header first.
+    // Work with Devices' rows (cells: type, device, location, lanes, status), the network's topology: each rack, the
+    // devices in it under it on tree lines (top unit first), then the rest of the network beside the racks. For the
+    // command line with a header first.
     public static TerminalOutput devices(TerminalContext context, boolean screen) {
         TerminalOutput out = new TerminalOutput();
         if (!screen) {
             out.line(TerminalLine.builder().text("    ").left("TYPE", 12).left("DEVICE", 24).left("LOCATION", 19).left("LANES", 9).text("STATUS")
                     .attr(TerminalLine.BRIGHT).build());
         }
-        for (ControllerStructures.DeviceRow row : ControllerStructures.deviceRows(context.server(), context.network())) {
+        List<ControllerStructures.DeviceRow> all = ControllerStructures.deviceRows(context.server(), context.network());
+        for (int i = 0; i < all.size(); i++) {
+            ControllerStructures.DeviceRow row = all.get(i);
             RackDevice device = row.rackDevice();
-            String type = device != null ? "  U" + device.u() + (device.size() > 1 ? "-U" + device.top() : "") : row.type();
+            // A rack's last device closes its branch.
+            boolean last = i + 1 >= all.size() || all.get(i + 1).depth() == 0;
+            String type = device != null ? (last ? " └─U" : " ├─U") + device.u() + (device.size() > 1 ? "-" + device.top() : "") : row.type();
             BlockPos pos = row.pos().pos();
             String location = device != null ? "R " + pos.getX() + "," + pos.getZ() + " U" + device.u() : pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
             String lanes = Integer.toString(row.lanes());

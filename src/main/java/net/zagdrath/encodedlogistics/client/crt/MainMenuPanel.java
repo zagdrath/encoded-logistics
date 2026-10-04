@@ -5,13 +5,16 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
-// MAIN: 1 Work with Inventory, 2 Work with Jobs (crafting), 3 Work with Devices, 4 Display Network Status, 5 Work with
-// Libraries, 6 Work with Active Jobs, 7 Display Messages, 8 Work with Output, 90 Sign Off. Type the number on the
-// command line (or click an option, double-click to go); anything else runs as a command.
-final class MainMenuPanel extends CrtPanel {
-    private static final int[] OPTIONS = { 1, 2, 3, 4, 5, 6, 7, 8, 90 };
-    private static final int[] ROWS = { 6, 7, 8, 9, 10, 11, 12, 13, 15 };
+import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
+// MAIN: the options in MainMenu (1 Work with Inventory, 2 Work with Jobs (crafting), 3 Work with Devices, 4 Display
+// Network Status, 5 Work with Libraries, 6 Work with Active Jobs, 7 Display Messages, 8 Work with Output, 90 Sign Off),
+// each running its screen's command just as typing it would (ScreenCommands). Type the number on the command line (or
+// click an option, double-click to go); an option not available yet says so; a number not on the menu says that;
+// anything else runs as a command. Its help panel comes from the same definition.
+final class MainMenuPanel extends CrtPanel {
     MainMenuPanel(CrtTerminal screen) {
         super(screen);
     }
@@ -37,44 +40,52 @@ final class MainMenuPanel extends CrtPanel {
     }
 
     @Override
+    String help(@Nullable String field) {
+        return MainMenu.help();
+    }
+
+    @Override
     void draw(CrtGrid grid) {
         grid.put(3, 0, tr("crt.encodedlogistics.menu.select"));
-        for (int i = 0; i < OPTIONS.length; i++) {
-            String number = OPTIONS[i] + ".";
-            grid.put(ROWS[i], 8 - number.length(), number + " " + tr("crt.encodedlogistics.menu." + OPTIONS[i]));
+        for (MainMenu.Option option : MainMenu.OPTIONS) {
+            String number = option.number() + ".";
+            grid.put(option.row(), 8 - number.length(), number + " " + option.label(), option.available() ? CrtGrid.NORMAL : CrtGrid.DIM);
         }
     }
 
     @Override
     boolean option(String text) {
-        switch (text) {
-            case "1" -> screen.push(new InventoryPanel(screen));
-            case "2" -> screen.push(new JobsPanel(screen));
-            case "3" -> screen.push(new DevicesPanel(screen));
-            case "4" -> screen.push(new StatusPanel(screen));
-            case "5" -> screen.push(new WrkLibPanel(screen));
-            case "6" -> ScreenCommands.open(screen, "WRKACTJOB");
-            case "7" -> ScreenCommands.open(screen, "DSPMSG");
-            case "8" -> ScreenCommands.open(screen, "WRKSPLF");
-            case "90" -> screen.onClose();
-            default -> {
-                return false;
+        MainMenu.Option option = MainMenu.option(text);
+        if (option == null) {
+            // A number that isn't an option; anything else is a command.
+            if (!text.isEmpty() && text.chars().allMatch(Character::isDigit)) {
+                screen.message(tr("crt.encodedlogistics.menu.no_option", text));
+                return true;
             }
+            return false;
         }
+        choose(option);
         return true;
+    }
+
+    // Goes to an option's screen, or says it isn't available (marked so, or its command can't open a screen here).
+    void choose(MainMenu.Option option) {
+        if (!option.available() || !ScreenCommands.open(screen, option.command().toUpperCase(Locale.ROOT))) {
+            screen.message(tr("crt.encodedlogistics.menu.not_available", option.number()));
+        }
     }
 
     @Override
     void click(int row, int col, boolean doubleClick) {
-        for (int i = 0; i < ROWS.length; i++) {
-            if (row == ROWS[i]) {
-                screen.command.set(Integer.toString(OPTIONS[i]));
-                screen.focus(screen.command);
-                if (doubleClick) {
-                    screen.command.set("");
-                    option(Integer.toString(OPTIONS[i]));
-                }
-            }
+        MainMenu.Option option = MainMenu.atRow(row);
+        if (option == null) {
+            return;
+        }
+        screen.command.set(Integer.toString(option.number()));
+        screen.focus(screen.command);
+        if (doubleClick) {
+            screen.command.set("");
+            option(Integer.toString(option.number()));
         }
     }
 }

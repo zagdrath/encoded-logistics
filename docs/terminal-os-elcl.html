@@ -641,19 +641,20 @@ Select one of the following:
 <p class="muted">The Withdraw Item, Craft Item, Display Item Details, Display Device and crafting job display screens open from options on the desk's own lists.</p>
 
 <h3 id="main-menu">Main Menu</h3>
-<p>Type an option's number on the command line and press Enter, or click an option (double-click to go). Any command can be typed there too.</p>
+<p>Type an option's number on the command line and press Enter, or click an option (double-click to go). Any command can be typed there too. Each option runs its screen's command, just as typing that command would. A number that isn't on the menu answers <em>"Option 9 is not on this menu."</em>; an option whose screen isn't available yet answers <em>"Option 6 not available."</em> on the message line (all nine are available today).</p>
+<p>The menu and its F1 help come from one definition in the code (<code>client/crt/MainMenu.java</code>), so they always list the same options. The help shows all nine options in two columns on its first page, then how to use the menu, then a line on each option.</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Option</th><th>Text</th><th>Opens</th></tr></thead>
   <tbody>
-    <tr><td>1</td><td>Work with Inventory</td><td>Items in the network (<code>WRKINV</code>)</td></tr>
-    <tr><td>2</td><td>Work with Jobs</td><td>Crafting jobs (<code>WRKCRFJOB</code>)</td></tr>
-    <tr><td>3</td><td>Work with Devices</td><td>Devices on the network (<code>WRKDEV</code>)</td></tr>
-    <tr><td>4</td><td>Display Network Status</td><td>Storage, energy, lanes (<code>DSPNETSTS</code>)</td></tr>
-    <tr><td>5</td><td>Work with Libraries</td><td>Libraries and source members (<code>WRKLIB</code>)</td></tr>
-    <tr><td>6</td><td>Work with Active Jobs</td><td>Script jobs (<code>WRKACTJOB</code>)</td></tr>
-    <tr><td>7</td><td>Display Messages</td><td>Your message queue (<code>DSPMSG</code>)</td></tr>
-    <tr><td>8</td><td>Work with Output</td><td>Spooled output (<code>WRKSPLF</code>)</td></tr>
-    <tr><td>90</td><td>Sign Off</td><td>Closes the terminal</td></tr>
+    <tr><td>1</td><td>Work with Inventory</td><td>The items in the network, hot and on tape (<code>WRKINV</code>)</td></tr>
+    <tr><td>2</td><td>Work with Jobs</td><td>Crafting jobs on the network's Schedulers (<code>WRKCRFJOB</code>)</td></tr>
+    <tr><td>3</td><td>Work with Devices</td><td>The devices on the network and their lanes, as a topology (<code>WRKDEV</code>)</td></tr>
+    <tr><td>4</td><td>Display Network Status</td><td>Storage, energy and lanes at a glance (<code>DSPNETSTS</code>)</td></tr>
+    <tr><td>5</td><td>Work with Libraries</td><td>Libraries and their source members (<code>WRKLIB</code>)</td></tr>
+    <tr><td>6</td><td>Work with Active Jobs</td><td>Script jobs: each session's interactive job and the batch jobs (<code>WRKACTJOB</code>)</td></tr>
+    <tr><td>7</td><td>Display Messages</td><td>Your message queue, newest first (<code>DSPMSG</code>)</td></tr>
+    <tr><td>8</td><td>Work with Output</td><td>Spooled output: compile listings and jobs' printed output (<code>WRKSPLF</code>)</td></tr>
+    <tr><td>90</td><td>Sign Off</td><td>End the session (<code>SIGNOFF</code>)</td></tr>
   </tbody>
 </table></div>
 <p>Job schedule entries, trigger events and system values have no menu option; open them with <code>WRKJOBSCDE</code>, <code>WRKTRGEVT</code> and <code>WRKSYSVAL</code>.</p>
@@ -701,7 +702,7 @@ Select one of the following:
   <dt>Work with Jobs (<code>WRKCRFJOB</code>, option 2)</dt>
   <dd>The network's crafting jobs (these are separate from ELCL script jobs). Columns: Opt, Job, Item, Qty, Status (Active, Waiting, Recall), Progress (bar and %), Scheduler. Refreshes every two seconds. Options: <strong>4=Cancel</strong> (press Enter again to confirm), <strong>5=Display</strong> (the job's steps). This screen was called <code>WRKJOB</code> before the Terminal OS took that name (amendment 1).</dd>
   <dt>Work with Devices (<code>WRKDEV</code>, option 3)</dt>
-  <dd>Every device on the network. Columns: Opt, Type, Device, Location (a rack's units under it), Lanes, Status (Online, Offline dim, a fault or what it is busy with bright). Options: <strong>5=Display</strong> (device, location, units, lanes, status), <strong>8=Locate</strong> (it lights up in the world for ten seconds). Scripts name devices by type and number (<code>CTLIF01</code>, <code>UPS01</code>...); see <a href="#device-names">device names</a>.</dd>
+  <dd>The network as a topology, each device once. First each Server Rack (Type <em>Rack</em>, its lanes on the network), with the devices in it listed under it on tree lines, top unit first (<code>├─U39-42</code>, <code>└─U1-2</code>; a rack's Network Controllers among them). Then everything that isn't in a rack, at the same level as the racks: a controller structure, Drive Bays, terminals, parts on cables (<em>Part</em>), Control Interfaces and other devices. Cables and a rack's other blocks aren't listed. Columns: Opt, Type, Device, Location, Lanes, Status (Online, Offline dim, a fault or what it is busy with bright). Options: <strong>5=Display</strong> (device, location, units, lanes, status), <strong>8=Locate</strong> (it lights up in the world for ten seconds). Scripts name devices by type and number (<code>CTLIF01</code>, <code>UPS01</code>...); see <a href="#device-names">device names</a>.</dd>
   <dt>Display Network Status (<code>DSPNETSTS</code>, option 4)</dt>
   <dd>Storage (hot and cold), energy (stored, in / out), lanes used, crafting (active jobs) and devices online, with gauges. Refreshes every two seconds. Enter returns.</dd>
 </dl>
