@@ -95,6 +95,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_on_network", RackGameTests::onNetwork);
         TESTS.put("rack_firewall", RackGameTests::firewall);
         TESTS.put("rack_ups", RackGameTests::upsCoversAndRecharges);
+        TESTS.put("rack_ups_full_buffers", RackGameTests::upsOnFullBuffers);
         TESTS.put("rack_router", RackGameTests::routerMovesItems);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }

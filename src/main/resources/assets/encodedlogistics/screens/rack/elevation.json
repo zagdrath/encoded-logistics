@@ -49,12 +49,14 @@
    "track": [
     150,
     18,
-    10,
+    8,
     146
    ],
-   "thumb": "rack/scroll_thumb"
+   "thumb": "controller/scroll_thumb",
+   "thumb_hover": "controller/scroll_thumb_hover",
+   "thumb_x": 151
   },
-  "order": "U42 at the top, U1 at the bottom (rack elevation convention)"
+  "order": "U42 at the top, U1 at the bottom (rack elevation convention); opens scrolled to the top"
  },
  "player_inventory": {
   "left": 8,

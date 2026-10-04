@@ -318,7 +318,7 @@ final class RackGameTests {
     }
 
     // With nothing coming in, a UPS in Online mode covers the network's drain from its battery and the controller keeps
-    // its energy; while FE comes in again it's back on mains and recharges from the surplus.
+    // its energy; while FE comes in again it's back on mains and recharges from the buffers.
     static void upsCoversAndRecharges(GameTestHelper helper) {
         BlockPos master = networkedRack(helper);
         UpsDevice ups = install(helper, master, RackDeviceType.UPS, 1, UpsDevice.class);
@@ -340,12 +340,37 @@ final class RackGameTests {
                     helper.assertTrue(ups.log().size() == 1 && ups.log().getFirst().toBattery(), "Switchover not logged");
                     before[1] = ups.stored();
                 })
-                // Supply for a few ticks: the UPS goes back to mains and recharges (and back to battery when it stops).
-                .thenExecuteFor(5, () -> insert(helper, CONTROLLER, 500))
+                // Supply for a few ticks, enough to refill the buffers past half: the UPS goes back to mains and recharges
+                // from them (and back to battery when it stops).
+                .thenExecuteFor(5, () -> insert(helper, CONTROLLER, 4_096))
                 .thenIdle(1)
                 .thenExecute(() -> {
                     helper.assertTrue(ups.log().stream().anyMatch(event -> !event.toBattery()), "UPS never went back to mains");
                     helper.assertTrue(ups.stored() > before[1], "UPS didn't recharge: " + ups.stored() + " <= " + before[1]);
+                })
+                .thenSucceed();
+    }
+
+    // With the network's buffers full and its supply still pushing (so almost nothing gets in), the UPS stays on mains
+    // and charges from the buffers; when the supply stops it goes on battery; cut off the network it's off battery.
+    static void upsOnFullBuffers(GameTestHelper helper) {
+        BlockPos master = networkedRack(helper);
+        UpsDevice ups = install(helper, master, RackDeviceType.UPS, 1, UpsDevice.class);
+        helper.startSequence()
+                .thenExecuteFor(12, () -> insert(helper, CONTROLLER, 4_096))
+                .thenExecuteFor(40, () -> insert(helper, CONTROLLER, 200))
+                .thenExecute(() -> {
+                    helper.assertFalse(ups.onBattery(), "On battery with the supply pushing into full buffers");
+                    helper.assertTrue(ups.log().stream().noneMatch(UpsDevice.Event::toBattery), "Switched to battery with mains present");
+                    helper.assertTrue(ups.stored() > 0, "UPS didn't charge");
+                })
+                .thenIdle(5)
+                .thenExecute(() -> helper.assertTrue(ups.onBattery(), "Not on battery with the supply gone"))
+                .thenExecute(() -> helper.getLevel().destroyBlock(helper.absolutePos(new BlockPos(3, 1, 2)), false))
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    helper.assertFalse(ups.onBattery(), "Still on battery off the network");
+                    helper.assertTrue(ups.load() == 0, "Still loaded off the network");
                 })
                 .thenSucceed();
     }

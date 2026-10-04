@@ -380,13 +380,18 @@ public class ControllerStructures extends SavedData {
                 runtime.drainCarry += usage;
                 int toDrain = (int) runtime.drainCarry;
                 runtime.drainCarry -= toDrain;
-                // UPSes cover a shortfall in what came in this tick before the buffers are touched, and recharge from
-                // a surplus (UpsDevice).
+                // UPSes cover a shortfall in what came in this tick before the buffers are touched (UpsDevice). Buffers
+                // within a tick's drain of full can't take anything in, so nothing coming in then isn't a failure: the
+                // supply counts as covering the drain (if it has really failed, the buffers drop and the next tick
+                // says so). While they aren't covering, they recharge from the top half of the buffers, which the
+                // supply refills; the network always keeps the lower half.
                 List<UpsDevice> upses = upses(level.getServer(), runtime);
-                int fromUps = upses.isEmpty() ? 0 : UpsDevice.cover(upses, toDrain, received, level.getGameTime());
+                int supply = capacity - stored <= toDrain ? Math.max(received, toDrain) : received;
+                int fromUps = upses.isEmpty() ? 0 : UpsDevice.cover(upses, toDrain, supply, level.getGameTime());
                 stored -= drain(banks, blocks, toDrain - fromUps);
-                if (!upses.isEmpty() && received > toDrain) {
-                    int charge = drain(banks, blocks, UpsDevice.wantedCharge(upses, received - toDrain));
+                if (!upses.isEmpty() && fromUps == 0) {
+                    long spare = Math.max(0, stored - capacity / 2);
+                    int charge = drain(banks, blocks, UpsDevice.wantedCharge(upses, (int) Math.min(Integer.MAX_VALUE, spare)));
                     UpsDevice.charge(upses, charge);
                     stored -= charge;
                 }

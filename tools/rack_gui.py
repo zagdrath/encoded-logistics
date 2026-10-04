@@ -1,11 +1,11 @@
 # Server Rack GUIs + HUD sprites (lighter grey style; same kit as the terminals/controller).
 import os, json
 from PIL import Image
-from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, energy_track
+from p1_gui import C, FILL, OUT, SLOT, panel, slot, inventory, header, corners, energy_track, scroll_track
 from gui_p3 import inset, bar_track, sprite, icon
 W_=C('#E6E6E6'); M_=C('#9A9A9A'); MINT=[C('#127A57'),C('#1FB582'),C('#5CF0B8')]; RED=C('#E5483C'); GRY=C('#6A6A6A'); AMB=C('#F5B23A')
 ROW=9; ROWS=16                     # elevation: 9 px per U, 16 U visible (scroll for 42)
-EL={'inset':(8,18,140,146),'u_col':(10,24),'slot_x':26,'slot_w':104,'scroll':(150,18,10,146)}
+EL={'inset':(8,18,140,146),'u_col':(10,24),'slot_x':26,'slot_w':104,'scroll':(150,18,8,146)}
 def top_panel(p,W=176,H=168):
     panel(p,0,0,W,H,'tlr'); header(p,W); p[0,0]=(0,0,0,0); p[W-1,0]=(0,0,0,0)
 def elevation(T):
@@ -16,8 +16,7 @@ def elevation(T):
         for x in range(26,130): p[x,y+ROW-1]=C('#262626')
         for x in range(10,24): p[x,y+ROW-1]=C('#262626')
     for y in range(19,163): p[25,y]=C('#3A3A3A')
-    for y in range(18,164):                                       # scrollbar track
-        for x in range(150,160): p[x,y]=SLOT[0] if x==150 or y==18 else SLOT[3] if x==159 or y==163 else C('#2A2A2A')
+    scroll_track(p,150,18,146)                                    # the controller's track; thumb (controller/scroll_thumb) at x 151
     im.save(T+'gui/rack/elevation.png')
     b=Image.new('RGBA',(256,128),(0,0,0,0)); q=b.load(); panel(q,0,0,176,100,'blr'); inventory(q,7,16)
     q[0,99]=(0,0,0,0); q[175,99]=(0,0,0,0); b.save(T+'gui/rack/inventory.png')
@@ -29,7 +28,6 @@ def elevation(T):
     sprite(S+'drop_target_2u.png',106,19,lambda x,y: AMB if (x in (0,105) or y in (0,18)) and (x+y)%2==0 else None)
     sprite(S+'drop_blocked.png',106,10,lambda x,y: RED if (x in (0,105) or y in (0,9)) else None)
     icon(S+'back.png',['................','.....#..........','....##..........','...##########...','....##.......#..','.....#.......#..','.............#..','.....#########..'],W_)
-    sprite(S+'scroll_thumb.png',8,15,lambda x,y: C('#B4B4B4') if (x==0 or y==0) else C('#5A5A5A') if (x==7 or y==14) else C('#8A8A8A'))
 def firewall_panel(T):
     im=Image.new('RGBA',(256,256),(0,0,0,0)); p=im.load(); top_panel(p)
     inset(p,8,36,160,108)                                         # player list: 8 rows of 13
@@ -92,7 +90,7 @@ def screens(A):
       'elevation':{'inset':EL['inset'],'row_height':ROW,'rows_visible':ROWS,'u_number':{'right':23,'color':'TEXT_MUTED'},'slot':{'left':26,'width':104,'height':8,
         'empty_sprite':'rack/slot_empty','device_front':'drawn from the device texture (0,0)-(104,8n) at 1:1'},
         'select':{'1u':'rack/select_1u','2u':'rack/select_2u','offset':[-1,-1]},'drop_target':{'1u':'rack/drop_target_1u','2u':'rack/drop_target_2u','blocked':'rack/drop_blocked'},
-        'scrollbar':{'track':EL['scroll'],'thumb':'rack/scroll_thumb'},'order':'U42 at the top, U1 at the bottom (rack elevation convention)'},
+        'scrollbar':{'track':EL['scroll'],'thumb':'controller/scroll_thumb','thumb_hover':'controller/scroll_thumb_hover','thumb_x':151},'order':'U42 at the top, U1 at the bottom (rack elevation convention); opens scrolled to the top'},
       'player_inventory':{'left':8,'top_in_bottom':17},
       'text':{'title':{'key':'block.encodedlogistics.server_rack','left':8,'top':5,'color':'TEXT'},'free':{'right':168,'top':5,'color':'TEXT_MUTED'},
               'inventory':{'key':'container.inventory','left':8,'top_in_bottom':6,'color':'TEXT_MUTED'}}},open(S+'elevation.json','w'),indent=1)

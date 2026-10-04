@@ -56,16 +56,19 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     private static final Identifier SLOT_EMPTY = EncodedLogistics.id("rack/slot_empty"), SELECT_1U = EncodedLogistics.id("rack/select_1u"),
             SELECT_2U = EncodedLogistics.id("rack/select_2u"), DROP_1U = EncodedLogistics.id("rack/drop_target_1u"),
             DROP_2U = EncodedLogistics.id("rack/drop_target_2u"), DROP_BLOCKED = EncodedLogistics.id("rack/drop_blocked"),
-            SCROLL_THUMB = EncodedLogistics.id("rack/scroll_thumb"), BACK = EncodedLogistics.id("rack/back");
+            BACK = EncodedLogistics.id("rack/back");
+    // The controller's scrollbar, as on the other screens: an 8 px track, its 6x15 thumb one in from the left.
+    private static final Identifier THUMB = EncodedLogistics.id("controller/scroll_thumb"),
+            THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
 
     private static final int INSET_X = 8, INSET_Y = 18, INSET_W = 140, INSET_H = 146;
     private static final int ROW_H = 9, ROWS = 16, FIRST_ROW_Y = 19, NUMBER_RIGHT = 23, SLOT_X = 26, SLOT_W = 104;
-    private static final int SCROLL_X = 150, SCROLL_Y = 18, SCROLL_W = 10, SCROLL_H = 146, THUMB_W = 8, THUMB_H = 15;
+    private static final int SCROLL_X = 150, SCROLL_Y = 18, SCROLL_W = 8, SCROLL_H = 146, THUMB_W = 6, THUMB_H = 15;
     private static final int MAX_SCROLL = RackGeometry.UNITS - ROWS;
     static final int BACK_X = 150, BACK_Y = 2;
 
-    // Rows scrolled down from the top (U42); starts at the bottom, showing U1-U16.
-    private int scroll = MAX_SCROLL;
+    // Rows scrolled down from the top (U42); starts at the top, showing U27-U42.
+    private int scroll;
     private boolean draggingThumb;
     private @Nullable Panel panel;
     private int panelU;
@@ -269,8 +272,9 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         }
         graphics.disableScissor();
         // The scrollbar's thumb.
-        int thumbY = y + SCROLL_Y + 1 + Math.round((SCROLL_H - 2 - THUMB_H) * (float) scroll / MAX_SCROLL);
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SCROLL_THUMB, x + SCROLL_X + 1, thumbY, THUMB_W, THUMB_H);
+        int thumbY = y + thumbTop();
+        boolean hover = draggingThumb || over(mouseX, mouseY, SCROLL_X + 1, thumbTop(), THUMB_W, THUMB_H);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? THUMB_HOVER : THUMB, x + SCROLL_X + 1, thumbY, THUMB_W, THUMB_H);
     }
 
     // A device's real front, from its texture, with its lights for its state.
@@ -358,6 +362,11 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             case OFFLINE -> TEXT_MUTED;
             case FAULT -> ERROR;
         };
+    }
+
+    // The thumb's top, relative to the screen, inside the track's 1 px rim.
+    private int thumbTop() {
+        return SCROLL_Y + 1 + Math.round((SCROLL_H - 2 - THUMB_H) * (float) scroll / MAX_SCROLL);
     }
 
     // --- Rows ---

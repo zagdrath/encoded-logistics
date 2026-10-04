@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -21,9 +22,10 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 
 // The UPS (2U): a battery for its network. Each tick the network compares what its Power Inlets (and anything else
-// feeding its controllers and banks) brought in with what it drains (ControllerStructures). When supply falls short, the
-// UPSes on the network cover the difference from their batteries in the same tick, before the network's own buffers are
-// touched; when there's a surplus they recharge from it. Online mode always conditions the supply (covers any shortfall,
+// feeding its controllers and banks) brought in with what it drains (ControllerStructures; full buffers count as a
+// supply that covers it). When supply falls short, the UPSes on the network cover the difference from their batteries
+// in the same tick, before the network's own buffers are touched; otherwise they recharge from the top half of the
+// buffers. Online mode always conditions the supply (covers any shortfall,
 // recharges continuously); Standby only steps in once supply has failed altogether, and idles on less. Several UPSes on
 // a network add up: they discharge together and recharge in parallel. Overload (a shortfall over their rated output)
 // is a fault.
@@ -50,6 +52,8 @@ public class UpsDevice extends RackDevice {
     private double load;
     private int supplied;
     private int faultTicks;
+    // The game time a network last ran this UPS's energy (cover).
+    private long lastCovered = Long.MIN_VALUE;
     private final Deque<Event> log = new ArrayDeque<>();
     // Client: what the front shows, as synced.
     private int shownPercent, shownLeds;
@@ -123,6 +127,7 @@ public class UpsDevice extends RackDevice {
         int deficit = Math.max(0, demand - supply);
         List<UpsDevice> engaged = new ArrayList<>();
         for (UpsDevice ups : upses) {
+            ups.lastCovered = time;
             ups.load = (double) demand / upses.size();
             if (deficit > 0 && (ups.mode == Mode.ONLINE || supply <= 0) && ups.stored > 0) {
                 engaged.add(ups);
@@ -156,7 +161,18 @@ public class UpsDevice extends RackDevice {
         return given;
     }
 
-    // How much the UPSes take from a surplus to recharge.
+    // Off every network (cable cut, lane lost): nothing to cover or carry.
+    @Override
+    public void tick(ServerLevel level) {
+        if (level.getGameTime() - lastCovered > 2 && (onBattery || load != 0 || supplied != 0)) {
+            onBattery = false;
+            load = 0;
+            supplied = 0;
+            changed(false);
+        }
+    }
+
+    // How much the UPSes take from what's available to recharge.
     public static int wantedCharge(List<UpsDevice> upses, int surplus) {
         long want = 0;
         for (UpsDevice ups : upses) {
