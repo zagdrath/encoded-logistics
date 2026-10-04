@@ -7,6 +7,7 @@
   "interior": "encodedlogistics:block/rack/interior",
   "plinth": "encodedlogistics:block/rack/plinth",
   "roof": "encodedlogistics:block/rack/roof",
+  "roof_edge": "encodedlogistics:block/rack/roof_edge",
   "side_upper": "encodedlogistics:block/rack/side_upper",
   "side_lower": "encodedlogistics:block/rack/side_lower",
   "rail": "encodedlogistics:block/rack/rail",
@@ -663,39 +664,39 @@
      ]
     },
     "north": {
-     "texture": "#frame",
+     "texture": "#roof_edge",
      "uv": [
-      0,
-      0,
-      16,
-      3
+      0.0,
+      0.0,
+      8.0,
+      3.0
      ]
     },
     "south": {
-     "texture": "#frame",
+     "texture": "#roof_edge",
      "uv": [
-      0,
-      0,
-      16,
-      3
+      0.0,
+      0.0,
+      8.0,
+      3.0
      ]
     },
     "east": {
-     "texture": "#frame",
+     "texture": "#roof_edge",
      "uv": [
-      0,
-      0,
-      16,
-      3
+      0.0,
+      0.0,
+      16.0,
+      3.0
      ]
     },
     "west": {
-     "texture": "#frame",
+     "texture": "#roof_edge",
      "uv": [
-      0,
-      0,
-      16,
-      3
+      0.0,
+      0.0,
+      16.0,
+      3.0
      ]
     }
    }
@@ -1339,26 +1340,26 @@
      "uv": [
       0.0,
       1.0,
-      8.0,
+      16.0,
       15.0
      ]
     },
     "east": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     },
     "west": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     }
    }
@@ -1381,26 +1382,26 @@
      "uv": [
       0.0,
       1.0,
-      8.0,
+      16.0,
       15.0
      ]
     },
     "east": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     },
     "west": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     }
    }
@@ -1423,26 +1424,26 @@
      "uv": [
       0.0,
       1.0,
-      8.0,
+      16.0,
       15.0
      ]
     },
     "east": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     },
     "west": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     }
    }
@@ -1465,26 +1466,26 @@
      "uv": [
       0.0,
       1.0,
-      8.0,
+      16.0,
       15.0
      ]
     },
     "east": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     },
     "west": {
      "texture": "#rail",
      "uv": [
-      0.0,
-      0.0,
-      1.0,
-      16.0
+      0,
+      0,
+      2,
+      16
      ]
     }
    }

@@ -9,10 +9,14 @@ def new(): return Image.new('RGBA',(128,128),(0,0,0,0))
 def fill(im,x0,y0,w,h,c):
     for y in range(y0,y0+h):
         for x in range(x0,x0+w): put(im,x,y,c)
-def speck(im,x0,y0,w,h,base,seed,p=0.12):
-    r=random.Random(seed)
+def _lerp(a,c,t): return tuple(round(a[i]+(c[i]-a[i])*t) for i in range(3))
+def speck(im,x0,y0,w,h,base,seed,p=0.0,span=1.8):
+    """Smooth shaded fill (kept the old name for callers): light falls off from the top edge down and slightly to the
+       right - the sheen on a rack faceplate. No noise."""
     for y in range(y0,y0+h):
-        for x in range(x0,x0+w): put(im,x,y,g(base-1 if r.random()<p else base))
+        for x in range(x0,x0+w):
+            t=0.8*((y-y0)/max(1,h-1))+0.2*((x-x0)/max(1,w-1)); v=base+span/2-span*t
+            v=max(0,min(9.999,v)); i=int(v); put(im,x,y,_lerp(g(i),g(i+1),v-i))
 def bevel(im,x0,y0,w,h,lit,dark):
     for a in range(w): put(im,x0+a,y0,g(lit)); put(im,x0+a,y0+h-1,g(dark))
     for a in range(h): put(im,x0,y0+a,g(lit)); put(im,x0+w-1,y0+a,g(dark))
@@ -26,8 +30,9 @@ def ears(im,y0,h):
 def bezel(im,y0,h,seed,base=3):
     speck(im,10,y0,84,h,base,seed); bevel(im,10,y0,84,h,base+3,base-2)
 def port_rj45(im,x,y,led_l=None,led_r=None):
-    """6x5 copper port: recess with gold pins, latch notch, two link LEDs on the top edge (dark by default)."""
-    fill(im,x,y,6,5,g(0))
+    """6x5 copper port: shaded recess (darker at the top under the lip), gold pins, latch notch, link LEDs."""
+    for yy in range(5):
+        for xx in range(6): put(im,x+xx,y+yy,_lerp(g(0),g(2),yy/4))
     for dx in range(1,5): put(im,x+dx,y+1,CU[4] if dx%2 else CU[3])
     put(im,x+2,y+4,g(1)); put(im,x+3,y+4,g(1))
     for dx in range(6): put(im,x+dx,y+5,g(6))
@@ -55,7 +60,8 @@ def chassis(im):
 # ---------------- Firewall (1U) ----------------
 def firewall(state='off'):
     im=new(); ears(im,0,8); bezel(im,0,8,1010)
-    fill(im,11,1,3,6,RED[2]); put(im,11,1,RED[4]); put(im,13,6,RED[1])                 # red accent stripe
+    for yy in range(6):
+        for xx in range(3): put(im,11+xx,1+yy,_lerp(RED[4],RED[1],0.75*yy/5+0.25*xx/2))   # red accent stripe, shaded
     for i in range(8): port_rj45(im,26+i*8,2)
     fill(im,90,3,2,2,g(1))                                                              # status LED socket
     rear_panel(im,1,1011); chassis(im)
@@ -73,7 +79,8 @@ def firewall_glow(state):
 # ---------------- Router (1U) ----------------
 def router(state='off'):
     im=new(); ears(im,0,8); bezel(im,0,8,1020)
-    fill(im,11,1,3,6,BLU[2]); put(im,11,1,BLU[4]); put(im,13,6,BLU[1])                 # blue accent (routing)
+    for yy in range(6):
+        for xx in range(3): put(im,11+xx,1+yy,_lerp(BLU[4],BLU[1],0.75*yy/5+0.25*xx/2))   # blue accent, shaded
     for i in range(6): port_rj45(im,18+i*8,2)
     for i in range(4): sfp_cage(im,68+i*5 if False else 66+i*6,2) if False else None
     for i in range(2):
@@ -104,7 +111,8 @@ def seg_digit(im,x,y,ch,col):
 def ups(state='off'):
     im=new(); ears(im,0,16); bezel(im,0,16,1030)
     fill(im,14,3,26,10,g(1)); bevel(im,14,3,26,10,1,6)                                 # LCD window (dark when off)
-    fill(im,15,4,24,8,H('#18261E'))
+    for yy in range(8):
+        for xx in range(24): put(im,15+xx,4+yy,_lerp(H('#22382C'),H('#101A15'),0.7*yy/7+0.3*xx/23))   # LCD glass, shaded
     for i in range(10): fill(im,44+i*3,6,2,3,g(1))                                     # load bar LEDs (off)
     fill(im,76,5,5,5,g(2)); bevel(im,76,5,5,5,7,3)                                      # power button
     for y in range(2,14):                                                               # vented battery bezel
@@ -121,8 +129,8 @@ def ups_glow(state,load=6):
     im=new()
     if state=='off': return im
     if state=='on':
-        fill(im,15,4,24,8,LCD[1])                                                       # LCD backlight
-        for x in range(15,39): put(im,x,4,LCD[2])
+        for yy in range(8):
+            for xx in range(24): put(im,15+xx,4+yy,_lerp(LCD[3],LCD[1],0.7*yy/7+0.3*xx/23))   # LCD backlight, smooth
         for i in range(10):
             if i<load: fill(im,44+i*3,6,2,3,(GRN if i<6 else AMB if i<8 else RED)[5])
         for (dx,dy) in ((1,1),(2,1),(1,2)): put(im,76+dx,5+dy,GRN[5])

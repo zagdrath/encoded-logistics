@@ -11,7 +11,7 @@ def jd(o,p): os.makedirs(os.path.dirname(p),exist_ok=True); json.dump(o,open(p,'
 def textures():
     R=T+'block/rack/'
     save(RT.frame_tex(),R+'frame.png'); save(RT.side_panel(751,False),R+'side_lower.png'); save(RT.side_panel(752,True),R+'side_upper.png')
-    save(RT.roof_tex(),R+'roof.png'); save(RT.plinth_tex(),R+'plinth.png'); save(RT.interior_tex(),R+'interior.png'); save16(RT.rail_tex(),R+'rail.png')
+    save(RT.roof_tex(),R+'roof.png'); save(RT.roof_edge_tex(),R+'roof_edge.png'); save(RT.plinth_tex(),R+'plinth.png'); save(RT.interior_tex(),R+'interior.png'); save16(RT.rail_tex(),R+'rail.png')
     save16(RT.mesh_door(15,45,761,badge=True),R+'door_front.png'); save16(RT.mesh_door(8,45,762,header=False),R+'door_rear.png'); save(RT.door_parts(),R+'door_parts.png')
     D=T+'block/rack_device/'
     for n,(u,base,glow) in DT.DEVICES.items():

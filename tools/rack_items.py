@@ -5,6 +5,11 @@ from style_kit import g
 from rack_tex import b
 from device_tex import RED, BLU, GRN, LCD, CU
 def new(): return Image.new('RGBA',(16,16),(0,0,0,0))
+def _l(a,c,t): return tuple(round(a[k]+(c[k]-a[k])*t) for k in range(3))
+def smooth(im,ramp_fn,x0,y0,w,h,lo,hi):
+    for y in range(y0,y0+h):
+        for x in range(x0,x0+w):
+            t=0.7*((y-y0)/max(1,h-1))+0.3*((x-x0)/max(1,w-1)); v=hi-(hi-lo)*t; k=int(v); put(im,x,y,_l(ramp_fn(k),ramp_fn(k+1),v-k))
 def outline(im,col):
     src=im.copy()
     for y in range(16):
@@ -14,12 +19,12 @@ def outline(im,col):
 def rack_icon():
     """Tall cabinet in 3/4 view: mesh front with a header and handle, side panel with the seam, casters."""
     im=new()
-    for y in range(1,15):
-        for x in range(3,10):                                   # front door
-            edge=x in (3,9) or y in (1,14) or y==2
-            put(im,x,y,b(5) if (x==3 or y==1) else b(2) if edge else (b(1) if (x+y)%2 else b(3)))
-        for x in range(10,13):                                  # side panel
-            put(im,x,y,b(4) if x==10 else b(3) if y!=8 else b(1))
+    smooth(im,b,3,1,7,14,1.5,5.0); smooth(im,b,10,1,3,14,1.0,3.6)  # door and side, smoothly lit from the top-left
+    for y in range(3,14):
+        for x in range(4,9):
+            if (x+y)%2: put(im,x,y,b(0))                        # mesh openings
+    for y in range(1,15): put(im,10,y,b(4)); put(im,9,y,b(1))
+    for x in range(10,13): put(im,x,8,b(1))
     put(im,4,7,g(6)); put(im,4,8,g(4))                          # handle
     for x in range(4,9): put(im,x,2,b(4))
     for x in (4,8,11): put(im,x,15,g(5))                        # casters
@@ -28,10 +33,9 @@ def device_icon(kind):
     """1U/2U unit in 3/4 view: top face, front strip with the device's signature detail, ears."""
     im=new(); top0,front0=(4,9) if kind!='ups' else (3,7)
     fh=3 if kind!='ups' else 6
-    for y in range(top0,front0):
-        for x in range(2,14): put(im,x,y,g(6) if y==top0 else g(5) if x<8 else g(4))
-    for y in range(front0,front0+fh):
-        for x in range(1,15): put(im,x,y,g(3) if 2<=x<=13 else g(6))
+    smooth(im,g,2,top0,12,front0-top0,4.0,6.8)                  # top face, smooth sheen
+    smooth(im,g,2,front0,12,fh,2.2,3.8)                         # faceplate
+    for y in range(front0,front0+fh): put(im,1,y,g(6)); put(im,14,y,g(5))   # ears
     if kind=='firewall':
         for y in range(front0,front0+fh): put(im,3,y,RED[3])
         for x in range(5,13,2): put(im,x,front0+1,g(0)); put(im,x,front0,CU[4])

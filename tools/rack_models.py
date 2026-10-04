@@ -31,8 +31,10 @@ def frame_model():
                      'up':face(F,[0,0,1,16]),'down':face(F,[0,0,1,16])}))
         E.append(el(f'seam_{side}',((0.1 if side=='left' else 15.6),7.75,1.5),((0.4 if side=='left' else 15.9),8.25,30.5),all_faces(I,[0,0,16,16])))
     # roof (vented, cable-entry slots) and plinth
+    RE='#roof_edge'
     E.append(el('roof',(0,29,0),(16,32,32),{'up':face('#roof',uvf((0,0,16,32),32,32)),'down':face(I,[0,0,16,16]),
-             'north':face(F,[0,0,16,3]),'south':face(F,[0,0,16,3]),'east':face(F,[0,0,16,3]),'west':face(F,[0,0,16,3])}))
+             'north':face(RE,uvf((0,0,16,3),32,16)),'south':face(RE,uvf((0,0,16,3),32,16)),
+             'east':face(RE,uvf((0,0,32,3),32,16)),'west':face(RE,uvf((0,0,32,3),32,16))}))
     E.append(el('plinth',(0,-15,0),(16,-13,32),{'up':face(I,[0,0,16,16]),'down':face(P,[0,2,16,14]),'north':face(P,[0,0,16,2]),
              'south':face(P,[0,0,16,2]),'east':face(P,[0,0,16,2]),'west':face(P,[0,0,16,2])}))
     for (x,z) in ((1,1),(13.5,1),(1,29.5),(13.5,29.5)):                      # casters
@@ -42,12 +44,12 @@ def frame_model():
     # 19" rails, front (z 2..2.5) and rear (z 29.5..30): flange 2 px wide, numbered 1..42 from the bottom
     for z0,face_dir,n in ((2,'north','front'),(29.5,'south','rear')):
         for x0,s in ((1.5,'l'),(12.5,'r')):
-            E.append(el(f'rail_{n}_{s}',(x0,-13,z0),(x0+2,29,z0+0.5),{face_dir:face('#rail',uvf((0,12,8,180),16,192)),
-                     'east':face('#rail',[0,0,1,16]),'west':face('#rail',[0,0,1,16])}))
+            E.append(el(f'rail_{n}_{s}',(x0,-13,z0),(x0+2,29,z0+0.5),{face_dir:face('#rail',uvf((0,24,16,360),16,384)),
+                     'east':face('#rail',[0,0,2,16]),'west':face('#rail',[0,0,2,16])}))
     # dark interior back plane between the rails so the cabinet reads deep (not a wall: devices sit in front of it)
     return {'parent':'minecraft:block/block','render_type':'minecraft:cutout','ambientocclusion':False,
             'textures':{'frame':'encodedlogistics:block/rack/frame','interior':'encodedlogistics:block/rack/interior',
-                        'plinth':'encodedlogistics:block/rack/plinth','roof':'encodedlogistics:block/rack/roof',
+                        'plinth':'encodedlogistics:block/rack/plinth','roof':'encodedlogistics:block/rack/roof','roof_edge':'encodedlogistics:block/rack/roof_edge',
                         'side_upper':'encodedlogistics:block/rack/side_upper','side_lower':'encodedlogistics:block/rack/side_lower',
                         'rail':'encodedlogistics:block/rack/rail','particle':'encodedlogistics:block/rack/frame'},'elements':E}
 # ---------------- doors (BER parts; rotated about their hinge pivot) ----------------
@@ -66,9 +68,9 @@ def door_model(name,x0,x1,z0,z1,tex,tw,th,handle_x=None,handle_face='north'):
             'textures':{'mesh':f'encodedlogistics:block/rack/{tex}','frame':'encodedlogistics:block/rack/frame','parts':'encodedlogistics:block/rack/door_parts',
                         'particle':'encodedlogistics:block/rack/frame'},'elements':E}
 def door_models():
-    return {'rack_door_front':door_model('door_front',0.5,15.5,0,1,'door_front',30,90,handle_x=1.75,handle_face='north'),
-            'rack_door_rear_left':door_model('door_rear_left',8,15.5,30.6,31.6,'door_rear',16,90,handle_x=8.6,handle_face='south'),
-            'rack_door_rear_right':door_model('door_rear_right',0.5,8,30.6,31.6,'door_rear',16,90,handle_x=6.65,handle_face='south')}
+    return {'rack_door_front':door_model('door_front',0.5,15.5,0,1,'door_front',60,180,handle_x=1.75,handle_face='north'),
+            'rack_door_rear_left':door_model('door_rear_left',8,15.5,30.6,31.6,'door_rear',32,180,handle_x=8.6,handle_face='south'),
+            'rack_door_rear_right':door_model('door_rear_right',0.5,8,30.6,31.6,'door_rear',32,180,handle_x=6.65,handle_face='south')}
 # ---------------- devices (BER parts; drawn at their U, y 0..n in model space) ----------------
 def device_model(name,n,glow=None):
     """13 px wide (x 1.5..14.5, ears over the rails), n px tall (1U = 1 px), front plate at z 1.75, rear at z 29.25.

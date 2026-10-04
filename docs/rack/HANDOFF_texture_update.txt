@@ -1,0 +1,29 @@
+ENCODED LOGISTICS - SERVER RACK: TEXTURE UPDATE (delta on top of the first encodedlogistics_server_rack.zip)
+=========================================================================================================
+Apply the first Server Rack zip first (or keep what was already implemented from it), then copy this zip's src/ over
+the repo. Only files that changed are included. No code, behaviour, GUI, HUD, sound or animation changes.
+
+FILES (replace / add)
+  textures/block/rack/*.png               all rack textures redrawn (see below)
+     NEW  roof_edge.png                    32x16 - the roof cap's four sides
+     SIZE door_front.png 30x90 -> 60x180, door_rear.png 16x90 -> 32x180 (4 texels/px mesh)
+     SIZE rail.png 8x192 -> 16x384 (8 texels/px)
+     (door and rail model UVs are normalised 0..16, so rack_door_*.json and the rail elements need NO change)
+  textures/block/rack_device/*.png         firewall, router, ups + their _on / _fault overlays (.mcmeta unchanged)
+  textures/item/{server_rack,firewall,router,ups}.png
+  models/block/rack/rack_frame.json        the roof element's four sides now use #roof_edge (added to "textures")
+  blockbench/*.bbmodel                     sources rebuilt with the new textures embedded
+  tools/{rack_tex,device_tex,rack_items,rack_models,rack_export}.py   the painters/exporter that produce the above
+
+TEXTURE RULES (update the first zip's HANDOFF section to these)
+  - RACK EXTERIOR (posts/frame, side panels, roof + roof band, plinth, interior): drawn the way vanilla draws dark metal
+    (netherite block, anvil, hopper, iron door): vanilla density (1 texel per model px), an 8-tone black powder-coat
+    palette, brushed runs of 3-7 px one tone up/down (horizontal on plates, vertical on posts), light that steps in
+    bands (top rows +1, bottom rows -1), crisp bevelled inset panels. No blended gradients, no single-pixel speckle.
+  - MESH DOORS (4 texels/px): staggered hex-row openings (alpha 0 cutout), smoothly shaded frame, blank badge plate.
+  - RAILS (8 texels/px): zinc shaded as a rounded strip, a 3x3 mounting hole per U, small U numbers every 5U that fit
+    inside one U (counted from the bottom).
+  - DEVICES (8 texels/px): faceplates, ears, accent stripes, port recesses and the UPS LCD smoothly shaded; no flat
+    fills, no speckle. Texture layout (front/rear/chassis/extras regions) unchanged.
+
+previews/  rack_front.png, roof_rear.png, hud_firewall.png, rack_rear_open.png - rendered from the updated files.
