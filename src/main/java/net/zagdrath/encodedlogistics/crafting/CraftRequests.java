@@ -39,11 +39,17 @@ public final class CraftRequests {
         return ControllerStructures.get(level).isDeviceOnline(level, device) ? ControllerStructures.networkOf(level, device) : null;
     }
 
-    // Every schematic on the network, Fabricators and Gateways in position order.
+    // Every schematic on the network, Fabricators and Gateways in position order, then its online recipe libraries'
+    // (RecipeLibraries: a diskette job library) that no provider holds already.
     public static List<Schematic> schematics(MinecraftServer server, @Nullable NetworkRef network) {
         List<Schematic> schematics = new ArrayList<>();
         for (CraftingProvider provider : ControllerStructures.providersOf(server, network)) {
             schematics.addAll(provider.schematics());
+        }
+        for (Schematic recipe : RecipeLibraries.recipes(server, network)) {
+            if (!schematics.contains(recipe)) {
+                schematics.add(recipe);
+            }
         }
         return schematics;
     }

@@ -15,6 +15,12 @@ public interface CraftingProvider {
     // The schematics it holds.
     List<Schematic> schematics();
 
+    // Whether it can carry out a schematic: one it holds, or (a provider that works from a recipe library) one from
+    // the network's recipe libraries (RecipeLibraries) it takes.
+    default boolean accepts(Schematic schematic) {
+        return schematics().contains(schematic);
+    }
+
     // Takes the task if it holds the schematic and has room for it now; false leaves the inputs with the job.
     boolean offer(ServerLevel level, CraftTask task);
 }

@@ -16,6 +16,10 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.ElclMessages;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
+import net.zagdrath.encodedlogistics.elcl.device.Diskette;
+import net.zagdrath.encodedlogistics.elcl.device.DisketteDevice;
+import net.zagdrath.encodedlogistics.elcl.device.Diskettes;
+import net.zagdrath.encodedlogistics.elcl.device.LibraryImage;
 import net.zagdrath.encodedlogistics.elcl.job.BatchContext;
 import net.zagdrath.encodedlogistics.elcl.job.InteractiveCalls;
 import net.zagdrath.encodedlogistics.elcl.job.JobManager;
@@ -154,6 +158,41 @@ public final class OsCommands {
         CommandRegistry.bind("CALL", InteractiveCalls::call);
         // In a program the VM waits; typed on a command line there's nothing to hold up, so it's done at once.
         CommandRegistry.bind("DLYJOB", call -> {});
+
+        // SAVLIB / RSTLIB: a library to or from the 8" Diskette in the device DEV() names (the Midrange line's
+        // DisketteDevice): ELC1301 with no such device, ELC1310 with no diskette, ELC1311 when it doesn't fit.
+        CommandRegistry.bind("SAVLIB", call -> {
+            ElclSystem system = system(call);
+            String lib = call.text("LIB").toUpperCase(Locale.ROOT);
+            LibraryImage image = libraries.image(system, lib);
+            DisketteDevice device = Diskettes.find(system, call.text("DEV"));
+            Diskette diskette = device.mounted().getFirst();
+            long free = diskette.capacity() - diskette.used(lib);
+            if (image.bytes() > free) {
+                throw new ElclException("ELC1311", lib, image.bytes(), Math.max(0, free));
+            }
+            diskette.write(image);
+            call.send(ElclMessage.of("ELC0220", lib, device.name() + " (" + diskette.label() + ")"));
+        });
+        CommandRegistry.bind("RSTLIB", call -> {
+            ElclSystem system = system(call);
+            String lib = call.text("LIB").toUpperCase(Locale.ROOT);
+            DisketteDevice device = Diskettes.find(system, call.text("DEV"));
+            LibraryImage image = null;
+            String label = "";
+            for (Diskette diskette : device.mounted()) {
+                image = diskette.library(lib);
+                if (image != null) {
+                    label = diskette.label();
+                    break;
+                }
+            }
+            if (image == null) {
+                throw new ElclException("ELC0201", lib);
+            }
+            libraries.restore(system, user(call), image);
+            call.send(ElclMessage.of("ELC0221", lib, device.name() + " (" + label + ")"));
+        });
 
         JobService jobs = ElclServices.jobs();
         CommandRegistry.bind("SBMJOB", call -> {

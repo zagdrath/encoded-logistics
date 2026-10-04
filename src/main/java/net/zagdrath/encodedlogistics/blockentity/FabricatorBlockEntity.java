@@ -116,7 +116,7 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
 
     @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
-        if (task != null || !online || offered.schematic().kind() != Schematic.Kind.CRAFTING || !schematics().contains(offered.schematic())) {
+        if (task != null || !online || offered.schematic().kind() != Schematic.Kind.CRAFTING || !accepts(offered.schematic())) {
             return false;
         }
         int cost = Config.FABRICATOR_ENERGY_PER_CRAFT.getAsInt();

@@ -139,7 +139,7 @@ public final class JobRunner {
                 boolean taken = false;
                 for (CraftingProvider provider : providers) {
                     offers++;
-                    if (provider.schematics().contains(step.schematic) && provider.offer(level, task)) {
+                    if (provider.accepts(step.schematic) && provider.offer(level, task)) {
                         taken = true;
                         break;
                     }

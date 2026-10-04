@@ -140,6 +140,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("trigger_storage", SchedulingGameTests::storageTrigger);
         TESTS.put("security_authority", SecurityGameTests::authority);
         TESTS.put("security_signon", SecurityGameTests::signOn);
+        TESTS.put("diskette_save_restore", InterfaceGameTests::saveRestore);
+        TESTS.put("printer_print", InterfaceGameTests::printing);
+        TESTS.put("recipe_library", InterfaceGameTests::recipeLibrary);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);

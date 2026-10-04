@@ -98,7 +98,8 @@ The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-test
   `JobManager` (runs programs each server tick within the budgets), `JobVmHost`, `Waits` (RECALL, CRAFT),
   `InteractiveCalls` (CALL on a command line), `Schedules`; `elcl.store.JobData` (what's saved)
 - `elcl.exec` - `ModCommands` (COMMANDS.md 3-8), `ElclItems` (item IDs)
-- `elcl.device` - `DisplayDevice`, `Displays` (SNDDSPTXT)
+- `elcl.device` - `DisplayDevice`, `Displays` (SNDDSPTXT), `DisketteDevice`, `Diskette`, `Diskettes`, `LibraryImage` (SAVLIB /
+  RSTLIB); `crafting.RecipeLibrarySource`, `RecipeLibraries` (see INTERFACES.md)
 
 - `elcl.job` (Part 5) - `Schedules` (due times and firing), `Triggers` (polled conditions, events, edge and debounce),
   `RealTime` (the real-time clock INTERVAL and the debounce use)
@@ -114,8 +115,8 @@ system (network) for as long as the server runs: **nothing here survives a resta
 | Stub | Methods | Waits for |
 |---|---|---|
 
-Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this):
-only SAVLIB and RSTLIB remain (the 8" Diskette interface, Part 7).
+Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this).
+None is left: SAVLIB and RSTLIB run against the 8" Diskette interface (`elcl.device.DisketteDevice`, INTERFACES.md).
 
 The language statements (PGM, DCL, IF, DO, MONMSG and the rest, 29 in all) are program-only: on the command line
 they're ELC0106.

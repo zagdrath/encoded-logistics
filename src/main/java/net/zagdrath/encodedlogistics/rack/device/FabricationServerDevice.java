@@ -85,7 +85,7 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
         if (task != null || !isOnline() || rack() == null || offered.schematic().kind() != Schematic.Kind.CRAFTING
-                || !schematics().contains(offered.schematic())) {
+                || !accepts(offered.schematic())) {
             return false;
         }
         int cost = Config.FABRICATOR_ENERGY_PER_CRAFT.getAsInt();

@@ -114,6 +114,9 @@ public final class ElclMessages {
         // Not in MESSAGES.md originally: device renaming (RNMDEV).
         define("ELC1308", SEVERE, "Device name &1 is already used on &2.");
         define("ELC1309", INFO, "Device &1 renamed to &2.");
+        // Not in MESSAGES.md originally: 8" Diskettes (SAVLIB / RSTLIB).
+        define("ELC1310", SEVERE, "No diskette in device &1.");
+        define("ELC1311", SEVERE, "Library &1 needs &2 bytes; the diskette has &3 free.");
         // Crafting.
         define("ELC1401", SEVERE, "No Scheduler available.");
         define("ELC1402", SEVERE, "No recipe known for &1.");

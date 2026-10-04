@@ -17,6 +17,7 @@ import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.compile.CompiledProgram;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
 import net.zagdrath.encodedlogistics.elcl.compile.Listing;
+import net.zagdrath.encodedlogistics.elcl.device.LibraryImage;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.JobService;
@@ -421,6 +422,52 @@ public final class StoredLibraryService implements LibraryService {
             throw new ElclException("ELC0203", upper(program), lib.name);
         }
         return compiled;
+    }
+
+    @Override
+    public synchronized LibraryImage image(ElclSystem system, String library) throws ElclException {
+        SystemData.Library lib = find(system, library);
+        List<LibraryImage.MemberImage> members = new ArrayList<>();
+        lib.members.values().forEach(m -> members.add(new LibraryImage.MemberImage(m.name, m.text, List.copyOf(m.lines))));
+        List<LibraryImage.ProgramImage> programs = new ArrayList<>();
+        lib.programs.values().forEach(p -> programs.add(new LibraryImage.ProgramImage(p.name, p.sourceMember, p.source)));
+        return new LibraryImage(lib.name, lib.system() ? "*PROD" : lib.type, lib.text, system.name(), system.nowShort(), List.copyOf(members),
+                List.copyOf(programs));
+    }
+
+    @Override
+    public synchronized void restore(ElclSystem system, String user, LibraryImage image) throws ElclException {
+        String name = upper(image.library());
+        checkName(name, "LIB");
+        SystemData.Library lib = stored(system).get(name);
+        if (lib != null) {
+            writable(system, lib, user);
+        }
+        // What it'll take of the network's storage, less what the members it replaces took.
+        long more = 0;
+        for (LibraryImage.MemberImage member : image.members()) {
+            SystemData.Member old = lib != null ? lib.members.get(upper(member.name())) : null;
+            more += cost(member.lines()) - (old != null ? cost(old.lines) : 0);
+        }
+        room(system, name, more);
+        if (lib == null) {
+            lib = new SystemData.Library(name, image.type().equals("*SYS") ? "*PROD" : image.type(), image.text(), upper(user), "*USE", system.nowShort());
+            stored(system).put(name, lib);
+            listener.libraryCreated(system, name);
+        }
+        for (LibraryImage.MemberImage member : image.members()) {
+            String mbr = upper(member.name());
+            SystemData.Member old = lib.members.get(mbr);
+            lib.members.put(mbr, new SystemData.Member(mbr, member.text(), List.copyOf(member.lines()), old != null ? old.version + 1 : 0, system.nowShort()));
+            listener.saved(system, name, mbr, member.lines());
+        }
+        for (LibraryImage.ProgramImage program : image.programs()) {
+            SystemData.Member source = lib.members.get(upper(program.sourceMember()));
+            String pgm = upper(program.name());
+            lib.programs.put(pgm, new SystemData.Program(pgm, name, upper(program.sourceMember()), source != null ? source.version : 0, system.nowShort(),
+                    program.source()));
+        }
+        ElclStore.of(system).changed();
     }
 
     @Override

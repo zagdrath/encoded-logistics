@@ -121,7 +121,7 @@ ELC1303.)*
 | `ADDJOBSCDE JOB() CMD() FRQ(*ONCE\|*INTERVAL\|*DAILY) TIME(HHMM) INTERVAL(seconds)` / `RMVJOBSCDE JOB()` / `WRKJOBSCDE` | game-clock TIME, real-time INTERVAL (see HANDOFF open question 2) | IB / IB / I |
 | `ADDTRGEVT TRG() EVENT() PGM() ITEM() DEV() VALUE()` / `RMVTRGEVT TRG()` / `WRKTRGEVT` | events below | IB / IB / I |
 | `WRKSYSVAL` / `RTVSYSVAL SYSVAL() RTNVAR()` / `CHGSYSVAL SYSVAL() VALUE()` | OS.md §7 | I / IB / IB |
-| `SAVLIB LIB() DEV()` / `RSTLIB LIB() DEV()` | 8" Diskette in a Midrange System or Card Reader | IB |
+| `SAVLIB LIB() DEV()` / `RSTLIB LIB() DEV()` | 8" Diskette in a Midrange System or Card Reader. *(Implemented against `DisketteDevice`, docs/elcl/INTERFACES.md: ELC1301 no device, ELC1310 no diskette, ELC1311 too big; RSTLIB makes the library or replaces its members and programs)* | IB |
 | `WRKDEV` / `WRKINV` / `DSPNETSTS` | existing screens | I |
 | `SIGNOFF` | | I |
 
