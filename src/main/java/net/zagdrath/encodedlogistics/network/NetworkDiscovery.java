@@ -26,8 +26,9 @@ import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 
 // Builds a controller structure's network graph from the world: its controller blocks, then everything reachable
 // from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other, and
-// through remote links (Network Bridges, lanes Point-to-Point Links) whose two ends are both loaded and list each other -
-// into another dimension too, for Bridges, when bridgeCrossDimension allows. A node that doesn't pass through (a
+// through remote links (Network Bridges, lanes Point-to-Point Links, a Wireless Controller's Wireless Bridges and Ports)
+// whose two ends are both loaded and list each other - into another dimension too when bridgeCrossDimension allows
+// (wirelessCrossDimension, for wireless links). A node that doesn't pass through (a
 // Segment Isolator) is on the network but the walk stops there.
 // Controllers of another structure that turn up are added too (and not walked through), so the solver sees the
 // conflict.
@@ -120,7 +121,8 @@ public final class NetworkDiscovery {
             }
             for (RemoteLink remote : node.remoteLinks()) {
                 NodePos target = remote.target();
-                if (target.equals(at) || !target.dimension().equals(at.dimension()) && !Config.BRIDGE_CROSS_DIMENSION.getAsBoolean()) {
+                boolean crossDimension = remote.wireless() ? Config.WIRELESS_CROSS_DIMENSION.getAsBoolean() : Config.BRIDGE_CROSS_DIMENSION.getAsBoolean();
+                if (target.equals(at) || !target.dimension().equals(at.dimension()) && !crossDimension) {
                     continue;
                 }
                 ServerLevel there = server.getLevel(target.dimension());

@@ -96,14 +96,14 @@ final class WithdrawPanel extends CrtPanel {
             return true;
         }
         sent = true;
-        screen.runCommand("withdraw \"" + item.trimmed() + "\" " + amount + " " + to.toLowerCase(Locale.ROOT));
+        screen.send(TerminalService.QUERY, "withdraw \"" + item.trimmed() + "\" " + amount + " " + to.toLowerCase(Locale.ROOT));
         return true;
     }
 
     // Done: back to the list, the message on its line.
     @Override
     void receive(CrtResponsePayload response) {
-        if (sent && response.kind() == TerminalService.COMMAND) {
+        if (sent && response.kind() == TerminalService.QUERY && response.topic().equals("withdraw")) {
             screen.back();
         }
     }

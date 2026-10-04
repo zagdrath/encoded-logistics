@@ -153,20 +153,8 @@ above, the longer event names arrive cut to 10 characters: `*DEVOFFLIN`,
 `*PWRRESTOR`. Schedule entries: `*ONCE` is removed once it has run; a `*DAILY`
 entry missed while its network was unloaded runs once when it's loaded again.)*
 
-## 10. Aliases for the existing CLI
+## 10. The existing CLI (removed)
 
-The existing Terminal Desk CLI commands stay as aliases:
-
-| Existing | ELCL |
-|----------|------|
-| `help` | `F1` help / `GO HELP` |
-| `show inventory [f]` | `WRKINV` (with filter) |
-| `show drives` | `WRKDEV` filtered to storage |
-| `show lanes` | `DSPNETSTS` lanes section |
-| `show jobs` | `WRKACTJOB` |
-| `show devices` | `WRKDEV` |
-| `show power` | `DSPNETSTS` power section |
-| `withdraw <item> <n>` | `MOVITM ITEM() QTY() TODEV(*DESK)` |
-| `craft <item> <n>` | `STRCRAFT` |
-| `cancel job <id>` | `ENDCRAFT` |
-| `clear` | `CLEAR` (clears command entry history) |
+The Terminal Desk's original words (`help`, `show`, `withdraw`, `craft`, `cancel job`, `clear`) are gone: every command
+line is ELCL. Use F1 / `GO HELP`, `WRKINV`, `WRKDEV`, `DSPNETSTS`, `WRKCRFJOB`, `MOVITM ITEM() QTY() TODEV(*DESK)`,
+`STRCRAFT`, `ENDCRAFT` and `CLEAR` instead.

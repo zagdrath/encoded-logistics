@@ -96,6 +96,9 @@ public final class TerminalService {
             case "info" -> info(context);
             case "jobs" -> jobs(context, true);
             case "jobhistory" -> jobHistory(context);
+            case "withdraw" -> withdraw(context, words.subList(1, words.size()));
+            case "craft" -> craft(context, words.subList(1, words.size()));
+            case "canceljob" -> TerminalActions.cancel(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "jobrecord" -> jobRecord(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "removejobrecord" -> removeJobRecord(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "job" -> job(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
@@ -202,7 +205,9 @@ public final class TerminalService {
             // The bar: eight cells, "#" done and "." to do; on the screen the scheduler by number (its name won't fit).
             int filled = Math.clamp(row.percent() * 8 / 100, 0, 8);
             String bar = "#".repeat(filled) + ".".repeat(8 - filled);
-            out.line(TerminalLine.builder().text(screen ? "" : "    ").left(row.number(), 6).left(row.item().stack().getHoverName(), 26)
+            // On the screen the job number is the first cell (Work with Jobs' options name the job by it).
+            TerminalLine.Builder line = screen ? TerminalLine.builder() : TerminalLine.builder().text("    ");
+            out.line(line.left(row.number(), 6).left(row.item().stack().getHoverName(), 26)
                     .right(TerminalItems.count(row.amount()), 5).text("  ").left(row.status(), 9).text(" ").text(bar).right(row.percent() + "%", 5)
                     .text(" ").text(screen ? row.schedulerShort() : row.scheduler())
                     .attr(row.status().equals("Active") ? TerminalLine.BRIGHT : TerminalLine.NORMAL).build());
@@ -211,6 +216,49 @@ public final class TerminalService {
             out.setMessage(Component.translatable("crt.encodedlogistics.msg.no_jobs"));
         }
         return out;
+    }
+
+    // --- The desk's screens' requests ---
+
+    // Withdraw Item's Enter: "withdraw <item> <amount> *drawer|*inv".
+    private static TerminalOutput withdraw(TerminalContext context, List<String> args) {
+        if (!context.allowed(RackPermission.EXTRACT)) {
+            return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.EXTRACT));
+        }
+        ItemKey key = args.isEmpty() ? null : TerminalItems.resolve(context, args.get(0));
+        if (key == null) {
+            return noItem(context, args.isEmpty() ? "" : args.get(0));
+        }
+        long amount = args.size() > 1 ? TerminalItems.amount(args.get(1)) : -1;
+        TerminalActions.Destination destination = args.size() > 2 ? TerminalActions.Destination.parse(args.get(2)) : TerminalActions.Destination.DRAWER;
+        if (amount <= 0 || destination == null || destination == TerminalActions.Destination.NETWORK) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.invalid_value", String.join(" ", args)));
+        }
+        return TerminalActions.withdraw(context, key, amount, destination);
+    }
+
+    // Craft Item's Enter: "craft <item> <amount> <scheduler> *network|*drawer|*inv".
+    private static TerminalOutput craft(TerminalContext context, List<String> args) {
+        if (!context.allowed(RackPermission.CRAFT)) {
+            return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.CRAFT));
+        }
+        ItemKey key = args.isEmpty() ? null : TerminalItems.resolve(context, args.get(0));
+        if (key == null) {
+            return noItem(context, args.isEmpty() ? "" : args.get(0));
+        }
+        long amount = args.size() > 1 ? TerminalItems.amount(args.get(1)) : -1;
+        String scheduler = args.size() > 2 ? args.get(2) : "*AUTO";
+        TerminalActions.Destination destination = args.size() > 3 ? TerminalActions.Destination.parse(args.get(3)) : TerminalActions.Destination.NETWORK;
+        if (amount <= 0 || destination == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.invalid_value", String.join(" ", args)));
+        }
+        return TerminalActions.craft(context, key, amount, scheduler, destination);
+    }
+
+    // No such item, or several.
+    private static TerminalOutput noItem(TerminalContext context, String spec) {
+        return TerminalOutput.message(Component.translatable(TerminalItems.matches(context, spec).isEmpty() ? "crt.encodedlogistics.msg.no_item"
+                : "crt.encodedlogistics.msg.ambiguous", spec));
     }
 
     // Work with Jobs' history view (CraftLog), newest first, a row of cells each: number, item id, item name, quantity

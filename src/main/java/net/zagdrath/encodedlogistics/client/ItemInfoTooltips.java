@@ -104,6 +104,7 @@ public final class ItemInfoTooltips {
                     case P2P -> "item.encodedlogistics.point_to_point_link";
                     case SEGMENT -> "tooltip.encodedlogistics.link_card.segment";
                     case NETWORK -> "tooltip.encodedlogistics.link_card.network";
+                    case WIRELESS -> "item.encodedlogistics.wireless_controller";
                 });
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.link_card.address", kind, address.pos().pos().getX(),
                         address.pos().pos().getY(), address.pos().pos().getZ()).withStyle(ChatFormatting.GRAY));

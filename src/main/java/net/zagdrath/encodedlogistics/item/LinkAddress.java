@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.item;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -13,6 +14,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
@@ -20,13 +22,15 @@ import net.zagdrath.encodedlogistics.part.LinkType;
 
 // What a Link Card remembers: a Network Bridge, a Point-to-Point Link endpoint (the side of the cable it's on, and
 // what it carries), a network segment for a rack's switch (the node at one end of a Segment Isolator, and that end), or a
-// network for a Router (any block on it), and where it is.
-public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Optional<LinkType> type) {
+// network for a Router (any block on it), or a Wireless Controller (its rack's master, and the controller's id), and
+// where it is.
+public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Optional<LinkType> type, Optional<UUID> controller) {
     public enum Kind implements StringRepresentable {
         BRIDGE("bridge"),
         P2P("p2p"),
         SEGMENT("segment"),
-        NETWORK("network");
+        NETWORK("network"),
+        WIRELESS("wireless");
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
         public static final StreamCodec<ByteBuf, Kind> STREAM_CODEC = ByteBufCodecs.idMapper(id -> values()[Math.clamp(id, 0, values().length - 1)], Kind::ordinal);
@@ -47,7 +51,8 @@ public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Op
             Kind.CODEC.fieldOf("kind").forGetter(LinkAddress::kind),
             GlobalPos.CODEC.fieldOf("pos").forGetter(LinkAddress::pos),
             Direction.CODEC.optionalFieldOf("side").forGetter(LinkAddress::side),
-            LinkType.CODEC.optionalFieldOf("type").forGetter(LinkAddress::type))
+            LinkType.CODEC.optionalFieldOf("type").forGetter(LinkAddress::type),
+            UUIDUtil.CODEC.optionalFieldOf("controller").forGetter(LinkAddress::controller))
             .apply(i, LinkAddress::new));
 
     public static final StreamCodec<ByteBuf, LinkAddress> STREAM_CODEC = StreamCodec.composite(
@@ -55,7 +60,17 @@ public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Op
             GlobalPos.STREAM_CODEC, LinkAddress::pos,
             ByteBufCodecs.optional(Direction.STREAM_CODEC), LinkAddress::side,
             ByteBufCodecs.optional(LinkType.STREAM_CODEC), LinkAddress::type,
+            ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC), LinkAddress::controller,
             LinkAddress::new);
+
+    public LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Optional<LinkType> type) {
+        this(kind, pos, side, type, Optional.empty());
+    }
+
+    // A Wireless Controller: its rack's master and its id.
+    public static LinkAddress wireless(GlobalPos rack, UUID controller) {
+        return new LinkAddress(Kind.WIRELESS, rack, Optional.empty(), Optional.empty(), Optional.of(controller));
+    }
 
     public static LinkAddress bridge(GlobalPos pos) {
         return new LinkAddress(Kind.BRIDGE, pos, Optional.empty(), Optional.empty());

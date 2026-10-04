@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.network.RemoteLink;
 
 // A device mounted in a Server Rack at U u (taking size U from there up). The rack is its network node: each device
 // uses laneCost lanes (none while a switch in the rack pools it: LanePool) and drains drain() FE/t from the network,
@@ -190,6 +191,11 @@ public abstract class RackDevice {
 
     // Every server tick while it's in a loaded rack.
     public void tick(ServerLevel level) {}
+
+    // Its links to nodes elsewhere, which its rack carries on the network (a Wireless Controller's clients).
+    public List<RemoteLink> remoteLinks() {
+        return List.of();
+    }
 
     // Every client tick, on the client's copy (animations). The copy lives on across syncs while it stays at its unit.
     public void clientTick() {}

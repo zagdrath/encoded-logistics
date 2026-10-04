@@ -55,6 +55,7 @@ import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
 import net.zagdrath.encodedlogistics.network.RackLanes;
 import net.zagdrath.encodedlogistics.network.RackNode;
+import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
@@ -287,15 +288,17 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     public RackNode networkNode(Set<Direction> sides) {
         double drain = 0;
         List<NetworkPart> parts = new ArrayList<>();
+        List<RemoteLink> links = new ArrayList<>();
         for (RackDevice device : devices.values()) {
             drain += device.drain();
             parts.add(new NetworkPart(device.type().item(), device.drain()));
+            links.addAll(device.remoteLinks());
         }
         List<RackNode.RackController> controllers = new ArrayList<>();
         for (NetworkControllerDevice controller : controllers()) {
             controllers.add(new RackNode.RackController(controller.u(), controller.size(), controller.lanes(), controller.usable()));
         }
-        return new RackNode(worldPosition.immutable(), sides, drain, parts, demands(), controllers, controllerStructure);
+        return new RackNode(worldPosition.immutable(), sides, drain, parts, demands(), controllers, controllerStructure, links);
     }
 
     // Each connection point with its state, for a controller's uplink chips: up (it carries the network toward a source,

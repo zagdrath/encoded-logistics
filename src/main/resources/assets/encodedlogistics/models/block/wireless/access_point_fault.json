@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "ring": "encodedlogistics:block/wireless/ap_ring_fault",
+  "particle": "encodedlogistics:block/wireless/ap_ring_fault"
+ },
+ "elements": [
+  {
+   "name": "ring",
+   "from": [
+    3,
+    15.51,
+    3
+   ],
+   "to": [
+    13,
+    15.51,
+    13
+   ],
+   "faces": {
+    "up": {
+     "texture": "#ring",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

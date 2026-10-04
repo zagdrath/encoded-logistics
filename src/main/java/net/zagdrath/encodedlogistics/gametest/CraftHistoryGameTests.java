@@ -260,6 +260,14 @@ final class CraftHistoryGameTests {
                     TerminalService.handle(context, TerminalService.QUERY, "removejobrecord " + number);
                     expect(helper, context, "RTVCRFSTS " + done, "ELC1404");
 
+                    // Work with Jobs' rows name a running job by their first cell (what 4=Cancel and 5=Display send).
+                    UUID running = CraftingCompletionGameTests.start(helper, master, player());
+                    TerminalOutput jobs = TerminalService.handle(context, TerminalService.QUERY, "jobs");
+                    String first = jobs.lines().getFirst().cells().getFirst().text().getString().trim();
+                    helper.assertTrue(first.equals(String.format("%04d", ControllerStructures.jobNumber(helper.getLevel().getServer(), network, running))),
+                            "First cell " + first);
+                    helper.assertTrue(!TerminalService.handle(context, TerminalService.QUERY, "job " + first).lines().isEmpty(), "Job " + first + " not found");
+
                     // Aged out: CRFLOGRTN 1 keeps only the newest.
                     try {
                         ElclServices.sysvals().change(new ElclSystem(helper.getLevel().getServer(), network), "QSECOFR", true, "CRFLOGRTN", "1");

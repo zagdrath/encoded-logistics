@@ -1,0 +1,151 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "front": "encodedlogistics:block/wireless/port_front",
+  "back": "encodedlogistics:block/wireless/port_ingress_back",
+  "side": "encodedlogistics:block/wireless/port_ingress_side",
+  "mast": "encodedlogistics:block/wireless/mast",
+  "particle": "encodedlogistics:block/wireless/port_front"
+ },
+ "elements": [
+  {
+   "name": "panel",
+   "from": [
+    2,
+    2,
+    0
+   ],
+   "to": [
+    14,
+    14,
+    4
+   ],
+   "faces": {
+    "north": {
+     "texture": "#front",
+     "uv": [
+      2,
+      2,
+      14,
+      14
+     ]
+    },
+    "south": {
+     "texture": "#back",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "nub",
+   "from": [
+    11.5,
+    14,
+    2
+   ],
+   "to": [
+    12.5,
+    16,
+    3
+   ],
+   "faces": {
+    "north": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      2,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      2,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      2,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      2,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      2,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      2,
+      4
+     ]
+    }
+   }
+  }
+ ]
+}

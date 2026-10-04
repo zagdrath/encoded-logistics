@@ -224,7 +224,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#cmd-os-jobs">Jobs, schedules, triggers</a></li>
       <li><a href="#cmd-os-sysvals">System values, save/restore</a></li>
       <li><a href="#cmd-screens">Screen and session commands</a></li>
-      <li><a href="#cmd-desk">The desk's own words (aliases)</a></li>
+      <li><a href="#cmd-desk">The desk's old words (removed)</a></li>
       <li><a href="#cmd-extra">Not in COMMANDS.md</a></li>
     </ol>
   </li>
@@ -348,7 +348,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#cmd-os-jobs">Jobs, schedules, triggers</a></li>
       <li><a href="#cmd-os-sysvals">System values, save/restore</a></li>
       <li><a href="#cmd-screens">Screen and session commands</a></li>
-      <li><a href="#cmd-desk">The desk's own words (aliases)</a></li>
+      <li><a href="#cmd-desk">The desk's old words (removed)</a></li>
       <li><a href="#cmd-extra">Not in COMMANDS.md</a></li>
     </ol>
   </li>
@@ -573,12 +573,12 @@ Select one of the following:
   <li>On a menu, a number is the menu option. In the editor, editor commands (<code>FIND</code>, <code>SAVE</code>...) come first.</li>
   <li><code>clear</code> (any case) clears Command Entry's history.</li>
   <li>A command that opens a screen (<code>WRKLIB</code>, <code>WRKMBR LIB(ZAGLIB)</code>, <code>DSPMSG</code>, <code>GO MAIN</code>, <code>SIGNOFF</code>... see <a href="#cmd-screens">screen commands</a>) is checked against its schema and opens the screen on this desk.</li>
-  <li>Otherwise the line goes to the server. If its first word is one of the desk's own words (<code>help</code>, <code>show</code>, <code>withdraw</code>, <code>craft</code>, <code>cancel</code>, <code>clear</code>) that runs, with a dim note naming its ELCL equivalent (<a href="#cmd-desk">aliases</a>). Anything else runs as an ELCL command in your interactive job.</li>
+  <li>Otherwise the line goes to the server and runs as an ELCL command in your interactive job. (The desk's old words are gone: see <a href="#cmd-desk">the desk's old words</a>.)</li>
 </ol>
 <p>An ELCL command on the command line is parsed, checked against its schema, checked for where it may run and for Firewall authority, then run. Its messages are shown as <code>ID  text</code> (escape and completion messages bright), the values of any <code>RTN*</code> parameters are listed as <code>RTNLVL = 7</code>, and the last message goes to the message line. If the command produced output and you're not on Command Entry, Command Entry opens to show it. The command and its messages also go in your interactive job's log.</p>
 <p><code>CALL</code> on the command line starts the program in your interactive job and answers at once (<code>ELC0108 Program LIB/NAME running in job ...</code>); its messages come to Command Entry when it ends. See <a href="#running">running a program</a>. <code>DLYJOB</code> typed on a command line has nothing to hold up and completes at once.</p>
 <p>There are no variables on the command line (an <code>&amp;name</code> is <code>ELC0002</code>), but expressions of literals work, for example <code>SNDMSG MSG('Shift' *BCAT 'change')</code>. <code>RTN*</code> parameters are optional on the command line even when a program would have to give them. Language statements such as <code>DCL</code>, <code>IF</code> or <code>CHGVAR</code> answer <code>ELC0106</code> there.</p>
-<p><strong>Tab completion</strong> (Command Entry only) completes the desk's own words, <code>show</code> topics and item names. It does not complete ELCL command names; use F4 to prompt those. One match fills in the word; several are listed on the message line.</p>
+<p><strong>Tab completion</strong> (Command Entry only) completes the first word from the ELCL command names and later words from the network's item names; F4 prompts a command's parameters. One match fills in the word; several are listed on the message line.</p>
 
 <h3 id="prompter">The prompter (F4)</h3>
 <p>Type a command name (with or without some parameters) on a command line and press F4. The prompter shows one row per parameter, built from the command's schema.</p>
@@ -715,26 +715,10 @@ Select one of the following:
     RTNLVL = 7
   > CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(20)
     <span class="b">ELC0004  Value 20 is outside the allowed range.</span>
-  > show drives
-  <span class="d">  (alias: WRKDEV filtered to storage)</span>
-    HOLDER                    SLOT  DRIVE           USED       TOTAL
-
-
-
-
-
-
-
-
-
-
- Type command, press Enter.
- ===> <span class="u">                                                                        </span>
-
- <span class="b">F1=Help F3=Exit F4=Prompt F9=Retrieve F12=Cancel F13=Clear F24=More keys</span></pre>
+</pre>
 <figcaption>Command Entry. Commands are shown after <code>&gt;</code>; their messages, RTN* values and output under them.</figcaption>
 </figure>
-<p>The commands typed at this desk and what they said, newest at the bottom (the last 500 lines; Page Up rolls back). <em>"Type any ELCL command and press Enter: it runs in your interactive job and its messages show here (ID and text), with the values its RTN parameters return. The desk's own words (show, withdraw, craft, cancel job, help) still work as aliases."</em> F4 prompts the command on the command line, Tab completes its last word, F9 brings back earlier commands, F13 (<kbd>Shift</kbd>+<kbd>F1</kbd>) clears the list. Typing <code>clear</code> also clears it (<em>"Command history cleared."</em>).</p>
+<p>The commands typed at this desk and what they said, newest at the bottom (the last 500 lines; Page Up rolls back). <em>"Type any ELCL command and press Enter: it runs in your interactive job and its messages show here (ID and text), with the values its RTN parameters return."</em> F4 prompts the command on the command line, Tab completes its last word, F9 brings back earlier commands, F13 (<kbd>Shift</kbd>+<kbd>F1</kbd>) clears the list. Typing <code>clear</code> also clears it (<em>"Command history cleared."</em>).</p>
 
 <h3 id="scr-desk">Inventory, crafting jobs, devices and network status</h3>
 <p>These are the desk's original screens, now Main Menu options 1&ndash;4.</p>
@@ -1726,25 +1710,19 @@ ENDPGM</pre>
 </table></div>
 <p>The other screen commands (<code>WRKLIB</code>, <code>WRKMBR</code>, <code>EDTMBR</code>, <code>WRKACTJOB</code>, <code>WRKJOB</code>, <code>DSPJOBLOG</code>, <code>WRKJOBSCDE</code>, <code>WRKTRGEVT</code>, <code>DSPMSG</code>, <code>WRKSYSVAL</code>) are in the tables above.</p>
 
-<h3 id="cmd-desk">The desk's own words (aliases)</h3>
-<p>The Terminal Desk's original command words still work on any command line, in any case, and are checked before ELCL. Each shows a dim note naming its ELCL equivalent. Words are split on blanks; <code>"double quotes"</code> keep words together.</p>
+<h3 id="cmd-desk">The desk's old words (removed)</h3>
+<p>The Terminal Desk's original command words - <code>help</code>, <code>show</code>, <code>withdraw</code>, <code>craft</code>, <code>cancel job</code> - are gone: every command line is ELCL, so typing one now answers <code>ELC0101 Command &amp;1 not found</code>. What they did:</p>
 <div class="table-wrap"><table>
-  <thead><tr><th>Word</th><th>Usage</th><th>Firewall</th><th>What it does</th><th>Alias note</th></tr></thead>
+  <thead><tr><th>Old word</th><th>Now</th></tr></thead>
   <tbody>
-    <tr><td><code>help</code></td><td><code>help [command]</code></td><td>&ndash;</td><td>Lists the desk's words, or how to use one (<code>help show</code> lists the topics).</td><td>F1 help / GO HELP</td></tr>
-    <tr><td rowspan="6"><code>show</code></td><td><code>show inventory [filter]</code></td><td rowspan="6">view</td><td>Items (filter: part of a name or id, or <code>#tag</code>), up to 200, with quantity and location.</td><td>WRKINV</td></tr>
-    <tr><td><code>show drives</code></td><td>Every drive and tape, used and total.</td><td>WRKDEV filtered to storage</td></tr>
-    <tr><td><code>show lanes</code></td><td>The controller's lanes and each rack's pool.</td><td>DSPNETSTS lanes section</td></tr>
-    <tr><td><code>show jobs</code></td><td>Crafting jobs, as Work with Jobs lists them.</td><td>WRKACTJOB</td></tr>
-    <tr><td><code>show devices</code></td><td>Devices, as Work with Devices lists them.</td><td>WRKDEV</td></tr>
-    <tr><td><code>show power</code></td><td>Energy stored, in and out, and the ten hungriest kinds of device.</td><td>DSPNETSTS power section</td></tr>
-    <tr><td><code>withdraw</code></td><td><code>withdraw &lt;item&gt; &lt;amount&gt; [*drawer|*inv]</code></td><td>extract</td><td>Takes items out to the desk drawer (default) or your inventory.</td><td>MOVITM ITEM() QTY() TODEV(*DESK)</td></tr>
-    <tr><td><code>craft</code></td><td><code>craft &lt;item&gt; &lt;amount&gt; [scheduler] [*network|*drawer|*inv]</code></td><td>craft</td><td>Submits a crafting job (scheduler: <code>*AUTO</code>, a number or a name).</td><td>STRCRAFT</td></tr>
-    <tr><td><code>cancel</code></td><td><code>cancel job &lt;id&gt;</code></td><td>craft</td><td>Cancels a crafting job by its number.</td><td>ENDCRAFT</td></tr>
-    <tr><td><code>clear</code></td><td><code>clear</code></td><td>&ndash;</td><td>Clears the command history.</td><td>CLEAR</td></tr>
+    <tr><td><code>help</code></td><td>F1 on any screen, or <code>GO HELP</code></td></tr>
+    <tr><td><code>show inventory</code>, <code>show drives</code>, <code>show devices</code>, <code>show lanes</code>, <code>show power</code>, <code>show jobs</code></td><td><code>WRKINV</code>, <code>WRKDEV</code>, <code>DSPNETSTS</code>, <code>WRKCRFJOB</code> (or <code>RTVITMLST</code>, <code>RTVDEVLST</code>, <code>RTVLANES</code>, <code>RTVPWRSTS</code>, <code>RTVSTGSTS</code> in a program)</td></tr>
+    <tr><td><code>withdraw</code></td><td>Work with Inventory's 1=Withdraw, or <code>MOVITM ITEM() QTY() TODEV(*DESK)</code></td></tr>
+    <tr><td><code>craft</code></td><td>Work with Inventory's 7=Craft, or <code>STRCRAFT</code></td></tr>
+    <tr><td><code>cancel job</code></td><td>Work with Jobs' 4=Cancel, or <code>ENDCRAFT</code></td></tr>
+    <tr><td><code>clear</code></td><td><code>CLEAR</code> (or F13 on Command Entry)</td></tr>
   </tbody>
 </table></div>
-<p>Because these words come first, <code>HELP</code> typed on a command line runs the desk's <code>help</code>, not an ELCL command. Note that <code>show jobs</code> lists <em>crafting</em> jobs even though its alias note names <code>WRKACTJOB</code> (script jobs); the crafting job screen is <code>WRKCRFJOB</code>. Other mods' devices can add more words and <code>show</code> topics.</p>
 
 <h3 id="cmd-extra">Commands in the code but not in COMMANDS.md</h3>
 <p>These are registered in <code>BuiltinCommands</code> for the OS screens but are not described in <code>COMMANDS.md</code>:</p>
@@ -2144,7 +2122,7 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
     <tr><td><code>elcl.sync</code></td><td><code>FolderSync</code> (the world folder, both ways), <code>Resequence</code> (sequence numbers kept for unchanged lines).</td></tr>
     <tr><td><code>elcl.screen</code></td><td><code>ElclServices</code> (the service holder), <code>ElclSystem</code> (a network on a server, and the game clock and <code>DATFMT</code>), the service interfaces <code>LibraryService</code>, <code>JobService</code>, <code>MessageService</code>, <code>SpoolService</code>, <code>SysvalService</code>, <code>UserService</code>, and <code>ScreenQueries</code> (the screens' data requests, and the sign-on).</td></tr>
     <tr><td><code>client.crt</code></td><td>The terminal: <code>CrtScreen</code> (drawing and game input), <code>CrtTerminal</code> (screen stack, windows, frame, keys), <code>CrtPanel</code>, <code>CrtGrid</code>, <code>CrtField</code>, <code>CrtWindow</code>, <code>FormWindow</code>, <code>ValueListWindow</code>, <code>ListPanel</code>, <code>OsListPanel</code>, <code>InfoPanel</code>, <code>TextPanel</code>, <code>ScreenCommands</code>, <code>PrompterPanel</code>, <code>EditorPanel</code> / <code>EditorModel</code>, and one panel per screen.</td></tr>
-    <tr><td><code>terminal</code></td><td><code>TerminalCommands</code> (the desk's own words and <code>show</code> topics; anything else goes to <code>ElclCommandLine</code>), <code>TerminalCommand</code>, <code>ShowTopic</code>, <code>TerminalService</code> (request kinds <code>COMMAND</code>, <code>QUERY</code>, <code>COMPLETE</code>, <code>SCREEN</code>), <code>TerminalContext</code> (implements <code>ElclContext</code>), <code>TerminalOutput</code>, <code>TerminalLine</code>, <code>TerminalActions</code>, <code>TerminalItems</code>.</td></tr>
+    <tr><td><code>terminal</code></td><td><code>TerminalCommands</code> (the command line: every line goes to <code>ElclCommandLine</code>; Tab completion), <code>TerminalCommand</code>, <code>ShowTopic</code>, <code>TerminalService</code> (request kinds <code>COMMAND</code>, <code>QUERY</code>, <code>COMPLETE</code>, <code>SCREEN</code>), <code>TerminalContext</code> (implements <code>ElclContext</code>), <code>TerminalOutput</code>, <code>TerminalLine</code>, <code>TerminalActions</code>, <code>TerminalItems</code>.</td></tr>
     <tr><td>elsewhere</td><td><code>block/ControlInterfaceBlock</code>, <code>blockentity/ControlInterfaceBlockEntity</code>; <code>menu/TerminalDeskMenu</code> (starts and ends the session's interactive job, refuses requests until sign-on, sends the unread count); <code>net/CrtResponsePayload</code>; <code>EncodedLogistics</code> (the server tick runs <code>FolderSync</code>, <code>Schedules</code>, <code>Triggers</code>, the job service and <code>JobManager</code>); <code>crafting/RecipeLibrarySource</code>, <code>RecipeLibraries</code>; the game tests in <code>gametest/</code>.</td></tr>
   </tbody>
 </table></div>
@@ -2154,7 +2132,7 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
 <ol>
   <li><code>CrtTerminal.runCommand</code> (client): <code>clear</code> is handled here; <code>ScreenCommands.open</code> opens screens for screen commands; anything else goes to the server as a <code>COMMAND</code> request.</li>
   <li><code>TerminalDeskMenu</code> starts the session's interactive job if needed and calls <code>TerminalService.handle</code>.</li>
-  <li><code>TerminalCommands.execute</code>: a desk word runs itself; otherwise <code>ElclCommandLine.run</code>.</li>
+  <li><code>TerminalCommands.execute</code>: <code>ElclCommandLine.run</code> (the screens' own requests - withdraw, craft, cancel a job - go to <code>TerminalService</code>, not the command line).</li>
   <li><code>CommandRunner.run</code>: <code>Parser.parseCommand</code>, unknown command (<code>ELC0101</code>), context (<code>ELC0106</code>), <code>Compiler.checkCommand</code>, Firewall permission (<code>ELC0401</code>, through <code>Authority</code>), no executor (<code>ELC0107</code>), then the executor with an <code>Invocation</code> whose values are worked out from the literals. <code>CALL</code>'s executor (<code>InteractiveCalls</code>) starts a VM in the interactive job and returns at once; <code>JobManager</code> runs it on the following ticks and sends its messages to the terminal when it ends.</li>
   <li><code>ElclCommandLine</code> logs the command and messages in the interactive job and formats the output; the response carries the unread message count for <code>MW</code>.</li>
 </ol>
@@ -2186,7 +2164,6 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
   <li><strong>Parameters required only together</strong> (like <code>CHGDEVFTR ITEM</code> unless <code>*CLR</code>) are checked in the switch in <code>Compiler</code>'s statement check.</li>
   <li><strong>A device scripts talk to</strong>: give it a name (<code>ElclDevices</code>: a type code, and storage on the device), and if it is a printer, diskette drive, display or job host, implement the interface in <code>elcl.device</code> / <code>elcl.job</code> and register a source at setup (<code>docs/elcl/INTERFACES.md</code>).</li>
   <li><strong>A command that opens a screen</strong>: add it to <code>ScreenCommands.panel()</code>, write a <code>CrtPanel</code> (or <code>OsListPanel</code>) subclass, add <code>crt.encodedlogistics.*</code> lang keys (title, F-keys, <code>help.&lt;id&gt;</code> and <code>help.&lt;id&gt;.&lt;field&gt;</code>), and a layout under <code>src/test/resources/layouts/</code> for <code>LayoutTest</code>.</li>
-  <li><strong>A desk word</strong> (not ELCL): <code>TerminalCommands.register(TerminalCommand)</code> or <code>registerShowTopic</code>; an alias note comes from the lang key <code>crt.encodedlogistics.alias.&lt;word&gt;[.&lt;topic&gt;]</code>.</li>
 </ol>
 
 <h3 id="dev-services">Services</h3>
@@ -2232,7 +2209,7 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
   <tbody>
     <tr><td><code>control_interface</code></td><td><code>ControlInterfaceGameTests</code></td><td>Naming <code>CTLIF01</code>/<code>CTLIF02</code>; <code>RTVRSIN</code> per face and <code>*MAX</code>; <code>CHGRSOUT</code> per face and <code>*ALL</code> powering a lamp and dust; no read-back; LEDs; <code>*RSCHANGE</code> once per change; <code>ELC1301</code>/<code>ELC1302</code>/<code>ELC1303</code>/<code>ELC0004</code>; offline behaviour.</td></tr>
     <tr><td><code>elcl_os_commands</code></td><td><code>ElclGameTests</code></td><td>Each OS command's completion message and job log entry; ELSYS read-only; screen queries; <code>SNDMSG</code> leaving a message waiting (<code>MW</code>).</td></tr>
-    <tr><td><code>desk_commands</code></td><td><code>DeskGameTests</code></td><td>The desk's own words.</td></tr>
+    <tr><td><code>desk_commands</code></td><td><code>DeskGameTests</code></td><td>The command line is ELCL only (the old words are unknown commands); the Withdraw Item request; completion of ELCL commands and items.</td></tr>
     <tr><td><code>elcl_persistence</code>, <code>elcl_storage_full</code>, <code>elcl_retention</code>, <code>elcl_library_authority</code>, <code>device_locate_box</code></td><td><code>ElclStoreGameTests</code></td><td>What survives a save and load; <code>ELC0207</code>; the spooled file and message caps; library authority; Work with Devices 8=Locate's box.</td></tr>
     <tr><td><code>device_names_migration</code>, <code>device_names_stable</code>, <code>device_names_moved</code></td><td><code>DeviceNameGameTests</code></td><td>Old worlds get their counted names; adding, removing and renaming never renames another; a device moved to another network.</td></tr>
     <tr><td><code>elcl_mod_commands</code>, <code>elcl_interactive_call</code>, <code>elcl_examples</code></td><td><code>ElclVmGameTests</code></td><td>The mod commands on Command Entry, against a chest behind an Egress Port, a fake Line Printer and a fake display; <code>CALL</code> on a command line (<code>ELC0108</code>&ndash;<code>ELC0110</code>); all five examples run.</td></tr>
@@ -2264,7 +2241,6 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
   <li><strong><code>SNDMSG TOUSR(*SYSOPR)</code></strong>: COMMANDS.md says the network owner; the code uses a <code>QSYSOPR</code> queue (its chat notice goes to the owner), which no screen shows. <code>*ALL</code> reaches only queues that already exist, plus <code>QSYSOPR</code>.</li>
   <li><strong>Missing "not found" IDs</strong>: removing, holding or releasing an unknown trigger is <code>ELC0103</code> (value not valid for <code>TRG</code>), and an unknown schedule entry is <code>ELC0302</code> (job not found).</li>
   <li><strong>Silent commands</strong>: amendment 2 says every successful OS command returns its completion message, but <code>CHGJOB</code>, <code>HLDJOBSCDE</code>, <code>RLSJOBSCDE</code>, <code>HLDTRGEVT</code> and <code>RLSTRGEVT</code> have no message defined and send none; <code>SNDMSG</code>, <code>PRTTXT</code>, <code>CHGDEVSTS</code> and <code>CHGDEVFTR</code> send none either.</li>
-  <li><strong>Alias <code>show jobs</code></strong>: COMMANDS.md §10 maps it to <code>WRKACTJOB</code> (and the alias note says so), but it lists crafting jobs, which are <code>WRKCRFJOB</code>.</li>
   <li><strong>Device names</strong>: COMMANDS.md mentions naming with the Label Maker; the mod has no Label Maker. Names are given to Control Interfaces, Terminal Desks, rack devices and the parts on cables.</li>
   <li><strong>Item tiers</strong>: the mod has no per-item tier, so <code>CHGITMTIER</code> works through the Tape Libraries' keep-hot, pin and archive lists.</li>
   <li><strong>Trigger <code>&amp;EVENT</code></strong>: the spec's <code>*CHAR 10</code> can't hold <code>*DEVOFFLINE</code> or <code>*PWRRESTORED</code>; they arrive cut to 10 characters.</li>

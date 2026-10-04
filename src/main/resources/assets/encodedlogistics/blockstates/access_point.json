@@ -1,0 +1,246 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "up"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_linking"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_online"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_fault"
+   }
+  },
+  {
+   "when": {
+    "facing": "down"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_linking",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_online",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_fault",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_linking",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_online",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_fault",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_linking",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_online",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_fault",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_linking",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_online",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_fault",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_linking",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_online",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/access_point_fault",
+    "x": 90,
+    "y": 90
+   }
+  }
+ ]
+}

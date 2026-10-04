@@ -1,0 +1,220 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "side": "encodedlogistics:block/wireless/bridge_side",
+  "top": "encodedlogistics:block/wireless/bridge_top",
+  "casing": "encodedlogistics:block/wireless/casing",
+  "mast": "encodedlogistics:block/wireless/mast",
+  "particle": "encodedlogistics:block/wireless/bridge_side"
+ },
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    10,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#side",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#side",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#top",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#casing",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "mast",
+   "from": [
+    7,
+    10,
+    7
+   ],
+   "to": [
+    9,
+    15,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      4,
+      10
+     ]
+    },
+    "south": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      4,
+      10
+     ]
+    },
+    "east": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      4,
+      10
+     ]
+    },
+    "west": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      4,
+      10
+     ]
+    },
+    "up": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      4,
+      10
+     ]
+    }
+   }
+  },
+  {
+   "name": "tip",
+   "from": [
+    6.5,
+    15,
+    6.5
+   ],
+   "to": [
+    9.5,
+    16,
+    9.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    }
+   }
+  }
+ ]
+}

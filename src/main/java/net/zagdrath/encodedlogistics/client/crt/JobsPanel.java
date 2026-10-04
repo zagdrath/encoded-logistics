@@ -206,6 +206,7 @@ final class JobsPanel extends ListPanel<TerminalLine> {
                     show();
                 }
             }
+            case "canceljob" -> reload();
             case "removejobrecord" -> {
                 response.message().ifPresent(screen::message);
                 reload();
@@ -264,7 +265,7 @@ final class JobsPanel extends ListPanel<TerminalLine> {
     boolean enter() {
         if (!cancelling.isEmpty() && !anyOptions()) {
             for (String job : cancelling) {
-                screen.runCommand("cancel job " + job);
+                screen.send(TerminalService.QUERY, "canceljob " + job);
             }
             cancelling.clear();
             return true;

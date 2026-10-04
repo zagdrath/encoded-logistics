@@ -451,6 +451,22 @@ public class Config {
             .comment("Whether any online Wireless Controller on the network serves a linked Handheld Terminal (else only the one it was linked to).")
             .define("wirelessAnyController", true);
 
+    public static final ModConfigSpec.IntValue WIRELESS_AP_CLIENTS = BUILDER
+            .comment("Wireless Bridges and Wireless Ports each online Access Point lets a network's Wireless Controller serve.")
+            .defineInRange("wirelessApClients", 8, 1, 256);
+
+    public static final ModConfigSpec.IntValue WIRELESS_BRIDGE_LANES = BUILDER
+            .comment("Lanes a Wireless Bridge carries between its Wireless Controller and what's cabled to it.")
+            .defineInRange("wirelessBridgeLanes", 32, 1, 1_024);
+
+    public static final ModConfigSpec.DoubleValue WIRELESS_ENERGY_MULTIPLIER = BUILDER
+            .comment("Wireless Bridges and Wireless Ports drain this many times their cabled equivalent's (Network Bridge, Ingress / Egress Port).")
+            .defineInRange("wirelessEnergyMultiplier", 2.0, 0.0, 100.0);
+
+    public static final ModConfigSpec.DoubleValue ACCESS_POINT_DRAIN = BUILDER
+            .comment("FE per tick an Access Point drains while its network runs.")
+            .defineInRange("accessPointDrain", 2.0, 0.0, 1_000.0);
+
     public static final ModConfigSpec.DoubleValue TAPE_LIBRARY_4U_DRAIN = BUILDER
             .comment("FE per tick a 4U Tape Library drains while its network runs, idle.")
             .defineInRange("tapeLibrary4uDrain", 3.0, 0.0, 1_000.0);

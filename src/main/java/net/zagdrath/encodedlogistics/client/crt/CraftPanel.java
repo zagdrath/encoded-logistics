@@ -112,7 +112,7 @@ final class CraftPanel extends CrtPanel {
         if (response.kind() == TerminalService.QUERY && response.topic().equals("plan") && !response.lines().isEmpty()) {
             plan = response.lines().getFirst().text();
         }
-        if (sent && response.kind() == TerminalService.COMMAND) {
+        if (sent && response.kind() == TerminalService.QUERY && response.topic().equals("craft")) {
             screen.back();
         }
     }
@@ -133,7 +133,7 @@ final class CraftPanel extends CrtPanel {
         }
         sent = true;
         String using = scheduler.trimmed().isEmpty() ? "*AUTO" : scheduler.trimmed();
-        screen.runCommand("craft \"" + item.trimmed() + "\" " + amount + " \"" + using + "\" " + to.toLowerCase(Locale.ROOT));
+        screen.send(TerminalService.QUERY, "craft \"" + item.trimmed() + "\" " + amount + " \"" + using + "\" " + to.toLowerCase(Locale.ROOT));
         return true;
     }
 }

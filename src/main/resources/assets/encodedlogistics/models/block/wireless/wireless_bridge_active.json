@@ -1,0 +1,141 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "win": "encodedlogistics:block/wireless/bridge_window_active",
+  "tip": "encodedlogistics:block/wireless/bridge_tip_active",
+  "particle": "encodedlogistics:block/wireless/bridge_window_active"
+ },
+ "elements": [
+  {
+   "name": "window",
+   "from": [
+    -0.01,
+    0,
+    -0.01
+   ],
+   "to": [
+    16.01,
+    10,
+    16.01
+   ],
+   "faces": {
+    "north": {
+     "texture": "#win",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#win",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#win",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#win",
+     "uv": [
+      0,
+      6,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "name": "tip_glow",
+   "from": [
+    6.49,
+    15,
+    6.49
+   ],
+   "to": [
+    9.51,
+    16.01,
+    9.51
+   ],
+   "faces": {
+    "north": {
+     "texture": "#tip",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#tip",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#tip",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#tip",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#tip",
+     "uv": [
+      0,
+      0,
+      6,
+      6
+     ]
+    },
+    "down": {
+     "texture": "#tip",
+     "uv": [
+      0,
+      0,
+      6,
+      2
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

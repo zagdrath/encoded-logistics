@@ -1,0 +1,234 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_linking"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_online"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_fault"
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_linking",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_online",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_fault",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_linking",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_online",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_fault",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_linking",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_online",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_fault",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "up"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_linking",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_online",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_fault",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "down"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_linking",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_online",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_ingress_port_fault",
+    "x": 90
+   }
+  }
+ ]
+}

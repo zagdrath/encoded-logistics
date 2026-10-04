@@ -1,0 +1,289 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "casing": "encodedlogistics:block/wireless/casing",
+  "top": "encodedlogistics:block/wireless/ap_top",
+  "puck": "encodedlogistics:block/wireless/puck_top",
+  "puckside": "encodedlogistics:block/wireless/puck_side",
+  "particle": "encodedlogistics:block/wireless/casing"
+ },
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#casing",
+     "uv": [
+      0,
+      3,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#casing",
+     "uv": [
+      0,
+      3,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#casing",
+     "uv": [
+      0,
+      3,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#casing",
+     "uv": [
+      0,
+      3,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#top",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#casing",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "puck_a",
+   "from": [
+    3,
+    13,
+    5
+   ],
+   "to": [
+    13,
+    15.5,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "south": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "east": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "west": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "up": {
+     "texture": "#puck",
+     "uv": [
+      3,
+      5,
+      13,
+      11
+     ]
+    },
+    "down": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "puck_b",
+   "from": [
+    5,
+    13,
+    3
+   ],
+   "to": [
+    11,
+    15.5,
+    13
+   ],
+   "faces": {
+    "north": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "south": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "east": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "west": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "up": {
+     "texture": "#puck",
+     "uv": [
+      5,
+      3,
+      11,
+      13
+     ]
+    },
+    "down": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "puck_c",
+   "from": [
+    4,
+    13,
+    4
+   ],
+   "to": [
+    12,
+    15.5,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "south": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "east": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "west": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    },
+    "up": {
+     "texture": "#puck",
+     "uv": [
+      4,
+      4,
+      12,
+      12
+     ]
+    },
+    "down": {
+     "texture": "#puckside",
+     "uv": [
+      0,
+      0,
+      16,
+      2.5
+     ]
+    }
+   }
+  }
+ ]
+}

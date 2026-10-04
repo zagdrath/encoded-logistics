@@ -1,0 +1,41 @@
+{
+ "multipart": [
+  {
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_bridge"
+   }
+  },
+  {
+   "when": {
+    "state": "linking"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_bridge_linking"
+   }
+  },
+  {
+   "when": {
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_bridge_online"
+   }
+  },
+  {
+   "when": {
+    "state": "active"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_bridge_active"
+   }
+  },
+  {
+   "when": {
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/wireless/wireless_bridge_fault"
+   }
+  }
+ ]
+}

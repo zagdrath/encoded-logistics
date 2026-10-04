@@ -107,7 +107,8 @@ final class DeskGameTests {
                 .thenSucceed();
     }
 
-    // The command line: words and quotes, k/M amounts, names and ids, show, withdraw, unknown commands, completion.
+    // The command line: words and quotes, k/M amounts, names and ids, ELCL only (the old desk words are unknown commands),
+    // the Withdraw Item screen's request, completion of ELCL commands and items.
     @SuppressWarnings("removal")
     static void deskCommands(GameTestHelper helper) {
         desk(helper);
@@ -123,17 +124,22 @@ final class DeskGameTests {
                     TerminalContext context = context(helper, player);
                     helper.assertTrue(TerminalItems.resolve(context, "cobblestone") != null && TerminalItems.resolve(context, "minecraft:cobblestone") != null,
                             "Item not found by id");
-                    TerminalOutput shown = TerminalCommands.execute(context, "show inventory cobble");
-                    // The alias note (WRKINV), the heading, the row.
-                    helper.assertTrue(shown.lines().size() == 3 && shown.lines().get(0).text().contains("WRKINV") && shown.lines().get(2).text().contains("50"),
-                            "show inventory: " + shown.lines().size());
-                    TerminalCommands.execute(context, "withdraw cobblestone 10 *inv");
-                    helper.assertTrue(player.getInventory().countItem(Items.COBBLESTONE) == 10, "CLI withdraw");
-                    TerminalOutput unknown = TerminalCommands.execute(context, "frobnicate");
-                    helper.assertTrue(unknown.message() != null && unknown.message().getString().startsWith("ELC0101") && unknown.message().getString().contains("FROBNICATE"),
-                            "Unknown command message: " + unknown.message());
-                    helper.assertTrue(TerminalCommands.complete(context, "sh").equals(List.of("show")), "Completion " + TerminalCommands.complete(context, "sh"));
-                    helper.assertTrue(TerminalCommands.complete(context, "show dr").equals(List.of("drives")), "Topic completion");
+                    TerminalOutput counted = TerminalCommands.execute(context, "RTVITMCNT COBBLESTONE");
+                    helper.assertTrue(counted.lines().stream().anyMatch(line -> line.text().contains("RTNCOUNT = 50")), "RTVITMCNT on the command line");
+                    // Withdraw Item's request (the screen's, not a command).
+                    TerminalService.handle(context, TerminalService.QUERY, "withdraw cobblestone 10 *inv");
+                    helper.assertTrue(player.getInventory().countItem(Items.COBBLESTONE) == 10, "Withdraw request");
+                    // The desk's old words are gone: every line is ELCL.
+                    for (String old : List.of("frobnicate", "withdraw cobblestone 1", "show inventory", "cancel job 1", "help")) {
+                        TerminalOutput unknown = TerminalCommands.execute(context, old);
+                        String word = old.split(" ")[0].toUpperCase(java.util.Locale.ROOT);
+                        helper.assertTrue(unknown.message() != null && unknown.message().getString().startsWith("ELC0101") && unknown.message().getString().contains(word),
+                                old + ": " + unknown.message());
+                    }
+                    List<String> commands = TerminalCommands.complete(context, "rtvitm");
+                    helper.assertTrue(commands.contains("RTVITMCNT") && commands.contains("RTVITMLST"), "Completion " + commands);
+                    helper.assertTrue(TerminalCommands.complete(context, "RTVITMCNT cobble").stream().anyMatch(item -> item.contains("cobblestone")),
+                            "Item completion " + TerminalCommands.complete(context, "RTVITMCNT cobble"));
                     TerminalOutput devices = TerminalService.handle(context, TerminalService.QUERY, "devices");
                     helper.assertTrue(devices.lines().stream().anyMatch(line -> line.text().startsWith("Terminal")), "Devices list has no desk");
                     UUID job = UUID.randomUUID();
