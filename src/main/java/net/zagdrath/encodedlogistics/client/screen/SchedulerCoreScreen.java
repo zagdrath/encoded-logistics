@@ -26,21 +26,29 @@ import net.zagdrath.encodedlogistics.net.JobCancelPayload;
 import net.zagdrath.encodedlogistics.net.SchedulerStatusPayload;
 
 // The Scheduler Core's screen (screens/scheduler_core.json): the running jobs (icon, name x amount, progress, cancel X),
-// the queue, and meters for threads (gold) and job memory (mint). Click a job to see its status. While the structure
-// isn't formed it says why instead.
+// the queue, meters for threads (gold) and job memory (mint), and the last few jobs that finished here (RecentJobs,
+// with a hint to Work with Jobs' history). Click a job to see its status. While the structure isn't formed it says why
+// instead.
 public class SchedulerCoreScreen extends AbstractContainerScreen<SchedulerCoreMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/scheduler_core.png");
     private static final Identifier MINT = EncodedLogistics.id("common/bar_fill_mint"), GOLD = EncodedLogistics.id("common/bar_fill_gold"),
             CANCEL = EncodedLogistics.id("common/cancel_small"), HIGHLIGHT = EncodedLogistics.id("common/row_highlight");
     private static final int LIST_X = 10, LIST_W = 188, ROW = 20, ACTIVE_Y = 30, ACTIVE_ROWS = 3, QUEUE_Y = 110, QUEUE_ROWS = 2;
     private static final int PROGRESS_W = 120, CANCEL_SIZE = 9, METER_Y = 163, METER_W = 90, THREADS_X = 9, BUFFER_X = 109;
+    // The finished jobs: the heading, then a line each in the inset under it.
+    private static final int RECENT_LABEL_Y = 186, RECENT_Y = 199, RECENT_H = 10, RECENT_X = 14, RECENT_W = 180;
 
     private int activeScroll, queueScroll;
 
     public SchedulerCoreScreen(SchedulerCoreMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 208, 186);
+        super(menu, inventory, title, 208, 254);
         this.titleLabelX = 8;
         this.titleLabelY = 5;
+    }
+
+    private List<RecentJobs.Row> recent() {
+        return menu.status().recent().stream().map(job -> new RecentJobs.Row(job.item().getHoverName(), job.requested(), job.produced(), job.status(),
+                job.reason(), job.ended(), job.duration())).toList();
     }
 
     private List<JobInfo> active() {
@@ -100,6 +108,8 @@ public class SchedulerCoreScreen extends AbstractContainerScreen<SchedulerCoreMe
                 PartScreens.TEXT_MUTED, false);
         graphics.text(font, Component.translatable("gui.encodedlogistics.scheduler.buffer", AbstractTerminalScreen.abbreviate(status.memoryUsed()),
                 AbstractTerminalScreen.abbreviate(status.memory())), 108, 172, PartScreens.TEXT_MUTED, false);
+        RecentJobs.heading(graphics, font, 8, RECENT_LABEL_Y, imageWidth - 8);
+        RecentJobs.rows(graphics, font, recent(), RECENT_X, RECENT_Y, RECENT_W, RECENT_H);
         if (!status.formed() && status.containerId() >= 0) {
             SchedulerStructures.Problem problem = SchedulerStructures.Problem.values()[Mth.clamp(status.problem(), 0,
                     SchedulerStructures.Problem.values().length - 1)];
@@ -115,6 +125,10 @@ public class SchedulerCoreScreen extends AbstractContainerScreen<SchedulerCoreMe
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
+        RecentJobs.Row finished = RecentJobs.at(recent(), mouseX - leftPos, mouseY - topPos, RECENT_X, RECENT_Y, RECENT_W, RECENT_H);
+        if (finished != null) {
+            graphics.setComponentTooltipForNextFrame(font, RecentJobs.tooltip(finished), mouseX, mouseY);
+        }
         JobInfo job = jobAt(mouseX, mouseY);
         if (job != null) {
             if (mouseX >= cancelX() && mouseX < cancelX() + CANCEL_SIZE) {

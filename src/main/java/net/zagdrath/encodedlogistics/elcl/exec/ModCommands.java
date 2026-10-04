@@ -25,7 +25,7 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
-import net.zagdrath.encodedlogistics.crafting.CraftHistory;
+import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
@@ -42,6 +42,8 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.JobService;
 import net.zagdrath.encodedlogistics.elcl.screen.SpoolService;
+import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
+import net.zagdrath.encodedlogistics.elcl.store.JobData;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -441,28 +443,50 @@ public final class ModCommands {
 
     private static void crafting() {
         CommandRegistry.bind("STRCRAFT", ModCommands::startCraft);
+        // A job still on a Scheduler: *ACTIVE or *QUEUED; one that ended and is still in the history (CraftLog): *DONE,
+        // *FAILED or *CANCELLED, its percent what it made of what was asked; ELC1404 once it's aged out.
         CommandRegistry.bind("RTVCRFSTS", call -> {
             ElclContext context = context(call);
-            UUID id = craftJob(context, call.text("CRFJOB"));
-            for (JobHost host : CraftRequests.schedulers(context.server(), context.network())) {
-                CraftingJob job = host.job(id);
-                if (job != null) {
-                    call.returns("RTNSTS", job.running ? "*ACTIVE" : "*QUEUED");
-                    call.returns("RTNPCT", percent(job.done(), job.total()));
-                    return;
+            int number = craftNumber(call.text("CRFJOB"));
+            UUID id = ControllerStructures.jobByNumber(context.server(), context.network(), number);
+            if (id != null) {
+                for (JobHost host : CraftRequests.schedulers(context.server(), context.network())) {
+                    CraftingJob job = host.job(id);
+                    if (job != null) {
+                        call.returns("RTNSTS", job.running ? "*ACTIVE" : "*QUEUED");
+                        call.returns("RTNPCT", percent(job.done(), job.total()));
+                        return;
+                    }
                 }
             }
-            CraftHistory.Ended ended = CraftHistory.ended(context.server(), id);
+            CraftLog.Entry ended = CraftLog.byNumber(context.server(), context.network(), number);
             if (ended == null) {
                 throw new ElclException("ELC1404", call.text("CRFJOB").toUpperCase(Locale.ROOT));
             }
-            call.returns("RTNSTS", switch (ended.outcome()) {
-                case COMPLETED -> "*DONE";
-                case FAILED -> "*FAILED";
-                case CANCELLED -> "*CANCELLED";
-            });
-            call.returns("RTNPCT", ended.outcome() == net.zagdrath.encodedlogistics.crafting.JobEvents.Outcome.COMPLETED ? BigDecimal.valueOf(100)
-                    : percent(ended.done(), ended.total()));
+            call.returns("RTNSTS", ended.status().special());
+            call.returns("RTNPCT", ended.status() == CraftLog.Status.DONE ? BigDecimal.valueOf(100)
+                    : ended.requested() <= 0 ? BigDecimal.ZERO
+                    : BigDecimal.valueOf(Math.min(ended.produced(), ended.requested()) * 100).divide(BigDecimal.valueOf(ended.requested()), 5,
+                            RoundingMode.HALF_UP));
+        });
+        // RTVCRFLOG: the history's job IDs (C0042), newest first - ITEM() and STATUS() narrow it, MAX() caps it.
+        CommandRegistry.bind("RTVCRFLOG", call -> {
+            ElclContext context = context(call);
+            String item = call.text("ITEM");
+            String wanted = item.equals("*ALL") ? null : ElclItems.id(ElclItems.resolve(item));
+            String status = call.text("STATUS");
+            String max = call.text("MAX");
+            int limit = max.equals("*NOMAX") ? Integer.MAX_VALUE : (int) call.integer("MAX");
+            List<String> ids = new ArrayList<>();
+            for (CraftLog.Entry entry : CraftLog.entries(context.server(), context.network())) {
+                if (ids.size() >= limit) {
+                    break;
+                }
+                if ((wanted == null || entry.item().equals(wanted)) && (status.equals("*ALL") || entry.status().special().equals(status))) {
+                    ids.add(entry.jobId());
+                }
+            }
+            call.returns("RTNLST", ids);
         });
         CommandRegistry.bind("ENDCRAFT", call -> {
             ElclContext context = context(call);
@@ -482,15 +506,35 @@ public final class ModCommands {
 
     // C0042 (or 42) to its job; ELC1404 when no job has that number.
     private static UUID craftJob(ElclContext context, String text) throws ElclException {
-        String number = text.trim().toUpperCase(Locale.ROOT);
-        UUID id = null;
-        try {
-            id = ControllerStructures.jobByNumber(context.server(), context.network(), Integer.parseInt(number.startsWith("C") ? number.substring(1) : number));
-        } catch (NumberFormatException ignored) {}
+        UUID id = ControllerStructures.jobByNumber(context.server(), context.network(), craftNumber(text));
         if (id == null) {
-            throw new ElclException("ELC1404", number);
+            throw new ElclException("ELC1404", text.trim().toUpperCase(Locale.ROOT));
         }
         return id;
+    }
+
+    // C0042 (or 42) as its number; ELC1404 when it isn't one.
+    private static int craftNumber(String text) throws ElclException {
+        String number = text.trim().toUpperCase(Locale.ROOT);
+        try {
+            return Integer.parseInt(number.startsWith("C") ? number.substring(1) : number);
+        } catch (NumberFormatException e) {
+            throw new ElclException("ELC1404", number);
+        }
+    }
+
+    // The ELCL job a command runs in, as a crafting job records who asked ("000123/USER/NAME", and what submitted it):
+    // empty in an interactive job (the player asked).
+    private static String origin(ElclContext context) {
+        String number = context.job();
+        if (number == null || context.network() == null) {
+            return "";
+        }
+        JobData.Batch batch = ElclStore.of(new ElclSystem(context.server(), context.network())).jobs.batch.get(number);
+        if (batch == null) {
+            return "";
+        }
+        return batch.source.isEmpty() ? batch.qualified() : batch.qualified() + " " + batch.source;
     }
 
     // STRCRAFT: plans the craft (MISSING(*PARTIAL): as many as can be made), picks a Scheduler and starts the job,
@@ -542,7 +586,8 @@ public final class ModCommands {
         }
         TerminalContext terminal = call.context(TerminalContext.class);
         Optional<UUID> player = terminal != null ? Optional.of(terminal.player().getUUID()) : Optional.empty();
-        CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host, new CraftRequests.Requester(player, context.user(), context.user()));
+        CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host,
+                new CraftRequests.Requester(player, context.user(), context.user(), origin(context)));
         if (job == null) {
             throw new ElclException("ELC1403", ElclItems.id(item));
         }

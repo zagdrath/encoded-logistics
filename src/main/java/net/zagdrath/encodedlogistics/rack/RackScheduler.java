@@ -96,7 +96,7 @@ public final class RackScheduler implements JobHost {
         if (runner.tick(level, rack.getBlockPos(), threads, () -> providers(server), () -> ControllerStructures.sharedStorageOf(server, served, true),
                 job -> {
                     ControllerStructures.jobFinished(server, served);
-                    JobEvents.ended(server, served, job, JobEvents.Outcome.COMPLETED, "");
+                    JobEvents.ended(server, served, this, job, JobEvents.Outcome.COMPLETED, "");
                 })) {
             rack.setChanged();
         }
@@ -169,7 +169,7 @@ public final class RackScheduler implements JobHost {
             return false;
         }
         rack.setChanged();
-        JobEvents.ended(rack.getLevel().getServer(), network, job, JobEvents.Outcome.CANCELLED, "");
+        JobEvents.ended(rack.getLevel().getServer(), network, this, job, JobEvents.Outcome.CANCELLED, "");
         return true;
     }
 
@@ -182,7 +182,7 @@ public final class RackScheduler implements JobHost {
     public void dropAll(ServerLevel level) {
         NetworkRef served = network;
         for (CraftingJob job : runner.dropAll(level, rack.getBlockPos())) {
-            JobEvents.ended(level.getServer(), served, job, JobEvents.Outcome.FAILED, JobEvents.SCHEDULER_REMOVED);
+            JobEvents.ended(level.getServer(), served, this, job, JobEvents.Outcome.FAILED, JobEvents.SCHEDULER_REMOVED);
         }
     }
 

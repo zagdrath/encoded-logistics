@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -26,8 +28,9 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // found on tape are awaited: recalled when the job starts, taken from storage as they come back (JobRunner).
 //
 // It also knows who asked for it (the player, by id, and their Terminal OS user name), who it runs as (a script's
-// user, once scripts can start jobs; else the requester) and when it started (game time): what its end is told with
-// (JobEvents).
+// user, once scripts can start jobs; else the requester), the ELCL job that started it (and the schedule entry or
+// trigger behind that), when it started (game time, and the clock the screens show) and what it took from storage:
+// what its end is told and recorded with (JobEvents, CraftLog).
 public final class CraftingJob {
     public static final class Step {
         static final Codec<Step> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -77,8 +80,12 @@ public final class CraftingJob {
             UUIDUtil.CODEC.optionalFieldOf("requester").forGetter(job -> job.requester),
             Codec.STRING.optionalFieldOf("user", "").forGetter(job -> job.user),
             Codec.STRING.optionalFieldOf("run_as", "").forGetter(job -> job.runAs),
-            Codec.LONG.optionalFieldOf("started", -1L).forGetter(job -> job.started))
-            .apply(i, (id, target, amount, memory, steps, held, running, awaiting, requester, user, runAs, started) -> {
+            Codec.LONG.optionalFieldOf("started", -1L).forGetter(job -> job.started),
+            Held.CODEC.listOf().optionalFieldOf("taken", List.of())
+                    .forGetter(job -> job.taken.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()),
+            Codec.STRING.optionalFieldOf("origin", "").forGetter(job -> job.origin),
+            Codec.LONG.optionalFieldOf("started_clock", -1L).forGetter(job -> job.startedClock))
+            .apply(i, (id, target, amount, memory, steps, held, running, awaiting, requester, user, runAs, started, taken, origin, startedClock) -> {
                 CraftingJob job = new CraftingJob(id, target, amount, memory, steps);
                 held.forEach(entry -> job.held.put(entry.key(), entry.count()));
                 awaiting.forEach(entry -> job.awaiting.put(entry.key(), entry.count()));
@@ -87,6 +94,9 @@ public final class CraftingJob {
                 job.user = user;
                 job.runAs = runAs;
                 job.started = started;
+                taken.forEach(entry -> job.taken.put(entry.key(), entry.count()));
+                job.origin = origin;
+                job.startedClock = startedClock;
                 return job;
             }));
 
@@ -105,6 +115,20 @@ public final class CraftingJob {
     public Optional<UUID> requester = Optional.empty();
     public String user = "", runAs = "";
     public long started = -1;
+    // What it took from storage (at the start, and back from tape): what it consumed, less what it gives back.
+    public final Map<ItemKey, Long> taken = new LinkedHashMap<>();
+    // The ELCL job that started it ("000123/USER/NAME", and " *SCDE NAME" or " *TRGEVT NAME" when a schedule entry or
+    // trigger submitted that); empty for a player's request. The overworld clock when it started (-1 unknown).
+    public String origin = "";
+    public long startedClock = -1;
+    // What it held when it finished, before that went into the network (not saved: a job finishing across a restart
+    // reports what it still held).
+    public @Nullable Map<ItemKey, Long> returned;
+
+    // What it holds at its end: what went back to the network, or what it holds still.
+    public Map<ItemKey, Long> atEnd() {
+        return returned != null ? returned : held;
+    }
 
     // The Terminal OS user its end is told to.
     public String notifyUser() {

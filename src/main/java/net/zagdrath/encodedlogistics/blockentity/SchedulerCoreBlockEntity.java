@@ -154,7 +154,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         setChanged();
         updateActive(false);
         ServerLevel serverLevel = (ServerLevel) level;
-        JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), job, JobEvents.Outcome.CANCELLED, "");
+        JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), this, job, JobEvents.Outcome.CANCELLED, "");
         return true;
     }
 
@@ -170,7 +170,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         if (runner.tick(serverLevel, worldPosition, threads(), () -> structures.providersAt(serverLevel, worldPosition),
                 () -> structures.sharedStorageAt(serverLevel, worldPosition, true), job -> {
                     ControllerStructures.jobFinished(serverLevel, worldPosition);
-                    JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), job, JobEvents.Outcome.COMPLETED, "");
+                    JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), this, job, JobEvents.Outcome.COMPLETED, "");
                 })) {
             setChanged();
         }
@@ -248,7 +248,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         if (level instanceof ServerLevel serverLevel) {
             NetworkRef network = ControllerStructures.networkOf(serverLevel, pos);
             for (CraftingJob job : runner.dropAll(serverLevel, pos)) {
-                JobEvents.ended(serverLevel.getServer(), network, job, JobEvents.Outcome.FAILED, JobEvents.SCHEDULER_REMOVED);
+                JobEvents.ended(serverLevel.getServer(), network, this, job, JobEvents.Outcome.FAILED, JobEvents.SCHEDULER_REMOVED);
             }
         }
     }

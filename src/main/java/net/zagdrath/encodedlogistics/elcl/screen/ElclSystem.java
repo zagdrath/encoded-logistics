@@ -50,6 +50,11 @@ public record ElclSystem(MinecraftServer server, NetworkRef network) {
         return date + " " + clock.substring(clock.lastIndexOf(' ') + 1);
     }
 
+    // A clock time (overworld clock ticks) as lists show it: "Day 2  07:13" (DATFMT applied); "" when unknown (-1).
+    public String at(long time) {
+        return time < 0 ? "" : dated(clock(time, false));
+    }
+
     public long ticks() {
         return server.overworld().getOverworldClockTime();
     }

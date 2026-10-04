@@ -43,7 +43,7 @@ public final class Schedules {
                     continue;
                 }
                 try {
-                    ElclServices.jobs().submit(system, e.user(), schedule.player, e.command(), e.job(), "*ANY", false);
+                    ElclServices.jobs().submit(system, e.user(), schedule.player, e.command(), e.job(), "*ANY", false, "*SCDE " + e.job());
                 } catch (ElclException failed) {
                     Triggers.report(system, e.user(), "Schedule entry " + e.job(), failed.elclMessage());
                 }

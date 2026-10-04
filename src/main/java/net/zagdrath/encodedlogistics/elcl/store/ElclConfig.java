@@ -69,6 +69,10 @@ public final class ElclConfig {
         return value(Config.ELCL_COMPUTE_SERVER_JOBS);
     }
 
+    public static int craftLogRetention() {
+        return value(Config.ELCL_CRAFT_LOG_RETENTION);
+    }
+
     public static int disketteBytes() {
         return value(Config.ELCL_DISKETTE_BYTES);
     }

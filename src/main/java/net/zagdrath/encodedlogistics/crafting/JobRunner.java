@@ -115,6 +115,7 @@ public final class JobRunner {
                 long taken = storage.extract(key, want, false);
                 if (taken > 0) {
                     job.held.merge(key, taken, Long::sum);
+                    job.taken.merge(key, taken, Long::sum);
                     changed = true;
                 }
                 if (taken >= want) {
@@ -159,6 +160,9 @@ public final class JobRunner {
     private static boolean finish(CraftingJob job, @Nullable NetworkStorage storage) {
         if (storage == null) {
             return false;
+        }
+        if (job.returned == null) {
+            job.returned = new java.util.LinkedHashMap<>(job.held);
         }
         for (ItemKey key : List.copyOf(job.held.keySet())) {
             long count = job.held.get(key);

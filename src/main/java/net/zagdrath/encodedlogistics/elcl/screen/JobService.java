@@ -52,7 +52,14 @@ public interface JobService {
     void change(ElclSystem system, String user, String id, int priority, String log) throws ElclException;
 
     // player: the submitter's (the job runs with their Firewall permissions), null when not a player.
-    ElclMessage submit(ElclSystem system, String user, @Nullable UUID player, String command, String name, String host, boolean log) throws ElclException;
+    default ElclMessage submit(ElclSystem system, String user, @Nullable UUID player, String command, String name, String host, boolean log)
+            throws ElclException {
+        return submit(system, user, player, command, name, host, log, "");
+    }
+
+    // source: what submitted it, when not a user ("*SCDE NIGHTLY", "*TRGEVT LOWIRON"; its crafting jobs say so).
+    ElclMessage submit(ElclSystem system, String user, @Nullable UUID player, String command, String name, String host, boolean log, String source)
+            throws ElclException;
 
     List<LogEntry> log(ElclSystem system, String id) throws ElclException;
 

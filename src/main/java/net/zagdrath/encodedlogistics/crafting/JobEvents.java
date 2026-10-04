@@ -25,7 +25,8 @@ import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 
 // A crafting job ended: completed, failed (its Scheduler or rack was broken while it ran) or cancelled. Whatever ends it
-// (JobRunner's hosts) reports it here, so it doesn't matter how its outputs came back. The requester, when online,
+// (JobRunner's hosts) reports it here, so it doesn't matter how its outputs came back; it goes into the network's
+// history (CraftLog). The requester, when online,
 // gets a toast (JobToastPayload, theirs); everyone else online who may view the network gets one too, marked not
 // theirs, for players who want every job (each client filters by its own settings). An offline requester gets a
 // message in their Terminal OS queue instead. allowJobToasts off sends no toasts (the queue message still goes).
@@ -59,8 +60,12 @@ public final class JobEvents {
         LISTENERS.remove(listener);
     }
 
-    public static void ended(MinecraftServer server, @Nullable NetworkRef network, CraftingJob job, Outcome outcome, String reason) {
-        CraftHistory.record(server, job, outcome);
+    // host: the scheduler that ran it (null: unknown).
+    public static void ended(MinecraftServer server, @Nullable NetworkRef network, @Nullable JobHost host, CraftingJob job, Outcome outcome,
+            String reason) {
+        if (network != null) {
+            CraftLog.record(server, network, host, job, outcome, reason);
+        }
         if (network != null) {
             net.zagdrath.encodedlogistics.elcl.exec.ElclEvents.craftEnded(server, network, job, outcome);
         }

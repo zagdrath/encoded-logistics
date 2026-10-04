@@ -237,7 +237,7 @@ public final class Triggers {
         ElclStore.of(system).changed();
         String command = "CALL PGM(" + t.program() + ") PARM(" + quote(t.event()) + " " + quote(data) + ")";
         try {
-            ElclServices.jobs().submit(system, t.user(), trigger.player, command, t.name(), "*ANY", false);
+            ElclServices.jobs().submit(system, t.user(), trigger.player, command, t.name(), "*ANY", false, "*TRGEVT " + t.name());
         } catch (ElclException e) {
             report(system, t.user(), "Trigger " + t.name(), e.elclMessage());
         }

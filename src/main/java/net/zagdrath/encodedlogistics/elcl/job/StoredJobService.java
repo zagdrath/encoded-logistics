@@ -294,8 +294,8 @@ public final class StoredJobService implements JobService {
     // --- Batch jobs ---
 
     @Override
-    public synchronized ElclMessage submit(ElclSystem system, String user, @Nullable UUID player, String command, String name, String host, boolean log)
-            throws ElclException {
+    public synchronized ElclMessage submit(ElclSystem system, String user, @Nullable UUID player, String command, String name, String host, boolean log,
+            String source) throws ElclException {
         String jobName = upper(name);
         String wanted = upper(host);
         List<JobHost> hosts = JobHosts.all(system);
@@ -309,6 +309,7 @@ public final class StoredJobService implements JobService {
         JobData data = data(system);
         JobData.Batch job = new JobData.Batch(number(data), jobName, upper(user), player, command.trim(), wanted, system.nowShort());
         job.log = log;
+        job.source = source;
         data.batch.put(job.number, job);
         ElclMessage message = ElclMessage.of("ELC0304", job.qualified(), wanted);
         job.entries.add(entry(system, message));

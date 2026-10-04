@@ -118,9 +118,14 @@ public final class CraftRequests {
         return null;
     }
 
-    // Who asks for a job: the player (by id), their Terminal OS user, and the user it runs as (a script's; empty: theirs).
-    public record Requester(Optional<UUID> player, String user, String runAs) {
+    // Who asks for a job: the player (by id), their Terminal OS user, the user it runs as (a script's; empty: theirs),
+    // and the ELCL job that asked (CraftingJob.origin; empty: the player).
+    public record Requester(Optional<UUID> player, String user, String runAs, String origin) {
         public static final Requester NONE = new Requester(Optional.empty(), "", "");
+
+        public Requester(Optional<UUID> player, String user, String runAs) {
+            this(player, user, runAs, "");
+        }
 
         public static Requester of(ServerPlayer player) {
             return new Requester(Optional.of(player.getUUID()), player.getName().getString().toUpperCase(Locale.ROOT), "");
@@ -155,11 +160,14 @@ public final class CraftRequests {
         job.requester = requester.player();
         job.user = requester.user();
         job.runAs = requester.runAs();
+        job.origin = requester.origin();
         job.started = server.overworld().getGameTime();
+        job.startedClock = server.overworld().getOverworldClockTime();
         for (Map.Entry<ItemKey, Long> entry : plan.take().entrySet()) {
             long taken = storage.extract(entry.getKey(), entry.getValue(), false);
             if (taken > 0) {
                 job.held.merge(entry.getKey(), taken, Long::sum);
+                job.taken.merge(entry.getKey(), taken, Long::sum);
             }
         }
         plan.recall().forEach((key, amount) -> {

@@ -20,7 +20,7 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The game's async waits (ELCL_SPEC.md 9; DLYJOB's DELAY the VM checks itself):
 //  RECALL item, need   an item coming back from tape: done once no recall of it is left, or enough of it is hot
-//  CRAFT job           a crafting job: done once it's left every Scheduler on the network (CraftHistory has how)
+//  CRAFT job           a crafting job: done once it's left every Scheduler on the network (CraftLog has how)
 // A wait whose network has gone is done (the command then fails as it would).
 public final class Waits {
     private Waits() {}

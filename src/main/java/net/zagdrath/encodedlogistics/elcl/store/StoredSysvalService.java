@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
@@ -26,6 +27,7 @@ public final class StoredSysvalService implements SysvalService {
             new Definition("SECLVL", "Security level (10 / 30)", List.of("10", "30")),
             new Definition("QMAXJOB", "Maximum batch jobs", List.of("1-999")),
             new Definition("LOGRTN", "Job logs retained", List.of("0-999")),
+            new Definition("CRFLOGRTN", "Crafting jobs retained", List.of("0-999")),
             new Definition("PHOSPHOR", "Default screen colour", List.of("*GREEN", "*AMBER", "*WHITE")));
 
     private static Map<String, String> defaults(ElclSystem system) {
@@ -35,6 +37,7 @@ public final class StoredSysvalService implements SysvalService {
         values.put("SECLVL", "30");
         values.put("QMAXJOB", "16");
         values.put("LOGRTN", "50");
+        values.put("CRFLOGRTN", Integer.toString(ElclConfig.craftLogRetention()));
         values.put("PHOSPHOR", "*GREEN");
         return values;
     }
@@ -90,6 +93,10 @@ public final class StoredSysvalService implements SysvalService {
             data.sysvals.put(sysval.name(), upper);
             data.changed();
         }
+        if (sysval.name().equals("CRFLOGRTN")) {
+            // Lowered: the history down to it now.
+            CraftLog.trim(system);
+        }
         return ElclMessage.of("ELC0222", sysval.name());
     }
 
@@ -99,7 +106,7 @@ public final class StoredSysvalService implements SysvalService {
             case "DATFMT" -> List.of("*DAY", "*MDY", "*DMY", "*YMD").contains(value);
             case "SECLVL" -> value.equals("10") || value.equals("30");
             case "QMAXJOB" -> value.matches("[0-9]{1,3}") && Integer.parseInt(value) >= 1;
-            case "LOGRTN" -> value.matches("[0-9]{1,3}");
+            case "LOGRTN", "CRFLOGRTN" -> value.matches("[0-9]{1,3}");
             case "PHOSPHOR" -> List.of("*GREEN", "*AMBER", "*WHITE").contains(value);
             default -> false;
         };

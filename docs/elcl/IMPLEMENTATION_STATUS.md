@@ -38,7 +38,7 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | §1 | RTVJOBA | Done | The job the command runs in (interactive or batch) |
 | §2 Lists | ADDLSTE, RMVLSTE, CLRLST | Done | `elcl/vm/Vm` |
 | §3 Inventory | RTVITMCNT, RTVITMLST, MOVITM, IMPITM, CHGITMTIER, RTVSTGSTS | Done | `ModCommands`. MOVITM / IMPITM work on a cable part's faced inventory or `*DESK`; CHGITMTIER through the Tape Libraries' keep-hot and pinned lists |
-| §4 Crafting | STRCRAFT, RTVCRFSTS, ENDCRAFT | Done | `ModCommands`; ended jobs from `crafting/CraftHistory` |
+| §4 Crafting | STRCRAFT, RTVCRFSTS, RTVCRFLOG, ENDCRAFT | Done | `ModCommands`; ended jobs from the saved history `crafting/CraftLog` (CRFLOGRTN) |
 | §5 Devices | RTVDEVSTS, RTVDEVLST, CHGDEVSTS, CHGDEVFTR, RTVLANES; RNMDEV (added) | Done | `ModCommands`, `RedstoneCommands`. Cable parts can be disabled and have filters; other devices answer ELC1303 |
 | §6 Power | RTVPWRSTS | Done | `ModCommands` |
 | §7 Redstone | RTVRSIN, CHGRSOUT | Done | `RedstoneCommands` |
@@ -119,8 +119,9 @@ Compute Servers are batch job hosts already (4 jobs each), so batch jobs, schedu
 - **Storage:** members count against free drive space and block saves when it's full (ELC0207), but don't stop items
   going into the drives.
 - **No per-item tier:** the mod has none, so CHGITMTIER works through the Tape Libraries' lists.
-- **Crafting history:** crafting jobs leave their Scheduler as soon as they end. Their outcomes are kept in memory
-  (`CraftHistory`) for RTVCRFSTS, STRCRAFT WAIT(*YES) and *CRAFTEND, but not across a restart.
+- **Crafting history:** crafting jobs leave their Scheduler as soon as they end. Their records are kept in the
+  network's history (`CraftLog`, saved with the system's data, the last CRFLOGRTN) for RTVCRFSTS, RTVCRFLOG, Work with Jobs' history and the
+  Scheduler and server panels; it survives a restart.
 - **Sign-on:** needed at SECLVL 30 only on a network with a Firewall; without one everyone has full authority anyway.
   SECLVL 10 also stops the OS asking the Firewall (it still guards the blocks).
 - **Job control:** holding, ending or changing another user's job, schedule entry or trigger needs *SECOFR or full

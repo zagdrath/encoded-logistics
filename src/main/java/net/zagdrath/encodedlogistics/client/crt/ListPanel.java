@@ -132,6 +132,12 @@ abstract class ListPanel<T> extends CrtPanel {
         return !chosen.isEmpty() && process(chosen);
     }
 
+    // Every typed option forgotten (the list switched to other rows).
+    protected void clearOptions() {
+        options.clear();
+        optionFields.forEach(field -> field.set(""));
+    }
+
     // Whether any row has an option typed.
     protected boolean anyOptions() {
         keepOptions();

@@ -30,6 +30,8 @@ public final class JobData {
         public String host = "", status = "*JOBQ";
         public int priority = 5;
         public boolean log, resumes, started;
+        // What submitted it when a user didn't: "*SCDE NAME" or "*TRGEVT NAME" (JobService.submit).
+        public String source = "";
         public final List<JobService.LogEntry> entries = new ArrayList<>();
         // The VM's state as last saved (a loaded job, before it runs again), and how the live one saves (null when none).
         public @Nullable CompoundTag vm;
@@ -156,6 +158,7 @@ public final class JobData {
             j.putBoolean("log", job.log);
             j.putBoolean("resumes", job.resumes);
             j.putBoolean("started", job.started);
+            j.putString("source", job.source);
             j.put("entries", entries(job.entries));
             CompoundTag vm = job.live != null ? job.live.get() : job.vm;
             if (vm != null) {
@@ -236,6 +239,7 @@ public final class JobData {
             job.log = j.getBooleanOr("log", false);
             job.resumes = j.getBooleanOr("resumes", false);
             job.started = j.getBooleanOr("started", false);
+            job.source = j.getStringOr("source", "");
             job.entries.addAll(entries(j.getListOrEmpty("entries")));
             job.vm = j.getCompound("vm").orElse(null);
             data.batch.put(job.number, job);

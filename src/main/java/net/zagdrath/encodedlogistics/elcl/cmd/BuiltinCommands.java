@@ -185,6 +185,11 @@ final class BuiltinCommands {
                 .p(p("CRFJOB", "Craft job", Kind.NAME).req())
                 .p(rtn("RTNSTS", "Return status", VarType.CHAR))
                 .p(rtn("RTNPCT", "Return percent done", VarType.DEC)));
+        add(CommandDefinition.of("RTVCRFLOG", "Retrieve Craft Log").auth(VIEW)
+                .p(p("ITEM", "Item", Kind.ITEM).sv("*ALL").dft("*ALL").len(64))
+                .p(p("STATUS", "Status", Kind.SPECIAL).sv("*ALL", "*DONE", "*FAILED", "*CANCELLED").dft("*ALL"))
+                .p(p("MAX", "Maximum jobs", Kind.INT).sv("*NOMAX").dft("*NOMAX").range(1, 999))
+                .p(rtn("RTNLST", "Return list", VarType.LIST).req()));
         add(CommandDefinition.of("ENDCRAFT", "End Crafting").auth(CRAFT).positional(1)
                 .p(p("CRFJOB", "Craft job", Kind.NAME).req()));
 

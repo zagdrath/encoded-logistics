@@ -10,7 +10,7 @@ import java.util.List;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 
-// System values (OS.md 7): SYSNAME, DATFMT, SECLVL, QMAXJOB, LOGRTN, PHOSPHOR. Changing one takes *SECOFR-class
+// System values (OS.md 7): SYSNAME, DATFMT, SECLVL, QMAXJOB, LOGRTN, CRFLOGRTN, PHOSPHOR. Changing one takes *SECOFR-class
 // authority (ELC0401 otherwise); a value outside its allowed ones is ELC0103.
 public interface SysvalService {
     // allowed: the special values it takes, or a description ("1-999") when it's a number or a name.

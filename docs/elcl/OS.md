@@ -118,6 +118,7 @@ date as `Day 2`, or on a calendar of 30-day months from year 1.)*
 | `SECLVL` | `30` | 10 = no sign-on, 30 = sign-on + Firewall authority |
 | `QMAXJOB` | `16` | Max batch jobs per system |
 | `LOGRTN` | `50` | Job logs retained |
+| `CRFLOGRTN` | `200` | Crafting jobs retained in the crafting job history (default: the `craftLogRetention` config) |
 | `PHOSPHOR` | `*GREEN` | Default screen colour (`*AMBER`, `*WHITE`) |
 
 ## 8. Screens (art coming from Claude Design)

@@ -24,9 +24,18 @@ final class CraftPanel extends CrtPanel {
     private boolean sent;
 
     CraftPanel(CrtTerminal screen, ItemKey key) {
+        this(screen, key, 1);
+    }
+
+    CraftPanel(CrtTerminal screen, ItemKey key, long amount) {
+        this(screen, BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString(), amount);
+    }
+
+    // Filled in (Work with Jobs' 7=Craft again: the same item, by id, and quantity).
+    CraftPanel(CrtTerminal screen, String itemId, long amount) {
         super(screen);
-        item = new CrtField(5, LABEL, 40, BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString());
-        quantity = new CrtField(6, LABEL, 10, "1");
+        item = new CrtField(5, LABEL, 40, itemId);
+        quantity = new CrtField(6, LABEL, 10, Long.toString(Math.max(1, amount)));
         scheduler = new CrtField(7, LABEL, 10, "*AUTO");
         destination = new CrtField(8, LABEL, 10, "*NETWORK");
         fields.add(item);

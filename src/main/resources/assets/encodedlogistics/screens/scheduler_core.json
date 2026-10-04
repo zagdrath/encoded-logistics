@@ -5,7 +5,7 @@
  "background": {
   "texture": "gui/scheduler_core.png",
   "width": 208,
-  "height": 186
+  "height": 254
  },
  "lists": {
   "active": {
@@ -46,6 +46,15 @@
     22,
     6
    ]
+  },
+  "recent": {
+   "left": 14,
+   "top": 199,
+   "rows": 5,
+   "row_height": 10,
+   "width": 180,
+   "status": "right",
+   "note": "the last jobs that ended here (CraftLog), hover for details"
   }
  },
  "bars": {
@@ -92,6 +101,18 @@
    "left": 108,
    "top": 172,
    "color": "TEXT_MUTED"
+  },
+  "recent": {
+   "key": "gui.encodedlogistics.history.recent",
+   "left": 8,
+   "top": 186,
+   "color": "TEXT_MUTED"
+  },
+  "view_all": {
+   "key": "gui.encodedlogistics.history.view_all",
+   "right": 8,
+   "top": 186,
+   "color": "TEXT_DISABLED"
   }
  }
 }

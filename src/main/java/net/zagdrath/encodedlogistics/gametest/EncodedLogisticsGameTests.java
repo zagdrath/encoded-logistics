@@ -164,6 +164,12 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("job_toast_to_requester", CraftingCompletionGameTests::toastToRequester);
         TESTS.put("job_toast_cancelled_failed", CraftingCompletionGameTests::toastCancelledAndFailed);
         TESTS.put("job_offline_requester_queued", CraftingCompletionGameTests::offlineRequesterQueued);
+        TESTS.put("history_completed_port", CraftHistoryGameTests::completedThroughPort);
+        TESTS.put("history_completed_gateway", CraftHistoryGameTests::completedThroughGateway);
+        TESTS.put("history_cancelled_failed", CraftHistoryGameTests::cancelledAndFailed);
+        TESTS.put("history_requested_by_script", CraftHistoryGameTests::requestedByScript);
+        TESTS.put("history_retention_persistence", CraftHistoryGameTests::retentionAndPersistence);
+        TESTS.put("history_commands", CraftHistoryGameTests::commands);
         TESTS.put("share_read", SharingGameTests::shareRead);
         TESTS.put("share_read_write", SharingGameTests::shareReadWrite);
         TESTS.put("share_crafting", SharingGameTests::shareCrafting);

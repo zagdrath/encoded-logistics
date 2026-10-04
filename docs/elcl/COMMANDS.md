@@ -52,12 +52,15 @@ ELC1305 when the list is full.)*
 
 ## 4. Crafting
 
-Crafting jobs have IDs like `C0042` and are separate from script jobs.
+Crafting jobs have IDs like `C0042` and are separate from script jobs. Jobs that ended stay in the network's crafting
+job history (the last `CRFLOGRTN`): `RTVCRFSTS` answers `*DONE`, `*FAILED` or `*CANCELLED` for them (ELC1404 once they
+have aged out), and `RTVCRFLOG` returns their IDs, newest first, filtered by item and status.
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
 | `STRCRAFT` | `ITEM`(P1, Req) `QTY`(P2, Req) `SCHEDULER(*ANY\|name)` `MISSING(*FAIL\|*PARTIAL)` `WAIT(*NO\|*YES)` `RTNCRFJOB`(*CHAR) | craft | ELC1401, ELC1402, ELC1403 |
 | `RTVCRFSTS` | `CRFJOB`(P1, Req) `RTNSTS`(*CHAR: `*QUEUED\|*ACTIVE\|*DONE\|*FAILED\|*CANCELLED`) `RTNPCT`(*DEC) | view | ELC1404 |
+| `RTVCRFLOG` | `ITEM(*ALL\|item)` `STATUS(*ALL\|*DONE\|*FAILED\|*CANCELLED)` `MAX(*NOMAX\|1-999)` `RTNLST`(*LIST, Req) | view | ELC1201 |
 | `ENDCRAFT` | `CRFJOB`(P1, Req) | craft | ELC1404 |
 
 ## 5. Devices

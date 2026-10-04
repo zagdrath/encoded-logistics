@@ -57,14 +57,14 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // Ingress Port on that cable's top empties (standing in for the port under the furnace). The Gateway can't reach the
 // output chest.
 final class CraftingCompletionGameTests {
-    private static final BlockPos GATEWAY = new BlockPos(0, 1, 1), INPUT = new BlockPos(0, 2, 1), OUTPUT = new BlockPos(2, 2, 2),
+    static final BlockPos GATEWAY = new BlockPos(0, 1, 1), INPUT = new BlockPos(0, 2, 1), OUTPUT = new BlockPos(2, 2, 2),
             PORT_CABLE = new BlockPos(2, 1, 2);
-    private static final ItemKey RAW_IRON = ItemKey.of(new ItemStack(Items.RAW_IRON)), INGOT = ItemKey.of(new ItemStack(Items.IRON_INGOT));
+    static final ItemKey RAW_IRON = ItemKey.of(new ItemStack(Items.RAW_IRON)), INGOT = ItemKey.of(new ItemStack(Items.IRON_INGOT));
 
     private CraftingCompletionGameTests() {}
 
     // The rig; returns the rack's master.
-    private static BlockPos rig(GameTestHelper helper, boolean port) {
+    static BlockPos rig(GameTestHelper helper, boolean port) {
         BlockPos master = RackGameTests.networkedRack(helper);
         RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
         RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 3, MemoryServerDevice.class);
@@ -89,7 +89,7 @@ final class CraftingCompletionGameTests {
         return master;
     }
 
-    private static RackScheduler scheduler(GameTestHelper helper, BlockPos master) {
+    static RackScheduler scheduler(GameTestHelper helper, BlockPos master) {
         return helper.getBlockEntity(master, RackBlockEntity.class).scheduler();
     }
 
@@ -98,7 +98,7 @@ final class CraftingCompletionGameTests {
         return start(helper, master, CraftRequests.Requester.NONE);
     }
 
-    private static UUID start(GameTestHelper helper, BlockPos master, CraftRequests.Requester requester) {
+    static UUID start(GameTestHelper helper, BlockPos master, CraftRequests.Requester requester) {
         RackGameTests.storage(helper, master).insert(RAW_IRON, 2, false);
         BlockPos device = helper.absolutePos(master);
         CraftPlanner.Plan plan = CraftRequests.plan(helper.getLevel(), device, INGOT, 2);
@@ -110,7 +110,7 @@ final class CraftingCompletionGameTests {
     }
 
     // The "furnace": takes the raw iron out of the input chest and puts ingots where they'll come back from.
-    private static void smelt(GameTestHelper helper, BlockPos into) {
+    static void smelt(GameTestHelper helper, BlockPos into) {
         ChestBlockEntity input = helper.getBlockEntity(INPUT, ChestBlockEntity.class);
         helper.assertTrue(input.countItem(Items.RAW_IRON) == 2, "Input has " + input.countItem(Items.RAW_IRON) + " raw iron");
         input.clearContent();

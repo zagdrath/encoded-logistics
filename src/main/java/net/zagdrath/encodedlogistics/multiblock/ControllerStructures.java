@@ -53,6 +53,7 @@ import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
@@ -1172,9 +1173,13 @@ public class ControllerStructures extends SavedData {
             return 0;
         }
         Runtime runtime = owner.runtime;
+        // A number the history still has (from before a restart) is skipped, so C0042 stays one job.
         return runtime.jobNumbers.computeIfAbsent(job, id -> {
             int number = runtime.nextJob;
-            runtime.nextJob = runtime.nextJob % 9_999 + 1;
+            for (int tries = 0; tries < 9_999 && network != null && CraftLog.numberUsed(server, network, number); tries++) {
+                number = number % 9_999 + 1;
+            }
+            runtime.nextJob = number % 9_999 + 1;
             return number;
         });
     }

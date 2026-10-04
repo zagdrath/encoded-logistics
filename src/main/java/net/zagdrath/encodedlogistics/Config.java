@@ -545,6 +545,10 @@ public class Config {
             .comment("Bytes of library source an 8\" Diskette holds (SAVLIB).")
             .defineInRange("disketteBytes", 65_536, 1, 16_777_216);
 
+    public static final ModConfigSpec.IntValue ELCL_CRAFT_LOG_RETENTION = BUILDER
+            .comment("Ended crafting jobs each network's history keeps by default (the CRFLOGRTN system value's default); past this the oldest is removed.")
+            .defineInRange("craftLogRetention", 200, 0, 999);
+
     public enum FolderSync { AUTO, TRUE, FALSE }
 
     public static final ModConfigSpec.EnumValue<FolderSync> ELCL_ALLOW_FOLDER_SYNC = BUILDER

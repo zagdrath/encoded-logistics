@@ -17,8 +17,8 @@
  "widgets": {
   "readouts": {
    "left": 12,
-   "top": 26,
-   "line_height": 12,
+   "top": 25,
+   "line_height": 11,
    "lines": [
     "buffer_capacity",
     "buffer_in_use",
@@ -27,16 +27,25 @@
   },
   "bar": {
    "left": 9,
-   "top": 101,
+   "top": 64,
    "width": 158,
    "sprite": "common/bar_fill_gold"
   },
   "jobs": {
    "left": 12,
-   "top": 122,
+   "top": 79,
    "rows": 3,
-   "row_height": 12,
+   "row_height": 10,
    "note": "jobs using this rack scheduler"
+  },
+  "recent": {
+   "left": 12,
+   "top": 120,
+   "rows": 5,
+   "row_height": 9,
+   "width": 152,
+   "heading_top": 110,
+   "note": "the last jobs this rack's scheduler finished (CraftLog), hover for details"
   }
  },
  "text": {

@@ -24,6 +24,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.compile.CompiledProgram;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
@@ -33,7 +34,8 @@ import net.zagdrath.encodedlogistics.elcl.screen.SpoolService;
 // One system's saved data (OS.md 1-3): its libraries (members with their sequence numbers and change dates, programs
 // with their source member and compile date), each user's message queue, its spooled files and its system values.
 // ELSYS is never saved: it's rebuilt from the bundled examples whenever a system is made or loaded. The later parts'
-// data (device names, user profiles, jobs, schedule entries, triggers) is kept here too, as sections of their own.
+// data (device names, user profiles, jobs, schedule entries, triggers, the crafting job history) is kept here too, as
+// sections of their own.
 public final class SystemData {
     public static final String SYSTEM_LIBRARY = "ELSYS", GENERAL = "ELGPL", SYSTEM_OWNER = "QSYS", SHIPPED = "Day 1  06:00";
     private static final Pattern DESCRIPTION = Pattern.compile("/\\*\\s*\\S+\\s+-\\s+(.*?)\\s*\\*/");
@@ -143,6 +145,8 @@ public final class SystemData {
     public final Map<String, String> syncHashes = new TreeMap<>();
     // Jobs, their logs, schedule entries and triggers (OS.md 5).
     public JobData jobs = new JobData();
+    // Crafting jobs that ended, oldest first (CraftLog).
+    public final List<CraftLog.Entry> craftLog = new ArrayList<>();
     // The later parts' sections, kept as they were saved until their code reads them.
     public final Map<String, Tag> sections = new LinkedHashMap<>();
     private Runnable changed = () -> {};
@@ -334,6 +338,10 @@ public final class SystemData {
 
         tag.put("jobs", jobs.save());
 
+        ListTag crafts = new ListTag();
+        craftLog.forEach(entry -> crafts.add(entry.save()));
+        tag.put("craft_log", crafts);
+
         ListTag users = new ListTag();
         for (Profile profile : profiles.values()) {
             CompoundTag p = new CompoundTag();
@@ -421,6 +429,14 @@ public final class SystemData {
         }
 
         data.jobs = JobData.load(tag.getCompoundOrEmpty("jobs"));
+
+        ListTag crafts = tag.getListOrEmpty("craft_log");
+        for (int i = 0; i < crafts.size(); i++) {
+            CraftLog.Entry entry = CraftLog.Entry.load(crafts.getCompoundOrEmpty(i));
+            if (entry != null) {
+                data.craftLog.add(entry);
+            }
+        }
 
         ListTag users = tag.getListOrEmpty("profiles");
         for (int i = 0; i < users.size(); i++) {

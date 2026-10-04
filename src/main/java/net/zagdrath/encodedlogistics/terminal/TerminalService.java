@@ -12,20 +12,25 @@ import java.util.Map;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries;
@@ -90,6 +95,9 @@ public final class TerminalService {
         return switch (words.getFirst()) {
             case "info" -> info(context);
             case "jobs" -> jobs(context, true);
+            case "jobhistory" -> jobHistory(context);
+            case "jobrecord" -> jobRecord(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
+            case "removejobrecord" -> removeJobRecord(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "job" -> job(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "devices" -> devices(context, true);
             case "device" -> device(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
@@ -203,6 +211,95 @@ public final class TerminalService {
             out.setMessage(Component.translatable("crt.encodedlogistics.msg.no_jobs"));
         }
         return out;
+    }
+
+    // Work with Jobs' history view (CraftLog), newest first, a row of cells each: number, item id, item name, quantity
+    // asked for, quantity made, status, ended (as shown, and as clock ticks to sort by), duration, requested by.
+    private static TerminalOutput jobHistory(TerminalContext context) {
+        TerminalOutput out = new TerminalOutput();
+        if (context.network() == null) {
+            return out;
+        }
+        ElclSystem system = new ElclSystem(context.server(), context.network());
+        for (CraftLog.Entry entry : CraftLog.entries(context.server(), context.network())) {
+            TerminalLine.Builder row = TerminalLine.builder();
+            for (Object cell : new Object[] { String.format(Locale.ROOT, "%04d", entry.number()), registryId(entry.item()), itemName(entry.item()),
+                    entry.requested(), entry.produced(), entry.status().label(), system.at(entry.ended()), entry.ended(), CraftLog.duration(entry.duration()),
+                    entry.requestedBy() }) {
+                row.left(String.valueOf(cell), 0);
+            }
+            out.line(row.build());
+        }
+        return out;
+    }
+
+    // An ended job's record in full (5=Display in the history view): what DSPJOB shows, the ingredients it used up.
+    private static TerminalOutput jobRecord(TerminalContext context, int number) {
+        CraftLog.Entry entry = CraftLog.byNumber(context.server(), context.network(), number);
+        String shown = String.format(Locale.ROOT, "%04d", Math.max(0, number));
+        if (entry == null || context.network() == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_job", shown));
+        }
+        ElclSystem system = new ElclSystem(context.server(), context.network());
+        TerminalOutput out = new TerminalOutput();
+        out.line(field("crt.encodedlogistics.job.job").text(shown).build());
+        out.line(field("crt.encodedlogistics.job.item").text(entry.requested() + " x ").text(itemName(entry.item())).attr(TerminalLine.BRIGHT).build());
+        out.line(field("crt.encodedlogistics.history.produced").text(Long.toString(entry.produced())).build());
+        out.line(field("crt.encodedlogistics.job.status").text(entry.status().label()).attr(entry.status() == CraftLog.Status.FAILED
+                ? TerminalLine.BRIGHT : TerminalLine.NORMAL).build());
+        if (!entry.reason().isEmpty()) {
+            out.line(field("crt.encodedlogistics.history.reason").text(Component.translatable("gui.encodedlogistics.job.reason." + entry.reason())).build());
+        }
+        out.line(field("crt.encodedlogistics.history.requested_by").text(entry.requestedByFull()).build());
+        if (!entry.origin().isEmpty()) {
+            out.line(field("crt.encodedlogistics.history.user").text(entry.user()).build());
+        }
+        out.line(field("crt.encodedlogistics.job.scheduler").text(entry.scheduler()).build());
+        out.line(field("crt.encodedlogistics.history.started").text(entry.started() < 0 ? "-" : system.at(entry.started())).build());
+        out.line(field("crt.encodedlogistics.history.ended").text(system.at(entry.ended())).build());
+        out.line(field("crt.encodedlogistics.history.duration").text(CraftLog.duration(entry.duration())).build());
+        out.line(TerminalLine.blank());
+        out.line(TerminalLine.builder().left("  " + Component.translatable("crt.encodedlogistics.history.consumed").getString(), 46).right("QTY", 10)
+                .attr(TerminalLine.BRIGHT).build());
+        if (entry.consumed().isEmpty()) {
+            out.line(TerminalLine.builder().text("  ").text(Component.translatable("crt.encodedlogistics.history.none")).build());
+        }
+        entry.consumed().forEach((item, count) -> out.line(TerminalLine.builder().text("  ").left(itemName(item), 44).right(count, 10).build()));
+        return out;
+    }
+
+    private static TerminalLine.Builder field(String key) {
+        return TerminalLine.builder().left(Component.translatable(key), 28);
+    }
+
+    // 4=Remove in the history view (confirmed on the screen): as cancelling a job, it takes CRAFT.
+    private static TerminalOutput removeJobRecord(TerminalContext context, int number) {
+        if (!context.allowed(RackPermission.CRAFT)) {
+            return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.CRAFT));
+        }
+        String shown = String.format(Locale.ROOT, "%04d", Math.max(0, number));
+        if (context.network() == null || !CraftLog.remove(context.server(), context.network(), number)) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_job", shown));
+        }
+        return TerminalOutput.message(Component.translatable("crt.encodedlogistics.history.removed", shown));
+    }
+
+    // A history item (ElclItems' id: COAL_BLOCK, or mod:item) as the registry names it, and its name; the id itself
+    // when the item's gone.
+    private static String registryId(String item) {
+        try {
+            return BuiltInRegistries.ITEM.getKey(ElclItems.resolve(item)).toString();
+        } catch (ElclException e) {
+            return item;
+        }
+    }
+
+    private static Component itemName(String item) {
+        try {
+            return new ItemStack(ElclItems.resolve(item)).getHoverName();
+        } catch (ElclException e) {
+            return Component.literal(item);
+        }
     }
 
     private static TerminalOutput job(TerminalContext context, int number) {
