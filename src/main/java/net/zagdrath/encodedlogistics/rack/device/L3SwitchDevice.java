@@ -160,8 +160,7 @@ public class L3SwitchDevice extends SwitchDevice {
             return;
         }
         int n = endpoints();
-        ItemStack carried = player.containerMenu.getCarried();
-        ItemStack filter = carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
+        ItemStack filter = filter(player, text);
         switch (action) {
             case ACTION_ADD_ROUTE -> {
                 if (routes.size() >= MAX_ROUTES) {

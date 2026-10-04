@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -91,6 +92,8 @@ public class L3SwitchPanel extends SwitchPanel {
             for (int i = 0; i < Math.min(ROWS, l3.routes().size()); i++) {
                 int rowY = y + LIST_Y + i * ROW_H;
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
+                RackScreen.filterBox(graphics, x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2 && mouseX < x + FILTER_X + 14
+                        && mouseY >= rowY && mouseY < rowY + ROW_H);
                 item(graphics, l3.routes().get(i).filter(), x + FILTER_X, rowY + 1);
             }
         } else {
@@ -224,6 +227,24 @@ public class L3SwitchPanel extends SwitchPanel {
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected List<RackScreen.GhostTarget> ghostTargets() {
+        L3SwitchDevice l3 = l3();
+        List<RackScreen.GhostTarget> targets = new ArrayList<>();
+        if (l3 == null || tab == 0) {
+            return targets;
+        }
+        int count = Math.min(ROWS, tab == 1 ? l3.routes().size() : l3.qos().size());
+        for (int i = 0; i < count; i++) {
+            int row = i, rowY = screen.top() + LIST_Y + i * ROW_H;
+            targets.add(tab == 1
+                    ? new RackScreen.GhostTarget(screen.left() + FILTER_X - 1, rowY, 14, 14, stack -> sendItem(L3SwitchDevice.ACTION_SET_FILTER, row, stack))
+                    : new RackScreen.GhostTarget(screen.left() + LIST_X, rowY, LEVEL_X - LIST_X, ROW_H,
+                            stack -> sendItem(L3SwitchDevice.ACTION_SET_QOS_FILTER, row, stack)));
+        }
+        return targets;
     }
 
     @Override

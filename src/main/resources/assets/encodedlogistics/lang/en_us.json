@@ -534,7 +534,7 @@
   "gui.encodedlogistics.router.route": "%s → %s",
   "gui.encodedlogistics.router.filter": "Filter: %s",
   "gui.encodedlogistics.router.filter_any": "Any item",
-  "gui.encodedlogistics.router.route_hint": "Click a segment to change it, the filter with an item to set it; right-click to remove",
+  "gui.encodedlogistics.router.route_hint": "Click a name to change it; click the box with an item to filter, empty-handed for any item; right-click to remove",
   "gui.encodedlogistics.ups.charge": "Charge",
   "gui.encodedlogistics.ups.load": "Load",
   "gui.encodedlogistics.ups.runtime": "Runtime",

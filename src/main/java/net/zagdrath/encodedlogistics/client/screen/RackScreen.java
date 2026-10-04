@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
@@ -21,6 +22,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -154,9 +156,26 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             ClientPacketDistributor.sendToServer(new RackActionPayload(screen.getMenu().containerId, screen.panelU, action, value, text));
         }
 
+        // An action naming an item (a filter dragged in from JEI): the device reads it as RackDevice#filter.
+        protected void sendItem(int action, int value, ItemStack stack) {
+            send(action, value, BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+        }
+
+        // Where an item can be dropped as a filter (JEI's ghost drag), in screen coordinates.
+        protected List<GhostTarget> ghostTargets() {
+            return List.of();
+        }
+
         protected Font font() {
             return screen.getFont();
         }
+    }
+
+    // A filter box an item dragged from JEI can be dropped on.
+    public record GhostTarget(int x, int y, int width, int height, Consumer<ItemStack> accept) {}
+
+    public List<GhostTarget> ghostTargets() {
+        return panel != null ? panel.ghostTargets() : List.of();
     }
 
     int left() {
@@ -281,6 +300,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         int thumbY = y + thumbTop();
         boolean hover = draggingThumb || over(mouseX, mouseY, SCROLL_X + 1, thumbTop(), THUMB_W, THUMB_H);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? THUMB_HOVER : THUMB, x + SCROLL_X + 1, thumbY, THUMB_W, THUMB_H);
+    }
+
+    // A route's filter box (the 12x12 item at x+1, y+1 inside it): a dark well, its border lit while hovered.
+    public static void filterBox(GuiGraphicsExtractor graphics, int x, int y, boolean hovered) {
+        graphics.fill(x, y, x + 14, y + 14, hovered ? ACCENT : 0xFF5A5A5A);
+        graphics.fill(x + 1, y + 1, x + 13, y + 13, 0xFF1C1C1C);
     }
 
     // The selection and drop-target outlines drawn for devices taller than the 1U and 2U sprites (3U, 4U): the same

@@ -251,8 +251,7 @@ public class RouterDevice extends RackDevice {
                     return;
                 }
                 ItemRouting.Route route = routes.get(value);
-                ItemStack carried = player.containerMenu.getCarried();
-                routes.set(value, new ItemRouting.Route(route.source(), route.dest(), carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1)));
+                routes.set(value, new ItemRouting.Route(route.source(), route.dest(), filter(player, text)));
             }
             case ACTION_RENAME -> {
                 String name = (text.length() > 24 ? text.substring(0, 24) : text).trim();

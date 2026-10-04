@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.compat.jei;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
@@ -18,12 +19,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.ExternalSearch;
+import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
 // category (with the press as its station), the Fabricator as a crafting station, recipe transfer into the Fabrication
-// Terminal's grid and the Schematic Encoder's ghost slots (any recipe), and an info page on how controllers form
+// Terminal's grid and the Schematic Encoder's ghost slots (any recipe), dragging items onto the Server Rack's filter boxes, and an info page on how controllers form
 // structures and what they provide. Its search bar is what the terminals' JEI search mode syncs with (ExternalSearch).
 @JeiPlugin
 public class EncodedLogisticsJeiPlugin implements IModPlugin {
@@ -51,6 +53,11 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
         registration.addRecipeTransferHandler(new FabricationTransferHandler(), RecipeTypes.CRAFTING);
         registration.addUniversalRecipeTransferHandler(new EncoderTransferHandler());
+    }
+
+    @Override
+    public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        registration.addGhostIngredientHandler(RackScreen.class, new RackGhostHandler());
     }
 
     @Override

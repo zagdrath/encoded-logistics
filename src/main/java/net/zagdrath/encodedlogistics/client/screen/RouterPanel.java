@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -77,6 +78,8 @@ public class RouterPanel extends RackScreen.Panel {
             for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
                 int rowY = y + LIST_Y + i * ROW_H;
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
+                RackScreen.filterBox(graphics, x + FILTER_X - 1, rowY, mouseX >= x + FILTER_X - 2 && mouseX < x + ROUTES_X + ROUTES_W
+                        && mouseY >= rowY && mouseY < rowY + ROW_H);
                 if (!routes.get(i).filter().isEmpty()) {
                     graphics.pose().pushMatrix();
                     graphics.pose().translate(x + FILTER_X, rowY + 1);
@@ -121,6 +124,9 @@ public class RouterPanel extends RackScreen.Panel {
             int rowY = LIST_Y + i * ROW_H + 3;
             text(graphics, router.endpointName(route.source()).getString(), SOURCE_X, rowY, ARROW_X - SOURCE_X - 1, RackScreen.TEXT);
             text(graphics, router.endpointName(route.dest()).getString(), DEST_X, rowY, FILTER_X - DEST_X - 2, RackScreen.TEXT);
+            if (route.filter().isEmpty()) {
+                graphics.text(font(), "*", FILTER_X + 4, rowY, RackScreen.TEXT_MUTED, false);
+            }
         }
         ValueInput data = data();
         if (data != null) {
@@ -163,6 +169,18 @@ public class RouterPanel extends RackScreen.Panel {
                     Component.translatable("gui.encodedlogistics.router.filter", filter).withColor(RackScreen.TEXT_MUTED),
                     Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         }
+    }
+
+    @Override
+    protected List<RackScreen.GhostTarget> ghostTargets() {
+        RouterDevice router = router();
+        List<RackScreen.GhostTarget> targets = new ArrayList<>();
+        for (int i = 0; router != null && i < Math.min(ROWS, router.routes().size()); i++) {
+            int row = i;
+            targets.add(new RackScreen.GhostTarget(screen.left() + FILTER_X - 1, screen.top() + LIST_Y + i * ROW_H, 14, 14,
+                    stack -> sendItem(RouterDevice.ACTION_SET_FILTER, row, stack)));
+        }
+        return targets;
     }
 
     // --- Input ---

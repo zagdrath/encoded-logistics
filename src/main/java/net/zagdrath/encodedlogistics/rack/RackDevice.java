@@ -11,7 +11,9 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -215,6 +217,17 @@ public abstract class RackDevice {
 
     // An action from its settings panel. The player is allowed to use the rack's screen.
     public void handleAction(ServerPlayer player, int action, int value, String text) {}
+
+    // A filter set from a panel: the item text names (dragged in from JEI), else one of what the player is carrying
+    // (empty-handed: no filter).
+    protected static ItemStack filter(ServerPlayer player, String text) {
+        if (!text.isEmpty()) {
+            Identifier id = Identifier.tryParse(text);
+            return id == null ? ItemStack.EMPTY : BuiltInRegistries.ITEM.getOptional(id).map(ItemStack::new).orElse(ItemStack.EMPTY);
+        }
+        ItemStack carried = player.containerMenu.getCarried();
+        return carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(1);
+    }
 
     // --- Saving ---
 
