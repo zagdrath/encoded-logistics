@@ -131,6 +131,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("job_returned_through_gateway", CraftingCompletionGameTests::returnedThroughGateway);
         TESTS.put("job_cancel_while_waiting", CraftingCompletionGameTests::cancelWhileWaiting);
         TESTS.put("job_survives_reload", CraftingCompletionGameTests::survivesReload);
+        TESTS.put("job_toast_to_requester", CraftingCompletionGameTests::toastToRequester);
+        TESTS.put("job_toast_cancelled_failed", CraftingCompletionGameTests::toastCancelledAndFailed);
+        TESTS.put("job_offline_requester_queued", CraftingCompletionGameTests::offlineRequesterQueued);
         TESTS.put("share_read", SharingGameTests::shareRead);
         TESTS.put("share_read_write", SharingGameTests::shareReadWrite);
         TESTS.put("share_crafting", SharingGameTests::shareCrafting);

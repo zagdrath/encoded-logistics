@@ -37,9 +37,55 @@ public final class TerminalSettings {
             .comment("The Terminal Desk's screen colour: green, amber or white (screens/crt/phosphor.json), or *SYSVAL for the system's PHOSPHOR value.")
             .define("phosphor", SYSVAL);
 
+    // Job toasts (JobToasts): whether to show them, for whose jobs, for which ends, how long a job must have run, and
+    // the chime.
+    public enum ToastJobs {
+        MINE, ALL
+    }
+
+    private static final ModConfigSpec.BooleanValue TOASTS = BUILDER.pop().push("toasts")
+            .comment("Show a toast when a crafting job finishes, fails or is cancelled.").define("enabled", true);
+    private static final ModConfigSpec.EnumValue<ToastJobs> TOAST_JOBS = BUILDER
+            .comment("Whose jobs: MINE (the ones you asked for) or ALL (every job on networks you can view).").defineEnum("jobs", ToastJobs.MINE);
+    private static final ModConfigSpec.BooleanValue TOAST_COMPLETED = BUILDER.comment("Toast when a job completes.").define("completed", true);
+    private static final ModConfigSpec.BooleanValue TOAST_FAILED = BUILDER.comment("Toast when a job fails.").define("failed", true);
+    private static final ModConfigSpec.BooleanValue TOAST_CANCELLED = BUILDER.comment("Toast when a job is cancelled.").define("cancelled", false);
+    private static final ModConfigSpec.IntValue TOAST_MIN_SECONDS = BUILDER
+            .comment("Only toast for jobs that ran at least this many seconds (failures always toast).").defineInRange("minimumSeconds", 5, 0, 3_600);
+    private static final ModConfigSpec.BooleanValue TOAST_SOUND = BUILDER.comment("A quiet chime with each toast (a lower tone for failures).")
+            .define("sound", true);
+
     public static final ModConfigSpec SPEC = BUILDER.pop().build();
 
     private TerminalSettings() {}
+
+    public static boolean toasts() {
+        return SPEC.isLoaded() ? TOASTS.get() : TOASTS.getDefault();
+    }
+
+    public static ToastJobs toastJobs() {
+        return SPEC.isLoaded() ? TOAST_JOBS.get() : TOAST_JOBS.getDefault();
+    }
+
+    public static boolean toastCompleted() {
+        return SPEC.isLoaded() ? TOAST_COMPLETED.get() : TOAST_COMPLETED.getDefault();
+    }
+
+    public static boolean toastFailed() {
+        return SPEC.isLoaded() ? TOAST_FAILED.get() : TOAST_FAILED.getDefault();
+    }
+
+    public static boolean toastCancelled() {
+        return SPEC.isLoaded() ? TOAST_CANCELLED.get() : TOAST_CANCELLED.getDefault();
+    }
+
+    public static int toastMinimumSeconds() {
+        return SPEC.isLoaded() ? TOAST_MIN_SECONDS.get() : TOAST_MIN_SECONDS.getDefault();
+    }
+
+    public static boolean toastSound() {
+        return SPEC.isLoaded() ? TOAST_SOUND.get() : TOAST_SOUND.getDefault();
+    }
 
     public static SortMode sortMode() {
         return SPEC.isLoaded() ? SORT_MODE.get() : SORT_MODE.getDefault();

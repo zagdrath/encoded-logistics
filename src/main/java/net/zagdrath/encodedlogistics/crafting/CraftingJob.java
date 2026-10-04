@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.mojang.serialization.Codec;
@@ -23,6 +24,10 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // steps have made so far. A step runs whenever the job holds the inputs for one more run and a Fabricator or Gateway
 // with its schematic is free. Once every step is done, everything the job holds goes into the network. Items the plan
 // found on tape are awaited: recalled when the job starts, taken from storage as they come back (JobRunner).
+//
+// It also knows who asked for it (the player, by id, and their Terminal OS user name), who it runs as (a script's
+// user, once scripts can start jobs; else the requester) and when it started (game time): what its end is told with
+// (JobEvents).
 public final class CraftingJob {
     public static final class Step {
         static final Codec<Step> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -68,12 +73,20 @@ public final class CraftingJob {
             Held.CODEC.listOf().fieldOf("held").forGetter(job -> job.held.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()),
             Codec.BOOL.fieldOf("running").forGetter(job -> job.running),
             Held.CODEC.listOf().optionalFieldOf("awaiting", List.of())
-                    .forGetter(job -> job.awaiting.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()))
-            .apply(i, (id, target, amount, memory, steps, held, running, awaiting) -> {
+                    .forGetter(job -> job.awaiting.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()),
+            UUIDUtil.CODEC.optionalFieldOf("requester").forGetter(job -> job.requester),
+            Codec.STRING.optionalFieldOf("user", "").forGetter(job -> job.user),
+            Codec.STRING.optionalFieldOf("run_as", "").forGetter(job -> job.runAs),
+            Codec.LONG.optionalFieldOf("started", -1L).forGetter(job -> job.started))
+            .apply(i, (id, target, amount, memory, steps, held, running, awaiting, requester, user, runAs, started) -> {
                 CraftingJob job = new CraftingJob(id, target, amount, memory, steps);
                 held.forEach(entry -> job.held.put(entry.key(), entry.count()));
                 awaiting.forEach(entry -> job.awaiting.put(entry.key(), entry.count()));
                 job.running = running;
+                job.requester = requester;
+                job.user = user;
+                job.runAs = runAs;
+                job.started = started;
                 return job;
             }));
 
@@ -87,6 +100,26 @@ public final class CraftingJob {
     public final Map<ItemKey, Long> awaiting = new LinkedHashMap<>();
     // Running (has a thread) or waiting in the queue.
     public boolean running;
+    // Who asked for it (none for jobs saved before this was kept), their Terminal OS user, the user it runs as (empty:
+    // the requester's), and the game time it started (-1 unknown).
+    public Optional<UUID> requester = Optional.empty();
+    public String user = "", runAs = "";
+    public long started = -1;
+
+    // The Terminal OS user its end is told to.
+    public String notifyUser() {
+        return runAs.isEmpty() ? user : runAs;
+    }
+
+    // Whether what it makes in the end comes from a Processing Schematic (a machine) rather than crafting.
+    public boolean processing() {
+        for (Step step : steps) {
+            if (step.schematic.output().is(target.stack().getItem())) {
+                return step.schematic.kind() == Schematic.Kind.PROCESSING;
+            }
+        }
+        return false;
+    }
 
     public CraftingJob(UUID id, ItemKey target, long amount, long memory, List<Step> steps) {
         this.id = id;

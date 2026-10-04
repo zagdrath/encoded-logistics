@@ -25,10 +25,12 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.ThreadUnitBlock;
 import net.zagdrath.encodedlogistics.crafting.CraftTask;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.JobEvents;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.JobRunner;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -144,12 +146,15 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
     // Cancels a job: everything it holds goes into the network (or drops at the Core when it doesn't fit).
     @Override
     public boolean cancel(UUID id) {
-        if (!(level instanceof ServerLevel serverLevel)
-                || !runner.cancel(serverLevel, worldPosition, id, ControllerStructures.get(serverLevel).storageAt(serverLevel, worldPosition))) {
+        CraftingJob job = level instanceof ServerLevel serverLevel
+                ? runner.cancel(serverLevel, worldPosition, id, ControllerStructures.get(serverLevel).storageAt(serverLevel, worldPosition)) : null;
+        if (job == null) {
             return false;
         }
         setChanged();
         updateActive(false);
+        ServerLevel serverLevel = (ServerLevel) level;
+        JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), job, JobEvents.Outcome.CANCELLED, "");
         return true;
     }
 
@@ -163,7 +168,10 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         }
         ControllerStructures structures = ControllerStructures.get(serverLevel);
         if (runner.tick(serverLevel, worldPosition, threads(), () -> structures.providersAt(serverLevel, worldPosition),
-                () -> structures.sharedStorageAt(serverLevel, worldPosition, true), () -> ControllerStructures.jobFinished(serverLevel, worldPosition))) {
+                () -> structures.sharedStorageAt(serverLevel, worldPosition, true), job -> {
+                    ControllerStructures.jobFinished(serverLevel, worldPosition);
+                    JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), job, JobEvents.Outcome.COMPLETED, "");
+                })) {
             setChanged();
         }
         updateActive(false);
@@ -233,12 +241,15 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
 
     // --- Saving ---
 
-    // Breaking the Core drops what its jobs hold.
+    // Breaking the Core drops what its jobs hold, and they've failed.
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
         if (level instanceof ServerLevel serverLevel) {
-            runner.dropAll(serverLevel, pos);
+            NetworkRef network = ControllerStructures.networkOf(serverLevel, pos);
+            for (CraftingJob job : runner.dropAll(serverLevel, pos)) {
+                JobEvents.ended(serverLevel.getServer(), network, job, JobEvents.Outcome.FAILED, JobEvents.SCHEDULER_REMOVED);
+            }
         }
     }
 

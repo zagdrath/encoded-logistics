@@ -5,13 +5,17 @@
 
 package net.zagdrath.encodedlogistics.gametest;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -22,13 +26,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.JobEvents;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.elcl.screen.MessageService;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
@@ -85,13 +95,17 @@ final class CraftingCompletionGameTests {
 
     // Raw iron into the network and a 2-ingot job on the rack's Scheduler.
     private static UUID start(GameTestHelper helper, BlockPos master) {
+        return start(helper, master, CraftRequests.Requester.NONE);
+    }
+
+    private static UUID start(GameTestHelper helper, BlockPos master, CraftRequests.Requester requester) {
         RackGameTests.storage(helper, master).insert(RAW_IRON, 2, false);
         BlockPos device = helper.absolutePos(master);
         CraftPlanner.Plan plan = CraftRequests.plan(helper.getLevel(), device, INGOT, 2);
         helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
         RackScheduler scheduler = scheduler(helper, master);
         helper.assertTrue(scheduler.active(), "Rack isn't a Scheduler");
-        helper.assertTrue(CraftRequests.start(helper.getLevel(), device, plan, scheduler) != null, "Job didn't start");
+        helper.assertTrue(CraftRequests.start(helper.getLevel(), device, plan, scheduler, requester) != null, "Job didn't start");
         return scheduler.jobs().getFirst().id;
     }
 
@@ -182,6 +196,98 @@ final class CraftingCompletionGameTests {
                 })
                 .thenIdle(45)
                 .thenExecute(() -> assertFinished(helper, master))
+                .thenSucceed();
+    }
+
+    // --- Who's told when a job ends (JobEvents) ---
+
+    // The player who asked gets a toast for it, theirs, with the item and amount; it ran long enough to count.
+    static void toastToRequester(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        List<JobEvents.Notice> notices = new ArrayList<>();
+        Consumer<JobEvents.Notice> listener = notices::add;
+        JobEvents.listen(listener);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> start(helper, master, CraftRequests.Requester.of(player)))
+                .thenIdle(25)
+                .thenExecute(() -> smelt(helper, OUTPUT))
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    JobEvents.unlisten(listener);
+                    assertFinished(helper, master);
+                    // (Other tests run alongside, with their own players and jobs.)
+                    JobEvents.Notice mine = notices.stream().filter(n -> n.mine() && n.player() == player).findFirst().orElse(null);
+                    helper.assertTrue(mine != null, "Requester not told");
+                    helper.assertTrue(mine.toast().item().equals(INGOT) && mine.toast().amount() == 2 && mine.toast().processing()
+                            && mine.toast().outcome() == JobEvents.Outcome.COMPLETED.ordinal(), "Toast " + mine.toast());
+                    helper.assertTrue(mine.toast().duration() >= 25, "Duration " + mine.toast().duration());
+                })
+                .thenSucceed();
+    }
+
+    // Cancelled and failed jobs say so; a failure says why.
+    static void toastCancelledAndFailed(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        List<JobEvents.Notice> notices = new ArrayList<>();
+        Consumer<JobEvents.Notice> listener = notices::add;
+        JobEvents.listen(listener);
+        UUID[] job = new UUID[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    RackGameTests.storage(helper, master).insert(RAW_IRON, 2, false);
+                    job[0] = start(helper, master, CraftRequests.Requester.of(player));
+                })
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    scheduler(helper, master).cancel(job[0]);
+                    helper.assertTrue(notices.stream().anyMatch(n -> n.mine() && n.player() == player
+                            && n.toast().outcome() == JobEvents.Outcome.CANCELLED.ordinal()), "No cancelled toast");
+                    notices.clear();
+                    start(helper, master, CraftRequests.Requester.of(player));
+                })
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    scheduler(helper, master).dropAll(helper.getLevel());
+                    JobEvents.unlisten(listener);
+                    JobEvents.Notice failed = notices.stream().filter(n -> n.mine() && n.player() == player
+                            && n.toast().outcome() == JobEvents.Outcome.FAILED.ordinal()).findFirst().orElse(null);
+                    helper.assertTrue(failed != null && failed.toast().reason().equals(JobEvents.SCHEDULER_REMOVED), "No failure toast with its reason");
+                })
+                .thenSucceed();
+    }
+
+    // A requester who isn't online gets a Terminal OS message instead; with job toasts off on the server nobody gets
+    // a toast, but the message still goes.
+    static void offlineRequesterQueued(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        List<JobEvents.Notice> notices = new ArrayList<>();
+        Consumer<JobEvents.Notice> listener = notices::add;
+        JobEvents.listen(listener);
+        boolean allowed = Config.ALLOW_JOB_TOASTS.get();
+        helper.makeMockServerPlayerInLevel();
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    // All in this one tick, so the setting (and what's heard) is this test's alone.
+                    notices.clear();
+                    Config.ALLOW_JOB_TOASTS.set(false);
+                    try {
+                        UUID job = start(helper, master, new CraftRequests.Requester(Optional.of(UUID.randomUUID()), "AWAY", ""));
+                        scheduler(helper, master).cancel(job);
+                    } finally {
+                        Config.ALLOW_JOB_TOASTS.set(allowed);
+                        JobEvents.unlisten(listener);
+                    }
+                    helper.assertTrue(notices.stream().noneMatch(n -> n.player() != null), "A toast went out with toasts off");
+                    helper.assertTrue(notices.stream().anyMatch(n -> "AWAY".equals(n.queuedFor())), "Not queued");
+                    NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(master));
+                    List<MessageService.Message> messages = ElclServices.messages().messages(new ElclSystem(helper.getLevel().getServer(), network), "AWAY");
+                    helper.assertTrue(messages.stream().anyMatch(m -> m.text().contains("Iron Ingot x2")), "Queue: " + messages);
+                })
                 .thenSucceed();
     }
 }

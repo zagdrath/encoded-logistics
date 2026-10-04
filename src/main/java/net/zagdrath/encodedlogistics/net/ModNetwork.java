@@ -36,6 +36,7 @@ public final class ModNetwork {
         registrar.playBidirectional(JobStatusPayload.TYPE, JobStatusPayload.STREAM_CODEC, JobStatusPayload::handleServer,
                 JobStatusPayload::handleClient);
         registrar.playToServer(JobCancelPayload.TYPE, JobCancelPayload.STREAM_CODEC, JobCancelPayload::handle);
+        registrar.playToClient(JobToastPayload.TYPE, JobToastPayload.STREAM_CODEC, JobToastPayload::handle);
         registrar.playToClient(RelayTerminalsPayload.TYPE, RelayTerminalsPayload.STREAM_CODEC, RelayTerminalsPayload::handle);
         registrar.playToClient(RackPanelPayload.TYPE, RackPanelPayload.STREAM_CODEC, RackPanelPayload::handle);
         registrar.playToServer(RackActionPayload.TYPE, RackActionPayload.STREAM_CODEC, RackActionPayload::handle);

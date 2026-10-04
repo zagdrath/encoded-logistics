@@ -342,6 +342,10 @@ public class Config {
             .comment("FE per tick a UPS in Standby mode drains while its network runs.")
             .defineInRange("upsDrainStandby", 1.0, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.BooleanValue ALLOW_JOB_TOASTS = BUILDER
+            .comment("Whether players get a toast when a crafting job finishes, fails or is cancelled (each player chooses which in their client config).")
+            .define("allowJobToasts", true);
+
     public static final ModConfigSpec.IntValue UPS_LOW_BATTERY_PERCENT = BUILDER
             .comment("Charge (%) below which a UPS on battery shows Low battery and sounds its rapid alarm.")
             .defineInRange("upsLowBatteryPercent", 20, 0, 100);

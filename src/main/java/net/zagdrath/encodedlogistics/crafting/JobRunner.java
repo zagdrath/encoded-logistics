@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
@@ -63,7 +64,7 @@ public final class JobRunner {
     // One tick: queued jobs take free threads, running ones dispatch their steps, finished ones empty into storage.
     // host: the job host's position (on its tasks); finished: called for each job done. Returns whether anything changed.
     public boolean tick(ServerLevel level, BlockPos host, int threads, Supplier<List<CraftingProvider>> providers,
-            Supplier<@Nullable NetworkStorage> storage, Runnable finished) {
+            Supplier<@Nullable NetworkStorage> storage, Consumer<CraftingJob> finished) {
         boolean changed = false;
         int free = threads - threadsUsed();
         for (CraftingJob job : jobs) {
@@ -89,7 +90,7 @@ public final class JobRunner {
             if (job.finished()) {
                 if (finish(job, storage.get())) {
                     iterator.remove();
-                    finished.run();
+                    finished.accept(job);
                     changed = true;
                 }
                 continue;
@@ -172,24 +173,27 @@ public final class JobRunner {
     }
 
     // Cancels a job: what it holds goes into storage, and drops at host what doesn't fit.
-    public boolean cancel(ServerLevel level, BlockPos host, UUID id, @Nullable NetworkStorage storage) {
+    // Returns the job cancelled, or null.
+    public @Nullable CraftingJob cancel(ServerLevel level, BlockPos host, UUID id, @Nullable NetworkStorage storage) {
         CraftingJob job = job(id);
         if (job == null) {
-            return false;
+            return null;
         }
         jobs.remove(job);
         putBack(level, host, job.heldStacks(), storage);
-        return true;
+        return job;
     }
 
-    // Every job's items dropped at pos (the host broken).
-    public void dropAll(ServerLevel level, BlockPos pos) {
+    // Every job's items dropped at pos (the host broken); returns the jobs, which have failed.
+    public List<CraftingJob> dropAll(ServerLevel level, BlockPos pos) {
         for (CraftingJob job : jobs) {
             for (ItemStack stack : job.heldStacks()) {
                 Block.popResource(level, pos, stack);
             }
         }
+        List<CraftingJob> dropped = List.copyOf(jobs);
         jobs.clear();
+        return dropped;
     }
 
     // Items into storage (not claimed by waiting jobs: they're coming back, not arriving); what doesn't fit drops at pos.

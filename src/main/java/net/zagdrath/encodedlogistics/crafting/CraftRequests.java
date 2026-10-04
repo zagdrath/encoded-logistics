@@ -10,12 +10,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
@@ -109,9 +112,23 @@ public final class CraftRequests {
         return null;
     }
 
+    // Who asks for a job: the player (by id), their Terminal OS user, and the user it runs as (a script's; empty: theirs).
+    public record Requester(Optional<UUID> player, String user, String runAs) {
+        public static final Requester NONE = new Requester(Optional.empty(), "", "");
+
+        public static Requester of(ServerPlayer player) {
+            return new Requester(Optional.of(player.getUUID()), player.getName().getString().toUpperCase(Locale.ROOT), "");
+        }
+    }
+
+    public static @Nullable CraftingJob start(MinecraftServer server, @Nullable NetworkRef network, CraftPlanner.Plan plan, JobHost scheduler) {
+        return start(server, network, plan, scheduler, Requester.NONE);
+    }
+
     // Takes the plan's hot items out of storage, starts the recalls of its cold ones, and gives the job to the
     // scheduler; null (and nothing taken) when storage no longer has them all.
-    public static @Nullable CraftingJob start(MinecraftServer server, @Nullable NetworkRef network, CraftPlanner.Plan plan, JobHost scheduler) {
+    public static @Nullable CraftingJob start(MinecraftServer server, @Nullable NetworkRef network, CraftPlanner.Plan plan, JobHost scheduler,
+            Requester requester) {
         NetworkStorage storage = network != null ? ControllerStructures.sharedStorageOf(server, network, true) : null;
         if (storage == null || !plan.complete()) {
             return null;
@@ -129,6 +146,10 @@ public final class CraftRequests {
         List<CraftingJob.Step> steps = new ArrayList<>();
         plan.crafts().forEach((schematic, runs) -> steps.add(new CraftingJob.Step(schematic, (int) Math.min(Integer.MAX_VALUE, runs), 0, 0)));
         CraftingJob job = new CraftingJob(UUID.randomUUID(), plan.target(), plan.amount(), plan.memory(), steps);
+        job.requester = requester.player();
+        job.user = requester.user();
+        job.runAs = requester.runAs();
+        job.started = server.overworld().getGameTime();
         for (Map.Entry<ItemKey, Long> entry : plan.take().entrySet()) {
             long taken = storage.extract(entry.getKey(), entry.getValue(), false);
             if (taken > 0) {
@@ -145,5 +166,9 @@ public final class CraftRequests {
 
     public static @Nullable CraftingJob start(ServerLevel level, BlockPos device, CraftPlanner.Plan plan, JobHost scheduler) {
         return start(level.getServer(), network(level, device), plan, scheduler);
+    }
+
+    public static @Nullable CraftingJob start(ServerLevel level, BlockPos device, CraftPlanner.Plan plan, JobHost scheduler, Requester requester) {
+        return start(level.getServer(), network(level, device), plan, scheduler, requester);
     }
 }

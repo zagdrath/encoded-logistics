@@ -65,7 +65,7 @@ public record CraftRequestPayload(int containerId, ItemKey key, long amount, int
         Optional<CraftPlanPayload.Started> started = Optional.empty();
         if (plan != null && payload.start()) {
             JobHost scheduler = CraftRequests.choose(schedulers, plan.memory(), payload.scheduler());
-            CraftingJob job = scheduler != null ? CraftRequests.start(server, network, plan, scheduler) : null;
+            CraftingJob job = scheduler != null ? CraftRequests.start(server, network, plan, scheduler, CraftRequests.Requester.of(player)) : null;
             if (job != null) {
                 started = Optional.of(new CraftPlanPayload.Started(scheduler.hostPos(), job.id));
             }

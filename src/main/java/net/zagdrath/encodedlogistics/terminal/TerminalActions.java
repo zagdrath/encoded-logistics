@@ -173,7 +173,8 @@ public final class TerminalActions {
         if (host == null) {
             return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_scheduler"));
         }
-        CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host);
+        CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host,
+                new CraftRequests.Requester(Optional.of(context.player().getUUID()), context.user(), ""));
         if (job == null) {
             return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.not_started"));
         }

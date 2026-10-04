@@ -20,6 +20,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
+import net.zagdrath.encodedlogistics.crafting.JobEvents;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.JobRunner;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -93,7 +94,10 @@ public final class RackScheduler implements JobHost {
         MinecraftServer server = level.getServer();
         NetworkRef served = network;
         if (runner.tick(level, rack.getBlockPos(), threads, () -> providers(server), () -> ControllerStructures.sharedStorageOf(server, served, true),
-                () -> ControllerStructures.jobFinished(server, served))) {
+                job -> {
+                    ControllerStructures.jobFinished(server, served);
+                    JobEvents.ended(server, served, job, JobEvents.Outcome.COMPLETED, "");
+                })) {
             rack.setChanged();
         }
     }
@@ -159,11 +163,13 @@ public final class RackScheduler implements JobHost {
 
     @Override
     public boolean cancel(UUID id) {
-        if (!(rack.getLevel() instanceof ServerLevel level)
-                || !runner.cancel(level, rack.getBlockPos(), id, ControllerStructures.storageOf(level.getServer(), network))) {
+        CraftingJob job = rack.getLevel() instanceof ServerLevel level
+                ? runner.cancel(level, rack.getBlockPos(), id, ControllerStructures.storageOf(level.getServer(), network)) : null;
+        if (job == null) {
             return false;
         }
         rack.setChanged();
+        JobEvents.ended(rack.getLevel().getServer(), network, job, JobEvents.Outcome.CANCELLED, "");
         return true;
     }
 
@@ -172,9 +178,12 @@ public final class RackScheduler implements JobHost {
         rack.setChanged();
     }
 
-    // The rack broken: what its jobs hold drops.
+    // The rack broken: what its jobs hold drops, and they've failed.
     public void dropAll(ServerLevel level) {
-        runner.dropAll(level, rack.getBlockPos());
+        NetworkRef served = network;
+        for (CraftingJob job : runner.dropAll(level, rack.getBlockPos())) {
+            JobEvents.ended(level.getServer(), served, job, JobEvents.Outcome.FAILED, JobEvents.SCHEDULER_REMOVED);
+        }
     }
 
     public void save(ValueOutput output) {
