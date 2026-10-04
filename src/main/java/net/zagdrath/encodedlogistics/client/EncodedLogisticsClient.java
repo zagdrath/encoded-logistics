@@ -11,9 +11,9 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
@@ -24,17 +24,18 @@ import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
+import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
-import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
-import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
 import net.zagdrath.encodedlogistics.client.rack.RackModels;
 import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
@@ -152,6 +153,11 @@ public class EncodedLogisticsClient {
     static void onClientTick(ClientTickEvent.Post event) {
         RackHud.tick(event);
         CrtLocate.tick();
+    }
+
+    @SubscribeEvent
+    static void onCustomGeometry(SubmitCustomGeometryEvent event) {
+        CrtLocate.render(event);
     }
 
     @SubscribeEvent

@@ -8,6 +8,8 @@ package net.zagdrath.encodedlogistics.gametest;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -22,8 +24,13 @@ import net.zagdrath.encodedlogistics.elcl.screen.MessageService;
 import net.zagdrath.encodedlogistics.elcl.screen.SpoolService;
 import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
 import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
+import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // elcl.store (Part 1): what a system keeps survives a save and reload; members take network storage (ELC0207 when
 // it's full); message queues and spooled files keep to their caps, oldest out first; library authority.
@@ -164,6 +171,32 @@ final class ElclStoreGameTests {
             } catch (ElclException e) {
                 helper.assertTrue(e.elclMessage().id().equals("ELC0401"), "Wanted ELC0401, got " + e.getMessage());
             }
+        });
+    }
+
+    // Work with Devices' 8=Locate sends the device's own box: a rack device's units inside its rack (which spans the block
+    // below its master to the one above), not a whole block.
+    static void locateBox(GameTestHelper helper) {
+        withDesk(helper, (context, system) -> {
+            BlockPos master = RackGeometry.masterPos(new BlockPos(3, 1, 0), Direction.NORTH,
+                    RackGeometry.BOTTOM_FRONT);
+            RackGameTests.install(helper, master, RackDeviceType.UPS, 5,
+                    UpsDevice.class);
+            var rows = ControllerStructures.deviceRows(context.server(), context.network());
+            int index = -1;
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i).rackDevice() != null) {
+                    index = i;
+                }
+            }
+            helper.assertTrue(index >= 0, "No rack device row");
+            var out = TerminalService.handle(context, TerminalService.QUERY,
+                    "locate " + index);
+            String[] parts = out.lines().getFirst().text().trim().split(" ");
+            helper.assertTrue(parts.length == 7, "Locate answer " + out.lines().getFirst().text());
+            double minY = Double.parseDouble(parts[1]), maxY = Double.parseDouble(parts[4]);
+            BlockPos rack = helper.absolutePos(master);
+            helper.assertTrue(maxY - minY < 0.5 && minY >= rack.getY() - 1 && maxY <= rack.getY() + 2, "Not the unit's box: " + minY + " - " + maxY);
         });
     }
 }

@@ -124,6 +124,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("device_names_migration", DeviceNameGameTests::migration);
         TESTS.put("device_names_stable", DeviceNameGameTests::addRemoveRename);
         TESTS.put("device_names_moved", DeviceNameGameTests::moved);
+        TESTS.put("device_locate_box", ElclStoreGameTests::locateBox);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);

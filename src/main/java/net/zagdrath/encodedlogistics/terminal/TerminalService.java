@@ -9,10 +9,16 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.Item;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.zagdrath.encodedlogistics.block.ServerRackBlock;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
@@ -25,6 +31,7 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
+import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
@@ -311,9 +318,31 @@ public final class TerminalService {
         ControllerStructures.DeviceRow row = rows.get(index);
         BlockPos pos = row.pos().pos();
         TerminalOutput out = new TerminalOutput();
-        out.line(pos.getX() + " " + pos.getY() + " " + pos.getZ() + " " + row.pos().dimension().identifier());
+        AABB box = locateBox(context, row);
+        out.line(String.format(Locale.ROOT, "%.4f %.4f %.4f %.4f %.4f %.4f %s", box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
+                row.pos().dimension().identifier()));
         out.setMessage(Component.translatable("crt.encodedlogistics.msg.located", row.name(), pos.getX() + ", " + pos.getY() + ", " + pos.getZ()));
         return out;
+    }
+
+    // What 8=Locate outlines, in world coordinates: a rack device's own units in its rack, otherwise the device's block
+    // (its shape, or the whole block when it has none).
+    private static AABB locateBox(TerminalContext context, ControllerStructures.DeviceRow row) {
+        BlockPos pos = row.pos().pos();
+        RackDevice device = row.rackDevice();
+        if (device != null && device.rack() != null) {
+            RackBlockEntity rack = device.rack();
+            Direction facing = rack.getBlockState().getValue(ServerRackBlock.FACING);
+            return RackGeometry.toWorld(RackGeometry.deviceBox(device.u(), device.size()), rack.getBlockPos(), facing);
+        }
+        BlockEntity entity = ControllerStructures.blockEntity(context.server(), row.pos());
+        if (entity != null && entity.getLevel() != null) {
+            VoxelShape shape = entity.getBlockState().getShape(entity.getLevel(), pos);
+            if (!shape.isEmpty()) {
+                return shape.bounds().move(pos);
+            }
+        }
+        return new AABB(pos);
     }
 
     // --- Network status ---
