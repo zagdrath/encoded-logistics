@@ -1,0 +1,231 @@
+ENCODED LOGISTICS - HANDOFF: SERVER RACK + RACK DEVICES (Firewall, Router, UPS)
+==============================================================================
+Mod id: encodedlogistics      Target: Minecraft 26.3 / NeoForge 26.3      Terminology: lanes.
+A 42U enclosed rack multiblock with animated doors, an elevation GUI, a data-driven unit HUD popup, and the first three
+rack devices. Matches the attached 42U reference (proportions, mesh front door, split rear doors, two-piece side panels,
+vented roof, casters) - unbranded: a blank badge plate sits where a logo would be.
+Art follows docs/TEXTURE_STYLE.md (style_kit primitives; black powder-coat variant of the steel ramp). Every preview
+in previews/ was rendered FROM these files (models, textures) with the door rotations applied exactly as specified.
+Paths are relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. MULTIBLOCK
+=====================================================================================================
+Footprint: 1 wide x 3 tall x 2 deep (6 blocks). Block id encodedlogistics:server_rack; BlockState: facing (horizontal),
+part = master | dummy (dummies also store their offset if convenient, e.g. an IntegerProperty 0..5, or look up via BE).
+  MASTER = the MIDDLE block of the FRONT column. Reason: model elements must stay within -16..32 px, and the whole rack
+  (48 tall, 32 deep) then fits ONE static block model on the master: x 0..16, y -16..32, z 0..32 (front at z = 0).
+  Placement: the player targets a block -> the rack's bottom-front block goes there, master = one above it; the other
+  four blocks are: bottom-front, top-front, and the three blocks behind (toward the rack's back = +z for facing north).
+  Facing = opposite the player's look (front faces the player). Fail placement if any of the 6 positions is not
+  replaceable; show "Not enough room".
+  Breaking ANY part breaks all six; drops one Server Rack item + every installed device (with its data components) +
+  any Optical Transceivers in Routers.
+  Dummies: RenderShape.INVISIBLE, full collision/selection shapes as if one 1x3x2 box (see 6 for the unit outline).
+  Light: does not occlude (it's mesh); propagatesSkylightDown = false is fine.
+Block entity: RackBlockEntity on the master only: devices (U -> RackDevice instance), door state (front/rear open flag +
+  animation progress for the client), network node.
+Static model: blockstates/server_rack.json -> part=master uses models/block/rack/rack_frame.json (y-rotated by facing),
+  part=dummy uses rack_empty.json. The frame model includes posts, two-piece side panels with a 0.5 px seam and lock
+  points, vented roof with cable-entry slots, plinth, casters + levelling feet (the rack sits 1 px off the ground),
+  and the front + rear 19" rails (zinc, square holes, U numbers 1..42 from the bottom).
+Vertical layout (master local y): -16..-15 casters | -15..-13 plinth | -13..29 the 42U space (U1 = y -13..-12, Uk = y
+  -14+k .. -13+k, 1 px per U) | 29..32 roof.  rack_models.U_y(u) = -13 + (u-1).
+
+=====================================================================================================
+2. RENDERER (RackBlockEntityRenderer on the master)
+=====================================================================================================
+Register as additional models: rack_door_front, rack_door_rear_left, rack_door_rear_right and every device model
+(models/block/rack_device/<id>.json, <id>_on.json, <id>_fault.json). Renders, in the master's space:
+  - poseStack: rotate by facing about the rack's footprint centre (x 8, z 16 in model px), then draw.
+  - Doors: translate(pivot), mulPose(Axis.YP.rotationDegrees(angle * eased(progress))), translate(-pivot), draw the door
+    model. Pivots/angles in door_animation.json (front -110 at (15.5,0,0.5); rear left +110 at (15.5,0,31.5); rear
+    right -110 at (0.5,0,31.5)).
+  - Devices: for each installed device, translate(0, U_y(u)/16, 0) and draw its model for its state (off -> <id>,
+    on -> <id>_on, fault -> <id>_fault; the glow elements are full-bright via neoforge_data). Optional per-device extras
+    (2.1). Cutout render type for the frame/doors (mesh holes are alpha 0) and devices.
+  - Culling: skip devices when both doors are closed AND the player is farther than 24 blocks [config].
+2.1 Device render extras (drawn by the device's renderer hook after its model):
+  - Router: for each installed Optical Transceiver (slot i = 0..2), a 6x2-texel quad from its texture sprite (0,64)-(6,66)
+    over cage i (front texture x 67+8i, y 3) - the cages visibly hold transceivers.
+  - UPS: live battery % on the LCD - 7-segment digit sprites (0,64)+5*d (4x7 texels each) and '%' at (50,64), drawn
+    full-bright over the LCD (x 17.., y 5 in the front texture); the 10 load LEDs (44+3i, 6) lit by load fraction
+    (green 0-5, amber 6-7, red 8-9). The baked _on texture shows 6 lit as the default.
+Texel densities (why the textures are the sizes they are): frame 1 texel/px; door mesh 2 texels/px; rails 4 texels/px
+(so each U carries a mounting hole + a number); devices 8 texels/px on 128x128 sheets (a 1U front is 104x8 texels).
+UVs in the JSONs are already computed for those sizes.
+
+=====================================================================================================
+3. DOORS
+=====================================================================================================
+  Right-click the FRONT face: toggle the front door. Right-click the REAR face: toggle both rear leaves.
+  Shift-right-click the front: open the GUI (works with the door open or closed).
+  Animation: 10 ticks, smoothstep easing both ways, client-side interpolation; the server just stores open/closed and
+  syncs it (block event or BE update). Sounds: block.rack.door_open on open, block.rack.door_close on close
+  (sounds.json; 2 synthesised variants each in sounds/block/rack/*.ogg - sheet-metal latch click + swing).
+  Interaction while open: the unit HUD (6) and installing by hand (OPEN 4) only through an open door.
+  Door models are separate parts: front leaf (x 0.5..15.5, z 0..1, mesh both sides, recessed handle + lock on the
+  right at x 1.75); rear leaves (x 8..15.5 and 0.5..8, z 31..32, a handle each by the centre seam).
+  Collision does not change when doors open (keep the full box).
+
+=====================================================================================================
+4. NETWORK
+=====================================================================================================
+  The rack connects through a cable on its REAR face (either rear block) or its TOP face (top-front or top-rear);
+  cables report 'block' there, 'none' elsewhere. Each installed device is a network device using 1 lane; the rack
+  itself uses 0 (OPEN 1 on power). Devices go online when the network is online and they have their lane; a device
+  without a lane shows offline.
+
+=====================================================================================================
+5. U-SLOT RULES + GUI
+=====================================================================================================
+  Devices are 1U or 2U (RackDeviceType.size). A device at U u occupies u..u+size-1; all must be free and <= 42.
+  Install: in the GUI, pick up a device item and click an empty U (the drop target spans the device's height: amber
+  dashed = fits, red = blocked, tooltip "Needs 2U free in a row"); or shift-click a device item from the inventory to
+  put it in the lowest free fit. Remove: shift-click a placed device (returns the item with its data).
+  GUI = one screen, two halves: top 176x168, bottom 176x100 (gui/rack/inventory.png, player inventory at (8, top+17)).
+  Elevation (gui/rack/elevation.png, screens/rack/elevation.json): inset (8,18,140,146), 16 rows of 9 px visible,
+  scroll for 42 (U42 at the top, U1 at the bottom - rack elevation convention). Per row: U number right-aligned at
+  x 23 (TEXT_MUTED; occupied rows TEXT); slot strip at x 26 (sprite rack/slot_empty 104x8). Installed devices draw
+  their REAL front texture region (0,0)-(104,8n) at 1:1 (plus glow by state) spanning n rows; select outline
+  rack/select_1u / select_2u (mint) at (25, row-1). Scrollbar (150,18,10,146), thumb rack/scroll_thumb. Title + "NU free".
+  Selecting a placed device opens its settings panel in the top half (back button rack/back at (151,2)).
+
+=====================================================================================================
+6. RACK UNIT HUD POPUP
+=====================================================================================================
+Targeting (client, every frame while the crosshair is on a rack block):
+  1. Take the BlockHitResult; convert the hit location into the master's local px space (undo facing).
+  2. Front face (z within 0..2 px of the front, or the hit is on the front door plane) -> use it; rear face (z >= 29.5)
+     -> only when the rear doors are open; otherwise no popup.
+  3. y_px -> U: u = floor(y_px - (-13)) + 1, valid 1..42 (top/bottom frame -> no popup).
+  4. If u is inside a device, target = that device (all of its U); else target = the empty U.
+Outline: replace the vanilla block outline (RenderHighlightEvent.Block, cancel for rack blocks) with a thin box around
+  the targeted DEVICE ONLY: x 1.5..14.5, z 1.75..29.25 px, y = its full U span, inflated 0.15 px; colour #5CF0B8 at
+  0.85 alpha, line width 2 (screens/rack/hud.json). Empty U: no outline (or a 1 px-tall box at the U - optional).
+Popup (screens/rack/hud.json; sprites gui/sprites/hud/*): a compact panel near the crosshair (offset +12,-8 GUI px,
+  clamped to the screen), 9-slice hud/panel (3 px borders), min 96 / max 180 px wide, 0.92 alpha.
+  - Empty U: one line "U14 - Empty" (lang gui.encodedlogistics.rack.hud.empty, an em dash).
+  - Device: header = item icon (16x16) + device name + U position ("U12" or "U12-U13", en dash); divider; status line
+    with a 5x5 dot (hud/dot_online | dot_offline | dot_fault) and coloured text (ACCENT / TEXT_MUTED / ERROR); then the
+    device's info lines: label left (TEXT_MUTED), value right (TEXT), 10 px each; an optional bar under a line
+    (hud/bar_track 64x5 + bar_fill | bar_fill_warn | bar_fill_low, stretched to the line width).
+  Mockups: previews/hud_empty.png, hud_firewall.png, hud_router.png, hud_ups.png (in-world, crosshair at centre).
+DATA-DRIVEN POPUP API (the popup never changes for new devices):
+  interface RackDeviceInfo { Component name(); Status status();            // ONLINE / OFFLINE / FAULT
+                             Component statusText();                        // e.g. "Online - on mains"
+                             List<InfoLine> lines(); }
+  record InfoLine(Component label, Component value, @Nullable Bar bar) {}
+  record Bar(float fraction, BarStyle style) {}                             // NORMAL / WARN / LOW -> fill sprite
+  Each device type implements RackDevice#describe(DescribeContext) -> RackDeviceInfo. The server sends a small
+  RackUnitInfoPayload for the targeted unit when the crosshair settles on it (and every 10 ticks while it stays),
+  so lines can show server-side numbers without syncing every device's full state.
+  (Jade/WTHIT: OPEN 6.)
+
+=====================================================================================================
+7. ADDING A DEVICE (the whole extension surface)
+=====================================================================================================
+  1. Item: an item with the RackDevice data component holding its type id (+ its own state component).
+  2. RackDeviceType registry entry: id, size (1 or 2), model ids (off / on / fault), the device's GUI panel factory,
+     optional renderer hook (2.1), and a factory for its behaviour.
+  3. Behaviour: class extends RackDevice { tick(), onInstalled(rack), onRemoved(), status(), describe() (6), save/load,
+     network node (lane cost, default 1), optional energy capability }.
+  4. Assets: models/block/rack_device/<id>(_on|_fault).json from tools/rack_models.device_model(name, n, glow),
+     a 128x128 texture laid out like the others (front (0,0)-(104,8n), rear (0,32)-(104,32+8n), chassis texels
+     (112,0)-(128,16), extras from (0,64)), its _on and _fault (+ blink .mcmeta) overlays, a 16x16 item icon, and
+     popup lines. No change to the rack, the GUI elevation, the HUD or the outline.
+
+=====================================================================================================
+8. DEVICES
+=====================================================================================================
+8.1 FIREWALL (firewall, 1U, 1 lane) - network access control.
+  Per player: view, insert, extract, craft, build (place/remove network blocks and parts) - each ON / OFF / INHERIT
+  (inherit = the default policy). Default policy: No access / View only / Full access. Players with build permission
+  can edit the Firewall (owner always can; owner = whoever installed it). Enforced wherever the network is used
+  (terminals, ports' GUIs, crafting requests, wrench/break on network blocks). Offline Firewall -> policy still
+  enforced (fail closed) [config].
+  Front: ears, red accent stripe, 8 copper ports with link LEDs, status LED. Rear: IEC inlet, vents, 2 fans.
+  Panel (gui/rack/firewall.png, screens/rack/firewall.json): default policy button (cycles), player list (7 visible
+  rows: head, name, 5 toggles under the permission icons rack/firewall/perm_*), add-player field + Add (online
+  players autocomplete), remove via right-click on a row.
+  HUD lines: Default policy; Custom players (count with any non-inherit permission).
+8.2 ROUTER (router, 1U, 1 lane) - routes items between network segments split by Segment Isolators.
+  It must be reachable from each segment it routes: a segment is "known" when a cable of that segment connects to the
+  rack the Router is in OR to a Point-to-Point lanes link / Network Bridge that ends at it (proposed: the rack's own
+  network + any segment linked to the Router with a Link Card - sneak-use a Link Card on an Isolator side to record
+  that segment, then on the Router). Rules: source segment -> destination segment + item filter (ghost item or tag
+  via the Fuzzy rules). Each tick budget moves matching items from source storage to destination storage.
+  Front: ears, blue accent, 6 ports, 3 SFP cages (transceivers drawn into them, 2.1), status LED. Rear: power + fans.
+  Panel (gui/rack/router.png): segments list (dot + name, rename on click), routes list (source -> dest, filter
+  ghost), "+ Add route", 3 transceiver slots (accept optical_transceiver), throughput readout + bar.
+  HUD lines: Active routes; Throughput (items/s).
+8.3 UPS (ups, 2U, 1 lane) - backup power.
+  Stores FE. When the network's supply from Power Inlets drops below demand, the UPS supplies the difference
+  (switchover within the same tick), and recharges from surplus when supply returns. Modes: Online (always conditions
+  the supply - covers instantly, recharges continuously) / Standby (only engages when supply fails; lower idle drain).
+  Front: ears, LCD with live battery % (2.1), 10-LED load bar, power button, vented battery bezel. Rear: inlet, 4 output
+  sockets, fan. Fault = battery missing/failed or overload (> rated output).
+  Panel (gui/rack/ups.png): Arcforge energy bar (controller/energy_bar at (9,23)), readouts Charge / Load / Runtime /
+  Source, load bar (gold), mode button (rack/ups/mode_online | mode_standby), event log (last 3 switchovers).
+  HUD lines: Battery % (with bar: normal >50%, warn 20-50%, low <20%); Load (FE/t); Runtime; Mode.
+
+=====================================================================================================
+9. RECIPES (data/encodedlogistics/recipe/*.json; adjust freely)
+=====================================================================================================
+  server_rack  shaped IBI/FDF/IBI: iron blocks x4, iron bars x2, ferrite x2, iron door
+  firewall     shaped ILI/CPC: iron x2, logic die, circuit substrate x2, processor die
+  router       shaped FMF/CPC: copper foil x2, memory die, circuit substrate x2, processor die
+  ups          shaped TLT/TCT/III: tantalum capacitor x4, logic die, circuit substrate, iron x3
+  Tag #encodedlogistics:rack_devices = firewall, router, ups (the GUI accepts only these).
+
+=====================================================================================================
+10. FILES
+=====================================================================================================
+assets/encodedlogistics/
+  blockstates/server_rack.json; models/block/rack/{rack_frame,rack_empty,rack_door_front,rack_door_rear_left,
+    rack_door_rear_right}.json; models/block/rack_device/{firewall,router,ups}(_on|_fault).json; models/item/*, items/*
+  textures/block/rack/{frame,side_lower,side_upper,roof,plinth,interior,rail,door_front,door_rear,door_parts}.png
+    (door_front 30x90 / door_rear 16x90 at 2 texels/px - hex-staggered holes are alpha 0 = cutout mesh;
+     rail 8x192 at 4 texels/px)
+  textures/block/rack_device/{firewall,router,ups}.png (+ _on.png, _fault.png 2-frame blink + .mcmeta)
+  textures/item/{server_rack,firewall,router,ups}.png
+  textures/gui/rack/{elevation,inventory,firewall,router,ups}.png; gui/sprites/rack/* (slot, select, drop targets,
+    back, scroll thumb; firewall/* perm icons + toggles + head; router/* arrow + segment dot; ups/* mode icons);
+    gui/sprites/hud/{panel,divider,dot_online,dot_offline,dot_fault,bar_track,bar_fill,bar_fill_warn,bar_fill_low}.png
+  screens/rack/{elevation,firewall,router,ups,hud}.json
+  sounds.json + sounds/block/rack/rack_door_{open,close}{1,2}.ogg
+  lang/en_us.rack.json -> MERGE into en_us.json
+data/encodedlogistics/{recipe,loot_table/blocks/server_rack.json,tags/item/rack_devices.json}, minecraft mineable tag
+blockbench/*.bbmodel  - Blockbench sources (java_block, per-face UV, textures embedded) for the frame, each door (group
+  origin = hinge pivot) and each device; generated from the same element lists as the JSONs.
+door_animation.json   - pivots, angles, timing, easing, sounds (section 3)
+tools/  rack_tex.py, device_tex.py, rack_items.py, rack_models.py, rack_gui.py, rack_sound.py, rack_bbmodel.py,
+  rack_export.py (python tools/rack_export.py; python tools/rack_gui.py src/main/resources/assets/encodedlogistics/),
+  rack_preview.py, rack_gui_preview.py, rack_hud_mockup.py (previews), style_kit.py, el_style.py, mcrender.py
+previews/ rack_front (closed + open), rack_open_close, rack_rear_open, door_swing_frames (0-110 deg), item_icons,
+  gui_elevation, gui_firewall, gui_router, gui_ups, hud_empty, hud_firewall, hud_router, hud_ups
+
+=====================================================================================================
+11. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+1. Rack power: proposed the rack draws nothing itself; each device drains from the network (Firewall 2, Router 4 +1 per
+   transceiver, UPS 1 standby / 2 online FE/t) [config].
+2. UPS: proposed 1,000,000 FE capacity, 8,192 FE/t max output, switchover in the same tick; multiple UPSes stack -
+   capacity and output add, they discharge together and recharge in parallel.
+3. Router throughput: proposed 16 items/s base, +16 per transceiver (3 slots, max 64 items/s), shared across routes
+   round-robin.
+4. Installing devices: proposed GUI install works with the door closed (the GUI is the "admin console"); hand-install
+   by using a device item on an open rack front at the targeted U [optional].
+5. Firewall scope: proposed one Firewall per network is enough (a second one shows Fault "Conflicting firewall"); it is
+   the mod's access-control block - no separate access block needed.
+6. Jade/WTHIT: proposed the rack opts out (blacklist the rack blocks in both) so the unit HUD is the single source;
+   the HUD also respects F1 and hides while a screen is open.
+
+ACCEPTANCE
+[ ] Rack places as 1x3x2 with the master in the middle-front; breaks as one; drops rack + devices.
+[ ] Front door and rear doors swing 110 deg in 10 ticks with smoothstep easing, latch/swing sounds; equipment is visible
+    through the mesh when closed.
+[ ] Shift-right-click opens the elevation GUI; 1U/2U install needs consecutive free U; devices show their real front.
+[ ] HUD popup shows "U14 - Empty" or the device header/status/lines; the outline wraps only the targeted device.
+[ ] Firewall enforces per-player permissions; Router moves items between Isolator segments by rule; UPS covers supply
+    drops and recharges; LCD %, load LEDs and transceiver cages render live.

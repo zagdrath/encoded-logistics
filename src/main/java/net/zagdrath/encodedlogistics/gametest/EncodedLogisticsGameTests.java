@@ -88,6 +88,13 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("result_stacks_on_cursor", TerminalGameTests::resultStacksOnCursor);
         TESTS.put("terminal_grid_actions", TerminalGameTests::gridActions);
         TESTS.put("copied_drives_count_once", PlacementGameTests::copiedDrivesCountOnce);
+        TESTS.put("rack_places_and_breaks", RackGameTests::placesAndBreaks);
+        TESTS.put("rack_unit_rules", RackGameTests::unitRules);
+        TESTS.put("rack_geometry", RackGameTests::geometry);
+        TESTS.put("rack_on_network", RackGameTests::onNetwork);
+        TESTS.put("rack_firewall", RackGameTests::firewall);
+        TESTS.put("rack_ups", RackGameTests::upsCoversAndRecharges);
+        TESTS.put("rack_router", RackGameTests::routerMovesItems);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

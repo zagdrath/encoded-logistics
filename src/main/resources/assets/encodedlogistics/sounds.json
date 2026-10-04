@@ -1,0 +1,24 @@
+{
+ "block.rack.door_open": {
+  "subtitle": "subtitles.encodedlogistics.rack.door_open",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/rack_door_open1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/rack_door_open2"
+   }
+  ]
+ },
+ "block.rack.door_close": {
+  "subtitle": "subtitles.encodedlogistics.rack.door_close",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/rack_door_close1"
+   },
+   {
+    "name": "encodedlogistics:block/rack/rack_door_close2"
+   }
+  ]
+ }
+}

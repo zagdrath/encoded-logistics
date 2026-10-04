@@ -32,7 +32,7 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 for (var block : List.of(ModItems.NETWORK_CONTROLLER, ModItems.POWER_INLET, ModItems.CAPACITOR_BANK, ModItems.SEGMENT_ISOLATOR,
                         ModItems.LITHOGRAPHY_PRESS, ModItems.DRIVE_BAY, ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE,
-                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE)) {
+                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.SERVER_RACK)) {
                     output.accept(block.get());
                 }
             })
@@ -60,6 +60,9 @@ public final class ModCreativeTabs {
                 for (var item : List.of(ModItems.FILTER_MODULE, ModItems.THROUGHPUT_MODULE, ModItems.FUZZY_MATCH_MODULE,
                         ModItems.REDSTONE_CONTROL_MODULE)) {
                     output.accept(item.get());
+                }
+                for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS)) {
+                    output.accept(device.get());
                 }
                 output.accept(ModItems.HANDHELD_TERMINAL.get());
                 output.accept(ModItems.LINK_CARD.get());

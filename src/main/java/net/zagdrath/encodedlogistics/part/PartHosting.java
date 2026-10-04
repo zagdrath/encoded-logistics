@@ -10,6 +10,7 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 
 // What cables and part hosts share about their parts: the network sees each part as a device of its own (its lanes and
 // drain), using one opens its menu, and taking one off drops it with its contents.
@@ -58,8 +61,17 @@ public final class PartHosting {
     }
 
     // Opens the menu of the part on that side; false when there's no part with a menu there.
+    // The network's Firewall decides first: a terminal needs view permission, any other part build permission.
     public static boolean open(Level level, BlockPos pos, Direction side, ServerPlayer player) {
-        return level.getBlockEntity(pos) instanceof CableBlockEntity host && host.part(side) != null && host.part(side).openMenu(player);
+        if (!(level.getBlockEntity(pos) instanceof CableBlockEntity host) || host.part(side) == null) {
+            return false;
+        }
+        PartType type = host.getAttachments().part(side);
+        RackPermission needed = type != null && type.isTerminal() ? RackPermission.VIEW : RackPermission.BUILD;
+        if (level instanceof ServerLevel serverLevel && !NetworkAccess.check(serverLevel, pos, player, needed)) {
+            return true;
+        }
+        return host.part(side).openMenu(player);
     }
 
     // Drops what comes off a side (the attachment and its part's contents) out of that face.

@@ -18,15 +18,17 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 import net.zagdrath.encodedlogistics.part.LinkType;
 
-// What a Link Card remembers: a Network Bridge, or a Point-to-Point Link endpoint (the side of the cable it's on, and
-// what it carries), and where it is.
+// What a Link Card remembers: a Network Bridge, a Point-to-Point Link endpoint (the side of the cable it's on, and
+// what it carries), or a network segment for a Router (the node at one end of a Segment Isolator, and that end), and
+// where it is.
 public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Optional<LinkType> type) {
     public enum Kind implements StringRepresentable {
         BRIDGE("bridge"),
-        P2P("p2p");
+        P2P("p2p"),
+        SEGMENT("segment");
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
-        public static final StreamCodec<ByteBuf, Kind> STREAM_CODEC = ByteBufCodecs.idMapper(id -> values()[Math.clamp(id, 0, 1)], Kind::ordinal);
+        public static final StreamCodec<ByteBuf, Kind> STREAM_CODEC = ByteBufCodecs.idMapper(id -> values()[Math.clamp(id, 0, values().length - 1)], Kind::ordinal);
 
         private final String name;
 
@@ -56,6 +58,11 @@ public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Op
 
     public static LinkAddress bridge(GlobalPos pos) {
         return new LinkAddress(Kind.BRIDGE, pos, Optional.empty(), Optional.empty());
+    }
+
+    // The segment on the side of a Segment Isolator: node is the block next to that end.
+    public static LinkAddress segment(GlobalPos node, Direction side) {
+        return new LinkAddress(Kind.SEGMENT, node, Optional.of(side), Optional.empty());
     }
 
     public static LinkAddress p2p(GlobalPos pos, Direction side, LinkType type) {

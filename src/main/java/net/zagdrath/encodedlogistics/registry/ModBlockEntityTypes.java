@@ -22,6 +22,7 @@ import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 
@@ -63,6 +64,10 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<NetworkBridgeBlockEntity>> NETWORK_BRIDGE = BLOCK_ENTITY_TYPES.register(
             "network_bridge", () -> new BlockEntityType<>(NetworkBridgeBlockEntity::new, ModBlocks.NETWORK_BRIDGE.get()));
+
+    // On the rack's master block only.
+    public static final Supplier<BlockEntityType<RackBlockEntity>> SERVER_RACK = BLOCK_ENTITY_TYPES.register(
+            "server_rack", () -> new BlockEntityType<>(RackBlockEntity::new, ModBlocks.SERVER_RACK.get()));
 
     private ModBlockEntityTypes() {}
 }

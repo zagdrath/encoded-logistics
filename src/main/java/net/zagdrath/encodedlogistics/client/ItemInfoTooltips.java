@@ -88,8 +88,11 @@ public final class ItemInfoTooltips {
             // A written card says what it holds.
             LinkAddress address = LinkCardItem.address(stack);
             if (address != null) {
-                Component kind = Component.translatable(address.kind() == LinkAddress.Kind.BRIDGE ? "block.encodedlogistics.network_bridge"
-                        : "item.encodedlogistics.point_to_point_link");
+                Component kind = Component.translatable(switch (address.kind()) {
+                    case BRIDGE -> "block.encodedlogistics.network_bridge";
+                    case P2P -> "item.encodedlogistics.point_to_point_link";
+                    case SEGMENT -> "tooltip.encodedlogistics.link_card.segment";
+                });
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.link_card.address", kind, address.pos().pos().getX(),
                         address.pos().pos().getY(), address.pos().pos().getZ()).withStyle(ChatFormatting.GRAY));
                 tooltip.add(at++, Component.literal(address.pos().dimension().identifier().toString()).withStyle(ChatFormatting.DARK_GRAY));
@@ -156,7 +159,9 @@ public final class ItemInfoTooltips {
     private static Object[] descriptionArguments(String path) {
         return switch (path) {
             case "capacitor_bank" -> new Object[] { String.format(Locale.ROOT, "%,d", Config.CAPACITOR_CAPACITY.getAsInt()) };
-            case "optical_transceiver" -> new Object[] { Config.RELAY_RANGE_PER_TRANSCEIVER.getAsInt() };
+            case "optical_transceiver" -> new Object[] { Config.RELAY_RANGE_PER_TRANSCEIVER.getAsInt(), Config.ROUTER_RATE_PER_TRANSCEIVER.getAsInt() };
+            case "router" -> new Object[] { Config.ROUTER_BASE_RATE.getAsInt(), Config.ROUTER_RATE_PER_TRANSCEIVER.getAsInt() };
+            case "ups" -> new Object[] { String.format(Locale.ROOT, "%,d", Config.UPS_CAPACITY.getAsInt()) };
             case "relay_antenna" -> new Object[] { Config.RELAY_BASE_RANGE.getAsInt() };
             case "network_bridge" -> new Object[] { Config.BRIDGE_LANES.getAsInt() };
             default -> new Object[0];

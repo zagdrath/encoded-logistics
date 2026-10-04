@@ -1,0 +1,83 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/firewall.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "widgets": {
+  "default_policy": {
+   "left": 8,
+   "top": 18,
+   "width": 160,
+   "height": 14,
+   "button": "common/button_wide",
+   "text": "gui.encodedlogistics.firewall.default"
+  },
+  "list": {
+   "left": 10,
+   "top": 52,
+   "rows": 7,
+   "row_height": 13,
+   "head": [
+    2,
+    2
+   ],
+   "name": [
+    12,
+    3
+   ],
+   "perms": {
+    "order": [
+     "view",
+     "insert",
+     "extract",
+     "craft",
+     "build"
+    ],
+    "left": 108,
+    "spacing": 11,
+    "header_top": 40,
+    "header_icons": "rack/firewall/perm_<id>",
+    "toggle": {
+     "on": "rack/firewall/toggle_on",
+     "off": "rack/firewall/toggle_off",
+     "inherit": "rack/firewall/toggle_inherit"
+    }
+   }
+  },
+  "add_player": {
+   "field": [
+    10,
+    151,
+    106,
+    10
+   ],
+   "button": {
+    "left": 122,
+    "top": 148,
+    "width": 46,
+    "height": 14,
+    "button": "common/button_wide",
+    "text": "gui.encodedlogistics.firewall.add"
+   }
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.firewall",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  }
+ }
+}

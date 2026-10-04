@@ -14,6 +14,7 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -59,6 +60,10 @@ public final class ModDataComponents {
     // FE in a Handheld Terminal's battery.
     public static final Supplier<DataComponentType<Integer>> ENERGY = DATA_COMPONENTS.registerComponentType("energy",
             builder -> builder.persistent(Codec.intRange(0, Integer.MAX_VALUE)).networkSynchronized(ByteBufCodecs.VAR_INT));
+
+    // A rack device's settings while it's out of a rack (RackDeviceItem).
+    public static final Supplier<DataComponentType<CustomData>> RACK_DEVICE_STATE = DATA_COMPONENTS.registerComponentType("rack_device_state",
+            builder -> builder.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC));
 
     private ModDataComponents() {}
 }

@@ -28,6 +28,7 @@ import net.zagdrath.encodedlogistics.menu.NetworkBridgeMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.menu.PointToPointMenu;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
+import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
@@ -91,6 +92,9 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<DeployerPlaneMenu>> DEPLOYER_PLANE = MENU_TYPES.register("deployer_plane",
             () -> IMenuTypeExtension.create(DeployerPlaneMenu::new));
+
+    public static final Supplier<MenuType<RackMenu>> SERVER_RACK = MENU_TYPES.register("server_rack",
+            () -> IMenuTypeExtension.create(RackMenu::new));
 
     private ModMenuTypes() {}
 }

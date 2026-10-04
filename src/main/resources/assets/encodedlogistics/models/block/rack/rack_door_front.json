@@ -1,0 +1,220 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "ambientocclusion": false,
+ "textures": {
+  "mesh": "encodedlogistics:block/rack/door_front",
+  "frame": "encodedlogistics:block/rack/frame",
+  "parts": "encodedlogistics:block/rack/door_parts",
+  "particle": "encodedlogistics:block/rack/frame"
+ },
+ "elements": [
+  {
+   "name": "door_front",
+   "from": [
+    0.5,
+    -14.5,
+    0
+   ],
+   "to": [
+    15.5,
+    29,
+    1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#mesh",
+     "uv": [
+      0.0,
+      0.0,
+      15.0,
+      15.0
+     ]
+    },
+    "south": {
+     "texture": "#mesh",
+     "uv": [
+      15.0,
+      0.0,
+      0.0,
+      15.0
+     ]
+    },
+    "east": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      1,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      1,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#frame",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "name": "handle",
+   "from": [
+    1.75,
+    5,
+    -0.4
+   ],
+   "to": [
+    2.5,
+    10,
+    0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      4,
+      8
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      4,
+      8
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      4,
+      8
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      4,
+      8
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      4,
+      8
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      0,
+      0,
+      4,
+      8
+     ]
+    }
+   }
+  },
+  {
+   "name": "lock",
+   "from": [
+    1.75,
+    3.5,
+    -0.4
+   ],
+   "to": [
+    2.5,
+    4.25,
+    0
+   ],
+   "faces": {
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      1,
+      8,
+      3
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      1,
+      8,
+      3
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      1,
+      8,
+      3
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      1,
+      8,
+      3
+     ]
+    },
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      1,
+      8,
+      3
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      6,
+      1,
+      8,
+      3
+     ]
+    }
+   }
+  }
+ ]
+}

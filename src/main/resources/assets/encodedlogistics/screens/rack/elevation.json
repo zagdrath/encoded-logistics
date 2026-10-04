@@ -1,0 +1,82 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/elevation.png",
+  "width": 176,
+  "height": 168
+ },
+ "bottom": {
+  "texture": "gui/rack/inventory.png",
+  "width": 176,
+  "height": 100
+ },
+ "elevation": {
+  "inset": [
+   8,
+   18,
+   140,
+   146
+  ],
+  "row_height": 9,
+  "rows_visible": 16,
+  "u_number": {
+   "right": 23,
+   "color": "TEXT_MUTED"
+  },
+  "slot": {
+   "left": 26,
+   "width": 104,
+   "height": 8,
+   "empty_sprite": "rack/slot_empty",
+   "device_front": "drawn from the device texture (0,0)-(104,8n) at 1:1"
+  },
+  "select": {
+   "1u": "rack/select_1u",
+   "2u": "rack/select_2u",
+   "offset": [
+    -1,
+    -1
+   ]
+  },
+  "drop_target": {
+   "1u": "rack/drop_target_1u",
+   "2u": "rack/drop_target_2u",
+   "blocked": "rack/drop_blocked"
+  },
+  "scrollbar": {
+   "track": [
+    150,
+    18,
+    10,
+    146
+   ],
+   "thumb": "rack/scroll_thumb"
+  },
+  "order": "U42 at the top, U1 at the bottom (rack elevation convention)"
+ },
+ "player_inventory": {
+  "left": 8,
+  "top_in_bottom": 17
+ },
+ "text": {
+  "title": {
+   "key": "block.encodedlogistics.server_rack",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "free": {
+   "right": 168,
+   "top": 5,
+   "color": "TEXT_MUTED"
+  },
+  "inventory": {
+   "key": "container.inventory",
+   "left": 8,
+   "top_in_bottom": 6,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

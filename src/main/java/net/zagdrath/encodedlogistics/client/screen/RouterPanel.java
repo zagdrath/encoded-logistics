@@ -1,0 +1,257 @@
+/*
+ * Copyright (c) 2026 Zagdrath
+ * SPDX-License-Identifier: MIT
+ */
+
+package net.zagdrath.encodedlogistics.client.screen;
+
+import java.util.List;
+import java.util.Locale;
+
+import org.jspecify.annotations.Nullable;
+
+import com.mojang.blaze3d.platform.InputConstants;
+
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.storage.ValueInput;
+import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.menu.RackMenu;
+import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
+
+// The Router's panel (screens/rack/router.json): its segments (the rack's own network first; a green dot when it's
+// reachable; click a name to rename it, right-click a linked one to unlink it), its routes (click the source or the
+// destination to step through the segments, click the filter with an item to set it or empty-handed to clear it,
+// right-click to remove), "+ Add route", the three transceiver cages and the throughput.
+public class RouterPanel extends RackScreen.Panel {
+    private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/router.png");
+    private static final Identifier DOT = EncodedLogistics.id("rack/router/segment_dot"), ARROW = EncodedLogistics.id("rack/router/arrow"),
+            GHOST = EncodedLogistics.id("relay/ghost_transceiver"), BAR = EncodedLogistics.id("common/bar_fill_mint");
+    private static final int SEGMENTS_X = 10, LIST_Y = 32, ROWS = 6, ROW_H = 14, SEGMENTS_W = 52;
+    private static final int ROUTES_X = 70, SOURCE_X = 72, ARROW_X = 98, DEST_X = 112, FILTER_X = 150, ROUTES_W = 98;
+    private static final int ADD_X = 68, ADD_Y = 116, ADD_W = 100, ADD_H = 12, RATE_Y = 132, BAR_X = 69, BAR_Y = 144, BAR_W = 98;
+
+    private @Nullable EditBox rename;
+    private int renaming = -1;
+
+    public RouterPanel(RackScreen screen) {
+        super(screen);
+    }
+
+    @Override
+    protected Identifier background() {
+        return BACKGROUND;
+    }
+
+    @Override
+    protected void removed() {
+        stopRenaming();
+    }
+
+    private @Nullable RouterDevice router() {
+        return device(RouterDevice.class);
+    }
+
+    private boolean reachable(int segment) {
+        ValueInput data = data();
+        return data != null && (data.getIntOr("reachable", 0) >> segment & 1) != 0;
+    }
+
+    // --- Drawing ---
+
+    @Override
+    protected void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        int x = screen.left(), y = screen.top();
+        RouterDevice router = router();
+        if (router != null) {
+            for (int i = 0; i < Math.min(ROWS, router.segmentCount()); i++) {
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DOT, x + SEGMENTS_X + 2, y + LIST_Y + i * ROW_H + 4, 5, 5,
+                        reachable(i) ? 0xFFFFFFFF : 0xFF505050);
+            }
+            List<RouterDevice.Route> routes = router.routes();
+            for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
+                int rowY = y + LIST_Y + i * ROW_H;
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ARROW, x + ARROW_X, rowY + 1, 12, 12);
+                if (!routes.get(i).filter().isEmpty()) {
+                    graphics.pose().pushMatrix();
+                    graphics.pose().translate(x + FILTER_X, rowY + 1);
+                    graphics.pose().scale(0.75F, 0.75F);
+                    graphics.item(routes.get(i).filter(), 0, 0);
+                    graphics.pose().popMatrix();
+                }
+            }
+            boolean full = routes.size() >= RouterDevice.MAX_ROUTES;
+            PartScreens.wideButton(graphics, font(), x + ADD_X, y + ADD_Y, ADD_W, ADD_H, Component.translatable("gui.encodedlogistics.router.add_rule"),
+                    !full, mouseX, mouseY);
+            for (int i = 0; i < RouterDevice.CAGES; i++) {
+                if (screen.getMenu().getSlot(36 + i).getItem().isEmpty()) {
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, GHOST, x + RackMenu.CAGE_X[i], y + RackMenu.CAGE_Y, 16, 16);
+                }
+            }
+            ValueInput data = data();
+            if (data != null) {
+                PartScreens.bar(graphics, BAR, x + BAR_X, y + BAR_Y, BAR_W,
+                        (float) (data.getDoubleOr("throughput", 0) / Math.max(1, data.getIntOr("rate", 1))));
+            }
+        }
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.segments"), 8, 20, RackScreen.TEXT_MUTED, false);
+        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.rules"), 68, 20, RackScreen.TEXT_MUTED, false);
+        RouterDevice router = router();
+        if (router == null) {
+            return;
+        }
+        for (int i = 0; i < Math.min(ROWS, router.segmentCount()); i++) {
+            if (i != renaming) {
+                text(graphics, router.segmentName(i).getString(), SEGMENTS_X + 10, LIST_Y + i * ROW_H + 3, SEGMENTS_W - 10,
+                        reachable(i) ? RackScreen.TEXT : RackScreen.TEXT_DISABLED);
+            }
+        }
+        List<RouterDevice.Route> routes = router.routes();
+        for (int i = 0; i < Math.min(ROWS, routes.size()); i++) {
+            RouterDevice.Route route = routes.get(i);
+            int rowY = LIST_Y + i * ROW_H + 3;
+            text(graphics, router.segmentName(route.source()).getString(), SOURCE_X, rowY, ARROW_X - SOURCE_X - 1, RackScreen.TEXT);
+            text(graphics, router.segmentName(route.dest()).getString(), DEST_X, rowY, FILTER_X - DEST_X - 2, RackScreen.TEXT);
+        }
+        ValueInput data = data();
+        if (data != null) {
+            graphics.text(font(), Component.translatable("gui.encodedlogistics.router.throughput",
+                    String.format(Locale.ROOT, "%.1f", data.getDoubleOr("throughput", 0))).append(" / " + data.getIntOr("rate", 0)), 68, RATE_Y,
+                    RackScreen.TEXT_MUTED, false);
+        }
+    }
+
+    private void text(GuiGraphicsExtractor graphics, String text, int x, int y, int width, int color) {
+        graphics.text(font(), font().plainSubstrByWidth(text, width), x, y, color, false);
+    }
+
+    @Override
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        RouterDevice router = router();
+        if (router == null) {
+            return;
+        }
+        if (screen.over(mouseX, mouseY, SEGMENTS_X, LIST_Y, SEGMENTS_W, ROWS * ROW_H)) {
+            int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
+            if (row < router.segmentCount()) {
+                graphics.setComponentTooltipForNextFrame(font(), List.of(router.segmentName(row),
+                        Component.translatable(reachable(row) ? "gui.encodedlogistics.router.reachable" : "gui.encodedlogistics.router.unreachable")
+                                .withColor(RackScreen.TEXT_MUTED),
+                        Component.translatable(row == 0 ? "gui.encodedlogistics.router.rename_hint" : "gui.encodedlogistics.router.segment_hint")
+                                .withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
+            } else {
+                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.link_hint"), mouseX, mouseY);
+            }
+            return;
+        }
+        int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
+        if (screen.over(mouseX, mouseY, ROUTES_X, LIST_Y, ROUTES_W, ROWS * ROW_H) && row < router.routes().size()) {
+            RouterDevice.Route route = router.routes().get(row);
+            Component filter = route.filter().isEmpty() ? Component.translatable("gui.encodedlogistics.router.filter_any")
+                    : route.filter().getHoverName();
+            graphics.setComponentTooltipForNextFrame(font(), List.of(
+                    Component.translatable("gui.encodedlogistics.router.route", router.segmentName(route.source()), router.segmentName(route.dest())),
+                    Component.translatable("gui.encodedlogistics.router.filter", filter).withColor(RackScreen.TEXT_MUTED),
+                    Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
+        }
+    }
+
+    // --- Input ---
+
+    @Override
+    protected boolean mouseClicked(double x, double y, int button, boolean shift) {
+        RouterDevice router = router();
+        if (router == null) {
+            return false;
+        }
+        boolean left = button == InputConstants.MOUSE_BUTTON_LEFT, right = button == InputConstants.MOUSE_BUTTON_RIGHT;
+        if (rename != null && !in(x, y, SEGMENTS_X, LIST_Y + renaming * ROW_H, SEGMENTS_W, ROW_H)) {
+            submitRename();
+        }
+        if (left && in(x, y, ADD_X, ADD_Y, ADD_W, ADD_H)) {
+            send(RouterDevice.ACTION_ADD_ROUTE, 0, "");
+            return true;
+        }
+        int row = (int) Math.floor((y - LIST_Y) / ROW_H);
+        if (in(x, y, SEGMENTS_X, LIST_Y, SEGMENTS_W, ROWS * ROW_H) && row < router.segmentCount()) {
+            if (right && row > 0) {
+                send(RouterDevice.ACTION_UNLINK, row, "");
+            } else if (left) {
+                startRenaming(router, row);
+            }
+            return true;
+        }
+        if (in(x, y, ROUTES_X, LIST_Y, ROUTES_W, ROWS * ROW_H) && row < router.routes().size()) {
+            if (right) {
+                send(RouterDevice.ACTION_REMOVE_ROUTE, row, "");
+            } else if (left && x < ARROW_X) {
+                send(RouterDevice.ACTION_CYCLE_SOURCE, row, "");
+            } else if (left && x < FILTER_X - 2) {
+                send(RouterDevice.ACTION_CYCLE_DEST, row, "");
+            } else if (left) {
+                send(RouterDevice.ACTION_SET_FILTER, row, "");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    // --- Renaming a segment ---
+
+    private void startRenaming(RouterDevice router, int row) {
+        stopRenaming();
+        renaming = row;
+        rename = new EditBox(font(), screen.left() + SEGMENTS_X + 10, screen.top() + LIST_Y + row * ROW_H + 3, SEGMENTS_W - 10, 9,
+                Component.translatable("gui.encodedlogistics.router.rename"));
+        rename.setBordered(false);
+        rename.setMaxLength(24);
+        rename.setTextColor(RackScreen.TEXT);
+        rename.setValue(router.segmentName(row).getString());
+        screen.addPanelWidget(rename);
+        rename.setFocused(true);
+        screen.setFocused(rename);
+    }
+
+    private void submitRename() {
+        if (rename != null && renaming >= 0) {
+            send(RouterDevice.ACTION_RENAME, renaming, rename.getValue());
+        }
+        stopRenaming();
+    }
+
+    private void stopRenaming() {
+        if (rename != null) {
+            screen.removePanelWidget(rename);
+            rename = null;
+        }
+        renaming = -1;
+    }
+
+    @Override
+    protected boolean keyPressed(KeyEvent event) {
+        if (rename == null) {
+            return false;
+        }
+        if (event.isConfirmation()) {
+            submitRename();
+            return true;
+        }
+        if (event.isEscape()) {
+            stopRenaming();
+            return true;
+        }
+        return rename.keyPressed(event) || rename.canConsumeInput();
+    }
+
+    private static boolean in(double x, double y, int left, int top, int width, int height) {
+        return x >= left && x < left + width && y >= top && y < top + height;
+    }
+}

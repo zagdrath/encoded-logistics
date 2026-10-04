@@ -287,6 +287,59 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("rack");
+    }
+
+    public static final ModConfigSpec.IntValue RACK_CULL_DISTANCE = BUILDER
+            .comment("Blocks away beyond which a Server Rack with both doors closed doesn't draw its devices.")
+            .defineInRange("rackCullDistance", 24, 0, 256);
+
+    public static final ModConfigSpec.DoubleValue FIREWALL_DRAIN = BUILDER
+            .comment("FE per tick a Firewall drains while its network runs.")
+            .defineInRange("firewallDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.BooleanValue FIREWALL_FAIL_CLOSED = BUILDER
+            .comment("Whether a Firewall that's offline (no lane, no power) still enforces its rules.")
+            .define("firewallFailClosed", true);
+
+    public static final ModConfigSpec.DoubleValue ROUTER_DRAIN = BUILDER
+            .comment("FE per tick a Router drains while its network runs.")
+            .defineInRange("routerDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue ROUTER_DRAIN_PER_TRANSCEIVER = BUILDER
+            .comment("FE per tick each Optical Transceiver in a Router adds to its drain.")
+            .defineInRange("routerDrainPerTransceiver", 1.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue ROUTER_BASE_RATE = BUILDER
+            .comment("Items per second a Router moves, shared between its routes.")
+            .defineInRange("routerBaseRate", 16, 0, 4096);
+
+    public static final ModConfigSpec.IntValue ROUTER_RATE_PER_TRANSCEIVER = BUILDER
+            .comment("Items per second each Optical Transceiver in a Router adds.")
+            .defineInRange("routerRatePerTransceiver", 16, 0, 4096);
+
+    public static final ModConfigSpec.IntValue UPS_CAPACITY = BUILDER
+            .comment("FE a UPS's battery holds.")
+            .defineInRange("upsCapacity", 1_000_000, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue UPS_MAX_OUTPUT = BUILDER
+            .comment("FE per tick a UPS supplies at most (more is an overload).")
+            .defineInRange("upsMaxOutput", 8_192, 1, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.IntValue UPS_MAX_INPUT = BUILDER
+            .comment("FE per tick a UPS recharges at most, from the network's surplus.")
+            .defineInRange("upsMaxInput", 8_192, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.DoubleValue UPS_DRAIN_ONLINE = BUILDER
+            .comment("FE per tick a UPS in Online mode drains while its network runs.")
+            .defineInRange("upsDrainOnline", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue UPS_DRAIN_STANDBY = BUILDER
+            .comment("FE per tick a UPS in Standby mode drains while its network runs.")
+            .defineInRange("upsDrainStandby", 1.0, 0.0, 1_000.0);
+
+    static {
+        BUILDER.pop();
     }
 
     public static final ModConfigSpec SPEC = BUILDER.build();

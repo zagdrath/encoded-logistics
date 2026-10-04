@@ -1,0 +1,31 @@
+{
+ "variants": {
+  "facing=north,part=master": {
+   "model": "encodedlogistics:block/rack/rack_frame"
+  },
+  "facing=east,part=master": {
+   "model": "encodedlogistics:block/rack/rack_frame",
+   "y": 90
+  },
+  "facing=south,part=master": {
+   "model": "encodedlogistics:block/rack/rack_frame",
+   "y": 180
+  },
+  "facing=west,part=master": {
+   "model": "encodedlogistics:block/rack/rack_frame",
+   "y": 270
+  },
+  "facing=north,part=dummy": {
+   "model": "encodedlogistics:block/rack/rack_empty"
+  },
+  "facing=east,part=dummy": {
+   "model": "encodedlogistics:block/rack/rack_empty"
+  },
+  "facing=south,part=dummy": {
+   "model": "encodedlogistics:block/rack/rack_empty"
+  },
+  "facing=west,part=dummy": {
+   "model": "encodedlogistics:block/rack/rack_empty"
+  }
+ }
+}

@@ -23,18 +23,30 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.zagdrath.encodedlogistics.block.PartHostBlock;
+import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
 // The Link Card pairs Network Bridges and Point-to-Point Link endpoints. Sneak-use it on one to store its address (a
 // card taken off a stack of blank ones gets it); use it on the partner to pair the two - Bridge with Bridge, or a
 // Point-to-Point Link input with an output carrying the same thing. The card keeps the address, so more outputs can be
 // paired to the same input. Sneak-use in the air clears it. Blank cards stack; written ones don't.
+//
+// It also links network segments to a Router: sneak-use it on one end of a Segment Isolator to store the segment on
+// that side, then use it on the Router's unit in an open rack.
 public class LinkCardItem extends Item {
     public LinkCardItem(Item.Properties properties) {
         super(properties);
@@ -66,6 +78,10 @@ public class LinkCardItem extends Item {
     public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
+        InteractionResult segment = segment(stack, context);
+        if (segment != null) {
+            return segment;
+        }
         Target target = target(level, context.getClickedPos(), context.getClickLocation());
         if (target == null || player == null) {
             return InteractionResult.PASS;
@@ -89,8 +105,61 @@ public class LinkCardItem extends Item {
         return InteractionResult.SUCCESS;
     }
 
+    // A Segment Isolator's end (sneak-use: store the segment there) or a Router in an open rack (use with a stored
+    // segment: link it). Null when the use is about neither.
+    private static @Nullable InteractionResult segment(ItemStack stack, UseOnContext context) {
+        Level level = context.getLevel();
+        Player player = context.getPlayer();
+        BlockPos pos = context.getClickedPos();
+        BlockState state = level.getBlockState(pos);
+        if (player == null) {
+            return null;
+        }
+        if (state.getBlock() instanceof SegmentIsolatorBlock && player.isSecondaryUseActive()) {
+            Direction side = context.getClickedFace();
+            if (level instanceof ServerLevel) {
+                if (side.getAxis() != state.getValue(SegmentIsolatorBlock.AXIS)) {
+                    player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_end"));
+                } else {
+                    store(stack, player, context.getHand(), LinkAddress.segment(GlobalPos.of(level.dimension(), pos.relative(side)), side));
+                    player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_stored"));
+                    level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        LinkAddress stored = address(stack);
+        if (!(state.getBlock() instanceof ServerRackBlock) || stored == null || stored.kind() != LinkAddress.Kind.SEGMENT) {
+            return null;
+        }
+        RackBlockEntity rack = ServerRackBlock.rack(level, pos, state);
+        Direction facing = state.getValue(ServerRackBlock.FACING);
+        if (rack == null || RackGeometry.face(context.getClickedFace(), facing) != RackGeometry.Face.FRONT || !rack.isFrontOpen()) {
+            return null;
+        }
+        RackDevice device = rack.deviceAt(RackGeometry.unitAt(RackGeometry.toLocal(context.getClickLocation(), rack.getBlockPos(), facing).y));
+        if (!(device instanceof RouterDevice router)) {
+            if (level instanceof ServerLevel) {
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.not_router"));
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (level instanceof ServerLevel serverLevel && NetworkAccess.check(serverLevel, rack.getBlockPos(), player, RackPermission.BUILD)) {
+            String result = switch (router.link(stored.pos())) {
+                case LINKED -> "router_linked";
+                case ALREADY -> "router_already";
+                case FULL -> "router_full";
+            };
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card." + result));
+            if (result.equals("router_linked")) {
+                level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.8F);
+            }
+        }
+        return InteractionResult.SUCCESS;
+    }
+
     private static Component pair(ServerLevel level, LinkAddress stored, Target target) {
-        if (stored.kind() != target.address().kind()) {
+        if (stored.kind() != target.address().kind() || stored.kind() == LinkAddress.Kind.SEGMENT) {
             return Component.translatable("message.encodedlogistics.link_card.mismatch");
         }
         if (target.bridge() != null) {

@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "TLT",
+  "TCT",
+  "III"
+ ],
+ "key": {
+  "T": "encodedlogistics:tantalum_capacitor",
+  "L": "encodedlogistics:logic_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:ups",
+  "count": 1
+ }
+}

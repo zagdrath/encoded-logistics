@@ -26,6 +26,8 @@ import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 public final class ModItems {
@@ -106,6 +108,15 @@ public final class ModItems {
             p -> p.stacksTo(1));
     public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);
     public static final DeferredItem<BlockItem> NETWORK_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_BRIDGE);
+
+    // The Server Rack and its devices (RackDeviceType).
+    public static final DeferredItem<BlockItem> SERVER_RACK = ITEMS.registerSimpleBlockItem(ModBlocks.SERVER_RACK);
+    public static final DeferredItem<RackDeviceItem> FIREWALL = ITEMS.registerItem("firewall", p -> new RackDeviceItem(p, RackDeviceType.FIREWALL),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> ROUTER = ITEMS.registerItem("router", p -> new RackDeviceItem(p, RackDeviceType.ROUTER),
+            p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> UPS = ITEMS.registerItem("ups", p -> new RackDeviceItem(p, RackDeviceType.UPS),
+            p -> p.stacksTo(1));
 
     // Cable parts: terminals, ports, the tap and the sensor (PartType).
     private static final Map<PartType, DeferredItem<PartItem>> PARTS = new EnumMap<>(PartType.class);

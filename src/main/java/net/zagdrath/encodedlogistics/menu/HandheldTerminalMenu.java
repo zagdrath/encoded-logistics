@@ -25,6 +25,7 @@ import net.zagdrath.encodedlogistics.item.HandheldLinkState;
 import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -118,7 +119,7 @@ public class HandheldTerminalMenu extends AccessTerminalMenu {
 
     @Override
     protected @Nullable NetworkStorage storage() {
-        if (state != HandheldLinkState.LINKED || HandheldTerminalItem.energy(stack()) <= 0) {
+        if (state != HandheldLinkState.LINKED || HandheldTerminalItem.energy(stack()) <= 0 || !allowed(RackPermission.VIEW)) {
             return null;
         }
         return player.level() instanceof ServerLevel level ? ControllerStructures.get(level).storageAt(level, pos) : null;

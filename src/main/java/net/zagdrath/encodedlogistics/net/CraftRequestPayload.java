@@ -24,6 +24,8 @@ import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 
 // Client to server: plan crafting an item from an open terminal (start false), or plan and start it (start true) on a
@@ -51,6 +53,9 @@ public record CraftRequestPayload(int containerId, ItemKey key, long amount, int
             return;
         }
         BlockPos device = menu.pos();
+        if (!NetworkAccess.check(level, device, player, RackPermission.CRAFT)) {
+            return;
+        }
         long amount = Math.clamp(payload.amount(), 1, MAX_AMOUNT);
         CraftPlanner.Plan plan = CraftRequests.plan(level, device, payload.key(), amount);
         List<SchedulerCoreBlockEntity> schedulers = CraftRequests.schedulers(level, device);

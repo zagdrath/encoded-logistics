@@ -1,0 +1,18 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "FMF",
+  "CPC"
+ ],
+ "key": {
+  "F": "encodedlogistics:copper_foil",
+  "M": "encodedlogistics:memory_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "P": "encodedlogistics:processor_die"
+ },
+ "result": {
+  "id": "encodedlogistics:router",
+  "count": 1
+ }
+}

@@ -34,6 +34,8 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -121,8 +123,20 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // --- Server ---
 
+    // The network's storage as this player may see it: none without the Firewall's view permission.
     protected @Nullable NetworkStorage storage() {
-        return player.level() instanceof ServerLevel level ? ControllerStructures.get(level).storageAt(level, pos) : null;
+        return player.level() instanceof ServerLevel level && allowed(RackPermission.VIEW) ? ControllerStructures.get(level).storageAt(level, pos)
+                : null;
+    }
+
+    // The storage, for putting items in (INSERT) or taking them out (EXTRACT), if the Firewall allows it.
+    protected @Nullable NetworkStorage storageFor(RackPermission permission) {
+        return allowed(permission) ? storage() : null;
+    }
+
+    // Whether the network's Firewall (if any) lets this player do that through the terminal.
+    protected boolean allowed(RackPermission permission) {
+        return !(player.level() instanceof ServerLevel level) || NetworkAccess.allowed(level, pos, player, permission);
     }
 
     @Override
@@ -165,8 +179,10 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // A click on the grid: take the clicked item (a stack, half a stack, one, or a stack into the inventory) or put the
     // carried stack (or one of it) in.
     public void handleClick(ServerPlayer player, @Nullable ItemKey key, int action) {
+        RackPermission permission = action == INSERT_CARRIED || action == INSERT_ONE || action == INSERT_ALL_LIKE_CARRIED ? RackPermission.INSERT
+                : RackPermission.EXTRACT;
         NetworkStorage storage = storage();
-        if (storage == null) {
+        if (storage == null || !NetworkAccess.tell(allowed(permission), player, permission)) {
             return;
         }
         ItemStack carried = getCarried();
@@ -256,7 +272,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = slots.get(index);
         NetworkStorage storage = storage();
-        if (storage == null || !slot.hasItem()) {
+        if (storage == null || !slot.hasItem() || !NetworkAccess.tell(allowed(RackPermission.INSERT), player, RackPermission.INSERT)) {
             return ItemStack.EMPTY;
         }
         ItemStack stack = slot.getItem();

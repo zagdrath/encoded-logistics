@@ -1,0 +1,53 @@
+{
+ "$comment": "Door animation spec. Model px, master local space (front at z=0, facing NORTH); rotate with the rack facing.",
+ "duration_ticks": 10,
+ "easing": "smoothstep (t*t*(3-2t)) on open and close; interpolate with partialTick",
+ "doors": {
+  "front": {
+   "model": "encodedlogistics:block/rack/rack_door_front",
+   "pivot": [
+    15.5,
+    0,
+    0.5
+   ],
+   "axis": "Y",
+   "open_degrees": -110,
+   "note": "hinged on the LEFT as seen from the front (+x side); negative = swings out toward -z (verified in previews/door_swing_frames.png)"
+  },
+  "rear_left": {
+   "model": "encodedlogistics:block/rack/rack_door_rear_left",
+   "pivot": [
+    15.5,
+    0,
+    31.1
+   ],
+   "axis": "Y",
+   "open_degrees": 110,
+   "note": "x 8..15.5, hinged on its outer edge; positive = swings out toward +z; the leaves sit at z 30.6..31.6 so their handles end at the z 32 model limit"
+  },
+  "rear_right": {
+   "model": "encodedlogistics:block/rack/rack_door_rear_right",
+   "pivot": [
+    0.5,
+    0,
+    31.1
+   ],
+   "axis": "Y",
+   "open_degrees": -110,
+   "note": "x 0.5..8, hinged on its outer edge; negative = swings out toward +z"
+  }
+ },
+ "sounds": {
+  "open": {
+   "event": "encodedlogistics:block.rack.door_open",
+   "at_tick": 0,
+   "volume": 0.8,
+   "pitch": "0.95-1.05 random"
+  },
+  "close": {
+   "event": "encodedlogistics:block.rack.door_close",
+   "at_tick": "when the close animation starts (latch click is at the end of the clip, ~0.32 s in = tick 6-7, lining up with the swing)"
+  }
+ },
+ "rear_doors": "both rear leaves open/close together from one right-click on the rear face"
+}

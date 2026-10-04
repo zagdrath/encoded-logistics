@@ -33,6 +33,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.part.FabricationTerminalPart;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -134,7 +135,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
     }
 
     private void refill(ItemStack[] before) {
-        NetworkStorage storage = storage();
+        NetworkStorage storage = storageFor(RackPermission.EXTRACT);
         if (storage == null) {
             return;
         }
@@ -169,7 +170,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
         if (index >= GRID && index < RESULT) {
             Slot slot = slots.get(index);
             ItemStack stack = slot.getItem();
-            NetworkStorage storage = storage();
+            NetworkStorage storage = storageFor(RackPermission.INSERT);
             if (storage != null && !stack.isEmpty()) {
                 stack.shrink((int) storage.insert(ItemKey.of(stack), stack.getCount(), false));
             }
@@ -217,7 +218,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
 
     // Every grid item back to the network; what doesn't fit to the player.
     private void clearGrid() {
-        NetworkStorage storage = storage();
+        NetworkStorage storage = storageFor(RackPermission.INSERT);
         for (int i = 0; i < 9; i++) {
             ItemStack stack = craftSlots.getItem(i);
             if (stack.isEmpty()) {
@@ -238,7 +239,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
     // inventory has. inputs: the nine slots' options, row by row.
     public void fillGrid(List<List<ItemStack>> inputs) {
         clearGrid();
-        NetworkStorage storage = storage();
+        NetworkStorage storage = storageFor(RackPermission.EXTRACT);
         loading = true;
         for (int i = 0; i < Math.min(9, inputs.size()); i++) {
             for (ItemStack option : inputs.get(i)) {

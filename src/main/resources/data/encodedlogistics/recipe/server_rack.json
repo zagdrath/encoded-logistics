@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "IBI",
+  "FDF",
+  "IBI"
+ ],
+ "key": {
+  "I": "minecraft:iron_block",
+  "B": "minecraft:iron_bars",
+  "F": "encodedlogistics:ferrite",
+  "D": "minecraft:iron_door"
+ },
+ "result": {
+  "id": "encodedlogistics:server_rack",
+  "count": 1
+ }
+}

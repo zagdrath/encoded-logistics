@@ -1,0 +1,18 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "ILI",
+  "CPC"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "L": "encodedlogistics:logic_die",
+  "C": "encodedlogistics:circuit_substrate",
+  "P": "encodedlogistics:processor_die"
+ },
+ "result": {
+  "id": "encodedlogistics:firewall",
+  "count": 1
+ }
+}

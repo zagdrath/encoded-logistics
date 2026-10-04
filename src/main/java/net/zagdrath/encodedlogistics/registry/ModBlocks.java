@@ -31,6 +31,7 @@ import net.zagdrath.encodedlogistics.block.RelayAntennaBlock;
 import net.zagdrath.encodedlogistics.block.SchedulerBlock;
 import net.zagdrath.encodedlogistics.block.SchedulerCoreBlock;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.block.ThreadUnitBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
@@ -90,6 +91,11 @@ public final class ModBlocks {
     public static final DeferredBlock<NetworkBridgeBlock> NETWORK_BRIDGE = BLOCKS.registerBlock("network_bridge", NetworkBridgeBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .lightLevel(NetworkBridgeBlock::lightLevel));
+
+    // The Server Rack (a 1x3x2 multiblock: ServerRackBlock) and the devices that mount in it.
+    public static final DeferredBlock<ServerRackBlock> SERVER_RACK = BLOCKS.registerBlock("server_rack", ServerRackBlock::new,
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
 
     private static BlockBehaviour.Properties scheduler(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);

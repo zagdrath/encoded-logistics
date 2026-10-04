@@ -33,6 +33,8 @@ public class EncodedLogisticsJadePlugin implements IWailaPlugin {
         registration.registerBlockDataProvider(InfrastructureProviders.LithographyPress.INSTANCE, LithographyPressBlockEntity.class);
         ModBlocks.allCables().forEach(cable -> registration.blockOperations().pick(cable.getKey()));
         registration.blockOperations().pick(ModBlocks.PART_HOST.getKey());
+        // The Server Rack has its own popup per unit (RackHud); Jade's would only get in its way.
+        registration.blockOperations().hide(ModBlocks.SERVER_RACK.getKey());
     }
 
     @Override

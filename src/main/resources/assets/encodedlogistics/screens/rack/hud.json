@@ -1,0 +1,83 @@
+{
+ "$comment": "Rack unit HUD popup. Drawn at crosshair + offset, clamped to the screen; 9-slice panel.",
+ "panel": {
+  "sprite": "hud/panel",
+  "border": 3,
+  "padding": [
+   5,
+   4
+  ],
+  "offset_from_crosshair": [
+   12,
+   -8
+  ],
+  "min_width": 96,
+  "max_width": 180,
+  "alpha": 0.92
+ },
+ "header": {
+  "icon": [
+   0,
+   0
+  ],
+  "name": [
+   20,
+   0
+  ],
+  "u": [
+   20,
+   9
+  ],
+  "name_color": "TEXT",
+  "u_color": "TEXT_MUTED",
+  "height": 18
+ },
+ "divider": {
+  "sprite": "hud/divider",
+  "margin_top": 2,
+  "margin_bottom": 3
+ },
+ "status": {
+  "dot": {
+   "online": "hud/dot_online",
+   "offline": "hud/dot_offline",
+   "fault": "hud/dot_fault"
+  },
+  "text": [
+   8,
+   0
+  ],
+  "height": 10,
+  "colors": {
+   "online": "ACCENT",
+   "offline": "TEXT_MUTED",
+   "fault": "ERROR"
+  }
+ },
+ "line": {
+  "height": 10,
+  "label_color": "TEXT_MUTED",
+  "value_color": "TEXT",
+  "value_align": "right",
+  "gap": 8
+ },
+ "bar": {
+  "track": "hud/bar_track",
+  "fill": "hud/bar_fill",
+  "warn": "hud/bar_fill_warn",
+  "low": "hud/bar_fill_low",
+  "height": 6,
+  "width": "line"
+ },
+ "empty": {
+  "text": "gui.encodedlogistics.rack.hud.empty",
+  "single_line": true
+ },
+ "outline": {
+  "color": "#5CF0B8",
+  "alpha": 0.85,
+  "line_width": 2.0,
+  "inflate_px": 0.15,
+  "note": "world-space box around the device: x 1.5..14.5, z 1.75..29.25, y = its U span"
+ }
+}

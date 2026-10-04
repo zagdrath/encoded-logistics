@@ -24,6 +24,7 @@ import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
 import net.zagdrath.encodedlogistics.net.ModNetwork;
+import net.zagdrath.encodedlogistics.rack.FirewallEvents;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModCapabilities;
@@ -33,6 +34,7 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeSerializers;
 import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
+import net.zagdrath.encodedlogistics.registry.ModSounds;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(EncodedLogistics.MODID)
@@ -49,6 +51,7 @@ public class EncodedLogistics {
         ModBlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModMenuTypes.MENU_TYPES.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        ModSounds.SOUND_EVENTS.register(modEventBus);
         ModCapabilities.register(modEventBus);
         ModNetwork.register(modEventBus);
         EncodedLogisticsGameTests.register(modEventBus);
@@ -56,6 +59,7 @@ public class EncodedLogistics {
         modEventBus.addListener(EncodedLogistics::registerTicketControllers);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
+        FirewallEvents.register();
 
         modContainer.registerConfig(localConfigType(), Config.SPEC);
     }

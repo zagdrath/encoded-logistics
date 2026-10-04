@@ -17,6 +17,7 @@
   "encodedlogistics:job_buffer",
   "encodedlogistics:thread_unit",
   "encodedlogistics:relay_antenna",
-  "encodedlogistics:network_bridge"
+  "encodedlogistics:network_bridge",
+  "encodedlogistics:server_rack"
  ]
 }

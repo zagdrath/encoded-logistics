@@ -1,0 +1,89 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/router.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "widgets": {
+  "segments": {
+   "left": 10,
+   "top": 32,
+   "rows": 6,
+   "row_height": 14,
+   "dot": "rack/router/segment_dot"
+  },
+  "rules": {
+   "left": 70,
+   "top": 32,
+   "rows": 6,
+   "row_height": 14,
+   "columns": {
+    "source": 2,
+    "arrow": 30,
+    "dest": 46,
+    "filter": 80
+   },
+   "arrow": "rack/router/arrow",
+   "filter_ghost": true
+  },
+  "add_rule": {
+   "left": 68,
+   "top": 116,
+   "width": 100,
+   "height": 12,
+   "button": "common/button_wide",
+   "text": "gui.encodedlogistics.router.add_rule"
+  },
+  "transceivers": {
+   "left": [
+    9,
+    27,
+    45
+   ],
+   "top": 129,
+   "accepts": "encodedlogistics:optical_transceiver",
+   "ghost": "relay/ghost_transceiver"
+  },
+  "throughput": {
+   "left": 69,
+   "top": 144,
+   "width": 98,
+   "sprite": "common/bar_fill_mint"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.router",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "segments": {
+   "key": "gui.encodedlogistics.router.segments",
+   "left": 8,
+   "top": 20,
+   "color": "TEXT_MUTED"
+  },
+  "rules": {
+   "key": "gui.encodedlogistics.router.rules",
+   "left": 68,
+   "top": 20,
+   "color": "TEXT_MUTED"
+  },
+  "throughput": {
+   "left": 68,
+   "top": 132,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

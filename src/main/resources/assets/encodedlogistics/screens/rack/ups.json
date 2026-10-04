@@ -1,0 +1,74 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/ups.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "widgets": {
+  "energy_bar": {
+   "left": 9,
+   "top": 23,
+   "sprite": "controller/energy_bar",
+   "fill": "bottom_up"
+  },
+  "readouts": {
+   "left": 30,
+   "top": 25,
+   "line_height": 12,
+   "lines": [
+    "charge",
+    "load",
+    "runtime",
+    "source"
+   ]
+  },
+  "load_bar": {
+   "left": 27,
+   "top": 85,
+   "width": 140,
+   "height": 6,
+   "sprite": "common/bar_fill_gold"
+  },
+  "mode": {
+   "left": 8,
+   "top": 80,
+   "width": 14,
+   "height": 14,
+   "button": "terminal/button",
+   "icons": [
+    "rack/ups/mode_online",
+    "rack/ups/mode_standby"
+   ]
+  },
+  "log": {
+   "left": 10,
+   "top": 106,
+   "rows": 3,
+   "row_height": 12
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.ups",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "log": {
+   "key": "gui.encodedlogistics.ups.log",
+   "left": 8,
+   "top": 95,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

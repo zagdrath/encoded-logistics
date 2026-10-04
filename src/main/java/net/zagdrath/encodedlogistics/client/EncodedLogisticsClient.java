@@ -13,20 +13,28 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
+import net.zagdrath.encodedlogistics.client.rack.RackHud;
+import net.zagdrath.encodedlogistics.client.rack.RackModels;
+import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
 import net.zagdrath.encodedlogistics.client.screen.CollectorPlaneScreen;
@@ -42,6 +50,7 @@ import net.zagdrath.encodedlogistics.client.screen.NetworkBridgeScreen;
 import net.zagdrath.encodedlogistics.client.screen.NetworkControllerScreen;
 import net.zagdrath.encodedlogistics.client.screen.PointToPointScreen;
 import net.zagdrath.encodedlogistics.client.screen.PortScreen;
+import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.client.screen.RelayAntennaScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchedulerCoreScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
@@ -50,6 +59,7 @@ import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
+import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
 
@@ -88,6 +98,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.POINT_TO_POINT_LINK.get(), PointToPointScreen::new);
         event.register(ModMenuTypes.COLLECTOR_PLANE.get(), CollectorPlaneScreen::new);
         event.register(ModMenuTypes.DEPLOYER_PLANE.get(), DeployerPlaneScreen::new);
+        event.register(ModMenuTypes.SERVER_RACK.get(), RackScreen::new);
     }
 
     // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).
@@ -108,6 +119,28 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void registerStandaloneModels(ModelEvent.RegisterStandalone event) {
         CableParts.register(event);
+        RackModels.register(event);
+    }
+
+    // The Server Rack: its doors and devices (RackRenderer), and the popup by the crosshair (RackHud).
+    @SubscribeEvent
+    static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlockEntityTypes.SERVER_RACK.get(), RackRenderer::new);
+    }
+
+    @SubscribeEvent
+    static void registerGuiLayers(RegisterGuiLayersEvent event) {
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, RackHud.LAYER, RackHud::render);
+    }
+
+    @SubscribeEvent
+    static void onClientTick(ClientTickEvent.Post event) {
+        RackHud.tick(event);
+    }
+
+    @SubscribeEvent
+    static void onBlockOutline(ExtractBlockOutlineRenderStateEvent event) {
+        RackHud.outline(event);
     }
 
     @SubscribeEvent
