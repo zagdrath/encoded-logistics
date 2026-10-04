@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -110,7 +111,25 @@ public final class SystemData {
         }
     }
 
+    // A user's profile (OS.md 6): who they are (player id), their library list and current library, when it was made
+    // and last signed on with.
+    public static final class Profile {
+        public final String user, created;
+        public @Nullable UUID player;
+        public final List<String> libraryList;
+        public String currentLibrary, lastSignOn = "";
+
+        public Profile(String user, @Nullable UUID player, List<String> libraryList, String currentLibrary, String created) {
+            this.user = user;
+            this.player = player;
+            this.libraryList = libraryList;
+            this.currentLibrary = currentLibrary;
+            this.created = created;
+        }
+    }
+
     public final Map<String, Library> libraries = new TreeMap<>();
+    public final Map<String, Profile> profiles = new TreeMap<>();
     public final Map<String, List<MessageService.Message>> queues = new LinkedHashMap<>();
     public long nextMessage = 1;
     // Oldest first.
@@ -313,6 +332,21 @@ public final class SystemData {
 
         tag.put("jobs", jobs.save());
 
+        ListTag users = new ListTag();
+        for (Profile profile : profiles.values()) {
+            CompoundTag p = new CompoundTag();
+            p.putString("user", profile.user);
+            if (profile.player != null) {
+                p.putString("player", profile.player.toString());
+            }
+            p.put("library_list", strings(profile.libraryList));
+            p.putString("current_library", profile.currentLibrary);
+            p.putString("created", profile.created);
+            p.putString("last_sign_on", profile.lastSignOn);
+            users.add(p);
+        }
+        tag.put("profiles", users);
+
         CompoundTag names = new CompoundTag();
         deviceNames.forEach(names::putString);
         tag.put("device_names", names);
@@ -381,6 +415,22 @@ public final class SystemData {
         }
 
         data.jobs = JobData.load(tag.getCompoundOrEmpty("jobs"));
+
+        ListTag users = tag.getListOrEmpty("profiles");
+        for (int i = 0; i < users.size(); i++) {
+            CompoundTag p = users.getCompoundOrEmpty(i);
+            UUID player = null;
+            try {
+                String id = p.getStringOr("player", "");
+                player = id.isEmpty() ? null : UUID.fromString(id);
+            } catch (IllegalArgumentException ignored) {}
+            Profile profile = new Profile(p.getStringOr("user", ""), player, new ArrayList<>(strings(p.getListOrEmpty("library_list"))),
+                    p.getStringOr("current_library", GENERAL), p.getStringOr("created", ""));
+            profile.lastSignOn = p.getStringOr("last_sign_on", "");
+            if (!profile.user.isEmpty()) {
+                data.profiles.put(profile.user, profile);
+            }
+        }
 
         CompoundTag names = tag.getCompoundOrEmpty("device_names");
         for (String key : names.keySet()) {

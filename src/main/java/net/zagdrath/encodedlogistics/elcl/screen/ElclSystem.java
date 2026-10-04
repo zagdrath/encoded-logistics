@@ -24,14 +24,30 @@ public record ElclSystem(MinecraftServer server, NetworkRef network) {
         return ElclServices.sysvals().get(this, "SYSNAME");
     }
 
-    // The game day and time: "Day 2  07:14:22".
+    // The game day and time: "Day 2  07:14:22" (DATFMT *DAY), or the day as a date on a calendar of 30-day months
+    // starting at year 1 - "01/02/01 07:14:22" for *MDY (*DMY, *YMD likewise).
     public String now() {
-        return clock(server.overworld().getOverworldClockTime(), true);
+        return dated(clock(server.overworld().getOverworldClockTime(), true));
     }
 
     // "Day 2  07:13", for lists.
     public String nowShort() {
-        return clock(server.overworld().getOverworldClockTime(), false);
+        return dated(clock(server.overworld().getOverworldClockTime(), false));
+    }
+
+    private String dated(String clock) {
+        String format = ElclServices.sysvals().get(this, "DATFMT");
+        if (format.isEmpty() || format.equals("*DAY")) {
+            return clock;
+        }
+        int day = day() - 1;
+        int d = day % 30 + 1, m = day / 30 % 12 + 1, y = day / 360 % 100 + 1;
+        String date = switch (format) {
+            case "*DMY" -> String.format(Locale.ROOT, "%02d/%02d/%02d", d, m, y);
+            case "*YMD" -> String.format(Locale.ROOT, "%02d/%02d/%02d", y, m, d);
+            default -> String.format(Locale.ROOT, "%02d/%02d/%02d", m, d, y);
+        };
+        return date + " " + clock.substring(clock.lastIndexOf(' ') + 1);
     }
 
     public long ticks() {

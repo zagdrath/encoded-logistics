@@ -22,6 +22,7 @@ import net.zagdrath.encodedlogistics.elcl.exec.OsCommands;
 import net.zagdrath.encodedlogistics.elcl.job.JobHost;
 import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
+import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
@@ -37,6 +38,8 @@ import net.zagdrath.encodedlogistics.terminal.TerminalOutput;
 //  messages / readmessages / removemessage N / removemessages
 //  spooled [job] / splf N / deletesplf N / printsplf N [printer]
 //  sysvals / sysval S
+//  signon USER [CURLIB]   (the session signs on: ELC0402 for a name not the player's; the profile's class, current
+//                          library and library list come back)
 //  values <items|devices|libraries|members|programs|jobs|sysvals> [filter]   (the prompter's F4 lists)
 public final class ScreenQueries {
     // Lines of source a response carries (a longer member comes in pages).
@@ -120,6 +123,7 @@ public final class ScreenQueries {
                 case "printsplf" -> TerminalOutput.message(Component.literal(ElclServices.spool()
                         .print(system, user, Integer.parseInt(arg(words, 1)), words.size() > 2 ? words.get(2) : "*DFT").toString()));
                 case "sysvals" -> sysvals(system);
+                case "signon" -> signOn(context, system, words.size() > 1 ? words.get(1) : "", arg(words, 2));
                 case "values" -> values(context, system, arg(words, 1), words.size() > 2 ? words.get(2) : "");
                 default -> new TerminalOutput();
             };
@@ -284,6 +288,17 @@ public final class ScreenQueries {
         return out;
     }
 
+    // --- Sign-on ---
+
+    // The session signs on (the desk's menu remembers it): user class, current library, library list (blank-joined).
+    private static TerminalOutput signOn(TerminalContext context, ElclSystem system, String typed, String library) throws ElclException {
+        UserService.Profile profile = ElclServices.users().signOn(system, context.user(), context.player().getUUID(), typed, library);
+        if (context.player().containerMenu instanceof TerminalDeskMenu menu) {
+            menu.signOn();
+        }
+        return new TerminalOutput().line(row(profile.userClass(), profile.currentLibrary(), String.join(" ", profile.libraryList())));
+    }
+
     // --- Messages, spooled files, system values ---
 
     // id, message ID, severity, from, sent, text, unread (1 / 0); newest first.
@@ -351,14 +366,14 @@ public final class ScreenQueries {
             }
             case "LIBRARIES" -> ElclServices.libraries().libraries(system).forEach(library -> out.line(row(library.name(), library.text())));
             case "MEMBERS" -> {
-                for (String library : filter.isEmpty() ? OsCommands.LIBRARY_LIST : new String[] { filter.toUpperCase(Locale.ROOT) }) {
+                for (String library : filter.isEmpty() ? OsCommands.libraryList(system, context.user()) : List.of(filter.toUpperCase(Locale.ROOT))) {
                     for (LibraryService.Member member : ElclServices.libraries().members(system, library)) {
                         out.line(row(library + "/" + member.name(), member.text()));
                     }
                 }
             }
             case "PROGRAMS" -> {
-                for (String library : filter.isEmpty() ? OsCommands.LIBRARY_LIST : new String[] { filter.toUpperCase(Locale.ROOT) }) {
+                for (String library : filter.isEmpty() ? OsCommands.libraryList(system, context.user()) : List.of(filter.toUpperCase(Locale.ROOT))) {
                     for (String program : ElclServices.libraries().programs(system, library)) {
                         out.line(row(library + "/" + program, ""));
                     }

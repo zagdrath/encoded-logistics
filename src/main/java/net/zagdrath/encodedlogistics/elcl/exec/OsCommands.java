@@ -23,20 +23,17 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.JobService;
 import net.zagdrath.encodedlogistics.elcl.screen.LibraryService;
-import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 
 // The OS commands (COMMANDS.md 8-9) on the screens' services: libraries, members and programs; jobs, schedule entries
 // and triggers; system values; messages and printed text. Each sends its completion message (MESSAGES.md, amendment 2).
 public final class OsCommands {
-    // A user's library list (OS.md 2): where *LIBL looks, the first being where new members go.
-    public static final String[] LIBRARY_LIST = { "ELGPL", "ELSYS" };
-
     private OsCommands() {}
 
-    // A user's library list (OS.md 2): where *LIBL looks, in order.
+    // A user's library list (OS.md 2, their profile's): where *LIBL looks, in order; the first is *CURLIB.
     public static List<String> libraryList(ElclSystem system, String user) {
-        return List.of(LIBRARY_LIST);
+        return ElclServices.users().profile(system, user, null).libraryList();
     }
 
     // The system the command runs on: the context's network (ELC1302 on *NETWORK while there's none).
@@ -69,17 +66,18 @@ public final class OsCommands {
         return context instanceof BatchContext batch ? batch.player() : null;
     }
 
-    // LIB/NAME as {library, name}: a bare name (or *LIBL/NAME) is looked for down the library list, else the first of
-    // it; *CURLIB is the first.
-    static String[] qualified(ElclSystem system, String text) {
+    // LIB/NAME as {library, name}: a bare name (or *LIBL/NAME) is looked for down the user's library list, else it's in
+    // their current library; *CURLIB is the current library.
+    static String[] qualified(ElclSystem system, String user, String text) {
         String value = text.toUpperCase(Locale.ROOT);
         int slash = value.indexOf('/');
         String library = slash >= 0 ? value.substring(0, slash) : "*LIBL", name = slash >= 0 ? value.substring(slash + 1) : value;
+        var profile = ElclServices.users().profile(system, user, null);
         if (library.equals("*CURLIB")) {
-            library = LIBRARY_LIST[0];
+            library = profile.currentLibrary();
         } else if (library.equals("*LIBL")) {
-            library = LIBRARY_LIST[0];
-            for (String candidate : LIBRARY_LIST) {
+            library = profile.currentLibrary();
+            for (String candidate : profile.libraryList()) {
                 try {
                     ElclServices.libraries().member(system, candidate, name);
                     library = candidate;
@@ -113,33 +111,33 @@ public final class OsCommands {
         });
         CommandRegistry.bind("CRTMBR", call -> {
             ElclSystem system = system(call);
-            String[] mbr = qualified(system, call.text("MBR"));
+            String[] mbr = qualified(system, user(call), call.text("MBR"));
             libraries.createMember(system, user(call), mbr[0], mbr[1], call.text("TEXT").equals("*BLANK") ? "" : call.text("TEXT"));
             call.send(ElclMessage.of("ELC0214", mbr[1], mbr[0]));
         });
         CommandRegistry.bind("CPYMBR", call -> {
             ElclSystem system = system(call);
-            String[] from = qualified(system, call.text("FROM")), to = qualified(system, call.text("TO"));
+            String[] from = qualified(system, user(call), call.text("FROM")), to = qualified(system, user(call), call.text("TO"));
             libraries.copyMember(system, user(call), from[0], from[1], to[0], to[1]);
             call.send(ElclMessage.of("ELC0215", from[1], to[0] + "/" + to[1]));
         });
         CommandRegistry.bind("RNMMBR", call -> {
             ElclSystem system = system(call);
-            String[] mbr = qualified(system, call.text("MBR"));
+            String[] mbr = qualified(system, user(call), call.text("MBR"));
             String name = call.text("NEWNAME").toUpperCase(Locale.ROOT);
             libraries.renameMember(system, user(call), mbr[0], mbr[1], name);
             call.send(ElclMessage.of("ELC0216", mbr[1], name));
         });
         CommandRegistry.bind("DLTMBR", call -> {
             ElclSystem system = system(call);
-            String[] mbr = qualified(system, call.text("MBR"));
+            String[] mbr = qualified(system, user(call), call.text("MBR"));
             libraries.deleteMember(system, user(call), mbr[0], mbr[1]);
             call.send(ElclMessage.of("ELC0217", mbr[1], mbr[0]));
         });
         CommandRegistry.bind("CRTELPGM", call -> {
             ElclSystem system = system(call);
-            String[] pgm = qualified(system, call.text("PGM"));
-            String[] src = call.text("SRCMBR").equals("*PGM") ? pgm : qualified(system, call.text("SRCMBR"));
+            String[] pgm = qualified(system, user(call), call.text("PGM"));
+            String[] src = call.text("SRCMBR").equals("*PGM") ? pgm : qualified(system, user(call), call.text("SRCMBR"));
             LibraryService.CompileOutcome outcome = libraries.compile(system, user(call), pgm[0], pgm[1], src[0], src[1]);
             if (!outcome.created()) {
                 throw new ElclException("ELC0206", pgm[1]);
@@ -148,7 +146,7 @@ public final class OsCommands {
         });
         CommandRegistry.bind("DLTPGM", call -> {
             ElclSystem system = system(call);
-            String[] pgm = qualified(system, call.text("PGM"));
+            String[] pgm = qualified(system, user(call), call.text("PGM"));
             libraries.deleteProgram(system, user(call), pgm[0], pgm[1]);
             call.send(ElclMessage.of("ELC0219", pgm[1], pgm[0]));
         });
@@ -193,8 +191,12 @@ public final class OsCommands {
         });
 
         CommandRegistry.bind("RTVSYSVAL", call -> call.returns("RTNVAR", ElclServices.sysvals().value(system(call), call.text("SYSVAL")).value()));
-        CommandRegistry.bind("CHGSYSVAL", call -> call.send(ElclServices.sysvals().change(system(call), user(call), context(call).allowed(RackPermission.BUILD),
-                call.text("SYSVAL"), call.text("VALUE"))));
+        CommandRegistry.bind("CHGSYSVAL", call -> {
+            ElclSystem system = system(call);
+            boolean officer = ElclServices.users().securityOfficer(system, user(call))
+                    || ControllerStructures.firewall(system.server(), system.network()) == null;
+            call.send(ElclServices.sysvals().change(system, user(call), officer, call.text("SYSVAL"), call.text("VALUE")));
+        });
 
         CommandRegistry.bind("SNDMSG", call -> {
             String to = call.text("TOUSR");

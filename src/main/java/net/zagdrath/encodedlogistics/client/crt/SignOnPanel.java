@@ -5,9 +5,16 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
+import java.util.List;
+
+import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
+import net.zagdrath.encodedlogistics.terminal.TerminalLine;
+import net.zagdrath.encodedlogistics.terminal.TerminalService;
+
 // SIGN ON (HANDOFF 7.4, screens handoff screen 1): shown first on a network with a Firewall (unless SECLVL is 10) - the
-// player types their own name (any case), no password; the desk then works with that player's permissions (the server
-// checks them per command and option). Program/procedure (blank: none; else it's CALLed after sign-on), Menu (MAIN) and
+// player types their own name (any case), no password; the server signs the session on (ELC0402 for another name; until
+// then it answers nothing else) and makes their profile the first time. The desk then works with that player's
+// permissions (the server checks them per command and option). Program/procedure (blank: none; else it's CALLed after sign-on), Menu (MAIN) and
 // Current library (*USRPRF: the profile's, ELGPL) round it out, over the system's banner. Enter signs on; Esc, F3 or
 // F12 exits.
 final class SignOnPanel extends CrtPanel {
@@ -71,9 +78,8 @@ final class SignOnPanel extends CrtPanel {
     @Override
     boolean enter() {
         String typed = user.trimmed();
-        if (typed.isEmpty() || !typed.equalsIgnoreCase(screen.user)) {
-            screen.message(typed.isEmpty() ? tr("crt.encodedlogistics.signon.type_user") : tr("crt.encodedlogistics.signon.bad_user", typed));
-            user.set("");
+        if (typed.isEmpty()) {
+            screen.message(tr("crt.encodedlogistics.signon.type_user"));
             screen.focus(user);
             return true;
         }
@@ -82,8 +88,26 @@ final class SignOnPanel extends CrtPanel {
             screen.focus(menu);
             return true;
         }
+        // The server checks the name (ELC0402) and the library (ELC0201), and signs the session on.
         String lib = library.trimmed();
-        screen.currentLibrary = lib.isEmpty() || lib.equals("*USRPRF") ? "ELGPL" : lib;
+        screen.query("signon " + typed + " " + (lib.isEmpty() ? "*USRPRF" : lib));
+        return true;
+    }
+
+    @Override
+    void receive(CrtResponsePayload response) {
+        if (response.kind() != TerminalService.SCREEN || !response.topic().equals("signon")) {
+            return;
+        }
+        if (response.message().isPresent() || response.lines().isEmpty()) {
+            response.message().ifPresent(screen::message);
+            user.set("");
+            screen.focus(user);
+            return;
+        }
+        // Back: the profile's class, current library and library list.
+        List<TerminalLine.Cell> cells = response.lines().getFirst().cells();
+        screen.currentLibrary = cells.size() > 1 ? cells.get(1).text().getString() : "ELGPL";
         screen.signedOn = true;
         screen.leave();
         screen.message(tr("crt.encodedlogistics.signon.done", screen.user));
@@ -91,6 +115,5 @@ final class SignOnPanel extends CrtPanel {
         if (!program.trimmed().isEmpty() && !program.trimmed().equals("*NONE")) {
             screen.runCommand("CALL PGM(" + program.trimmed() + ")");
         }
-        return true;
     }
 }

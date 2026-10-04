@@ -24,6 +24,7 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
@@ -76,7 +77,8 @@ public final class TerminalService {
             return out;
         }
         if (kind == SCREEN) {
-            return context.allowed(RackPermission.VIEW) ? ScreenQueries.handle(context, text) : TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.VIEW));
+            return context.allowed(RackPermission.VIEW) ? ScreenQueries.handle(context, text)
+                    : TerminalOutput.message(Component.literal(ElclMessage.of("ELC0401", context.user(), RackPermission.VIEW.name()).toString()));
         }
         List<String> words = TerminalCommands.words(text);
         if (words.isEmpty()) {

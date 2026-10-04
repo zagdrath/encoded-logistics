@@ -65,6 +65,13 @@ public final class StoredJobService implements JobService {
         return text.trim().toUpperCase(Locale.ROOT);
     }
 
+    // ELC0401 unless the user may manage what owner created.
+    private static void manage(ElclSystem system, String user, String owner) throws ElclException {
+        if (!ElclServices.users().mayManage(system, user, owner)) {
+            throw new ElclException("ELC0401", upper(user), "*JOBCTL");
+        }
+    }
+
     private static String number(JobData data) {
         String number = String.format(Locale.ROOT, "%06d", data.nextNumber);
         data.nextNumber = data.nextNumber >= 999_999 ? 1 : data.nextNumber + 1;
@@ -187,6 +194,7 @@ public final class StoredJobService implements JobService {
     @Override
     public synchronized ElclMessage hold(ElclSystem system, String user, String id) throws ElclException {
         Job job = job(system, id);
+        manage(system, user, job.user());
         JobData.Batch batch = batch(system, job.number());
         if (batch != null) {
             batch.status = "*HELD";
@@ -203,6 +211,7 @@ public final class StoredJobService implements JobService {
     @Override
     public synchronized ElclMessage release(ElclSystem system, String user, String id) throws ElclException {
         Job job = job(system, id);
+        manage(system, user, job.user());
         JobData.Batch batch = batch(system, job.number());
         if (batch != null) {
             batch.status = batch.started ? "*ACTIVE" : "*JOBQ";
@@ -231,6 +240,7 @@ public final class StoredJobService implements JobService {
     @Override
     public synchronized ElclMessage end(ElclSystem system, String user, String id, String option) throws ElclException {
         Job job = job(system, id);
+        manage(system, user, job.user());
         if (job.status().equals("*ENDED")) {
             throw new ElclException("ELC0302", upper(id));
         }
@@ -256,6 +266,7 @@ public final class StoredJobService implements JobService {
     @Override
     public synchronized void change(ElclSystem system, String user, String id, int priority, String log) throws ElclException {
         Job job = job(system, id);
+        manage(system, user, job.user());
         boolean logging = log.equals("*SAME") ? job.log() : log.equals("*YES");
         JobData.Batch batch = batch(system, job.number());
         if (batch != null) {
@@ -545,9 +556,12 @@ public final class StoredJobService implements JobService {
 
     @Override
     public synchronized ElclMessage removeScheduleEntry(ElclSystem system, String user, String job) throws ElclException {
-        if (data(system).schedules.remove(upper(job)) == null) {
+        JobData.Schedule schedule = data(system).schedules.get(upper(job));
+        if (schedule == null) {
             throw new ElclException("ELC0302", upper(job));
         }
+        manage(system, user, schedule.entry.user());
+        data(system).schedules.remove(upper(job));
         changed(system);
         return ElclMessage.of("ELC0313", upper(job));
     }
@@ -558,6 +572,7 @@ public final class StoredJobService implements JobService {
         if (schedule == null) {
             throw new ElclException("ELC0302", upper(job));
         }
+        manage(system, user, schedule.entry.user());
         ScheduleEntry entry = schedule.entry;
         schedule.entry = new ScheduleEntry(entry.job(), hold ? "*HLD" : "*SCD", entry.frequency(), entry.next(), entry.command(), entry.user(), entry.time(),
                 entry.interval());
@@ -588,9 +603,12 @@ public final class StoredJobService implements JobService {
 
     @Override
     public synchronized ElclMessage removeTrigger(ElclSystem system, String user, String name) throws ElclException {
-        if (data(system).triggers.remove(upper(name)) == null) {
+        JobData.Trigger trigger = data(system).triggers.get(upper(name));
+        if (trigger == null) {
             throw new ElclException("ELC0103", upper(name), "TRG");
         }
+        manage(system, user, trigger.trigger.user());
+        data(system).triggers.remove(upper(name));
         changed(system);
         return ElclMessage.of("ELC0315", upper(name));
     }
@@ -601,6 +619,7 @@ public final class StoredJobService implements JobService {
         if (t == null) {
             throw new ElclException("ELC0103", upper(name), "TRG");
         }
+        manage(system, user, t.trigger.user());
         Trigger trigger = t.trigger;
         t.trigger = new Trigger(trigger.name(), trigger.event(), trigger.item(), trigger.device(), trigger.value(), trigger.program(),
                 hold ? "*HELD" : "*ACTIVE", trigger.user());

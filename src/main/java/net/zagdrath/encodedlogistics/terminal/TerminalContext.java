@@ -13,10 +13,10 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
+import net.zagdrath.encodedlogistics.elcl.exec.Authority;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclContext;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
-import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
@@ -33,10 +33,10 @@ public record TerminalContext(MinecraftServer server, @Nullable NetworkRef netwo
         return player.getName().getString().toUpperCase(Locale.ROOT);
     }
 
-    // Whether the network's Firewall lets the player do that (always, without one).
+    // Whether the network's Firewall lets the player do that (always, without one, or at SECLVL 10).
     @Override
     public boolean allowed(RackPermission permission) {
-        return NetworkAccess.allowed(server, network, player, permission);
+        return Authority.allowed(server, network, player, player.getUUID(), permission);
     }
 
     // A job's number on this network ("0042").

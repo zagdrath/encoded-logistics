@@ -31,7 +31,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 
 | # | Screen | Status | Class |
 |---|---|---|---|
-| 1 | Sign On | EXTENDED | `SignOnPanel` |
+| 1 | Sign On | EXTENDED | `SignOnPanel`, signing on through the server (`ScreenQueries` signon, `UserService.signOn`; the desk's menu refuses everything else until then, `TerminalDeskMenu.refused`) |
 | 2 | Main Menu | EXTENDED | `MainMenuPanel`, from the option definition `MainMenu` (see below) |
 | 3 | Work with Libraries | NEW | `WrkLibPanel` (+ `InfoPanel` for 5=Display) |
 | 4 | Work with Members | NEW | `WrkMbrPanel` |

@@ -92,6 +92,16 @@ Per-system folder in the world save:
 - Command-level checks use the `Auth` column in COMMANDS.md; failures raise
   `ELC0401`.
 
+*(Implemented: profiles are made the first time a player uses a terminal on the
+system, or signs on. Sign-on is needed at SECLVL 30 on a network with a Firewall
+(none without one: full authority there anyway); until then a session is
+answered nothing but its info and the sign-on (ELC0402). *SECOFR: the
+Firewall's owner and server operators. At SECLVL 10 the Firewall isn't asked
+in the OS (it still guards the blocks). Changing a system value takes *SECOFR,
+or no Firewall. Holding, ending or changing another user's job, schedule entry
+or trigger takes *SECOFR or full authority (ELC0401 *JOBCTL). DATFMT shows the
+date as `Day 2`, or on a calendar of 30-day months from year 1.)*
+
 ## 7. System values
 
 | Value | Default | Meaning |
