@@ -620,7 +620,7 @@ public class ControllerStructures extends SavedData {
         }
         for (RackDevice device : rackDevicesServing(server, owner.ref)) {
             if (device instanceof StorageDevice storageDevice) {
-                views.addAll(storageDevice.views(server));
+                views.addAll(storageDevice.views(server, seen));
             }
         }
         Runtime runtime = owner.runtime;

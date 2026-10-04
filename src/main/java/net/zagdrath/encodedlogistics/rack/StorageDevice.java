@@ -6,9 +6,11 @@
 package net.zagdrath.encodedlogistics.rack;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.network.chat.Component;
@@ -87,6 +89,12 @@ public abstract class StorageDevice extends RackDevice {
     // --- As network storage ---
 
     public List<StorageView> views(MinecraftServer server) {
+        return views(server, new HashSet<>());
+    }
+
+    // Its drives as storage, skipping drives whose id is in seen (and adding the rest): a copied drive (creative
+    // pick-block) shares its id, and so its contents, with the original, so each id counts once on a network.
+    public List<StorageView> views(MinecraftServer server, Set<UUID> seen) {
         List<StorageView> views = new ArrayList<>();
         if (!ready()) {
             return views;
@@ -96,7 +104,9 @@ public abstract class StorageDevice extends RackDevice {
             ItemStack stack = items().get(slot);
             if (stack.getItem() instanceof StorageDriveItem drive) {
                 UUID id = assignId(stack);
-                views.add(new DriveView(data, slot, id, drive.getTier()));
+                if (seen.add(id)) {
+                    views.add(new DriveView(data, slot, id, drive.getTier()));
+                }
             }
         }
         return views;

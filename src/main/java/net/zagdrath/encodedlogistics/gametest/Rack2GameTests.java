@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.gametest;
 
 import java.util.List;
+import java.util.UUID;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
@@ -242,6 +244,32 @@ final class Rack2GameTests {
                 .thenIdle(25)
                 .thenExecute(() -> helper.assertTrue(RackGameTests.storage(helper, bayB).count(COBBLESTONE) == 10,
                         "Linked network has " + RackGameTests.storage(helper, bayB).count(COBBLESTONE)))
+                .thenSucceed();
+    }
+
+    // Copies of one drive (creative pick-block copies share the drive's id, so its contents) count once on a network,
+    // whether they're in a NAS, a SAN or a Drive Bay.
+    static void copiedDrives(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        BlockPos bay = new BlockPos(1, 2, 1);
+        ItemStack original = drive();
+        original.set(ModDataComponents.DRIVE_ID.get(), UUID.randomUUID());
+        NasDevice nas = RackGameTests.install(helper, master, RackDeviceType.NAS, 1, NasDevice.class);
+        for (int slot = 0; slot < 3; slot++) {
+            nas.items().set(slot, original.copy());
+        }
+        nas.itemsChanged();
+        RackGameTests.driveBay(helper, bay);
+        helper.getBlockEntity(bay, DriveBayBlockEntity.class).setItem(0, original.copy());
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    NetworkStorage storage = storageOf(helper, network(helper, master));
+                    helper.assertTrue(storage.insert(COBBLESTONE, 192, false) == 192, "Not all inserted");
+                    helper.assertTrue(storageOf(helper, network(helper, master)).count(COBBLESTONE) == 192,
+                            "Network shows " + storageOf(helper, network(helper, master)).count(COBBLESTONE) + " of 192");
+                    helper.assertTrue(storageOf(helper, network(helper, master)).list().get(COBBLESTONE) == 192, "Listed more than 192");
+                })
                 .thenSucceed();
     }
 

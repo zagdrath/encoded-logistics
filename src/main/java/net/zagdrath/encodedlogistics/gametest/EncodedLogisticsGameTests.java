@@ -103,6 +103,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_segments", Rack2GameTests::segments);
         TESTS.put("rack_router_wan", Rack2GameTests::routerWan);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
+        TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
