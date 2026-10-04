@@ -1,0 +1,117 @@
+ENCODED LOGISTICS — ELCL (Encoded Logistics Control Language) + TERMINAL OS
+HANDOFF FOR CLAUDE CODE
+=====================================================================
+
+WHAT THIS IS
+------------
+A scripting system for the Terminal Desk "OS": a custom control language
+modelled on midrange control languages (keyword-parameter commands,
+&variables, MONMSG error handling), plus the OS features around it:
+libraries/members, a source editor, compile, interactive and batch jobs,
+job scheduling, event triggers, message queues, spooled output, and
+two-way sync of scripts with a folder in the world save.
+
+FILES IN THIS PACKAGE
+---------------------
+  HANDOFF.txt      This file: scope, architecture, implementation order.
+  ELCL_SPEC.md     The language: lexical rules, grammar, types, expressions,
+                   control flow, error handling, runtime model, limits.
+  COMMANDS.md      Every command: parameters, types, defaults, returns, errors.
+  MESSAGES.md      Every message ID, text and severity.
+  OS.md            Object model, storage, folder sync, jobs, security,
+                   system values, screens list.
+  examples/        Sample ELCL programs. These double as test fixtures and
+                   should ship in the read-only ELSYS library.
+
+The GUI art for the new screens (source editor, Work with Members, compile
+listing, job screens, etc.) is being designed separately in Claude Design
+and will arrive as its own zip. Build the logic against the screen list in
+OS.md; wire in the art when it lands. The existing Terminal Desk green-screen
+GUI, font sheet and CLI command system are the foundation — extend them,
+don't replace them.
+
+ARCHITECTURE (suggested packages, Java, loader-agnostic)
+--------------------------------------------------------
+  elcl.lex        Lexer -> tokens (case-insensitive, see spec §2)
+  elcl.parse      Parser -> AST (spec §3). Uses the command registry for
+                  parameter schemas, so keyword/positional resolution and
+                  validation happen at parse/compile time.
+  elcl.compile    Semantic checks (declarations, types, labels, block
+                  matching, command validation) -> compiled program
+                  (flat instruction list / IR) + compile listing.
+  elcl.vm         Interpreter for compiled programs. Resumable: all state
+                  (pc, variables, call stack, subroutine stack, pending
+                  async op) must be serializable to NBT.
+  elcl.cmd        CommandRegistry + CommandDefinition. A definition holds:
+                  name, description, parameter schema (keyword, type,
+                  required, default, allowed special values, positional
+                  order), allowed contexts (*INTERACTIVE/*BATCH/*BOTH),
+                  required permission, and an executor. The SAME definitions
+                  drive: the parser, the compiler, the F4 prompter, F1 help,
+                  and the interactive command line. Other devices (Midrange
+                  System, Mainframe, future rack devices) register commands
+                  through this API.
+  elcl.job        JobManager: job queue, job hosts, scheduling, triggers,
+                  tick budgeting, job logs, persistence.
+  elcl.store      Library/member/program storage in network saved data.
+  elcl.sync       World-folder sync (OS.md §4).
+  elcl.screen     Screen logic for every OS screen (OS.md §8).
+
+IMPLEMENTATION ORDER
+--------------------
+  1. Command registry + port the existing CLI commands onto it.
+     Keep the existing "show inventory" etc. as aliases (COMMANDS.md §10).
+  2. Lexer, parser, compiler, compile listing. Unit tests from examples/.
+  3. VM with interactive CALL only. Variables, expressions, control flow,
+     MONMSG, subroutines.
+  4. Libraries/members storage, WRKLIB/WRKMBR, the source editor (logic),
+     option 14 compile.
+  5. Mod commands: inventory, devices, power, storage, display, redstone.
+     Add the Control Interface block (new; art in the Claude Design batch).
+  6. Batch jobs: SBMJOB, job hosts, tick budget, WRKACTJOB, job logs.
+  7. Job schedule entries and event triggers.
+  8. Message queues, spooled output, Line Printer printing.
+  9. Folder sync, SAVLIB/RSTLIB to 8" Diskette.
+ 10. Sign-on screen, user profiles, Firewall authority checks everywhere.
+
+INTEGRATION POINTS WITH EXISTING FEATURES
+-----------------------------------------
+  - Terminal Desk: hosts interactive sessions. Main Menu gains
+    5. Work with Libraries, 6. Work with Active Jobs, 7. Display Messages,
+    8. Work with Output, and keeps 90. Sign Off. (The Midrange System
+    integration already planned "Work with Midrange Jobs"; fold it into
+    Work with Active Jobs.)
+  - Midrange System / Compute Servers / Mainframe: batch job hosts (OS.md §5).
+  - Firewall: user profiles and authority (OS.md §6).
+  - Label Maker + Work with Devices: device names used by scripts.
+  - Line Printer: prints spooled files.
+  - 8" Diskette: SAVLIB/RSTLIB.
+  - Status Display / NOC Video Wall / Rack Console: SNDDSPTXT targets.
+  - Tape Libraries: CHGITMTIER, TIER() on inventory commands.
+  - Craft Plan / Scheduler system: STRCRAFT.
+
+TESTING
+-------
+  - Golden tests: every file in examples/ must compile with zero errors.
+  - Negative tests: one test per compile-time message in MESSAGES.md.
+  - VM tests: arithmetic/precedence, string ops, list ops, every loop form,
+    LEAVE/ITERATE, SELECT, GOTO, subroutines, nested CALL with PARM,
+    MONMSG at command and program level including range IDs.
+  - Persistence test: a batch job with DLYJOB survives save/reload on a
+    Mainframe host and is ended with ELC0310 on a Midrange host.
+  - Budget test: an infinite DOWHILE loop never exceeds its per-tick budget
+    and can be ended with ENDJOB.
+
+OPEN QUESTIONS (decide or flag back)
+------------------------------------
+  1. Storage cost of source members/programs on the network (proposal:
+     1 storage unit per 64 characters of source, programs free).
+  2. Schedule entry time base: game clock (matches the Main Menu's
+     "Day 2 07:00:00") or real time. Proposal: TIME() uses game clock,
+     INTERVAL() uses real seconds.
+  3. Default per-tick instruction budgets (proposal in ELCL_SPEC.md §9).
+  4. Whether folder sync is enabled by default on dedicated servers
+     (proposal: off on dedicated servers, on in single-player).
+  5. Maximum libraries/members per network.
+  6. Whether a lightweight debugger (STRDBG: breakpoints, step, display
+     variable) is in scope for v1.
