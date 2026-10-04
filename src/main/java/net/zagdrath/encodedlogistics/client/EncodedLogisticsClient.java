@@ -62,7 +62,6 @@ import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
-import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModEntityTypes;
@@ -81,9 +80,9 @@ public class EncodedLogisticsClient {
         // A terminal's grid gets as many rows as fit the window when it opens.
         AccessTerminalMenu.clientRows = section -> TerminalLayout.load(AccessTerminalScreen.LAYOUT)
                 .rowsFor(Minecraft.getInstance().getWindow().getGuiScaledHeight() - section);
-        // The Server Rack's elevation: every unit when the window has room, else as many rows as fit (it scrolls).
+        // The Server Rack's elevation: as many rows as fit the window, up to MAX_ROWS (it scrolls).
         RackMenu.clientRows = () -> Math.clamp(RackMenu.ROWS + (Minecraft.getInstance().getWindow().getGuiScaledHeight() - 8
-                - RackMenu.TOP_HEIGHT - RackMenu.INVENTORY_HEIGHT) / RackMenu.ROW_H, RackMenu.ROWS, RackGeometry.UNITS);
+                - RackMenu.TOP_HEIGHT - RackMenu.INVENTORY_HEIGHT) / RackMenu.ROW_H, RackMenu.ROWS, RackMenu.MAX_ROWS);
     }
 
     @SubscribeEvent

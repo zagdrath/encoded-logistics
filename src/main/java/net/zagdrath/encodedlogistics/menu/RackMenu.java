@@ -51,7 +51,9 @@ public class RackMenu extends AbstractContainerMenu {
     private static final int SYNC_INTERVAL = 10;
     public static final int INVENTORY_SLOTS = 36;
 
-    // How many elevation rows fit the client's window (ROWS to all 42 units); set by the client.
+    // At most this many elevation rows, however tall the window: past it the elevation scrolls.
+    public static final int MAX_ROWS = 24;
+    // How many elevation rows fit the client's window (ROWS to MAX_ROWS); set by the client.
     public static IntSupplier clientRows = () -> ROWS;
 
     private final BlockPos pos;

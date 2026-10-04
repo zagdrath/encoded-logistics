@@ -74,7 +74,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     private static final int PANEL_FILL_Y = 166;
     static final int BACK_X = 150, BACK_Y = 2;
 
-    // The rows shown (all 42 when the window has room: no scrolling) and the extra height they add.
+    // The rows shown (16 to RackMenu.MAX_ROWS, as the window has room) and the extra height they add.
     private final int rows, extra;
     // Rows scrolled down from the top (U42); starts at the top.
     private int scroll;
