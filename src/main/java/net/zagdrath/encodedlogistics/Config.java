@@ -451,6 +451,14 @@ public class Config {
             .comment("A new Tape Library's archive age: hours (game time) an item goes untouched before it's archived.")
             .defineInRange("tapeDefaultAgeHours", 2, 1, 9_999);
 
+    public static final ModConfigSpec.DoubleValue TERMINAL_DESK_DRAIN = BUILDER
+            .comment("FE per tick a Terminal Desk drains while its network runs.")
+            .defineInRange("terminalDeskDrain", 1.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue TERMINAL_DESK_SCREEN_DRAIN = BUILDER
+            .comment("FE per tick a Terminal Desk drains on top of that while its screen is on (whenever it's online).")
+            .defineInRange("terminalDeskScreenDrain", 2.0, 0.0, 1_000.0);
+
     public static final ModConfigSpec.IntValue TAPE_DEFAULT_HOT_PERCENT = BUILDER
             .comment("A new Tape Library's free-space trigger: it only archives while hot storage is fuller than this (%).")
             .defineInRange("tapeDefaultHotPercent", 80, 0, 100);

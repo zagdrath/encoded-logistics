@@ -1,0 +1,18 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "W  ",
+  "WWW",
+  "IBI"
+ ],
+ "key": {
+  "W": "#minecraft:wool",
+  "B": "minecraft:iron_bars",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:swivel_chair",
+  "count": 1
+ }
+}

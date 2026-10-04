@@ -1,0 +1,218 @@
+/*
+ * Copyright (c) 2026 Zagdrath
+ * SPDX-License-Identifier: MIT
+ */
+
+package net.zagdrath.encodedlogistics.terminal;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
+import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RackScheduler;
+import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+
+// What the Terminal Desk does for its screens and its command line alike: withdraw (to the desk's drawer or the
+// player's inventory; what's on tape is recalled and follows when it's back), craft (optionally sent to the drawer or
+// inventory once done), cancel a job, sum up a plan, and list the network's jobs.
+public final class TerminalActions {
+    public enum Destination {
+        DRAWER, INV, NETWORK;
+
+        public static @Nullable Destination parse(String text) {
+            return switch (text.trim().toUpperCase(Locale.ROOT)) {
+                case "*DRAWER", "DRAWER" -> DRAWER;
+                case "*INV", "INV" -> INV;
+                case "*NETWORK", "NETWORK" -> NETWORK;
+                default -> null;
+            };
+        }
+
+        public Component label() {
+            return Component.translatable("crt.encodedlogistics.dest." + name().toLowerCase(Locale.ROOT));
+        }
+    }
+
+    private TerminalActions() {}
+
+    public static Component notAuthorised(RackPermission permission) {
+        return Component.translatable("crt.encodedlogistics.msg.not_authorised", permission.label());
+    }
+
+    public static Component offline() {
+        return Component.translatable("crt.encodedlogistics.msg.offline");
+    }
+
+    // --- Withdrawing ---
+
+    public static TerminalOutput withdraw(TerminalContext context, ItemKey key, long amount, Destination destination) {
+        if (!context.allowed(RackPermission.EXTRACT)) {
+            return TerminalOutput.message(notAuthorised(RackPermission.EXTRACT));
+        }
+        NetworkStorage storage = context.storage();
+        TerminalDeskBlockEntity desk = context.desk();
+        if (storage == null || destination == Destination.DRAWER && desk == null) {
+            return TerminalOutput.message(offline());
+        }
+        if (destination == Destination.NETWORK) {
+            destination = Destination.DRAWER;
+        }
+        long hot = storage.count(key), cold = storage.cold().count(key);
+        if (hot + cold <= 0) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.none", key.stack().getHoverName()));
+        }
+        long room = destination == Destination.DRAWER ? desk.drawerRoom(key) : Long.MAX_VALUE;
+        long taken = storage.extract(key, Math.min(Math.min(amount, room), hot), false);
+        long given = give(context, key, taken, destination, storage);
+        long remaining = amount - given;
+        if (remaining > 0 && cold > 0 && desk != null && (destination == Destination.INV || room > given)) {
+            long recall = Math.min(remaining, cold);
+            storage.cold().recall(key, recall);
+            desk.addDelivery(new TerminalDeskBlockEntity.Delivery(Optional.empty(), key, recall,
+                    destination == Destination.INV ? Optional.of(context.player().getUUID()) : Optional.empty()));
+            int eta = Math.max(0, storage.cold().eta(key));
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.recall", key.stack().getHoverName(), TerminalItems.count(recall),
+                    destination.label(), TerminalItems.seconds(eta, true)));
+        }
+        if (given < Math.min(amount, hot) && destination == Destination.DRAWER) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.drawer_full", TerminalItems.count(Math.min(amount, hot) - given)));
+        }
+        return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.withdrawn", TerminalItems.count(given), key.stack().getHoverName(),
+                destination.label()));
+    }
+
+    // Puts taken items where they go; what doesn't fit goes back to the network. Returns how many went.
+    private static long give(TerminalContext context, ItemKey key, long count, Destination destination, NetworkStorage storage) {
+        long given = 0, left = count;
+        while (left > 0) {
+            ItemStack stack = key.toStack((int) Math.min(left, key.maxStackSize()));
+            left -= stack.getCount();
+            int size = stack.getCount();
+            ItemStack rest;
+            if (destination == Destination.INV) {
+                context.player().getInventory().add(stack);
+                rest = stack;
+            } else {
+                rest = context.desk().addToDrawer(stack);
+            }
+            given += size - rest.getCount();
+            if (!rest.isEmpty()) {
+                storage.insert(ItemKey.of(rest), rest.getCount(), false);
+            }
+        }
+        return given;
+    }
+
+    // --- Crafting ---
+
+    // The plan in a line: steps, missing items, recall time.
+    public static Component planSummary(TerminalContext context, ItemKey key, long amount) {
+        CraftPlanner.Plan plan = CraftRequests.plan(context.server(), context.network(), key, amount);
+        if (plan == null) {
+            return offline();
+        }
+        return Component.translatable("crt.encodedlogistics.craft.plan_summary", plan.crafts().size(), plan.missing(),
+                TerminalItems.seconds(plan.recallTicks(), true));
+    }
+
+    // A scheduler's name as the screens show it: "Core x, y, z" or "Rack x, y, z".
+    public static String schedulerName(JobHost host) {
+        BlockPos pos = host.hostPos();
+        return (host instanceof RackScheduler ? "Rack " : "Core ") + pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
+    }
+
+    // *AUTO (-1), a number (1 the first), or the start of a scheduler's name; -2 when nothing matches.
+    public static int scheduler(List<JobHost> schedulers, String spec) {
+        String wanted = spec.trim().toLowerCase(Locale.ROOT);
+        if (wanted.isEmpty() || wanted.equals("*auto")) {
+            return -1;
+        }
+        long number = TerminalItems.amount(wanted);
+        if (number >= 1 && number <= schedulers.size()) {
+            return (int) number - 1;
+        }
+        for (int i = 0; i < schedulers.size(); i++) {
+            if (schedulerName(schedulers.get(i)).toLowerCase(Locale.ROOT).startsWith(wanted)) {
+                return i;
+            }
+        }
+        return -2;
+    }
+
+    public static TerminalOutput craft(TerminalContext context, ItemKey key, long amount, String schedulerSpec, Destination destination) {
+        if (!context.allowed(RackPermission.CRAFT)) {
+            return TerminalOutput.message(notAuthorised(RackPermission.CRAFT));
+        }
+        CraftPlanner.Plan plan = CraftRequests.plan(context.server(), context.network(), key, amount);
+        if (plan == null) {
+            return TerminalOutput.message(offline());
+        }
+        if (plan.crafts().isEmpty()) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_schematic", key.stack().getHoverName()));
+        }
+        if (!plan.complete()) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.missing", key.stack().getHoverName(), plan.missing()));
+        }
+        List<JobHost> schedulers = CraftRequests.schedulers(context.server(), context.network());
+        int index = scheduler(schedulers, schedulerSpec);
+        JobHost host = index >= -1 ? CraftRequests.choose(schedulers, plan.memory(), index) : null;
+        if (host == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_scheduler"));
+        }
+        CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host);
+        if (job == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.not_started"));
+        }
+        if (destination != Destination.NETWORK && context.desk() != null) {
+            context.desk().addDelivery(new TerminalDeskBlockEntity.Delivery(Optional.of(job.id), key, amount,
+                    destination == Destination.INV ? Optional.of(context.player().getUUID()) : Optional.empty()));
+        }
+        return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.job_submitted", context.jobNumber(job.id)));
+    }
+
+    public static TerminalOutput cancel(TerminalContext context, int number) {
+        if (!context.allowed(RackPermission.CRAFT)) {
+            return TerminalOutput.message(notAuthorised(RackPermission.CRAFT));
+        }
+        UUID id = context.job(number);
+        String shown = String.format("%04d", number);
+        for (JobHost host : CraftRequests.schedulers(context.server(), context.network())) {
+            if (id != null && host.job(id) != null && host.cancel(id)) {
+                return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.cancelled", shown));
+            }
+        }
+        return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_job", shown));
+    }
+
+    // --- Jobs ---
+
+    // A job as Work with Jobs lists it.
+    public record JobRow(String number, UUID id, ItemKey item, long amount, String status, int percent, String scheduler, CraftingJob job) {}
+
+    public static List<JobRow> jobs(TerminalContext context) {
+        List<JobRow> rows = new ArrayList<>();
+        for (JobHost host : CraftRequests.schedulers(context.server(), context.network())) {
+            for (CraftingJob job : host.jobs()) {
+                String status = !job.awaiting.isEmpty() ? "Recall" : job.running ? "Active" : "Waiting";
+                int percent = job.total() <= 0 ? 0 : job.done() * 100 / job.total();
+                rows.add(new JobRow(context.jobNumber(job.id), job.id, job.target, job.amount, status, percent, schedulerName(host), job));
+            }
+        }
+        rows.sort((a, b) -> a.number().compareTo(b.number()));
+        return rows;
+    }
+}

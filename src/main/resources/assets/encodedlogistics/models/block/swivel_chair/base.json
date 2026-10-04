@@ -1,0 +1,988 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "metal": "encodedlogistics:block/swivel_chair/metal",
+  "caster": "encodedlogistics:block/swivel_chair/caster",
+  "particle": "encodedlogistics:block/swivel_chair/fabric"
+ },
+ "elements": [
+  {
+   "name": "leg0",
+   "from": [
+    8,
+    0.6,
+    7.25
+   ],
+   "to": [
+    14,
+    1.6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "caster0",
+   "from": [
+    13.25,
+    0,
+    7.25
+   ],
+   "to": [
+    14.75,
+    0.6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "leg1",
+   "from": [
+    7.25,
+    0.6,
+    8
+   ],
+   "to": [
+    8.75,
+    1.6,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "caster1",
+   "from": [
+    7.25,
+    0,
+    13.25
+   ],
+   "to": [
+    8.75,
+    0.6,
+    14.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "leg2",
+   "from": [
+    2,
+    0.6,
+    7.25
+   ],
+   "to": [
+    8,
+    1.6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "caster2",
+   "from": [
+    1.25,
+    0,
+    7.25
+   ],
+   "to": [
+    2.75,
+    0.6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "leg3",
+   "from": [
+    2,
+    0.6,
+    7.25
+   ],
+   "to": [
+    8,
+    1.6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    }
+   },
+   "rotation": {
+    "angle": -45,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "caster3",
+   "from": [
+    1.25,
+    0,
+    7.25
+   ],
+   "to": [
+    2.75,
+    0.6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": -45,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "leg4",
+   "from": [
+    7.25,
+    0.6,
+    2
+   ],
+   "to": [
+    8.75,
+    1.6,
+    8
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      4
+     ]
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "caster4",
+   "from": [
+    7.25,
+    0,
+    1.25
+   ],
+   "to": [
+    8.75,
+    0.6,
+    2.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#caster",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "y",
+    "origin": [
+     8,
+     1,
+     8
+    ]
+   }
+  },
+  {
+   "name": "hub",
+   "from": [
+    6.5,
+    0.6,
+    6.5
+   ],
+   "to": [
+    9.5,
+    2,
+    9.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "gas_lift",
+   "from": [
+    7.25,
+    2,
+    7.25
+   ],
+   "to": [
+    8.75,
+    6,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "gas_lift_45",
+   "from": [
+    7.25,
+    2.6,
+    7.25
+   ],
+   "to": [
+    8.75,
+    5.4,
+    8.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      4,
+      0,
+      8,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "y",
+    "origin": [
+     8,
+     4,
+     8
+    ]
+   }
+  }
+ ]
+}

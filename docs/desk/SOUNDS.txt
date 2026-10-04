@@ -1,0 +1,9 @@
+TERMINAL DESK SOUNDS (sounds/block/terminal_desk/*.ogg, events in sounds.desk.json - merge into sounds.json)
+  block.terminal_desk.crt_hum    crt_hum.ogg, 2.0 s seamless loop: 60 Hz mains hum with 120/180 Hz harmonics and a very
+                                 faint 15.7 kHz flyback whine. Loop while the screen is boot/on; volume 0.2, audible ~6 blocks.
+  block.terminal_desk.degauss    crt_degauss.ogg, 1.1 s: a deep thunk when the tube powers on, then a decaying 60 Hz warble as
+                                 the degauss coil field collapses. Played once at the start of the boot sequence.
+  block.terminal_desk.key_clack  key_clack1-4.ogg, ~90 ms each: a sharp plastic keycap transient with a short body
+                                 resonance. Played client-side on key presses in the green-screen GUI (random variant,
+                                 pitch 0.9-1.1, at most one per 2 ticks), and at the desk for other players while it is in use.
+All synthesised in tools/desk_sound.py (original, no samples).

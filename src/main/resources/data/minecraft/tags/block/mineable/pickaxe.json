@@ -18,6 +18,7 @@
   "encodedlogistics:thread_unit",
   "encodedlogistics:relay_antenna",
   "encodedlogistics:network_bridge",
-  "encodedlogistics:server_rack"
+  "encodedlogistics:server_rack",
+  "encodedlogistics:terminal_desk"
  ]
 }

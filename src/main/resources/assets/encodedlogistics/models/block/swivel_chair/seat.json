@@ -1,0 +1,361 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "metal": "encodedlogistics:block/swivel_chair/metal",
+  "fabric": "encodedlogistics:block/swivel_chair/fabric",
+  "particle": "encodedlogistics:block/swivel_chair/fabric"
+ },
+ "elements": [
+  {
+   "name": "mechanism",
+   "from": [
+    6,
+    6,
+    6
+   ],
+   "to": [
+    10,
+    7,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "seat",
+   "from": [
+    2.5,
+    7,
+    2.5
+   ],
+   "to": [
+    13.5,
+    9,
+    13.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "tintindex": 0
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "north": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      12,
+      16,
+      15
+     ],
+     "tintindex": 0
+    },
+    "south": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      12,
+      16,
+      15
+     ],
+     "tintindex": 0
+    },
+    "east": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      12,
+      16,
+      15
+     ],
+     "tintindex": 0
+    },
+    "west": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      12,
+      16,
+      15
+     ],
+     "tintindex": 0
+    }
+   }
+  },
+  {
+   "name": "seat_roll",
+   "from": [
+    2.5,
+    8.5,
+    2
+   ],
+   "to": [
+    13.5,
+    9.25,
+    2.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ],
+     "tintindex": 0
+    },
+    "up": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ],
+     "tintindex": 0
+    },
+    "east": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ],
+     "tintindex": 0
+    },
+    "west": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      2
+     ],
+     "tintindex": 0
+    }
+   }
+  },
+  {
+   "name": "back_post",
+   "from": [
+    7,
+    7,
+    13.5
+   ],
+   "to": [
+    9,
+    12,
+    14.75
+   ],
+   "faces": {
+    "north": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      8,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      8,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      8,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      8,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      8,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#metal",
+     "uv": [
+      0,
+      0,
+      8,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "back",
+   "from": [
+    3,
+    11,
+    13.25
+   ],
+   "to": [
+    13,
+    21,
+    15.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "tintindex": 0
+    },
+    "south": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "tintindex": 0
+    },
+    "up": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      3
+     ],
+     "tintindex": 0
+    },
+    "down": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      16,
+      3
+     ],
+     "tintindex": 0
+    },
+    "east": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      3,
+      16
+     ],
+     "tintindex": 0
+    },
+    "west": {
+     "texture": "#fabric",
+     "uv": [
+      0,
+      0,
+      3,
+      16
+     ],
+     "tintindex": 0
+    }
+   },
+   "rotation": {
+    "angle": 0,
+    "axis": "x",
+    "origin": [
+     8,
+     11,
+     14
+    ]
+   }
+  }
+ ]
+}

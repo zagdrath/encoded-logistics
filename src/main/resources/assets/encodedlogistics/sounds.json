@@ -75,5 +75,39 @@
     "name": "encodedlogistics:block/rack/tape_load2"
    }
   ]
+ },
+ "block.terminal_desk.crt_hum": {
+  "subtitle": "subtitles.encodedlogistics.desk.crt_hum",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/terminal_desk/crt_hum",
+    "stream": false
+   }
+  ]
+ },
+ "block.terminal_desk.degauss": {
+  "subtitle": "subtitles.encodedlogistics.desk.degauss",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/terminal_desk/crt_degauss"
+   }
+  ]
+ },
+ "block.terminal_desk.key_clack": {
+  "subtitle": "subtitles.encodedlogistics.desk.key_clack",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/terminal_desk/key_clack1"
+   },
+   {
+    "name": "encodedlogistics:block/terminal_desk/key_clack2"
+   },
+   {
+    "name": "encodedlogistics:block/terminal_desk/key_clack3"
+   },
+   {
+    "name": "encodedlogistics:block/terminal_desk/key_clack4"
+   }
+  ]
  }
 }

@@ -1,0 +1,195 @@
+ENCODED LOGISTICS - HANDOFF: TERMINAL DESK + SWIVEL CHAIR + GREEN-SCREEN GUI  (v2)
+============================================================================
+v2: the CRT GUI is a taller 4:3 screen (tall pixels: 2 wide x 3 tall per virtual pixel), with less-rounded corners and a
+text margin inside the glass so nothing sits under the bezel curve (20 virtual px left/right, 10 top/bottom - the glass
+is exactly 4:3). Changed: section 3 (scaling, margin,
+scanlines, bezel), textures/gui/crt/{bezel,scanlines,vignette}.png, tools/crt_gui.py, previews/crt_*.png.
+A mainframe/minicomputer-era office terminal: a CRT green-screen terminal on a steel-and-laminate desk, a matching
+swivel chair, and a full-screen text-mode interface to the network. Unbranded and original (no manufacturer styling,
+names or logos; the screen wording is generic era style). World textures follow the vanilla method used for the rack
+exterior (1 texel per px, small palettes, brushed runs, stepped light bands, no speckle, no gradients); only the CRT
+glass (4 texels/px) and keyboard (3 texels/px) are finer. Previews were rendered from these files.
+Paths are relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. TERMINAL DESK - block encodedlogistics:terminal_desk (2 wide x 1 deep), 1 lane
+=====================================================================================================
+Multiblock: master + one dummy. BlockState: facing (horizontal), part (master|dummy), screen (off|boot|on),
+  clutter (bool). The master is the LEFT half as seen from the front; the dummy is the block to its right (for facing
+  north: master at x, dummy at x+1). Placement fails if the dummy position isn't replaceable; breaking either breaks
+  both and drops the desk + drawer contents. Shapes: desk top slab + legs/pedestal + CRT box (collision), full
+  selection per half.
+Network: like the Access Terminal - a network device on the master (connects from any side/below via cable), 1 lane,
+  draws [config] 1 FE/t (+2 while the screen is on). Reuse AccessTerminalMenu's server side for item sync.
+Model (models/block/terminal_desk/, multipart on the master, elements x 0..32 so it spans the dummy):
+  desk.json      laminate top (woodgrain + dark edge band), steel panel leg, modesty panel, front apron, a three-drawer
+                 steel pedestal on the dummy half (top drawer = the output drawer, with a label card)
+  terminal_<screen>.json  the CRT: chunky off-white case (front 12x10x6) with a deep tapered back (9x7.5x5), side and
+                 top vents, an inset dark bezel, a curved screen (two glass panes, the inner one 0.25 px proud),
+                 power rocker, status lamp; screen off | boot | on
+  keyboard.json  separate keyboard in front of the CRT: function-key row, 4 key rows, space bar, numeric block, raised
+                 rear edge
+  clutter.json   variant (clutter=true): coffee mug, a stack of green-bar fanfold printouts, a clipboard (22.5 deg)
+  empty.json     the dummy
+  Clutter toggle: sneak-use the desk top with an empty hand (or craft-free toggle) - purely cosmetic.
+Screen states:
+  off  - network offline / no power / no lane: dark curved glass (crt_screen_off.png), status lamp off.
+  boot - on going online: 60 ticks (crt_screen_boot.png, 12 frames x 5 ticks, 36x28 frames): degauss bloom on the first
+         two frames, then text scrolling up; play block.terminal_desk.degauss at the start; then -> on.
+  on   - green screen with a blinking cursor (crt_screen_on.png, 2 frames x 10 ticks), lamp lit; CRT hum loops.
+  The glass and lamp are full-bright (neoforge_data) when boot/on.
+Drawer: 9-slot inventory on the master (block entity) - the output buffer for withdrawals sent to *DRAWER. Opened by
+  using the pedestal half (the dummy) - a plain 9-slot chest-like menu (vanilla generic_3x3 layout, title
+  "Desk Drawer"); hoppers/pipes can pull from it (bottom/side face of the dummy). Full drawer -> the remainder stays in
+  the network and the message line says so.
+Use: right-click the CRT/keyboard (master half) -> the green-screen GUI (section 3). Sneak-use with empty hand ->
+  toggle clutter.
+
+=====================================================================================================
+2. SWIVEL CHAIR - block encodedlogistics:swivel_chair
+=====================================================================================================
+Model: models/block/swivel_chair/base.json (static block model: five-star base - legs at 0 / 67.5 / 135 / 225 / 292.5
+  deg, all on Minecraft's 22.5-deg element grid - casters, hub, gas-lift column) and seat.json (the swivelling part:
+  mechanism, padded seat with a front roll, back post, padded back) drawn by a block entity renderer rotated about
+  (8, y, 8) to the chair's yaw (seat "north" = the way the sitter faces).
+Placement: yaw = the placer's facing (any angle, not just 4 ways); stored in the block entity.
+Sit: right-click -> spawn (or reuse) an invisible seat entity at the seat (rider height 9/16 above the block bottom),
+  the player rides it; the chair's yaw is set to the player's look yaw at that moment and then follows the rider's yaw
+  while seated (it's a swivel chair). Sneak to stand up (dismount 1 block in front of the seat). The seat entity is
+  removed when empty or when the block breaks. Not sittable while another player sits.
+Dye: the fabric faces have tintindex 0 (OPEN 5); undyed = the brown tweed texture as drawn.
+Shape: seat + back (collision), base as a thin slab.
+
+=====================================================================================================
+3. THE GREEN-SCREEN GUI (CrtScreen) - full-screen, text mode
+=====================================================================================================
+Character grid: 80 x 24 cells, cell 6 x 10 px (virtual screen 480 x 240) plus a margin inside the glass of 20 virtual px
+  left/right and 10 top/bottom (virtual glass 520 x 260). TALL PIXELS: each virtual pixel is drawn SX = 2k wide and
+  SY = 3k tall (k >= 1 integer), so the glass is exactly 4:3 like an old CRT (k=1: 1040 x 780) and the characters read
+  tall and narrow, crisp, with every stroke the same thickness.
+  k = max(1, floor(min((w - 2*bezel) / (520*2), (h - 2*bezel) / (260*3)))); if even k = 1 doesn't
+  fit (small windows / high GUI scale), fall back to SX = 1, SY = 2 (still a tall aspect). Centred, black outside.
+Font: font/terminal.json (bitmap provider over textures/font/terminal.png: 16 x 6 cells of 6x10, ASCII 32-127, 127 =
+  solid block, glyphs white). DRAW CHARACTER BY CHARACTER at col*6, row*10 from the sheet (do not use Font string
+  advance - bitmap providers trim glyph widths; the grid must stay monospace). Tint per attribute from the phosphor.
+Attributes: normal, bright (titles, column heads, entered values, Cold location, messages), dim (help text, offline),
+  underline (input fields: the cell's bottom row), reverse (selected row when navigating with arrows).
+Phosphor (screens/crt/phosphor.json): green (default), amber, white - normal / bright / dim / bg / glow colours;
+  setting stored per player (client config + a /settings key: "F24=More keys" page shows "Phosphor: Green").
+Effects, in order: bg colour -> glow pass (textures/font/terminal_glow.png: the same glyphs pre-blurred, 10x14 cells,
+  drawn at -2,-2 virtual px offset, glow colour at 45% alpha) -> text -> scanlines (gui/crt/scanlines.png, a 1x3 tile:
+  one 20%-black row at the bottom of every virtual pixel row, i.e. tiled at SY) -> vignette (gui/crt/vignette.png
+  stretched over the glass; soft, 10 px corner radius, fades out well before the text margin) -> bezel
+  (gui/crt/bezel.png 9-slice, 16 px borders, inner corner radius ~4 px at 1x - only gently rounded).
+  Keep it readable: no flicker, no curvature distortion of text; nothing is drawn under the corners (the margin).
+Layout rules (every screen):
+  row 1  screen id (left), title (centred, bright), "System:  <network name>" (right, 1-col margin)
+  row 2  date + time (right) - in-game date (day count) + time of day as 24 h
+  rows 3-20 body;  row 21 prompt ("Selection or command" / "Parameters or command" / "Type command, press Enter.")
+  row 22 command line "===> " + 72-char input field;  row 23 message line;  row 24 function keys (bright)
+Keys: typing goes to the focused field; Tab / Shift+Tab move between fields; Enter submits; Up/Down move between list
+  rows' Opt fields; PageUp/PageDown roll the list ("More..." / "Bottom"); F3 = exit (close the GUI), F5 = refresh,
+  F9 = Command Entry (on Command Entry: retrieve the previous command), F12 = cancel (back one screen), F4 = prompt
+  (list valid values for the field), F11 = sort (list screens), Shift+F1 = F13 = clear (Command Entry), Esc = F12.
+  Mouse: clicking a menu option or a list row fills its number/Opt with the default option and submits on double-click;
+  clicking a function-key label presses it. Key presses play key_clack.
+Screens (mockups in previews/crt_*.png; content generator tools/crt_screens.py):
+  MAIN MENU (MAIN): 1 Work with Inventory, 2 Work with Jobs, 3 Work with Devices, 4 Display Network Status, 90 Sign Off
+    (closes the GUI). The command line accepts a number or any CLI command.
+  WORK WITH INVENTORY (WRKINV): "Position to" filter field (starting characters of the display name; *ALL), options
+    1=Withdraw  5=Display details  7=Craft; columns Opt / Item / Quantity / Location (Hot, Cold = on tape (bright),
+    Hot+Cold when split); paged 11 rows; F11 cycles sort (name / quantity / mod).
+    Opt 1 -> WITHDRAW prompt; Opt 5 -> a detail screen (item id, tags, hot / cold counts per storage, craftable?);
+    Opt 7 -> CRAFT prompt. Several options can be typed at once; Enter processes them top to bottom.
+  WITHDRAW prompt (WITHDRAW): Item (prefilled), Quantity 1-999999, Destination *DRAWER (default) / *INV; shows On hand
+    and cold recall ETA; Enter -> withdraw (cold items: recall first); message line confirms.
+  CRAFT prompt (CRAFT): Item, Quantity, Scheduler (*AUTO or a scheduler name), Destination *NETWORK / *DRAWER / *INV; the
+    plan summary (steps, missing, recall time); Enter -> submit; "Job 0042 submitted." (job ids are 4-digit per network).
+  WORK WITH JOBS (WRKJOB): active + queued jobs: Opt / Job / Item / Qty / Status (Active, Waiting, Recall, Done, Failed)
+    / Progress (ASCII bar + %) / Scheduler; 4=Cancel (asks to confirm with Enter), 5=Display (the Job Status contents as
+    text).
+  WORK WITH DEVICES (WRKDEV): every network device: Opt / Type / Device / Location (x, y, z; rack units indented under
+    their rack as "U3-U6") / Lanes (used, or used / pool for switches) / Status (Online, Offline (dim), Fault, or the
+    device's activity e.g. Recalling (bright)); 5=Display (the device's HUD info lines as text), 8=Locate (highlights the
+    block for 10 s like the rack outline).
+  DISPLAY NETWORK STATUS (DSPNETSTS): Storage hot / cold, Energy stored + in/out, Lanes, Crafting (active, queued,
+    schedulers), Devices (online / offline / fault), with [####....] gauges; Enter returns.
+  COMMAND ENTRY (CMDENT): scrolling history of commands and their output (newest at the bottom, PageUp to scroll back,
+    500 lines kept per desk session), F9 retrieves previous commands into the input.
+  Message line examples: "Job 0042 submitted.", "Withdrawn 64 Iron Ingot to desk drawer.", "Command X not found.",
+    "Not authorised to extract.", "Desk drawer full - 12 left in the network." (lang crt.encodedlogistics.*).
+
+=====================================================================================================
+4. CLI - extensible command system
+=====================================================================================================
+Grammar: words separated by spaces; quoted strings allowed ("iron ingot"); numbers accept k/M suffixes (2k = 2000).
+Initial commands:
+  help [command]                       list commands / show usage
+  show inventory [filter]              items matching filter (substring of name or id; tag with #), quantity, location
+  show drives                          every drive: holder (Drive Bay / NAS / SAN), slot, tier, used, total
+  show lanes                           controller lanes used/total, per switch pool
+  show jobs                            as WRKJOB, plain text
+  show devices                         as WRKDEV, plain text
+  show power                           energy stored, in, out, per-device drain top 10
+  withdraw <item> <amount> [*drawer|*inv]
+  craft <item> <amount> [scheduler]
+  cancel job <id>
+  clear                                clear the Command Entry history
+API (common side; executed on the server, output synced to the screen):
+  interface TerminalCommand {
+      String name();                                  // root word, e.g. "show"; unique per registry
+      String usage();  Component help();
+      @Nullable RackPermission permission();          // Firewall permission needed (VIEW, EXTRACT, CRAFT, BUILD) or null
+      TerminalOutput run(TerminalContext ctx, List<String> args);   // lines with attributes (normal/bright/dim)
+      List<String> complete(TerminalContext ctx, List<String> args); // tab completion
+  }
+  TerminalCommands.register(TerminalCommand)                  // new root commands
+  TerminalCommands.registerShowTopic(String topic, ShowTopic)  // "show <topic>" extensions (e.g. "show tapes")
+  TerminalContext: the network, the desk (drawer), the player, output sink, an id allocator for jobs.
+  Devices register in their setup (e.g. a future Midrange System adds "wrksys", "show partitions"; a Mainframe adds
+  "submit <jcl>"), so the desk needs no change. Unknown command -> "Command <x> not found." Tab completes command
+  words, topics and item names (OPEN 3).
+Permissions: when the network has a Firewall, the desk signs on as the player (OPEN 4): VIEW to open, EXTRACT for
+  withdraw, CRAFT for craft/cancel, BUILD for device commands that change settings.
+
+=====================================================================================================
+5. RECIPES (data/encodedlogistics/recipe/*.json; adjust freely)
+=====================================================================================================
+  terminal_desk   shaped "GTC" / "SSS" / "I I": glass pane, access terminal, circuit substrate, wooden slabs x3, iron x2
+  swivel_chair    shaped "W  " / "WWW" / "IBI": wool x4, iron x2, iron bars
+  Loot: desk drops itself (+ drawer contents); chair drops itself keeping its dye colour.
+
+=====================================================================================================
+6. FILES
+=====================================================================================================
+assets/encodedlogistics/
+  blockstates/terminal_desk.json (multipart), swivel_chair.json
+  models/block/terminal_desk/{desk,terminal_off,terminal_boot,terminal_on,keyboard,clutter,empty}.json
+  models/block/swivel_chair/{base,seat}.json; models/item/{terminal_desk,swivel_chair}.json; items/*.json (chair: dye tint)
+  textures/block/terminal_desk/{laminate,steel,pedestal,modesty,crt_case,keyboard,clutter,lamp_off,lamp_on}.png,
+    crt_screen_off.png, crt_screen_boot.png (+ .mcmeta, 12 frames 36x28), crt_screen_on.png (+ .mcmeta, 2 frames)
+  textures/block/swivel_chair/{fabric,metal,caster}.png; textures/item/{terminal_desk,swivel_chair}.png
+  font/terminal.json, textures/font/terminal.png (font sheet), textures/font/terminal_glow.png (glow pass)
+  textures/gui/crt/{bezel,scanlines,vignette}.png; screens/crt/phosphor.json
+  sounds/block/terminal_desk/{crt_hum,crt_degauss,key_clack1-4}.ogg; sounds.desk.json -> MERGE into sounds.json
+  lang/en_us.desk.json -> MERGE into en_us.json (block names + every crt.* string used on the screens)
+data/encodedlogistics/recipe/{terminal_desk,swivel_chair}.json, loot_table/blocks/*.json; minecraft mineable tags
+blockbench/ terminal_desk_{desk,terminal,keyboard,clutter}.bbmodel, swivel_chair_{base,seat}.bbmodel (seat pivot 8,6,8)
+SOUNDS.txt - the sound list with descriptions
+tools/ desk_tex.py, desk_models.py, desk_export.py, crt_font.py, crt_gui.py, crt_screens.py, desk_sound.py, desk_preview.py
+previews/ desk_overview, desk_close, chair, screen_0..3 (off, boot x2, on), item_icons, crt_main_menu (+ _amber, _white),
+  crt_work_with_inventory (+ _amber, _white), crt_withdraw_prompt, crt_craft_prompt, crt_work_with_jobs,
+  crt_work_with_devices, crt_network_status, crt_command_entry
+
+=====================================================================================================
+7. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+1. Retro item view as an Access Terminal: yes - F24 (Shift+F12) toggles a "graphic item view": the standard Access
+   Terminal screen (item grid) drawn inside the CRT bezel, so players can drag items; F3 returns to text mode.
+2. Pause in single-player: no - the network keeps running while you work (like other terminals, isPauseScreen false).
+3. Item arguments: both - registry ids (minecraft:iron_ingot, namespace optional when unambiguous) and display names
+   (quoted or with spaces as underscores: iron_ingot / "iron ingot"), with tab completion over both; ambiguous names
+   list the matches.
+4. Sign-on with Firewall permissions: yes - the desk shows a short SIGN ON screen (player name prefilled, no password)
+   when the network has a Firewall, then enforces the player's permissions per command / option.
+5. Dyeable chair: yes - craft with dye (vanilla dyed_color component) tints the fabric; undyed keeps the brown tweed.

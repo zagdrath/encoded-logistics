@@ -34,6 +34,7 @@ import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
+import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
 
 public final class ModMenuTypes {
@@ -56,6 +57,10 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<FabricationTerminalMenu>> FABRICATION_TERMINAL = MENU_TYPES.register("fabrication_terminal",
             () -> IMenuTypeExtension.create(FabricationTerminalMenu::new));
+
+    // The Terminal Desk's green screen (CrtScreen).
+    public static final Supplier<MenuType<TerminalDeskMenu>> TERMINAL_DESK = MENU_TYPES.register("terminal_desk",
+            () -> IMenuTypeExtension.create(TerminalDeskMenu::new));
 
     // The Rack Console's terminals: the Access and Fabrication Terminal screens, laid out as the console's.
     public static final Supplier<MenuType<AccessTerminalMenu>> RACK_CONSOLE = MENU_TYPES.register("rack_console",

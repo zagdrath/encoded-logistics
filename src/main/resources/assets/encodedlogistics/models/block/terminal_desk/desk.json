@@ -1,0 +1,354 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "lam": "encodedlogistics:block/terminal_desk/laminate",
+  "steel": "encodedlogistics:block/terminal_desk/steel",
+  "ped": "encodedlogistics:block/terminal_desk/pedestal",
+  "modesty": "encodedlogistics:block/terminal_desk/modesty",
+  "particle": "encodedlogistics:block/terminal_desk/laminate"
+ },
+ "elements": [
+  {
+   "name": "top",
+   "from": [
+    0,
+    12,
+    0
+   ],
+   "to": [
+    32,
+    13,
+    16
+   ],
+   "faces": {
+    "up": {
+     "texture": "#lam",
+     "uv": [
+      0.0,
+      0.0,
+      16.0,
+      8.0
+     ]
+    },
+    "down": {
+     "texture": "#lam",
+     "uv": [
+      0.0,
+      9.0,
+      16.0,
+      16.0
+     ]
+    },
+    "north": {
+     "texture": "#lam",
+     "uv": [
+      0.0,
+      8.0,
+      16.0,
+      8.5
+     ]
+    },
+    "south": {
+     "texture": "#lam",
+     "uv": [
+      0.0,
+      8.0,
+      16.0,
+      8.5
+     ]
+    },
+    "east": {
+     "texture": "#lam",
+     "uv": [
+      0.0,
+      8.0,
+      8.0,
+      8.5
+     ]
+    },
+    "west": {
+     "texture": "#lam",
+     "uv": [
+      0.0,
+      8.0,
+      8.0,
+      8.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "leg_panel",
+   "from": [
+    0.5,
+    0,
+    1
+   ],
+   "to": [
+    2,
+    12,
+    15
+   ],
+   "faces": {
+    "west": {
+     "texture": "#steel",
+     "uv": [
+      1,
+      4,
+      15,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#steel",
+     "uv": [
+      1,
+      4,
+      15,
+      16
+     ]
+    },
+    "north": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      4,
+      1.5,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      4,
+      1.5,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      0,
+      1.5,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "name": "foot",
+   "from": [
+    0,
+    0,
+    0.5
+   ],
+   "to": [
+    2.5,
+    1,
+    15.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      15,
+      15,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      15,
+      15,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      15,
+      15,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      15,
+      15,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      15,
+      15,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "pedestal",
+   "from": [
+    20,
+    0,
+    1
+   ],
+   "to": [
+    31.5,
+    12,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#ped",
+     "uv": [
+      0,
+      0,
+      11,
+      12
+     ]
+    },
+    "south": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      4,
+      11.5,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#steel",
+     "uv": [
+      1,
+      4,
+      15,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#steel",
+     "uv": [
+      1,
+      4,
+      15,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      0,
+      11.5,
+      14
+     ]
+    }
+   }
+  },
+  {
+   "name": "modesty",
+   "from": [
+    2,
+    2,
+    13.5
+   ],
+   "to": [
+    20,
+    11.5,
+    14.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#modesty",
+     "uv": [
+      0,
+      0,
+      16,
+      9.5
+     ]
+    },
+    "south": {
+     "texture": "#modesty",
+     "uv": [
+      0,
+      0,
+      16,
+      9.5
+     ]
+    },
+    "up": {
+     "texture": "#modesty",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#modesty",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "name": "apron",
+   "from": [
+    2,
+    11,
+    1
+   ],
+   "to": [
+    20,
+    12,
+    2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "south": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#steel",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   }
+  }
+ ]
+}

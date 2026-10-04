@@ -1,0 +1,7 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "particle": "encodedlogistics:block/terminal_desk/laminate"
+ },
+ "elements": []
+}

@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -32,6 +33,8 @@ import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
+import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
+import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
 import net.zagdrath.encodedlogistics.client.rack.RackModels;
 import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
@@ -60,6 +63,7 @@ import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
+import net.zagdrath.encodedlogistics.registry.ModEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
 
@@ -101,6 +105,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.COLLECTOR_PLANE.get(), CollectorPlaneScreen::new);
         event.register(ModMenuTypes.DEPLOYER_PLANE.get(), DeployerPlaneScreen::new);
         event.register(ModMenuTypes.SERVER_RACK.get(), RackScreen::new);
+        event.register(ModMenuTypes.TERMINAL_DESK.get(), CrtScreen::new);
     }
 
     // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).
@@ -122,12 +127,16 @@ public class EncodedLogisticsClient {
     static void registerStandaloneModels(ModelEvent.RegisterStandalone event) {
         CableParts.register(event);
         RackModels.register(event);
+        SwivelChairRenderer.register(event);
     }
 
     // The Server Rack: its doors and devices (RackRenderer), and the popup by the crosshair (RackHud).
     @SubscribeEvent
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntityTypes.SERVER_RACK.get(), RackRenderer::new);
+        // The Swivel Chair's seat, turned (SwivelChairRenderer); what it's sat on isn't drawn.
+        event.registerBlockEntityRenderer(ModBlockEntityTypes.SWIVEL_CHAIR.get(), SwivelChairRenderer::new);
+        event.registerEntityRenderer(ModEntityTypes.SEAT.get(), NoopRenderer::new);
     }
 
     @SubscribeEvent
@@ -138,6 +147,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         RackHud.tick(event);
+        CrtLocate.tick();
     }
 
     @SubscribeEvent

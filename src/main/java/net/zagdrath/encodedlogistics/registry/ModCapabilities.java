@@ -9,12 +9,15 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.transfer.energy.ItemAccessEnergyHandler;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.block.TerminalDeskBlock;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 
 public final class ModCapabilities {
     private ModCapabilities() {}
@@ -31,6 +34,10 @@ public final class ModCapabilities {
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntityTypes.LITHOGRAPHY_PRESS.get(), LithographyPressBlockEntity::getEnergyHandler);
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntityTypes.LITHOGRAPHY_PRESS.get(), LithographyPressBlockEntity::getItemHandler);
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntityTypes.GATEWAY.get(), GatewayBlockEntity::getItemHandler);
+        // The Terminal Desk's drawer, through its pedestal half.
+        event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, blockEntity, side) -> state.getValue(TerminalDeskBlock.PART) == TerminalDeskBlock.Part.DUMMY
+                && level.getBlockEntity(TerminalDeskBlock.master(state, pos)) instanceof TerminalDeskBlockEntity desk ? VanillaContainerWrapper.of(desk) : null,
+                ModBlocks.TERMINAL_DESK.get());
         // The Handheld Terminal's battery charges in any FE charger.
         event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new ItemAccessEnergyHandler(access, ModDataComponents.ENERGY.get(),
                 Config.HANDHELD_CAPACITY.getAsInt(), Config.HANDHELD_CHARGE_RATE.getAsInt(), 0), ModItems.HANDHELD_TERMINAL.get());

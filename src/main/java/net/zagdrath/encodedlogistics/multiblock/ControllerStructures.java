@@ -26,6 +26,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -780,6 +781,102 @@ public class ControllerStructures extends SavedData {
     }
 
 
+    // --- What the Terminal Desk lists ---
+
+    // A network's snapshot (as its controller's screen shows it), or the empty one.
+    public static NetworkSnapshot snapshotOf(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        return owner != null ? get(owner.home).snapshot(owner.ref.id()) : NetworkSnapshot.EMPTY;
+    }
+
+    // A network's Drive Bays (loaded), online or not.
+    public static List<DriveBayBlockEntity> driveBays(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        List<DriveBayBlockEntity> bays = new ArrayList<>();
+        if (owner != null) {
+            for (NodePos pos : owner.runtime.driveBays) {
+                if (blockEntity(server, pos) instanceof DriveBayBlockEntity bay) {
+                    bays.add(bay);
+                }
+            }
+        }
+        return bays;
+    }
+
+    // A job's number on a network (given the first time it's asked for); 0 for an unknown network.
+    public static int jobNumber(MinecraftServer server, @Nullable NetworkRef network, UUID job) {
+        Owner owner = owner(server, network);
+        if (owner == null) {
+            return 0;
+        }
+        Runtime runtime = owner.runtime;
+        return runtime.jobNumbers.computeIfAbsent(job, id -> {
+            int number = runtime.nextJob;
+            runtime.nextJob = runtime.nextJob % 9_999 + 1;
+            return number;
+        });
+    }
+
+    public static @Nullable UUID jobByNumber(MinecraftServer server, @Nullable NetworkRef network, int number) {
+        Owner owner = owner(server, network);
+        if (owner == null) {
+            return null;
+        }
+        for (Map.Entry<UUID, Integer> entry : owner.runtime.jobNumbers.entrySet()) {
+            if (entry.getValue() == number) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    // One device on a network as the Terminal Desk lists it: its kind ("Controller", "Drive Bay", "Rack", "Part",
+    // "Terminal", "Device"; a rack's devices are listed under it, depth 1), its name, where it is, the lanes it takes,
+    // whether it's online and whether it's short of a lane.
+    public record DeviceRow(String type, Component name, NodePos pos, int lanes, boolean online, boolean laneMissing, @Nullable RackDevice rackDevice,
+            int depth) {}
+
+    public static List<DeviceRow> deviceRows(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        List<DeviceRow> rows = new ArrayList<>();
+        if (owner == null || owner.runtime.discovered == null) {
+            return rows;
+        }
+        Runtime runtime = owner.runtime;
+        boolean networkOnline = runtime.status == NetworkStatus.ONLINE;
+        if (!owner.structure.members().isEmpty()) {
+            rows.add(new DeviceRow("Controller", ModItems.NETWORK_CONTROLLER.get().getName(ModItems.NETWORK_CONTROLLER.get().getDefaultInstance()),
+                    NetworkGraph.at(owner.ref.dimension(), owner.structure.members().getFirst()), 0, networkOnline, false, null, 0));
+        }
+        List<Map.Entry<NodePos, NetworkNode>> entries = new ArrayList<>(runtime.discovered.graph().entries().entrySet());
+        entries.sort(Map.Entry.comparingByKey(NetworkGraph.ORDER));
+        for (Map.Entry<NodePos, NetworkNode> entry : entries) {
+            NodePos pos = entry.getKey();
+            NetworkNode node = entry.getValue();
+            if (node.isController() || node.laneCost() <= 0 && node.parts().isEmpty() && !runtime.racks.contains(pos)) {
+                continue;
+            }
+            boolean online = runtime.online.contains(pos);
+            boolean missing = networkOnline && node.laneCost() > 0 && runtime.lanes != null && !runtime.lanes.hasLane(pos);
+            for (NetworkPart part : node.parts()) {
+                rows.add(new DeviceRow("Part", part.item().getName(part.item().getDefaultInstance()), pos, 0, online, missing, null, 0));
+            }
+            Item item = runtime.discovered.items().get(pos);
+            if (item == null || item == Items.AIR || !node.parts().isEmpty() && node.laneCost() <= 0) {
+                continue;
+            }
+            String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.SERVER_RACK.get() ? "Rack"
+                    : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
+            rows.add(new DeviceRow(type, item.getName(item.getDefaultInstance()), pos, node.laneCost(), online, missing, null, 0));
+            if (runtime.racks.contains(pos) && blockEntity(server, pos) instanceof RackBlockEntity rack) {
+                for (RackDevice device : rack.devices()) {
+                    rows.add(new DeviceRow("Unit", device.name(), pos, device.laneCost(), device.isOnline(), false, device, 1));
+                }
+            }
+        }
+        return rows;
+    }
+
     // Whether two nodes in this level are on the same network.
     public boolean sameNetwork(ServerLevel level, BlockPos a, BlockPos b) {
         NetworkRef ref = networkOf(level, a);
@@ -1006,5 +1103,8 @@ public class ControllerStructures extends SavedData {
         long itemsMoved, jobsDone;
         // Tape recalls waiting and running, archiving in progress.
         final TapeRecalls recalls = new TapeRecalls();
+        // Crafting jobs' numbers as the Terminal Desk shows them (0001-9999, in the order it first saw them).
+        final Map<UUID, Integer> jobNumbers = new HashMap<>();
+        int nextJob = 1;
     }
 }

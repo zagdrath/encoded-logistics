@@ -1,0 +1,28 @@
+{
+ "type": "minecraft:block",
+ "pools": [
+  {
+   "rolls": 1,
+   "entries": [
+    {
+     "type": "minecraft:item",
+     "name": "encodedlogistics:swivel_chair",
+     "functions": [
+      {
+       "function": "minecraft:copy_components",
+       "source": "block_entity",
+       "include": [
+        "minecraft:dyed_color"
+       ]
+      }
+     ]
+    }
+   ],
+   "conditions": [
+    {
+     "condition": "minecraft:survives_explosion"
+    }
+   ]
+  }
+ ]
+}

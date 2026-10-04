@@ -28,6 +28,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.CraftPlanPayload;
 import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
+import net.zagdrath.encodedlogistics.terminal.TerminalItems;
 
 // The crafting plan (screens/craft_plan.json): the ingredient tree (click the arrow to fold a branch) with, for each
 // item, how many are in storage (Have), will be made (Make) and are missing (Miss); how many are missing, top right;
@@ -209,9 +210,7 @@ public class CraftPlanScreen extends Screen {
 
     // "14s" ("14 s" spaced), "2m 05s" past a minute; ticks rounded up to seconds.
     public static String seconds(int ticks, boolean spaced) {
-        int seconds = (ticks + 19) / 20;
-        String space = spaced ? " " : "";
-        return seconds < 60 ? seconds + space + "s" : String.format(Locale.ROOT, "%dm%s%02ds", seconds / 60, " ", seconds % 60);
+        return TerminalItems.seconds(ticks, spaced);
     }
 
     private Component schedulerText() {

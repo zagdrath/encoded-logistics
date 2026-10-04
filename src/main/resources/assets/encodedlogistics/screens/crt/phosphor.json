@@ -1,0 +1,25 @@
+{
+ "$comment": "Phosphor palettes: normal text, bright (titles, column heads, entered values, highlights), dim (help text, offline), background, glow tint.",
+ "green": {
+  "normal": "#28D25A",
+  "bright": "#DAFFE4",
+  "dim": "#167A34",
+  "bg": "#020904",
+  "glow": "#33F06A"
+ },
+ "amber": {
+  "normal": "#E89A10",
+  "bright": "#FFE8B8",
+  "dim": "#8E5A06",
+  "bg": "#0A0602",
+  "glow": "#FFA010"
+ },
+ "white": {
+  "normal": "#B8BCB6",
+  "bright": "#FFFFFF",
+  "dim": "#6E726C",
+  "bg": "#05060A",
+  "glow": "#C8D0FF"
+ },
+ "default": "green"
+}

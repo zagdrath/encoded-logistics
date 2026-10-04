@@ -32,6 +32,8 @@ import net.zagdrath.encodedlogistics.block.SchedulerBlock;
 import net.zagdrath.encodedlogistics.block.SchedulerCoreBlock;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
+import net.zagdrath.encodedlogistics.block.SwivelChairBlock;
+import net.zagdrath.encodedlogistics.block.TerminalDeskBlock;
 import net.zagdrath.encodedlogistics.block.ThreadUnitBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
@@ -96,6 +98,13 @@ public final class ModBlocks {
     public static final DeferredBlock<ServerRackBlock> SERVER_RACK = BLOCKS.registerBlock("server_rack", ServerRackBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.0F, 1200.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
                     .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
+
+    // The Terminal Desk (2 wide: TerminalDeskBlock) and the Swivel Chair.
+    public static final DeferredBlock<TerminalDeskBlock> TERMINAL_DESK = BLOCKS.registerBlock("terminal_desk", TerminalDeskBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
+    public static final DeferredBlock<SwivelChairBlock> SWIVEL_CHAIR = BLOCKS.registerBlock("swivel_chair", SwivelChairBlock::new,
+            p -> p.mapColor(MapColor.COLOR_BROWN).strength(1.0F).sound(SoundType.WOOL).noOcclusion());
 
     private static BlockBehaviour.Properties scheduler(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);

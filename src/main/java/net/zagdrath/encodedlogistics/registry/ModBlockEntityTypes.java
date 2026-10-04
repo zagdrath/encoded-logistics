@@ -25,6 +25,8 @@ import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.SwivelChairBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -46,6 +48,12 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<LithographyPressBlockEntity>> LITHOGRAPHY_PRESS = BLOCK_ENTITY_TYPES.register(
             "lithography_press", () -> new BlockEntityType<>(LithographyPressBlockEntity::new, ModBlocks.LITHOGRAPHY_PRESS.get()));
+
+    public static final Supplier<BlockEntityType<TerminalDeskBlockEntity>> TERMINAL_DESK = BLOCK_ENTITY_TYPES.register(
+            "terminal_desk", () -> new BlockEntityType<>(TerminalDeskBlockEntity::new, ModBlocks.TERMINAL_DESK.get()));
+
+    public static final Supplier<BlockEntityType<SwivelChairBlockEntity>> SWIVEL_CHAIR = BLOCK_ENTITY_TYPES.register(
+            "swivel_chair", () -> new BlockEntityType<>(SwivelChairBlockEntity::new, ModBlocks.SWIVEL_CHAIR.get()));
 
     public static final Supplier<BlockEntityType<DriveBayBlockEntity>> DRIVE_BAY = BLOCK_ENTITY_TYPES.register(
             "drive_bay", () -> new BlockEntityType<>(DriveBayBlockEntity::new, ModBlocks.DRIVE_BAY.get()));

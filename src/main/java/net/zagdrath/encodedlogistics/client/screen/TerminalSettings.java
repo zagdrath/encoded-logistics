@@ -30,6 +30,10 @@ public final class TerminalSettings {
             .comment("Keep the search field in step with JEI's search bar (needs JEI).")
             .define("searchSynced", false);
 
+    private static final ModConfigSpec.ConfigValue<String> PHOSPHOR = BUILDER
+            .comment("The Terminal Desk's screen colour: green, amber or white (screens/crt/phosphor.json).")
+            .define("phosphor", "green");
+
     public static final ModConfigSpec SPEC = BUILDER.pop().build();
 
     private TerminalSettings() {}
@@ -79,5 +83,13 @@ public final class TerminalSettings {
             value.set(to);
             value.save();
         }
+    }
+
+    public static String phosphor() {
+        return SPEC.isLoaded() ? PHOSPHOR.get() : PHOSPHOR.getDefault();
+    }
+
+    public static void phosphor(String phosphor) {
+        set(PHOSPHOR, phosphor);
     }
 }

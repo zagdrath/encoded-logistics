@@ -1,0 +1,9 @@
+{
+ "type": "minecraft:crafting_dye",
+ "dye": "#minecraft:dyes",
+ "group": "dyed_swivel_chair",
+ "result": {
+  "id": "encodedlogistics:swivel_chair"
+ },
+ "target": "encodedlogistics:swivel_chair"
+}

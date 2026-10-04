@@ -12,7 +12,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 
 // The mod's sounds (sounds.json): the Server Rack's doors, the Rack Console's drawer and screen, the Tape Library's
-// picker.
+// picker, the Terminal Desk's CRT and keys.
 public final class ModSounds {
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(Registries.SOUND_EVENT, EncodedLogistics.MODID);
 
@@ -30,6 +30,11 @@ public final class ModSounds {
     public static final Holder<SoundEvent> RACK_PICKER_MOVE = SOUND_EVENTS.register("block.rack.picker_move",
             SoundEvent::createVariableRangeEvent);
     public static final Holder<SoundEvent> RACK_TAPE_LOAD = SOUND_EVENTS.register("block.rack.tape_load",
+            SoundEvent::createVariableRangeEvent);
+
+    public static final Holder<SoundEvent> DESK_HUM = SOUND_EVENTS.register("block.terminal_desk.crt_hum", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> DESK_DEGAUSS = SOUND_EVENTS.register("block.terminal_desk.degauss", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> DESK_KEY_CLACK = SOUND_EVENTS.register("block.terminal_desk.key_clack",
             SoundEvent::createVariableRangeEvent);
 
     private ModSounds() {}

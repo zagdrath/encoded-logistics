@@ -30,6 +30,7 @@ import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModCapabilities;
 import net.zagdrath.encodedlogistics.registry.ModCreativeTabs;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
+import net.zagdrath.encodedlogistics.registry.ModEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeSerializers;
@@ -49,6 +50,7 @@ public class EncodedLogistics {
         ModRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
         ModRecipeTypes.RECIPE_TYPES.register(modEventBus);
         ModBlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
+        ModEntityTypes.ENTITY_TYPES.register(modEventBus);
         ModMenuTypes.MENU_TYPES.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);

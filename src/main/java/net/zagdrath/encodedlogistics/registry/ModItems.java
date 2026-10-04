@@ -113,6 +113,8 @@ public final class ModItems {
 
     // The Server Rack and its devices (RackDeviceType).
     public static final DeferredItem<BlockItem> SERVER_RACK = ITEMS.registerSimpleBlockItem(ModBlocks.SERVER_RACK);
+    public static final DeferredItem<BlockItem> TERMINAL_DESK = ITEMS.registerSimpleBlockItem(ModBlocks.TERMINAL_DESK);
+    public static final DeferredItem<BlockItem> SWIVEL_CHAIR = ITEMS.registerSimpleBlockItem(ModBlocks.SWIVEL_CHAIR);
     public static final DeferredItem<RackDeviceItem> FIREWALL = ITEMS.registerItem("firewall", p -> new RackDeviceItem(p, RackDeviceType.FIREWALL),
             p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> ROUTER = ITEMS.registerItem("router", p -> new RackDeviceItem(p, RackDeviceType.ROUTER),

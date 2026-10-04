@@ -110,6 +110,10 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_wireless_controller", Rack3GameTests::wirelessController);
         TESTS.put("rack_console", Rack3GameTests::rackConsole);
         TESTS.put("rack_six_units_and_upgrades", Rack3GameTests::sixUnitsAndUpgrades);
+        TESTS.put("desk_screen", DeskGameTests::deskScreen);
+        TESTS.put("desk_withdraws", DeskGameTests::deskWithdraws);
+        TESTS.put("desk_commands", DeskGameTests::deskCommands);
+        TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));

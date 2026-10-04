@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "GTC",
+  "SSS",
+  "I I"
+ ],
+ "key": {
+  "G": "minecraft:glass_pane",
+  "T": "encodedlogistics:access_terminal",
+  "S": "#minecraft:wooden_slabs",
+  "I": "minecraft:iron_ingot",
+  "C": "encodedlogistics:circuit_substrate"
+ },
+ "result": {
+  "id": "encodedlogistics:terminal_desk",
+  "count": 1
+ }
+}

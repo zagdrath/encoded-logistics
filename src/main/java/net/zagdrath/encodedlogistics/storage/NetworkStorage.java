@@ -172,6 +172,12 @@ public final class NetworkStorage {
 
     // How full the drives are, 0-1, by bytes (0 with no drives).
     public double hotFill() {
+        long[] bytes = hotBytes();
+        return bytes[1] <= 0 ? 0 : (double) bytes[0] / bytes[1];
+    }
+
+    // The drives' bytes used and in all.
+    public long[] hotBytes() {
         long used = 0, total = 0;
         for (StorageView view : fillOrder) {
             DriveStats stats = view.stats();
@@ -180,6 +186,6 @@ public final class NetworkStorage {
                 total += stats.bytesTotal();
             }
         }
-        return total <= 0 ? 0 : (double) used / total;
+        return new long[] { used, total };
     }
 }

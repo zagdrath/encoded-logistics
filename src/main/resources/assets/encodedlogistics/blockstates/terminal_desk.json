@@ -1,0 +1,262 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/desk"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/keyboard"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "master",
+    "screen": "off"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_off"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "master",
+    "screen": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_boot"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "master",
+    "screen": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_on"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "master",
+    "clutter": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/clutter"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/desk",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/keyboard",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master",
+    "screen": "off"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_off",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master",
+    "screen": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_boot",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master",
+    "screen": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_on",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master",
+    "clutter": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/clutter",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/desk",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/keyboard",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master",
+    "screen": "off"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_off",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master",
+    "screen": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_boot",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master",
+    "screen": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_on",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master",
+    "clutter": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/clutter",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/desk",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/keyboard",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master",
+    "screen": "off"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_off",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master",
+    "screen": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_boot",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master",
+    "screen": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/terminal_on",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master",
+    "clutter": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/clutter",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "dummy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/terminal_desk/empty"
+   }
+  }
+ ]
+}
