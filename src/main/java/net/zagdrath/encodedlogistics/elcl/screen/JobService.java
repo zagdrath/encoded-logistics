@@ -6,6 +6,9 @@
 package net.zagdrath.encodedlogistics.elcl.screen;
 
 import java.util.List;
+import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
 
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
@@ -48,7 +51,8 @@ public interface JobService {
 
     void change(ElclSystem system, String user, String id, int priority, String log) throws ElclException;
 
-    ElclMessage submit(ElclSystem system, String user, String command, String name, String host, boolean log) throws ElclException;
+    // player: the submitter's (the job runs with their Firewall permissions), null when not a player.
+    ElclMessage submit(ElclSystem system, String user, @Nullable UUID player, String command, String name, String host, boolean log) throws ElclException;
 
     List<LogEntry> log(ElclSystem system, String id) throws ElclException;
 
@@ -60,7 +64,7 @@ public interface JobService {
 
     List<ScheduleEntry> scheduleEntries(ElclSystem system);
 
-    ElclMessage addScheduleEntry(ElclSystem system, String user, String job, String command, String frequency, String time, int interval)
+    ElclMessage addScheduleEntry(ElclSystem system, String user, @Nullable UUID player, String job, String command, String frequency, String time, int interval)
             throws ElclException;
 
     ElclMessage removeScheduleEntry(ElclSystem system, String user, String job) throws ElclException;
@@ -69,7 +73,7 @@ public interface JobService {
 
     List<Trigger> triggers(ElclSystem system);
 
-    ElclMessage addTrigger(ElclSystem system, String user, Trigger trigger) throws ElclException;
+    ElclMessage addTrigger(ElclSystem system, String user, @Nullable UUID player, Trigger trigger) throws ElclException;
 
     ElclMessage removeTrigger(ElclSystem system, String user, String name) throws ElclException;
 

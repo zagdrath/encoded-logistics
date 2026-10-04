@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.elcl.exec;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -15,6 +16,7 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.ElclMessages;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
+import net.zagdrath.encodedlogistics.elcl.job.BatchContext;
 import net.zagdrath.encodedlogistics.elcl.job.InteractiveCalls;
 import net.zagdrath.encodedlogistics.elcl.job.JobManager;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
@@ -22,6 +24,7 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.JobService;
 import net.zagdrath.encodedlogistics.elcl.screen.LibraryService;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 
 // The OS commands (COMMANDS.md 8-9) on the screens' services: libraries, members and programs; jobs, schedule entries
 // and triggers; system values; messages and printed text. Each sends its completion message (MESSAGES.md, amendment 2).
@@ -55,6 +58,15 @@ public final class OsCommands {
 
     static String user(Invocation call) throws ElclException {
         return context(call).user();
+    }
+
+    // The player a command runs for: at a terminal, theirs; in a batch job, its submitter's; else null.
+    static @Nullable UUID player(Invocation call) throws ElclException {
+        ElclContext context = context(call);
+        if (context instanceof TerminalContext terminal) {
+            return terminal.player().getUUID();
+        }
+        return context instanceof BatchContext batch ? batch.player() : null;
     }
 
     // LIB/NAME as {library, name}: a bare name (or *LIBL/NAME) is looked for down the library list, else the first of
@@ -148,7 +160,7 @@ public final class OsCommands {
         JobService jobs = ElclServices.jobs();
         CommandRegistry.bind("SBMJOB", call -> {
             String name = call.text("JOB").equals("*JOBD") ? "QDFTJOBD" : call.text("JOB");
-            call.send(jobs.submit(system(call), user(call), call.text("CMD"), name, call.text("HOST"), call.text("LOG").equals("*YES")));
+            call.send(jobs.submit(system(call), user(call), player(call), call.text("CMD"), name, call.text("HOST"), call.text("LOG").equals("*YES")));
         });
         CommandRegistry.bind("HLDJOB", call -> call.send(jobs.hold(system(call), user(call), call.text("JOB"))));
         CommandRegistry.bind("RLSJOB", call -> call.send(jobs.release(system(call), user(call), call.text("JOB"))));
@@ -160,12 +172,12 @@ public final class OsCommands {
         });
         CommandRegistry.bind("CHGJOB", call -> jobs.change(system(call), user(call), call.text("JOB"),
                 call.text("JOBPTY").equals("*SAME") ? 0 : (int) call.integer("JOBPTY"), call.text("LOG")));
-        CommandRegistry.bind("ADDJOBSCDE", call -> call.send(jobs.addScheduleEntry(system(call), user(call), call.text("JOB"), call.text("CMD"),
+        CommandRegistry.bind("ADDJOBSCDE", call -> call.send(jobs.addScheduleEntry(system(call), user(call), player(call), call.text("JOB"), call.text("CMD"),
                 call.text("FRQ"), call.text("TIME"), call.given("INTERVAL") ? (int) call.integer("INTERVAL") : 0)));
         CommandRegistry.bind("RMVJOBSCDE", call -> call.send(jobs.removeScheduleEntry(system(call), user(call), call.text("JOB"))));
         CommandRegistry.bind("HLDJOBSCDE", call -> jobs.holdScheduleEntry(system(call), user(call), call.text("JOB"), true));
         CommandRegistry.bind("RLSJOBSCDE", call -> jobs.holdScheduleEntry(system(call), user(call), call.text("JOB"), false));
-        CommandRegistry.bind("ADDTRGEVT", call -> call.send(jobs.addTrigger(system(call), user(call), new JobService.Trigger(call.text("TRG"),
+        CommandRegistry.bind("ADDTRGEVT", call -> call.send(jobs.addTrigger(system(call), user(call), player(call), new JobService.Trigger(call.text("TRG"),
                 call.text("EVENT"), call.text("ITEM"), call.text("DEV"), call.text("VALUE").equals("*NONE") ? "" : call.text("VALUE"),
                 call.text("PGM").toUpperCase(Locale.ROOT), "*ACTIVE", user(call)))));
         CommandRegistry.bind("RMVTRGEVT", call -> call.send(jobs.removeTrigger(system(call), user(call), call.text("TRG"))));

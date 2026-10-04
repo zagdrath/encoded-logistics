@@ -34,6 +34,8 @@ public final class JobManager {
         public final ElclContext context;
         public final List<ElclMessage> output = new ArrayList<>();
         public boolean logCommands;
+        // Held (HLDJOB) or paused (its host is down but resumes its jobs): it doesn't run.
+        public boolean held, paused;
         @Nullable Vm vm;
         int lastUsed;
         @Nullable Consumer<Run> onEnd;
@@ -98,7 +100,14 @@ public final class JobManager {
             return false;
         }
         run.vm.end();
+        run.held = false;
+        run.paused = false;
         return true;
+    }
+
+    // The server stopping, as far as a system's jobs go (the game tests' restart): its runs are dropped, unended.
+    public synchronized void forget(ElclSystem system) {
+        runs.removeIf(run -> run.system.equals(system));
     }
 
     public void tick(MinecraftServer server) {
@@ -109,7 +118,8 @@ public final class JobManager {
             for (int i = 0; i < count && global > 0; i++) {
                 Run run = runs.get((next + i) % count);
                 Vm vm = run.vm;
-                if (vm == null) {
+                if (vm == null || run.held || run.paused) {
+                    run.lastUsed = 0;
                     continue;
                 }
                 run.lastUsed = vm.run(Math.min(run.budget(), global));

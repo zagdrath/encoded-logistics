@@ -19,6 +19,8 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.OsCommands;
+import net.zagdrath.encodedlogistics.elcl.job.JobHost;
+import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -227,8 +229,11 @@ public final class ScreenQueries {
         TerminalOutput out = new TerminalOutput();
         int budget = jobs.stream().mapToInt(JobService.Job::budget).sum();
         long active = jobs.stream().filter(job -> job.status().equals("*ACTIVE")).count();
-        // STUB: waiting on elcl.job (job hosts and the global per-tick budget)
-        out.line(row(Math.min(100, budget), active, 0, 0));
+        // Hosts running batch jobs, of all the system's job hosts.
+        List<JobHost> hosts = JobHosts.all(system);
+        long busy = hosts.stream().filter(host -> jobs.stream().anyMatch(job -> job.type().equals("BCH") && job.host().equals(host.name())
+                && !job.status().equals("*JOBQ") && !job.status().equals("*HELD"))).count();
+        out.line(row(Math.min(100, budget), active, busy, hosts.size()));
         for (JobService.Job job : jobs) {
             out.line(jobRow(job));
         }

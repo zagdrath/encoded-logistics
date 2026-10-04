@@ -128,6 +128,11 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("elcl_mod_commands", ElclVmGameTests::modCommands);
         TESTS.put("elcl_interactive_call", ElclVmGameTests::interactiveCall);
         TESTS.put("elcl_examples", ElclVmGameTests::examples);
+        TESTS.put("batch_compute_server", BatchJobGameTests::computeServer);
+        TESTS.put("batch_queue_and_hosts", BatchJobGameTests::queueAndHosts);
+        TESTS.put("batch_restart", BatchJobGameTests::restart);
+        TESTS.put("batch_budget", BatchJobGameTests::budget);
+        TESTS.put("batch_logs", BatchJobGameTests::logs);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);

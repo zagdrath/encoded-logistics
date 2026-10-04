@@ -120,6 +120,8 @@ public final class SystemData {
     // Device names (Part 2): each name given out on this system and the device holding it (ElclDevices.identity), so a
     // device that arrives with a name already taken here gets another rather than taking it.
     public final Map<String, String> deviceNames = new TreeMap<>();
+    // Jobs, their logs, schedule entries and triggers (OS.md 5).
+    public JobData jobs = new JobData();
     // The later parts' sections, kept as they were saved until their code reads them.
     public final Map<String, Tag> sections = new LinkedHashMap<>();
     private Runnable changed = () -> {};
@@ -309,6 +311,8 @@ public final class SystemData {
         sysvals.forEach(values::putString);
         tag.put("sysvals", values);
 
+        tag.put("jobs", jobs.save());
+
         CompoundTag names = new CompoundTag();
         deviceNames.forEach(names::putString);
         tag.put("device_names", names);
@@ -375,6 +379,8 @@ public final class SystemData {
         for (String key : values.keySet()) {
             data.sysvals.put(key, values.getStringOr(key, ""));
         }
+
+        data.jobs = JobData.load(tag.getCompoundOrEmpty("jobs"));
 
         CompoundTag names = tag.getCompoundOrEmpty("device_names");
         for (String key : names.keySet()) {

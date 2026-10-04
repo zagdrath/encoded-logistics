@@ -5,24 +5,19 @@
 
 package net.zagdrath.encodedlogistics.elcl.screen;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Function;
 
-import net.minecraft.server.MinecraftServer;
+import net.zagdrath.encodedlogistics.elcl.job.StoredJobService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredSpoolService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredSysvalService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredUserService;
-import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 
-// The services behind the Terminal OS screens: libraries, messages, spooled files, system values and users are kept in
-// each system's saved data (elcl.store); jobs are still the stub until elcl.job lands (docs/elcl/SCREEN_INVENTORY.md).
+// The services behind the Terminal OS screens, each keeping what it has in the system's saved data (elcl.store): libraries,
+// messages, spooled files, system values, users, and jobs (elcl.job). Replaceable (set*) for tests.
 public final class ElclServices {
     private static LibraryService libraries = new StoredLibraryService();
-    private static JobService jobs = new StubJobService();
+    private static JobService jobs = new StoredJobService();
     private static MessageService messages = new StoredMessageService();
     private static SpoolService spool = new StoredSpoolService();
     private static SysvalService sysvals = new StoredSysvalService();
@@ -76,25 +71,5 @@ public final class ElclServices {
 
     public static void setSysvals(SysvalService service) {
         sysvals = service;
-    }
-
-    // A stub's data per system, for as long as its server runs.
-    static final class Store<T> {
-        private final Map<MinecraftServer, Map<NetworkRef, T>> data = new WeakHashMap<>();
-        private final Function<ElclSystem, T> create;
-
-        Store(Function<ElclSystem, T> create) {
-            this.create = create;
-        }
-
-        synchronized T of(ElclSystem system) {
-            Map<NetworkRef, T> systems = data.computeIfAbsent(system.server(), server -> new HashMap<>());
-            T state = systems.get(system.network());
-            if (state == null) {
-                state = create.apply(system);
-                systems.put(system.network(), state);
-            }
-            return state;
-        }
     }
 }

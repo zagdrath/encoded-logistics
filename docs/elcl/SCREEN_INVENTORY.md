@@ -66,7 +66,7 @@ on the message line; a number not on the menu shows "Option n is not on this men
 | 3 | Work with Devices | WRKDEV | `DevicesPanel` | Available | the network's topology (real) |
 | 4 | Display Network Status | DSPNETSTS | `StatusPanel` | Available | the network's status (real) |
 | 5 | Work with Libraries | WRKLIB | `WrkLibPanel` | Available | `elcl.store.StoredLibraryService`: libraries, members and programs in the system's saved data |
-| 6 | Work with Active Jobs | WRKACTJOB | `WrkActJobPanel` | Available | `StubJobService`: each session's interactive job; batch jobs never appear until `elcl.job` / `elcl.vm` |
+| 6 | Work with Active Jobs | WRKACTJOB | `WrkActJobPanel` | Available | `elcl.job.StoredJobService`: interactive and batch jobs with their host, status and budget use; hosts busy / total |
 | 7 | Display Messages | DSPMSG | `DspMsgPanel` | Available | `elcl.store.StoredMessageService`: message queues in the system's saved data (500 per user by default) |
 | 8 | Work with Output | WRKSPLF | `WrkSplfPanel` | Available | `elcl.store.StoredSpoolService`: spooled files in the system's saved data (200 by default); 6=Print through `elcl.device.Printers` (ELC1301 with no printer) |
 | 90 | Sign Off | SIGNOFF | - | Available | - |
@@ -93,12 +93,14 @@ The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-test
 
 - `elcl.vm` - `Values` (types, conversions, expressions, built-ins), `Lowerer` (statements to flat code), `VmProgram`, `Vm`
   (budgeted, resumable, NBT), `VmHost`
-- `elcl.job` (so far) - `JobManager` (runs programs each server tick within the budgets), `JobVmHost`, `Waits` (RECALL,
-  CRAFT), `InteractiveCalls` (CALL on a command line)
+- `elcl.job` - `StoredJobService` (interactive and batch jobs, the job queue, hosts, logs, schedule entries and triggers,
+  saved with the system), `JobHost` / `JobHosts` (Compute Servers built in; see INTERFACES.md), `BatchContext`,
+  `JobManager` (runs programs each server tick within the budgets), `JobVmHost`, `Waits` (RECALL, CRAFT),
+  `InteractiveCalls` (CALL on a command line), `Schedules`; `elcl.store.JobData` (what's saved)
 - `elcl.exec` - `ModCommands` (COMMANDS.md 3-8), `ElclItems` (item IDs)
 - `elcl.device` - `DisplayDevice`, `Displays` (SNDDSPTXT)
 
-Not in place yet: batch jobs and job hosts (the rest of `elcl.job`), `elcl.sync`. See IMPLEMENTATION_STATUS.md.
+Not in place yet: schedule entries and triggers firing (Part 5), `elcl.sync`. See IMPLEMENTATION_STATUS.md.
 
 ## Stubs waiting on ELCL packages
 
@@ -108,9 +110,6 @@ system (network) for as long as the server runs: **nothing here survives a resta
 
 | Stub | Methods | Waits for |
 |---|---|---|
-| `StubJobService` | jobs, job, interactive, endInteractive, hold, release, end, change, log, logCommand, logMessage, scheduleEntries, addScheduleEntry, removeScheduleEntry, holdScheduleEntry, triggers, addTrigger, removeTrigger, holdTrigger | `elcl.job`: job hosts, the job queue, tick budgets, persistence; schedule entries and triggers never fire yet |
-| `StubJobService.submit` | SBMJOB, WRKJOBSCDE 10=Submit now | `elcl.job` job hosts: always ELC0301 |
-| `ScreenQueries.jobs` | WRKACTJOB row 2 | `elcl.job`: hosts busy / total are 0/0, budget the jobs' sum |
 | `ElclEvents` | `*RSCHANGE` (fired by the Control Interface) | `elcl.job` triggers listening (nothing listens yet) |
 
 Commands with a schema but no executor answer **ELC0107** "Command &1 is not available yet." (an ID added for this):
