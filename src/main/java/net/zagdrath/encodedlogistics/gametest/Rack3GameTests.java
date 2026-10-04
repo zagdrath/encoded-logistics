@@ -151,6 +151,7 @@ final class Rack3GameTests {
     static void rackConsole(GameTestHelper helper) {
         BlockPos master = RackGameTests.networkedRack(helper);
         RackConsoleDevice console = RackGameTests.install(helper, master, RackDeviceType.RACK_CONSOLE, 2, RackConsoleDevice.class);
+        RackGameTests.driveBay(helper, BAY);
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         helper.startSequence()
                 .thenIdle(3)
@@ -162,6 +163,10 @@ final class Rack3GameTests {
                     helper.assertTrue(console.use(player) && console.isOpen(), "Didn't open");
                     RackConsoleMenu menu = new RackConsoleMenu(1, player.getInventory(), helper.absolutePos(master), console.u(), 6);
                     helper.assertTrue(menu.network() != null && menu.stillValid(player), "Terminal can't reach the network");
+                    // Shift-clicking a stack in: it goes into the network.
+                    player.getInventory().setItem(9, new ItemStack(Items.COBBLESTONE, 10));
+                    menu.quickMoveStack(player, 0);
+                    helper.assertTrue(player.getInventory().getItem(9).isEmpty(), "Console didn't take the stack: " + player.getInventory().getItem(9));
                     rack.setFrontOpen(false);
                     helper.assertTrue(!console.isOpen(), "Closing the door didn't close it");
                     helper.assertTrue(menu.network() == null && !menu.stillValid(player), "Terminal works closed");

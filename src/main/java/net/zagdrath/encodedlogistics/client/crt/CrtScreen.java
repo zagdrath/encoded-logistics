@@ -38,11 +38,11 @@ import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
-// The Terminal Desk's green screen (HANDOFF 3): an 80 x 24 text terminal filling the window, drawn character by
-// character from the terminal font sheet (6 x 10 cells) with tall pixels - each virtual pixel 2k wide and 3k tall, so
-// the 520 x 260 virtual glass (the 480 x 240 text and its margin) is 4:3 - in real screen pixels, crisp. Passes: the
-// phosphor's background, the glow (pre-blurred glyphs at 45%), the text, a scanline under every virtual row, the
-// vignette, the bezel.
+// The Terminal Desk's green screen (HANDOFF 3): an 80 x 24 text terminal on a CRT monitor drawn over the game (which
+// shows round it), character by character from the terminal font sheet (6 x 10 cells) with tall pixels (1.3 times as
+// tall as wide: the 520 x 260 virtual glass - the 480 x 240 text and its margin - a little wider than 4:3), in real
+// screen pixels. Passes: the monitor's case, the phosphor's background, the glow (pre-blurred glyphs at 45%), the text,
+// a scanline under every virtual row, the vignette, the bezel. While it's open it takes text input (typing reaches it).
 //
 // Every screen has the same frame: id, title and system name, the date and time, its body, a prompt and the command
 // line ("===> "), the message line and its function keys. Keys: typing goes to the focused field; Tab / Shift+Tab and
@@ -51,8 +51,8 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // (F24) shows more keys and the phosphor. Clicking a function key presses it.
 public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     private static final Identifier FONT = EncodedLogistics.id("textures/font/terminal.png"), GLOW = EncodedLogistics.id("textures/font/terminal_glow.png"),
-            BEZEL = EncodedLogistics.id("textures/gui/crt/bezel.png"), VIGNETTE = EncodedLogistics.id("textures/gui/crt/vignette.png");
-    private static final int VW = 520, VH = 260, MARGIN_X = 20, MARGIN_Y = 10, CW = 6, CH = 10, BEZEL_PX = 16, HISTORY = 500;
+            BEZEL_TEXTURE = EncodedLogistics.id("textures/gui/crt/bezel.png"), VIGNETTE = EncodedLogistics.id("textures/gui/crt/vignette.png");
+    private static final int VW = 520, VH = 260, MARGIN_X = 20, MARGIN_Y = 10, CW = 6, CH = 10, HISTORY = 500;
 
     // A phosphor's colours (screens/crt/phosphor.json).
     record Palette(int normal, int bright, int dim, int bg, int glow) {
@@ -74,8 +74,9 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     boolean firewall, signedOn;
     private Palette palette = Palette.GREEN;
     private int ticks;
-    // This frame's layout, in real pixels: the glass's corner and the virtual pixel's size.
-    private int glassX, glassY, sx = 2, sy = 3;
+    // This frame's layout, in real pixels: the glass's corner and a virtual pixel's size.
+    private int glassX, glassY;
+    private float vx = 2, vy = 2.6F;
 
     public CrtScreen(TerminalDeskMenu menu, Inventory inventory, Component title) {
         super(title);
@@ -89,6 +90,8 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
 
     @Override
     protected void init() {
+        // Typed characters only arrive while something has text input focus.
+        minecraft.onTextInputFocusChange(this, true);
         palette = loadPalette(TerminalSettings.phosphor());
         if (panels.isEmpty()) {
             push(new MainMenuPanel(this));
@@ -227,95 +230,132 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         compose();
         float scale = (float) minecraft.getWindow().getGuiScale();
-        int width = minecraft.getWindow().getWidth(), height = minecraft.getWindow().getHeight();
-        layout(width, height);
-        int glassW = VW * sx, glassH = VH * sy;
+        layout(minecraft.getWindow().getWidth(), minecraft.getWindow().getHeight());
         graphics.pose().pushMatrix();
+        // Real pixels.
         graphics.pose().scale(1 / scale, 1 / scale);
-        graphics.fill(0, 0, width, height, 0xFF000000);
+        housing(graphics);
+        int glassW = Math.round(VW * vx), glassH = Math.round(VH * vy);
         graphics.fill(glassX, glassY, glassX + glassW, glassY + glassH, palette.bg());
-        int textX = glassX + MARGIN_X * sx, textY = glassY + MARGIN_Y * sy;
+        // Virtual pixels: the text and its glow.
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(glassX, glassY);
+        graphics.pose().scale(vx, vy);
         int glowColor = (0x73 << 24) | (palette.glow() & 0xFFFFFF);
-        // Glow, then text.
         for (int row = 0; row < CrtGrid.ROWS; row++) {
             for (int col = 0; col < CrtGrid.COLS; col++) {
                 char c = grid.chars[row][col];
                 if (c != ' ' && !grid.reverse[row][col]) {
                     int i = c - 32;
-                    graphics.blit(RenderPipelines.GUI_TEXTURED, GLOW, textX + col * CW * sx - 2 * sx, textY + row * CH * sy - 2 * sy, (i % 16) * 10,
-                            (i / 16) * 14, 10 * sx, 14 * sy, 10, 14, 160, 84, glowColor);
+                    graphics.blit(RenderPipelines.GUI_TEXTURED, GLOW, MARGIN_X + col * CW - 2, MARGIN_Y + row * CH - 2, (i % 16) * 10, (i / 16) * 14, 10, 14,
+                            10, 14, 160, 84, glowColor);
                 }
             }
         }
         for (int row = 0; row < CrtGrid.ROWS; row++) {
             for (int col = 0; col < CrtGrid.COLS; col++) {
-                int x = textX + col * CW * sx, y = textY + row * CH * sy;
+                int x = MARGIN_X + col * CW, y = MARGIN_Y + row * CH;
                 int color = color(grid.attrs[row][col]);
                 char c = grid.chars[row][col];
                 if (grid.reverse[row][col]) {
-                    graphics.fill(x, y, x + CW * sx, y + CH * sy, color);
+                    graphics.fill(x, y, x + CW, y + CH, color);
                     color = palette.bg();
                 }
                 if (c != ' ') {
                     int i = c - 32;
-                    graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y, (i % 16) * CW, (i / 16) * CH, CW * sx, CH * sy, CW, CH, 96, 60, color);
+                    graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y, (i % 16) * CW, (i / 16) * CH, CW, CH, CW, CH, 96, 60, color);
                 }
                 if (grid.underline[row][col]) {
-                    graphics.fill(x, y + (CH - 1) * sy, x + CW * sx, y + CH * sy, color);
+                    graphics.fill(x, y + CH - 1, x + CW, y + CH, color);
                 }
             }
         }
         // The cursor: a block in the focused field, blinking.
         if (focused != null && ticks / 10 % 2 == 0) {
             int col = Math.min(focused.col + focused.cursor, focused.col + focused.length - 1);
-            int x = textX + col * CW * sx, y = textY + focused.row * CH * sy;
-            graphics.fill(x, y + sy, x + 5 * sx, y + 8 * sy, palette.bright());
+            int x = MARGIN_X + col * CW, y = MARGIN_Y + focused.row * CH;
+            graphics.fill(x, y + 1, x + 5, y + 8, palette.bright());
         }
-        // Scanlines: the bottom of every virtual row, a third of it.
-        int line = Math.max(1, sy / 3);
-        for (int v = 0; v < VH; v++) {
-            int y = glassY + v * sy + sy - line;
-            graphics.fill(glassX, y, glassX + glassW, y + line, 0x34000000);
+        graphics.pose().popMatrix();
+        // Scanlines: the bottom third of every virtual row.
+        int line = Math.max(1, Math.round(vy / 3));
+        for (int v = 1; v <= VH; v++) {
+            int y = glassY + Math.round(v * vy) - line;
+            graphics.fill(glassX, y, glassX + glassW, y + line, 0x30000000);
         }
         graphics.blit(RenderPipelines.GUI_TEXTURED, VIGNETTE, glassX, glassY, 0, 0, glassW, glassH, 256, 192, 256, 192);
-        bezel(graphics, glassX - BEZEL_PX, glassY - BEZEL_PX, glassW + 2 * BEZEL_PX, glassH + 2 * BEZEL_PX);
+        int bezel = bezelPx();
+        bezel(graphics, glassX - bezel, glassY - bezel, glassW + 2 * bezel, glassH + 2 * bezel, bezel);
         graphics.pose().popMatrix();
     }
 
-    // The scale (HANDOFF 3): k = the largest whole number the glass fits at (2k x 3k a virtual pixel) inside the
-    // bezel; if even k = 1 doesn't, 1 x 2.
+    // The monitor fills about four fifths of the window, its pixels 1.3 times as tall as wide (the glass a little
+    // wider than 4:3), centred a little above the middle; the game shows round it.
+    private static final float PIXEL_ASPECT = 1.3F;
+    // The housing round the glass, in glass widths: the bezel, the case's sides, top and chin.
+    private static final float BEZEL = 0.025F, SIDE = 0.055F, TOP = 0.045F, CHIN = 0.10F;
+
     private void layout(int width, int height) {
-        int k = Math.max(1, Math.min((width - 2 * BEZEL_PX) / (VW * 2), (height - 2 * BEZEL_PX) / (VH * 3)));
-        if (VW * 2 > width - 2 * BEZEL_PX || VH * 3 > height - 2 * BEZEL_PX) {
-            sx = 1;
-            sy = 2;
-        } else {
-            sx = 2 * k;
-            sy = 3 * k;
-        }
-        glassX = (width - VW * sx) / 2;
-        glassY = (height - VH * sy) / 2;
+        float caseW = VW * (1 + 2 * BEZEL + 2 * SIDE), caseH = VH * PIXEL_ASPECT + VW * (2 * BEZEL + TOP + CHIN);
+        vx = Math.max(0.5F, Math.min(0.80F * width / caseW, 0.84F * height / caseH));
+        vy = vx * PIXEL_ASPECT;
+        int glassW = Math.round(VW * vx), glassH = Math.round(VH * vy);
+        int outerH = Math.round(caseH * vx);
+        glassX = (width - glassW) / 2;
+        int caseTop = (height - outerH) / 2;
+        glassY = caseTop + Math.round(VW * vx * (TOP + BEZEL));
+    }
+
+    private int bezelPx() {
+        return Math.max(4, Math.round(VW * vx * BEZEL));
     }
 
     private int color(byte attr) {
         return attr == CrtGrid.BRIGHT ? palette.bright() : attr == CrtGrid.DIM ? palette.dim() : palette.normal();
     }
 
-    // The 9-slice bezel (64 x 64, 16-pixel borders) round the glass.
-    private static void bezel(GuiGraphicsExtractor graphics, int x, int y, int w, int h) {
-        int b = BEZEL_PX;
-        slice(graphics, x, y, b, b, 0, 0);
-        slice(graphics, x + w - b, y, b, b, 48, 0);
-        slice(graphics, x, y + h - b, b, b, 0, 48);
-        slice(graphics, x + w - b, y + h - b, b, b, 48, 48);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL, x + b, y, 16, 0, w - 2 * b, b, 32, 16, 64, 64);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL, x + b, y + h - b, 16, 48, w - 2 * b, b, 32, 16, 64, 64);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL, x, y + b, 0, 16, b, h - 2 * b, 16, 32, 64, 64);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL, x + w - b, y + b, 48, 16, b, h - 2 * b, 16, 32, 64, 64);
+    // The CRT's case: a soft shadow, the beige shell with its lit top edge and dark rim, a recess round the bezel, and
+    // the chin with its badge strip, two knobs and the power light.
+    private void housing(GuiGraphicsExtractor graphics) {
+        int glassW = Math.round(VW * vx), glassH = Math.round(VH * vy);
+        float g = VW * vx;
+        int bezel = bezelPx(), side = Math.round(g * SIDE), top = Math.round(g * TOP), chin = Math.round(g * CHIN);
+        int x0 = glassX - bezel - side, y0 = glassY - bezel - top, x1 = glassX + glassW + bezel + side, y1 = glassY + glassH + bezel + chin;
+        int shadow = Math.max(4, Math.round(g * 0.012F));
+        graphics.fill(x0 + shadow, y0 + shadow * 2, x1 + shadow, y1 + shadow * 2, 0x55000000);
+        int rim = Math.max(2, Math.round(g * 0.003F));
+        graphics.fill(x0, y0, x1, y1, 0xFF7F786B);
+        graphics.fill(x0 + rim, y0 + rim, x1 - rim, y1 - rim, 0xFFCFC8B6);
+        graphics.fill(x0 + rim, y0 + rim, x1 - rim, y0 + rim * 2, 0xFFE6E0D0);
+        graphics.fill(x0 + rim, y1 - rim * 3, x1 - rim, y1 - rim, 0xFFB3AC9B);
+        // The recess round the bezel.
+        int recess = Math.max(2, Math.round(g * 0.006F));
+        graphics.fill(glassX - bezel - recess, glassY - bezel - recess, glassX + glassW + bezel + recess, glassY + glassH + bezel + recess, 0xFFA59E8E);
+        // The chin: a badge strip left, two knobs and the power light right.
+        int chinTop = glassY + glassH + bezel + recess, chinMid = (chinTop + y1 - rim * 3) / 2;
+        int unit = Math.max(2, Math.round(g * 0.008F));
+        graphics.fill(glassX, chinMid - unit / 2, glassX + Math.round(g * 0.14F), chinMid + unit / 2 + 1, 0xFFB7B09F);
+        int knob = unit * 3, right = glassX + glassW;
+        for (int i = 0; i < 2; i++) {
+            int kx = right - knob * (5 + i * 2);
+            graphics.fill(kx, chinMid - knob / 2, kx + knob, chinMid + knob / 2, 0xFF9C9584);
+            graphics.fill(kx + 1, chinMid - knob / 2 + 1, kx + knob - 1, chinMid + knob / 2 - 1, 0xFFC3BCAA);
+        }
+        int led = unit * 2;
+        graphics.fill(right - led * 2 - 2, chinMid - led / 2 - 2, right - led + 2, chinMid + led / 2 + 2, 0x4033F06A);
+        graphics.fill(right - led * 2, chinMid - led / 2, right - led, chinMid + led / 2, 0xFF33F06A);
     }
 
-    private static void slice(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int u, int v) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL, x, y, u, v, w, h, w, h, 64, 64);
+    // The 9-slice bezel (64 x 64, 16-texel borders) round the glass, its borders b pixels.
+    private static void bezel(GuiGraphicsExtractor graphics, int x, int y, int w, int h, int b) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x, y, 0, 0, b, b, 16, 16, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x + w - b, y, 48, 0, b, b, 16, 16, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x, y + h - b, 0, 48, b, b, 16, 16, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x + w - b, y + h - b, 48, 48, b, b, 16, 16, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x + b, y, 16, 0, w - 2 * b, b, 32, 16, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x + b, y + h - b, 16, 48, w - 2 * b, b, 32, 16, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x, y + b, 0, 16, b, h - 2 * b, 16, 32, 64, 64);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, BEZEL_TEXTURE, x + w - b, y + b, 48, 16, b, h - 2 * b, 16, 32, 64, 64);
     }
 
     // The frame and the current screen, into the grid.
@@ -498,8 +538,8 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     // The cell under a point on the GUI, or null outside the text.
     private int @Nullable [] cell(double mouseX, double mouseY) {
         double scale = minecraft.getWindow().getGuiScale();
-        double px = mouseX * scale - glassX - MARGIN_X * sx, py = mouseY * scale - glassY - MARGIN_Y * sy;
-        int col = (int) Math.floor(px / (CW * sx)), row = (int) Math.floor(py / (CH * sy));
+        double px = (mouseX * scale - glassX) / vx - MARGIN_X, py = (mouseY * scale - glassY) / vy - MARGIN_Y;
+        int col = (int) Math.floor(px / CW), row = (int) Math.floor(py / CH);
         return col >= 0 && col < CrtGrid.COLS && row >= 0 && row < CrtGrid.ROWS ? new int[] { row, col } : null;
     }
 
@@ -543,6 +583,12 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public void removed() {
+        minecraft.onTextInputFocusChange(this, false);
+        super.removed();
     }
 
     @Override

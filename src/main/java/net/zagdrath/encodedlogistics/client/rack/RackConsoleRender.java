@@ -21,12 +21,13 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 
 // The Rack Console's moving parts (animation_specs.json -> rack_console), over its body (the device model): the drawer
-// (front plate and tray, its light for the state), the keyboard and the lid slide out 12.5 px together; then the lid
-// folds up 100 degrees about its hinge (8, 0.625, 13.5), which rides with the drawer. Past 60 degrees, on a running
-// network, the lid shows its lit screen.
+// (front plate and tray, its light for the state), the keyboard and the lid slide out 9 px together; then the lid
+// folds up 95 degrees about its hinge (8, 0.625, 13.5), which rides with the drawer and, as the lid rises, slides 5.5 px
+// forward so the screen stands just behind the keyboard, clear of the rack. Past 60 degrees, on a running network,
+// the lid shows its lit screen.
 final class RackConsoleRender implements RackClientDevices.RenderExtra {
     private static final int[] NO_TINTS = new int[0];
-    private static final float TRAVEL = 12.5F, LID_DEGREES = 100, HINGE_Y = 0.625F, HINGE_Z = 13.5F, SCREEN_AFTER = 60;
+    private static final float TRAVEL = 9, LID_DEGREES = 95, HINGE_FORWARD = 5.5F, HINGE_Y = 0.625F, HINGE_Z = 13.5F, SCREEN_AFTER = 60;
 
     @Override
     public int[] capture(RackDevice device) {
@@ -53,6 +54,9 @@ final class RackConsoleRender implements RackClientDevices.RenderExtra {
         }, light);
         part(poseStack, collector, RackModels.CONSOLE_KEYBOARD, light);
         float degrees = LID_DEGREES * lid;
+        // 1 - cos keeps the lying lid's front edge behind the drawer's front plate while it slides.
+        float forward = HINGE_FORWARD * Math.min(1, 1 - (float) Math.cos(Math.toRadians(degrees)));
+        poseStack.translate(0, 0, -forward / 16);
         poseStack.translate(0, HINGE_Y / 16, HINGE_Z / 16);
         poseStack.rotate(Axis.XP.rotationDegrees(degrees));
         poseStack.translate(0, -HINGE_Y / 16, -HINGE_Z / 16);
