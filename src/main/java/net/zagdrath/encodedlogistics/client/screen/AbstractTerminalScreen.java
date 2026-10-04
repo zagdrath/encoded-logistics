@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,6 +62,10 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     private List<Map.Entry<ItemKey, Long>> view = List.of();
     private int viewVersion = -1;
     private String viewSearch = "";
+    // The view was last built in the order it already had (the mouse was over the grid), not sorted afresh.
+    private boolean viewHeld;
+    // Where the mouse was last drawn at, for the view's hold.
+    private double lastMouseX = -1, lastMouseY = -1;
     private int scrollRow;
     private boolean draggingThumb;
     // The release of a click this screen handled itself, which vanilla mustn't act on as well.
@@ -169,14 +174,37 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     // --- The list ---
 
+    // What the grid shows. While the mouse is over the grid the order holds, as in AE2: counts change in place, an item
+    // that runs out leaves a gap (a negative count) and new ones go on the end, so nothing moves under the cursor. The
+    // list is sorted afresh once the mouse leaves the grid, or the search or a toolbar setting changes.
     private List<Map.Entry<ItemKey, Long>> view() {
         String text = search != null ? search.getValue() : "";
-        if (viewVersion != menu.version() || !text.equals(viewSearch)) {
+        boolean hold = inInsertArea(lastMouseX, lastMouseY);
+        boolean resort = viewVersion == -1 || !text.equals(viewSearch) || viewHeld && !hold;
+        if (resort || viewVersion != menu.version()) {
+            List<Map.Entry<ItemKey, Long>> fresh = filtered(text);
+            view = resort || !hold ? fresh : keepOrder(view, fresh);
+            viewHeld = !resort && hold;
             viewVersion = menu.version();
             viewSearch = text;
-            view = filtered(text);
         }
         return view;
+    }
+
+    // The fresh list in the old one's order: what's still there where it was, a gap for what's gone, new items after.
+    private static List<Map.Entry<ItemKey, Long>> keepOrder(List<Map.Entry<ItemKey, Long>> old, List<Map.Entry<ItemKey, Long>> fresh) {
+        Map<ItemKey, Long> counts = new LinkedHashMap<>();
+        fresh.forEach(entry -> counts.put(entry.getKey(), entry.getValue()));
+        List<Map.Entry<ItemKey, Long>> kept = new ArrayList<>(Math.max(old.size(), fresh.size()));
+        for (Map.Entry<ItemKey, Long> entry : old) {
+            Long count = counts.remove(entry.getKey());
+            kept.add(Map.entry(entry.getKey(), count != null ? count : -1L));
+        }
+        counts.forEach((key, count) -> kept.add(Map.entry(key, count)));
+        while (!kept.isEmpty() && kept.getLast().getValue() < 0) {
+            kept.removeLast();
+        }
+        return kept;
     }
 
     private List<Map.Entry<ItemKey, Long>> filtered(String text) {
@@ -239,7 +267,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             return -1;
         }
         int index = (scrollRow + row) * layout.columns + column;
-        return index < view().size() ? index : -2;
+        return index < view().size() && view().get(index).getValue() >= 0 ? index : -2;
     }
 
     // --- Drawing ---
@@ -247,6 +275,8 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
         int x = leftPos, y = topPos;
         graphics.blit(RenderPipelines.GUI_TEXTURED, layout.top, x, y, 0.0F, 0.0F, layout.width, layout.topHeight, 256, 32);
         for (int row = 0; row < rows; row++) {
@@ -289,7 +319,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             int index = scrollRow * layout.columns + cell;
             int cx = x + layout.gridLeft + (cell % layout.columns) * layout.cell;
             int cy = y + layout.topHeight + layout.gridTopInRow + (cell / layout.columns) * layout.cell;
-            if (index < entries.size()) {
+            if (index < entries.size() && entries.get(index).getValue() >= 0) {
                 graphics.item(entries.get(index).getKey().stack(), cx, cy);
             }
             if (index == hovered || hovered == -2 && cell == cellUnder(mouseX, mouseY)) {
@@ -373,7 +403,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 break;
             }
             long count = entries.get(index).getValue();
-            if (count == 1) {
+            if (count == 1 || count < 0) {
                 continue;
             }
             String text = count == 0 ? Component.translatable("gui.encodedlogistics.terminal.craft").getString() : abbreviate(count);
