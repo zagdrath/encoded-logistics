@@ -48,8 +48,10 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // Click actions, as AE2's terminals have them: left-click takes a stack, right-click half of one, shift-click a stack
     // into the inventory, shift-right-click (or Shift+wheel down) one onto the cursor; with an item carried, left-click
-    // puts it all in and right-click (or Shift+wheel up) one.
-    public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4, TAKE_ONE = 5;
+    // puts it all in and right-click (or Shift+wheel up) one; double-clicking an inventory stack puts every stack like it
+    // in, along with the one picked up by the first click.
+    public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4, TAKE_ONE = 5,
+            INSERT_ALL_LIKE_CARRIED = 6;
 
     // The player's inventory slots come first (0-35); terminals with a crafting section add theirs after.
     public static final int INVENTORY_SLOTS = 36;
@@ -193,6 +195,26 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
                     setCarried(key.toStack(taken));
                     moved(taken);
                 }
+            }
+            case INSERT_ALL_LIKE_CARRIED -> {
+                if (carried.isEmpty()) {
+                    return;
+                }
+                ItemKey like = ItemKey.of(carried);
+                int stored = (int) storage.insert(like, carried.getCount(), false);
+                carried.shrink(stored);
+                setCarried(carried);
+                for (int i = 0; i < INVENTORY_SLOTS; i++) {
+                    Slot slot = slots.get(i);
+                    ItemStack stack = slot.getItem();
+                    if (!stack.isEmpty() && like.equals(ItemKey.of(stack))) {
+                        int in = (int) storage.insert(like, stack.getCount(), false);
+                        stack.shrink(in);
+                        slot.setChanged();
+                        stored += in;
+                    }
+                }
+                moved(stored);
             }
             case TAKE_ONE -> {
                 // Onto the cursor: an empty one, or one carrying the same item with room for another.

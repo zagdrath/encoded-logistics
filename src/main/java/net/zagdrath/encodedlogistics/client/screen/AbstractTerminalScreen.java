@@ -43,7 +43,8 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // Counts are drawn at half size and abbreviated (1.2K, 34M, 5.1B); what the network can craft but doesn't have shows with
 // "Craft" instead. Clicks work as in AE2: left click takes a stack, right click half of one, shift-click moves a stack
 // into the inventory, shift-right-click takes one onto the cursor; clicking with an item held puts it in (right click:
-// just one); Shift+wheel puts one in (up) or takes one (down). Middle-click or Ctrl-click on a craftable item (or any click on one
+// just one); Shift+wheel puts one in (up) or takes one (down); double-clicking an inventory stack puts every stack like
+// it in. Middle-click or Ctrl-click on a craftable item (or any click on one
 // the network has none of) asks how many to craft. Search matches names; "@" searches mod ids. Each terminal adds
 // little more than its layout and title (AccessTerminalScreen).
 public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> extends AbstractContainerScreen<M> {
@@ -62,6 +63,8 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     private String viewSearch = "";
     private int scrollRow;
     private boolean draggingThumb;
+    // The release of a click this screen handled itself, which vanilla mustn't act on as well.
+    private boolean swallowRelease;
 
     protected AbstractTerminalScreen(M menu, Inventory inventory, Component title, TerminalLayout layout) {
         super(menu, inventory, title, layout.width, layout.height(menu.rows()));
@@ -471,6 +474,16 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 return true;
             }
         }
+        // Double-clicking an inventory stack: the first click picked it up; this one puts it, and every stack like it in
+        // the inventory, into the network (instead of vanilla gathering them onto the cursor).
+        if (doubleClick && event.button() == InputConstants.MOUSE_BUTTON_LEFT && !event.hasShiftDown() && menu.isOnline()
+                && !menu.getCarried().isEmpty() && hoveredSlot != null && hoveredSlot.index < AccessTerminalMenu.INVENTORY_SLOTS
+                && (!hoveredSlot.hasItem() || ItemStack.isSameItemSameComponents(hoveredSlot.getItem(), menu.getCarried()))) {
+            ClientPacketDistributor.sendToServer(new TerminalClickPayload(menu.containerId, Optional.empty(),
+                    AccessTerminalMenu.INSERT_ALL_LIKE_CARRIED));
+            swallowRelease = true;
+            return true;
+        }
         int sx = leftPos + layout.scrollLeft, sy = topPos + layout.scrollTop;
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && mx >= sx && mx < sx + layout.thumbWidth && my >= sy && my < sy + rows * layout.rowHeight) {
             draggingThumb = true;
@@ -531,6 +544,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         draggingThumb = false;
+        if (swallowRelease) {
+            // The stack is still on the cursor until the server answers; vanilla would put it back in the slot.
+            swallowRelease = false;
+            return true;
+        }
         return super.mouseReleased(event);
     }
 

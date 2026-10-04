@@ -115,7 +115,7 @@ final class TerminalGameTests {
     }
 
     // The grid, as AE2 does it: left takes a stack, right half a stack, shift-right one, Shift+wheel one at a time either
-    // way; with an item carried, left puts it all in and right one.
+    // way; with an item carried, left puts it all in and right one, and a double-click everything like it.
     static void gridActions(GameTestHelper helper) {
         rig(helper);
         mount(helper);
@@ -143,6 +143,16 @@ final class TerminalGameTests {
                     helper.assertTrue(menu.getCarried().getCount() == 1, "Take one onto an empty cursor: " + menu.getCarried());
                     menu.handleClick(player, INGOT, AccessTerminalMenu.TAKE_STACK);
                     helper.assertTrue(menu.getCarried().getCount() == 1, "Left-click with an item carried took more");
+                    // Double-click: the carried ingot and every ingot stack in the inventory go in; other stacks stay.
+                    player.getInventory().setItem(3, new ItemStack(Items.GOLD_INGOT, 20));
+                    player.getInventory().setItem(7, new ItemStack(Items.GOLD_INGOT, 5));
+                    player.getInventory().setItem(8, new ItemStack(Items.IRON_INGOT, 4));
+                    long before = storage.count(INGOT);
+                    menu.handleClick(player, null, AccessTerminalMenu.INSERT_ALL_LIKE_CARRIED);
+                    helper.assertTrue(menu.getCarried().isEmpty() && storage.count(INGOT) == before + 26,
+                            "Double-click stored " + (storage.count(INGOT) - before));
+                    helper.assertTrue(player.getInventory().getItem(3).isEmpty() && player.getInventory().getItem(7).isEmpty()
+                            && player.getInventory().getItem(8).getCount() == 4, "Double-click left the wrong stacks");
                 })
                 .thenSucceed();
     }
