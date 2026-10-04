@@ -49,6 +49,7 @@ import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
+import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -348,6 +349,38 @@ final class RackGameTests {
                 .thenExecute(() -> {
                     helper.assertTrue(ups.log().stream().anyMatch(event -> !event.toBattery()), "UPS never went back to mains");
                     helper.assertTrue(ups.stored() > before[1], "UPS didn't recharge: " + ups.stored() + " <= " + before[1]);
+                })
+                .thenSucceed();
+    }
+
+    // On battery the UPS shows it (amber, the battery look) and its alarm can be muted for the outage; power back for a
+    // while, the mute is over. Under 20% it's Low battery.
+    static void upsOnBatteryIndication(GameTestHelper helper) {
+        BlockPos master = networkedRack(helper);
+        UpsDevice ups = install(helper, master, RackDeviceType.UPS, 1, UpsDevice.class);
+        helper.startSequence()
+                .thenExecute(() -> ups.loadSettings(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(),
+                        upsState(helper, 500_000))))
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    helper.assertTrue(ups.onBattery(), "Not on battery");
+                    helper.assertTrue(ups.status() == RackDeviceInfo.Status.WARNING, "Status " + ups.status());
+                    helper.assertTrue("_battery".equals(ups.modelVariant()), "Look " + ups.modelVariant());
+                    ups.handleAction(null, UpsDevice.ACTION_TOGGLE_ALARM, 0, "");
+                    helper.assertTrue(ups.muted(), "Not muted");
+                })
+                .thenExecuteFor(5, () -> insert(helper, CONTROLLER, 4_096))
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    // (It's back on battery once the supply stops: a new outage, unmuted.)
+                    helper.assertTrue(ups.log().stream().anyMatch(event -> !event.toBattery()), "Never back on mains");
+                    helper.assertFalse(ups.muted(), "Mute outlasted the outage");
+                    ups.loadSettings(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), upsState(helper, 100_000)));
+                })
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    helper.assertTrue(ups.lowBattery(), "Not low at " + ups.percent() + "%");
+                    helper.assertTrue("_battery_low".equals(ups.modelVariant()), "Look " + ups.modelVariant());
                 })
                 .thenSucceed();
     }

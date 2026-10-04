@@ -204,14 +204,40 @@ public final class RackClientDevices {
         }
     }
 
-    // --- The UPS: battery % on the LCD, the load LEDs ---
+    // --- The UPS: battery % on the LCD (on battery, a marquee between showings of it), the load LEDs ---
 
     private static final class UpsDisplay implements RenderExtra {
         private static final int GREEN = 0xFF66FF77, AMBER = 0xFFFFB040, RED = 0xFFFF4848;
+        // The LCD's window and its digits' colour (the marquee's white glyphs are tinted with it).
+        private static final int LCD_X = 15, LCD_W = 24, MARQUEE_Y = 5, LCD_COLOR = 0xFFA4FFBB;
+        // The marquee's 3x5 glyphs: at (4i, 72) for the first 32 of these, (4(i - 32), 78) after (ups_marquee_font.txt).
+        private static final String GLYPHS = " ABCDEFGHILMNOPRSTUVWY0123456789%:-";
+        // The digits show this long between passes; a pass scrolls a texel every 2 ticks.
+        private static final int DIGITS_TICKS = 80, TICKS_PER_TEXEL = 2;
 
         @Override
         public int[] capture(RackDevice device) {
-            return new int[] { device instanceof UpsDevice ups ? Math.clamp(ups.shownPercent(), 0, 100) | Math.clamp(ups.shownLeds(), 0, 10) << 8 : 0 };
+            if (!(device instanceof UpsDevice ups)) {
+                return new int[] { 0, 0, -1 };
+            }
+            int packed = Math.clamp(ups.shownPercent(), 0, 100) | Math.clamp(ups.shownLeds(), 0, 10) << 8 | (ups.shownBattery() ? 1 << 16 : 0);
+            return new int[] { packed, ups.clientTicks(), (int) Math.min(Integer.MAX_VALUE, ups.shownRuntime()) };
+        }
+
+        // "ON BATTERY - 5M 44S" (just "ON BATTERY" with no load to go by).
+        static String marquee(long runtime) {
+            String text = "ON BATTERY";
+            if (runtime >= 0) {
+                text += " - " + UpsDevice.runtime(runtime).getString().toUpperCase(java.util.Locale.ROOT);
+            }
+            return text;
+        }
+
+        // Where the marquee's left edge is this tick (relative to the LCD's), or Integer.MIN_VALUE while the digits show.
+        static int marqueeOffset(int ticks, int width) {
+            int pass = (width + LCD_W) * TICKS_PER_TEXEL, cycle = pass + DIGITS_TICKS;
+            int at = Math.floorMod(ticks, cycle);
+            return at < pass ? LCD_W - at / TICKS_PER_TEXEL : Integer.MIN_VALUE;
         }
 
         @Override
@@ -222,14 +248,30 @@ public final class RackClientDevices {
             }
             int data = packed[0];
             int percent = data & 0xFF, leds = data >> 8 & 0xFF;
+            boolean battery = (data >> 16 & 1) != 0;
             TextureAtlasSprite sprite = sprite(type.id().withPath("block/rack_device/" + type.id().getPath()));
             String text = percent + "%";
+            String marquee = battery && packed.length > 2 ? marquee(packed[2]) : "";
+            int offset = battery && packed.length > 2 ? marqueeOffset(packed[1], marquee.length() * 4) : Integer.MIN_VALUE;
             collector.submitCustomGeometry(poseStack, Sheets.cutoutBlockItemSheet(), (pose, buffer) -> {
-                // 7-segment digits (4x7 texels at (5d, 64), '%' at (50, 64)), full-bright on the LCD.
-                for (int i = 0; i < text.length(); i++) {
-                    char c = text.charAt(i);
-                    int glyph = c == '%' ? 50 : 5 * (c - '0');
-                    frontQuad(buffer, pose, type.size(), 17 + 5 * i, 5, 4, 7, sprite, glyph, 64, 4, 7, -1, LightCoordsUtil.FULL_BRIGHT);
+                if (offset != Integer.MIN_VALUE) {
+                    // The marquee, clipped to the LCD.
+                    for (int i = 0; i < marquee.length(); i++) {
+                        int glyph = Math.max(0, GLYPHS.indexOf(marquee.charAt(i)));
+                        int u = glyph < 32 ? 4 * glyph : 4 * (glyph - 32), v = glyph < 32 ? 72 : 78;
+                        int x0 = offset + 4 * i, from = Math.max(0, -x0), to = Math.min(3, LCD_W - x0);
+                        if (to > from) {
+                            frontQuad(buffer, pose, type.size(), LCD_X + x0 + from, MARQUEE_Y, to - from, 5, sprite, u + from, v, to - from, 5, LCD_COLOR,
+                                    LightCoordsUtil.FULL_BRIGHT);
+                        }
+                    }
+                } else {
+                    // 7-segment digits (4x7 texels at (5d, 64), '%' at (50, 64)), full-bright on the LCD.
+                    for (int i = 0; i < text.length(); i++) {
+                        char c = text.charAt(i);
+                        int glyph = c == '%' ? 50 : 5 * (c - '0');
+                        frontQuad(buffer, pose, type.size(), 17 + 5 * i, 5, 4, 7, sprite, glyph, 64, 4, 7, -1, LightCoordsUtil.FULL_BRIGHT);
+                    }
                 }
                 // The load bar: lit LEDs green, then amber, then red; the rest dark (covering the baked default).
                 for (int i = 0; i < UpsDevice.LOAD_LEDS; i++) {

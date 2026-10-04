@@ -21,6 +21,11 @@ public final class ModSounds {
     public static final Holder<SoundEvent> RACK_DOOR_CLOSE = SOUND_EVENTS.register("block.rack.door_close",
             SoundEvent::createVariableRangeEvent);
 
+    // A UPS on battery: four beeps every 30 s, a rapid beep when low, one beep when power's back.
+    public static final Holder<SoundEvent> UPS_ALARM = SOUND_EVENTS.register("block.rack.ups_alarm", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> UPS_ALARM_LOW = SOUND_EVENTS.register("block.rack.ups_alarm_low", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> UPS_BEEP = SOUND_EVENTS.register("block.rack.ups_beep", SoundEvent::createVariableRangeEvent);
+
     public static final Holder<SoundEvent> RACK_CONSOLE_SLIDE_OUT = SOUND_EVENTS.register("block.rack.console_slide_out",
             SoundEvent::createVariableRangeEvent);
     public static final Holder<SoundEvent> RACK_CONSOLE_SLIDE_IN = SOUND_EVENTS.register("block.rack.console_slide_in",

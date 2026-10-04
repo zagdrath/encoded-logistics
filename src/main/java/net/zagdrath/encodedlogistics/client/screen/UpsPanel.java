@@ -30,6 +30,8 @@ public class UpsPanel extends RackScreen.Panel {
     private static final int LABEL_X = 30, VALUE_RIGHT = 165, READOUT_Y = 25, LINE_H = 12;
     private static final int MODE_X = 8, MODE_Y = 80, MODE_SIZE = 14, LOAD_X = 27, LOAD_Y = 85, LOAD_W = 140;
     private static final int LOG_TITLE_Y = 95, LOG_X = 10, LOG_Y = 106, LOG_H = 12;
+    private static final int ALARM_X = 152, ALARM_Y = 93, ALARM_SIZE = 14;
+    private static final Identifier ALARM_ON = EncodedLogistics.id("rack/ups/alarm_on"), ALARM_MUTED = EncodedLogistics.id("rack/ups/alarm_muted");
 
     public UpsPanel(RackScreen screen) {
         super(screen);
@@ -63,6 +65,11 @@ public class UpsPanel extends RackScreen.Panel {
                 MODE_SIZE);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ups.mode() == UpsDevice.Mode.ONLINE ? MODE_ONLINE : MODE_STANDBY, x + MODE_X + 1,
                 y + MODE_Y + 1, 12, 12);
+        boolean alarmHover = ups.onBattery() && screen.over(mouseX, mouseY, ALARM_X, ALARM_Y, ALARM_SIZE, ALARM_SIZE);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, alarmHover ? PartScreens.BUTTON_HOVER : PartScreens.BUTTON, x + ALARM_X, y + ALARM_Y, ALARM_SIZE,
+                ALARM_SIZE);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ups.muted() ? ALARM_MUTED : ALARM_ON, x + ALARM_X + 1, y + ALARM_Y + 1, 12, 12,
+                ups.onBattery() ? 0xFFFFFFFF : 0xFF808080);
         PartScreens.bar(graphics, LOAD_BAR, x + LOAD_X, y + LOAD_Y, LOAD_W,
                 (float) (data.getDoubleOr("load", 0) / Math.max(1, data.getIntOr("max_output", UpsDevice.maxOutput()))));
     }
@@ -82,6 +89,7 @@ public class UpsPanel extends RackScreen.Panel {
         row(graphics, 2, "runtime", UpsDevice.runtime(data.getLongOr("runtime", -1)), RackScreen.TEXT);
         row(graphics, 3, "source", Component.translatable(ups.onBattery() ? "gui.encodedlogistics.ups.source.battery"
                 : "gui.encodedlogistics.ups.source.mains"), ups.onBattery() ? RackScreen.WARNING : RackScreen.TEXT);
+        row(graphics, 4, "status", Component.literal(data.getStringOr("status", "")), ups.onBattery() ? RackScreen.AMBER : RackScreen.TEXT);
 
         graphics.text(font(), Component.translatable("gui.encodedlogistics.ups.log"), 8, LOG_TITLE_Y, RackScreen.TEXT_MUTED, false);
         long now = data.getLongOr("now", 0);
@@ -113,7 +121,12 @@ public class UpsPanel extends RackScreen.Panel {
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         UpsDevice ups = ups();
-        if (ups != null && screen.over(mouseX, mouseY, MODE_X, MODE_Y, MODE_SIZE, MODE_SIZE)) {
+        if (ups != null && screen.over(mouseX, mouseY, ALARM_X, ALARM_Y, ALARM_SIZE, ALARM_SIZE)) {
+            graphics.setComponentTooltipForNextFrame(font(), List.of(Component.translatable("gui.encodedlogistics.ups.alarm",
+                    Component.translatable(ups.muted() ? "gui.encodedlogistics.ups.alarm.muted" : "gui.encodedlogistics.ups.alarm.on")),
+                    Component.translatable(ups.onBattery() ? "gui.encodedlogistics.ups.alarm.hint" : "gui.encodedlogistics.ups.alarm.idle")
+                            .withColor(RackScreen.TEXT_MUTED)), mouseX, mouseY);
+        } else if (ups != null && screen.over(mouseX, mouseY, MODE_X, MODE_Y, MODE_SIZE, MODE_SIZE)) {
             graphics.setComponentTooltipForNextFrame(font(), List.of(ups.mode().label(),
                     Component.translatable("gui.encodedlogistics.ups.mode.hint").withColor(RackScreen.TEXT_MUTED)), mouseX, mouseY);
         } else if (ups != null && screen.over(mouseX, mouseY, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
@@ -126,6 +139,10 @@ public class UpsPanel extends RackScreen.Panel {
     protected boolean mouseClicked(double x, double y, int button, boolean shift) {
         if (button == InputConstants.MOUSE_BUTTON_LEFT && x >= MODE_X && x < MODE_X + MODE_SIZE && y >= MODE_Y && y < MODE_Y + MODE_SIZE) {
             send(UpsDevice.ACTION_TOGGLE_MODE, 0, "");
+            return true;
+        }
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && x >= ALARM_X && x < ALARM_X + ALARM_SIZE && y >= ALARM_Y && y < ALARM_Y + ALARM_SIZE) {
+            send(UpsDevice.ACTION_TOGGLE_ALARM, 0, "");
             return true;
         }
         return false;

@@ -11,12 +11,20 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.registry.ModSounds;
+import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -29,6 +37,11 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 // recharges continuously); Standby only steps in once supply has failed altogether, and idles on less. Several UPSes on
 // a network add up: they discharge together and recharge in parallel. Overload (a shortfall over their rated output)
 // is a fault.
+//
+// On battery it says so: an amber status LED (steady; blinking under upsLowBatteryPercent, Low battery), the LCD
+// scrolling "ON BATTERY - <runtime>" between showings of the charge, and an alarm from its place in the rack: four beeps
+// every 30 s, a rapid beep while low, one beep when power's back. Muting (its panel) silences this outage only; upsAlarms
+// turns them all off.
 public class UpsDevice extends RackDevice {
     public enum Mode {
         ONLINE, STANDBY;
@@ -41,7 +54,8 @@ public class UpsDevice extends RackDevice {
     // A switchover: when, and which way.
     public record Event(long time, boolean toBattery) {}
 
-    public static final int ACTION_TOGGLE_MODE = 0;
+    public static final int ACTION_TOGGLE_MODE = 0, ACTION_TOGGLE_ALARM = 1;
+    private static final int ALARM_INTERVAL = 600, LOW_ALARM_INTERVAL = 40;
     public static final int LOAD_LEDS = 10;
     private static final int LOG_SIZE = 3, FAULT_HOLD = 20;
 
@@ -55,9 +69,15 @@ public class UpsDevice extends RackDevice {
     // The game time a network last ran this UPS's energy (cover).
     private long lastCovered = Long.MIN_VALUE;
     private final Deque<Event> log = new ArrayDeque<>();
+    // The alarm: muted for this outage, ticks into the outage (or since it went low), and how the last tick stood.
+    private boolean muted;
+    private int alarmTicks;
+    private boolean alarmBattery, alarmLow;
     // Client: what the front shows, as synced.
     private int shownPercent, shownLeds;
-    private boolean shownFault;
+    private boolean shownFault, shownBattery, shownLow;
+    private long shownRuntime = -1;
+    private int clientTicks;
 
     public UpsDevice(RackDeviceType type) {
         super(type);
@@ -86,6 +106,37 @@ public class UpsDevice extends RackDevice {
 
     public boolean onBattery() {
         return onBattery;
+    }
+
+    // On battery with less than upsLowBatteryPercent left.
+    public boolean lowBattery() {
+        return onBattery && percent() < Config.UPS_LOW_BATTERY_PERCENT.getAsInt();
+    }
+
+    public boolean muted() {
+        return muted;
+    }
+
+    // Client: on battery, low, the runtime left (seconds, -1 unknown) and ticks for the LCD's marquee, as synced.
+    public boolean shownBattery() {
+        return shownBattery;
+    }
+
+    public boolean shownLow() {
+        return shownLow;
+    }
+
+    public long shownRuntime() {
+        return shownRuntime;
+    }
+
+    public int clientTicks() {
+        return clientTicks;
+    }
+
+    @Override
+    public void clientTick() {
+        clientTicks++;
     }
 
     public double load() {
@@ -166,7 +217,7 @@ public class UpsDevice extends RackDevice {
         return given;
     }
 
-    // Off every network (cable cut, lane lost): nothing to cover or carry.
+    // Off every network (cable cut, lane lost): nothing to cover or carry. Then the alarm.
     @Override
     public void tick(ServerLevel level) {
         if (level.getGameTime() - lastCovered > 2 && (onBattery || load != 0 || supplied != 0)) {
@@ -175,6 +226,46 @@ public class UpsDevice extends RackDevice {
             supplied = 0;
             changed(false);
         }
+        alarm(level);
+        // The LCD's runtime, once a second while it shows it.
+        if (onBattery && level.getGameTime() % 20 == 0 && runtimeSeconds() != shownRuntime) {
+            shownRuntime = runtimeSeconds();
+            changed(false);
+        }
+    }
+
+    private void alarm(ServerLevel level) {
+        boolean battery = onBattery && isOnline(), low = battery && lowBattery();
+        if (battery != alarmBattery) {
+            if (!battery && alarmBattery) {
+                // Power's back: the alarm stops, one beep, and muting is over.
+                play(level, ModSounds.UPS_BEEP.value());
+                muted = false;
+            }
+            alarmBattery = battery;
+            alarmTicks = 0;
+        }
+        if (low != alarmLow) {
+            alarmLow = low;
+            alarmTicks = 0;
+        }
+        if (!battery) {
+            return;
+        }
+        if (!muted && alarmTicks % (low ? LOW_ALARM_INTERVAL : ALARM_INTERVAL) == 0) {
+            play(level, (low ? ModSounds.UPS_ALARM_LOW : ModSounds.UPS_ALARM).value());
+        }
+        alarmTicks++;
+    }
+
+    // From its place in the rack: the middle of its units' front.
+    private void play(ServerLevel level, SoundEvent sound) {
+        RackBlockEntity rack = rack();
+        if (rack == null || !Config.UPS_ALARMS.getAsBoolean()) {
+            return;
+        }
+        Vec3 at = RackGeometry.toWorld(RackGeometry.deviceBox(u(), size()), rack.getBlockPos(), rack.facing()).getCenter();
+        level.playSound(null, at.x, at.y, at.z, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     // How much the UPSes take from what's available to recharge.
@@ -229,7 +320,10 @@ public class UpsDevice extends RackDevice {
 
     @Override
     public RackDeviceInfo.Status status() {
-        return faultTicks > 0 ? RackDeviceInfo.Status.FAULT : super.status();
+        if (faultTicks > 0) {
+            return RackDeviceInfo.Status.FAULT;
+        }
+        return onBattery && isOnline() ? RackDeviceInfo.Status.WARNING : super.status();
     }
 
     @Override
@@ -240,7 +334,18 @@ public class UpsDevice extends RackDevice {
         if (!isOnline()) {
             return super.statusText();
         }
-        return Component.translatable(onBattery ? "hud.encodedlogistics.ups.on_battery" : "hud.encodedlogistics.ups.on_mains");
+        return powerStatus();
+    }
+
+    // Online, On battery or Low battery.
+    public Component powerStatus() {
+        return Component.translatable(lowBattery() ? "hud.encodedlogistics.ups.low_battery" : onBattery ? "hud.encodedlogistics.ups.battery_status"
+                : "hud.encodedlogistics.ups.online");
+    }
+
+    @Override
+    public @Nullable String modelVariant() {
+        return onBattery && isOnline() && faultTicks <= 0 ? lowBattery() ? "_battery_low" : "_battery" : null;
     }
 
     @Override
@@ -249,6 +354,8 @@ public class UpsDevice extends RackDevice {
         RackDeviceInfo.BarStyle style = percent > 50 ? RackDeviceInfo.BarStyle.NORMAL : percent >= 20 ? RackDeviceInfo.BarStyle.WARN
                 : RackDeviceInfo.BarStyle.LOW;
         return List.of(
+                new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.ups.status"), isOnline() ? powerStatus()
+                        : super.statusText()),
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.ups.battery"), Component.literal(percent + "%"),
                         new RackDeviceInfo.Bar(percent / 100.0F, style)),
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.ups.load"), Component.literal(rate(load))),
@@ -284,6 +391,10 @@ public class UpsDevice extends RackDevice {
             mode = mode == Mode.ONLINE ? Mode.STANDBY : Mode.ONLINE;
             // Its drain changed.
             changed(true);
+        } else if (action == ACTION_TOGGLE_ALARM && onBattery) {
+            // This outage only.
+            muted = !muted;
+            saveOnly();
         }
     }
 
@@ -296,6 +407,8 @@ public class UpsDevice extends RackDevice {
         output.putLong("now", viewer.level().getGameTime());
         output.putLong("capacity", capacity());
         output.putInt("max_output", maxOutput());
+        output.putString("status", powerStatus().getString());
+        output.putBoolean("low", lowBattery());
     }
 
     // --- Saving ---
@@ -316,6 +429,7 @@ public class UpsDevice extends RackDevice {
     public void save(ValueOutput output) {
         saveSettings(output);
         output.putBoolean("on_battery", onBattery);
+        output.putBoolean("muted", muted);
         ValueOutput.ValueOutputList events = output.childrenList("log");
         for (Event event : log) {
             ValueOutput child = events.addChild();
@@ -328,6 +442,7 @@ public class UpsDevice extends RackDevice {
     public void load(ValueInput input) {
         loadSettings(input);
         onBattery = input.getBooleanOr("on_battery", false);
+        muted = input.getBooleanOr("muted", false);
         log.clear();
         for (ValueInput child : input.childrenListOrEmpty("log")) {
             if (log.size() < LOG_SIZE) {
@@ -341,11 +456,19 @@ public class UpsDevice extends RackDevice {
     public void writeClient(ValueOutput output) {
         output.putInt("percent", percent());
         output.putInt("leds", loadLeds());
+        if (onBattery) {
+            output.putBoolean("battery", true);
+            output.putBoolean("low", lowBattery());
+            output.putLong("runtime", runtimeSeconds());
+        }
     }
 
     @Override
     public void readClient(ValueInput input) {
         shownPercent = input.getIntOr("percent", 0);
         shownLeds = input.getIntOr("leds", 0);
+        shownBattery = input.getBooleanOr("battery", false);
+        shownLow = input.getBooleanOr("low", false);
+        shownRuntime = input.getLongOr("runtime", -1);
     }
 }
