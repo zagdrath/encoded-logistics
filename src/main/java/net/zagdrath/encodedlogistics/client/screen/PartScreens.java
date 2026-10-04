@@ -79,6 +79,12 @@ final class PartScreens {
         graphics.centeredText(font, text, x + width / 2, y + (height - 8) / 2, enabled ? TEXT : TEXT_DISABLED);
     }
 
+    // A 16x16 icon (whose glyph, as the kit draws them, sits in its top rows: y 1 to 8) centred in a box: the button
+    // under it, at (x, y), width by height.
+    static void centeredIcon(GuiGraphicsExtractor graphics, Identifier icon, int x, int y, int width, int height, int color) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, icon, x + width / 2 - 8, y + (height - 7) / 2 - 1, 16, 16, color);
+    }
+
     // A progress bar's fill (common/bar_fill_*), width wide when full.
     static void bar(GuiGraphicsExtractor graphics, Identifier sprite, int x, int y, int width, float progress) {
         int filled = Math.round(width * Math.clamp(progress, 0.0F, 1.0F));

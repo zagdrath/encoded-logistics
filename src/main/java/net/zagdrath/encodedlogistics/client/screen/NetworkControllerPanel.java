@@ -29,7 +29,8 @@ public class NetworkControllerPanel extends RackScreen.Panel {
     private static final Identifier ENERGY_BAR = EncodedLogistics.id("controller/energy_bar"), LANES_BAR = EncodedLogistics.id("common/bar_fill_mint");
     private static final Identifier[] CHIPS = { EncodedLogistics.id("rack/controller/chip_up"), EncodedLogistics.id("rack/controller/chip_down"),
             EncodedLogistics.id("rack/controller/chip_unused"), EncodedLogistics.id("rack/controller/chip_mismatch") };
-    private static final int GAUGE_X = 9, GAUGE_Y = 23, GAUGE_W = 10, GAUGE_H = 50;
+    // The energy well's inside (its texture's well is wider and taller than the UPS's): the bar is stretched to fill it.
+    private static final int GAUGE_X = 9, GAUGE_Y = 23, GAUGE_W = 14, GAUGE_H = 58;
     private static final int LABEL_X = 31, VALUE_RIGHT = 165, READOUT_Y = 25, LINE_H = 11, LANES_Y = 67, BAR_X = 32, BAR_Y = 78, BAR_W = 132;
     private static final int PAIR_TITLE_Y = 86, PAIR_X = 12, PAIR_Y = 98, PAIR_VALUE_X = 82;
     private static final int SWITCH_X = 108, SWITCH_Y = 136, SWITCH_W = 60, SWITCH_H = 14;

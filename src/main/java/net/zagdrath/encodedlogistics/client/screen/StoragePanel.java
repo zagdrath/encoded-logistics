@@ -55,6 +55,12 @@ public class StoragePanel extends RackScreen.Panel {
         top = san ? 104 : 55;
     }
 
+    // The NAS's drive box ends at 91, the SAN's slots at 159.
+    @Override
+    protected int height() {
+        return san ? 166 : 98;
+    }
+
     @Override
     protected Identifier background() {
         return san ? SAN : NAS;

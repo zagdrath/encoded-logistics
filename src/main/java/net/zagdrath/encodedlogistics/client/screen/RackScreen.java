@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
@@ -22,13 +23,17 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
@@ -36,9 +41,11 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.client.rack.RackClientDevices;
+import net.zagdrath.encodedlogistics.client.rack.RackHud;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.net.RackActionPayload;
 import net.zagdrath.encodedlogistics.net.RackPanelPayload;
+import net.zagdrath.encodedlogistics.net.RackUnitPayloads;
 import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
@@ -68,7 +75,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
 
     // At 16 rows (RackMenu.ROWS); the inset and the scrollbar grow with the rows the window has room for.
-    private static final int INSET_X = 8, INSET_Y = 18, INSET_W = 140, INSET_H = 146;
+    private static final int INSET_X = 8, INSET_Y = 18, INSET_W = 124, INSET_H = 146;
     private static final int ROW_H = RackMenu.ROW_H, FIRST_ROW_Y = 19, NUMBER_RIGHT = 23, SLOT_X = 26, SLOT_W = 104;
     private static final int SCROLL_X = 150, SCROLL_Y = 18, SCROLL_W = 8, SCROLL_H = 146, THUMB_W = 6, THUMB_H = 15;
     // The elevation texture's rows repeat every ROW_H from here (a row and its separator line).
@@ -99,6 +106,53 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         return RackGeometry.UNITS - rows;
     }
 
+    // The top half's height now: the elevation's (it grows with the window), or the open panel's own.
+    private int topHeight() {
+        if (!showingPanel()) {
+            return menu.topHeight();
+        }
+        return panel != null ? Math.min(RackMenu.TOP_HEIGHT, panel.height()) : RackMenu.TOP_HEIGHT;
+    }
+
+    // The screen's height now (imageHeight stays what it was when the screen opened).
+    private int screenHeight() {
+        return topHeight() + RackMenu.INVENTORY_HEIGHT;
+    }
+
+    @Override
+    public int getImageHeight() {
+        return screenHeight();
+    }
+
+    @Override
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
+        return mouseX < left || mouseY < top || mouseX >= left + imageWidth || mouseY >= top + screenHeight();
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        relayout();
+    }
+
+    // Sizes the screen to the top half shown, and moves the player's inventory under it (on the client: the server never
+    // looks at slot positions; MovedSlot).
+    private void relayout() {
+        int top = topHeight();
+        topPos = (height - screenHeight()) / 2;
+        inventoryLabelY = top + 6;
+        int dy = top - menu.topHeight();
+        for (int i = 0; i < menu.slots.size(); i++) {
+            Slot slot = menu.slots.get(i);
+            Slot base = slot instanceof MovedSlot moved ? moved.base : slot;
+            if (base.container instanceof Inventory) {
+                menu.slots.set(i, MovedSlot.of(slot, dy));
+            }
+        }
+    }
+
+    private int lastMouseX, lastMouseY;
+
     // --- What panels use ---
 
     // A device's settings panel, in the top half.
@@ -107,6 +161,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
         protected Panel(RackScreen screen) {
             this.screen = screen;
+        }
+
+        // How tall it is: the top half's height while it shows (its content and a margin; at most RackMenu.TOP_HEIGHT).
+        // The screen shrinks to it and the inventory moves up under it.
+        protected int height() {
+            return RackMenu.TOP_HEIGHT;
         }
 
         // The top half's background texture (176x168 of a 256x256).
@@ -234,10 +294,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             panelU = picked;
             RackDevice device = menu.pickedDevice();
             panel = device != null ? RackClientDevices.panel(device.type(), this) : null;
+            relayout();
             if (panel != null) {
                 panel.init();
             }
         }
+        queryHovered(lastMouseX, lastMouseY);
         if (panel != null) {
             panel.tick();
         }
@@ -260,14 +322,13 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        int topHeight = menu.topHeight();
+        int topHeight = topHeight();
         if (showingPanel()) {
-            // A panel's background, its plain bottom stretched over the extra height.
+            // A panel's background down to its height, then the texture's plain bottom rows.
             Identifier top = panel != null ? panel.background() : ELEVATION;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos, 0.0F, 0.0F, imageWidth, PANEL_FILL_Y, 256, 256);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos + PANEL_FILL_Y, 0.0F, PANEL_FILL_Y, imageWidth, extra, imageWidth, 1, 256, 256);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos + PANEL_FILL_Y + extra, 0.0F, PANEL_FILL_Y, imageWidth,
-                    RackMenu.TOP_HEIGHT - PANEL_FILL_Y, 256, 256);
+            int bottom = RackMenu.TOP_HEIGHT - PANEL_FILL_Y;
+            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos, 0.0F, 0.0F, imageWidth, topHeight - bottom, 256, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos + topHeight - bottom, 0.0F, PANEL_FILL_Y, imageWidth, bottom, 256, 256);
         } else {
             // The elevation: its top, a row's strip for each extra row, its bottom.
             graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos, 0.0F, 0.0F, imageWidth, STRIP_Y, 256, 256);
@@ -284,10 +345,9 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (panel != null) {
                 RackDevice picked = menu.pickedDevice();
                 if (picked != null) {
-                    // Like the back button: the icon alone, brighter when hovered (its glyph is in the sprite's top half,
-                    // so it sits 4 lower to line up with the back arrow).
+                    // Like the back button: the icon alone, brighter when hovered, in line with the back arrow.
                     boolean overPriority = over(mouseX, mouseY, PRIORITY_X, BACK_Y, 16, 16);
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PRIORITY[picked.lanePriority().ordinal()], leftPos + PRIORITY_X, topPos + BACK_Y + 4, 16, 16,
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PRIORITY[picked.lanePriority().ordinal()], leftPos + PRIORITY_X, topPos + BACK_Y, 16, 16,
                             overPriority ? 0xFFFFFFFF : 0xFFC8C8C8);
                 }
                 panel.extractBackground(graphics, mouseX, mouseY, partialTick);
@@ -406,25 +466,33 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
     // A device's real front, from its texture (128 x sheetHeight, frames that tall), with its lights for its state (an animated overlay shown frame by frame,
     // as the block does: 3 ticks a frame).
+    // Drawn ROW_H a unit (less the last row's gap), so a device fills its rows with no gaps between its units.
     private void front(GuiGraphicsExtractor graphics, RackDevice device, int x, int y) {
-        int height = 8 * device.size(), sheet = device.type().sheetHeight();
-        graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, height, 128, sheet);
+        int height = 8 * device.size(), shown = device.size() * ROW_H - 1, sheet = device.type().sheetHeight();
+        graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, shown, SLOT_W, height, 128, sheet);
         RackDeviceInfo.Status status = device.shownStatus();
         String variant = device.shownVariant();
-        Integer variantFrames = variant != null ? device.type().variants().get(variant) : null;
-        if (variantFrames != null) {
-            int frame = (int) (System.currentTimeMillis() / 200 % variantFrames);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(variant), x, y, 0.0F, frame * sheet, SLOT_W, height, 128,
-                    sheet * variantFrames);
-        } else if (status == RackDeviceInfo.Status.ONLINE || status == RackDeviceInfo.Status.WARNING) {
-            int frames = device.type().frames();
-            int frame = (int) (System.currentTimeMillis() / 150 % frames);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_on"), x, y, 0.0F, frame * sheet, SLOT_W, height, 128, sheet * frames);
-        } else if (status == RackDeviceInfo.Status.FAULT) {
-            // Two frames, blinking.
-            boolean lit = (System.currentTimeMillis() / 500 & 1) == 0;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_fault"), x, y, 0.0F, lit ? 0.0F : sheet, SLOT_W, height, 128, sheet * 2);
+        String lit = variant != null && device.type().variants().containsKey(variant) ? variant
+                : status == RackDeviceInfo.Status.ONLINE || status == RackDeviceInfo.Status.WARNING ? "_on" : status == RackDeviceInfo.Status.FAULT ? "_fault"
+                        : null;
+        if (lit != null) {
+            litFront(graphics, device, lit, x, y, shown, height, sheet);
         }
+    }
+
+    // A device's lit overlay as the block atlas has it this moment: the atlas animates these textures (frame time,
+    // interpolation and all) just as it does for the rack in the world, so the screen shows the same frame. (Loaded as a
+    // plain texture, an animated strip only has its first frame.)
+    private static void litFront(GuiGraphicsExtractor graphics, RackDevice device, String suffix, int x, int y, int shown, int height, int sheet) {
+        Identifier id = device.type().id().withPath("block/rack_device/" + device.type().id().getPath() + suffix);
+        TextureAtlas atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
+        TextureAtlasSprite sprite = atlas.getSprite(id);
+        if (sprite == atlas.missingSprite() || sprite.getU1() <= sprite.getU0() || sprite.getV1() <= sprite.getV0()) {
+            return;
+        }
+        int atlasWidth = Math.round(128 / (sprite.getU1() - sprite.getU0())), atlasHeight = Math.round(sheet / (sprite.getV1() - sprite.getV0()));
+        graphics.blit(RenderPipelines.GUI_TEXTURED, sprite.atlasLocation(), x, y, sprite.getX(), sprite.getY(), SLOT_W, shown, SLOT_W, height, atlasWidth,
+                atlasHeight);
     }
 
     @Override
@@ -457,6 +525,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
         if (showingPanel()) {
             RackDevice picked = menu.pickedDevice();
             if (over(mouseX, mouseY, BACK_X, BACK_Y, 16, 16)) {
@@ -481,13 +551,30 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         }
         RackDevice device = rack.deviceAt(u);
         if (device != null && carried == null) {
-            List<Component> lines = new ArrayList<>();
-            lines.add(device.name());
-            lines.add(unitRange(device).copy().withColor(TEXT_MUTED));
-            RackDeviceInfo.Status status = device.shownStatus();
-            lines.add(status.text().copy().withColor(statusColor(status)));
-            lines.add(Component.translatable("gui.encodedlogistics.rack.hint").withColor(TEXT_DISABLED));
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            // The same popup as looking at the rack, with the screen's hint under it (once the server's answer is in).
+            RackDeviceInfo info = RackUnitPayloads.Info.forUnit(rack.getBlockPos(), device.u(), device.type());
+            if (info != null) {
+                graphics.nextStratum();
+                RackHud.popup(graphics, font, device, info, mouseX + 12, mouseY - 8, Component.translatable("gui.encodedlogistics.rack.hint"));
+            }
+        }
+    }
+
+    // Asks the server about the device under the mouse: at once, then every QUERY_INTERVAL ticks.
+    private static final int QUERY_INTERVAL = 10;
+    private int hoveredQueried = -1, queryTicks;
+
+    private void queryHovered(int mouseX, int mouseY) {
+        RackBlockEntity rack = menu.rack();
+        int u = showingPanel() ? 0 : hoveredUnit(mouseX, mouseY);
+        RackDevice device = rack != null && u > 0 ? rack.deviceAt(u) : null;
+        int unit = device != null ? device.u() : -1;
+        if (unit != hoveredQueried) {
+            hoveredQueried = unit;
+            queryTicks = 0;
+        }
+        if (device != null && queryTicks++ % QUERY_INTERVAL == 0) {
+            ClientPacketDistributor.sendToServer(new RackUnitPayloads.Query(rack.getBlockPos(), device.u()));
         }
     }
 
@@ -559,7 +646,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
                 ClientPacketDistributor.sendToServer(new RackActionPayload(menu.containerId, panelU, RackDevice.ACTION_PRIORITY, 0, ""));
                 return true;
             }
-            if (panel != null && mouseY < topPos + menu.topHeight() && panel.mouseClicked(mouseX - leftPos, mouseY - topPos, button, shift)) {
+            if (panel != null && mouseY < topPos + topHeight() && panel.mouseClicked(mouseX - leftPos, mouseY - topPos, button, shift)) {
                 return true;
             }
             return super.mouseClicked(event, doubleClick);
@@ -619,7 +706,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (panel != null && panel.mouseScrolled(mouseX - leftPos, mouseY - topPos, scrollY)) {
                 return true;
             }
-        } else if (mouseY < topPos + menu.topHeight() && mouseX >= leftPos && mouseX < leftPos + imageWidth) {
+        } else if (mouseY < topPos + topHeight() && mouseX >= leftPos && mouseX < leftPos + imageWidth) {
             scroll = Mth.clamp(scroll - (int) Math.signum(scrollY) * 2, 0, Math.max(0, maxScroll()));
             return true;
         }

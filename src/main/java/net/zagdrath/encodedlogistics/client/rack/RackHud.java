@@ -167,12 +167,22 @@ public final class RackHud {
             // Not in yet (a moment at most): no half popup.
             return;
         }
+        popup(graphics, font, device, info, centerX + OFFSET_X, centerY + OFFSET_Y, null);
+    }
+
+    // A device's popup (the rack's strip above it), its top left at (anchorX, anchorY) or as near as the window allows,
+    // with an optional muted line at the bottom (the rack screen's hint). The HUD's and the rack screen's hover.
+    public static void popup(GuiGraphicsExtractor graphics, Font font, RackDevice device, RackDeviceInfo info, int anchorX, int anchorY,
+            @Nullable Component footer) {
         // The rack's strip goes above the popup, so the popup starts lower.
         int headerH = info.header().isPresent() ? HEADER_STRIP_H + 2 : 0;
         Component units = RackScreen.unitRange(device);
         Component badge = Component.translatable("hud.encodedlogistics.rack.scheduler");
         int badgeWidth = info.schedulerBadge() ? 8 + BADGE + 2 + font.width(badge) : 0;
         int content = Math.max(20 + Math.max(font.width(info.name()), font.width(units) + badgeWidth), 8 + font.width(info.statusText()));
+        if (footer != null) {
+            content = Math.max(content, font.width(footer));
+        }
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             content = Math.max(content, font.width(line.label()) + GAP + font.width(line.value()));
         }
@@ -183,7 +193,10 @@ public final class RackHud {
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             height += LINE_H + (line.bar().isPresent() ? BAR_H : 0);
         }
-        int x = clampX(graphics, centerX + OFFSET_X, width), y = clampY(graphics, centerY + OFFSET_Y, height + headerH) + headerH;
+        if (footer != null) {
+            height += DIVIDER_TOP + 1 + DIVIDER_BOTTOM + LINE_H;
+        }
+        int x = clampX(graphics, anchorX, width), y = clampY(graphics, anchorY, height + headerH) + headerH;
         if (info.header().isPresent()) {
             header(graphics, font, info.header().get(), x, y - headerH, width);
         }
@@ -231,6 +244,12 @@ public final class RackHud {
                 }
                 lineY += BAR_H;
             }
+        }
+        if (footer != null) {
+            lineY += DIVIDER_TOP;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DIVIDER, left, lineY, inner, 1);
+            lineY += 1 + DIVIDER_BOTTOM;
+            graphics.text(font, font.plainSubstrByWidth(footer.getString(), inner), left, lineY, RackScreen.TEXT_DISABLED, false);
         }
     }
 

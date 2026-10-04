@@ -27,6 +27,12 @@ public class FabricationServerPanel extends RackScreen.Panel {
         super(screen);
     }
 
+    // Its job box ends at 123.
+    @Override
+    protected int height() {
+        return 130;
+    }
+
     @Override
     protected Identifier background() {
         return BACKGROUND;

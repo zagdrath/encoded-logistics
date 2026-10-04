@@ -27,14 +27,22 @@ public class UpsPanel extends RackScreen.Panel {
     private static final Identifier ENERGY_BAR = EncodedLogistics.id("controller/energy_bar"), LOAD_BAR = EncodedLogistics.id("common/bar_fill_gold");
     private static final Identifier MODE_ONLINE = EncodedLogistics.id("rack/ups/mode_online"), MODE_STANDBY = EncodedLogistics.id("rack/ups/mode_standby");
     private static final int GAUGE_X = 9, GAUGE_Y = 23, GAUGE_W = 10, GAUGE_H = 50;
-    private static final int LABEL_X = 30, VALUE_RIGHT = 165, READOUT_Y = 25, LINE_H = 12;
+    // Five readout lines in the box (y 22 to 73).
+    private static final int LABEL_X = 30, VALUE_RIGHT = 165, READOUT_Y = 24, LINE_H = 10;
     private static final int MODE_X = 8, MODE_Y = 80, MODE_SIZE = 14, LOAD_X = 27, LOAD_Y = 85, LOAD_W = 140;
     private static final int LOG_TITLE_Y = 95, LOG_X = 10, LOG_Y = 106, LOG_H = 12;
-    private static final int ALARM_X = 152, ALARM_Y = 93, ALARM_SIZE = 14;
+    // In the Events title's row, clear of the load bar above and the events box below.
+    private static final int ALARM_X = 155, ALARM_Y = 92, ALARM_SIZE = 12;
     private static final Identifier ALARM_ON = EncodedLogistics.id("rack/ups/alarm_on"), ALARM_MUTED = EncodedLogistics.id("rack/ups/alarm_muted");
 
     public UpsPanel(RackScreen screen) {
         super(screen);
+    }
+
+    // Its events box ends at 143.
+    @Override
+    protected int height() {
+        return 150;
     }
 
     @Override
@@ -63,12 +71,12 @@ public class UpsPanel extends RackScreen.Panel {
         boolean hover = screen.over(mouseX, mouseY, MODE_X, MODE_Y, MODE_SIZE, MODE_SIZE);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? PartScreens.BUTTON_HOVER : PartScreens.BUTTON, x + MODE_X, y + MODE_Y, MODE_SIZE,
                 MODE_SIZE);
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ups.mode() == UpsDevice.Mode.ONLINE ? MODE_ONLINE : MODE_STANDBY, x + MODE_X + 1,
-                y + MODE_Y + 1, 12, 12);
+        PartScreens.centeredIcon(graphics, ups.mode() == UpsDevice.Mode.ONLINE ? MODE_ONLINE : MODE_STANDBY, x + MODE_X, y + MODE_Y, MODE_SIZE, MODE_SIZE,
+                0xFFFFFFFF);
         boolean alarmHover = ups.onBattery() && screen.over(mouseX, mouseY, ALARM_X, ALARM_Y, ALARM_SIZE, ALARM_SIZE);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, alarmHover ? PartScreens.BUTTON_HOVER : PartScreens.BUTTON, x + ALARM_X, y + ALARM_Y, ALARM_SIZE,
                 ALARM_SIZE);
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ups.muted() ? ALARM_MUTED : ALARM_ON, x + ALARM_X + 1, y + ALARM_Y + 1, 12, 12,
+        PartScreens.centeredIcon(graphics, ups.muted() ? ALARM_MUTED : ALARM_ON, x + ALARM_X, y + ALARM_Y, ALARM_SIZE, ALARM_SIZE,
                 ups.onBattery() ? 0xFFFFFFFF : 0xFF808080);
         PartScreens.bar(graphics, LOAD_BAR, x + LOAD_X, y + LOAD_Y, LOAD_W,
                 (float) (data.getDoubleOr("load", 0) / Math.max(1, data.getIntOr("max_output", UpsDevice.maxOutput()))));

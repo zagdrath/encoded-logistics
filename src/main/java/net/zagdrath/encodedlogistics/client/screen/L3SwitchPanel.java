@@ -55,6 +55,12 @@ public class L3SwitchPanel extends SwitchPanel {
         return Component.translatable("gui.encodedlogistics.router.route", segment(route.source()), segment(route.dest()));
     }
 
+    // Its add button ends at 160.
+    @Override
+    protected int height() {
+        return 166;
+    }
+
     @Override
     protected Identifier background() {
         return BACKGROUND;

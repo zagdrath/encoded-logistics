@@ -11,7 +11,6 @@ package net.zagdrath.encodedlogistics.client.crt;
 // Current library (*USRPRF: the profile's, ELGPL) round it out, over the system's banner. Enter signs on; Esc, F3 or
 // F12 exits.
 final class SignOnPanel extends CrtPanel {
-    private static final int BOX_ROW = 14, BOX_COL = 18, BOX_HEIGHT = 5, BOX_WIDTH = 44;
     private final CrtField user, program, menu, library;
 
     SignOnPanel(CrtTerminal screen) {
@@ -58,15 +57,10 @@ final class SignOnPanel extends CrtPanel {
         grid.put(10, 0, CrtGrid.pad(tr("crt.encodedlogistics.signon.program"), 34));
         grid.put(11, 0, CrtGrid.pad(tr("crt.encodedlogistics.signon.menu"), 34));
         grid.put(12, 0, CrtGrid.pad(tr("crt.encodedlogistics.signon.library"), 34));
-        grid.box(BOX_ROW, BOX_COL, BOX_HEIGHT, BOX_WIDTH, -1);
-        banner(grid, 1, tr("crt.encodedlogistics.signon.banner"), CrtGrid.BRIGHT);
-        banner(grid, 2, tr("crt.encodedlogistics.signon.os", system), CrtGrid.NORMAL);
-        banner(grid, 3, tr("crt.encodedlogistics.signon.credit"), CrtGrid.DIM);
         grid.put(20, 0, tr("crt.encodedlogistics.enter_continue"));
-    }
-
-    private static void banner(CrtGrid grid, int line, String text, byte attr) {
-        grid.put(BOX_ROW + line, BOX_COL + (BOX_WIDTH - text.length()) / 2, text, attr);
+        // The system's name in small, dim, at the bottom right.
+        String banner = tr("crt.encodedlogistics.signon.banner");
+        grid.put(20, CrtGrid.COLS - banner.length(), banner, CrtGrid.DIM);
     }
 
     @Override

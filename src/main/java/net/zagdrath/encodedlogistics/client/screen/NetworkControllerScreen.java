@@ -22,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.net.NetworkSnapshotPayload;
@@ -284,18 +285,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
 
     // 950, 25k, 1.36M: three significant digits, trailing zeros dropped.
     static String compact(long value) {
-        if (value < 1000) {
-            return Long.toString(value);
-        }
-        String[] units = { "k", "M", "G", "T" };
-        double scaled = value;
-        int unit = -1;
-        while (scaled >= 1000 && unit < units.length - 1) {
-            scaled /= 1000;
-            unit++;
-        }
-        int decimals = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
-        return trim(String.format(Locale.ROOT, "%." + decimals + "f", scaled)) + units[unit];
+        return NetworkControllerDevice.compact(value);
     }
 
     private static String perTick(double value) {

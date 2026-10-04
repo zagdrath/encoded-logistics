@@ -46,6 +46,12 @@ public class RouterPanel extends RackScreen.Panel {
                 RouterDevice.ACTION_FILTER_OPTION, RouterDevice.ACTION_SHARE_OPTION);
     }
 
+    // Its rate bar ends at 150.
+    @Override
+    protected int height() {
+        return 157;
+    }
+
     @Override
     protected Identifier background() {
         return BACKGROUND;

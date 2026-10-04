@@ -164,8 +164,9 @@ class LayoutTest {
         CrtTerminal terminal = terminal();
         terminal.push(new SignOnPanel(terminal));
         CrtGrid grid = terminal.compose();
-        // Rows 5, 8, 9 and 20 are the existing Sign On's (kept); its new fields line up with them (column 0).
-        compare("01_signon", grid, 0, 3, 14, 15, 16, 17, 18, 23);
+        // Rows 5, 8 and 9 are the existing Sign On's (kept); its new fields line up with them (column 0). The banner is one
+        // dim line at the bottom right of row 20.
+        compare("01_signon", grid, 0, 3, 14, 15, 16, 17, 18, 20, 23);
         assertEquals("MAIN", terminal.current().fields.get(2).value);
         assertEquals("*USRPRF", terminal.current().fields.get(3).value);
     }

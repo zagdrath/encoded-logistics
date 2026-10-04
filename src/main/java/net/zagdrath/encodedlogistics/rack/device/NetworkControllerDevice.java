@@ -303,6 +303,12 @@ public class NetworkControllerDevice extends RackDevice implements ControllerBuf
             unit++;
         }
         int decimals = scaled >= 100 ? 0 : scaled >= 10 ? 1 : 2;
+        // 999,900 rounds up to the next unit ("1M"), not "1000k".
+        if (Math.round(scaled * Math.pow(10, decimals)) >= 1000 * Math.pow(10, decimals) && unit < units.length - 1) {
+            scaled /= 1000;
+            unit++;
+            decimals = 2;
+        }
         return trim(String.format(Locale.ROOT, "%." + decimals + "f", scaled)) + units[unit];
     }
 

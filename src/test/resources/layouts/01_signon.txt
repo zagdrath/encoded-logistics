@@ -14,13 +14,13 @@
 11 |    Menu  . . . . . . . . . . . .  MAIN
 12 |    Current library . . . . . . .  *USRPRF
 13 | 
-14 |                   ┌──────────────────────────────────────────┐
-15 |                   │    E N C O D E D   L O G I S T I C S     │
-16 |                   │         Terminal OS  -  ELNET01          │
-17 |                   │    (C) Zagdrath. All rights reserved.    │
-18 |                   └──────────────────────────────────────────┘
+14 |
+15 |
+16 |
+17 |
+18 |
 19 | 
-20 | Press Enter to continue.
+20 | Press Enter to continue.                           Encoded Logistics Terminal OS
 21 | 
 22 | 
 23 |  F1=Help  F3=Exit  F12=Cancel
