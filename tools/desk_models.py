@@ -34,10 +34,12 @@ def terminal(screen):
     E.append(el('base',(4,12.99,6),(13,13.5,12),{s:f(C,L32((24,0,32,2))) for s in ('north','south','east','west')}))
     glass='#'+('screen_'+screen)
     # curved glass: the full pane, then a smaller "bulge" pane 0.25 px proud of it
-    gl=lambda n,a,b,em: el(n,a,b,{'north':f(glass,[0,0,16,16])},**(GLOW if em else {}))
+    # (the 'on' screen is tools/terminal_screens.py's 10 x 8 picture in a 16 x 16 frame: one texel a pixel)
+    full,bulge=([0,0,10,8],[1,1,9,7]) if screen=='on' else ([0,0,16,16],[1.6,2,14.4,14])
+    gl=lambda n,a,b,em: el(n,a,b,{'north':f(glass,full)},**(GLOW if em else {}))
     em=screen!='off'
     E.append(gl('glass',(3.5,14,4.4),(13.5,22,4.4),em))
-    E.append(el('glass_bulge',(4.5,15,4.15),(12.5,21,4.15),{'north':f(glass,[1.6,2,14.4,14])},**(GLOW if em else {})))
+    E.append(el('glass_bulge',(4.5,15,4.15),(12.5,21,4.15),{'north':f(glass,bulge)},**(GLOW if em else {})))
     E.append(el('switch',(12.5,13.4,4.2),(13.5,14.2,4.5),{s:f(C,L32((9,9,11,10))) for s in ('north','east','west','up','down')}))
     E.append(el('lamp',(11.2,13.5,4.3),(12,14.1,4.5),{'north':f('#lamp',[0,0,16,16])},**(GLOW if em else {})))
     tx={'case':RL('block/terminal_desk/crt_case'),f'screen_{screen}':RL(f'block/terminal_desk/crt_screen_{screen}'),

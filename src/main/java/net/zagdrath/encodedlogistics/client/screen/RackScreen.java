@@ -64,24 +64,36 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     private static final Identifier THUMB = EncodedLogistics.id("controller/scroll_thumb"),
             THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
 
+    // At 16 rows (RackMenu.ROWS); the inset and the scrollbar grow with the rows the window has room for.
     private static final int INSET_X = 8, INSET_Y = 18, INSET_W = 140, INSET_H = 146;
-    private static final int ROW_H = 9, ROWS = 16, FIRST_ROW_Y = 19, NUMBER_RIGHT = 23, SLOT_X = 26, SLOT_W = 104;
+    private static final int ROW_H = RackMenu.ROW_H, FIRST_ROW_Y = 19, NUMBER_RIGHT = 23, SLOT_X = 26, SLOT_W = 104;
     private static final int SCROLL_X = 150, SCROLL_Y = 18, SCROLL_W = 8, SCROLL_H = 146, THUMB_W = 6, THUMB_H = 15;
-    private static final int MAX_SCROLL = RackGeometry.UNITS - ROWS;
+    // The elevation texture's rows repeat every ROW_H from here (a row and its separator line).
+    private static final int STRIP_Y = FIRST_ROW_Y + 9 * ROW_H;
+    // Panels' backgrounds: this row (plain body and sides) stretches over the extra height.
+    private static final int PANEL_FILL_Y = 166;
     static final int BACK_X = 150, BACK_Y = 2;
 
-    // Rows scrolled down from the top (U42); starts at the top, showing U27-U42.
+    // The rows shown (all 42 when the window has room: no scrolling) and the extra height they add.
+    private final int rows, extra;
+    // Rows scrolled down from the top (U42); starts at the top.
     private int scroll;
     private boolean draggingThumb;
     private @Nullable Panel panel;
     private int panelU;
 
     public RackScreen(RackMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, RackMenu.WIDTH, RackMenu.HEIGHT);
+        super(menu, inventory, title, RackMenu.WIDTH, menu.topHeight() + RackMenu.INVENTORY_HEIGHT);
+        this.rows = menu.rows();
+        this.extra = menu.topHeight() - RackMenu.TOP_HEIGHT;
         this.titleLabelX = 8;
         this.titleLabelY = 5;
         this.inventoryLabelX = 8;
-        this.inventoryLabelY = RackMenu.TOP_HEIGHT + 6;
+        this.inventoryLabelY = menu.topHeight() + 6;
+    }
+
+    private int maxScroll() {
+        return RackGeometry.UNITS - rows;
     }
 
     // --- What panels use ---
@@ -245,9 +257,24 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        Identifier top = panel != null ? panel.background() : ELEVATION;
-        graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos, 0.0F, 0.0F, imageWidth, RackMenu.TOP_HEIGHT, 256, 256);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, leftPos, topPos + RackMenu.TOP_HEIGHT, 0.0F, 0.0F, imageWidth, 100, 256, 128);
+        int topHeight = menu.topHeight();
+        if (showingPanel()) {
+            // A panel's background, its plain bottom stretched over the extra height.
+            Identifier top = panel != null ? panel.background() : ELEVATION;
+            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos, 0.0F, 0.0F, imageWidth, PANEL_FILL_Y, 256, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos + PANEL_FILL_Y, 0.0F, PANEL_FILL_Y, imageWidth, extra, imageWidth, 1, 256, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos + PANEL_FILL_Y + extra, 0.0F, PANEL_FILL_Y, imageWidth,
+                    RackMenu.TOP_HEIGHT - PANEL_FILL_Y, 256, 256);
+        } else {
+            // The elevation: its top, a row's strip for each extra row, its bottom.
+            graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos, 0.0F, 0.0F, imageWidth, STRIP_Y, 256, 256);
+            for (int i = 0; i < extra / ROW_H; i++) {
+                graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos + STRIP_Y + i * ROW_H, 0.0F, STRIP_Y, imageWidth, ROW_H, 256, 256);
+            }
+            graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos + STRIP_Y + extra, 0.0F, STRIP_Y, imageWidth,
+                    RackMenu.TOP_HEIGHT - STRIP_Y, 256, 256);
+        }
+        graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, leftPos, topPos + topHeight, 0.0F, 0.0F, imageWidth, RackMenu.INVENTORY_HEIGHT, 256, 128);
         if (showingPanel()) {
             boolean hover = over(mouseX, mouseY, BACK_X, BACK_Y, 16, 16);
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACK, leftPos + BACK_X, topPos + BACK_Y, 16, 16, hover ? 0xFFFFFFFF : 0xFFC8C8C8);
@@ -262,8 +289,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     private void extractElevation(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         RackBlockEntity rack = menu.rack();
         int x = leftPos, y = topPos;
-        graphics.enableScissor(x + INSET_X, y + INSET_Y, x + INSET_X + INSET_W, y + INSET_Y + INSET_H);
-        for (int row = 0; row < ROWS; row++) {
+        graphics.enableScissor(x + INSET_X, y + INSET_Y, x + INSET_X + INSET_W, y + INSET_Y + INSET_H + extra);
+        for (int row = 0; row < rows; row++) {
             int u = unitAtRow(row);
             if (rack == null || rack.deviceAt(u) == null) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_EMPTY, x + SLOT_X, y + rowY(row), SLOT_W, 8);
@@ -272,7 +299,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         if (rack != null) {
             for (RackDevice device : rack.devices()) {
                 int topRow = rowOf(device.top());
-                if (topRow + device.size() <= 0 || topRow >= ROWS) {
+                if (topRow + device.size() <= 0 || topRow >= rows) {
                     continue;
                 }
                 front(graphics, device, x + SLOT_X, y + rowY(topRow));
@@ -304,7 +331,10 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             }
         }
         graphics.disableScissor();
-        // The scrollbar's thumb.
+        // The scrollbar's thumb (none when every unit shows).
+        if (maxScroll() <= 0) {
+            return;
+        }
         int thumbY = y + thumbTop();
         boolean hover = draggingThumb || over(mouseX, mouseY, SCROLL_X + 1, thumbTop(), THUMB_W, THUMB_H);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? THUMB_HOVER : THUMB, x + SCROLL_X + 1, thumbY, THUMB_W, THUMB_H);
@@ -395,7 +425,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             Component free = Component.translatable("gui.encodedlogistics.rack.free", rack.freeUnits());
             graphics.text(font, free, 168 - font.width(free), titleLabelY, TEXT_MUTED, false);
         }
-        for (int row = 0; row < ROWS; row++) {
+        for (int row = 0; row < rows; row++) {
             int u = unitAtRow(row);
             String number = Integer.toString(u);
             boolean used = rack != null && rack.deviceAt(u) != null;
@@ -451,7 +481,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
     // The thumb's top, relative to the screen, inside the track's 1 px rim.
     private int thumbTop() {
-        return SCROLL_Y + 1 + Math.round((SCROLL_H - 2 - THUMB_H) * (float) scroll / MAX_SCROLL);
+        return SCROLL_Y + 1 + Math.round((SCROLL_H + extra - 2 - THUMB_H) * (float) scroll / maxScroll());
     }
 
     // --- Rows ---
@@ -471,7 +501,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     // The unit under the mouse in the elevation, or 0.
     private int hoveredUnit(double mouseX, double mouseY) {
         double x = mouseX - leftPos, y = mouseY - topPos;
-        if (x < INSET_X || x >= INSET_X + INSET_W || y < FIRST_ROW_Y || y >= FIRST_ROW_Y + ROWS * ROW_H) {
+        if (x < INSET_X || x >= INSET_X + INSET_W || y < FIRST_ROW_Y || y >= FIRST_ROW_Y + rows * ROW_H) {
             return 0;
         }
         return unitAtRow(Mth.floor((y - FIRST_ROW_Y) / ROW_H));
@@ -499,12 +529,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
                 buttonClick(RackMenu.PICK);
                 return true;
             }
-            if (panel != null && mouseY < topPos + RackMenu.TOP_HEIGHT && panel.mouseClicked(mouseX - leftPos, mouseY - topPos, button, shift)) {
+            if (panel != null && mouseY < topPos + menu.topHeight() && panel.mouseClicked(mouseX - leftPos, mouseY - topPos, button, shift)) {
                 return true;
             }
             return super.mouseClicked(event, doubleClick);
         }
-        if (button == InputConstants.MOUSE_BUTTON_LEFT && over(mouseX, mouseY, SCROLL_X, SCROLL_Y, SCROLL_W, SCROLL_H)) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && over(mouseX, mouseY, SCROLL_X, SCROLL_Y, SCROLL_W, SCROLL_H + extra)) {
             draggingThumb = true;
             scrollTo(mouseY);
             return true;
@@ -549,8 +579,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     }
 
     private void scrollTo(double mouseY) {
-        double fraction = (mouseY - topPos - SCROLL_Y - 1 - THUMB_H / 2.0) / (SCROLL_H - 2 - THUMB_H);
-        scroll = Mth.clamp((int) Math.round(fraction * MAX_SCROLL), 0, MAX_SCROLL);
+        double fraction = (mouseY - topPos - SCROLL_Y - 1 - THUMB_H / 2.0) / (SCROLL_H + extra - 2 - THUMB_H);
+        scroll = Mth.clamp((int) Math.round(fraction * maxScroll()), 0, Math.max(0, maxScroll()));
     }
 
     @Override
@@ -559,8 +589,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (panel != null && panel.mouseScrolled(mouseX - leftPos, mouseY - topPos, scrollY)) {
                 return true;
             }
-        } else if (mouseY < topPos + RackMenu.TOP_HEIGHT && mouseX >= leftPos && mouseX < leftPos + imageWidth) {
-            scroll = Mth.clamp(scroll - (int) Math.signum(scrollY) * 2, 0, MAX_SCROLL);
+        } else if (mouseY < topPos + menu.topHeight() && mouseX >= leftPos && mouseX < leftPos + imageWidth) {
+            scroll = Mth.clamp(scroll - (int) Math.signum(scrollY) * 2, 0, Math.max(0, maxScroll()));
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);

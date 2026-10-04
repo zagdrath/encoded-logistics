@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.menu;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.IntSupplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -44,15 +45,20 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 // into the inventory, PUT + u mounts the carried device at u. A picked device's panel gets its state every
 // SYNC_INTERVAL ticks (RackPanelPayload) and sends actions with RackActionPayload.
 public class RackMenu extends AbstractContainerMenu {
-    public static final int WIDTH = 176, TOP_HEIGHT = 168, HEIGHT = TOP_HEIGHT + 100;
+    // TOP_HEIGHT: the top half with the elevation's ROWS rows; it grows ROW_H a row as the client's window has room.
+    public static final int WIDTH = 176, TOP_HEIGHT = 168, INVENTORY_HEIGHT = 100, ROWS = 16, ROW_H = 9;
     public static final int PICK = 0, TAKE = 100, PUT = 200;
     private static final int SYNC_INTERVAL = 10;
     public static final int INVENTORY_SLOTS = 36;
+
+    // How many elevation rows fit the client's window (ROWS to all 42 units); set by the client.
+    public static IntSupplier clientRows = () -> ROWS;
 
     private final BlockPos pos;
     private final Player player;
     private final @Nullable RackBlockEntity rack;
     private final DataSlot picked = DataSlot.standalone();
+    private final int rows;
     // Each device type's first slot index.
     private final Map<RackDeviceType, Integer> banks = new LinkedHashMap<>();
     private int ticksUntilSync;
@@ -63,19 +69,20 @@ public class RackMenu extends AbstractContainerMenu {
 
     // Client constructor, with the rack's master position written by the server.
     public RackMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf extraData) {
-        this(containerId, inventory, extraData.readBlockPos(), null);
+        this(containerId, inventory, extraData.readBlockPos(), null, clientRows.getAsInt());
     }
 
     public RackMenu(int containerId, Inventory inventory, RackBlockEntity rack) {
-        this(containerId, inventory, rack.getBlockPos(), rack);
+        this(containerId, inventory, rack.getBlockPos(), rack, ROWS);
     }
 
-    private RackMenu(int containerId, Inventory inventory, BlockPos pos, @Nullable RackBlockEntity serverRack) {
+    private RackMenu(int containerId, Inventory inventory, BlockPos pos, @Nullable RackBlockEntity serverRack, int rows) {
         super(ModMenuTypes.SERVER_RACK.get(), containerId);
         this.pos = pos;
         this.player = inventory.player;
         this.rack = serverRack;
-        addStandardInventorySlots(inventory, 8, TOP_HEIGHT + 17);
+        this.rows = rows;
+        addStandardInventorySlots(inventory, 8, topHeight() + 17);
         for (RackDeviceType type : RackDeviceType.all()) {
             if (type.slots().isEmpty()) {
                 continue;
@@ -87,6 +94,15 @@ public class RackMenu extends AbstractContainerMenu {
             }
         }
         addDataSlot(picked);
+    }
+
+    // The elevation's rows, and the top half's height with them.
+    public int rows() {
+        return rows;
+    }
+
+    public int topHeight() {
+        return TOP_HEIGHT + (rows - ROWS) * ROW_H;
     }
 
     public BlockPos pos() {

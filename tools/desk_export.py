@@ -18,7 +18,7 @@ save(T.crt_case(),D+'crt_case.png'); save(T.keyboard(),D+'keyboard.png'); save(T
 save(T.lamp(False),D+'lamp_off.png'); save(T.lamp(True),D+'lamp_on.png')
 save(T.crt_screen('off'),D+'crt_screen_off.png')
 save(T.crt_screen('boot',12),D+'crt_screen_boot.png'); open(A+D+'crt_screen_boot.png.mcmeta','w').write(mc(5,36,28))
-save(T.crt_screen('on',2),D+'crt_screen_on.png'); open(A+D+'crt_screen_on.png.mcmeta','w').write(mc(10,36,28))
+# crt_screen_on.png: tools/terminal_screens.py (the terminals' style, 10 x 8)
 C='textures/block/swivel_chair/'
 save(T.chair_fabric(),C+'fabric.png'); save(T.chair_metal(),C+'metal.png'); save(T.chair_caster(),C+'caster.png')
 save(T.desk_icon(),'textures/item/terminal_desk.png'); save(T.chair_icon(),'textures/item/swivel_chair.png')

@@ -31,7 +31,8 @@ public final class RackModels {
             CONSOLE_DRAWER_ON = EncodedLogistics.id("block/rack_device/rack_console_drawer_on"),
             CONSOLE_DRAWER_FAULT = EncodedLogistics.id("block/rack_device/rack_console_drawer_fault"),
             CONSOLE_KEYBOARD = EncodedLogistics.id("block/rack_device/rack_console_keyboard"),
-            CONSOLE_LID = EncodedLogistics.id("block/rack_device/rack_console_lid"), CONSOLE_LID_ON = EncodedLogistics.id("block/rack_device/rack_console_lid_on");
+            CONSOLE_LID = EncodedLogistics.id("block/rack_device/rack_console_lid"), CONSOLE_LID_ON = EncodedLogistics.id("block/rack_device/rack_console_lid_on"),
+            CONSOLE_LID_FAB = EncodedLogistics.id("block/rack_device/rack_console_lid_fab");
 
     private static final Map<Identifier, StandaloneModelKey<BlockStateModelPart>> KEYS = new HashMap<>();
 
@@ -41,7 +42,7 @@ public final class RackModels {
         register(event, DOOR_FRONT);
         register(event, DOOR_REAR_LEFT);
         register(event, DOOR_REAR_RIGHT);
-        for (Identifier part : List.of(CONSOLE_DRAWER, CONSOLE_DRAWER_ON, CONSOLE_DRAWER_FAULT, CONSOLE_KEYBOARD, CONSOLE_LID, CONSOLE_LID_ON)) {
+        for (Identifier part : List.of(CONSOLE_DRAWER, CONSOLE_DRAWER_ON, CONSOLE_DRAWER_FAULT, CONSOLE_KEYBOARD, CONSOLE_LID, CONSOLE_LID_ON, CONSOLE_LID_FAB)) {
             register(event, part);
         }
         for (RackDeviceType type : RackDeviceType.all()) {

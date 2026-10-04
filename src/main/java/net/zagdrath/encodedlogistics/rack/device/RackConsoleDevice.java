@@ -211,12 +211,14 @@ public class RackConsoleDevice extends RackDevice {
     @Override
     public void writeClient(ValueOutput output) {
         output.putBoolean("open", open);
+        output.putBoolean("fabrication", fabrication);
     }
 
     @Override
     public void readClient(ValueInput input) {
         boolean wasOpen = open;
         open = input.getBooleanOr("open", false);
+        fabrication = input.getBooleanOr("fabrication", false);
         // A console seen for the first time open is open already, not opening.
         if (open && !wasOpen && drawer == 0 && lastDrawer == 0 && !seen) {
             drawer = lastDrawer = DRAWER_TICKS;

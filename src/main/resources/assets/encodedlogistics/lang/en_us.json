@@ -933,5 +933,7 @@
   "crt.encodedlogistics.msg.invalid_value": "Value %s not valid.",
   "crt.encodedlogistics.msg.at_bottom": "Already at the bottom of the list.",
   "crt.encodedlogistics.msg.at_top": "Already at the top of the list.",
-  "encodedlogistics.configuration.phosphor": "Terminal Desk Phosphor"
+  "encodedlogistics.configuration.phosphor": "Terminal Desk Phosphor",
+  "crt.encodedlogistics.signon.type_user": "Type your user name.",
+  "crt.encodedlogistics.signon.bad_user": "User %s not valid at this terminal."
 }

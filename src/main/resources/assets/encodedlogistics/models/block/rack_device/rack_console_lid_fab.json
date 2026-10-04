@@ -4,7 +4,7 @@
  "textures": {
   "tex": "encodedlogistics:block/rack_device/rack_console",
   "parts": "encodedlogistics:block/rack_device/rack_console_parts",
-  "screen": "encodedlogistics:block/rack_device/rack_console_screen",
+  "screen": "encodedlogistics:block/rack_device/rack_console_screen_fab",
   "particle": "encodedlogistics:block/rack_device/rack_console"
  },
  "elements": [

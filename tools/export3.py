@@ -47,7 +47,7 @@ def console_models():
             'east':face('#parts',T128((0,0,2,48))),'west':face('#parts',T128((0,0,2,48)))})]
     lid=[el('lid',(3,0.5,6.5),(13,0.75,13.5),{'up':face('#parts',T128((62,10,102,38))),'down':face('#parts',T128((6,62,46,90))),
              'north':face('#parts',T128((112,0,128,1))),'east':face('#parts',T128((112,0,128,1))),'west':face('#parts',T128((112,0,128,1))),'south':face('#parts',T128((112,0,128,1)))})]
-    lid_on=lid+[el('screen',(3.75,0.49,7.25),(12.25,0.49,12.75),{'down':face('#screen',[1,3.1,13,10.9])},**GLOW)]
+    lid_on=lid+[el('screen',(3.5,0.49,7),(12.5,0.49,13),{'down':face('#screen',[0,0,9,6])},**GLOW)]   # tools/terminal_screens.py draws it
     base={'parent':'minecraft:block/block','render_type':'minecraft:cutout'}
     tx={'tex':tex,'parts':parts,'screen':scr,'particle':tex}
     out={'rack_console':{**base,'textures':tx,'elements':body},
@@ -56,7 +56,8 @@ def console_models():
          'rack_console_drawer_fault':{**base,'textures':{**tx,'glow':RL('block/rack_device/rack_console_fault')},'elements':drawer+[el('led',(1.55,0,1.24),(14.45,1,1.24),{'north':face('#glow',T128((0,0,104,8)))},**GLOW)]},
          'rack_console_keyboard':{**base,'textures':tx,'elements':kb},
          'rack_console_lid':{**base,'textures':tx,'elements':lid},
-         'rack_console_lid_on':{**base,'textures':tx,'elements':lid_on}}
+         'rack_console_lid_on':{**base,'textures':tx,'elements':lid_on},
+         'rack_console_lid_fab':{**base,'textures':{**tx,'screen':RL('block/rack_device/rack_console_screen_fab')},'elements':lid_on}}
     # the type's state models (<id>_on / _fault) are the static body; the drawer carries the LED glow
     out['rack_console_on']=out['rack_console']; out['rack_console_fault']=out['rack_console']
     return out

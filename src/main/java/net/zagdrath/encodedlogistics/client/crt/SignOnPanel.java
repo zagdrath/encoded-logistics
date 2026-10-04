@@ -5,14 +5,15 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
-// SIGN ON (HANDOFF 7.4): shown first on a network with a Firewall - the player's name, no password; the desk then
-// works with that player's permissions (the server checks them per command and option).
+// SIGN ON (HANDOFF 7.4): shown first on a network with a Firewall - the player types their own name (any case), no
+// password; the desk then works with that player's permissions (the server checks them per command and option).
+// Enter signs on; Esc, F3 or F12 exits.
 final class SignOnPanel extends CrtPanel {
     private final CrtField user;
 
     SignOnPanel(CrtScreen screen) {
         super(screen);
-        user = new CrtField(8, 34, 16, screen.user);
+        user = new CrtField(8, 34, 16, "");
         fields.add(user);
     }
 
@@ -47,8 +48,15 @@ final class SignOnPanel extends CrtPanel {
 
     @Override
     boolean enter() {
+        String typed = user.trimmed();
+        if (typed.isEmpty() || !typed.equalsIgnoreCase(screen.user)) {
+            screen.message(typed.isEmpty() ? tr("crt.encodedlogistics.signon.type_user") : tr("crt.encodedlogistics.signon.bad_user", typed));
+            user.set("");
+            screen.focus(user);
+            return true;
+        }
         screen.signedOn = true;
-        screen.back();
+        screen.leave();
         screen.message(tr("crt.encodedlogistics.signon.done", screen.user));
         return true;
     }

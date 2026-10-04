@@ -124,6 +124,15 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         current().shown();
     }
 
+    // Off this screen to the one under it, never exiting (Sign On, done).
+    void leave() {
+        if (panels.size() > 1) {
+            panels.pop();
+            focusFirst();
+            current().shown();
+        }
+    }
+
     void replace(CrtPanel panel) {
         panels.pop();
         push(panel);
@@ -427,13 +436,9 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
             back();
             return true;
         }
-        // F1-F12 (shifted: F13-F24), and F13-F24 themselves.
-        if (key >= InputConstants.KEY_F1 && key <= InputConstants.KEY_F12) {
-            functionKey(key - InputConstants.KEY_F1 + 1 + (shift ? 12 : 0));
-            return true;
-        }
-        if (key >= InputConstants.KEY_F13 && key <= InputConstants.KEY_F24) {
-            functionKey(key - InputConstants.KEY_F13 + 13);
+        // Function keys act on release (keyReleased), so the release can't reach the game after an exit: F3's
+        // debug overlay toggles on release.
+        if (functionKey(event) > 0) {
             return true;
         }
         if (event.isConfirmation()) {
@@ -616,10 +621,23 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         borrowedKeys.clear();
     }
 
-    // Releases too: F3's debug overlay toggles on release.
+    // Releases too: F3's debug overlay toggles on release. A function key's release presses it.
     @Override
     public boolean keyReleased(KeyEvent event) {
+        int f = functionKey(event);
+        if (f > 0) {
+            functionKey(f);
+        }
         return true;
+    }
+
+    // F1-F12 (shifted: F13-F24), and F13-F24 themselves; 0 for any other key.
+    private static int functionKey(KeyEvent event) {
+        int key = event.key();
+        if (key >= InputConstants.KEY_F1 && key <= InputConstants.KEY_F12) {
+            return key - InputConstants.KEY_F1 + 1 + (event.hasShiftDown() ? 12 : 0);
+        }
+        return key >= InputConstants.KEY_F13 && key <= InputConstants.KEY_F24 ? key - InputConstants.KEY_F13 + 13 : 0;
     }
 
     @Override

@@ -24,7 +24,7 @@ import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 // (front plate and tray, its light for the state), the keyboard and the lid slide out 9 px together; then the lid
 // folds up 95 degrees about its hinge (8, 0.625, 13.5), which rides with the drawer and, as the lid rises, slides 5.5 px
 // forward so the screen stands just behind the keyboard, clear of the rack. Past 60 degrees, on a running network,
-// the lid shows its lit screen.
+// the lid shows its lit screen: the Access Terminal's, or the Fabrication Terminal's with a Memory Die.
 final class RackConsoleRender implements RackClientDevices.RenderExtra {
     private static final int[] NO_TINTS = new int[0];
     private static final float TRAVEL = 9, LID_DEGREES = 95, HINGE_FORWARD = 5.5F, HINGE_Y = 0.625F, HINGE_Z = 13.5F, SCREEN_AFTER = 60;
@@ -37,9 +37,10 @@ final class RackConsoleRender implements RackClientDevices.RenderExtra {
     @Override
     public int[] capture(RackDevice device, float partialTick) {
         if (!(device instanceof RackConsoleDevice console)) {
-            return new int[] { 0, 0 };
+            return new int[] { 0, 0, 0 };
         }
-        return new int[] { Float.floatToIntBits(console.drawer(partialTick)), Float.floatToIntBits(console.lid(partialTick)) };
+        return new int[] { Float.floatToIntBits(console.drawer(partialTick)), Float.floatToIntBits(console.lid(partialTick)),
+                console.fabrication() ? 1 : 0 };
     }
 
     @Override
@@ -60,8 +61,8 @@ final class RackConsoleRender implements RackClientDevices.RenderExtra {
         poseStack.translate(0, HINGE_Y / 16, HINGE_Z / 16);
         poseStack.rotate(Axis.XP.rotationDegrees(degrees));
         poseStack.translate(0, -HINGE_Y / 16, -HINGE_Z / 16);
-        part(poseStack, collector, degrees > SCREEN_AFTER && status == RackDeviceInfo.Status.ONLINE ? RackModels.CONSOLE_LID_ON : RackModels.CONSOLE_LID,
-                light);
+        Identifier lit = data.length > 2 && data[2] == 1 ? RackModels.CONSOLE_LID_FAB : RackModels.CONSOLE_LID_ON;
+        part(poseStack, collector, degrees > SCREEN_AFTER && status == RackDeviceInfo.Status.ONLINE ? lit : RackModels.CONSOLE_LID, light);
         poseStack.popPose();
     }
 
