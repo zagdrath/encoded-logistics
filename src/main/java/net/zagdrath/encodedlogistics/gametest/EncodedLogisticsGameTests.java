@@ -143,6 +143,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("diskette_save_restore", InterfaceGameTests::saveRestore);
         TESTS.put("printer_print", InterfaceGameTests::printing);
         TESTS.put("recipe_library", InterfaceGameTests::recipeLibrary);
+        TESTS.put("folder_sync", FolderSyncGameTests::roundTrip);
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);

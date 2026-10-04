@@ -104,7 +104,9 @@ The precondition packages (ELCL HANDOFF order 1-2) are implemented and unit-test
 - `elcl.job` (Part 5) - `Schedules` (due times and firing), `Triggers` (polled conditions, events, edge and debounce),
   `RealTime` (the real-time clock INTERVAL and the debounce use)
 
-Not in place yet: `elcl.sync`. See IMPLEMENTATION_STATUS.md.
+- `elcl.sync` - `FolderSync` (the world-folder sync, both ways), `Resequence` (sequence numbers kept for unchanged lines)
+
+Every package in the ELCL handoff is now in place. See IMPLEMENTATION_STATUS.md.
 
 ## Stubs waiting on ELCL packages
 

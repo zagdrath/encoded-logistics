@@ -256,13 +256,20 @@ public final class StoredLibraryService implements LibraryService {
         }
     }
 
-    // A member from outside (folder sync): made if new, replaced if changed. No authority or lock checks; storage is.
-    public synchronized void put(ElclSystem system, String library, String member, List<SourceLine> lines) throws ElclException {
+    // A library from outside (folder sync: a new folder), owned by the system and open to everyone (*CHANGE).
+    public synchronized SystemData.Library makeLibrary(ElclSystem system, String library) {
         SystemData.Library lib = stored(system).get(library);
         if (lib == null) {
-            lib = new SystemData.Library(library, "*PROD", "", SystemData.SYSTEM_OWNER, "*USE", system.nowShort());
+            lib = new SystemData.Library(library, "*PROD", "", SystemData.SYSTEM_OWNER, "*CHANGE", system.nowShort());
             stored(system).put(library, lib);
+            ElclStore.of(system).changed();
         }
+        return lib;
+    }
+
+    // A member from outside (folder sync): made if new, replaced if changed. No authority or lock checks; storage is.
+    public synchronized void put(ElclSystem system, String library, String member, List<SourceLine> lines) throws ElclException {
+        SystemData.Library lib = makeLibrary(system, library);
         if (lib.system()) {
             throw new ElclException("ELC0205", library);
         }

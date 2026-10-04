@@ -47,6 +47,13 @@ Per-system folder in the world save:
   (safety); deleting the member in-game moves the file to `.deleted/`.
 - **Config:** `allowFolderSync` (proposal: true in single-player, false by
   default on dedicated servers). `ELSYS` is never synced in.
+*(Implemented in `elcl.sync.FolderSync`: the folder is read every two seconds
+while the network is loaded; what was last synced is remembered per member, so
+an in-game save over a file changed outside wins and keeps the file's version
+as `.bak`. Libraries made from new folders are owned by the system with
+`*CHANGE` authority. ELSYS isn't written out either. Off by default on
+dedicated servers: config `elcl.allowFolderSync` = AUTO / TRUE / FALSE.)*
+
 - **Diskettes:** `SAVLIB` writes a library to an 8" Diskette item (stored in
   item data; size limit proposal 64 KB of source per diskette); `RSTLIB`
   restores it on any system.

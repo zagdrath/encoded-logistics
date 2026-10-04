@@ -139,6 +139,8 @@ public final class SystemData {
     // Device names (Part 2): each name given out on this system and the device holding it (ElclDevices.identity), so a
     // device that arrives with a name already taken here gets another rather than taking it.
     public final Map<String, String> deviceNames = new TreeMap<>();
+    // Folder sync (elcl.sync): each LIB/MEMBER's text as last synced with its file (a hash).
+    public final Map<String, String> syncHashes = new TreeMap<>();
     // Jobs, their logs, schedule entries and triggers (OS.md 5).
     public JobData jobs = new JobData();
     // The later parts' sections, kept as they were saved until their code reads them.
@@ -347,6 +349,10 @@ public final class SystemData {
         }
         tag.put("profiles", users);
 
+        CompoundTag synced = new CompoundTag();
+        syncHashes.forEach(synced::putString);
+        tag.put("sync_hashes", synced);
+
         CompoundTag names = new CompoundTag();
         deviceNames.forEach(names::putString);
         tag.put("device_names", names);
@@ -430,6 +436,11 @@ public final class SystemData {
             if (!profile.user.isEmpty()) {
                 data.profiles.put(profile.user, profile);
             }
+        }
+
+        CompoundTag synced = tag.getCompoundOrEmpty("sync_hashes");
+        for (String key : synced.keySet()) {
+            data.syncHashes.put(key, synced.getStringOr(key, ""));
         }
 
         CompoundTag names = tag.getCompoundOrEmpty("device_names");
