@@ -15,6 +15,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.tags.TagKey;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -34,9 +37,10 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 //  status               Display Network Status' body
 //  detail <item>        an item's details (Work with Inventory, option 5)
 //  plan <item> <n>      a craft's plan in a line (the CRAFT prompt)
-// Rows come as cells padded to their columns, so the client lines them up in its own language.
+// Rows come as cells padded to their columns, so the client lines them up in its own language. SCREEN requests are the
+// Terminal OS screens' (ScreenQueries).
 public final class TerminalService {
-    public static final int COMMAND = 0, QUERY = 1, COMPLETE = 2;
+    public static final int COMMAND = 0, QUERY = 1, COMPLETE = 2, SCREEN = 3;
 
     private TerminalService() {}
 
@@ -57,6 +61,9 @@ public final class TerminalService {
             TerminalOutput out = new TerminalOutput();
             TerminalCommands.complete(context, text).forEach(out::line);
             return out;
+        }
+        if (kind == SCREEN) {
+            return context.allowed(RackPermission.VIEW) ? ScreenQueries.handle(context, text) : TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.VIEW));
         }
         List<String> words = TerminalCommands.words(text);
         if (words.isEmpty()) {
@@ -91,6 +98,8 @@ public final class TerminalService {
         out.line(context.network() != null ? networkName(context.network()) : "*OFFLINE");
         out.line(ControllerStructures.firewall(context.server(), context.network()) != null ? "1" : "0");
         out.line(context.player().getName().getString());
+        // The system's PHOSPHOR, every terminal's default colour.
+        out.line(context.network() != null ? ElclServices.sysvals().get(new ElclSystem(context.server(), context.network()), "PHOSPHOR") : "*GREEN");
         return out;
     }
 

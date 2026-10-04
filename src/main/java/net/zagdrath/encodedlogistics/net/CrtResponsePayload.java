@@ -20,8 +20,8 @@ import net.zagdrath.encodedlogistics.client.CrtClient;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 
 // Server to client: the answer to a Terminal Desk screen's request - its kind and topic (the query's first word), the
-// lines, and a message for the message line.
-public record CrtResponsePayload(int containerId, int kind, String topic, List<TerminalLine> lines, Optional<Component> message)
+// lines, a message for the message line, and how many messages wait unread for the user ("MW"; -1 when not known).
+public record CrtResponsePayload(int containerId, int kind, String topic, List<TerminalLine> lines, Optional<Component> message, int unread)
         implements CustomPacketPayload {
     public static final Type<CrtResponsePayload> TYPE = new Type<>(EncodedLogistics.id("crt_response"));
 
@@ -31,6 +31,7 @@ public record CrtResponsePayload(int containerId, int kind, String topic, List<T
             ByteBufCodecs.STRING_UTF8, CrtResponsePayload::topic,
             TerminalLine.STREAM_CODEC.apply(ByteBufCodecs.list()), CrtResponsePayload::lines,
             ByteBufCodecs.optional(ComponentSerialization.TRUSTED_STREAM_CODEC), CrtResponsePayload::message,
+            ByteBufCodecs.VAR_INT.map(i -> i - 1, i -> i + 1), CrtResponsePayload::unread,
             CrtResponsePayload::new);
 
     @Override

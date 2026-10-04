@@ -54,6 +54,8 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     private static final Identifier FONT = EncodedLogistics.id("textures/font/terminal.png"), GLOW = EncodedLogistics.id("textures/font/terminal_glow.png"),
             BEZEL_TEXTURE = EncodedLogistics.id("textures/gui/crt/bezel.png"), VIGNETTE = EncodedLogistics.id("textures/gui/crt/vignette.png");
     private static final int VW = 520, VH = 260, MARGIN_X = 20, MARGIN_Y = 10, CW = 6, CH = 10, HISTORY = 500;
+    // The font sheets: 16 x 7 cells of 6 x 10 (the glow sheet's of 10 x 14).
+    private static final int FONT_W = 96, FONT_H = 70, GLOW_W = 160, GLOW_H = 98;
 
     // A phosphor's colours (screens/crt/phosphor.json).
     record Palette(int normal, int bright, int dim, int bg, int glow) {
@@ -65,6 +67,8 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
 
     private final TerminalDeskMenu menu;
     private final Deque<CrtPanel> panels = new ArrayDeque<>();
+    // Pop-up windows over the current screen, the top one first.
+    private final Deque<CrtWindow> windows = new ArrayDeque<>();
     private final CrtGrid grid = new CrtGrid();
     final CrtField command = new CrtField(21, 5, 72, "");
     private @Nullable CrtField focused;
@@ -73,6 +77,10 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     final List<String> commands = new ArrayList<>();
     String network = "", user = "";
     boolean firewall, signedOn;
+    // Insert mode (the Insert key) for every field; the user's unread messages ("MW"); the system's PHOSPHOR.
+    boolean insert;
+    int unread;
+    String systemPhosphor = "*GREEN";
     private Palette palette = Palette.GREEN;
     private int ticks;
     // This frame's layout, in real pixels: the glass's corner and a virtual pixel's size.
@@ -94,7 +102,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         // Typed characters only arrive while something has text input focus.
         minecraft.onTextInputFocusChange(this, true);
         borrowFunctionKeys();
-        palette = loadPalette(TerminalSettings.phosphor());
+        palette = loadPalette(phosphor());
         if (panels.isEmpty()) {
             push(new MainMenuPanel(this));
             send(TerminalService.QUERY, "info");
@@ -108,6 +116,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     }
 
     void push(CrtPanel panel) {
+        windows.clear();
         panels.push(panel);
         focusFirst();
         panel.shown();
@@ -119,6 +128,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
             onClose();
             return;
         }
+        windows.clear();
         panels.pop();
         focusFirst();
         current().shown();
@@ -138,14 +148,71 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         push(panel);
     }
 
+    // What takes focus: the top window's fields while one's open, else the screen's (protected ones never) and the
+    // command line.
     private List<CrtField> focusable() {
-        List<CrtField> list = new ArrayList<>(current().fields);
-        list.add(command);
+        List<CrtField> list = new ArrayList<>();
+        CrtWindow window = windows.peek();
+        for (CrtField field : window != null ? window.fields : current().fields) {
+            if (!field.isProtected) {
+                list.add(field);
+            }
+        }
+        if (window == null) {
+            list.add(command);
+        }
         return list;
     }
 
     void focusFirst() {
-        focused = focusable().getFirst();
+        List<CrtField> list = focusable();
+        focused = list.isEmpty() ? null : list.getFirst();
+    }
+
+    // --- Windows ---
+
+    @Nullable CrtWindow window() {
+        return windows.peek();
+    }
+
+    void openWindow(CrtWindow window) {
+        windows.push(window);
+        focusFirst();
+    }
+
+    void closeWindow() {
+        windows.poll();
+        focusFirst();
+    }
+
+    // F1: help for the field under the cursor, else the screen, in a window over it (screen 15).
+    void help() {
+        CrtPanel panel = current();
+        String text = panel.help(panel.helpField(focused));
+        openWindow(new CrtWindow(this, 5, 12, 13, 56, CrtPanel.tr("crt.encodedlogistics.help.title", panel.title())).text(text)
+                .keys(CrtPanel.tr("crt.encodedlogistics.help.keys")));
+    }
+
+    // A confirmation (list deletes, ENDJOB): Enter does it, F12 goes back. f11, if any, is offered as another choice.
+    void confirm(String text, Runnable confirmed, @Nullable Runnable f11) {
+        openWindow(new CrtWindow(this, 7, 10, 10, 60, CrtPanel.tr("crt.encodedlogistics.confirm.title")) {
+            @Override
+            boolean enter() {
+                screen.closeWindow();
+                confirmed.run();
+                return true;
+            }
+
+            @Override
+            boolean functionKey(int f) {
+                if (f == 11 && f11 != null) {
+                    screen.closeWindow();
+                    f11.run();
+                    return true;
+                }
+                return false;
+            }
+        }.text(text).keys(CrtPanel.tr(f11 != null ? "crt.encodedlogistics.confirm.keys_f11" : "crt.encodedlogistics.confirm.keys")));
     }
 
     void focus(CrtField field) {
@@ -167,7 +234,8 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     // --- Server ---
 
     void send(int kind, String text) {
-        ClientPacketDistributor.sendToServer(new CrtRequestPayload(menu.containerId, kind, text.length() > 256 ? text.substring(0, 256) : text));
+        String cut = text.length() > CrtRequestPayload.MAX_TEXT ? text.substring(0, CrtRequestPayload.MAX_TEXT) : text;
+        ClientPacketDistributor.sendToServer(new CrtRequestPayload(menu.containerId, kind, cut));
     }
 
     // A command line: run it, and keep it and what comes back in Command Entry's history.
@@ -190,11 +258,18 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
     }
 
     public void receive(CrtResponsePayload response) {
+        if (response.unread() >= 0) {
+            unread = response.unread();
+        }
         if (response.kind() == TerminalService.QUERY && response.topic().equals("info")) {
             List<TerminalLine> lines = response.lines();
             network = lines.size() > 0 ? lines.get(0).text() : "";
             firewall = lines.size() > 1 && lines.get(1).text().equals("1");
             user = lines.size() > 2 ? lines.get(2).text() : "";
+            if (lines.size() > 3 && !lines.get(3).text().equals(systemPhosphor)) {
+                systemPhosphor = lines.get(3).text();
+                palette = loadPalette(phosphor());
+            }
             if (firewall && !signedOn) {
                 push(new SignOnPanel(this));
             }
@@ -257,9 +332,9 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
             for (int col = 0; col < CrtGrid.COLS; col++) {
                 char c = grid.chars[row][col];
                 if (c != ' ' && !grid.reverse[row][col]) {
-                    int i = c - 32;
+                    int i = CrtGrid.glyph(c);
                     graphics.blit(RenderPipelines.GUI_TEXTURED, GLOW, MARGIN_X + col * CW - 2, MARGIN_Y + row * CH - 2, (i % 16) * 10, (i / 16) * 14, 10, 14,
-                            10, 14, 160, 84, glowColor);
+                            10, 14, GLOW_W, GLOW_H, glowColor);
                 }
             }
         }
@@ -273,8 +348,8 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
                     color = palette.bg();
                 }
                 if (c != ' ') {
-                    int i = c - 32;
-                    graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y, (i % 16) * CW, (i / 16) * CH, CW, CH, CW, CH, 96, 60, color);
+                    int i = CrtGrid.glyph(c);
+                    graphics.blit(RenderPipelines.GUI_TEXTURED, FONT, x, y, (i % 16) * CW, (i / 16) * CH, CW, CH, CW, CH, FONT_W, FONT_H, color);
                 }
                 if (grid.underline[row][col]) {
                     graphics.fill(x, y + CH - 1, x + CW, y + CH, color);
@@ -385,12 +460,26 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
             command.draw(grid);
         }
         if (message != null) {
-            grid.put(22, 1, message.getString(), CrtGrid.BRIGHT);
+            String text = message.getString();
+            // "MW" takes the line's end while messages wait.
+            grid.put(22, 1, unread > 0 && text.length() > 73 ? text.substring(0, 73) : text, CrtGrid.BRIGHT);
+        }
+        if (unread > 0) {
+            grid.put(22, 76, "MW", CrtGrid.BRIGHT);
         }
         grid.put(23, 1, panel.keys(), CrtGrid.BRIGHT);
         for (CrtField field : panel.fields) {
             field.draw(grid);
         }
+        windows.descendingIterator().forEachRemaining(window -> window.draw(grid));
+    }
+
+    // The grid as last composed (tests compare it with the layouts).
+    CrtGrid compose(boolean fresh) {
+        if (fresh) {
+            compose();
+        }
+        return grid;
     }
 
     // The game's day and time: "Day 12  14:32:07".
@@ -406,9 +495,19 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
 
     // --- Phosphor ---
 
+    // The player's choice (green, amber, white), or *SYSVAL: the system's PHOSPHOR value for every terminal on it.
     void setPhosphor(String name) {
         TerminalSettings.phosphor(name);
-        palette = loadPalette(name);
+        palette = loadPalette(phosphor());
+    }
+
+    // The phosphor in use: the player's own choice when they made one, else the system value's.
+    String phosphor() {
+        String chosen = TerminalSettings.phosphor();
+        if (!chosen.equalsIgnoreCase(TerminalSettings.SYSVAL)) {
+            return chosen;
+        }
+        return systemPhosphor.startsWith("*") ? systemPhosphor.substring(1).toLowerCase(Locale.ROOT) : systemPhosphor.toLowerCase(Locale.ROOT);
     }
 
     private Palette loadPalette(String name) {
@@ -433,7 +532,11 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         int key = event.key();
         boolean shift = event.hasShiftDown();
         if (event.isEscape()) {
-            back();
+            if (window() != null) {
+                cancelWindow();
+            } else {
+                back();
+            }
             return true;
         }
         // Function keys act on release (keyReleased), so the release can't reach the game after an exit: F3's
@@ -441,19 +544,26 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         if (functionKey(event) > 0) {
             return true;
         }
+        // Field Exit: Ctrl+Enter or the keypad's Enter clears the rest of the field and moves on.
+        if (focused != null && (key == InputConstants.KEY_NUMPADENTER || event.isConfirmation() && event.hasControlDown())) {
+            focused.fieldExit();
+            nextField(false);
+            return true;
+        }
         if (event.isConfirmation()) {
             submit();
             return true;
         }
-        List<CrtField> fields = focusable();
-        int at = focused != null ? fields.indexOf(focused) : -1;
         if (key == InputConstants.KEY_TAB || event.isDown() || event.isUp()) {
-            boolean back = key == InputConstants.KEY_TAB ? shift : event.isUp();
-            focused = fields.get(Math.floorMod(at + (back ? -1 : 1), fields.size()));
+            nextField(key == InputConstants.KEY_TAB ? shift : event.isUp());
             return true;
         }
         if (key == InputConstants.KEY_PAGEUP || key == InputConstants.KEY_PAGEDOWN) {
-            current().page(key == InputConstants.KEY_PAGEUP ? -1 : 1);
+            page(key == InputConstants.KEY_PAGEUP ? -1 : 1);
+            return true;
+        }
+        if (key == InputConstants.KEY_INSERT) {
+            insert = !insert;
             return true;
         }
         if (focused == null) {
@@ -462,7 +572,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         if (event.isPaste()) {
             for (char c : minecraft.keyboardHandler.getClipboard().toCharArray()) {
                 if (c >= 32 && c < 127) {
-                    focused.type(c);
+                    focused.type(c, true);
                 }
             }
         } else if (key == InputConstants.KEY_BACKSPACE) {
@@ -476,23 +586,67 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         } else if (key == InputConstants.KEY_HOME) {
             focused.cursor = 0;
         } else if (key == InputConstants.KEY_END) {
-            focused.cursor = focused.value.length();
+            focused.cursor = Math.min(focused.value.length(), focused.length - 1);
         }
         return true;
+    }
+
+    // Tab / Shift+Tab, Up / Down, Field Exit and Field Advance: the next (or previous) field, the cursor at its end.
+    private void nextField(boolean back) {
+        List<CrtField> fields = focusable();
+        if (fields.isEmpty()) {
+            return;
+        }
+        int at = focused != null ? fields.indexOf(focused) : -1;
+        focused = fields.get(Math.floorMod(at + (back ? -1 : 1), fields.size()));
+        focused.cursor = Math.min(focused.value.length(), focused.length - 1);
+    }
+
+    private void page(int direction) {
+        if (window() != null) {
+            window().page(direction);
+        } else {
+            current().page(direction);
+        }
+    }
+
+    // Esc / F3 / F12 on a window: it goes, the screen under it stays.
+    private void cancelWindow() {
+        CrtWindow window = windows.poll();
+        if (window != null) {
+            window.cancelled();
+        }
+        focusFirst();
     }
 
     @Override
     public boolean charTyped(CharacterEvent event) {
         int c = event.codepoint();
-        if (focused != null && c >= 32 && c < 127) {
-            focused.type((char) c);
+        // Field Advance: typing into a field's last position moves on to the next.
+        if (focused != null && c >= 32 && c < 127 && focused.type((char) c, insert)) {
+            nextField(false);
         }
         return true;
     }
 
-    // F3 exit, F4 prompt, F5 refresh, F9 Command Entry, F11 sort, F12 back, F13 clear, F24 more keys.
+    // While a window is open: F3 / F12 close it, others are its own. Else the screen's own keys first (F6 Create,
+    // F10, F19 / F20...), then F1 help, F3 exit, F4 prompt, F5 refresh, F9 Command Entry, F11 sort, F12 back, F13
+    // clear, F24 more keys.
     void functionKey(int f) {
+        CrtWindow window = window();
+        if (window != null) {
+            if (f == 3 || f == 12) {
+                cancelWindow();
+            } else {
+                window.functionKey(f);
+            }
+            return;
+        }
+        if (current().functionKey(f)) {
+            return;
+        }
         switch (f) {
+            case 1 -> help();
             case 3 -> onClose();
             case 4 -> {
                 Component prompt = focused != null ? current().prompt(focused) : null;
@@ -527,8 +681,12 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
         }
     }
 
-    // Enter: the command line first (a menu's option, or a command), else the screen.
+    // Enter: the top window's, else the command line first (a menu's option, or a command), else the screen.
     private void submit() {
+        if (window() != null) {
+            window().enter();
+            return;
+        }
         String text = command.trimmed();
         if (!text.isEmpty() && !current().prompt().isEmpty()) {
             command.set("");
@@ -557,7 +715,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
             return true;
         }
         int row = cell[0], col = cell[1];
-        if (row == 23) {
+        if (row == 23 && window() == null) {
             // A function key's label: "F3=Exit" pressed.
             String keys = " " + current().keys();
             int start = keys.lastIndexOf('F', col + 1);
@@ -577,13 +735,17 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu> {
                 field.cursor = Math.min(field.value.length(), col - field.col);
             }
         }
-        current().click(row, col, doubleClick);
+        if (window() != null) {
+            window().click(row, col, doubleClick);
+        } else {
+            current().click(row, col, doubleClick);
+        }
         return true;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        current().page(scrollY > 0 ? -1 : 1);
+        page(scrollY > 0 ? -1 : 1);
         return true;
     }
 

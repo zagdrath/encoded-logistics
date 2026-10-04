@@ -16,10 +16,12 @@ import java.util.function.BiFunction;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclCommandLine;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -92,12 +94,20 @@ public final class TerminalCommands {
         }
         TerminalCommand command = COMMANDS.get(words.getFirst().toLowerCase(Locale.ROOT));
         if (command == null) {
-            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.unknown_command", words.getFirst()));
+            // Not one of the desk's own words: an ELCL command (COMMANDS.md).
+            return ElclCommandLine.run(context, line);
         }
         if (command.permission() != null && !context.allowed(command.permission())) {
             return TerminalOutput.message(TerminalActions.notAuthorised(command.permission()));
         }
-        return command.run(context, words.subList(1, words.size()));
+        TerminalOutput out = command.run(context, words.subList(1, words.size()));
+        // The desk's own words are aliases of ELCL commands now (COMMANDS.md 10): say which.
+        String alias = "crt.encodedlogistics.alias." + command.name().toLowerCase(Locale.ROOT)
+                + (command.name().equals("show") && words.size() > 1 ? "." + words.get(1).toLowerCase(Locale.ROOT) : "");
+        if (Language.getInstance().has(alias)) {
+            out.lines().addFirst(TerminalLine.of(Component.translatable(alias), TerminalLine.DIM));
+        }
+        return out;
     }
 
     // Completions for the last word of a line (a trailing space starts a new one).

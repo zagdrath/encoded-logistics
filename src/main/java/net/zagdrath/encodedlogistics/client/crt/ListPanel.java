@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 // A "Work with" screen: a list a page at a time, an Opt field (3 wide, column 0) on each row, "More..." or "Bottom" under
 // it. Options typed stay with their rows across pages; Enter takes every row's option, top to bottom. Clicking a row
 // types its default option; double-clicking does it.
@@ -121,6 +123,29 @@ abstract class ListPanel<T> extends CrtPanel {
         options.clear();
         rebuild();
         return !chosen.isEmpty() && process(chosen);
+    }
+
+    // An option code this screen hasn't got: says so, puts it back on its row and the cursor there.
+    protected boolean invalid(Option<T> option) {
+        screen.message(tr("crt.encodedlogistics.msg.invalid_option", option.option()));
+        options.put(key(option.row()), option.option());
+        int index = rows.indexOf(option.row());
+        if (index >= 0 && (index < top || index >= top + pageSize())) {
+            top = index / pageSize() * pageSize();
+        }
+        rebuild();
+        for (CrtField field : optionFields) {
+            if (index >= 0 && field.row == firstRow() + index - top) {
+                screen.focus(field);
+            }
+        }
+        return true;
+    }
+
+    // The Opt column's help key for F1 there.
+    @Override
+    @Nullable String helpField(@Nullable CrtField field) {
+        return field != null && optionFields.contains(field) ? "opt" : null;
     }
 
     @Override

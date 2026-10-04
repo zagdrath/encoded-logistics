@@ -332,7 +332,7 @@ final class BuiltinCommands {
                 .p(rtn("RTNVAR", "Return variable", VarType.CHAR).req()));
         add(CommandDefinition.of("CHGSYSVAL", "Change System Value").positional(2)
                 .p(p("SYSVAL", "System value", Kind.NAME).req().values(ValueList.SYSVALS))
-                .p(p("VALUE", "New value", Kind.CHAR).req().len(24)));
+                .p(p("VALUE", "New value", Kind.VALUE).req().len(24)));
         add(CommandDefinition.of("SAVLIB", "Save Library").positional(2)
                 .p(p("LIB", "Library", Kind.NAME).req().values(ValueList.LIBRARIES))
                 .p(p("DEV", "Device", Kind.DEVICE).req()));

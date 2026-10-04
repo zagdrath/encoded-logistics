@@ -10,10 +10,10 @@ import java.util.Locale;
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
 
-// F24=More keys: every key the screens take, and the phosphor (Green, Amber, White) - type it (or 1-3), press Enter;
-// it's kept in the client config.
+// F24=More keys: every key the screens take, and the phosphor (Green, Amber, White, or *SYSVAL: the system's PHOSPHOR
+// value) - type it (or 1-4), press Enter; it's kept in the client config.
 final class MoreKeysPanel extends CrtPanel {
-    private static final String[] PHOSPHORS = { "green", "amber", "white" };
+    private static final String[] PHOSPHORS = { "green", "amber", "white", TerminalSettings.SYSVAL.toLowerCase(Locale.ROOT) };
     private final CrtField phosphor;
 
     MoreKeysPanel(CrtScreen screen) {
@@ -23,6 +23,9 @@ final class MoreKeysPanel extends CrtPanel {
     }
 
     private static String capital(String text) {
+        if (text.startsWith("*")) {
+            return text.toUpperCase(Locale.ROOT);
+        }
         return text.isEmpty() ? text : Character.toUpperCase(text.charAt(0)) + text.substring(1).toLowerCase(Locale.ROOT);
     }
 
@@ -56,13 +59,13 @@ final class MoreKeysPanel extends CrtPanel {
         }
         grid.put(15, 0, tr("crt.encodedlogistics.type_choices"));
         grid.put(17, 0, CrtGrid.pad(tr("crt.encodedlogistics.keys.phosphor"), 34));
-        grid.put(17, 46, "Green, Amber, White", CrtGrid.DIM);
+        grid.put(17, 46, "Green, Amber, White, *SYSVAL", CrtGrid.DIM);
         grid.put(20, 0, tr("crt.encodedlogistics.enter_continue"));
     }
 
     @Override
     Component prompt(CrtField field) {
-        return Component.literal("1=Green  2=Amber  3=White");
+        return Component.literal("1=Green  2=Amber  3=White  4=*SYSVAL (the system value)");
     }
 
     @Override
@@ -78,7 +81,7 @@ final class MoreKeysPanel extends CrtPanel {
             screen.message(tr("crt.encodedlogistics.msg.invalid_value", phosphor.trimmed()));
             return true;
         }
-        screen.setPhosphor(chosen);
+        screen.setPhosphor(chosen.startsWith("*") ? TerminalSettings.SYSVAL : chosen);
         screen.back();
         screen.message(tr("crt.encodedlogistics.keys.set", capital(chosen)));
         return true;

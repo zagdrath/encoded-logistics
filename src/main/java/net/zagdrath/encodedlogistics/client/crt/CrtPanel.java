@@ -7,9 +7,11 @@ package net.zagdrath.encodedlogistics.client.crt;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.jspecify.annotations.Nullable;
 
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 
@@ -69,6 +71,27 @@ abstract class CrtPanel {
 
     // A click on a cell; double-clicked: do what Enter would.
     void click(int row, int col, boolean doubleClick) {}
+
+    // A function key this screen has its own meaning for (F6 Create, F10, F19 / F20 window left / right, the editor's
+    // keys...): true when it took it, before the frame's own meaning.
+    boolean functionKey(int f) {
+        return false;
+    }
+
+    // F1: the help for the field (or the option code) under the cursor, else the screen's -
+    // crt.encodedlogistics.help.<screen>[.<field>] (null for the screen's own).
+    String help(@Nullable String field) {
+        String base = "crt.encodedlogistics.help." + id().toLowerCase(Locale.ROOT);
+        if (field != null && Language.getInstance().has(base + "." + field)) {
+            return tr(base + "." + field);
+        }
+        return Language.getInstance().has(base) ? tr(base) : tr("crt.encodedlogistics.help.none");
+    }
+
+    // The help key of the field under the cursor ("opt" on a list's Opt column), or null.
+    @Nullable String helpField(@Nullable CrtField field) {
+        return null;
+    }
 
     // The command line's text as this screen takes it (a menu's option number); false to run it as a command.
     boolean option(String text) {

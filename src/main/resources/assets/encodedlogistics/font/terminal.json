@@ -11,7 +11,8 @@
     "@ABCDEFGHIJKLMNO",
     "PQRSTUVWXYZ[\\]^_",
     "`abcdefghijklmno",
-    "pqrstuvwxyz{|}~█"
+    "pqrstuvwxyz{|}~█",
+    "¬─│┌┐└┘├┤┬┴┼\u0000\u0000\u0000\u0000"
    ]
   }
  ]

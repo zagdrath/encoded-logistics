@@ -30,9 +30,12 @@ public final class TerminalSettings {
             .comment("Keep the search field in step with JEI's search bar (needs JEI).")
             .define("searchSynced", false);
 
+    // The phosphor setting's default: the system's PHOSPHOR value, until the player picks their own.
+    public static final String SYSVAL = "*SYSVAL";
+
     private static final ModConfigSpec.ConfigValue<String> PHOSPHOR = BUILDER
-            .comment("The Terminal Desk's screen colour: green, amber or white (screens/crt/phosphor.json).")
-            .define("phosphor", "green");
+            .comment("The Terminal Desk's screen colour: green, amber or white (screens/crt/phosphor.json), or *SYSVAL for the system's PHOSPHOR value.")
+            .define("phosphor", SYSVAL);
 
     public static final ModConfigSpec SPEC = BUILDER.pop().build();
 

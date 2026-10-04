@@ -1,0 +1,23 @@
+/* ARCHIVE - push every matching item to tape and report         */
+/* Usage: CALL ELSYS/ARCHIVE PARM('*_ORE')                       */
+PGM PARM(&FILTER)
+  DCL VAR(&FILTER) TYPE(*CHAR) LEN(64)
+  DCL VAR(&ITEMS)  TYPE(*LIST)
+  DCL VAR(&ITEM)   TYPE(*CHAR) LEN(64)
+  DCL VAR(&N)      TYPE(*INT)  VALUE(0)
+
+  RTVDEVLST TYPE(TAPELIB) RTNLST(&ITEMS)
+  IF COND(%SIZE(&ITEMS) *EQ 0) THEN( +
+    SNDPGMMSG MSG('ARCHIVE needs a Tape Library') MSGTYPE(*ESCAPE))
+
+  RTVITMLST FILTER(&FILTER) TIER(*HOT) RTNLST(&ITEMS)
+  FOREACH VAR(&ITEM) IN(&ITEMS)
+    CHGITMTIER ITEM(&ITEM) TIER(*COLD)
+    CHGVAR VAR(&N) VALUE(&N + 1)
+  ENDFOR
+
+  PRTTXT TEXT('Archived' *BCAT %CHAR(&N) *BCAT 'item types matching' +
+         *BCAT &FILTER)
+  SNDMSG MSG('ARCHIVE complete:' *BCAT %CHAR(&N) *BCAT 'types') +
+         TOUSR(*REQUESTER)
+ENDPGM

@@ -124,11 +124,14 @@ final class DeskGameTests {
                     helper.assertTrue(TerminalItems.resolve(context, "cobblestone") != null && TerminalItems.resolve(context, "minecraft:cobblestone") != null,
                             "Item not found by id");
                     TerminalOutput shown = TerminalCommands.execute(context, "show inventory cobble");
-                    helper.assertTrue(shown.lines().size() == 2 && shown.lines().get(1).text().contains("50"), "show inventory: " + shown.lines().size());
+                    // The alias note (WRKINV), the heading, the row.
+                    helper.assertTrue(shown.lines().size() == 3 && shown.lines().get(0).text().contains("WRKINV") && shown.lines().get(2).text().contains("50"),
+                            "show inventory: " + shown.lines().size());
                     TerminalCommands.execute(context, "withdraw cobblestone 10 *inv");
                     helper.assertTrue(player.getInventory().countItem(Items.COBBLESTONE) == 10, "CLI withdraw");
                     TerminalOutput unknown = TerminalCommands.execute(context, "frobnicate");
-                    helper.assertTrue(unknown.message() != null && unknown.message().getString().contains("frobnicate"), "Unknown command message");
+                    helper.assertTrue(unknown.message() != null && unknown.message().getString().startsWith("ELC0101") && unknown.message().getString().contains("FROBNICATE"),
+                            "Unknown command message: " + unknown.message());
                     helper.assertTrue(TerminalCommands.complete(context, "sh").equals(List.of("show")), "Completion " + TerminalCommands.complete(context, "sh"));
                     helper.assertTrue(TerminalCommands.complete(context, "show dr").equals(List.of("drives")), "Topic completion");
                     TerminalOutput devices = TerminalService.handle(context, TerminalService.QUERY, "devices");

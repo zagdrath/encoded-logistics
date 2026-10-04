@@ -14,14 +14,16 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 
-// Client to server: a Terminal Desk screen's request (TerminalService.COMMAND / QUERY / COMPLETE) and its text.
+// Client to server: a Terminal Desk screen's request (TerminalService.COMMAND / QUERY / COMPLETE / SCREEN) and its text.
 public record CrtRequestPayload(int containerId, int kind, String text) implements CustomPacketPayload {
     public static final Type<CrtRequestPayload> TYPE = new Type<>(EncodedLogistics.id("crt_request"));
+    // Characters a request may carry (a serverbound payload is at most 32 KiB): the editor sends a member in pieces.
+    public static final int MAX_TEXT = 8_000;
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CrtRequestPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, CrtRequestPayload::containerId,
             ByteBufCodecs.VAR_INT, CrtRequestPayload::kind,
-            ByteBufCodecs.stringUtf8(256), CrtRequestPayload::text,
+            ByteBufCodecs.stringUtf8(MAX_TEXT), CrtRequestPayload::text,
             CrtRequestPayload::new);
 
     @Override
