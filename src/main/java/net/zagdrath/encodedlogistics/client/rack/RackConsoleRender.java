@@ -50,7 +50,7 @@ final class RackConsoleRender implements RackClientDevices.RenderExtra {
         poseStack.translate(0, 0, -TRAVEL * drawer / 16);
         part(poseStack, collector, switch (status) {
             case OFFLINE -> RackModels.CONSOLE_DRAWER;
-            case ONLINE -> RackModels.CONSOLE_DRAWER_ON;
+            case ONLINE, WARNING -> RackModels.CONSOLE_DRAWER_ON;
             case FAULT -> RackModels.CONSOLE_DRAWER_FAULT;
         }, light);
         part(poseStack, collector, RackModels.CONSOLE_KEYBOARD, light);

@@ -55,7 +55,7 @@ public final class RackHud {
 
     private static final Identifier PANEL = EncodedLogistics.id("hud/panel"), DIVIDER = EncodedLogistics.id("hud/divider"),
             DOT_ONLINE = EncodedLogistics.id("hud/dot_online"), DOT_OFFLINE = EncodedLogistics.id("hud/dot_offline"),
-            DOT_FAULT = EncodedLogistics.id("hud/dot_fault"), BAR_TRACK = EncodedLogistics.id("hud/bar_track"),
+            DOT_FAULT = EncodedLogistics.id("hud/dot_fault"), DOT_WARNING = EncodedLogistics.id("hud/dot_warning"), BAR_TRACK = EncodedLogistics.id("hud/bar_track"),
             BAR_FILL = EncodedLogistics.id("hud/bar_fill"), BAR_WARN = EncodedLogistics.id("hud/bar_fill_warn"),
             BAR_LOW = EncodedLogistics.id("hud/bar_fill_low");
     private static final int OFFSET_X = 12, OFFSET_Y = -8, PAD_X = 5, PAD_Y = 4, MIN_W = 96, MAX_W = 180;
@@ -195,6 +195,7 @@ public final class RackHud {
             case ONLINE -> DOT_ONLINE;
             case OFFLINE -> DOT_OFFLINE;
             case FAULT -> DOT_FAULT;
+            case WARNING -> DOT_WARNING;
         };
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, dot, left, lineY + 1, 5, 5);
         graphics.text(font, info.statusText(), left + 8, lineY, RackScreen.statusColor(info.status()), false);

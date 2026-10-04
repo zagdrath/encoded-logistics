@@ -11,7 +11,9 @@
   "side_upper": "encodedlogistics:block/rack/side_upper",
   "side_lower": "encodedlogistics:block/rack/side_lower",
   "rail": "encodedlogistics:block/rack/rail",
-  "particle": "encodedlogistics:block/rack/frame"
+  "particle": "encodedlogistics:block/rack/frame",
+  "base": "encodedlogistics:block/rack/base",
+  "grommet": "encodedlogistics:block/rack/grommet"
  },
  "elements": [
   {
@@ -724,12 +726,12 @@
      ]
     },
     "down": {
-     "texture": "#plinth",
+     "texture": "#base",
      "uv": [
       0,
-      2,
-      16,
-      14
+      0,
+      8,
+      16
      ]
     },
     "north": {
@@ -1522,6 +1524,126 @@
       0,
       2,
       16
+     ]
+    }
+   }
+  },
+  {
+   "name": "grommet_skirt_front",
+   "from": [
+    4,
+    -16,
+    4
+   ],
+   "to": [
+    12,
+    -15,
+    12
+   ],
+   "faces": {
+    "north": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "south": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "east": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "west": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "down": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      0,
+      4,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "grommet_skirt_rear",
+   "from": [
+    4,
+    -16,
+    20
+   ],
+   "to": [
+    12,
+    -15,
+    28
+   ],
+   "faces": {
+    "north": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "south": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "east": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "west": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      8,
+      8,
+      9
+     ]
+    },
+    "down": {
+     "texture": "#grommet",
+     "uv": [
+      0,
+      0,
+      4,
+      4
      ]
     }
    }

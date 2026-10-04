@@ -47,7 +47,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         final List<DeviceDraw> devices = new ArrayList<>();
     }
 
-    record DeviceDraw(RackDeviceType type, int u, RackDeviceInfo.Status status, int[] extra) {}
+    record DeviceDraw(RackDeviceType type, int u, RackDeviceInfo.Status status, @Nullable String variant, int[] extra) {}
 
     public RackRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -71,7 +71,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         }
         for (RackDevice device : rack.devices()) {
             RackClientDevices.RenderExtra extra = RackClientDevices.extra(device.type());
-            state.devices.add(new DeviceDraw(device.type(), device.u(), device.shownStatus(), extra != null ? extra.capture(device, partialTicks) : NONE));
+            state.devices.add(new DeviceDraw(device.type(), device.u(), device.shownStatus(), device.shownVariant(), extra != null ? extra.capture(device, partialTicks) : NONE));
         }
     }
 
@@ -87,7 +87,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         door(poseStack, collector, state, RackModels.DOOR_REAR_RIGHT, 1.5F, 31.1F, -OPEN_DEGREES * state.rear);
 
         for (DeviceDraw device : state.devices) {
-            BlockStateModelPart model = RackModels.get(device.type().model(device.status()));
+            BlockStateModelPart model = RackModels.get(device.type().model(device.status(), device.variant()));
             poseStack.pushPose();
             poseStack.translate(0, RackGeometry.unitBottom(device.u()) / 16, 0);
             if (model != null) {

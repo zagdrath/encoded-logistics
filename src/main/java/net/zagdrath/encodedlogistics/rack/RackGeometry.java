@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.rack;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -73,9 +75,55 @@ public final class RackGeometry {
         return new Direction[] { Direction.UP, Direction.DOWN, across };
     }
 
-    // Whether a cable on that side of a part joins the rack: the rear face of the back blocks, the top of the top ones.
+    // Whether a cable on that side of a part joins the rack: the rear face of the back blocks, the top of the top ones
+    // and the bottom of the bottom ones (through the roof's and the plinth's grommets).
     public static boolean connectsOn(int index, Direction facing, Direction side) {
-        return isBack(index) && side == facing.getOpposite() || isTop(index) && side == Direction.UP;
+        return isBack(index) && side == facing.getOpposite() || isTop(index) && side == Direction.UP || isBottom(index) && side == Direction.DOWN;
+    }
+
+    public static boolean isBottom(int index) {
+        return dy(index) == -1;
+    }
+
+    // The rack's connection points, in the order its controllers' uplink chips show them: the four grommets, then the
+    // rear faces from the top.
+    public enum Point {
+        TOP_FRONT(RackGeometry.TOP_FRONT, Direction.UP), TOP_REAR(TOP_BACK, Direction.UP), BOTTOM_FRONT(RackGeometry.BOTTOM_FRONT, Direction.DOWN),
+        BOTTOM_REAR(BOTTOM_BACK, Direction.DOWN), REAR_TOP(TOP_BACK, null), REAR_MIDDLE(MIDDLE_BACK, null), REAR_BOTTOM(BOTTOM_BACK, null);
+
+        private final int index;
+        private final @Nullable Direction vertical;
+
+        Point(int index, @Nullable Direction vertical) {
+            this.index = index;
+            this.vertical = vertical;
+        }
+
+        public int index() {
+            return index;
+        }
+
+        public Direction side(Direction facing) {
+            return vertical != null ? vertical : facing.getOpposite();
+        }
+
+        // The block a cable at this point sits in.
+        public BlockPos outside(BlockPos master, Direction facing) {
+            return partPos(master, facing, index).relative(side(facing));
+        }
+
+        public static @Nullable Point at(int index, Direction facing, Direction side) {
+            for (Point point : values()) {
+                if (point.index == index && point.side(facing) == side) {
+                    return point;
+                }
+            }
+            return null;
+        }
+
+        public String key() {
+            return "gui.encodedlogistics.rack.point." + name().toLowerCase(java.util.Locale.ROOT);
+        }
     }
 
     // --- Units ---

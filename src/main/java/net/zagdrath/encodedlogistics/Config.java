@@ -342,6 +342,30 @@ public class Config {
             .comment("FE per tick a UPS in Standby mode drains while its network runs.")
             .defineInRange("upsDrainStandby", 1.0, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.IntValue UPS_LOW_BATTERY_PERCENT = BUILDER
+            .comment("Charge (%) below which a UPS on battery shows Low battery and sounds its rapid alarm.")
+            .defineInRange("upsLowBatteryPercent", 20, 0, 100);
+
+    public static final ModConfigSpec.BooleanValue UPS_ALARMS = BUILDER
+            .comment("Whether UPSes sound their alarms on battery.")
+            .define("upsAlarms", true);
+
+    public static final ModConfigSpec.IntValue RACK_CONTROLLER_2U_ENERGY_BLOCKS = BUILDER
+            .comment("Controller blocks' worth of energy buffer, receive rate and drain a 2U Network Controller has (a 4U has twice).")
+            .defineInRange("rackController2uEnergyBlocks", 20, 1, 343);
+
+    public static final ModConfigSpec.IntValue RACK_CONTROLLER_2U_LANE_FACES = BUILDER
+            .comment("Connected controller faces' worth of lanes a 2U Network Controller hands out (a 4U has twice).")
+            .defineInRange("rackController2uLaneFaces", 6, 1, 1024);
+
+    public static final ModConfigSpec.DoubleValue RACK_CONTROLLER_STANDBY_FACTOR = BUILDER
+            .comment("The share of its drain a standby rack Network Controller draws while idle.")
+            .defineInRange("rackControllerStandbyFactor", 0.1, 0.0, 1.0);
+
+    public static final ModConfigSpec.IntValue RACK_POWER_MAX_INPUT = BUILDER
+            .comment("FE per tick a Server Rack takes in through its connection points (across all of them); -1: the same as inletMaxInput.")
+            .defineInRange("rackPowerMaxInput", -1, -1, Integer.MAX_VALUE);
+
     public static final ModConfigSpec.IntValue L2_SWITCH_24_LANES = BUILDER
             .comment("Rack-local lanes a 24-Port L2 Switch gives the other devices in its rack.")
             .defineInRange("l2Switch24Lanes", 16, 0, 1024);

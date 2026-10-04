@@ -1,0 +1,2 @@
+UPS LCD marquee font (white, tinted by the renderer): 3x5 glyphs at (4*i, 72) for i < 32, (4*(i-32), 78) after, in this order:
+' ABCDEFGHILMNOPRSTUVWY0123456789%:-'

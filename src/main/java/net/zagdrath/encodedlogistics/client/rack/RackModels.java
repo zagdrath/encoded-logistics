@@ -47,7 +47,12 @@ public final class RackModels {
         }
         for (RackDeviceType type : RackDeviceType.all()) {
             for (RackDeviceInfo.Status status : RackDeviceInfo.Status.values()) {
-                register(event, type.model(status));
+                if (!KEYS.containsKey(type.model(status))) {
+                    register(event, type.model(status));
+                }
+            }
+            for (String variant : type.variants().keySet()) {
+                register(event, type.model(RackDeviceInfo.Status.OFFLINE, variant));
             }
         }
     }

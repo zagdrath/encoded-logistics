@@ -109,5 +109,32 @@
     "name": "encodedlogistics:block/terminal_desk/key_clack4"
    }
   ]
+ },
+ "block.rack.ups_beep": {
+  "subtitle": "subtitles.encodedlogistics.rack.ups_beep",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/ups_beep",
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "block.rack.ups_alarm": {
+  "subtitle": "subtitles.encodedlogistics.rack.ups_alarm",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/ups_alarm",
+    "attenuation_distance": 16
+   }
+  ]
+ },
+ "block.rack.ups_alarm_low": {
+  "subtitle": "subtitles.encodedlogistics.rack.ups_alarm_low",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/rack/ups_alarm_low",
+    "attenuation_distance": 16
+   }
+  ]
  }
 }

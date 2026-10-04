@@ -122,6 +122,10 @@ public final class ModItems {
             p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> UPS = ITEMS.registerItem("ups", p -> new RackDeviceItem(p, RackDeviceType.UPS),
             p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> NETWORK_CONTROLLER_2U = ITEMS.registerItem("network_controller_2u",
+            p -> new RackDeviceItem(p, RackDeviceType.NETWORK_CONTROLLER_2U), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> NETWORK_CONTROLLER_4U = ITEMS.registerItem("network_controller_4u",
+            p -> new RackDeviceItem(p, RackDeviceType.NETWORK_CONTROLLER_4U), p -> p.stacksTo(1));
 
     public static final DeferredItem<RackDeviceItem> L2_SWITCH_24 = ITEMS.registerItem("l2_switch_24", p -> new RackDeviceItem(p, RackDeviceType.L2_SWITCH_24),
             p -> p.stacksTo(1));

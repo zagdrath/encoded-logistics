@@ -393,6 +393,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     // What the grid says while the terminal can't reach its network.
     protected Component offlineMessage() {
+        if (menu.isFailover()) {
+            return Component.translatable("hud.encodedlogistics.status.failover");
+        }
         return Component.translatable("gui.encodedlogistics.terminal.offline");
     }
 

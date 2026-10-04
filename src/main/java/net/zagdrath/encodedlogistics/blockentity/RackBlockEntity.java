@@ -61,6 +61,7 @@ import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
+import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
@@ -93,6 +94,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     private boolean online;
     // As last solved: which units got their lanes, and the rack's uplinks.
     private RackLanes rackLanes = RackLanes.NONE;
+    // Its controller structure (ControllerStructures) while it holds rack Network Controllers, else 0.
+    private long controllerStructure;
     private boolean syncPending;
     private int syncCooldown;
     // Client: door animation, 0 (closed) to DOOR_TICKS (open), this tick and last.
@@ -273,7 +276,92 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             drain += device.drain();
             parts.add(new NetworkPart(device.type().item(), device.drain()));
         }
-        return new RackNode(worldPosition.immutable(), sides, drain, parts, demands(), List.of(), 0);
+        List<RackNode.RackController> controllers = new ArrayList<>();
+        for (NetworkControllerDevice controller : controllers()) {
+            controllers.add(new RackNode.RackController(controller.u(), controller.size(), controller.lanes(), controller.usable()));
+        }
+        return new RackNode(worldPosition.immutable(), sides, drain, parts, demands(), controllers, controllerStructure);
+    }
+
+    // Each connection point with its state, for a controller's uplink chips: up (it carries the network toward a source,
+    // or out from this rack's controller), down (a cable there leads nowhere), unused (nothing there) or mismatch (a cable
+    // from another network); the cable there and its lanes.
+    public enum PointState {
+        UP, DOWN, UNUSED, MISMATCH
+    }
+
+    public void writeUplinks(ValueOutput.ValueOutputList list) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        for (RackGeometry.Point point : RackGeometry.Point.values()) {
+            BlockPos outside = point.outside(worldPosition, facing());
+            PointState state = pointState(serverLevel, point);
+            ValueOutput child = list.addChild();
+            child.putInt("state", state.ordinal());
+            child.putString("point", Component.translatable(point.key()).getString());
+            child.putString("cable", state == PointState.UNUSED ? "" : serverLevel.getBlockState(outside).getBlock().getName().getString());
+            int lanes = 0;
+            for (RackLanes.Uplink uplink : rackLanes.uplinks()) {
+                if (uplink.outside().pos().equals(outside)) {
+                    lanes = uplink.capacity();
+                }
+            }
+            child.putInt("lanes", lanes);
+        }
+    }
+
+    public PointState pointState(ServerLevel level, RackGeometry.Point point) {
+        BlockPos outside = point.outside(worldPosition, facing());
+        if (isMismatched(level, point)) {
+            return PointState.MISMATCH;
+        }
+        for (RackLanes.Uplink uplink : rackLanes.uplinks()) {
+            if (uplink.outside().pos().equals(outside) && uplink.outside().dimension().equals(level.dimension())) {
+                return uplink.active() ? PointState.UP : PointState.DOWN;
+            }
+        }
+        return PointState.UNUSED;
+    }
+
+    // A cable from another network than the rack's at a point (it carries nothing). Filled in with the rack's power and
+    // network checks.
+    public boolean isMismatched(ServerLevel level, RackGeometry.Point point) {
+        return false;
+    }
+
+    // --- Rack Network Controllers ---
+
+    public List<NetworkControllerDevice> controllers() {
+        List<NetworkControllerDevice> controllers = new ArrayList<>();
+        for (RackDevice device : devices.values()) {
+            if (device instanceof NetworkControllerDevice controller) {
+                controllers.add(controller);
+            }
+        }
+        return controllers;
+    }
+
+    public long controllerStructure() {
+        return controllerStructure;
+    }
+
+    // Holding controllers, it has a controller structure of its own; without, none.
+    private void checkControllerStructure(ServerLevel level) {
+        ControllerStructures structures = ControllerStructures.get(level);
+        boolean wanted = devices.values().stream().anyMatch(device -> device instanceof NetworkControllerDevice);
+        ControllerStructures.Structure structure = controllerStructure > 0 ? structures.get(controllerStructure) : null;
+        boolean valid = structure != null && structure.rack() && structure.members().contains(worldPosition);
+        if (wanted && !valid) {
+            controllerStructure = structures.addRack(worldPosition);
+            setChanged();
+        } else if (!wanted && controllerStructure > 0) {
+            if (valid) {
+                structures.removeRack(level, controllerStructure);
+            }
+            controllerStructure = 0;
+            setChanged();
+        }
     }
 
     // What each device needs from the network: each switch its uplink, each device no switch pools its own lanes.
@@ -482,6 +570,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
+        rack.checkControllerStructure(serverLevel);
         for (RackDevice device : List.copyOf(rack.devices.values())) {
             device.tick(serverLevel);
         }
@@ -540,6 +629,10 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             }
             devices.clear();
             scheduler.dropAll(serverLevel);
+            if (controllerStructure > 0) {
+                ControllerStructures.get(serverLevel).removeRack(serverLevel, controllerStructure);
+                controllerStructure = 0;
+            }
         }
     }
 
@@ -550,6 +643,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         super.loadAdditional(input);
         frontOpen = input.getBooleanOr("front_open", false);
         rearOpen = input.getBooleanOr("rear_open", false);
+        controllerStructure = input.getLongOr("controller_structure", 0L);
         segments.clear();
         input.read("segments", GlobalPos.CODEC.listOf()).ifPresent(segments::addAll);
         devices.clear();
@@ -583,6 +677,9 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         super.saveAdditional(output);
         output.putBoolean("front_open", frontOpen);
         output.putBoolean("rear_open", rearOpen);
+        if (controllerStructure > 0) {
+            output.putLong("controller_structure", controllerStructure);
+        }
         ValueOutput.ValueOutputList list = output.childrenList("devices");
         for (RackDevice device : devices.values()) {
             ValueOutput child = list.addChild();

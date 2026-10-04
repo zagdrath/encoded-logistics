@@ -29,6 +29,7 @@ import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.MonitoringServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
+import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.SanDevice;
@@ -59,7 +60,8 @@ public final class RackDeviceType {
     public static final RackDeviceType ROUTER = register("router", 1, () -> ModItems.ROUTER.get(), RouterDevice::new)
             .slots(List.of(new RackSlot(9, 129, RouterDevice::isTransceiver, 1), new RackSlot(27, 129, RouterDevice::isTransceiver, 1),
                     new RackSlot(45, 129, RouterDevice::isTransceiver, 1)));
-    public static final RackDeviceType UPS = register("ups", 2, () -> ModItems.UPS.get(), UpsDevice::new);
+    public static final RackDeviceType UPS = register("ups", 2, () -> ModItems.UPS.get(), UpsDevice::new)
+            .variants(Map.of("_battery", 1, "_battery_low", 2));
 
     // Batch 2: switches, servers, storage. Their lit overlays animate (4 frames).
     public static final RackDeviceType L2_SWITCH_24 = register("l2_switch_24", 1, () -> ModItems.L2_SWITCH_24.get(), SwitchDevice::new).frames(4);
@@ -86,12 +88,20 @@ public final class RackDeviceType {
     public static final RackDeviceType TAPE_LIBRARY_6U = register("tape_library_6u", 6, () -> ModItems.TAPE_LIBRARY_6U.get(),
             type -> new TapeLibraryDevice(type, 48, 4)).frames(4).slots(tapeSlots(48, new int[] { 9, 49, 89, 129 }));
 
+    // The rack Network Controllers: the block's colour cycle (16 frames) on, and looks for a pair's states.
+    public static final RackDeviceType NETWORK_CONTROLLER_2U = register("network_controller_2u", 2, () -> ModItems.NETWORK_CONTROLLER_2U.get(),
+            NetworkControllerDevice::new).frames(16).variants(Map.of("_standby", 1, "_failover", 4, "_conflict", 2));
+    public static final RackDeviceType NETWORK_CONTROLLER_4U = register("network_controller_4u", 4, () -> ModItems.NETWORK_CONTROLLER_4U.get(),
+            NetworkControllerDevice::new).frames(16).variants(Map.of("_standby", 1, "_failover", 4, "_conflict", 2));
+
     private final Identifier id;
     private final int size;
     private final Supplier<? extends Item> item;
     private final Function<RackDeviceType, RackDevice> factory;
     private List<RackSlot> slots = List.of();
     private int frames = 1;
+    // Extra looks (RackDevice#modelVariant) by suffix, and the frames in each one's texture.
+    private Map<String, Integer> variants = Map.of();
 
     private RackDeviceType(Identifier id, int size, Supplier<? extends Item> item, Function<RackDeviceType, RackDevice> factory) {
         if (size < 1 || size > MAX_SIZE) {
@@ -119,6 +129,16 @@ public final class RackDeviceType {
     private RackDeviceType frames(int frames) {
         this.frames = frames;
         return this;
+    }
+
+    RackDeviceType variants(Map<String, Integer> variants) {
+        this.variants = Map.copyOf(variants);
+        return this;
+    }
+
+    // Its extra looks' suffixes and frame counts: models/block/rack_device/<id><suffix>.json, textures the same.
+    public Map<String, Integer> variants() {
+        return variants;
     }
 
     private static List<RackSlot> fabricationSlots() {
@@ -208,14 +228,19 @@ public final class RackDeviceType {
         return size > 4 ? 128 : 64;
     }
 
-    // The model for a state: off, on or fault.
+    // The model for a state: off, on (a warning too) or fault.
     public Identifier model(RackDeviceInfo.Status status) {
         String suffix = switch (status) {
             case OFFLINE -> "";
-            case ONLINE -> "_on";
+            case ONLINE, WARNING -> "_on";
             case FAULT -> "_fault";
         };
         return id.withPath("block/rack_device/" + id.getPath() + suffix);
+    }
+
+    // The model for a device's look: its variant's when it has one it knows, else its status's.
+    public Identifier model(RackDeviceInfo.Status status, @Nullable String variant) {
+        return variant != null && variants.containsKey(variant) ? id.withPath("block/rack_device/" + id.getPath() + variant) : model(status);
     }
 
     public Identifier texture(String suffix) {

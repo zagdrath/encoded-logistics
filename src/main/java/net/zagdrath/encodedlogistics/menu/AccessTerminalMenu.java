@@ -35,6 +35,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
@@ -79,7 +80,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     private @Nullable Map<ItemKey, TerminalItemsPayload.Entry> sent;
     private @Nullable Set<ItemKey> sentCraftables;
     private List<TerminalItemsPayload.Recall> sentRecalls = List.of();
-    private boolean sentOnline;
+    private boolean sentOnline, sentFailover;
     private int ticksUntilSync;
     private final Map<ItemKey, Long> waiting = new LinkedHashMap<>();
 
@@ -88,7 +89,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     private final Map<ItemKey, TerminalItemsPayload.Entry> cold = new HashMap<>();
     private final Map<ItemKey, Integer> recalls = new HashMap<>();
     private final Set<ItemKey> craftables = new LinkedHashSet<>();
-    private boolean online;
+    private boolean online, failover;
     private int version;
 
     // Client constructor, with the terminal's position and side written by the server.
@@ -197,14 +198,17 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         }
         Set<ItemKey> craftable = isOnline && player.level() instanceof ServerLevel level ? CraftRequests.craftables(level.getServer(), network()) : Set.of();
         boolean craftablesChanged = !craftable.equals(sentCraftables);
-        if (full || !changes.isEmpty() || isOnline != sentOnline || craftablesChanged || !recallsNow.equals(sentRecalls)) {
-            PacketDistributor.sendToPlayer(serverPlayer, new TerminalItemsPayload(containerId, isOnline, full, changes,
+        boolean isFailover = !isOnline && player.level() instanceof ServerLevel level
+                && ControllerStructures.statusOf(level.getServer(), homeNetwork()) == NetworkStatus.FAILOVER;
+        if (full || !changes.isEmpty() || isOnline != sentOnline || isFailover != sentFailover || craftablesChanged || !recallsNow.equals(sentRecalls)) {
+            PacketDistributor.sendToPlayer(serverPlayer, new TerminalItemsPayload(containerId, isOnline, isFailover, full, changes,
                     craftablesChanged ? Optional.of(List.copyOf(craftable)) : Optional.empty(), recallsNow));
         }
         sent = new HashMap<>(now);
         sentCraftables = craftable;
         sentRecalls = recallsNow;
         sentOnline = isOnline;
+        sentFailover = isFailover;
     }
 
     // Every item, hot and cold, as the grid shows it.
@@ -386,9 +390,10 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     // --- Client ---
 
-    public void applyUpdate(boolean online, boolean full, List<TerminalItemsPayload.Entry> entries, @Nullable List<ItemKey> craftables,
+    public void applyUpdate(boolean online, boolean failover, boolean full, List<TerminalItemsPayload.Entry> entries, @Nullable List<ItemKey> craftables,
             List<TerminalItemsPayload.Recall> recalls) {
         this.online = online;
+        this.failover = failover;
         if (craftables != null) {
             this.craftables.clear();
             this.craftables.addAll(craftables);
@@ -435,6 +440,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     public boolean isOnline() {
         return online;
+    }
+
+    // Client: offline because its network is failing over (back shortly).
+    public boolean isFailover() {
+        return failover;
     }
 
     // Goes up with every update, so the screen knows when to rebuild its list.

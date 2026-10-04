@@ -26,8 +26,9 @@ public record RackDeviceInfo(Component name, Status status, Component statusText
         this(name, status, statusText, lines, false);
     }
 
+    // WARNING: a passing state that isn't a fault (a controller failing over, a UPS on battery): amber.
     public enum Status {
-        ONLINE, OFFLINE, FAULT;
+        ONLINE, OFFLINE, FAULT, WARNING;
 
         private static final Status[] VALUES = values();
 

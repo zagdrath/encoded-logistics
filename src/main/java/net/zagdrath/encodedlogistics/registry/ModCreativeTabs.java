@@ -66,7 +66,7 @@ public final class ModCreativeTabs {
                 for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS, ModItems.L2_SWITCH_24, ModItems.L2_SWITCH_48,
                         ModItems.L3_SWITCH, ModItems.COMPUTE_SERVER, ModItems.MEMORY_SERVER, ModItems.FABRICATION_SERVER, ModItems.MONITORING_SERVER,
                         ModItems.NAS, ModItems.SAN, ModItems.RACK_CONSOLE, ModItems.WIRELESS_CONTROLLER, ModItems.TAPE_LIBRARY_4U,
-                        ModItems.TAPE_LIBRARY_6U)) {
+                        ModItems.TAPE_LIBRARY_6U, ModItems.NETWORK_CONTROLLER_2U, ModItems.NETWORK_CONTROLLER_4U)) {
                     output.accept(device.get());
                 }
                 output.accept(ModItems.LTO_TAPE_DRIVE.get());

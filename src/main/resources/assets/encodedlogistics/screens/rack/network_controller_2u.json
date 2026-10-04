@@ -1,0 +1,117 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/network_controller_2u.png",
+  "width": 176,
+  "height": 168
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "priority": {
+  "left": 132,
+  "top": 2,
+  "button": "terminal/button",
+  "icons": [
+   "rack/priority/high",
+   "rack/priority/normal",
+   "rack/priority/low"
+  ],
+  "tooltip": "gui.encodedlogistics.rack.priority",
+  "note": "every device panel: cycles High / Normal / Low"
+ },
+ "widgets": {
+  "energy_bar": {
+   "left": 9,
+   "top": 23,
+   "sprite": "controller/energy_bar",
+   "fill": "bottom_up"
+  },
+  "readouts": {
+   "left": 31,
+   "top": 25,
+   "right": 165,
+   "line_height": 11,
+   "lines": [
+    "status",
+    "energy",
+    "usage",
+    "devices"
+   ]
+  },
+  "lanes": {
+   "label": [
+    31,
+    67
+   ],
+   "value_right": 165,
+   "bar": {
+    "left": 32,
+    "top": 78,
+    "width": 132,
+    "height": 2,
+    "sprite": "common/bar_fill_mint"
+   }
+  },
+  "pair": {
+   "left": 12,
+   "top": 98,
+   "value_left": 82,
+   "line_height": 11,
+   "lines": [
+    "role",
+    "partner",
+    "last_failover"
+   ]
+  },
+  "switch_over": {
+   "left": 108,
+   "top": 136,
+   "width": 60,
+   "height": 14,
+   "button": "common/button_wide",
+   "text": "gui.encodedlogistics.controller.switch_over",
+   "enabled_when": "redundant pair, both online",
+   "confirm": true
+  },
+  "uplinks": {
+   "left": 9,
+   "top": 153,
+   "count": 4,
+   "spacing": 20,
+   "sprites": {
+    "up": "rack/controller/chip_up",
+    "down": "rack/controller/chip_down",
+    "unused": "rack/controller/chip_unused",
+    "mismatch": "rack/controller/chip_mismatch"
+   },
+   "tooltip": "uplink n: connection point, cable type, lanes"
+  }
+ },
+ "text": {
+  "title": {
+   "key": "item.encodedlogistics.network_controller_2u",
+   "left": 8,
+   "top": 5,
+   "color": "TEXT"
+  },
+  "pair": {
+   "key": "gui.encodedlogistics.controller.pair",
+   "left": 8,
+   "top": 86,
+   "color": "TEXT_MUTED"
+  },
+  "uplinks": {
+   "key": "gui.encodedlogistics.controller.uplinks",
+   "left": 8,
+   "top": 140,
+   "color": "TEXT_MUTED"
+  }
+ }
+}

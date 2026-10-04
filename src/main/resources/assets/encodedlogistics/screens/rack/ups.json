@@ -29,7 +29,8 @@
     "charge",
     "load",
     "runtime",
-    "source"
+    "source",
+    "status"
    ]
   },
   "load_bar": {
@@ -55,6 +56,19 @@
    "top": 106,
    "rows": 3,
    "row_height": 12
+  },
+  "alarm": {
+   "left": 152,
+   "top": 93,
+   "width": 14,
+   "height": 14,
+   "button": "terminal/button",
+   "icons": [
+    "rack/ups/alarm_on",
+    "rack/ups/alarm_muted"
+   ],
+   "tooltip": "gui.encodedlogistics.ups.alarm",
+   "note": "muted = this outage only; re-arms when power returns"
   }
  },
  "text": {
@@ -70,5 +84,17 @@
    "top": 95,
    "color": "TEXT_MUTED"
   }
+ },
+ "priority": {
+  "left": 132,
+  "top": 2,
+  "button": "terminal/button",
+  "icons": [
+   "rack/priority/high",
+   "rack/priority/normal",
+   "rack/priority/low"
+  ],
+  "tooltip": "gui.encodedlogistics.rack.priority",
+  "note": "every device panel: cycles High / Normal / Low"
  }
 }

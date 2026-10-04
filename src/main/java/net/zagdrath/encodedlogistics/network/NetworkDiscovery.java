@@ -59,13 +59,31 @@ public final class NetworkDiscovery {
     private NetworkDiscovery() {}
 
     public static Discovered discover(ServerLevel level, long structureId, Collection<BlockPos> members, int lanesPerFace) {
-        MinecraftServer server = level.getServer();
         NetworkGraph graph = new NetworkGraph();
         Map<NodePos, Item> items = new HashMap<>();
         ArrayDeque<NodePos> queue = new ArrayDeque<>();
         for (BlockPos member : members) {
             queue.add(graph.addNode(level.dimension(), new ControllerNode(member.immutable(), structureId, lanesPerFace)));
         }
+        return walk(level, graph, items, queue, lanesPerFace);
+    }
+
+    // A rack Network Controller's network: everything reachable from its Server Rack (whose master is at rack).
+    public static Discovered discoverRack(ServerLevel level, BlockPos rack, int lanesPerFace) {
+        NetworkGraph graph = new NetworkGraph();
+        Map<NodePos, Item> items = new HashMap<>();
+        ArrayDeque<NodePos> queue = new ArrayDeque<>();
+        NetworkNode start = nodeAt(level, rack, lanesPerFace);
+        if (start != null) {
+            NodePos pos = graph.addNode(level.dimension(), start);
+            items.put(pos, level.getBlockState(rack).getBlock().asItem());
+            queue.add(pos);
+        }
+        return walk(level, graph, items, queue, lanesPerFace);
+    }
+
+    private static Discovered walk(ServerLevel level, NetworkGraph graph, Map<NodePos, Item> items, ArrayDeque<NodePos> queue, int lanesPerFace) {
+        MinecraftServer server = level.getServer();
         while (!queue.isEmpty() && graph.size() < MAX_NODES) {
             NodePos at = queue.poll();
             NetworkNode node = graph.node(at);

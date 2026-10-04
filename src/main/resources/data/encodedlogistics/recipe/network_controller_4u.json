@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:network_controller_2u",
+  "encodedlogistics:network_controller_2u",
+  "encodedlogistics:processor_die",
+  "encodedlogistics:heatsink",
+  "encodedlogistics:heatsink"
+ ],
+ "result": {
+  "id": "encodedlogistics:network_controller_4u",
+  "count": 1
+ }
+}

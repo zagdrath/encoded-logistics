@@ -21,6 +21,7 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.multiblock.ControllerBuffer;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
@@ -29,7 +30,7 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // energy stays put when structures merge or split. The energy capability on every face is a view of the whole
 // structure (StructureEnergy): FE in fills this block, then spills over into the others. ControllerStructures drains it
 // and counts what came in.
-public class NetworkControllerBlockEntity extends BlockEntity {
+public class NetworkControllerBlockEntity extends BlockEntity implements ControllerBuffer {
     private long structureId;
     private final Buffer energy = new Buffer();
     private final StructureEnergy structureEnergy = new StructureEnergy();
@@ -54,16 +55,19 @@ public class NetworkControllerBlockEntity extends BlockEntity {
         return structureEnergy;
     }
 
+    @Override
     public int getEnergy() {
         return energy.getAmountAsInt();
     }
 
+    @Override
     public int getCapacity() {
         energy.refreshLimits();
         return energy.getCapacityAsInt();
     }
 
     // Takes up to amount FE out of this block's buffer for the network; returns what it took.
+    @Override
     public int drain(int amount) {
         int taken = Math.min(amount, energy.getAmountAsInt());
         if (taken > 0) {
@@ -74,11 +78,13 @@ public class NetworkControllerBlockEntity extends BlockEntity {
 
     // Network side (a Power Inlet's FE): fills this block's buffer past the per-tick limit on its faces. It counts toward
     // what the structure received, and so toward this tick's allowance on its faces too.
+    @Override
     public int fill(int amount, TransactionContext transaction) {
         return energy.fill(amount, transaction);
     }
 
     // FE received since the last call; starts a new tick's receive allowance.
+    @Override
     public int takeReceived() {
         int received = energy.receivedThisTick;
         energy.receivedThisTick = 0;

@@ -18,9 +18,9 @@ import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 
 // Server to client: the network's items for an open terminal - everything (full) or just what changed since the last
-// update (a count of 0 means gone) - whether the terminal is online, what the network can craft (when that changed),
-// and the recalls the player is waiting on (every update).
-public record TerminalItemsPayload(int containerId, boolean online, boolean full, List<Entry> entries, Optional<List<ItemKey>> craftables,
+// update (a count of 0 means gone) - whether the terminal is online (or its network is failing over, which pauses it),
+// what the network can craft (when that changed), and the recalls the player is waiting on (every update).
+public record TerminalItemsPayload(int containerId, boolean online, boolean failover, boolean full, List<Entry> entries, Optional<List<ItemKey>> craftables,
         List<Recall> recalls) implements CustomPacketPayload {
     public static final Type<TerminalItemsPayload> TYPE = new Type<>(EncodedLogistics.id("terminal_items"));
 
@@ -51,6 +51,7 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean full
     public static final StreamCodec<RegistryFriendlyByteBuf, TerminalItemsPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, TerminalItemsPayload::containerId,
             ByteBufCodecs.BOOL, TerminalItemsPayload::online,
+            ByteBufCodecs.BOOL, TerminalItemsPayload::failover,
             ByteBufCodecs.BOOL, TerminalItemsPayload::full,
             Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), TerminalItemsPayload::entries,
             ByteBufCodecs.optional(ItemKey.STREAM_CODEC.apply(ByteBufCodecs.list())), TerminalItemsPayload::craftables,
@@ -64,7 +65,7 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean full
 
     static void handle(TerminalItemsPayload payload, IPayloadContext context) {
         if (context.player().containerMenu instanceof AccessTerminalMenu menu && menu.containerId == payload.containerId()) {
-            menu.applyUpdate(payload.online(), payload.full(), payload.entries(), payload.craftables().orElse(null), payload.recalls());
+            menu.applyUpdate(payload.online(), payload.failover(), payload.full(), payload.entries(), payload.craftables().orElse(null), payload.recalls());
         }
     }
 }

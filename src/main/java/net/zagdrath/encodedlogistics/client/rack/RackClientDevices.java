@@ -26,6 +26,7 @@ import net.zagdrath.encodedlogistics.client.screen.FabricationServerPanel;
 import net.zagdrath.encodedlogistics.client.screen.FirewallPanel;
 import net.zagdrath.encodedlogistics.client.screen.L3SwitchPanel;
 import net.zagdrath.encodedlogistics.client.screen.MonitoringPanel;
+import net.zagdrath.encodedlogistics.client.screen.NetworkControllerPanel;
 import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.client.screen.RouterPanel;
 import net.zagdrath.encodedlogistics.client.screen.ServerPanel;
@@ -69,6 +70,8 @@ public final class RackClientDevices {
         PANELS.put(RackDeviceType.FIREWALL, FirewallPanel::new);
         PANELS.put(RackDeviceType.ROUTER, RouterPanel::new);
         PANELS.put(RackDeviceType.UPS, UpsPanel::new);
+        PANELS.put(RackDeviceType.NETWORK_CONTROLLER_2U, NetworkControllerPanel::new);
+        PANELS.put(RackDeviceType.NETWORK_CONTROLLER_4U, NetworkControllerPanel::new);
         PANELS.put(RackDeviceType.L2_SWITCH_24, SwitchPanel::new);
         PANELS.put(RackDeviceType.L2_SWITCH_48, SwitchPanel::new);
         PANELS.put(RackDeviceType.L3_SWITCH, L3SwitchPanel::new);

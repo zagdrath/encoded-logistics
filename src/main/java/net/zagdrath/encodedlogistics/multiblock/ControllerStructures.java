@@ -27,6 +27,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -66,6 +67,7 @@ import net.zagdrath.encodedlogistics.network.NetworkPart;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.network.RackNode;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
@@ -73,6 +75,7 @@ import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.TapeRecalls;
 import net.zagdrath.encodedlogistics.rack.TapeTier;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
+import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -105,13 +108,20 @@ public class ControllerStructures extends SavedData {
     private static final int MAX_GROUP = 4096;
     private static final int GENERATION_WINDOW = 20;
 
-    public record Structure(long id, List<BlockPos> members, ControllerFrame.Problem problem) {
+    // A structure is a group of Network Controller blocks, or (rack) a Server Rack holding rack Network Controllers: its
+    // one member is the rack's master.
+    public record Structure(long id, List<BlockPos> members, ControllerFrame.Problem problem, boolean rack) {
         public static final Codec<Structure> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.LONG.fieldOf("id").forGetter(Structure::id),
                 BlockPos.CODEC.listOf().fieldOf("members").forGetter(Structure::members),
                 Codec.STRING.xmap(ControllerStructures::problemByName, ControllerFrame.Problem::name).fieldOf("problem")
-                        .forGetter(Structure::problem))
+                        .forGetter(Structure::problem),
+                Codec.BOOL.optionalFieldOf("rack", false).forGetter(Structure::rack))
                 .apply(i, Structure::new));
+
+        public Structure(long id, List<BlockPos> members, ControllerFrame.Problem problem) {
+            this(id, members, problem, false);
+        }
 
         // INVALID_SHAPE or TOO_LARGE when the shape is wrong, otherwise null.
         public @Nullable NetworkStatus shapeStatus() {
@@ -326,26 +336,86 @@ public class ControllerStructures extends SavedData {
 
     private void tickStructure(ServerLevel level, NetworkIndex index, Structure structure, Runtime runtime) {
         List<NetworkControllerBlockEntity> blocks = new ArrayList<>(structure.members().size());
-        for (BlockPos pos : structure.members()) {
-            // Part of it unloaded: the structure waits until all of it is back (and its devices are offline meanwhile).
+        RackBlockEntity rack = null;
+        if (structure.rack()) {
+            BlockPos pos = structure.members().getFirst();
             if (!level.isLoaded(pos)) {
                 runtime.online = Set.of();
                 return;
             }
-            if (!(level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller) || controller.getStructureId() != structure.id()) {
-                queue(pos);
-                runtime.online = Set.of();
+            if (!(level.getBlockEntity(pos) instanceof RackBlockEntity found) || found.controllerStructure() != structure.id() || found.controllers().isEmpty()) {
+                dropStructure(level, index, structure.id());
                 return;
             }
-            blocks.add(controller);
+            rack = found;
+        } else {
+            for (BlockPos pos : structure.members()) {
+                // Part of it unloaded: the structure waits until all of it is back (and its devices are offline meanwhile).
+                if (!level.isLoaded(pos)) {
+                    runtime.online = Set.of();
+                    return;
+                }
+                if (!(level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller) || controller.getStructureId() != structure.id()) {
+                    queue(pos);
+                    runtime.online = Set.of();
+                    return;
+                }
+                blocks.add(controller);
+            }
         }
 
+        NetworkStatus status = structure.shapeStatus();
+        if (status != null) {
+            runtime.discovered = null;
+            runtime.lanes = null;
+            runtime.dirty = true;
+            setNetworkNodes(level, index, structure.id(), runtime, null);
+        } else if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
+            int lanesPerFace = Config.LANES_PER_CONTROLLER_FACE.getAsInt();
+            runtime.discovered = rack != null ? NetworkDiscovery.discoverRack(level, rack.getBlockPos(), lanesPerFace)
+                    : NetworkDiscovery.discover(level, structure.id(), structure.members(), lanesPerFace);
+            runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
+            runtime.dirty = false;
+            // Racks with controllers paired up: the one with the lowest structure id runs the network.
+            runtime.lead = rack != null ? lead(runtime.discovered.graph(), structure.id()) : structure.id();
+            boolean runs = runtime.lanes.status() != NetworkStatus.CONFLICT && runtime.lead == structure.id();
+            setNetworkNodes(level, index, structure.id(), runtime, runs ? runtime.discovered : null);
+            if (runs) {
+                for (NodePos pos : runtime.racks) {
+                    if (blockEntity(level.getServer(), pos) instanceof RackBlockEntity onNetwork) {
+                        onNetwork.setRackLanes(runtime.lanes.rack(pos));
+                    }
+                }
+            }
+            runtime.deviceCount = countDevices(runtime.discovered.graph());
+        }
+        boolean conflict = status == null && runtime.lanes != null && runtime.lanes.status() == NetworkStatus.CONFLICT;
+        if (status == null && !conflict && runtime.lead != structure.id()) {
+            // Its partner's structure runs the network (and both controllers).
+            Runtime lead = runtimes.get(runtime.lead);
+            runtime.status = lead != null ? lead.status : NetworkStatus.NO_POWER;
+            runtime.online = Set.of();
+            return;
+        }
+
+        // The buffers that are the network's energy: the controller blocks, or the working rack controller.
+        List<ControllerBuffer> buffers = new ArrayList<>(blocks);
+        runtime.working = null;
+        runtime.standbys = List.of();
+        if (rack != null && status == null && !conflict) {
+            NetworkControllerDevice working = runPair(level, runtime);
+            if (working != null) {
+                runtime.working = working;
+                buffers.add(working);
+            }
+            runtime.standbys.forEach(NetworkControllerDevice::takeReceived);
+        }
         int received = 0;
         long stored = 0, capacity = 0;
-        for (NetworkControllerBlockEntity controller : blocks) {
-            received += controller.takeReceived();
-            stored += controller.getEnergy();
-            capacity += controller.getCapacity();
+        for (ControllerBuffer buffer : buffers) {
+            received += buffer.takeReceived();
+            stored += buffer.getEnergy();
+            capacity += buffer.getCapacity();
         }
         List<CapacitorBankBlockEntity> banks = banks(level.getServer(), runtime);
         for (CapacitorBankBlockEntity bank : banks) {
@@ -360,63 +430,45 @@ public class ControllerStructures extends SavedData {
             window += amount;
         }
 
-        NetworkStatus status = structure.shapeStatus();
         double usage = 0;
-        if (status != null) {
-            runtime.discovered = null;
-            runtime.lanes = null;
-            runtime.dirty = true;
-            setNetworkNodes(level, index, structure.id(), runtime, null);
-        } else {
-            if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
-                runtime.discovered = NetworkDiscovery.discover(level, structure.id(), structure.members(),
-                        Config.LANES_PER_CONTROLLER_FACE.getAsInt());
-                runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
-                runtime.dirty = false;
-                setNetworkNodes(level, index, structure.id(), runtime,
-                        runtime.lanes.status() == NetworkStatus.CONFLICT ? null : runtime.discovered);
-                for (NodePos pos : runtime.racks) {
-                    if (blockEntity(level.getServer(), pos) instanceof RackBlockEntity rack) {
-                        rack.setRackLanes(runtime.lanes.rack(pos));
-                    }
+        if (conflict) {
+            status = NetworkStatus.CONFLICT;
+        } else if (status == null) {
+            // A rack controller's own drain is part of its rack's.
+            usage = rack == null ? Config.CONTROLLER_DRAIN.getAsDouble() * blocks.size() : 0;
+            for (NetworkNode node : runtime.discovered.graph().nodes()) {
+                if (!node.isController()) {
+                    usage += node.passiveDrain();
                 }
             }
-            if (runtime.lanes.status() == NetworkStatus.CONFLICT) {
-                status = NetworkStatus.CONFLICT;
-            } else {
-                usage = Config.CONTROLLER_DRAIN.getAsDouble() * blocks.size();
-                for (NetworkNode node : runtime.discovered.graph().nodes()) {
-                    if (!node.isController()) {
-                        usage += node.passiveDrain();
-                    }
-                }
-                runtime.drainCarry += usage;
-                int toDrain = (int) runtime.drainCarry;
-                runtime.drainCarry -= toDrain;
-                // UPSes cover a shortfall in what came in this tick before the buffers are touched (UpsDevice). Buffers
-                // within a tick's drain of full can't take anything in, so nothing coming in then isn't a failure: the
-                // supply counts as covering the drain (if it has really failed, the buffers drop and the next tick
-                // says so). While they aren't covering, they recharge from the top half of the buffers, which the
-                // supply refills; the network always keeps the lower half.
-                List<UpsDevice> upses = upses(level.getServer(), runtime);
-                int supply = capacity - stored <= toDrain ? Math.max(received, toDrain) : received;
-                int fromUps = upses.isEmpty() ? 0 : UpsDevice.cover(upses, toDrain, supply, level.getGameTime());
-                stored -= drain(banks, blocks, toDrain - fromUps);
-                if (!upses.isEmpty() && fromUps == 0) {
-                    long spare = Math.max(0, stored - capacity / 2);
-                    int charge = drain(banks, blocks, UpsDevice.wantedCharge(upses, (int) Math.min(Integer.MAX_VALUE, spare)));
-                    UpsDevice.charge(upses, charge);
-                    stored -= charge;
-                }
-                status = stored > 0 || fromUps > 0 ? NetworkStatus.ONLINE : NetworkStatus.NO_POWER;
-                if (status == NetworkStatus.NO_POWER) {
-                    runtime.drainCarry = 0;
-                }
+            runtime.drainCarry += usage;
+            int toDrain = (int) runtime.drainCarry;
+            runtime.drainCarry -= toDrain;
+            // UPSes cover a shortfall in what came in this tick before the buffers are touched (UpsDevice). Buffers
+            // within a tick's drain of full can't take anything in, so nothing coming in then isn't a failure: the
+            // supply counts as covering the drain (if it has really failed, the buffers drop and the next tick
+            // says so). While they aren't covering, they recharge from the top half of the buffers, which the
+            // supply refills; the network always keeps the lower half.
+            List<UpsDevice> upses = upses(level.getServer(), runtime);
+            int supply = capacity - stored <= toDrain ? Math.max(received, toDrain) : received;
+            int fromUps = upses.isEmpty() ? 0 : UpsDevice.cover(upses, toDrain, supply, level.getGameTime());
+            stored -= drain(banks, buffers, toDrain - fromUps);
+            if (!upses.isEmpty() && fromUps == 0) {
+                long spare = Math.max(0, stored - capacity / 2);
+                int charge = drain(banks, buffers, UpsDevice.wantedCharge(upses, (int) Math.min(Integer.MAX_VALUE, spare)));
+                UpsDevice.charge(upses, charge);
+                stored -= charge;
+            }
+            status = stored > 0 || fromUps > 0 ? NetworkStatus.ONLINE : NetworkStatus.NO_POWER;
+            if (status == NetworkStatus.NO_POWER) {
+                runtime.drainCarry = 0;
+            } else if (runtime.failoverTarget != null) {
+                status = NetworkStatus.FAILOVER;
             }
         }
         runtime.status = status;
         Set<NodePos> online = new HashSet<>();
-        if (status == NetworkStatus.ONLINE && runtime.lanes != null) {
+        if ((status == NetworkStatus.ONLINE || status == NetworkStatus.FAILOVER) && runtime.lanes != null) {
             for (NodePos device : runtime.devices) {
                 if (runtime.lanes.hasLane(device)) {
                     online.add(device);
@@ -429,6 +481,10 @@ public class ControllerStructures extends SavedData {
         runtime.usage = usage;
         runtime.generation = (double) window / GENERATION_WINDOW;
 
+        if (rack != null) {
+            showControllers(level.getServer(), runtime, conflict);
+            return;
+        }
         applyStates(level, structure, status);
 
         int signal = capacity <= 0 || stored <= 0 ? 0 : 1 + (int) (stored * 14 / capacity);
@@ -440,8 +496,190 @@ public class ControllerStructures extends SavedData {
         }
     }
 
+    // --- Rack Network Controllers ---
+
+    // A rack that has rack Network Controllers gets a structure of its own: its id, kept by the rack.
+    public long addRack(BlockPos rack) {
+        long id = nextId++;
+        structures.put(id, new Structure(id, List.of(rack.immutable()), ControllerFrame.Problem.NONE, true));
+        runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
+        topologyChanged = true;
+        setDirty();
+        return id;
+    }
+
+    // Its last controller went, or the rack did.
+    public void removeRack(ServerLevel level, long id) {
+        dropStructure(level, NetworkIndex.get(level.getServer()), id);
+    }
+
+    private void dropStructure(ServerLevel level, NetworkIndex index, long id) {
+        structures.remove(id);
+        Runtime runtime = runtimes.remove(id);
+        if (runtime != null) {
+            runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
+            NetworkRef ref = new NetworkRef(level.dimension(), id);
+            runtime.members.forEach(pos -> index.members.remove(pos, ref));
+            runtime.racks.forEach(index.racks::remove);
+        }
+        topologyChanged = true;
+        setDirty();
+    }
+
+    // The lowest controller structure among the racks with controllers on a graph (own when there's none).
+    private static long lead(NetworkGraph graph, long own) {
+        long lead = Long.MAX_VALUE;
+        for (NetworkNode node : graph.nodes()) {
+            if (node instanceof RackNode rack && !rack.controllers().isEmpty() && rack.structure() > 0) {
+                lead = Math.min(lead, rack.structure());
+            }
+        }
+        return lead == Long.MAX_VALUE ? own : lead;
+    }
+
+    // Devices on a network, as its controllers' popups count them: a rack's each count.
+    private static int countDevices(NetworkGraph graph) {
+        int count = 0;
+        for (NetworkNode node : graph.nodes()) {
+            if (node instanceof RackNode) {
+                count += node.parts().size();
+            } else if (node.isDevice()) {
+                count += Math.max(1, node.parts().size());
+            }
+        }
+        return count;
+    }
+
+    // The rack Network Controllers on a network, by rack (NetworkGraph.ORDER) then unit.
+    private static List<NetworkControllerDevice> rackControllers(MinecraftServer server, NetworkGraph graph) {
+        List<Map.Entry<NodePos, NetworkNode>> entries = new ArrayList<>(graph.entries().entrySet());
+        entries.sort(Map.Entry.comparingByKey(NetworkGraph.ORDER));
+        List<NetworkControllerDevice> controllers = new ArrayList<>();
+        for (Map.Entry<NodePos, NetworkNode> entry : entries) {
+            if (entry.getValue() instanceof RackNode node && !node.controllers().isEmpty()
+                    && blockEntity(server, entry.getKey()) instanceof RackBlockEntity rack) {
+                controllers.addAll(rack.controllers());
+            }
+        }
+        return controllers;
+    }
+
+    // Decides which controller runs the network this tick: the active one, or the standby taking over. Which is active is
+    // kept on the controllers; when the active one can't run (faulted, gone, or the network out of power) and the standby
+    // can, or Switch over was asked for, the standby takes over after FAILOVER_TICKS. The one handing over stays as
+    // standby; nothing fails back on its own.
+    private static @Nullable NetworkControllerDevice runPair(ServerLevel level, Runtime runtime) {
+        List<NetworkControllerDevice> all = rackControllers(level.getServer(), runtime.discovered.graph());
+        runtime.pair = all;
+        NetworkControllerDevice active = null;
+        boolean requested = false;
+        for (NetworkControllerDevice controller : all) {
+            requested |= controller.takeSwitchRequest();
+            if (controller.isActive()) {
+                if (active == null) {
+                    active = controller;
+                } else {
+                    controller.setActive(false);
+                }
+            }
+        }
+        NetworkControllerDevice target = runtime.failoverTarget;
+        if (target != null && (!all.contains(target) || !target.usable())) {
+            runtime.failoverTarget = target = null;
+        }
+        if (target != null && --runtime.failoverTicks <= 0) {
+            long now = level.getServer().overworld().getOverworldClockTime();
+            for (NetworkControllerDevice controller : all) {
+                controller.setActive(controller == target);
+                controller.setLastFailover(now);
+            }
+            active = target;
+            runtime.failoverTarget = target = null;
+        }
+        if (target == null) {
+            NetworkControllerDevice current = active;
+            NetworkControllerDevice standby = all.stream().filter(c -> c != current && c.usable() && c.getEnergy() > 0).findFirst().orElse(null);
+            boolean lost = active == null ? runtime.hadActive : !active.usable() || runtime.status == NetworkStatus.NO_POWER;
+            boolean asked = requested && active != null && active.usable() && standby != null;
+            if (standby != null && (lost || asked)) {
+                runtime.failoverTarget = target = standby;
+                runtime.failoverTicks = NetworkControllerDevice.FAILOVER_TICKS;
+            } else if (active == null && !all.isEmpty()) {
+                active = all.stream().filter(c -> c.usable() && c.getEnergy() > 0).findFirst()
+                        .orElse(all.stream().filter(NetworkControllerDevice::usable).findFirst().orElse(all.getFirst()));
+                for (NetworkControllerDevice controller : all) {
+                    controller.setActive(controller == active);
+                }
+            }
+        }
+        runtime.hadActive = active != null || target != null;
+        runtime.active = active;
+        NetworkControllerDevice working = target != null ? target : active;
+        List<NetworkControllerDevice> standbys = new ArrayList<>();
+        for (NetworkControllerDevice controller : all) {
+            if (controller != working && controller.usable()) {
+                standbys.add(controller);
+            }
+        }
+        runtime.standbys = standbys;
+        return working;
+    }
+
+    // Tells each rack controller on the network how it stands.
+    private static void showControllers(MinecraftServer server, Runtime runtime, boolean conflict) {
+        if (runtime.discovered == null) {
+            return;
+        }
+        NetworkGraph graph = runtime.discovered.graph();
+        if (conflict) {
+            List<NetworkControllerDevice> all = rackControllers(server, graph);
+            NodePos block = null;
+            for (Map.Entry<NodePos, NetworkNode> entry : graph.entries().entrySet()) {
+                if (entry.getValue().isController() && (block == null || NetworkGraph.ORDER.compare(entry.getKey(), block) < 0)) {
+                    block = entry.getKey();
+                }
+            }
+            for (NetworkControllerDevice controller : all) {
+                Component with = block != null ? Component.empty().append(ModItems.NETWORK_CONTROLLER.get().getName(ModItems.NETWORK_CONTROLLER.get().getDefaultInstance()))
+                        .append(" " + block.pos().getX() + "," + block.pos().getY() + "," + block.pos().getZ())
+                        : all.stream().filter(other -> other != controller).findFirst().map(other -> describe(other, controller, true)).orElse(Component.empty());
+                controller.view(NetworkControllerDevice.Shown.CONFLICT, with, 0, 0, 0, 0, 0, 0);
+            }
+            return;
+        }
+        LaneResult lanes = runtime.lanes;
+        for (NetworkControllerDevice controller : runtime.pair) {
+            NetworkControllerDevice.Shown shown;
+            if (!controller.usable()) {
+                shown = NetworkControllerDevice.Shown.FAULT;
+            } else if (runtime.failoverTarget != null) {
+                shown = controller == runtime.failoverTarget ? NetworkControllerDevice.Shown.TAKING_OVER : NetworkControllerDevice.Shown.HANDING_OVER;
+            } else if (controller == runtime.active) {
+                shown = runtime.pair.size() > 1 ? NetworkControllerDevice.Shown.ACTIVE_PAIR : NetworkControllerDevice.Shown.ACTIVE;
+            } else {
+                shown = NetworkControllerDevice.Shown.STANDBY;
+            }
+            Component partner = runtime.pair.stream().filter(other -> other != controller).findFirst().map(other -> describe(other, controller, false))
+                    .orElse(Component.empty());
+            controller.view(shown, partner, lanes != null ? lanes.used() : 0, lanes != null ? lanes.capacity() : 0, runtime.deviceCount, runtime.stored,
+                    runtime.capacity, runtime.usage);
+        }
+    }
+
+    // Another controller as one names it: "U13" in its own rack, else where its rack is too (with its name, for a conflict).
+    private static Component describe(NetworkControllerDevice other, NetworkControllerDevice from, boolean named) {
+        RackBlockEntity rack = other.rack();
+        String unit = "U" + other.u();
+        MutableComponent text = named ? other.name().copy().append(" ") : Component.empty();
+        if (rack == null || rack == from.rack()) {
+            return text.append(unit);
+        }
+        BlockPos pos = rack.getBlockPos();
+        return text.append(pos.getX() + "," + pos.getY() + "," + pos.getZ() + " " + unit);
+    }
+
     // Takes up to amount FE out of a network's banks, then its controllers; returns what it got.
-    private static int drain(List<CapacitorBankBlockEntity> banks, List<NetworkControllerBlockEntity> controllers, int amount) {
+    private static int drain(List<CapacitorBankBlockEntity> banks, List<ControllerBuffer> controllers, int amount) {
         int left = amount;
         for (CapacitorBankBlockEntity bank : banks) {
             if (left <= 0) {
@@ -449,7 +687,7 @@ public class ControllerStructures extends SavedData {
             }
             left -= bank.drain(left);
         }
-        for (NetworkControllerBlockEntity controller : controllers) {
+        for (ControllerBuffer controller : controllers) {
             if (left <= 0) {
                 break;
             }
@@ -570,6 +808,12 @@ public class ControllerStructures extends SavedData {
         return NetworkIndex.get(level.getServer()).members.get(NetworkGraph.at(level.dimension(), pos));
     }
 
+    // A network's status as of the last tick (NO_POWER for an unknown one).
+    public static NetworkStatus statusOf(MinecraftServer server, @Nullable NetworkRef ref) {
+        Owner owner = owner(server, ref);
+        return owner != null ? owner.runtime.status : NetworkStatus.NO_POWER;
+    }
+
     // Whether a network runs: valid, powered and not in conflict.
     public static boolean isOnline(MinecraftServer server, @Nullable NetworkRef ref) {
         Owner owner = owner(server, ref);
@@ -588,7 +832,8 @@ public class ControllerStructures extends SavedData {
     // and the inventories its online Inventory Taps face. Null while the device itself is offline.
     public @Nullable NetworkStorage storageAt(ServerLevel level, BlockPos device) {
         Owner owner = owner(level, device);
-        if (owner == null || !owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device))) {
+        if (owner == null || !owner.runtime.online.contains(NetworkGraph.at(level.dimension(), device))
+                || owner.runtime.status == NetworkStatus.FAILOVER) {
             return null;
         }
         return storage(level.getServer(), owner);
@@ -850,7 +1095,14 @@ public class ControllerStructures extends SavedData {
         }
         Runtime runtime = owner.runtime;
         boolean networkOnline = runtime.status == NetworkStatus.ONLINE;
-        if (!owner.structure.members().isEmpty()) {
+        if (owner.structure.rack()) {
+            for (NetworkControllerDevice controller : runtime.pair) {
+                if (controller.rack() != null) {
+                    rows.add(new DeviceRow("Controller", controller.name(), NetworkGraph.at(controller.rack().getLevel().dimension(), controller.rack().getBlockPos()), 0,
+                            networkOnline, false, controller, 0));
+                }
+            }
+        } else if (!owner.structure.members().isEmpty()) {
             rows.add(new DeviceRow("Controller", ModItems.NETWORK_CONTROLLER.get().getName(ModItems.NETWORK_CONTROLLER.get().getDefaultInstance()),
                     NetworkGraph.at(owner.ref.dimension(), owner.structure.members().getFirst()), 0, networkOnline, false, null, 0));
         }
@@ -971,23 +1223,7 @@ public class ControllerStructures extends SavedData {
         if (owner == null || owner.runtime.status != NetworkStatus.ONLINE || amount <= 0) {
             return 0;
         }
-        int left = amount;
-        for (CapacitorBankBlockEntity bank : banks(server, owner.runtime)) {
-            if (left <= 0) {
-                break;
-            }
-            left -= bank.drain(left);
-        }
-        for (BlockPos pos : owner.structure.members()) {
-            if (left <= 0) {
-                break;
-            }
-            if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
-                    && controller.getStructureId() == owner.ref.id()) {
-                left -= controller.drain(left);
-            }
-        }
-        return amount - left;
+        return drain(banks(server, owner.runtime), buffers(owner), amount);
     }
 
     // --- Energy from outside ---
@@ -1005,14 +1241,11 @@ public class ControllerStructures extends SavedData {
             return 0;
         }
         int left = amount;
-        for (BlockPos pos : owner.structure.members()) {
+        for (ControllerBuffer controller : buffers(owner)) {
             if (left <= 0) {
                 break;
             }
-            if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
-                    && controller.getStructureId() == network.id()) {
-                left -= controller.fill(left, transaction);
-            }
+            left -= controller.fill(left, transaction);
         }
         for (CapacitorBankBlockEntity bank : banks(server, owner.runtime)) {
             if (left <= 0) {
@@ -1020,7 +1253,32 @@ public class ControllerStructures extends SavedData {
             }
             left -= bank.fill(left, transaction);
         }
+        // A rack pair's standby keeps its own buffer topped up from what's left.
+        for (NetworkControllerDevice standby : owner.runtime.standbys) {
+            if (left <= 0) {
+                break;
+            }
+            left -= standby.fill(left, transaction);
+        }
         return amount - left;
+    }
+
+    // The buffers that are a network's working energy: its controller blocks (loaded), or its working rack controller.
+    private static List<ControllerBuffer> buffers(Owner owner) {
+        List<ControllerBuffer> buffers = new ArrayList<>();
+        if (owner.structure.rack()) {
+            if (owner.runtime.working != null) {
+                buffers.add(owner.runtime.working);
+            }
+            return buffers;
+        }
+        for (BlockPos pos : owner.structure.members()) {
+            if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
+                    && controller.getStructureId() == owner.ref.id()) {
+                buffers.add(controller);
+            }
+        }
+        return buffers;
     }
 
     private static void applyStates(ServerLevel level, Structure structure, NetworkStatus status) {
@@ -1053,10 +1311,12 @@ public class ControllerStructures extends SavedData {
         BlockPos min = structure.min(), max = structure.max();
         LaneResult lanes = runtime.lanes;
         List<NetworkSnapshot.DeviceEntry> devices = new ArrayList<>();
-        boolean online = runtime.status == NetworkStatus.ONLINE;
+        boolean online = runtime.status == NetworkStatus.ONLINE || runtime.status == NetworkStatus.FAILOVER;
         // The structure's own blocks come first in the list (sorted with the rest by count).
-        devices.add(new NetworkSnapshot.DeviceEntry(BuiltInRegistries.ITEM.getKey(ModItems.NETWORK_CONTROLLER.get()), structure.members().size(),
-                Config.CONTROLLER_DRAIN.getAsDouble() * structure.members().size(), 0, !online));
+        if (!structure.rack()) {
+            devices.add(new NetworkSnapshot.DeviceEntry(BuiltInRegistries.ITEM.getKey(ModItems.NETWORK_CONTROLLER.get()), structure.members().size(),
+                    Config.CONTROLLER_DRAIN.getAsDouble() * structure.members().size(), 0, !online));
+        }
         if (runtime.discovered != null && lanes != null) {
             Map<Item, int[]> counts = new LinkedHashMap<>();
             Map<Item, Double> drains = new HashMap<>();
@@ -1138,6 +1398,15 @@ public class ControllerStructures extends SavedData {
         int comparator = -1;
         // Counted for Monitoring Servers: items moved in or out of storage, crafting jobs finished.
         long itemsMoved, jobsDone;
+        // Rack controllers: the structure whose controllers run the network (its own, or its partner's), the pair as last
+        // run, the active one, the working one (taking over, during a failover) and the standbys, and a failover in
+        // progress.
+        long lead;
+        List<NetworkControllerDevice> pair = List.of(), standbys = List.of();
+        @Nullable NetworkControllerDevice active, working, failoverTarget;
+        int failoverTicks;
+        boolean hadActive;
+        int deviceCount;
         // Tape recalls waiting and running, archiving in progress.
         final TapeRecalls recalls = new TapeRecalls();
         // Crafting jobs' numbers as the Terminal Desk shows them (0001-9999, in the order it first saw them).

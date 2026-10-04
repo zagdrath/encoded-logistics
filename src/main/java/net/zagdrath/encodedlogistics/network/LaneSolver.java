@@ -172,7 +172,44 @@ public final class LaneSolver {
             }
             lanes.put(device, fits);
         }
+        // A source rack's uplinks, once everything has drawn through them.
+        for (NodePos source : rackSources) {
+            RackLanes result = rackLanes.get(source);
+            if (result == null) {
+                continue;
+            }
+            List<RackLanes.Uplink> uplinks = new ArrayList<>();
+            for (RackLink link : rackLinks(graph, source, rackOf)) {
+                uplinks.add(new RackLanes.Uplink(link.outside(), shown(link.link()), usage.getOrDefault(link.link(), 0), true));
+            }
+            rackLanes.put(source, new RackLanes(true, result.granted(), result.used(), result.available(), result.total(), uplinks, result.shed()));
+        }
         return new LaneResult(NetworkStatus.ONLINE, false, capacity, used, lanes, usage, rackLanes);
+    }
+
+    // A link from one of a rack's blocks to something outside it.
+    private record RackLink(NetworkLink link, NodePos outside) {}
+
+    // A rack's links to the outside, in a stable order.
+    private static List<RackLink> rackLinks(NetworkGraph graph, NodePos master, Map<NodePos, NodePos> rackOf) {
+        List<RackLink> result = new ArrayList<>();
+        rackOf.forEach((block, rack) -> {
+            if (rack.equals(master)) {
+                for (NetworkLink link : links(graph, block)) {
+                    NodePos outside = link.other(block);
+                    if (!master.equals(rackOf.get(outside))) {
+                        result.add(new RackLink(link, outside));
+                    }
+                }
+            }
+        });
+        result.sort(Comparator.comparing(RackLink::outside, NetworkGraph.ORDER));
+        return result;
+    }
+
+    // A link's lanes as shown: 0 for one with no limit (straight into a device).
+    private static int shown(NetworkLink link) {
+        return link.capacity() == NetworkNode.UNLIMITED ? 0 : link.capacity();
     }
 
     // A rack with a controller: its demands take lanes from the budget, by priority. Its uplinks are what the others
@@ -195,26 +232,12 @@ public final class LaneSolver {
 
     private static RackLanes bondedRack(NetworkGraph graph, NodePos master, RackNode rack, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources,
             Map<NodePos, NetworkLink> parent, Map<NodePos, Integer> distance, Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed) {
-        // The rack's uplinks: links from any of its blocks to anything outside it, in a stable order.
+        // The rack's uplinks, each with its way to a source if it has one.
         record Candidate(NetworkLink link, NodePos outside, @Nullable Path path) {}
         List<Candidate> candidates = new ArrayList<>();
-        List<NodePos> blocks = new ArrayList<>();
-        rackOf.forEach((pos, rack2) -> {
-            if (rack2.equals(master)) {
-                blocks.add(pos);
-            }
-        });
-        blocks.sort(NetworkGraph.ORDER);
-        for (NodePos block : blocks) {
-            for (NetworkLink link : links(graph, block)) {
-                NodePos outside = link.other(block);
-                if (master.equals(rackOf.get(outside))) {
-                    continue;
-                }
-                candidates.add(new Candidate(link, outside, towardSource(outside, master, rackOf, parent, distance)));
-            }
+        for (RackLink link : rackLinks(graph, master, rackOf)) {
+            candidates.add(new Candidate(link.link(), link.outside(), towardSource(link.outside(), master, rackOf, parent, distance)));
         }
-        candidates.sort(Comparator.comparing(Candidate::outside, NetworkGraph.ORDER));
 
         Map<NetworkLink, Integer> own = new HashMap<>();
         Set<Integer> granted = new HashSet<>();
@@ -248,7 +271,7 @@ public final class LaneSolver {
         int available = 0, total = 0;
         for (Candidate candidate : candidates) {
             boolean active = candidate.path() != null;
-            int linkCapacity = candidate.link().capacity() == NetworkNode.UNLIMITED ? 0 : candidate.link().capacity();
+            int linkCapacity = shown(candidate.link());
             uplinks.add(new RackLanes.Uplink(candidate.outside(), linkCapacity, own.getOrDefault(candidate.link(), 0), active));
             total += linkCapacity;
             if (active) {

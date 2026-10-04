@@ -52,7 +52,7 @@ import net.zagdrath.encodedlogistics.rack.RackGeometry;
 public class RackScreen extends AbstractContainerScreen<RackMenu> {
     // palette.json
     public static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, TEXT_DISABLED = 0xFF7A7A7A, ACCENT = 0xFF00D992, WARNING = 0xFFE8C24A,
-            ERROR = 0xFFFF6B6B;
+            ERROR = 0xFFFF6B6B, AMBER = 0xFFF5B23A;
 
     private static final Identifier ELEVATION = EncodedLogistics.id("textures/gui/rack/elevation.png");
     private static final Identifier INVENTORY = EncodedLogistics.id("textures/gui/rack/inventory.png");
@@ -395,7 +395,13 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         int height = 8 * device.size(), sheet = device.type().sheetHeight();
         graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, height, 128, sheet);
         RackDeviceInfo.Status status = device.shownStatus();
-        if (status == RackDeviceInfo.Status.ONLINE) {
+        String variant = device.shownVariant();
+        Integer variantFrames = variant != null ? device.type().variants().get(variant) : null;
+        if (variantFrames != null) {
+            int frame = (int) (System.currentTimeMillis() / 200 % variantFrames);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(variant), x, y, 0.0F, frame * sheet, SLOT_W, height, 128,
+                    sheet * variantFrames);
+        } else if (status == RackDeviceInfo.Status.ONLINE || status == RackDeviceInfo.Status.WARNING) {
             int frames = device.type().frames();
             int frame = (int) (System.currentTimeMillis() / 150 % frames);
             graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture("_on"), x, y, 0.0F, frame * sheet, SLOT_W, height, 128, sheet * frames);
@@ -476,6 +482,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             case ONLINE -> ACCENT;
             case OFFLINE -> TEXT_MUTED;
             case FAULT -> ERROR;
+            case WARNING -> AMBER;
         };
     }
 

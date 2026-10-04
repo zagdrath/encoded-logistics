@@ -118,6 +118,11 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("swivel_chair", DeskGameTests::swivelChair);
         TESTS.put("rack_monitoring", Rack2GameTests::monitoring);
         TESTS.put("rack_copied_drives", Rack2GameTests::copiedDrives);
+        TESTS.put("rack_controller_standalone", RackControllerGameTests::standalone);
+        TESTS.put("rack_controller_conflict_block", RackControllerGameTests::conflictWithBlock);
+        TESTS.put("rack_controller_conflict_sizes", RackControllerGameTests::conflictBetweenSizes);
+        TESTS.put("rack_controller_pair_failover", RackControllerGameTests::pairFailover);
+        TESTS.put("rack_bottom_entry", RackControllerGameTests::bottomEntry);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
