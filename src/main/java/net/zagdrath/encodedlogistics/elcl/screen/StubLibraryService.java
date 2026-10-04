@@ -329,6 +329,18 @@ final class StubLibraryService implements LibraryService {
         }
     }
 
+    // STUB: waiting on elcl.store
+    @Override
+    public synchronized void unlockAll(ElclSystem system, String user) {
+        for (Library library : store.of(system).values()) {
+            for (Member member : library.members.values()) {
+                if (user.equalsIgnoreCase(member.locker)) {
+                    member.locker = null;
+                }
+            }
+        }
+    }
+
     // STUB: waiting on elcl.store (the program object kept for elcl.vm)
     @Override
     public CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember)

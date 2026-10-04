@@ -127,6 +127,17 @@ final class CrtGrid {
         return out.toString();
     }
 
+    // The source editor's ruler (and the compile listing's): "*...+... 1 ...+... 2", the column number of each ten
+    // under its last column.
+    static String columnRuler(int width, int first) {
+        StringBuilder out = new StringBuilder(width);
+        for (int i = 0; i < width; i++) {
+            int column = first + i, place = column % 10;
+            out.append(place == 0 ? (char) ('0' + column / 10 % 10) : place == 9 ? ' ' : place == 1 ? (column == 1 ? '*' : ' ') : place == 5 ? '+' : '.');
+        }
+        return out.toString();
+    }
+
     // Text cut or padded to a width.
     static String pad(String text, int width) {
         return text.length() >= width ? text.substring(0, width) : text + " ".repeat(width - text.length());

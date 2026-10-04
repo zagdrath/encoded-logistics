@@ -118,7 +118,7 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
         }
         then(() -> screen.confirm(text.toString(), () -> {
             for (TerminalLine row : rows) {
-                screen.runCommand(command.apply(row));
+                delete(row);
             }
             next();
         }, null));
@@ -133,6 +133,11 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
     }
 
     abstract String deleteCommand(TerminalLine row);
+
+    // Deletes a row's object (confirmed): its delete command, by default.
+    void delete(TerminalLine row) {
+        screen.runCommand(deleteCommand(row));
+    }
 
     @Override
     boolean process(List<Option<TerminalLine>> chosen) {

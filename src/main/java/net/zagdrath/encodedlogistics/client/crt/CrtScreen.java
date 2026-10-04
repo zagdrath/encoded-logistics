@@ -190,7 +190,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
         // The cursor: a block in the focused field, blinking.
         CrtField focused = terminal.focused();
         if (focused != null && terminal.ticks() / 10 % 2 == 0) {
-            int col = Math.min(focused.col + focused.cursor, focused.col + focused.length - 1);
+            int col = focused.cursorColumn();
             int x = MARGIN_X + col * CW, y = MARGIN_Y + focused.row * CH;
             graphics.fill(x, y + 1, x + 5, y + 8, palette.bright());
         }
@@ -338,7 +338,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
             } else if (key == InputConstants.KEY_HOME) {
                 focused.cursor = 0;
             } else if (key == InputConstants.KEY_END) {
-                focused.cursor = Math.min(focused.value.length(), focused.length - 1);
+                focused.cursor = Math.min(focused.value.length(), focused.capacity - 1);
             }
         }
         return true;

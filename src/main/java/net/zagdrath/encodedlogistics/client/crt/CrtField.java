@@ -9,19 +9,27 @@ package net.zagdrath.encodedlogistics.client.crt;
 // end of the text when it's focused and anywhere in it with the arrows, Home and End; typing overwrites at the cursor
 // (or, in insert mode, pushes the rest along), Delete closes the gap, Field Exit (Ctrl+Enter, keypad Enter) clears from
 // the cursor on. Flags: protected (text only, never focused), numeric (digits, a sign, a decimal point), uppercase
-// (letters folded, for names), required (the prompter shows its label bright).
+// (letters folded, for names), required (the prompter shows its label bright). A field can hold more than it shows
+// (its capacity, the prompter's): the text scrolls to keep the cursor in view.
 final class CrtField {
-    final int row, col, length;
+    final int row, col, length, capacity;
     String value;
     int cursor;
     boolean isProtected, numeric, uppercase, required;
+    // The first character shown (a field holding more than it shows).
+    private int scroll;
 
     CrtField(int row, int col, int length, String value) {
+        this(row, col, length, length, value);
+    }
+
+    CrtField(int row, int col, int length, int capacity, String value) {
         this.row = row;
         this.col = col;
         this.length = length;
-        this.value = value.length() > length ? value.substring(0, length) : value;
-        this.cursor = this.value.length();
+        this.capacity = Math.max(length, capacity);
+        this.value = value.length() > this.capacity ? value.substring(0, this.capacity) : value;
+        this.cursor = Math.min(this.value.length(), this.capacity - 1);
     }
 
     CrtField protect() {
@@ -45,7 +53,7 @@ final class CrtField {
     }
 
     void set(String text) {
-        value = text.length() > length ? text.substring(0, length) : text;
+        value = text.length() > capacity ? text.substring(0, capacity) : text;
         cursor = value.length();
     }
 
@@ -59,13 +67,13 @@ final class CrtField {
         }
         if (cursor < value.length() && !insert) {
             value = value.substring(0, cursor) + c + value.substring(cursor + 1);
-        } else if (value.length() < length) {
+        } else if (value.length() < capacity) {
             value = value.substring(0, cursor) + c + value.substring(cursor);
         } else {
             return false;
         }
         cursor++;
-        return cursor >= length;
+        return cursor >= capacity;
     }
 
     void type(char c) {
@@ -96,7 +104,22 @@ final class CrtField {
 
     // Past the text only as far as the field's last position (overwriting blanks there pads it).
     void right() {
-        cursor = Math.min(Math.min(value.length(), length - 1), cursor + 1);
+        cursor = Math.min(Math.min(value.length(), capacity - 1), cursor + 1);
+    }
+
+    // The screen column the cursor is on (the text scrolled to keep it in view).
+    int cursorColumn() {
+        if (cursor < scroll) {
+            scroll = cursor;
+        } else if (cursor >= scroll + length) {
+            scroll = cursor - length + 1;
+        }
+        return col + Math.min(cursor - scroll, length - 1);
+    }
+
+    // A click at a column: the cursor to the character there.
+    void clickAt(int column) {
+        cursor = Math.min(value.length(), Math.min(capacity - 1, scroll + column - col));
     }
 
     String trimmed() {
@@ -108,7 +131,9 @@ final class CrtField {
             grid.put(row, col, value, CrtGrid.NORMAL);
             return;
         }
-        grid.put(row, col, value, CrtGrid.BRIGHT);
+        // Scrolled as the cursor last left it (only the focused field's cursor moves it: CrtScreen asks for its column).
+        String shown = value.length() > scroll ? value.substring(scroll) : "";
+        grid.put(row, col, shown.length() > length ? shown.substring(0, length) : shown, CrtGrid.BRIGHT);
         grid.underline(row, col, length);
     }
 

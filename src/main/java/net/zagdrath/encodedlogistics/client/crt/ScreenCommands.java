@@ -67,6 +67,16 @@ final class ScreenCommands {
             case "WRKDEV" -> new DevicesPanel(screen);
             case "DSPNETSTS" -> new StatusPanel(screen);
             case "WRKCRFJOB" -> new JobsPanel(screen);
+            case "WRKSPLF" -> {
+                String job = value(statement, "JOB", "*ALL");
+                yield new WrkSplfPanel(screen, job.equals("*ALL") ? null : job);
+            }
+            case "EDTMBR" -> {
+                String member = value(statement, "MBR", "");
+                int slash = member.indexOf('/');
+                String library = slash < 0 || member.startsWith("*") ? screen.currentLibrary : member.substring(0, slash);
+                yield new EditorPanel(screen, library, member.substring(slash + 1), library.equals("ELSYS"));
+            }
             default -> null;
         };
     }
@@ -74,7 +84,7 @@ final class ScreenCommands {
     // The screen commands without a screen yet, and GO / SIGNOFF.
     private static boolean handled(CrtTerminal screen, Stmt statement) {
         return switch (statement.name()) {
-            case "GO", "SIGNOFF", "EDTMBR", "WRKACTJOB", "WRKJOB", "DSPJOBLOG", "WRKJOBSCDE", "WRKTRGEVT", "DSPMSG", "WRKSPLF", "WRKSYSVAL" -> true;
+            case "GO", "SIGNOFF", "WRKACTJOB", "WRKJOB", "DSPJOBLOG", "WRKJOBSCDE", "WRKTRGEVT", "DSPMSG", "WRKSYSVAL" -> true;
             default -> false;
         };
     }

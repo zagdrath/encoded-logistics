@@ -237,6 +237,26 @@ class LayoutTest {
     }
 
     @Test
+    void workWithOutput() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.runCommand("WRKSPLF");
+        answer(terminal, "spooled", cells("3", "NOCWALL", "000118/NOCWALL", "ZAGDRATH", "1", "*RDY", "Day 2  07:13"),
+                cells("2", "QPJOBLOG", "000123/RESTOCK", "ZAGDRATH", "2", "*RDY", "Day 2  07:10"),
+                cells("1", "INVLIST", "000099/QPRTRPT", "OPERATOR", "6", "*PRT", "Day 1  18:44"));
+        CrtGrid grid = terminal.compose();
+        compare("13_wrksplf", grid, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 21, 23);
+    }
+
+    @Test
+    void displaySpooledFile() throws IOException {
+        CrtTerminal terminal = terminal();
+        terminal.push(new DspSplfPanel(terminal, "NOCWALL", List.of("ELCL Compile Listing   ZAGLIB/NOCWALL   Day 2 07:13   ELNET01")));
+        CrtGrid grid = terminal.compose();
+        // Rows 3 and 4 hold fields (the layout draws them as underscores); the listing below is the real one's.
+        compare("07_compile_listing", grid, 0, 2, 5, 6, 23);
+    }
+
+    @Test
     void screenCommandsOpenTheirScreens() {
         CrtTerminal terminal = terminal();
         terminal.runCommand("WRKLIB");

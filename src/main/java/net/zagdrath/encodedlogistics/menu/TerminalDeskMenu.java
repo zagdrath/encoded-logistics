@@ -86,7 +86,9 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
     public void removed(Player player) {
         super.removed(player);
         if (player instanceof ServerPlayer serverPlayer && network() != null) {
-            ElclServices.jobs().endInteractive(new ElclSystem(serverPlayer.level().getServer(), network()), session(player));
+            ElclSystem system = new ElclSystem(serverPlayer.level().getServer(), network());
+            ElclServices.jobs().endInteractive(system, session(player));
+            ElclServices.libraries().unlockAll(system, player.getName().getString());
         }
     }
 }

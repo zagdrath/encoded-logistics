@@ -177,7 +177,9 @@ final class PrompterPanel extends CrtPanel {
         for (int i = 0; i < lines && top + i < layout.size(); i++) {
             ParamDef param = layout.get(top + i).param();
             if (param != null) {
-                CrtField field = new CrtField(FIRST + i, FIELD, Math.min(MAX_FIELD, Math.max(1, param.length())), values.get(param.keyword()));
+                // Up to 24 shown; a list's values (or a long value) scroll in it.
+                int capacity = param.isList() || param.kind() == ParamDef.Kind.COMMAND ? 512 : Math.max(1, param.length());
+                CrtField field = new CrtField(FIRST + i, FIELD, Math.min(MAX_FIELD, Math.max(1, param.length())), capacity, values.get(param.keyword()));
                 if (param.required()) {
                     field.required();
                 }

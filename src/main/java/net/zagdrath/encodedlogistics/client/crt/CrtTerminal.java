@@ -16,7 +16,6 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
-import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
@@ -142,7 +141,7 @@ final class CrtTerminal {
 
     // EDTMBR / WRKMBR 2=Edit, 5=Display: the source editor on a member.
     void editMember(String library, String member, boolean readOnly) {
-        message(ElclMessage.of("ELC0107", "EDTMBR").toString());
+        push(new EditorPanel(this, library, member, readOnly));
     }
 
     // What takes focus: the top window's fields while one's open, else the screen's (protected ones never) and the
@@ -178,8 +177,14 @@ final class CrtTerminal {
         this.message = message;
     }
 
-    void message(String text) {
-        message = Component.literal(text);
+    // A message as text (null clears the line).
+    void message(@Nullable String text) {
+        message = text != null ? Component.literal(text) : null;
+    }
+
+    // The game's day and time, from the host.
+    String clock() {
+        return host.clock();
     }
 
     // --- Windows ---
@@ -217,6 +222,11 @@ final class CrtTerminal {
 
     // A confirmation (list deletes, ENDJOB): Enter does it, F12 goes back. f11, if any, is offered as another choice.
     void confirm(String text, Runnable confirmed, @Nullable Runnable f11) {
+        confirm(text, confirmed, f11, f11 != null ? "crt.encodedlogistics.confirm.keys_f11" : "crt.encodedlogistics.confirm.keys");
+    }
+
+    // keys: the lang key of its keys line.
+    void confirm(String text, Runnable confirmed, @Nullable Runnable f11, String keys) {
         openWindow(new CrtWindow(this, 7, 10, 10, 60, CrtPanel.tr("crt.encodedlogistics.confirm.title")) {
             @Override
             boolean enter() {
@@ -234,7 +244,7 @@ final class CrtTerminal {
                 }
                 return false;
             }
-        }.text(text).keys(CrtPanel.tr(f11 != null ? "crt.encodedlogistics.confirm.keys_f11" : "crt.encodedlogistics.confirm.keys")));
+        }.text(text).keys(CrtPanel.tr(keys)));
     }
 
     // --- Server ---
@@ -400,7 +410,7 @@ final class CrtTerminal {
         }
         int at = focused != null ? fields.indexOf(focused) : -1;
         focused = fields.get(Math.floorMod(at + (back ? -1 : 1), fields.size()));
-        focused.cursor = Math.min(focused.value.length(), focused.length - 1);
+        focused.cursor = Math.min(focused.value.length(), focused.capacity - 1);
     }
 
     void page(int direction) {
@@ -544,7 +554,7 @@ final class CrtTerminal {
         for (CrtField field : focusable()) {
             if (field.contains(row, col)) {
                 focused = field;
-                field.cursor = Math.min(field.value.length(), col - field.col);
+                field.clickAt(col);
             }
         }
         if (window() != null) {

@@ -56,6 +56,9 @@ public interface LibraryService {
 
     void unlock(ElclSystem system, String user, String library, String member);
 
+    // Every lock the user holds (their terminal closed).
+    void unlockAll(ElclSystem system, String user);
+
     CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember) throws ElclException;
 
     List<String> programs(ElclSystem system, String library) throws ElclException;
