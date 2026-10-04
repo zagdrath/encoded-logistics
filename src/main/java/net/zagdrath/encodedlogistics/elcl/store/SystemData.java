@@ -117,6 +117,9 @@ public final class SystemData {
     public final List<SpoolService.SpooledFile> spooled = new ArrayList<>();
     public int nextSpooled = 1;
     public final Map<String, String> sysvals = new LinkedHashMap<>();
+    // Device names (Part 2): each name given out on this system and the device holding it (ElclDevices.identity), so a
+    // device that arrives with a name already taken here gets another rather than taking it.
+    public final Map<String, String> deviceNames = new TreeMap<>();
     // The later parts' sections, kept as they were saved until their code reads them.
     public final Map<String, Tag> sections = new LinkedHashMap<>();
     private Runnable changed = () -> {};
@@ -306,6 +309,10 @@ public final class SystemData {
         sysvals.forEach(values::putString);
         tag.put("sysvals", values);
 
+        CompoundTag names = new CompoundTag();
+        deviceNames.forEach(names::putString);
+        tag.put("device_names", names);
+
         CompoundTag extra = new CompoundTag();
         sections.forEach(extra::put);
         tag.put("sections", extra);
@@ -367,6 +374,11 @@ public final class SystemData {
         CompoundTag values = tag.getCompoundOrEmpty("sysvals");
         for (String key : values.keySet()) {
             data.sysvals.put(key, values.getStringOr(key, ""));
+        }
+
+        CompoundTag names = tag.getCompoundOrEmpty("device_names");
+        for (String key : names.keySet()) {
+            data.deviceNames.put(key, names.getStringOr(key, ""));
         }
 
         CompoundTag extra = tag.getCompoundOrEmpty("sections");

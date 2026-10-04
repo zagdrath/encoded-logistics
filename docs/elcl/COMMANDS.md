@@ -57,7 +57,10 @@ Crafting jobs have IDs like `C0042` and are separate from script jobs.
 ## 5. Devices
 
 Devices are addressed by name (Label Maker or Work with Devices); defaults are
-type + number: `INGRESS01`, `EGRESS02`, `NAS01`, `UPS01`, `CTLIF01`.
+type + number: `INGRESS01`, `EGRESS02`, `NAS01`, `UPS01`, `CTLIF01`. A name is
+stored with the device, given once (type + the lowest number free on the
+system) and kept until renamed; it goes with the device's item. *(Implemented:
+Control Interfaces, Terminal Desks and rack devices; the mod has no Label Maker.)*
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
@@ -65,6 +68,7 @@ type + number: `INGRESS01`, `EGRESS02`, `NAS01`, `UPS01`, `CTLIF01`.
 | `RTVDEVLST` | `TYPE(*ALL\|type)` `STATUS(*ALL\|status)` `RTNLST`(*LIST) | view | — |
 | `CHGDEVSTS` | `DEV`(P1, Req) `STATUS`(P2, Req: `*ENABLE\|*DISABLE`) | configure | ELC1301, ELC1303 |
 | `CHGDEVFTR` | `DEV`(P1, Req) `ACTION`(P2, Req: `*ADD\|*RMV\|*CLR`) `ITEM` (Req unless *CLR) | configure | ELC1301, ELC1303, ELC1305 (filter full) |
+| `RNMDEV` **[EXT]** | `DEV`(P1, Req) `NEWNAME`(P2, Req) | configure | ELC1301, ELC0103, ELC1308 (name in use); ELC1309 on success |
 | `RTVLANES` | `RTNUSED` `RTNTOTAL` (*INT) | view | — |
 
 ## 6. Power

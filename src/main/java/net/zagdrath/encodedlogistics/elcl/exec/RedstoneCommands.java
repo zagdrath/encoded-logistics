@@ -12,16 +12,26 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.Direction;
 import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
 
-// COMMANDS.md 7: RTVRSIN reads what arrives on a Control Interface's face (or the highest of the six, *MAX);
+// RNMDEV (Part 2): renames a device (ElclDevices.rename). COMMANDS.md 7: RTVRSIN reads what arrives on a Control Interface's face (or the highest of the six, *MAX);
 // CHGRSOUT sets what a face (or every face, *ALL) gives out. A name no device has is ELC1301, a device that isn't a
 // Control Interface ELC1303, an offline one ELC1302 (CHGRSOUT then stores nothing); a level outside 0-15 ELC0004.
 public final class RedstoneCommands {
     private RedstoneCommands() {}
 
     static void bind() {
+        CommandRegistry.bind("RNMDEV", call -> {
+            ElclContext context = OsCommands.context(call);
+            if (context.network() == null) {
+                throw new ElclException("ELC1302", "*NETWORK");
+            }
+            String name = call.text("DEV").toUpperCase(Locale.ROOT), newName = call.text("NEWNAME").toUpperCase(Locale.ROOT);
+            ElclDevices.rename(context.server(), context.network(), name, newName);
+            call.send(ElclMessage.of("ELC1309", name, newName));
+        });
         CommandRegistry.bind("RTVRSIN", call -> {
             ControlInterfaceBlockEntity ci = controlInterface(call);
             String side = call.text("SIDE");

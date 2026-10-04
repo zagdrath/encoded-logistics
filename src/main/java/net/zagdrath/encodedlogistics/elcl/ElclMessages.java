@@ -107,6 +107,9 @@ public final class ElclMessages {
         define("ELC1306", SEVERE, "Printer &1 is out of paper.");
         // Not in MESSAGES.md originally: printing done.
         define("ELC1307", INFO, "Spooled file &1 printed on &2.");
+        // Not in MESSAGES.md originally: device renaming (RNMDEV).
+        define("ELC1308", SEVERE, "Device name &1 is already used on &2.");
+        define("ELC1309", INFO, "Device &1 renamed to &2.");
         // Crafting.
         define("ELC1401", SEVERE, "No Scheduler available.");
         define("ELC1402", SEVERE, "No recipe known for &1.");

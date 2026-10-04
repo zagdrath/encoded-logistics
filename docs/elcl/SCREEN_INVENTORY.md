@@ -49,6 +49,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | 16 | Command Entry | EXTENDED | `CommandEntryPanel` (F4 prompts, Tab completes) |
 | - | Work with Jobs (crafting) | EXTENDED | `JobsPanel`: id and command WRKCRFJOB (amendment 1) |
 | - | WRKINV, WRKDEV, DSPNETSTS, Withdraw, Craft, More keys | EXISTS | `InventoryPanel`, `DevicesPanel`, `StatusPanel`, `WithdrawPanel`, `CraftPanel`, `MoreKeysPanel` (phosphor choice extended) |
+| - | Work with Devices names | EXTENDED | `DevicesPanel` 2=Change (RNMDEV), the Device column starts with the device's stored name; `elcl/exec/ElclDevices` (names stored on the device, `SystemData.deviceNames`) |
 | - | Work with Devices topology | EXTENDED | `ControllerStructures.deviceRows`: each rack, its devices under it (top unit first, tree lines), then the rest of the network beside the racks; each device once |
 
 ### Main Menu options

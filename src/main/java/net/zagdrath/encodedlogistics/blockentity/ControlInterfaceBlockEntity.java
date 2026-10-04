@@ -11,6 +11,8 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,17 +22,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.block.ControlInterfaceBlock;
-import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
+import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
 // A Control Interface's six channels: per face, the level it gives out (out, 0-15, kept while it's offline and given
 // out again when it's back) and the level arriving there (in). Reading a face never sees this block's own output:
 // while it measures, it gives out nothing, and redstone dust it powers itself (dust keeps its level) only counts when
-// something else drives it higher. Its name (CTLIF01, ...) is given the first time it's online on a network: the
+// something else drives it higher. Its name (CTLIF01, ...) is given the first time it's on a network (ElclDevices): the
 // lowest number free there. A change of input fires *RSCHANGE.
 public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkDevice {
     public static final String TYPE = "CTLIF";
@@ -125,12 +127,6 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ControlInterfaceBlockEntity ci) {
-        if (ci.online && ci.name.isEmpty() && level instanceof ServerLevel serverLevel) {
-            NetworkRef network = ci.network();
-            if (network != null) {
-                ci.setName(ElclDevices.freeName(serverLevel.getServer(), network, TYPE));
-            }
-        }
         if (ci.inputsDirty) {
             ci.readInputs();
         }
@@ -191,6 +187,31 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
         if (next != state) {
             level.setBlock(worldPosition, next, Block.UPDATE_CLIENTS);
         }
+    }
+
+    // --- Components (its device name goes with the item) ---
+
+    @Override
+    protected void applyImplicitComponents(DataComponentGetter components) {
+        super.applyImplicitComponents(components);
+        String carried = components.get(ModDataComponents.DEVICE_NAME.get());
+        if (carried != null) {
+            name = carried;
+        }
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        if (!name.isEmpty()) {
+            components.set(ModDataComponents.DEVICE_NAME.get(), name);
+        }
+    }
+
+    @Override
+    public void removeComponentsFromTag(ValueOutput output) {
+        super.removeComponentsFromTag(output);
+        output.discard("name");
     }
 
     // --- Saving ---

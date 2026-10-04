@@ -832,6 +832,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 device.load(child.childOrEmpty("data"));
                 device.setSegment(child.getIntOr("segment", 0));
                 child.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
+                device.setDeviceName(child.getStringOr("device_name", ""));
                 devices.put(device.u(), device);
             }
         }
@@ -871,6 +872,9 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 child.putInt("segment", device.segment());
             }
             child.putInt("priority", device.lanePriority().ordinal());
+            if (!device.deviceName().isEmpty()) {
+                child.putString("device_name", device.deviceName());
+            }
             device.save(child.child("data"));
         }
         if (!segments.isEmpty()) {

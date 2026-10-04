@@ -33,6 +33,10 @@ public final class ModDataComponents {
     public static final Supplier<DataComponentType<BlockState>> FACADE_TARGET = DATA_COMPONENTS.registerComponentType("facade_target",
             builder -> builder.persistent(BlockState.CODEC).networkSynchronized(ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY)));
 
+    // The name scripts know a Terminal Desk or Control Interface by (ELDESK01, CTLIF01), kept on the item when it's broken.
+    public static final Supplier<DataComponentType<String>> DEVICE_NAME = DATA_COMPONENTS.registerComponentType("device_name",
+            builder -> builder.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+
     // A Storage Drive's id: its contents live in DriveStorage under it. Given when the drive first goes into a Drive Bay.
     public static final Supplier<DataComponentType<UUID>> DRIVE_ID = DATA_COMPONENTS.registerComponentType("drive_id",
             builder -> builder.persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC));

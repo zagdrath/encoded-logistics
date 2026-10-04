@@ -204,6 +204,10 @@ final class BuiltinCommands {
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("ACTION", "Action", Kind.SPECIAL).req().sv("*ADD", "*RMV", "*CLR"))
                 .p(p("ITEM", "Item", Kind.ITEM).len(64)));
+        // [EXT] Device names (Part 2): what Work with Devices 2=Change runs.
+        add(CommandDefinition.of("RNMDEV", "Rename Device").auth(CONFIGURE).positional(2)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("NEWNAME", "New name", Kind.NAME).req()));
         add(CommandDefinition.of("RTVLANES", "Retrieve Lanes").auth(VIEW)
                 .p(rtn("RTNUSED", "Return lanes used", VarType.INT))
                 .p(rtn("RTNTOTAL", "Return lanes total", VarType.INT)));

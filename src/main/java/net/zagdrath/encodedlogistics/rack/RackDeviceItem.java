@@ -43,6 +43,7 @@ public class RackDeviceItem extends Item {
             var input = TagValueInput.create(ProblemReporter.DISCARDING, registries, data.copyTag());
             device.loadSettings(input);
             input.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
+            device.setDeviceName(input.getStringOr("device_name", ""));
         }
         return device;
     }
@@ -54,6 +55,9 @@ public class RackDeviceItem extends Item {
         device.saveSettings(output);
         if (device.lanePriority() != device.defaultPriority()) {
             output.putInt("priority", device.lanePriority().ordinal());
+        }
+        if (!device.deviceName().isEmpty()) {
+            output.putString("device_name", device.deviceName());
         }
         CompoundTag tag = output.buildResult();
         if (!tag.isEmpty()) {

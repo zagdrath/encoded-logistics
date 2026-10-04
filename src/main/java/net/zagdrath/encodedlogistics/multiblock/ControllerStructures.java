@@ -44,9 +44,9 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
-import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
@@ -55,6 +55,7 @@ import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.LaneResult;
@@ -162,6 +163,8 @@ public class ControllerStructures extends SavedData {
     private final Map<Long, Runtime> runtimes = new HashMap<>();
     // Cables and part hosts holding parts that tick.
     private final Set<CableBlockEntity> ticking = new LinkedHashSet<>();
+    // Networks just solved again: their devices get any names they're missing at the end of the tick (ElclDevices).
+    private final Set<NetworkRef> namesDue = new LinkedHashSet<>();
     private boolean topologyChanged;
     // The NetworkIndex generation this level's networks were last solved for.
     private int seenGeneration = -1;
@@ -236,6 +239,10 @@ public class ControllerStructures extends SavedData {
         for (NodePos pos : online) {
             setDeviceOnline(server, pos, true);
         }
+        for (NetworkRef network : List.copyOf(namesDue)) {
+            ElclDevices.list(server, network);
+        }
+        namesDue.clear();
         for (CableBlockEntity host : List.copyOf(ticking)) {
             if (host.isRemoved()) {
                 ticking.remove(host);
@@ -392,6 +399,9 @@ public class ControllerStructures extends SavedData {
                 }
             }
             runtime.deviceCount = countDevices(runtime.discovered.graph());
+            if (runs) {
+                namesDue.add(new NetworkRef(level.dimension(), structure.id()));
+            }
         }
         boolean conflict = status == null && runtime.lanes != null && runtime.lanes.status() == NetworkStatus.CONFLICT;
         if (status == null && !conflict && runtime.lead != structure.id()) {

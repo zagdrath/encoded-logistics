@@ -15,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.tags.TagKey;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries;
@@ -229,6 +230,8 @@ public final class TerminalService {
                     .attr(TerminalLine.BRIGHT).build());
         }
         List<ControllerStructures.DeviceRow> all = ControllerStructures.deviceRows(context.server(), context.network());
+        // The names scripts use (UPS01), shown before the device's kind; display order doesn't affect them.
+        List<ElclDevices.Device> named = ElclDevices.list(context.server(), context.network());
         for (int i = 0; i < all.size(); i++) {
             ControllerStructures.DeviceRow row = all.get(i);
             RackDevice device = row.rackDevice();
@@ -255,8 +258,11 @@ public final class TerminalService {
                 status = Component.translatable(row.online() ? "gui.encodedlogistics.status.online" : "gui.encodedlogistics.status.offline");
                 attr = row.online() ? TerminalLine.NORMAL : TerminalLine.DIM;
             }
-            out.line(TerminalLine.builder().text(screen ? "" : "    ").left(type, 10).text("  ").left(row.name(), 22).text("  ").left(location, 17).text("  ")
-                    .left(lanes, 7).text("  ").text(status).attr(attr).build());
+            // Cell 3 is the device's name (empty when it has none): Work with Devices' 2=Change reads it.
+            String name = ElclDevices.nameAt(named, row.pos(), device);
+            out.line(TerminalLine.builder().text(screen ? "" : "    ").left(type, 10).text("  ").left(name, name.isEmpty() ? 0 : 11)
+                    .left(row.name(), name.isEmpty() ? 22 : 11).text("  ").left(location, 17).text("  ").left(lanes, 7).text("  ").text(status).attr(attr)
+                    .build());
         }
         return out;
     }
@@ -270,6 +276,10 @@ public final class TerminalService {
         TerminalOutput out = new TerminalOutput();
         BlockPos pos = row.pos().pos();
         out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.dev.device"), 28).text(row.name()).attr(TerminalLine.BRIGHT).build());
+        String name = ElclDevices.nameAt(ElclDevices.list(context.server(), context.network()), row.pos(), row.rackDevice());
+        if (!name.isEmpty()) {
+            out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.dev.name"), 28).text(name).build());
+        }
         out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.dev.location"), 28)
                 .text(pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "  " + row.pos().dimension().identifier()).build());
         if (row.rackDevice() != null && context.player() instanceof ServerPlayer viewer) {

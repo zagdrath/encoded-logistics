@@ -6,8 +6,8 @@
 package net.zagdrath.encodedlogistics.blockentity;
 
 import java.util.ArrayList;
-import java.util.ListIterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +16,8 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -40,6 +42,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
+import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -88,6 +91,20 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
     }
 
     // The network it's on while it's online, else null.
+    // The name scripts know it by (ELDESK01): given once on its first network, kept until renamed.
+    private String deviceName = "";
+
+    public String deviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String name) {
+        if (!deviceName.equals(name)) {
+            deviceName = name;
+            setChanged();
+        }
+    }
+
     public @Nullable NetworkRef network() {
         return online && level instanceof ServerLevel serverLevel ? ControllerStructures.networkOf(serverLevel, worldPosition) : null;
     }
@@ -241,6 +258,31 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
         return new DispenserMenu(containerId, inventory, this);
     }
 
+    // --- Components (its device name goes with the item) ---
+
+    @Override
+    protected void applyImplicitComponents(DataComponentGetter components) {
+        super.applyImplicitComponents(components);
+        String carried = components.get(ModDataComponents.DEVICE_NAME.get());
+        if (carried != null) {
+            deviceName = carried;
+        }
+    }
+
+    @Override
+    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        if (!deviceName.isEmpty()) {
+            components.set(ModDataComponents.DEVICE_NAME.get(), deviceName);
+        }
+    }
+
+    @Override
+    public void removeComponentsFromTag(ValueOutput output) {
+        super.removeComponentsFromTag(output);
+        output.discard("device_name");
+    }
+
     // --- Saving ---
 
     @Override
@@ -248,6 +290,7 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
         super.loadAdditional(input);
         items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
+        deviceName = input.getStringOr("device_name", "");
         deliveries.clear();
         for (ValueInput child : input.childrenListOrEmpty("deliveries")) {
             Optional<ItemKey> item = child.read("item", ItemKey.CODEC);
@@ -261,6 +304,9 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
+        if (!deviceName.isEmpty()) {
+            output.putString("device_name", deviceName);
+        }
         ValueOutput.ValueOutputList list = output.childrenList("deliveries");
         for (Delivery delivery : deliveries) {
             ValueOutput child = list.addChild();

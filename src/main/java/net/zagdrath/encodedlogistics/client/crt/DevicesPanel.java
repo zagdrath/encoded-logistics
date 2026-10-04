@@ -13,7 +13,8 @@ import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // WRKDEV: every device on the network - Opt, Type, Device, Location (a rack's units under it), Lanes, Status (Online,
-// Offline dim, a fault or what it's busy with bright). Options: 5=Display (its details), 8=Locate (it's picked out in
+// Offline dim, a fault or what it's busy with bright). The Device column starts with the name scripts use (UPS01) for
+// devices that have one. Options: 2=Change (rename it: RNMDEV), 5=Display (its details), 8=Locate (it's picked out in
 // the world for ten seconds).
 final class DevicesPanel extends ListPanel<DevicesPanel.Row> {
     record Row(int index, TerminalLine line) {}
@@ -73,6 +74,12 @@ final class DevicesPanel extends ListPanel<DevicesPanel.Row> {
         }
     }
 
+    // The row's device name (its fourth cell), or "" when it has none.
+    private static String name(Row row) {
+        List<TerminalLine.Cell> cells = row.line().cells();
+        return cells.size() > 3 ? cells.get(3).text().getString().trim() : "";
+    }
+
     @Override
     void drawHead(CrtGrid grid) {
         grid.put(3, 0, tr("crt.encodedlogistics.type_options"));
@@ -95,6 +102,19 @@ final class DevicesPanel extends ListPanel<DevicesPanel.Row> {
                     return true;
                 }
                 case "8" -> screen.send(TerminalService.QUERY, "locate " + index);
+                case "2" -> {
+                    String name = name(option.row());
+                    if (name.isEmpty()) {
+                        screen.message(tr("crt.encodedlogistics.dev.no_name"));
+                        return true;
+                    }
+                    screen.openWindow(new FormWindow(screen, tr("crt.encodedlogistics.dev.change", name), tr("crt.encodedlogistics.dev.change_text"),
+                            values -> {
+                                screen.runCommand("RNMDEV DEV(" + name + ") NEWNAME(" + values.getFirst().trim() + ")");
+                                shown();
+                            }).field(tr("crt.encodedlogistics.dev.new_name"), 10, name, tr("crt.encodedlogistics.dev.name_hint")));
+                    return true;
+                }
                 default -> {
                     screen.message(tr("crt.encodedlogistics.msg.invalid_option", option.option()));
                     return true;

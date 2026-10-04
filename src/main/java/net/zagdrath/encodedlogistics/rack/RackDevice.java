@@ -42,6 +42,8 @@ public abstract class RackDevice {
     private int segment;
     private Priority priority;
     private final NonNullList<ItemStack> items;
+    // The name scripts know it by (UPS01): given once on its first network, kept until renamed, carried by its item.
+    private String deviceName = "";
 
     protected RackDevice(RackDeviceType type) {
         this.type = type;
@@ -101,6 +103,17 @@ public abstract class RackDevice {
 
     public Component name() {
         return type.item().getName(type.item().getDefaultInstance());
+    }
+
+    public final String deviceName() {
+        return deviceName;
+    }
+
+    public final void setDeviceName(String name) {
+        if (!deviceName.equals(name)) {
+            deviceName = name;
+            saveOnly();
+        }
     }
 
     // --- Network ---
