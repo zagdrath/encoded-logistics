@@ -15,6 +15,7 @@ import java.util.UUID;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
@@ -101,17 +102,17 @@ public final class ScreenQueries {
                 case "callstack" -> callStack(system, own(system, user, arg(words, 1)));
                 case "schedules" -> schedules(system);
                 case "triggers" -> triggers(system);
-                case "messages" -> messages(system, user);
+                case "messages" -> messages(system, queue(system, user, arg(words, 1)));
                 case "readmessages" -> {
-                    ElclServices.messages().markRead(system, user);
+                    ElclServices.messages().markRead(system, queue(system, user, arg(words, 1)));
                     yield new TerminalOutput();
                 }
                 case "removemessage" -> {
-                    ElclServices.messages().remove(system, user, Long.parseLong(arg(words, 1)));
+                    ElclServices.messages().remove(system, queue(system, user, arg(words, 2)), Long.parseLong(arg(words, 1)));
                     yield new TerminalOutput();
                 }
                 case "removemessages" -> {
-                    ElclServices.messages().removeAll(system, user);
+                    ElclServices.messages().removeAll(system, queue(system, user, arg(words, 1)));
                     yield new TerminalOutput();
                 }
                 case "spooled" -> spooled(system, user, words.size() > 1 && !words.get(1).equals("*ALL") ? words.get(1) : null);
@@ -137,6 +138,19 @@ public final class ScreenQueries {
     // A job named "*" (or not named): the user's own interactive job.
     private static String own(ElclSystem system, String user, String id) {
         return id.equals("*") || id.isEmpty() ? OsCommands.interactiveJob(system, user).number() : id;
+    }
+
+    // DSPMSG USR(): the user's own queue (none given, *CURRENT), or another's - QSYSOPR (*SYSOPR) among them - for a
+    // *SECOFR (or with full authority); ELC0401 otherwise.
+    private static String queue(ElclSystem system, String user, String queue) throws ElclException {
+        if (queue.isEmpty() || queue.equals("*CURRENT") || queue.equalsIgnoreCase(user)) {
+            return user;
+        }
+        String name = queue.equals("*SYSOPR") ? StoredMessageService.SYSOPR : queue;
+        if (!ElclServices.users().mayManage(system, user, name)) {
+            throw new ElclException("ELC0401", user, "*USE");
+        }
+        return name;
     }
 
     private static String arg(List<String> words, int index) {

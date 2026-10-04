@@ -102,6 +102,8 @@ class LayoutTest {
         terminal.network = "ELNET01";
         terminal.user = "ZAGDRATH";
         terminal.start();
+        // No server: no answer to wait for.
+        terminal.connecting = false;
         return terminal;
     }
 

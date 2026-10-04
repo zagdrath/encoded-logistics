@@ -71,7 +71,7 @@ final class ScreenCommands {
             case "DSPJOBLOG" -> new DspJobLogPanel(screen, value(statement, "JOB", "*"));
             case "WRKJOBSCDE" -> new WrkJobScdePanel(screen);
             case "WRKTRGEVT" -> new WrkTrgEvtPanel(screen);
-            case "DSPMSG" -> new DspMsgPanel(screen);
+            case "DSPMSG" -> new DspMsgPanel(screen, value(statement, "USR", "*CURRENT"));
             case "WRKSYSVAL" -> new WrkSysvalPanel(screen);
             case "WRKSPLF" -> {
                 String job = value(statement, "JOB", "*ALL");

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.client.rack;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -21,6 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +52,7 @@ import net.zagdrath.encodedlogistics.rack.RackTargeting;
 // popup by the crosshair shows the device's icon, name, units, status and its own lines (RackDeviceInfo, asked of the
 // server as soon as the crosshair lands on it, then every QUERY_INTERVAL ticks; answers are kept per unit, so going back
 // to one shows it at once). Until a device's answer is in, only its outline shows: the popup is always the whole thing.
-// Above it, as wide as it, the rack's strip (lanes and uplinks). An empty unit just says so. With the doors closed
+// Above it, as wide as it, the rack's strip (lanes and uplinks). At most MAX_W wide: longer text wraps on to the next line. An empty unit just says so. With the doors closed
 // there's neither. Hidden with F1 and while a screen is open.
 public final class RackHud {
     public static final Identifier LAYER = EncodedLogistics.id("rack_unit_popup");
@@ -61,7 +63,7 @@ public final class RackHud {
             WARNING_SIGN = EncodedLogistics.id("rack/controller/warning"), BAR_TRACK = EncodedLogistics.id("hud/bar_track"),
             BAR_FILL = EncodedLogistics.id("hud/bar_fill"), BAR_WARN = EncodedLogistics.id("hud/bar_fill_warn"),
             BAR_LOW = EncodedLogistics.id("hud/bar_fill_low");
-    private static final int OFFSET_X = 12, OFFSET_Y = -8, PAD_X = 5, PAD_Y = 4, MIN_W = 96, MAX_W = 180;
+    private static final int OFFSET_X = 12, OFFSET_Y = -8, PAD_X = 5, PAD_Y = 4, MIN_W = 96, MAX_W = 140;
     private static final int HEADER_STRIP_H = 14;
     private static final int HEADER_H = 18, DIVIDER_TOP = 2, DIVIDER_BOTTOM = 3, LINE_H = 10, BAR_H = 6, GAP = 8;
     private static final int PANEL_COLOR = ARGB.color(Math.round(0.92F * 255), 0xFFFFFF);
@@ -174,8 +176,7 @@ public final class RackHud {
     // with an optional muted line at the bottom (the rack screen's hint). The HUD's and the rack screen's hover.
     public static void popup(GuiGraphicsExtractor graphics, Font font, RackDevice device, RackDeviceInfo info, int anchorX, int anchorY,
             @Nullable Component footer) {
-        // The rack's strip goes above the popup, so the popup starts lower.
-        int headerH = info.header().isPresent() ? HEADER_STRIP_H + 2 : 0;
+        // As wide as its content needs, up to MAX_W: anything longer goes on to the next line.
         Component units = RackScreen.unitRange(device);
         Component badge = Component.translatable("hud.encodedlogistics.rack.scheduler");
         int badgeWidth = info.schedulerBadge() ? 8 + BADGE + 2 + font.width(badge) : 0;
@@ -186,33 +187,52 @@ public final class RackHud {
         for (RackDeviceInfo.InfoLine line : info.lines()) {
             content = Math.max(content, font.width(line.label()) + GAP + font.width(line.value()));
         }
-        // As wide as the rack's strip above it, if that's wider.
-        int headerWidth = info.header().map(header -> headerWidth(font, header)).orElse(0);
-        int width = Math.max(Mth.clamp(content + 2 * PAD_X, MIN_W, MAX_W), headerWidth), inner = width - 2 * PAD_X;
-        int height = PAD_Y + HEADER_H + DIVIDER_TOP + 1 + DIVIDER_BOTTOM + LINE_H + PAD_Y;
+        int width = Mth.clamp(content + 2 * PAD_X, MIN_W, MAX_W), inner = width - 2 * PAD_X;
+
+        // The lines, wrapped to the width.
+        List<FormattedCharSequence> name = font.split(info.name(), inner - 20);
+        // The badge goes under the units when they don't fit side by side.
+        boolean badgeBelow = info.schedulerBadge() && font.width(units) + badgeWidth > inner - 20;
+        int top = Math.max(HEADER_H, 9 * name.size() + 9 + (badgeBelow ? 9 : 0) + 1);
+        List<FormattedCharSequence> status = font.split(info.statusText(), inner - 8);
+        List<List<Row>> lines = new ArrayList<>();
+        int linesHeight = 0;
         for (RackDeviceInfo.InfoLine line : info.lines()) {
-            height += LINE_H + (line.bar().isPresent() ? BAR_H : 0);
+            List<Row> rows = rows(font, line, inner);
+            lines.add(rows);
+            linesHeight += rows.size() * LINE_H + (line.bar().isPresent() ? BAR_H : 0);
         }
-        if (footer != null) {
-            height += DIVIDER_TOP + 1 + DIVIDER_BOTTOM + LINE_H;
+        List<FormattedCharSequence> hint = footer != null ? font.split(footer, inner) : List.of();
+        List<FormattedCharSequence> strip = info.header().map(header -> font.split(header.text(), width - 2 * PAD_X - (header.degraded() ? 12 : 0)))
+                .orElse(List.of());
+        int stripH = strip.isEmpty() ? 0 : HEADER_STRIP_H + (strip.size() - 1) * 9 + 2;
+        int height = PAD_Y + top + DIVIDER_TOP + 1 + DIVIDER_BOTTOM + status.size() * LINE_H + linesHeight + PAD_Y;
+        if (!hint.isEmpty()) {
+            height += DIVIDER_TOP + 1 + DIVIDER_BOTTOM + hint.size() * LINE_H - 1;
         }
-        int x = clampX(graphics, anchorX, width), y = clampY(graphics, anchorY, height + headerH) + headerH;
-        if (info.header().isPresent()) {
-            header(graphics, font, info.header().get(), x, y - headerH, width);
+
+        // The rack's strip goes above the popup, as wide as it.
+        int x = clampX(graphics, anchorX, width), y = clampY(graphics, anchorY, height + stripH) + stripH;
+        if (!strip.isEmpty()) {
+            header(graphics, font, info.header().get(), strip, x, y - stripH, width, stripH - 2);
         }
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, height, PANEL_COLOR);
         int left = x + PAD_X, lineY = y + PAD_Y;
 
         graphics.item(new ItemStack(device.type().item()), left, lineY);
-        graphics.text(font, font.substrByWidth(info.name(), inner - 20).getString(), left + 20, lineY, RackScreen.TEXT, false);
-        graphics.text(font, units, left + 20, lineY + 9, RackScreen.TEXT_MUTED, false);
-        if (info.schedulerBadge()) {
-            // Part of its rack's Scheduler: the badge and "Scheduler", right-aligned opposite the units.
-            int textX = left + inner - font.width(badge);
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BADGE_SPRITE, textX - 2 - BADGE, lineY + 8, BADGE, BADGE);
-            graphics.text(font, badge, textX, lineY + 9, SCHEDULER, false);
+        for (int i = 0; i < name.size(); i++) {
+            graphics.text(font, name.get(i), left + 20, lineY + 9 * i, RackScreen.TEXT, false);
         }
-        lineY += HEADER_H + DIVIDER_TOP;
+        int unitsY = lineY + 9 * name.size();
+        graphics.text(font, units, left + 20, unitsY, RackScreen.TEXT_MUTED, false);
+        if (info.schedulerBadge()) {
+            // Part of its rack's Scheduler: the badge and "Scheduler", right-aligned opposite the units (or under them).
+            int badgeY = badgeBelow ? unitsY + 9 : unitsY;
+            int textX = left + inner - font.width(badge);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BADGE_SPRITE, textX - 2 - BADGE, badgeY - 1, BADGE, BADGE);
+            graphics.text(font, badge, textX, badgeY, SCHEDULER, false);
+        }
+        lineY += top + DIVIDER_TOP;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DIVIDER, left, lineY, inner, 1);
         lineY += 1 + DIVIDER_BOTTOM;
 
@@ -223,13 +243,22 @@ public final class RackHud {
             case WARNING -> DOT_WARNING;
         };
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, dot, left, lineY + 1, 5, 5);
-        graphics.text(font, info.statusText(), left + 8, lineY, RackScreen.statusColor(info.status()), false);
-        lineY += LINE_H;
-
-        for (RackDeviceInfo.InfoLine line : info.lines()) {
-            graphics.text(font, line.label(), left, lineY, RackScreen.TEXT_MUTED, false);
-            graphics.text(font, line.value(), left + inner - font.width(line.value()), lineY, RackScreen.TEXT, false);
+        for (FormattedCharSequence part : status) {
+            graphics.text(font, part, left + 8, lineY, RackScreen.statusColor(info.status()), false);
             lineY += LINE_H;
+        }
+
+        for (int i = 0; i < info.lines().size(); i++) {
+            for (Row row : lines.get(i)) {
+                if (row.label() != null) {
+                    graphics.text(font, row.label(), left, lineY, RackScreen.TEXT_MUTED, false);
+                }
+                if (row.value() != null) {
+                    graphics.text(font, row.value(), left + inner - font.width(row.value()), lineY, RackScreen.TEXT, false);
+                }
+                lineY += LINE_H;
+            }
+            RackDeviceInfo.InfoLine line = info.lines().get(i);
             if (line.bar().isPresent()) {
                 RackDeviceInfo.Bar bar = line.bar().get();
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BAR_TRACK, left, lineY - 1, inner, 5);
@@ -245,26 +274,45 @@ public final class RackHud {
                 lineY += BAR_H;
             }
         }
-        if (footer != null) {
+        if (!hint.isEmpty()) {
             lineY += DIVIDER_TOP;
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DIVIDER, left, lineY, inner, 1);
             lineY += 1 + DIVIDER_BOTTOM;
-            graphics.text(font, font.plainSubstrByWidth(footer.getString(), inner), left, lineY, RackScreen.TEXT_DISABLED, false);
+            for (FormattedCharSequence part : hint) {
+                graphics.text(font, part, left, lineY, RackScreen.TEXT_DISABLED, false);
+                lineY += LINE_H;
+            }
         }
     }
 
-    // The rack's strip, as wide as the popup under it; degraded, amber behind a warning sign.
-    private static int headerWidth(Font font, RackDeviceInfo.Header header) {
-        return PAD_X + (header.degraded() ? 9 + 3 : 0) + font.width(header.text()) + PAD_X;
+    // One line of a popup: its label on the left, its value on the right (either may be missing).
+    private record Row(@Nullable FormattedCharSequence label, @Nullable FormattedCharSequence value) {}
+
+    // An info line as rows: label and value side by side when they fit, else the label (wrapped) and the value under
+    // it, on the right.
+    private static List<Row> rows(Font font, RackDeviceInfo.InfoLine line, int inner) {
+        List<Row> rows = new ArrayList<>();
+        if (font.width(line.label()) + GAP + font.width(line.value()) <= inner) {
+            rows.add(new Row(line.label().getVisualOrderText(), line.value().getVisualOrderText()));
+            return rows;
+        }
+        font.split(line.label(), inner).forEach(part -> rows.add(new Row(part, null)));
+        font.split(line.value(), inner).forEach(part -> rows.add(new Row(null, part)));
+        return rows;
     }
 
-    private static void header(GuiGraphicsExtractor graphics, Font font, RackDeviceInfo.Header header, int x, int y, int width) {
+    // The rack's strip, as wide as the popup under it, its text wrapped; degraded, amber behind a warning sign.
+    private static void header(GuiGraphicsExtractor graphics, Font font, RackDeviceInfo.Header header, List<FormattedCharSequence> lines, int x, int y,
+            int width, int height) {
         int icon = header.degraded() ? 9 + 3 : 0;
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, HEADER_STRIP_H, PANEL_COLOR);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, PANEL, x, y, width, height, PANEL_COLOR);
         if (header.degraded()) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, WARNING_SIGN, x + PAD_X, y + (HEADER_STRIP_H - 8) / 2, 9, 8);
         }
-        graphics.text(font, header.text(), x + PAD_X + icon, y + (HEADER_STRIP_H - 8) / 2, header.degraded() ? RackScreen.AMBER : RackScreen.TEXT_MUTED, false);
+        for (int i = 0; i < lines.size(); i++) {
+            graphics.text(font, lines.get(i), x + PAD_X + icon, y + (HEADER_STRIP_H - 8) / 2 + 9 * i, header.degraded() ? RackScreen.AMBER
+                    : RackScreen.TEXT_MUTED, false);
+        }
     }
 
     private static int clampX(GuiGraphicsExtractor graphics, int x, int width) {

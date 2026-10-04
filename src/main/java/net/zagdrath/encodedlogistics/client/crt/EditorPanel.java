@@ -24,7 +24,9 @@ import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 // EDTMBR (screen 5): a source member in the editor. Row 1 the member, row 2 the columns shown and the cursor's line and
 // column, row 3 the column ruler when it's on (COLS, F15), then "Beginning of data", the source - a margin field per row
 // with its sequence number (type a line command over it) and the text, 72 of the 80 columns at a time (F19 / F20) - and
-// "End of data". Enter applies the line commands (EditorModel) and checks the changed statements with the ELCL parser:
+// "End of data" (an empty member opens on one blank line; "Beginning of data" takes I, A and COLS). Enter applies the line
+// commands (EditorModel), drops new lines left blank, opens another after a new line just typed on (SEU's insert mode),
+// and checks the changed statements with the ELCL parser:
 // the first bad one shows reversed, the cursor goes to it, its message to the message line (saving is allowed anyway).
 // The command line takes FIND / CHANGE (F16 / F17 repeat them), TOP, BOTTOM, SAVE, FILE, CANCEL, RESET, or any ELCL
 // command (F4 prompts it). F4 on a source line prompts its statement and writes the answer back. F11: full-screen edit
@@ -63,9 +65,7 @@ final class EditorPanel extends CrtPanel {
     // For the tests: a member already in hand.
     EditorPanel(CrtTerminal screen, String library, String member, List<SourceLine> source, boolean readOnly) {
         this(screen, library, member, readOnly);
-        model = new EditorModel(source);
-        loaded = true;
-        rebuild();
+        load(source);
     }
 
     EditorModel model() {
@@ -94,6 +94,9 @@ final class EditorPanel extends CrtPanel {
 
     @Override
     void shown() {
+        if (loaded && !model.lines.isEmpty() && model.lines.getFirst().fresh) {
+            show(0, 0);
+        }
         if (!loaded && incoming.isEmpty()) {
             if (!readOnly) {
                 screen.query("lock " + library + " " + member);
@@ -123,12 +126,21 @@ final class EditorPanel extends CrtPanel {
                 screen.query("source " + library + " " + member + " " + incoming.size());
                 return;
             }
-            model = new EditorModel(incoming);
-            loaded = true;
-            rebuild();
+            load(incoming);
         } else if (answers(response, "savecommit") && response.message().isPresent() && response.message().get().getString().startsWith("ELC0213")) {
             model.saved(today());
         }
+    }
+
+    // The member in hand: an empty one opens on a blank line, the cursor on it.
+    private void load(List<SourceLine> source) {
+        model = new EditorModel(source);
+        loaded = true;
+        if (model.lines.isEmpty() && !readOnly) {
+            model.lines.add(EditorModel.blank());
+        }
+        rebuild();
+        shown();
     }
 
     // The game day (a changed line's date), from the clock.
@@ -201,6 +213,11 @@ final class EditorPanel extends CrtPanel {
             int row = firstRow() + i;
             CrtField margin = null, text = null;
             String marginShown = "", textShown = "";
+            if (item.kind() == Item.BEGIN && !readOnly) {
+                // Line commands before the first line (I, A).
+                margin = new CrtField(row, 0, MARGIN, "").uppercase();
+                fields.add(margin);
+            }
             if (item.kind() == Item.LINE || item.kind() == Item.EXCLUDED) {
                 EditorModel.Line line = item.line();
                 if (!full) {
@@ -244,13 +261,20 @@ final class EditorPanel extends CrtPanel {
         }
     }
 
+    // The first line's margin before "Beginning of data"'s.
     private @Nullable CrtField firstEditable() {
-        for (CrtField field : fields) {
-            if (!field.isProtected) {
-                return field;
+        CrtField begin = null;
+        for (RowFields row : rows) {
+            for (CrtField field : new CrtField[] { row.margin(), row.text() }) {
+                if (field != null && !field.isProtected) {
+                    if (row.item().kind() != Item.BEGIN) {
+                        return field;
+                    }
+                    begin = begin != null ? begin : field;
+                }
             }
         }
-        return null;
+        return begin;
     }
 
     private static String slice(String text, int from, int width) {
@@ -264,7 +288,7 @@ final class EditorPanel extends CrtPanel {
     private List<EditorModel.Command> sync() {
         List<EditorModel.Command> commands = new ArrayList<>();
         for (RowFields row : rows) {
-            EditorModel.Line line = row.item().line();
+            EditorModel.Line line = row.item().kind() == Item.BEGIN ? EditorModel.TOP : row.item().line();
             if (line == null) {
                 continue;
             }
@@ -451,12 +475,54 @@ final class EditorPanel extends CrtPanel {
         if (!loaded) {
             return true;
         }
+        EditorModel.Line at = focusedLine();
         List<EditorModel.Command> commands = sync();
-        String message = readOnly ? null : model.apply(commands);
+        String message = null;
+        EditorModel.Line opened = null;
+        if (!readOnly) {
+            List<EditorModel.Line> before = new ArrayList<>(model.lines);
+            message = model.apply(commands);
+            // Lines this Enter inserted stay; so does the one the cursor is on.
+            Set<EditorModel.Line> keep = new HashSet<>(model.lines);
+            keep.removeAll(before);
+            if (at != null) {
+                keep.add(at);
+            }
+            // Typed on a new line, the last of its run: another under it, the cursor there.
+            EditorModel.Line next = null;
+            int index = at != null ? model.lines.indexOf(at) : -1;
+            if (commands.isEmpty() && index >= 0 && at.seq == 0 && at.changed && !at.text.isBlank()
+                    && (index + 1 >= model.lines.size() || model.lines.get(index + 1).seq != 0)) {
+                next = EditorModel.blank();
+                model.lines.add(index + 1, next);
+                keep.add(next);
+            }
+            model.dropFresh(keep);
+            if (next != null) {
+                rebuild();
+                show(model.lines.indexOf(next), 0);
+            }
+            opened = next;
+        }
         rebuild();
         String problem = check();
+        if (opened != null) {
+            // Still typing: the cursor stays on the new line (the problem only on the message line).
+            show(model.lines.indexOf(opened), 0);
+        }
         screen.message(message != null ? message : problem);
         return true;
+    }
+
+    // The line the cursor is on (its margin or text), or null.
+    private EditorModel.@Nullable Line focusedLine() {
+        CrtField focused = screen.focused();
+        for (RowFields row : rows) {
+            if (focused != null && (focused == row.text() || focused == row.margin())) {
+                return row.item().line();
+            }
+        }
+        return null;
     }
 
     // The changed statements (and their continuation lines) through the parser and compiler: the first error in one.

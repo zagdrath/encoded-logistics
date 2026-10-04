@@ -23,20 +23,26 @@ import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 
 // An L2 Switch's panel (screens/rack/l2_switch_24.json, l2_switch_48.json): the rack's lane pool (bar and "N / M
 // lanes"), the rack's other devices - icon, name, whether the pool carries them, and the segment each serves (click to
-// step through the segments the rack knows, right-click back; only pooled devices can change) - and the uplink.
+// step through the segments the rack knows, right-click back; only pooled devices can change; a scrollbar beside the
+// list, as on the rack's own screen) - and the uplink.
 public class SwitchPanel extends RackScreen.Panel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/switch.png");
     protected static final Identifier LANE_TRACK = EncodedLogistics.id("rack/switch/lane_bar_track"),
             LANE_FILL = EncodedLogistics.id("rack/switch/lane_bar_fill"), POOL_FILL = EncodedLogistics.id("common/bar_fill_mint"),
             DOT_ONLINE = EncodedLogistics.id("hud/dot_online"), DOT_OFFLINE = EncodedLogistics.id("hud/dot_offline");
-    private static final int POOL_X = 9, POOL_Y = 21, POOL_W = 98, UPLINK_Y = 144;
-    // Each row's segment button: inside the row, clear of its edges.
-    private static final int SEGMENT_X = 114, SEGMENT_W = 40, SEGMENT_H = 10;
+    private static final Identifier THUMB = EncodedLogistics.id("controller/scroll_thumb"), THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
+    protected static final int POOL_X = 9, POOL_W = 98;
+    private static final int POOL_Y = 21, UPLINK_Y = 144;
+    // Each row: the name (up to NAME_W), the lane bar, the segment button (inside the row, clear of its edges).
+    private static final int NAME_W = 50, LANES_X = 66, SEGMENT_X = 104, SEGMENT_W = 38, SEGMENT_H = 10;
+    // The scrollbar's track (in the background, beside the list) and its 6x15 thumb one in from the left.
+    private static final int TRACK_X = 160, THUMB_W = 6, THUMB_H = 15;
 
     // A device in the list, as the server sent it.
     protected record Row(int u, RackDeviceType type, boolean pooled, int segment) {}
 
     protected int scroll;
+    private boolean dragging;
 
     public SwitchPanel(RackScreen screen) {
         super(screen);
@@ -128,14 +134,75 @@ public class SwitchPanel extends RackScreen.Panel {
             graphics.pose().scale(0.75F, 0.75F);
             graphics.item(new ItemStack(row.type().item()), 0, 0);
             graphics.pose().popMatrix();
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LANE_TRACK, x + listX() + 76, rowY + 4, 32, 4);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LANE_TRACK, x + listX() + LANES_X, rowY + 4, 32, 4);
             if (row.pooled()) {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LANE_FILL, x + listX() + 77, rowY + 5, 30, 2);
+                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LANE_FILL, x + listX() + LANES_X + 1, rowY + 5, 30, 2);
             }
             String segment = row.segment() < segments.size() ? segments.get(row.segment()) : "-";
             PartScreens.wideButton(graphics, font(), x + listX() + SEGMENT_X, rowY + 1, SEGMENT_W, SEGMENT_H, Component.literal(segment), row.pooled(),
                     mouseX, mouseY);
         }
+        extractScrollbar(graphics, rows.size(), mouseX, mouseY);
+    }
+
+    // --- The list's scrollbar ---
+
+    // The track's top and height (its border included), relative to the panel.
+    private int trackY() {
+        return listY() - 1;
+    }
+
+    private int trackH() {
+        return listRows() * rowHeight();
+    }
+
+    private int maxScroll(int rows) {
+        return Math.max(0, rows - listRows());
+    }
+
+    private int thumbY(int rows) {
+        int max = maxScroll(rows);
+        return trackY() + 1 + (max == 0 ? 0 : Math.round((trackH() - 2 - THUMB_H) * (float) scroll / max));
+    }
+
+    // The thumb, while there's more than the list shows.
+    private void extractScrollbar(GuiGraphicsExtractor graphics, int rows, int mouseX, int mouseY) {
+        if (maxScroll(rows) <= 0) {
+            return;
+        }
+        int thumbY = thumbY(rows);
+        boolean hover = dragging || screen.over(mouseX, mouseY, TRACK_X + 1, thumbY, THUMB_W, THUMB_H);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? THUMB_HOVER : THUMB, screen.left() + TRACK_X + 1, screen.top() + thumbY, THUMB_W, THUMB_H);
+    }
+
+    private void scrollTo(double y, int rows) {
+        double fraction = (y - trackY() - 1 - THUMB_H / 2.0) / (trackH() - 2 - THUMB_H);
+        scroll = Mth.clamp((int) Math.round(fraction * maxScroll(rows)), 0, maxScroll(rows));
+    }
+
+    // A click on the track: the thumb jumps there and follows the mouse.
+    protected boolean clickScrollbar(double x, double y) {
+        int rows = rows().size();
+        if (maxScroll(rows) > 0 && x >= TRACK_X && x < TRACK_X + 8 && y >= trackY() && y < trackY() + trackH()) {
+            dragging = true;
+            scrollTo(y, rows);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean mouseDragged(double x, double y) {
+        if (dragging) {
+            scrollTo(y, rows().size());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected void mouseReleased() {
+        dragging = false;
     }
 
     @Override
@@ -154,7 +221,7 @@ public class SwitchPanel extends RackScreen.Panel {
         List<Row> rows = rows();
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
-            String name = font().plainSubstrByWidth(row.type().item().getName(row.type().item().getDefaultInstance()).getString(), 60);
+            String name = font().plainSubstrByWidth(row.type().item().getName(row.type().item().getDefaultInstance()).getString(), NAME_W);
             graphics.text(font(), name, listX() + 15, listY() + i * rowHeight() + 3, row.pooled() ? RackScreen.TEXT : RackScreen.TEXT_MUTED, false);
         }
     }
@@ -165,7 +232,7 @@ public class SwitchPanel extends RackScreen.Panel {
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
             int rowY = listY() + i * rowHeight();
-            if (screen.over(mouseX, mouseY, listX() + 76, rowY, 32, rowHeight())) {
+            if (screen.over(mouseX, mouseY, listX() + LANES_X, rowY, 32, rowHeight())) {
                 graphics.setTooltipForNextFrame(Component.translatable(row.pooled() ? "gui.encodedlogistics.switch.pooled"
                         : "gui.encodedlogistics.switch.unpooled"), mouseX, mouseY);
                 return;
@@ -184,7 +251,7 @@ public class SwitchPanel extends RackScreen.Panel {
 
     @Override
     protected boolean mouseClicked(double x, double y, int button, boolean shift) {
-        return clickDevices(x, y, button);
+        return clickScrollbar(x, y) || clickDevices(x, y, button);
     }
 
     protected boolean clickDevices(double x, double y, int button) {
@@ -202,7 +269,7 @@ public class SwitchPanel extends RackScreen.Panel {
 
     @Override
     protected boolean mouseScrolled(double x, double y, double amount) {
-        if (x >= listX() && x < listX() + 158 && y >= listY() && y < listY() + listRows() * rowHeight()) {
+        if (x >= listX() && x < TRACK_X + 8 && y >= listY() && y < listY() + listRows() * rowHeight()) {
             scroll = Mth.clamp(scroll - (int) Math.signum(amount), 0, Math.max(0, rows().size() - listRows()));
             return true;
         }

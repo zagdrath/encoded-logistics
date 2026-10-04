@@ -35,10 +35,10 @@ import net.zagdrath.encodedlogistics.net.CrtRequestPayload;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 
 // The Terminal Desk's green screen (HANDOFF 3): an 80 x 24 text terminal on a CRT monitor drawn over the game (which
-// shows round it), character by character from the terminal font sheet (6 x 10 cells) with tall pixels (1.3 times as
+// shows round it), character by character from the terminal font sheet (6 x 10 cells) with tall pixels (1.15 times as
 // tall as wide: the 520 x 260 virtual glass - the 480 x 240 text and its margin - a little wider than 4:3), in real
 // screen pixels. Passes: the monitor's case, the phosphor's background, the glow (pre-blurred glyphs at 45%), the text,
-// a scanline under every virtual row, the vignette, the bezel. While it's open it takes text input (typing reaches it).
+// the vignette, the bezel (no scanlines: a flat glass, as the reference draws it). While it's open it takes text input (typing reaches it).
 // What's on the glass, and what keys and clicks do, is the terminal's (CrtTerminal); this draws it and hands it the
 // game's keys, characters, clicks and the server's answers.
 //
@@ -189,33 +189,27 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
         }
         // The cursor: a block in the focused field, blinking.
         CrtField focused = terminal.focused();
-        if (focused != null && terminal.ticks() / 10 % 2 == 0) {
+        if (focused != null && !terminal.connecting() && terminal.ticks() / 10 % 2 == 0) {
             int col = focused.cursorColumn();
             int x = MARGIN_X + col * CW, y = MARGIN_Y + focused.row * CH;
             graphics.fill(x, y + 1, x + 5, y + 8, palette.bright());
         }
         graphics.pose().popMatrix();
-        // Scanlines: the bottom third of every virtual row.
-        int line = Math.max(1, Math.round(vy / 3));
-        for (int v = 1; v <= VH; v++) {
-            int y = glassY + Math.round(v * vy) - line;
-            graphics.fill(glassX, y, glassX + glassW, y + line, 0x30000000);
-        }
         graphics.blit(RenderPipelines.GUI_TEXTURED, VIGNETTE, glassX, glassY, 0, 0, glassW, glassH, 256, 192, 256, 192);
         int bezel = bezelPx();
         bezel(graphics, glassX - bezel, glassY - bezel, glassW + 2 * bezel, glassH + 2 * bezel, bezel);
         graphics.pose().popMatrix();
     }
 
-    // The monitor fills about four fifths of the window, its pixels 1.3 times as tall as wide (the glass a little
+    // The monitor fills about three quarters of the window, its pixels 1.15 times as tall as wide (the glass a little
     // wider than 4:3), centred a little above the middle; the game shows round it.
-    private static final float PIXEL_ASPECT = 1.3F;
+    private static final float PIXEL_ASPECT = 1.15F;
     // The housing round the glass, in glass widths: the bezel, the case's sides, top and chin.
     private static final float BEZEL = 0.025F, SIDE = 0.055F, TOP = 0.045F, CHIN = 0.10F;
 
     private void layout(int width, int height) {
         float caseW = VW * (1 + 2 * BEZEL + 2 * SIDE), caseH = VH * PIXEL_ASPECT + VW * (2 * BEZEL + TOP + CHIN);
-        vx = Math.max(0.5F, Math.min(0.80F * width / caseW, 0.84F * height / caseH));
+        vx = Math.max(0.5F, Math.min(0.74F * width / caseW, 0.78F * height / caseH));
         vy = vx * PIXEL_ASPECT;
         int glassW = Math.round(VW * vx), glassH = Math.round(VH * vy);
         int outerH = Math.round(caseH * vx);
@@ -303,6 +297,9 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
             terminal.escape();
             return true;
         }
+        if (terminal.connecting()) {
+            return true;
+        }
         // Function keys act on release (keyReleased), so the release can't reach the game after an exit: F3's
         // debug overlay toggles on release.
         if (functionKey(event) > 0) {
@@ -347,7 +344,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
     @Override
     public boolean charTyped(CharacterEvent event) {
         int c = event.codepoint();
-        if (c >= 32 && c < 127) {
+        if (c >= 32 && c < 127 && !terminal.connecting()) {
             terminal.type((char) c);
         }
         return true;
@@ -364,7 +361,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         int[] cell = cell(event.x(), event.y());
-        if (cell != null) {
+        if (cell != null && !terminal.connecting()) {
             terminal.click(cell[0], cell[1], doubleClick);
         }
         return true;
@@ -414,7 +411,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
     @Override
     public boolean keyReleased(KeyEvent event) {
         int f = functionKey(event);
-        if (f > 0) {
+        if (f > 0 && !terminal.connecting()) {
             terminal.functionKey(f);
         }
         return true;

@@ -21,9 +21,10 @@ import net.zagdrath.encodedlogistics.elcl.SourceLine;
 // changed), the margin's line commands, FIND / CHANGE, and what saving gives back. Line commands (typed over a
 // sequence number; Enter applies them top to bottom): I / In insert, D / Dn delete, DD..DD delete a block, C / CC..CC
 // copy and M / MM..MM move (to A after / B before a line), R / Rn repeat, X / Xn exclude (S or F on the excluded row
-// shows them again), COLS the ruler. A copy or move waiting for its target (or a block for its end) stays pending
+// shows them again), COLS the ruler; on the "Beginning of data" row (TOP) I, A and COLS only. A copy or move waiting for its target (or a block for its end) stays pending
 // until it's completed or reset. Saving keeps every unchanged line's sequence number and date; new and moved lines are
-// numbered between their neighbours (all of them are renumbered when there's no room).
+// numbered between their neighbours (all of them are renumbered when there's no room). Inserted lines stay "fresh"
+// until something is typed on them: fresh blank lines are dropped on the next Enter (dropFresh), as SEU does.
 final class EditorModel {
     static final int WIDTH = SourceLine.WIDTH;
     private static final Pattern COMMAND = Pattern.compile("(COLS|DD|CC|MM|RR|I|D|C|M|R|X|A|B|S|F)([0-9]*)");
@@ -35,6 +36,8 @@ final class EditorModel {
         boolean changed;
         // Excluded lines in a run share a group (0: shown).
         int excluded;
+        // Inserted and not typed on yet.
+        boolean fresh;
 
         Line(int seq, String text, int date) {
             this.seq = seq;
@@ -47,7 +50,10 @@ final class EditorModel {
         }
     }
 
-    // A line command typed on a line's margin.
+    // The "Beginning of data" row's place: before the first line (it's never in the list, so its index is -1).
+    static final Line TOP = new Line(-1, "", 0);
+
+    // A line command typed on a line's margin (or TOP's).
     record Command(Line line, String text) {}
 
     private record Insert(Line after, int count) {}
@@ -125,6 +131,10 @@ final class EditorModel {
             int count = matcher.group(2).isEmpty() ? 1 : Math.max(1, Math.min(9999, Integer.parseInt(matcher.group(2))));
             Line line = command.line();
             int at = lines.indexOf(line);
+            if (line == TOP && !kind.equals("I") && !kind.equals("A") && !kind.equals("COLS")) {
+                problem = CrtPanel.tr("crt.encodedlogistics.edit.bad_command", command.text());
+                continue;
+            }
             switch (kind) {
                 case "COLS" -> ruler = !ruler;
                 case "I" -> inserting.add(new Insert(line, count));
@@ -214,9 +224,7 @@ final class EditorModel {
         for (Insert insert : inserting) {
             int at = lines.indexOf(insert.after()) + 1;
             for (int i = 0; i < insert.count(); i++) {
-                Line blank = new Line(0, "", 0);
-                blank.changed = true;
-                lines.add(at + i, blank);
+                lines.add(at + i, blank());
             }
             dirty = true;
         }
@@ -230,12 +238,26 @@ final class EditorModel {
         return pending() ? CrtPanel.tr("crt.encodedlogistics.edit.pending") : null;
     }
 
+    // A new, fresh blank line.
+    static Line blank() {
+        Line blank = new Line(0, "", 0);
+        blank.changed = true;
+        blank.fresh = true;
+        return blank;
+    }
+
+    // Fresh lines still blank (from an earlier Enter) dropped; any kept are given.
+    void dropFresh(Set<Line> keep) {
+        lines.removeIf(line -> line.fresh && line.text.isBlank() && !keep.contains(line) && line != target && line != blockStart);
+    }
+
     // A line's text changed on the screen.
     void setText(Line line, String text) {
         String clean = text.length() > WIDTH ? text.substring(0, WIDTH) : text;
         if (!clean.equals(line.text)) {
             line.text = clean;
             line.changed = true;
+            line.fresh = false;
             dirty = true;
         }
     }

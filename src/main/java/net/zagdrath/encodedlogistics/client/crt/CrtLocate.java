@@ -13,16 +13,18 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 
-// Work with Devices' 8=Locate: a cyan box blinking around the device for ten seconds - a rack device's own units, or
+// Work with Devices' 8=Locate: a box (the rack's hover outline's mint) blinking around the device for ten seconds - a rack device's own units, or
 // the device's block (in the player's dimension).
 public final class CrtLocate {
     private static final int TICKS = 200, BLINK = 10;
-    private static final int COLOR = 0xFF20F0FF;
+    // The rack's hover outline's colour.
+    private static final int COLOR = ARGB.color(Math.round(0.85F * 255), 0x5CF0B8);
     private static final float WIDTH = 3.0F;
     // Just outside the device, so its own faces don't hide the lines.
     private static final double INFLATE = 0.02;

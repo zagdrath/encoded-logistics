@@ -99,6 +99,11 @@ public final class RackClientDevices {
         return EXTRAS.get(type);
     }
 
+    // Whether a device has a settings panel (one without, like the Rack Console, isn't opened from the rack's screen).
+    public static boolean hasPanel(RackDeviceType type) {
+        return PANELS.containsKey(type);
+    }
+
     public static RackScreen.@Nullable Panel panel(RackDeviceType type, RackScreen screen) {
         Function<RackScreen, RackScreen.Panel> factory = PANELS.get(type);
         return factory != null ? factory.apply(screen) : null;

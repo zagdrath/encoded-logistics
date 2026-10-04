@@ -75,9 +75,9 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
 
     // At 16 rows (RackMenu.ROWS); the inset and the scrollbar grow with the rows the window has room for.
-    private static final int INSET_X = 8, INSET_Y = 18, INSET_W = 124, INSET_H = 146;
-    private static final int ROW_H = RackMenu.ROW_H, FIRST_ROW_Y = 19, NUMBER_RIGHT = 23, SLOT_X = 26, SLOT_W = 104;
-    private static final int SCROLL_X = 150, SCROLL_Y = 18, SCROLL_W = 8, SCROLL_H = 146, THUMB_W = 6, THUMB_H = 15;
+    private static final int INSET_X = 15, INSET_Y = 18, INSET_W = 124, INSET_H = 146;
+    private static final int ROW_H = RackMenu.ROW_H, FIRST_ROW_Y = 19, NUMBER_RIGHT = 30, SLOT_X = 33, SLOT_W = 104;
+    private static final int SCROLL_X = 153, SCROLL_Y = 18, SCROLL_W = 8, SCROLL_H = 146, THUMB_W = 6, THUMB_H = 15;
     // The elevation texture's rows repeat every ROW_H from here (a row and its separator line).
     private static final int STRIP_Y = FIRST_ROW_Y + 9 * ROW_H;
     // Panels' backgrounds: this row (plain body and sides) stretches over the extra height.
@@ -490,9 +490,10 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         if (sprite == atlas.missingSprite() || sprite.getU1() <= sprite.getU0() || sprite.getV1() <= sprite.getV0()) {
             return;
         }
-        int atlasWidth = Math.round(128 / (sprite.getU1() - sprite.getU0())), atlasHeight = Math.round(sheet / (sprite.getV1() - sprite.getV0()));
-        graphics.blit(RenderPipelines.GUI_TEXTURED, sprite.atlasLocation(), x, y, sprite.getX(), sprite.getY(), SLOT_W, shown, SLOT_W, height, atlasWidth,
-                atlasHeight);
+        // By the sprite's own UVs (its pixel position in the atlas isn't where its frame's texels start, so working from
+        // that put the overlay off its front): the front's part of the frame, SLOT_W x height of 128 x sheet.
+        graphics.blit(sprite.atlasLocation(), x, y, x + SLOT_W, y + shown, sprite.getU0(), sprite.getU((float) SLOT_W / 128), sprite.getV0(),
+                sprite.getV((float) height / sheet));
     }
 
     @Override
@@ -555,7 +556,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             RackDeviceInfo info = RackUnitPayloads.Info.forUnit(rack.getBlockPos(), device.u(), device.type());
             if (info != null) {
                 graphics.nextStratum();
-                RackHud.popup(graphics, font, device, info, mouseX + 12, mouseY - 8, Component.translatable("gui.encodedlogistics.rack.hint"));
+                RackHud.popup(graphics, font, device, info, mouseX + 12, mouseY - 8,
+                        Component.translatable(RackClientDevices.hasPanel(device.type()) ? "gui.encodedlogistics.rack.hint" : "gui.encodedlogistics.rack.hint_take"));
             }
         }
     }
@@ -666,7 +668,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
                 }
                 return true;
             }
-            if (device != null) {
+            // A device with no settings panel (the Rack Console) only comes out (shift-click).
+            if (device != null && (shift || RackClientDevices.hasPanel(device.type()))) {
                 buttonClick((shift ? RackMenu.TAKE : RackMenu.PICK) + u);
             }
             return true;

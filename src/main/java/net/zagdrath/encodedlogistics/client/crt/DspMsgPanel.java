@@ -10,15 +10,28 @@ import java.util.Set;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 
-// DSPMSG (screen 12): the user's message queue, newest first - Sev, From (job or user), Sent, Message (cut; 5 shows all
+// DSPMSG (screen 12): the user's message queue (or USR()'s: QSYSOPR for *SYSOPR, a *SECOFR's to see), newest first - Sev, From (job or user), Sent, Message (cut; 5 shows all
 // of it). Unread messages are bright; showing them marks them read, and "MW" goes. Options: 4=Remove, 5=Display details
 // (a window: the text, ID, severity, from, sent). F11 removes them all (confirmed).
 final class DspMsgPanel extends OsListPanel {
     // The ones unread when the screen got them (bright while it shows them).
     private Set<String> unread = Set.of();
+    // The queue shown: "" the user's own.
+    private final String queue;
 
     DspMsgPanel(CrtTerminal screen) {
+        this(screen, "*CURRENT");
+    }
+
+    DspMsgPanel(CrtTerminal screen, String user) {
         super(screen);
+        String name = user.toUpperCase(java.util.Locale.ROOT);
+        queue = name.equals("*CURRENT") || name.equalsIgnoreCase(screen.user) ? "" : name.equals("*SYSOPR") ? "QSYSOPR" : name;
+    }
+
+    // A query about the queue: its name after the words (none for the user's own).
+    private String about(String query) {
+        return queue.isEmpty() ? query : query + " " + queue;
     }
 
     @Override
@@ -38,7 +51,7 @@ final class DspMsgPanel extends OsListPanel {
 
     @Override
     String query() {
-        return "messages";
+        return about("messages");
     }
 
     @Override
@@ -72,7 +85,7 @@ final class DspMsgPanel extends OsListPanel {
                 }
             }
             if (!unread.isEmpty()) {
-                screen.query("readmessages");
+                screen.query(about("readmessages"));
             }
         }
         super.receive(response);
@@ -81,7 +94,7 @@ final class DspMsgPanel extends OsListPanel {
     @Override
     void drawTop(CrtGrid grid) {
         grid.put(2, 1, tr("crt.encodedlogistics.dspmsg.queue"));
-        grid.put(2, 19, screen.user.toUpperCase(java.util.Locale.ROOT), CrtGrid.BRIGHT);
+        grid.put(2, 19, queue.isEmpty() ? screen.user.toUpperCase(java.util.Locale.ROOT) : queue, CrtGrid.BRIGHT);
         grid.put(2, 44, tr("crt.encodedlogistics.dspmsg.program"));
         grid.put(2, 64, "*DSPMSG", CrtGrid.BRIGHT);
     }
@@ -114,7 +127,7 @@ final class DspMsgPanel extends OsListPanel {
         if (f == 11) {
             if (!rows.isEmpty()) {
                 screen.confirm(tr("crt.encodedlogistics.dspmsg.remove_all"), () -> {
-                    screen.query("removemessages");
+                    screen.query(about("removemessages"));
                     screen.query(query());
                 }, null);
             }
@@ -127,7 +140,7 @@ final class DspMsgPanel extends OsListPanel {
     boolean option(String code, TerminalLine row) {
         switch (code) {
             case "4" -> then(() -> {
-                screen.query("removemessage " + cell(row, 0));
+                screen.query(about("removemessage " + cell(row, 0)));
                 screen.query(query());
                 next();
             });

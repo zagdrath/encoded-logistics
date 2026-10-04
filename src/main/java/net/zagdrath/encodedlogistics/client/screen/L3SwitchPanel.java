@@ -21,7 +21,8 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
 
-// The L3 Switch's panel (screens/rack/l3_switch.json): three tabs. Devices: the L2 list (lanes and segments). Routes:
+// The L3 Switch's panel (screens/rack/l3_switch.json): three tabs. Devices: the L2 list (lanes and segments, scrolled
+// like it) over the rack's lane pool (bar and "N / M lanes", where the other tabs have their add button). Routes:
 // source segment -> destination segment and the filter (click a segment to step through them, the filter box to edit the
 // route's filter over the list - RouteFilterEditor, with "Done" in place of "+ Add route" - right-click to remove). QoS: each rule's priority and the items it
 // covers (click the priority to step through High / Normal / Low, the items with an item to set them; right-click to
@@ -32,7 +33,9 @@ public class L3SwitchPanel extends SwitchPanel {
             ARROW = EncodedLogistics.id("rack/router/arrow"), QOS = EncodedLogistics.id("rack/switch/qos_high");
     private static final int TABS_X = 8, TABS_Y = 17, TAB_STEP = 53, TAB_W = 52, LIST_X = 10, LIST_Y = 31, ROWS = 8, ROW_H = 14;
     private static final int SOURCE_X = 12, ARROW_X = 52, DEST_X = 70, FILTER_X = 130;
-    private static final int KIND_X = 24, TARGET_X = 72, LEVEL_X = 128;
+    private static final int KIND_X = 24, TARGET_X = 72, LEVEL_X = 118;
+    // The lane pool's bar, on the Devices tab under the list.
+    private static final int POOL_Y = 150;
     private static final int ADD_X = 8, ADD_Y = 146, ADD_W = 160, ADD_H = 14;
     private static final String[] TABS = { "gui.encodedlogistics.l3.tab.devices", "gui.encodedlogistics.l3.tab.routes", "gui.encodedlogistics.l3.tab.qos" };
     private static final String[] LEVELS = { "high", "normal", "low" };
@@ -42,7 +45,7 @@ public class L3SwitchPanel extends SwitchPanel {
 
     public L3SwitchPanel(RackScreen screen) {
         super(screen);
-        editor = new RouteFilterEditor(this, LIST_X - 1, LIST_Y - 1, 157, ROWS * ROW_H + 1, L3SwitchDevice.ACTION_SET_FILTER,
+        editor = new RouteFilterEditor(this, LIST_X - 1, LIST_Y - 1, 147, ROWS * ROW_H + 1, L3SwitchDevice.ACTION_SET_FILTER,
                 L3SwitchDevice.ACTION_FILTER_OPTION, L3SwitchDevice.ACTION_SHARE_OPTION);
     }
 
@@ -98,6 +101,7 @@ public class L3SwitchPanel extends SwitchPanel {
         L3SwitchDevice l3 = l3();
         if (tab == 0) {
             extractDevices(graphics, mouseX, mouseY);
+            extractPool(graphics, x, y);
             return;
         }
         ItemRouting.Route editing = editing(l3);
@@ -127,6 +131,20 @@ public class L3SwitchPanel extends SwitchPanel {
         }
     }
 
+    // The rack's lane pool as the L2 Switch shows it: a sunken bar (its inside POOL_W x 4) filled by the share in use.
+    private void extractPool(GuiGraphicsExtractor graphics, int x, int y) {
+        int left = x + POOL_X - 1, top = y + POOL_Y - 1;
+        graphics.fill(left, top, left + POOL_W + 2, top + 6, 0xFF5C5C5C);
+        graphics.fill(left, top, left + POOL_W + 1, top + 5, 0xFF0E0E0E);
+        graphics.fill(left + 1, top + 1, left + POOL_W + 1, top + 5, 0xFF1F1F1F);
+        var data = data();
+        int capacity = data != null ? data.getIntOr("pool_capacity", 0) : 0;
+        int width = capacity <= 0 ? 0 : Math.round(POOL_W * Math.clamp((float) data.getIntOr("pool_used", 0) / capacity, 0, 1));
+        if (width > 0) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, POOL_FILL, 200, 6, 0, 0, x + POOL_X, y + POOL_Y, width, 4);
+        }
+    }
+
     private static void item(GuiGraphicsExtractor graphics, ItemStack stack, int x, int y) {
         if (stack.isEmpty()) {
             return;
@@ -144,11 +162,11 @@ public class L3SwitchPanel extends SwitchPanel {
             graphics.centeredText(font(), Component.translatable(TABS[i]), TABS_X + i * TAB_STEP + TAB_W / 2, TABS_Y + 3,
                     i == tab ? RackScreen.TEXT : RackScreen.TEXT_MUTED);
         }
-        Component pool = poolText();
-        graphics.text(font(), pool, 146 - font().width(pool), 5, RackScreen.TEXT_MUTED, false);
         L3SwitchDevice l3 = l3();
         if (tab == 0) {
             extractDeviceNames(graphics);
+            Component pool = poolText();
+            graphics.text(font(), pool, 168 - font().width(pool), POOL_Y - 2, RackScreen.TEXT_MUTED, false);
             return;
         }
         if (l3 == null) {
@@ -199,7 +217,7 @@ public class L3SwitchPanel extends SwitchPanel {
             editor.extractTooltip(graphics, editing, screen.left(), screen.top(), mouseX, mouseY);
             return;
         }
-        if (l3 == null || !screen.over(mouseX, mouseY, LIST_X, LIST_Y, 156, ROWS * ROW_H) || mouseY - screen.top() < LIST_Y) {
+        if (l3 == null || !screen.over(mouseX, mouseY, LIST_X, LIST_Y, 146, ROWS * ROW_H) || mouseY - screen.top() < LIST_Y) {
             return;
         }
         if (tab == 1 && row < l3.routes().size()) {
@@ -234,7 +252,7 @@ public class L3SwitchPanel extends SwitchPanel {
             return true;
         }
         if (tab == 0) {
-            return clickDevices(x, y, button);
+            return clickScrollbar(x, y) || clickDevices(x, y, button);
         }
         if (left && x >= ADD_X && x < ADD_X + ADD_W && y >= ADD_Y && y < ADD_Y + ADD_H) {
             send(tab == 1 ? L3SwitchDevice.ACTION_ADD_ROUTE : L3SwitchDevice.ACTION_ADD_QOS, 0, "");
@@ -242,7 +260,7 @@ public class L3SwitchPanel extends SwitchPanel {
         }
         L3SwitchDevice l3 = l3();
         int row = (int) Math.floor((y - LIST_Y) / ROW_H);
-        if (l3 == null || y < LIST_Y || row >= ROWS || x < LIST_X || x >= LIST_X + 156) {
+        if (l3 == null || y < LIST_Y || row >= ROWS || x < LIST_X || x >= LIST_X + 146) {
             return false;
         }
         if (tab == 1 && row < l3.routes().size()) {

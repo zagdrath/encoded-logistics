@@ -69,17 +69,26 @@ final class CrtTerminal {
     // The system's SECLVL (10: no sign-on) and the session's current library (Sign On; *CURLIB).
     String securityLevel = "30", currentLibrary = "ELGPL";
     private int ticks;
+    // Opened and waiting for the session's details: the glass stays blank (and takes no input) until they say whether
+    // it's Sign On or the main menu, or CONNECT_TICKS pass without an answer.
+    boolean connecting;
+    private static final int CONNECT_TICKS = 40;
 
     CrtTerminal(Host host) {
         this.host = host;
     }
 
-    // Opened: the main menu, and the session's details from the server.
+    // Opened: the main menu (behind a blank glass until the session's details come), and those details from the server.
     void start() {
         if (panels.isEmpty()) {
             push(new MainMenuPanel(this));
+            connecting = true;
             send(TerminalService.QUERY, "info");
         }
+    }
+
+    boolean connecting() {
+        return connecting;
     }
 
     @Nullable TerminalDeskMenu getMenu() {
@@ -299,6 +308,7 @@ final class CrtTerminal {
             if (firewall && !signedOn && !securityLevel.equals("10")) {
                 push(new SignOnPanel(this));
             }
+            connecting = false;
             return;
         }
         response.message().ifPresent(this::message);
@@ -318,6 +328,9 @@ final class CrtTerminal {
 
     void tick() {
         ticks++;
+        if (connecting && ticks >= CONNECT_TICKS) {
+            connecting = false;
+        }
         current().tick();
     }
 
@@ -331,6 +344,9 @@ final class CrtTerminal {
     CrtGrid compose() {
         CrtPanel panel = current();
         grid.clear();
+        if (connecting) {
+            return grid;
+        }
         grid.put(0, 1, panel.id(), CrtGrid.NORMAL);
         grid.center(0, panel.title(), CrtGrid.BRIGHT);
         grid.right(0, CrtPanel.tr("crt.encodedlogistics.system", network.isEmpty() ? "*OFFLINE" : network), CrtGrid.NORMAL);

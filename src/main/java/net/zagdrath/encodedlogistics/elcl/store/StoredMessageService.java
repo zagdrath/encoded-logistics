@@ -81,7 +81,9 @@ public final class StoredMessageService implements MessageService {
         }
         for (ServerPlayer player : system.server().getPlayerList().getPlayers()) {
             if (player.getName().getString().equalsIgnoreCase(name)) {
-                player.sendSystemMessage(Component.translatable("message.encodedlogistics.elcl.message_waiting", from, system.name()));
+                // QSYSOPR's: where to look for it (DSPMSG alone shows the user's own queue).
+                player.sendSystemMessage(Component.translatable(user.equals(SYSOPR) ? "message.encodedlogistics.elcl.message_waiting_sysopr"
+                        : "message.encodedlogistics.elcl.message_waiting", from, system.name()));
             }
         }
     }

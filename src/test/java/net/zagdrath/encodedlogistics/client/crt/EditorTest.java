@@ -248,6 +248,39 @@ class EditorTest {
         assertEquals("MAIN", terminal.current().id());
     }
 
+    // A new member opens on a blank line; typing and Enter opens another; one left blank goes on the next Enter;
+    // "Beginning of data" takes I.
+    @Test
+    void emptyMember() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "NEW", List.of(), false);
+        terminal.push(editor);
+        assertEquals(1, editor.model().lines.size());
+        assertFalse(editor.model().dirty, "an untouched blank line isn't a change");
+        CrtField line = terminal.focused();
+        assertNotNull(line);
+        assertEquals(8, line.col, "the cursor on the line's text");
+        line.set("PGM");
+        terminal.submit();
+        assertEquals(List.of("PGM", ""), editor.model().texts(), "another line under the typed one");
+        terminal.focused().set("ENDPGM");
+        terminal.submit();
+        assertEquals(List.of("PGM", "ENDPGM", ""), editor.model().texts());
+        // Off the blank line (to the command line) and Enter: it goes.
+        terminal.focus(terminal.command);
+        terminal.submit();
+        assertEquals(List.of("PGM", "ENDPGM"), editor.model().texts());
+        // I on "Beginning of data": a line before the first.
+        terminal.focus(terminal.command);
+        terminal.nextField(false);
+        assertEquals(EditorPanel.class, terminal.current().getClass());
+        CrtField begin = terminal.focused();
+        assertEquals(3, begin.row, "Beginning of data's margin");
+        begin.set("I");
+        terminal.submit();
+        assertEquals(List.of("", "PGM", "ENDPGM"), editor.model().texts());
+    }
+
     @Test
     void promptedStatementIsWrittenBack() {
         CrtTerminal terminal = LayoutTest.terminal();
@@ -288,11 +321,12 @@ class EditorTest {
         CrtTerminal terminal = LayoutTest.terminal();
         EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "RESTOCK", SourceLine.number(restock, 0), false);
         terminal.push(editor);
-        // COLS on line 1, X3 on line 10; line 9's &COUNT typed as &CONT, the cursor at its column 34.
+        // COLS on line 1, X3 on line 10; line 9's &COUNT typed as &CONT, the cursor at its column 34 (field 0 is
+        // "Beginning of data"'s margin).
         List<CrtField> fields = new ArrayList<>(terminal.current().fields);
-        fields.get(0).set("COLS");
-        fields.get(2 * 9).set("X3");
-        fields.get(2 * 8 + 1).set(restock.get(8).replace("&COUNT", "&CONT"));
+        fields.get(1).set("COLS");
+        fields.get(1 + 2 * 9).set("X3");
+        fields.get(1 + 2 * 8 + 1).set(restock.get(8).replace("&COUNT", "&CONT"));
         terminal.submit();
         for (CrtField field : terminal.current().fields) {
             if (field.col == 8 && field.row == 13) {
