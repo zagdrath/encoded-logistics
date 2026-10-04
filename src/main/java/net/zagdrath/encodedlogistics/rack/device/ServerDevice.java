@@ -15,7 +15,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
 // A Compute or Memory Server: what it gives its rack's Scheduler (RackScheduler). Its panel shows its own share, the
-// Scheduler's use of it, and the jobs the Scheduler runs.
+// Scheduler's use of it, and the jobs the Scheduler runs (each with a cancel button: JobCancelPayload).
 public abstract class ServerDevice extends RackDevice {
     protected ServerDevice(RackDeviceType type) {
         super(type);
@@ -40,6 +40,7 @@ public abstract class ServerDevice extends RackDevice {
         ValueOutput.ValueOutputList jobs = output.childrenList("jobs");
         for (CraftingJob job : scheduler.jobs()) {
             ValueOutput child = jobs.addChild();
+            child.putString("id", job.id.toString());
             child.putString("target", job.target.stack().getHoverName().getString());
             child.putLong("amount", job.amount);
             child.putBoolean("running", job.running);

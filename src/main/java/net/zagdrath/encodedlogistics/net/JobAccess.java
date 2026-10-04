@@ -12,9 +12,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
 // Which job hosts (Scheduler Cores, racks' Schedulers) a player may see and cancel jobs on: the Core whose screen they
@@ -32,6 +35,10 @@ final class JobAccess {
         }
         if (player.containerMenu instanceof SchedulerCoreMenu menu && menu.pos().equals(pos)) {
             return host;
+        }
+        // A rack's screen (its Compute or Memory Server's panel), for a player who may change the rack.
+        if (player.containerMenu instanceof RackMenu menu && menu.pos().equals(pos)) {
+            return NetworkAccess.check(level, pos, player, RackPermission.BUILD) ? host : null;
         }
         if (player.containerMenu instanceof AccessTerminalMenu menu) {
             NetworkRef terminal = menu.network();

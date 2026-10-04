@@ -7,23 +7,33 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
+
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.ValueInput;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.net.JobCancelPayload;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 
 // A Compute or Memory Server's panel (screens/rack/compute_server.json, memory_server.json; gui/rack/server.png): what it
-// provides, what the rack's Scheduler uses of it, whether the Scheduler is active, a usage bar, and the Scheduler's jobs.
+// provides, what the rack's Scheduler uses of it, whether the Scheduler is active, a usage bar, and the Scheduler's jobs,
+// each with a cancel X (what it holds goes back into the network).
 public class ServerPanel extends RackScreen.Panel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/server.png"),
-            BAR = EncodedLogistics.id("common/bar_fill_gold");
+            BAR = EncodedLogistics.id("common/bar_fill_gold"), CANCEL = EncodedLogistics.id("common/cancel_small");
     private static final int LABEL_X = 12, VALUE_RIGHT = 164, READOUT_Y = 26, LINE_H = 12, BAR_X = 9, BAR_Y = 101, BAR_W = 158, JOBS_Y = 122;
+    private static final int JOB_ROWS = 3, JOB_H = 12, CANCEL_SIZE = 9, CANCEL_X = VALUE_RIGHT - CANCEL_SIZE;
 
     public ServerPanel(RackScreen screen) {
         super(screen);
@@ -48,6 +58,55 @@ public class ServerPanel extends RackScreen.Panel {
         float used = compute() ? (float) data.getIntOr("threads_used", 0) / Math.max(1, data.getIntOr("threads", 1))
                 : (float) data.getLongOr("memory_used", 0) / Math.max(1, data.getLongOr("memory", 1));
         PartScreens.bar(graphics, BAR, screen.left() + BAR_X, screen.top() + BAR_Y, BAR_W, used);
+        int rows = Math.min(JOB_ROWS, data.childrenListOrEmpty("jobs").stream().toList().size());
+        for (int i = 0; i < rows; i++) {
+            boolean hover = screen.over(mouseX, mouseY, CANCEL_X, JOBS_Y + i * JOB_H - 1, CANCEL_SIZE, CANCEL_SIZE);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, CANCEL, screen.left() + CANCEL_X, screen.top() + JOBS_Y + i * JOB_H - 1, CANCEL_SIZE,
+                    CANCEL_SIZE, hover ? 0xFFFFFFFF : 0xFFC8C8C8);
+        }
+    }
+
+    @Override
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        ValueInput data = data();
+        if (data == null) {
+            return;
+        }
+        int rows = Math.min(JOB_ROWS, data.childrenListOrEmpty("jobs").stream().toList().size());
+        for (int i = 0; i < rows; i++) {
+            if (screen.over(mouseX, mouseY, CANCEL_X, JOBS_Y + i * JOB_H - 1, CANCEL_SIZE, CANCEL_SIZE)) {
+                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.scheduler.cancel"), mouseX, mouseY);
+            }
+        }
+    }
+
+    @Override
+    protected boolean mouseClicked(double x, double y, int button, boolean shift) {
+        ValueInput data = data();
+        RackDevice device = screen.pickedDevice();
+        if (button != InputConstants.MOUSE_BUTTON_LEFT || data == null || device == null || device.rack() == null) {
+            return false;
+        }
+        List<ValueInput> jobs = data.childrenListOrEmpty("jobs").stream().toList();
+        for (int i = 0; i < Math.min(JOB_ROWS, jobs.size()); i++) {
+            int top = JOBS_Y + i * JOB_H - 1;
+            if (x >= CANCEL_X && x < CANCEL_X + CANCEL_SIZE && y >= top && y < top + CANCEL_SIZE) {
+                UUID id = parse(jobs.get(i).getStringOr("id", ""));
+                if (id != null) {
+                    ClientPacketDistributor.sendToServer(new JobCancelPayload(device.rack().getBlockPos(), id));
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static @Nullable UUID parse(String id) {
+        try {
+            return UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     @Override
@@ -80,8 +139,8 @@ public class ServerPanel extends RackScreen.Panel {
         if (jobs.isEmpty()) {
             graphics.text(font(), Component.translatable("gui.encodedlogistics.server.no_jobs"), LABEL_X, JOBS_Y, RackScreen.TEXT_DISABLED, false);
         }
-        for (int i = 0; i < Math.min(3, jobs.size()); i++) {
-            graphics.text(font(), font().plainSubstrByWidth(jobs.get(i), 152), LABEL_X, JOBS_Y + i * 12, i == 0 ? RackScreen.TEXT : RackScreen.TEXT_MUTED,
+        for (int i = 0; i < Math.min(JOB_ROWS, jobs.size()); i++) {
+            graphics.text(font(), font().plainSubstrByWidth(jobs.get(i), CANCEL_X - 4 - LABEL_X), LABEL_X, JOBS_Y + i * JOB_H, i == 0 ? RackScreen.TEXT : RackScreen.TEXT_MUTED,
                     false);
         }
     }

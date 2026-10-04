@@ -19,8 +19,21 @@ import java.util.function.LongConsumer;
 //
 // Behind it, the cold tier (ColdTier: tapes in Tape Libraries). list() and count() are hot only; taking more of an item
 // than is hot asks for the rest of it (what's on tape) to be recalled, and it can be taken once it's back.
+//
+// Crafting jobs waiting for outputs get first claim on items coming in (Claim): whatever path they arrive by (a Gateway, an
+// Ingress Port, an Inventory Tap, a terminal), what a waiting run expects goes to its job instead of into storage. The
+// mod's own moves (a finished job emptying out, a cancelled one's refund, a Gateway's stock trim) use store(), which
+// skips that.
 public final class NetworkStorage {
+    // Takes what waiting jobs expect out of an insert; returns how many it took (or would, simulating).
+    public interface Claim {
+        Claim NONE = (key, amount, simulate) -> 0;
+
+        long claim(ItemKey key, long amount, boolean simulate);
+    }
+
     private final List<StorageView> fillOrder, emptyOrder;
+    private final Claim claim;
     // Told how many items really went in or came out (not simulations): the network's item flow.
     private final LongConsumer moved;
     private final ColdTier cold;
@@ -34,8 +47,13 @@ public final class NetworkStorage {
     }
 
     public NetworkStorage(List<StorageView> views, LongConsumer moved, ColdTier cold) {
+        this(views, moved, cold, Claim.NONE);
+    }
+
+    public NetworkStorage(List<StorageView> views, LongConsumer moved, ColdTier cold, Claim claim) {
         this.moved = moved;
         this.cold = cold;
+        this.claim = claim;
         fillOrder = new ArrayList<>(views);
         fillOrder.sort(Comparator.comparingInt(StorageView::priority).reversed().thenComparing(StorageView::isTap));
         emptyOrder = new ArrayList<>(views);
@@ -81,8 +99,14 @@ public final class NetworkStorage {
 
     // --- Moving items ---
 
-    // Puts up to amount of an item into the network; returns how many went in.
+    // Puts up to amount of an item into the network (waiting jobs taking what they expect first); returns how many went in.
     public long insert(ItemKey key, long amount, boolean simulate) {
+        long claimed = amount > 0 ? Math.min(amount, claim.claim(key, amount, simulate)) : 0;
+        return claimed + store(key, amount - claimed, simulate);
+    }
+
+    // Puts up to amount of an item into storage itself, with no job claiming any; returns how many went in.
+    public long store(ItemKey key, long amount, boolean simulate) {
         long left = amount;
         int start = 0;
         while (start < fillOrder.size() && left > 0) {

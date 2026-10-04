@@ -127,6 +127,10 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_power_port", RackCablingGameTests::powerPort);
         TESTS.put("rack_bonding_and_shedding", RackCablingGameTests::bondingAndShedding);
         TESTS.put("rack_mismatch", RackCablingGameTests::mismatch);
+        TESTS.put("job_returned_through_port", CraftingCompletionGameTests::returnedThroughPort);
+        TESTS.put("job_returned_through_gateway", CraftingCompletionGameTests::returnedThroughGateway);
+        TESTS.put("job_cancel_while_waiting", CraftingCompletionGameTests::cancelWhileWaiting);
+        TESTS.put("job_survives_reload", CraftingCompletionGameTests::survivesReload);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 

@@ -42,6 +42,7 @@ import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.block.GatewayBlock;
 import net.zagdrath.encodedlogistics.crafting.CraftTask;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.menu.GatewayMenu;
@@ -304,17 +305,38 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         }
     }
 
-    // Runs whose job is gone (cancelled) stop waiting; inputs not yet pushed go back to the network.
+    // Runs whose job is gone (cancelled) stop waiting; inputs not yet pushed go back to the network. The job is on its
+    // host: a Scheduler's Core, or a rack (RackScheduler).
     private void dropOrphans(ServerLevel level) {
         Iterator<Run> iterator = runs.iterator();
         while (iterator.hasNext()) {
             Run run = iterator.next();
             BlockPos core = run.task.core();
-            if (level.isLoaded(core) && !(level.getBlockEntity(core) instanceof SchedulerCoreBlockEntity entity && entity.job(run.task.job()) != null)) {
+            JobHost host = level.isLoaded(core) ? JobHost.at(level, core) : null;
+            if (level.isLoaded(core) && (host == null || host.job(run.task.job()) == null)) {
                 SchedulerCoreBlockEntity.returnToNetwork(level, worldPosition, run.toPush);
                 iterator.remove();
             }
         }
+    }
+
+    // An item coming into the network some other way (an Ingress Port under the machine, a terminal): the runs expecting
+    // it take it for their jobs, as if it had come back here (NetworkStorage.Claim). Returns how many they took.
+    public long claim(ItemKey key, long amount, boolean simulate) {
+        if (!online || !(level instanceof ServerLevel serverLevel)) {
+            return 0;
+        }
+        long expected = expectedTotals().getOrDefault(key, 0L);
+        if (simulate || expected <= 0) {
+            return Math.min(amount, expected);
+        }
+        int offered = (int) Math.min(Math.min(amount, expected), Integer.MAX_VALUE);
+        int left = receive(serverLevel, key, offered);
+        if (offered - left > 0) {
+            lastMoved = serverLevel.getGameTime();
+            setChanged();
+        }
+        return offered - left;
     }
 
     private Map<ItemKey, Long> expectedTotals() {
@@ -341,7 +363,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
             ItemResource held = handler.getResource(slot);
             int count = handler.getAmountAsInt(slot);
             if (!held.isEmpty() && (want.isEmpty() || !held.matches(want))) {
-                int stored = (int) storage.insert(ItemKey.of(held.toStack(1)), count, false);
+                int stored = (int) storage.store(ItemKey.of(held.toStack(1)), count, false);
                 handler.set(slot, stored >= count ? ItemResource.EMPTY : held, count - stored);
                 moved |= stored > 0;
                 continue;
@@ -358,7 +380,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                     moved = true;
                 }
             } else if (count > target) {
-                int stored = (int) storage.insert(key, count - target, false);
+                int stored = (int) storage.store(key, count - target, false);
                 handler.set(slot, ItemResource.of(want), count - stored);
                 moved |= stored > 0;
             }

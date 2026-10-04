@@ -48,6 +48,7 @@ import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CapacitorBankBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RelayAntennaBlockEntity;
@@ -900,7 +901,20 @@ public class ControllerStructures extends SavedData {
             }
         }
         Runtime runtime = owner.runtime;
-        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(libraries, drives, runtime.recalls));
+        // Gateways' runs waiting for outputs claim them as they come in, whatever way they come.
+        NetworkStorage.Claim claim = (key, amount, simulate) -> {
+            long taken = 0;
+            for (NodePos pos : runtime.providers) {
+                if (taken >= amount) {
+                    break;
+                }
+                if (runtime.online.contains(pos) && blockEntity(server, pos) instanceof GatewayBlockEntity gateway) {
+                    taken += gateway.claim(key, amount - taken, simulate);
+                }
+            }
+            return taken;
+        };
+        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(libraries, drives, runtime.recalls), claim);
     }
 
     // A network's tape recall queue (TapeRecalls), or null for an unknown network.

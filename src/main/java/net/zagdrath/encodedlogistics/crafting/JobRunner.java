@@ -161,7 +161,7 @@ public final class JobRunner {
         }
         for (ItemKey key : List.copyOf(job.held.keySet())) {
             long count = job.held.get(key);
-            long stored = storage.insert(key, count, false);
+            long stored = storage.store(key, count, false);
             if (stored >= count) {
                 job.held.remove(key);
             } else {
@@ -192,7 +192,7 @@ public final class JobRunner {
         jobs.clear();
     }
 
-    // Items into storage; what doesn't fit drops at pos.
+    // Items into storage (not claimed by waiting jobs: they're coming back, not arriving); what doesn't fit drops at pos.
     public static void putBack(ServerLevel level, BlockPos pos, List<ItemStack> items, @Nullable NetworkStorage storage) {
         for (ItemStack stack : items) {
             if (stack.isEmpty()) {
@@ -200,7 +200,7 @@ public final class JobRunner {
             }
             ItemStack left = stack.copy();
             if (storage != null) {
-                left.shrink((int) storage.insert(ItemKey.of(left), left.getCount(), false));
+                left.shrink((int) storage.store(ItemKey.of(left), left.getCount(), false));
             }
             if (!left.isEmpty()) {
                 Block.popResource(level, pos, left);
