@@ -254,6 +254,8 @@ final class CraftHistoryGameTests {
                     // The history view's rows, one record in full, and 4=Remove.
                     TerminalOutput rows = TerminalService.handle(context, TerminalService.QUERY, "jobhistory");
                     helper.assertTrue(rows.lines().size() == 3, "History rows: " + rows.lines().size());
+                    String item = rows.lines().getFirst().cells().get(2).text().getString();
+                    helper.assertTrue(item.equals("Iron Ingot"), "Item cell: " + item);
                     String number = done.substring(1);
                     TerminalOutput record = TerminalService.handle(context, TerminalService.QUERY, "jobrecord " + number);
                     helper.assertTrue(record.lines().stream().anyMatch(l -> l.text().contains("Rack Scheduler")), "Record has no scheduler");

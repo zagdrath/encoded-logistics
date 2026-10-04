@@ -696,7 +696,7 @@ Select one of the following:
     <tr><td>6</td><td>Work with Active Jobs</td><td>Script jobs: each session's interactive job and the batch jobs (<code>WRKACTJOB</code>)</td></tr>
     <tr><td>7</td><td>Display Messages</td><td>Your message queue, newest first (<code>DSPMSG</code>)</td></tr>
     <tr><td>8</td><td>Work with Output</td><td>Spooled output: compile listings and jobs' printed output (<code>WRKSPLF</code>)</td></tr>
-    <tr><td>90</td><td>Sign Off</td><td>End the session (<code>SIGNOFF</code>)</td></tr>
+    <tr><td>90</td><td>Sign Off</td><td>End the session (<code>SIGNOFF</code>): back to Sign On where sign-on is needed, else the terminal closes</td></tr>
   </tbody>
 </table></div>
 <p>Job schedule entries, trigger events and system values have no menu option; open them with <code>WRKJOBSCDE</code>, <code>WRKTRGEVT</code> and <code>WRKSYSVAL</code>.</p>
@@ -1703,7 +1703,7 @@ ENDPGM</pre>
     <tr><td>WRKCRFJOB</td><td>Work with Crafting Jobs</td><td class="params">none</td><td>Interactive</td><td>Main Menu option 2</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
     <tr><td>DSPNETSTS</td><td>Display Network Status</td><td class="params">none</td><td>Interactive</td><td>Main Menu option 4</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
     <tr><td>WRKSPLF</td><td>Work with Spooled Files</td><td class="params"><ul><li><code>JOB</code> P1: name or <code>*ALL</code>, dft <code>*ALL</code>, len 28</li></ul></td><td>Interactive</td><td>Work with Output (Main Menu option 8)</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
-    <tr><td>SIGNOFF</td><td>Sign Off</td><td class="params">none</td><td>Interactive</td><td>Closes the terminal (ends your interactive job)</td><td><span class="badge b-scr">Session</span></td></tr>
+    <tr><td>SIGNOFF</td><td>Sign Off</td><td class="params">none</td><td>Interactive</td><td>Signs the session off: with a Firewall at <code>SECLVL</code> 30, Sign On shows again for the next user (the command history is cleared); otherwise the terminal closes</td><td><span class="badge b-scr">Session</span></td></tr>
     <tr><td>GO</td><td>Go to Menu</td><td class="params"><ul><li><code>MENU</code> P1: name, <code>MAIN HELP</code>, dft <code>MAIN</code></li></ul></td><td>Interactive</td><td><code>GO MAIN</code>: back to the Main Menu. <code>GO HELP</code>: the current screen's help window.</td><td><span class="badge b-scr">Session</span></td></tr>
     <tr><td>CLEAR</td><td>Clear Command Entry</td><td class="params">none</td><td>Interactive</td><td>Clears Command Entry's history (the line <code>clear</code> is caught by the terminal before it reaches ELCL).</td><td><span class="badge b-scr">Session</span></td></tr>
   </tbody>

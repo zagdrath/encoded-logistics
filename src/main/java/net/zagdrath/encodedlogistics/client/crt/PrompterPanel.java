@@ -82,8 +82,14 @@ final class PrompterPanel extends CrtPanel {
 
     // A parameter's value set after the fact (WRKMBR F6: the library, the name still to type), the cursor at its end.
     void preset(String keyword, String value) {
+        // Into the field itself: a rebuild would take the fields' (still empty) values back first.
         values.put(keyword, value);
-        rebuild();
+        CrtField field = byKeyword.get(keyword);
+        if (field != null) {
+            field.set(value);
+            field.cursor = Math.min(value.length(), field.capacity - 1);
+            screen.focus(field);
+        }
     }
 
     // A parameter's values as the field shows them: strings without their quotes when that's all there is.

@@ -125,6 +125,13 @@ public final class ScreenQueries {
                         .print(system, user, Integer.parseInt(arg(words, 1)), words.size() > 2 ? words.get(2) : "*DFT").toString()));
                 case "sysvals" -> sysvals(system);
                 case "signon" -> signOn(context, system, words.size() > 1 ? words.get(1) : "", arg(words, 2));
+                case "signoff" -> {
+                    // SIGNOFF: the session needs signing on again.
+                    if (context.player().containerMenu instanceof TerminalDeskMenu menu) {
+                        menu.signOff();
+                    }
+                    yield new TerminalOutput();
+                }
                 case "values" -> values(context, system, arg(words, 1), words.size() > 2 ? words.get(2) : "");
                 default -> new TerminalOutput();
             };

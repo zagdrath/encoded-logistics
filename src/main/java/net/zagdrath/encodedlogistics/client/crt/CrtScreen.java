@@ -56,7 +56,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
 
     // A phosphor's colours (screens/crt/phosphor.json).
     record Palette(int normal, int bright, int dim, int bg, int glow) {
-        static final Palette GREEN = new Palette(0xFF28D25A, 0xFFDAFFE4, 0xFF167A34, 0xFF020904, 0xFF33F06A);
+        static final Palette GREEN = new Palette(0xFF28D25A, 0xFFDAFFE4, 0xFF1F9E45, 0xFF020904, 0xFF33F06A);
     }
 
     private final TerminalDeskMenu menu;

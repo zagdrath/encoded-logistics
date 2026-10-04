@@ -1046,6 +1046,7 @@
   "crt.encodedlogistics.signon.user": "User . . . . . . . . . . . . .",
   "crt.encodedlogistics.signon.password": "Password . . . . . . . . . . .",
   "crt.encodedlogistics.signon.no_password": "(none needed)",
+  "crt.encodedlogistics.signon.signed_off": "Signed off.",
   "crt.encodedlogistics.signon.done": "Signed on as %s.",
   "crt.encodedlogistics.keys.title": "More Keys and Settings",
   "crt.encodedlogistics.keys.phosphor": "Phosphor . . . . . . . . . . .",

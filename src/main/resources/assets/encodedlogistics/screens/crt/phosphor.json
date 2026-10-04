@@ -3,21 +3,21 @@
  "green": {
   "normal": "#28D25A",
   "bright": "#DAFFE4",
-  "dim": "#167A34",
+  "dim": "#1F9E45",
   "bg": "#020904",
   "glow": "#33F06A"
  },
  "amber": {
   "normal": "#E89A10",
   "bright": "#FFE8B8",
-  "dim": "#8E5A06",
+  "dim": "#B0700A",
   "bg": "#0A0602",
   "glow": "#FFA010"
  },
  "white": {
   "normal": "#B8BCB6",
   "bright": "#FFFFFF",
-  "dim": "#6E726C",
+  "dim": "#8C908A",
   "bg": "#05060A",
   "glow": "#C8D0FF"
  },

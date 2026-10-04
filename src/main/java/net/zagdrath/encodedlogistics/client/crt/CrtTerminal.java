@@ -136,6 +136,24 @@ final class CrtTerminal {
         }
     }
 
+    // SIGNOFF (Main Menu option 90): where sign-on is needed, the session signs off on the server, the history of what
+    // was typed goes, and Sign On shows again for the next user; elsewhere the terminal just closes.
+    void signOff() {
+        if (!firewall || securityLevel.equals("10")) {
+            onClose();
+            return;
+        }
+        query("signoff");
+        signedOn = false;
+        currentLibrary = "ELGPL";
+        history.clear();
+        commands.clear();
+        command.set("");
+        home();
+        push(new SignOnPanel(this));
+        message(Component.translatable("crt.encodedlogistics.signon.signed_off"));
+    }
+
     // Back to the main menu (GO MAIN).
     void home() {
         windows.clear();

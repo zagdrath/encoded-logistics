@@ -104,7 +104,7 @@ final class ScreenCommands {
                     screen.message(CrtPanel.tr("crt.encodedlogistics.msg.no_menu", menu));
                 }
             }
-            default -> screen.onClose();
+            default -> screen.signOff();
         }
     }
 }

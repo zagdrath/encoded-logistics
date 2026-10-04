@@ -80,6 +80,10 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
     }
 
     // The session has signed on (ScreenQueries' signon).
+    public void signOff() {
+        signedOn = false;
+    }
+
     public void signOn() {
         signedOn = true;
     }

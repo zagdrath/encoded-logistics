@@ -275,7 +275,8 @@ public final class TerminalService {
             for (Object cell : new Object[] { String.format(Locale.ROOT, "%04d", entry.number()), registryId(entry.item()), itemName(entry.item()),
                     entry.requested(), entry.produced(), entry.status().label(), system.at(entry.ended()), entry.ended(), CraftLog.duration(entry.duration()),
                     entry.requestedBy() }) {
-                row.left(String.valueOf(cell), 0);
+                // As given: a translatable name stays one (the client shows it in its own language).
+                row.left(cell, 0);
             }
             out.line(row.build());
         }
