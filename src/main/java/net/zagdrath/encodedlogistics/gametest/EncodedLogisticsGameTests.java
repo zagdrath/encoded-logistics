@@ -72,6 +72,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("every_item_craftable", RecipeGameTests::everyItemCraftable);
         TESTS.put("scheduler_forms", Phase3GameTests::schedulerForms);
         TESTS.put("encoder_encodes", Phase3GameTests::encoderEncodes);
+        TESTS.put("ghost_drag", Phase3GameTests::ghostDrag);
         TESTS.put("fabricator_crafts", Phase3GameTests::fabricatorCrafts);
         TESTS.put("gateway_processes", Phase3GameTests::gatewayProcesses);
         TESTS.put("bridge_joins_networks", Phase4GameTests::bridgeJoinsNetworks);

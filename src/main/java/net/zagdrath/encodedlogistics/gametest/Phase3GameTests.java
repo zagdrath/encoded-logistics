@@ -35,14 +35,15 @@ import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
-import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
+import net.zagdrath.encodedlogistics.net.GhostSlotPayload;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
@@ -168,6 +169,37 @@ final class Phase3GameTests {
                             && processing != null && processing.kind() == Schematic.Kind.PROCESSING, "Not rewritten as processing");
                     helper.assertTrue(processing.inputTotals().get(RAW_IRON) == 2 && processing.outputCount(INGOT) == 2, "Amounts " + processing);
                     helper.assertTrue(menu.getSlot(SchematicEncoderMenu.BLANK).getItem().getCount() == 1, "Rewriting used a blank card");
+                })
+                .thenSucceed();
+    }
+
+    // An item dragged from JEI onto the encoder's grid (a ghost slot) sets one of it there, leaving whatever the player
+    // is carrying alone; a drag onto a real slot (the blank card) does nothing.
+    static void ghostDrag(GameTestHelper helper) {
+        rig(helper);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        helper.startSequence()
+                .thenExecute(() -> {
+                    ItemStack stack = new ItemStack(PartType.SCHEMATIC_ENCODER.item());
+                    player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                    BlockPos absolute = helper.absolutePos(CABLE);
+                    BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute).add(0, 0, 0.3), Direction.SOUTH, absolute, false);
+                    helper.getBlockState(CABLE).useItemOn(stack, helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+                })
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setPos(Vec3.atCenterOf(helper.absolutePos(CABLE)).add(0, 0, 1));
+                    SchematicEncoderMenu menu = new SchematicEncoderMenu(1, player.getInventory(), helper.absolutePos(CABLE), Direction.SOUTH);
+                    player.containerMenu = menu;
+                    ItemStack carried = new ItemStack(Items.COBBLESTONE, 5);
+                    menu.setCarried(carried);
+                    helper.assertTrue(GhostSlotPayload.apply(player, 1, SchematicEncoderMenu.GRID, new ItemStack(Items.IRON_INGOT, 64)), "Grid drag refused");
+                    ItemStack grid = menu.getSlot(SchematicEncoderMenu.GRID).getItem();
+                    helper.assertTrue(grid.is(Items.IRON_INGOT) && grid.getCount() == 1, "Grid " + grid);
+                    helper.assertTrue(menu.getCarried() == carried && carried.getCount() == 5, "Carried changed: " + menu.getCarried());
+                    helper.assertFalse(GhostSlotPayload.apply(player, 1, SchematicEncoderMenu.BLANK, new ItemStack(Items.DIAMOND)), "Real slot drag accepted");
+                    helper.assertTrue(menu.getSlot(SchematicEncoderMenu.BLANK).getItem().isEmpty(), "Real slot filled");
+                    helper.assertFalse(GhostSlotPayload.apply(player, 2, SchematicEncoderMenu.GRID + 1, new ItemStack(Items.DIAMOND)), "Wrong menu accepted");
                 })
                 .thenSucceed();
     }

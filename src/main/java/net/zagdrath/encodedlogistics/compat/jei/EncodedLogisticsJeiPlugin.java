@@ -19,13 +19,21 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.ExternalSearch;
+import net.zagdrath.encodedlogistics.client.screen.CollectorPlaneScreen;
+import net.zagdrath.encodedlogistics.client.screen.DeployerPlaneScreen;
+import net.zagdrath.encodedlogistics.client.screen.GatewayScreen;
+import net.zagdrath.encodedlogistics.client.screen.InventoryTapScreen;
+import net.zagdrath.encodedlogistics.client.screen.PortScreen;
 import net.zagdrath.encodedlogistics.client.screen.RackScreen;
+import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
+import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
 // category (with the press as its station), the Fabricator as a crafting station, recipe transfer into the Fabrication
-// Terminal's grid and the Schematic Encoder's ghost slots (any recipe), dragging items onto the Server Rack's filter boxes, and an info page on how controllers form
+// Terminal's grid and the Schematic Encoder's ghost slots (any recipe), dragging items onto ghost slots (every filter, the Gateway's stock list, the Encoder's grid) and the Server Rack's filter
+// boxes, and an info page on how controllers form
 // structures and what they provide. Its search bar is what the terminals' JEI search mode syncs with (ExternalSearch).
 @JeiPlugin
 public class EncodedLogisticsJeiPlugin implements IModPlugin {
@@ -58,6 +66,13 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         registration.addGhostIngredientHandler(RackScreen.class, new RackGhostHandler());
+        registration.addGhostIngredientHandler(PortScreen.class, new GhostSlotHandler<>());
+        registration.addGhostIngredientHandler(InventoryTapScreen.class, new GhostSlotHandler<>());
+        registration.addGhostIngredientHandler(CollectorPlaneScreen.class, new GhostSlotHandler<>());
+        registration.addGhostIngredientHandler(DeployerPlaneScreen.class, new GhostSlotHandler<>());
+        registration.addGhostIngredientHandler(GatewayScreen.class, new GhostSlotHandler<>());
+        registration.addGhostIngredientHandler(ThresholdSensorScreen.class, new GhostSlotHandler<>());
+        registration.addGhostIngredientHandler(SchematicEncoderScreen.class, new GhostSlotHandler<>());
     }
 
     @Override

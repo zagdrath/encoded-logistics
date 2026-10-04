@@ -10,7 +10,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public final class ModNetwork {
-    private static final String VERSION = "8";
+    private static final String VERSION = "9";
 
     private ModNetwork() {}
 
@@ -25,6 +25,7 @@ public final class ModNetwork {
         registrar.playToClient(TerminalItemsPayload.TYPE, TerminalItemsPayload.STREAM_CODEC, TerminalItemsPayload::handle);
         registrar.playToServer(TerminalClickPayload.TYPE, TerminalClickPayload.STREAM_CODEC, TerminalClickPayload::handle);
         registrar.playToServer(TerminalRecipePayload.TYPE, TerminalRecipePayload.STREAM_CODEC, TerminalRecipePayload::handle);
+        registrar.playToServer(GhostSlotPayload.TYPE, GhostSlotPayload.STREAM_CODEC, GhostSlotPayload::handle);
         registrar.playToServer(MenuValuePayload.TYPE, MenuValuePayload.STREAM_CODEC, MenuValuePayload::handle);
         registrar.playToServer(EncoderRecipePayload.TYPE, EncoderRecipePayload.STREAM_CODEC, EncoderRecipePayload::handle);
         registrar.playToServer(CraftRequestPayload.TYPE, CraftRequestPayload.STREAM_CODEC, CraftRequestPayload::handle);
