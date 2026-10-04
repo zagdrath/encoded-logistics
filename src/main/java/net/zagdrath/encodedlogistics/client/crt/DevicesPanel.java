@@ -18,7 +18,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 final class DevicesPanel extends ListPanel<DevicesPanel.Row> {
     record Row(int index, TerminalLine line) {}
 
-    DevicesPanel(CrtScreen screen) {
+    DevicesPanel(CrtTerminal screen) {
         super(screen);
     }
 

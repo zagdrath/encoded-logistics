@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  PROMPT                    Start Crafting (STRCRAFT)           System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Type choices, press Enter.
+03 | 
+04 |  Item  . . . . . . . .  ITEM       logic_die                 Name, F4 for list
+05 |  Quantity  . . . . . .  QTY        64                        1-999999
+06 | 
+07 |  Additional Parameters
+08 | 
+09 |  Scheduler . . . . . .  SCHEDULER  *ANY                      *ANY, name
+10 |  Missing ingredients .  MISSING    *FAIL                     *FAIL, *PARTIAL
+11 |  Wait for completion .  WAIT       *NO                       *NO, *YES
+12 |  Return craft job ID .  RTNCRFJOB                            *CHAR variable
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |                                                                          Bottom
+21 | 
+22 |  F4 on ITEM opens the item list. Required parameters are shown bright.
+23 |  F3=Exit F4=Prompt F5=Refresh F10=Additional parameters F12=Cancel F24=More keys
+   fields (row, col, length): (4,35,24) field (col 35, len = schema length, max 24); (5,35,10) input; (9,35,10) input; (10,35,8) input; (11,35,4) input; (12,35,10) input

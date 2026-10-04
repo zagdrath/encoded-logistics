@@ -14,15 +14,17 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
+import net.zagdrath.encodedlogistics.terminal.TerminalLine;
+import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // One screen of the green-screen terminal (HANDOFF 3): its id (top left) and title (centred), its body (rows 3-20), its
-// input fields, the prompt over the command line, and its function keys. CrtScreen draws the frame - header, date and
+// input fields, the prompt over the command line, and its function keys. CrtTerminal draws the frame - header, date and
 // time, command line, message line, keys - and hands it keys, clicks and the server's answers.
 abstract class CrtPanel {
-    protected final CrtScreen screen;
+    protected final CrtTerminal screen;
     final List<CrtField> fields = new ArrayList<>();
 
-    CrtPanel(CrtScreen screen) {
+    CrtPanel(CrtTerminal screen) {
         this.screen = screen;
     }
 
@@ -72,6 +74,11 @@ abstract class CrtPanel {
     // A click on a cell; double-clicked: do what Enter would.
     void click(int row, int col, boolean doubleClick) {}
 
+    // Tab on this screen: true when it took it (Command Entry completes the command line's last word).
+    boolean tab() {
+        return false;
+    }
+
     // A function key this screen has its own meaning for (F6 Create, F10, F19 / F20 window left / right, the editor's
     // keys...): true when it took it, before the frame's own meaning.
     boolean functionKey(int f) {
@@ -96,6 +103,16 @@ abstract class CrtPanel {
     // The command line's text as this screen takes it (a menu's option number); false to run it as a command.
     boolean option(String text) {
         return false;
+    }
+
+    // A field of a row from the server (the screens' queries send one cell per field), "" past the last.
+    static String cell(TerminalLine line, int index) {
+        return index < line.cells().size() ? line.cells().get(index).text().getString() : "";
+    }
+
+    // Whether a response is the answer to this screen's query (TerminalService.SCREEN) about topic.
+    static boolean answers(CrtResponsePayload response, String topic) {
+        return response.kind() == TerminalService.SCREEN && response.topic().equals(topic);
     }
 
     static String tr(String key, Object... args) {

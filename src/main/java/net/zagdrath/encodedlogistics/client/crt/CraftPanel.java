@@ -23,7 +23,7 @@ final class CraftPanel extends CrtPanel {
     private int planTimer;
     private boolean sent;
 
-    CraftPanel(CrtScreen screen, ItemKey key) {
+    CraftPanel(CrtTerminal screen, ItemKey key) {
         super(screen);
         item = new CrtField(5, LABEL, 40, BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString());
         quantity = new CrtField(6, LABEL, 10, "1");

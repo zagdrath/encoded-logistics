@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  MAIN                     ENCODED LOGISTICS MAIN MENU          System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 | 
+03 | Select one of the following:
+04 | 
+05 | 
+06 |       1. Work with Inventory
+07 |       2. Work with Jobs
+08 |       3. Work with Devices
+09 |       4. Display Network Status
+10 |       5. Work with Libraries
+11 |       6. Work with Active Jobs
+12 |       7. Display Messages
+13 |       8. Work with Output
+14 | 
+15 |      90. Sign Off
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Selection or command
+21 |  ===>
+22 |                                                                             MW
+23 |  F1=Help  F3=Exit  F5=Refresh  F9=Command Entry  F12=Cancel  F24=More keys
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command)

@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKLIB                       Work with Libraries              System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 | 
+03 |  Type options, press Enter.
+04 |    2=Change   4=Delete   5=Display   12=Work with members
+05 | 
+06 | Opt  Library     Type      Text
+07 |      ELGPL       *PROD     General purpose library
+08 |      ELSYS       *SYS      System library - samples (read-only)
+09 | 12   ZAGLIB      *PROD     Zagdrath automation scripts
+10 |      TESTLIB     *TEST     Scratch
+11 | 
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) Opt row 0; (8,0,3) input; (9,0,3) input; (10,0,3) input

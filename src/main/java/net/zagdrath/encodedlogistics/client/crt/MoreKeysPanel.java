@@ -16,7 +16,7 @@ final class MoreKeysPanel extends CrtPanel {
     private static final String[] PHOSPHORS = { "green", "amber", "white", TerminalSettings.SYSVAL.toLowerCase(Locale.ROOT) };
     private final CrtField phosphor;
 
-    MoreKeysPanel(CrtScreen screen) {
+    MoreKeysPanel(CrtTerminal screen) {
         super(screen);
         phosphor = new CrtField(17, 34, 10, capital(TerminalSettings.phosphor()));
         fields.add(phosphor);

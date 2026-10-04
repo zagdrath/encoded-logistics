@@ -13,13 +13,14 @@ import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // CMDENT: the commands typed at this desk and what they said (newest at the bottom, the last 500 lines; PageUp rolls
-// back), and the command line. F9 brings back earlier commands, F4 completes the last word (commands, topics, items),
-// F13 (Shift+F1) clears the history.
+// back), and the command line - ELCL commands (each message "ID  text", RTN* values shown) and the desk's own words as
+// aliases. F4 prompts the command line's command (the result comes back to the command line), Tab completes its last
+// word (commands, topics, items), F9 brings back earlier commands, F13 (Shift+F1) clears the history.
 final class CommandEntryPanel extends CrtPanel {
     private static final int FIRST = 3, ROWS = 17;
     private int back, recall = -1;
 
-    CommandEntryPanel(CrtScreen screen) {
+    CommandEntryPanel(CrtTerminal screen) {
         super(screen);
     }
 
@@ -40,7 +41,7 @@ final class CommandEntryPanel extends CrtPanel {
 
     @Override
     String keys() {
-        return "F3=Exit   F4=Prompt   F9=Retrieve   F12=Cancel   F13=Clear";
+        return tr("crt.encodedlogistics.fkeys.cmdent");
     }
 
     @Override
@@ -53,11 +54,11 @@ final class CommandEntryPanel extends CrtPanel {
     @Override
     void draw(CrtGrid grid) {
         grid.put(2, 2, tr("crt.encodedlogistics.cmd.history"), CrtGrid.DIM);
-        List<CrtScreen.HistoryLine> history = screen.history;
+        List<CrtTerminal.HistoryLine> history = screen.history;
         int end = Math.max(0, history.size() - back);
         int start = Math.max(0, end - ROWS);
         for (int i = start; i < end; i++) {
-            CrtScreen.HistoryLine line = history.get(i);
+            CrtTerminal.HistoryLine line = history.get(i);
             grid.put(FIRST + i - start, 2, line.text(), line.attr());
         }
     }
@@ -77,12 +78,14 @@ final class CommandEntryPanel extends CrtPanel {
         screen.focus(screen.command);
     }
 
+    // Tab: completes the command line's last word (F4 prompts it).
     @Override
-    Component prompt(CrtField field) {
-        if (field == screen.command) {
+    boolean tab() {
+        if (screen.focused() == screen.command && !screen.command.trimmed().isEmpty()) {
             screen.send(TerminalService.COMPLETE, screen.command.value);
+            return true;
         }
-        return null;
+        return false;
     }
 
     // Completions: one fills in the last word, several are listed.

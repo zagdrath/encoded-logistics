@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  DSPMSG                         Display Messages               System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Queue . . . . :   ZAGDRATH                 Program . . . . :   *DSPMSG
+03 |  Type options, press Enter.
+04 |    4=Remove   5=Display details
+05 | 
+06 | Opt  Sev  From        Sent             Message
+07 |      30   RESTOCK     Day 2  07:10:44  Called program ZAGLIB/RESTOCK ended abno
+08 |      00   UPSALERT    Day 2  06:58:02  Utility power restored. UPS charge 82%.
+09 |      10   QSYSOPR     Day 2  06:40:15  Storage 91% used (hot tier).
+10 | 
+11 |                                        Newest first; unread messages are bright.
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F11=Remove all  F12=Cancel  F24=More keys
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (9,0,3) input

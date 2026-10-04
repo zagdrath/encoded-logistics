@@ -33,7 +33,7 @@ final class InventoryPanel extends ListPanel<ItemKey> {
     // Options still to do once the one shown is done.
     private final Deque<Runnable> queued = new ArrayDeque<>();
 
-    InventoryPanel(CrtScreen screen) {
+    InventoryPanel(CrtTerminal screen) {
         super(screen);
         fields.add(position);
     }

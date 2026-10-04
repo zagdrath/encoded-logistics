@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  DSPSPLF                      Display Spooled File             System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  File  . . . . . :   NOCWALL      Page/Line   1/1
+03 |  Control . . . . .   ____         Columns     1 - 78
+04 |  Find  . . . . . .   ______________________________
+05 | *...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+06 | ELCL Compile Listing   ZAGLIB/NOCWALL   Day 2 07:13   ELNET01
+07 |  SEQNBR  *...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5
+08 |  0001.00 /* NOCWALL - refresh a status display every 30 seconds   */
+09 |  0003.00 PGM
+10 |  0004.00   DCL VAR(&USED)  TYPE(*INT)
+11 |  ...
+12 |                      Cross Reference
+13 |   Variable   Type    Length  References
+14 |   &PCT       *DEC    5 1      0006   0016*
+15 |   &USED      *INT             0004   0014*   0017
+16 |                      Message Summary
+17 |   Seq      Msg ID   Sev  Text
+18 |   0019.00  ELC0008   10  Value truncated to length 32.
+19 |   Total 1  Info 0  Warning 1  Error 0  Severe 0   Program NOCWALL created.
+20 | 
+21 | 
+22 | 
+23 |  F3=Exit  F12=Cancel  F19=Left  F20=Right  F24=More keys

@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKJOB                          Work with Job                 System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Job:   RESTOCK      User:   ZAGDRATH      Number:   000123
+03 |  Host:  MIDRANGE01   Status: *ACTIVE       Budget:   31%
+04 | 
+05 |  Select one of the following:
+06 | 
+07 |       1. Display job status attributes
+08 |       2. Display job definition attributes
+09 |       4. Work with spooled files
+10 |      10. Display job log
+11 |      11. Display call stack
+12 |      30. All of the above
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Selection or command
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command)

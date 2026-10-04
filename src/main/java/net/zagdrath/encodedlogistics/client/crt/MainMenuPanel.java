@@ -5,13 +5,14 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
-// MAIN: 1 Work with Inventory, 2 Work with Jobs, 3 Work with Devices, 4 Display Network Status, 90 Sign Off. Type the
-// number on the command line (or click an option, double-click to go); anything else runs as a command.
+// MAIN: 1 Work with Inventory, 2 Work with Jobs (crafting), 3 Work with Devices, 4 Display Network Status, 5 Work with
+// Libraries, 6 Work with Active Jobs, 7 Display Messages, 8 Work with Output, 90 Sign Off. Type the number on the
+// command line (or click an option, double-click to go); anything else runs as a command.
 final class MainMenuPanel extends CrtPanel {
-    private static final int[] OPTIONS = { 1, 2, 3, 4, 90 };
-    private static final int[] ROWS = { 6, 7, 8, 9, 11 };
+    private static final int[] OPTIONS = { 1, 2, 3, 4, 5, 6, 7, 8, 90 };
+    private static final int[] ROWS = { 6, 7, 8, 9, 10, 11, 12, 13, 15 };
 
-    MainMenuPanel(CrtScreen screen) {
+    MainMenuPanel(CrtTerminal screen) {
         super(screen);
     }
 
@@ -51,6 +52,10 @@ final class MainMenuPanel extends CrtPanel {
             case "2" -> screen.push(new JobsPanel(screen));
             case "3" -> screen.push(new DevicesPanel(screen));
             case "4" -> screen.push(new StatusPanel(screen));
+            case "5" -> screen.push(new WrkLibPanel(screen));
+            case "6" -> ScreenCommands.open(screen, "WRKACTJOB");
+            case "7" -> ScreenCommands.open(screen, "DSPMSG");
+            case "8" -> ScreenCommands.open(screen, "WRKSPLF");
             case "90" -> screen.onClose();
             default -> {
                 return false;

@@ -13,20 +13,21 @@ import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
-// WRKJOB: the network's jobs, active and queued - Opt, Job, Item, Qty, Status (Active, Waiting, Recall), Progress (bar
+// WRKCRFJOB (Main Menu option 2; WRKJOB until the Terminal OS took that name for its Work with Job): the network's
+// crafting jobs, active and queued - Opt, Job, Item, Qty, Status (Active, Waiting, Recall), Progress (bar
 // and %), Scheduler - refreshed every two seconds. Options: 4=Cancel (Enter again to confirm), 5=Display.
 final class JobsPanel extends ListPanel<TerminalLine> {
     private static final int REFRESH = 40;
     private int timer;
     private @Nullable String confirming;
 
-    JobsPanel(CrtScreen screen) {
+    JobsPanel(CrtTerminal screen) {
         super(screen);
     }
 
     @Override
     String id() {
-        return "WRKJOB";
+        return "WRKCRFJOB";
     }
 
     @Override

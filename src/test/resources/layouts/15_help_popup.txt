@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKLIB                       Work with Libraries              System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 | 
+03 |  Type options, press Enter.
+04 |    2=Change   4=Delete   5=Display   12=Work with members
+05 |             ┌──────────────────────────────────────────────────────┐
+06 | Opt  Library│ Work with Libraries - Help                           │
+07 |      ELGPL  ├──────────────────────────────────────────────────────┤
+08 |      ELSYS  │ Shows the libraries on this system. Type an option   │
+09 | 12   ZAGLIB │ in the Opt column next to a library and press Enter. │
+10 |      TESTLIB│                                                      │
+11 |             │   2=Change   Change the text or authority.           │
+12 |             │   4=Delete   Delete an empty library you own.        │
+13 |             │   5=Display  Show its attributes.                    │
+14 |             │   12=Work with members  List the source members.     │
+15 |             │                                             Bottom   │
+16 |             │ F3=Exit help   F12=Cancel                            │
+17 |             └──────────────────────────────────────────────────────┘
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) Opt row 0; (8,0,3) input; (9,0,3) input; (10,0,3) input

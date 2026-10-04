@@ -21,7 +21,7 @@ abstract class ListPanel<T> extends CrtPanel {
     private final Map<Object, String> options = new HashMap<>();
     private final List<CrtField> optionFields = new ArrayList<>();
 
-    ListPanel(CrtScreen screen) {
+    ListPanel(CrtTerminal screen) {
         super(screen);
     }
 

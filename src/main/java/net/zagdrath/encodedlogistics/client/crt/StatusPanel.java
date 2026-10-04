@@ -10,7 +10,7 @@ package net.zagdrath.encodedlogistics.client.crt;
 final class StatusPanel extends TextPanel {
     private int timer;
 
-    StatusPanel(CrtScreen screen) {
+    StatusPanel(CrtTerminal screen) {
         super(screen, "DSPNETSTS", tr("crt.encodedlogistics.status.title"), "status");
     }
 

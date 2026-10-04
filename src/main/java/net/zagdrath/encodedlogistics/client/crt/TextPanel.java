@@ -20,7 +20,7 @@ class TextPanel extends CrtPanel {
     private List<TerminalLine> lines = new ArrayList<>();
     private int top;
 
-    TextPanel(CrtScreen screen, String id, String title, String query) {
+    TextPanel(CrtTerminal screen, String id, String title, String query) {
         super(screen);
         this.id = id;
         this.title = title;

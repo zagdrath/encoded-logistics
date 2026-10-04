@@ -28,7 +28,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalOutput;
 
 // The Terminal OS screens' data (TerminalService.SCREEN requests), from the services: each row a line of cells (one
 // per field, the client lays them out), a failure an "ID: text" message. Requests:
-//  libraries / library L / members L / source L M [from] / lock L M / unlock L M
+//  libraries / library L / members L / source L M [from] / lock L M / unlock L M / printmember L M
 //  savebegin L M / savepart <lines> / savecommit  (a member's source in pieces: "seq\tdate\ttext" lines)
 //  jobs / job J / joblog J / callstack J / schedules / triggers
 //  messages / readmessages / removemessage N / removemessages
@@ -82,6 +82,7 @@ public final class ScreenQueries {
                     ElclServices.libraries().unlock(system, user, arg(words, 1), arg(words, 2));
                     yield new TerminalOutput();
                 }
+                case "printmember" -> printMember(system, user, arg(words, 1), arg(words, 2));
                 case "savebegin" -> {
                     SAVING.put(context.player().getUUID(), new Saving(arg(words, 1), arg(words, 2), new ArrayList<>()));
                     yield new TerminalOutput();
@@ -171,6 +172,19 @@ public final class ScreenQueries {
             out.line(row(line.seq(), line.date(), line.text()));
         }
         return out;
+    }
+
+    // WRKMBR 6=Print: the source, numbered, to a spooled file (the member's name) in the user's job.
+    private static TerminalOutput printMember(ElclSystem system, String user, String library, String member) throws ElclException {
+        List<String> lines = new ArrayList<>();
+        lines.add("Source member " + library + "/" + member + "   " + system.nowShort() + "   " + system.name());
+        lines.add("");
+        for (SourceLine line : ElclServices.libraries().source(system, library, member)) {
+            lines.add(line.seqText() + " " + line.text());
+        }
+        JobService.Job job = OsCommands.interactiveJob(system, user);
+        ElclServices.spool().create(system, member, job.number(), job.name(), user, lines);
+        return TerminalOutput.message(Component.translatable("crt.encodedlogistics.wrkmbr.printed", library + "/" + member));
     }
 
     private static TerminalOutput savePart(TerminalContext context, String encoded) {

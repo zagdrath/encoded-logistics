@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  EDTMBR                           Edit Member                  System:  ELNET01
+01 |  ZAGLIB/RESTOCK   ELCLP                                         Day 2  07:14:22
+02 |  Columns . . . :    1  72     Line . . :   0009     Col . . :   34
+03 | FMT **  ...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+... 6 ...+... 7 ..
+04 |        ************** Beginning of data *************************************
+05 | 0001.00 /* RESTOCK - keep an item stocked by crafting more when low      */
+06 | 0002.00 /* Usage: CALL ELSYS/RESTOCK PARM('IRON_INGOT' 500)              */
+07 | 0003.00 PGM PARM(&ITEM &MIN)
+08 | 0004.00   DCL VAR(&ITEM)  TYPE(*CHAR) LEN(64)
+09 | 0005.00   DCL VAR(&MIN)   TYPE(*INT)
+10 | 0006.00   DCL VAR(&COUNT) TYPE(*INT)
+11 | 0007.00   DCL VAR(&JOB)   TYPE(*CHAR) LEN(10)
+12 | 0008.00
+13 | 0009.00   RTVITMCNT ITEM(&ITEM) RTNCOUNT(&CONT) NOTFND(*ZERO)
+14 |        - - - - - - - - - - - - - - - - - - - - - - - -  3 data records excluded
+15 | 0013.00     MONMSG MSGID(ELC1400) EXEC(DO)
+16 | 0014.00       SNDMSG MSG('RESTOCK: cannot craft' *BCAT &ITEM) TOUSR(*SYSOPR)
+17 | 0015.00       RETURN
+18 | 0016.00     ENDDO
+19 | 
+20 |  Edit command  (FIND CHANGE TOP BOTTOM SAVE FILE CANCEL)                More...
+21 |  ===>
+22 |  ELC0002: Variable &CONT is not declared.
+23 |  F1=Help F3=Exit F4=Prompt F5=Refresh F10=Cursor F11=Full screen F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (5,0,7) line command / sequence margin (one per row); (6,0,7) input; (7,0,7) input; (8,0,7) input; (9,0,7) input; (10,0,7) input; (11,0,7) input; (12,0,7) input; (13,0,7) input; (15,0,7) input; (16,0,7) input; (17,0,7) input; (18,0,7) input

@@ -23,7 +23,7 @@ final class WithdrawPanel extends CrtPanel {
     private final CrtField item, quantity, destination;
     private boolean sent;
 
-    WithdrawPanel(CrtScreen screen, ItemKey key) {
+    WithdrawPanel(CrtTerminal screen, ItemKey key) {
         super(screen);
         this.key = key;
         long count = screen.getMenu().items().getOrDefault(key, 0L);

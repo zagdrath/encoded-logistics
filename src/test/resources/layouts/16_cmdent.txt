@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  CMDENT                          Command Entry                 System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  All previous commands and messages:
+03 |  > CRTLIB LIB(ZAGLIB) TEXT(Zagdrath automation scripts)
+04 |    ELC0210  Library ZAGLIB created.
+05 |  > SBMJOB CMD(CALL PGM(ZAGLIB/RESTOCK)) JOB(RESTOCK)
+06 |    ELC0304  Job 000123/ZAGDRATH/RESTOCK submitted to job queue on MIDRANGE01.
+07 |  > CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(20)
+08 |    ELC0004  Value 20 is outside the allowed range.
+09 |  > show drives
+10 |    (alias: WRKDEV filtered to storage)
+11 | 
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Type command, press Enter.
+21 |  ===>
+22 |                                                                             MW
+23 |  F1=Help F3=Exit F4=Prompt F9=Retrieve F12=Cancel F13=Clear F24=More keys
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command)

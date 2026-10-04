@@ -14,16 +14,16 @@ import java.util.List;
 // PageDown scroll the text. While it's open only its fields take focus; Esc or F12 closes it (F3 too), and Enter is
 // its own.
 class CrtWindow {
-    protected final CrtScreen screen;
+    protected final CrtTerminal screen;
     final int row, col, height, width;
     final String title;
     final List<CrtField> fields = new ArrayList<>();
     // Text lines (each with its attribute) and how far it's scrolled.
-    private final List<CrtScreen.HistoryLine> lines = new ArrayList<>();
+    private final List<CrtTerminal.HistoryLine> lines = new ArrayList<>();
     private int top;
     private String keys = CrtPanel.tr("crt.encodedlogistics.window.keys");
 
-    CrtWindow(CrtScreen screen, int row, int col, int height, int width, String title) {
+    CrtWindow(CrtTerminal screen, int row, int col, int height, int width, String title) {
         this.screen = screen;
         this.row = row;
         this.col = col;
@@ -58,7 +58,7 @@ class CrtWindow {
     CrtWindow text(String text, byte attr) {
         for (String paragraph : text.split("\n", -1)) {
             for (String line : wrap(paragraph, textWidth())) {
-                lines.add(new CrtScreen.HistoryLine(line, attr));
+                lines.add(new CrtTerminal.HistoryLine(line, attr));
             }
         }
         return this;
@@ -93,7 +93,7 @@ class CrtWindow {
         grid.put(row + 1, col + 2, CrtGrid.pad(title, width - 4), CrtGrid.BRIGHT);
         int rows = textRows();
         for (int i = 0; i < rows && top + i < lines.size(); i++) {
-            CrtScreen.HistoryLine line = lines.get(top + i);
+            CrtTerminal.HistoryLine line = lines.get(top + i);
             grid.put(firstTextRow() + i, textCol(), CrtGrid.pad(line.text(), textWidth()), line.attr());
         }
         drawBody(grid);

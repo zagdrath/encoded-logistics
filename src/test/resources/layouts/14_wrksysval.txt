@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKSYSVAL                  Work with System Values            System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 | 
+03 |  Type options, press Enter.
+04 |    2=Change   5=Display
+05 | 
+06 | Opt  System value  Value                     Description
+07 |      SYSNAME       ELNET01                   System name
+08 |      DATFMT        *DAY                      Date display format
+09 |      SECLVL        30                        Security level (10 / 30)
+10 |      QMAXJOB       16                        Maximum batch jobs
+11 |      LOGRTN        50                        Job logs retained
+12 |      PHOSPHOR      *GREEN                    Default screen colour
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F9=Command Entry  F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (9,0,3) input; (10,0,3) input; (11,0,3) input; (12,0,3) input

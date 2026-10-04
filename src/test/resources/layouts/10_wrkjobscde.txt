@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKJOBSCDE              Work with Job Schedule Entries        System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 | 
+03 |  Type options, press Enter.
+04 |    2=Change   3=Hold   4=Remove   10=Submit now
+05 | 
+06 | Opt  Job         Status    Frequency   Next run         Command
+07 |      NOCWALL     *SCD      *INTERVAL   Day 2  07:15:00  CALL PGM(ZAGLIB/NOCWALL
+08 |      ARCHIVE     *SCD      *DAILY      Day 3  02:00:00  CALL PGM(ZAGLIB/ARCHIVE
+09 |      RESTOCK     *HLD      *ONCE       Day 2  12:00:00  CALL PGM(ZAGLIB/RESTOCK
+10 | 
+11 | 
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F6=Add  F9=Command Entry  F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (9,0,3) input

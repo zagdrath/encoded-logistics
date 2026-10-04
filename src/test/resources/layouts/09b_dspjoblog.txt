@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  DSPJOBLOG                      Display Job Log                System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Job . . :   RESTOCK      User  . . :   ZAGDRATH      Number  . . :   000123
+03 | 
+04 |  >> CALL PGM(ZAGLIB/RESTOCK) PARM(LOGIC_DIE 64)
+05 |     ELC1203  Item LOGIC_DIE is being recalled from tape.
+06 |  >> STRCRAFT ITEM(&ITEM) QTY(64) RTNCRFJOB(&JOB)
+07 |     ELC1403  Missing ingredients for LOGIC_DIE.
+08 |     (monitored: MONMSG MSGID(ELC1400))
+09 |  >> SNDMSG MSG(RESTOCK: cannot craft LOGIC_DIE) TOUSR(*SYSOPR)
+10 |  >> RETURN
+11 |     ELC0307  Job 000123/ZAGDRATH/RESTOCK ended normally.
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |                                                                          Bottom
+21 | 
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F10=Display detailed messages  F12=Cancel
