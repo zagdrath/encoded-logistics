@@ -136,7 +136,7 @@ def mesh_door(w_px,h_px,seed,header=True,handle_side=None,badge=False,density=4)
     """Door face at 4 texels/px. Flat powder-coat frame (6 texels sides, 16 header with the blank badge plate, 6 bottom)
        and a hex-perforated mesh: 2x2 openings (alpha 0 = cutout, equipment shows through) on a pitch of 3, every other
        row shifted by half a pitch, so the openings sit in hex rows. Stepped frame bevel; no speckle."""
-    D=density; W,Hh=w_px*D,h_px*D; im=new(W,Hh); coat_smooth(im,0,0,W,Hh,seed,3)
+    D=density; W,Hh=round(w_px*D),round(h_px*D); im=new(W,Hh); coat_smooth(im,0,0,W,Hh,seed,3)
     side,top,bot=6,(16 if header else 6),6
     for y in range(top,Hh-bot):
         row=(y-top)//3; ry=(y-top)%3

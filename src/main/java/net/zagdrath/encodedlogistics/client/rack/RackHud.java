@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -41,12 +42,14 @@ import net.zagdrath.encodedlogistics.net.RackUnitPayloads;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.rack.RackTargeting;
 
-// The rack's unit popup and outline (screens/rack/hud.json). While the crosshair is on a rack's front (or its back with
-// the rear doors open) it points at a unit: a device there is outlined (instead of the block outline, which a rack
-// never shows) and the popup by the crosshair shows its icon, name, units, status and its own lines (RackDeviceInfo,
-// asked of the server when the crosshair settles, then every QUERY_INTERVAL ticks); an empty unit just says so.
-// Hidden with F1 and while a screen is open.
+// The rack's unit popup and outline (screens/rack/hud.json). While the crosshair is on a rack's front or back with
+// that side's door open, it points at a unit (RackTargeting: followed in to the devices, not the outer face): the
+// device there, or the empty unit, is outlined (instead of the block outline, which a rack never shows), and the
+// popup by the crosshair shows the device's icon, name, units, status and its own lines (RackDeviceInfo, asked of the
+// server when the crosshair settles, then every QUERY_INTERVAL ticks); an empty unit just says so. With the doors
+// closed there's neither. Hidden with F1 and while a screen is open.
 public final class RackHud {
     public static final Identifier LAYER = EncodedLogistics.id("rack_unit_popup");
 
@@ -83,13 +86,13 @@ public final class RackHud {
         if (rack == null) {
             return null;
         }
-        Direction facing = state.getValue(ServerRackBlock.FACING);
-        RackGeometry.Face face = RackGeometry.face(hit.getDirection(), facing);
-        if (face == RackGeometry.Face.OTHER || face == RackGeometry.Face.REAR && !rack.isRearOpen()) {
+        Entity viewer = Minecraft.getInstance().getCameraEntity();
+        if (viewer == null) {
             return null;
         }
-        int u = RackGeometry.unitAt(RackGeometry.toLocal(hit.getLocation(), rack.getBlockPos(), facing).y);
-        return u == 0 ? null : new Target(rack.getBlockPos(), facing, u, rack.deviceAt(u));
+        float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        RackTargeting.Target at = RackTargeting.pick(rack, hit.getDirection(), viewer.getEyePosition(partialTick), viewer.getViewVector(partialTick));
+        return at == null ? null : new Target(rack.getBlockPos(), rack.facing(), at.u(), at.device());
     }
 
     // --- Following the crosshair ---
@@ -107,7 +110,7 @@ public final class RackHud {
 
     // --- The outline ---
 
-    // Racks never show the block outline; a targeted device gets its own.
+    // Racks never show the block outline; the targeted device (or empty unit) gets its own.
     public static void outline(ExtractBlockOutlineRenderStateEvent event) {
         if (!(event.getBlockState().getBlock() instanceof ServerRackBlock)) {
             return;
@@ -115,8 +118,9 @@ public final class RackHud {
         Target at = target(event.getLevel(), event.getHitResult());
         VoxelShape box = null;
         BlockPos master = at != null ? at.master() : event.getBlockPos();
-        if (at != null && at.device() != null) {
-            AABB local = RackGeometry.deviceBox(at.device().u(), at.device().size()).inflate(OUTLINE_INFLATE);
+        if (at != null) {
+            AABB local = (at.device() != null ? RackGeometry.deviceBox(at.device().u(), at.device().size()) : RackGeometry.deviceBox(at.u(), 1))
+                    .inflate(OUTLINE_INFLATE);
             AABB world = RackGeometry.toWorld(local, master, at.facing()).move(-master.getX(), -master.getY(), -master.getZ());
             box = Shapes.create(world);
         }

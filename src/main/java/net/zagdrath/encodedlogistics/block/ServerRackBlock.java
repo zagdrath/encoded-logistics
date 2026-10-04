@@ -48,6 +48,7 @@ import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.rack.RackTargeting;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
 // The Server Rack: a 42U enclosed rack, 1 wide, 3 tall and 2 deep (RackGeometry). Six blocks of this one block: the
@@ -187,22 +188,21 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
 
     // --- Using it ---
 
-    // A rack device used on the open front mounts at the unit looked at.
+    // A rack device used on the open front mounts at the unit looked at (RackTargeting).
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
         RackDeviceType type = RackDeviceType.of(stack);
         RackBlockEntity rack = rack(level, pos, state);
-        if (type == null || rack == null || RackGeometry.face(hit.getDirection(), state.getValue(FACING)) != RackGeometry.Face.FRONT
-                || !rack.isFrontOpen()) {
+        if (type == null || rack == null || RackGeometry.face(hit.getDirection(), state.getValue(FACING)) != RackGeometry.Face.FRONT) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        int u = RackGeometry.unitAt(RackGeometry.toLocal(hit.getLocation(), rack.getBlockPos(), state.getValue(FACING)).y);
-        if (u == 0) {
+        RackTargeting.Target target = RackTargeting.pick(rack, hit.getDirection(), player.getEyePosition(), player.getViewVector(1.0F));
+        if (target == null) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level instanceof ServerLevel && player instanceof ServerPlayer serverPlayer) {
-            rack.installFromHand(serverPlayer, stack, u);
+            rack.installFromHand(serverPlayer, stack, target.u());
         }
         return InteractionResult.SUCCESS;
     }

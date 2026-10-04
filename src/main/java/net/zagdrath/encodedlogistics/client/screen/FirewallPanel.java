@@ -37,7 +37,9 @@ public class FirewallPanel extends RackScreen.Panel {
     private static final Identifier[] TOGGLES = { EncodedLogistics.id("rack/firewall/toggle_inherit"), EncodedLogistics.id("rack/firewall/toggle_on"),
             EncodedLogistics.id("rack/firewall/toggle_off") };
     private static final int POLICY_X = 8, POLICY_Y = 18, POLICY_W = 160, POLICY_H = 14;
-    private static final int LIST_X = 10, LIST_Y = 52, ROWS = 7, ROW_H = 13, PERM_X = 118, PERM_STEP = 11, HEADER_Y = 42, TOGGLE = 9;
+    // The list is the inset at (8, 36, 160, 108): a header row, then seven rows of 13 from y 51; the five toggles end at its
+    // inner right edge (x 165), each header icon over its toggle.
+    private static final int LIST_X = 10, LIST_Y = 51, ROWS = 7, ROW_H = 13, PERM_X = 112, PERM_STEP = 11, HEADER_Y = 41, TOGGLE = 9;
     private static final int FIELD_X = 10, FIELD_Y = 151, FIELD_W = 106, ADD_X = 122, ADD_Y = 148, ADD_W = 46, ADD_H = 14;
 
     // A row: the owner (fixed) or a listed player.
@@ -114,7 +116,7 @@ public class FirewallPanel extends RackScreen.Panel {
                 editable, mouseX, mouseY);
         for (RackPermission permission : RackPermission.values()) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EncodedLogistics.id("rack/firewall/perm_" + permission.key()),
-                    x + PERM_X + PERM_STEP * permission.ordinal(), y + HEADER_Y, 8, 7);
+                    x + PERM_X + PERM_STEP * permission.ordinal() + 1, y + HEADER_Y, 8, 7);
         }
         List<Row> rows = rows(firewall);
         scroll = Mth.clamp(scroll, 0, maxScroll(rows));
@@ -124,7 +126,7 @@ public class FirewallPanel extends RackScreen.Panel {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEAD, x + LIST_X + 2, rowY + 2, 8, 8);
             for (RackPermission permission : RackPermission.values()) {
                 byte value = row.permissions() == null ? FirewallDevice.ON : row.permissions()[permission.ordinal()];
-                int toggleX = x + PERM_X + PERM_STEP * permission.ordinal() - 1;
+                int toggleX = x + PERM_X + PERM_STEP * permission.ordinal();
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TOGGLES[Math.clamp(value, 0, 2)], toggleX, rowY + 2, TOGGLE, TOGGLE,
                         row.permissions() == null || !editable ? 0xFF9A9A9A : 0xFFFFFFFF);
             }
@@ -145,7 +147,7 @@ public class FirewallPanel extends RackScreen.Panel {
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         for (RackPermission permission : RackPermission.values()) {
-            if (screen.over(mouseX, mouseY, PERM_X + PERM_STEP * permission.ordinal(), HEADER_Y, 8, 7)) {
+            if (screen.over(mouseX, mouseY, PERM_X + PERM_STEP * permission.ordinal(), HEADER_Y, TOGGLE, 7)) {
                 graphics.setTooltipForNextFrame(permission.label(), mouseX, mouseY);
                 return;
             }
@@ -154,7 +156,7 @@ public class FirewallPanel extends RackScreen.Panel {
         for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
             for (RackPermission permission : RackPermission.values()) {
-                if (screen.over(mouseX, mouseY, PERM_X + PERM_STEP * permission.ordinal() - 1, LIST_Y + i * ROW_H + 2, TOGGLE, TOGGLE)) {
+                if (screen.over(mouseX, mouseY, PERM_X + PERM_STEP * permission.ordinal(), LIST_Y + i * ROW_H + 2, TOGGLE, TOGGLE)) {
                     graphics.setTooltipForNextFrame(toggleText(row, permission), mouseX, mouseY);
                     return;
                 }
@@ -203,7 +205,7 @@ public class FirewallPanel extends RackScreen.Panel {
                 return true;
             }
             for (RackPermission permission : RackPermission.values()) {
-                if (in(x, y, PERM_X + PERM_STEP * permission.ordinal() - 1, rowY + 2, TOGGLE, TOGGLE)) {
+                if (in(x, y, PERM_X + PERM_STEP * permission.ordinal(), rowY + 2, TOGGLE, TOGGLE)) {
                     send(FirewallDevice.ACTION_TOGGLE, permission.ordinal(), row.id().toString());
                     return true;
                 }

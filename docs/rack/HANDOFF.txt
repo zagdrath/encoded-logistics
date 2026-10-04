@@ -1,7 +1,12 @@
-NOTE (texture update): the rack and device textures were redrawn - see HANDOFF_texture_update.txt for the current
-texture rules and sizes, which replace the texel densities and sizes given below. In the repo, door_front.png and
-door_rear.png are padded to 64x192 and 32x192 (multiples of 16, so the block atlas keeps its mip levels), and the
-rear door leaves sit 0.4 px in (z 30.6..31.6, pivots z 31.1) so their handles stay inside the z 32 model limit.
+NOTE (repo changes): the rack and device textures were redrawn - see HANDOFF_texture_update.txt for the texture
+rules. In the repo, to stop faces flickering (z-fighting) and to keep the block atlas's mip levels:
+  - the posts and lower side panels stand on the plinth (from y -13); the rails have back faces;
+  - the door leaves fill the opening between the posts and above the plinth: front x 1.5..14.5, rear x 8..14.5 and
+    1.5..8, all y -13..29; the rear leaves sit at z 30.6..31.6 so their handles stay inside the z 32 model limit;
+    pivots (14.5, 0.5), (14.5, 31.1), (1.5, 31.1);
+  - door_front.png is 52x168 and door_rear.png 26x168 (4 texels/px at those sizes), padded to 64x176 and 32x176;
+  - devices are drawn 0.05 px in from x 1.5 / 14.5;
+  - the rack screens are drawn with the repo's GUI kit (tools/p1_gui.py), like the other screens.
 
 ENCODED LOGISTICS - HANDOFF: SERVER RACK + RACK DEVICES (Firewall, Router, UPS)
 ==============================================================================

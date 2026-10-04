@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.gametest;
 
+import java.util.function.Function;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -49,6 +51,7 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RackTargeting;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
@@ -215,6 +218,34 @@ final class RackGameTests {
             helper.assertTrue(rack.getXsize() * rack.getZsize() == 2 && rack.getYsize() == 3, facing + ": bounds " + rack);
             helper.assertTrue(rack.contains(Vec3.atCenterOf(master.relative(facing.getOpposite()))), facing + ": back block outside " + rack);
         }
+        helper.succeed();
+    }
+
+    // Looking down into the open front at the lower of two UPSes picks it (not the one above, where the line meets the
+    // rack's outer face); an empty unit is found where the line crosses the devices' front plane; a closed door picks
+    // nothing.
+    static void targeting(GameTestHelper helper) {
+        BlockPos master = rack(helper, new BlockPos(1, 1, 1), Direction.NORTH);
+        RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+        UpsDevice lower = install(helper, master, RackDeviceType.UPS, 1, UpsDevice.class);
+        install(helper, master, RackDeviceType.UPS, 3, UpsDevice.class);
+        BlockPos absolute = helper.absolutePos(master);
+        // Local pixels to the world (facing north, local and world axes agree).
+        Function<Vec3, Vec3> world = local -> Vec3.atLowerCornerOf(absolute).add(local.scale(1.0 / 16));
+        Vec3 eye = world.apply(new Vec3(8, 20, -24));
+        Vec3 lowerFront = world.apply(new Vec3(8, RackGeometry.unitBottom(1) + 1, RackGeometry.DEVICE_Z0));
+        Vec3 look = lowerFront.subtract(eye);
+        helper.assertTrue(RackTargeting.pick(rack, Direction.NORTH, eye, look) == null, "Picked through a closed door");
+        rack.setFrontOpen(true);
+        // Where the line meets the outer face (z 0) it's already in a higher unit.
+        double t = (0 - (-24)) / (RackGeometry.DEVICE_Z0 - (-24));
+        double outerY = 20 + (RackGeometry.unitBottom(1) + 1 - 20) * t;
+        helper.assertTrue(RackGeometry.unitAt(outerY) >= 3, "Test line doesn't cross the outer face higher up (U" + RackGeometry.unitAt(outerY) + ")");
+        RackTargeting.Target target = RackTargeting.pick(rack, Direction.NORTH, eye, look);
+        helper.assertTrue(target != null && target.device() == lower, "Picked " + (target == null ? "nothing" : "U" + target.u()));
+        Vec3 emptyFront = world.apply(new Vec3(8, RackGeometry.unitBottom(20) + 0.5, RackGeometry.DEVICE_Z0));
+        RackTargeting.Target empty = RackTargeting.pick(rack, Direction.NORTH, eye, emptyFront.subtract(eye));
+        helper.assertTrue(empty != null && empty.u() == 20 && empty.device() == null, "Empty unit picked as " + (empty == null ? "nothing" : "U" + empty.u()));
         helper.succeed();
     }
 

@@ -6,35 +6,35 @@
   "front": {
    "model": "encodedlogistics:block/rack/rack_door_front",
    "pivot": [
-    15.5,
+    14.5,
     0,
     0.5
    ],
    "axis": "Y",
    "open_degrees": -110,
-   "note": "hinged on the LEFT as seen from the front (+x side); negative = swings out toward -z (verified in previews/door_swing_frames.png)"
+   "note": "hinged on the LEFT as seen from the front (+x side); negative = swings out toward -z (verified in previews/door_swing_frames.png); the leaf fills x 1.5..14.5, y -13..29 (between the posts, above the plinth)"
   },
   "rear_left": {
    "model": "encodedlogistics:block/rack/rack_door_rear_left",
    "pivot": [
-    15.5,
+    14.5,
     0,
     31.1
    ],
    "axis": "Y",
    "open_degrees": 110,
-   "note": "x 8..15.5, hinged on its outer edge; positive = swings out toward +z; the leaves sit at z 30.6..31.6 so their handles end at the z 32 model limit"
+   "note": "x 8..14.5, hinged on its outer edge; positive = swings out toward +z; the leaves sit at z 30.6..31.6 so their handles end at the z 32 model limit"
   },
   "rear_right": {
    "model": "encodedlogistics:block/rack/rack_door_rear_right",
    "pivot": [
-    0.5,
+    1.5,
     0,
     31.1
    ],
    "axis": "Y",
    "open_degrees": -110,
-   "note": "x 0.5..8, hinged on its outer edge; negative = swings out toward +z"
+   "note": "x 1.5..8, hinged on its outer edge; negative = swings out toward +z"
   }
  },
  "sounds": {

@@ -33,8 +33,8 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 
 // Draws what moves or changes in a Server Rack, on its master: the three door leaves, swung by how open they are
-// (door_animation.json: the front leaf -110 degrees about (15.5, 0.5), the rear leaves +110 / -110 about (15.5, 31.1)
-// and (0.5, 31.1)), and each device's model for its state at its unit, with its render extras (RackClientDevices).
+// (door_animation.json: the front leaf -110 degrees about (14.5, 0.5), the rear leaves +110 / -110 about (14.5, 31.1)
+// and (1.5, 31.1)), and each device's model for its state at its unit, with its render extras (RackClientDevices).
 // Everything is in the master's local space turned by the rack's facing, as the frame model is. With both doors shut
 // the devices aren't drawn beyond rackCullDistance.
 public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRenderer.State> {
@@ -82,9 +82,9 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         poseStack.rotate(Axis.YP.rotationDegrees(-90 * state.turns));
         poseStack.translate(-0.5F, 0, -0.5F);
 
-        door(poseStack, collector, state, RackModels.DOOR_FRONT, 15.5F, 0.5F, -OPEN_DEGREES * state.front);
-        door(poseStack, collector, state, RackModels.DOOR_REAR_LEFT, 15.5F, 31.1F, OPEN_DEGREES * state.rear);
-        door(poseStack, collector, state, RackModels.DOOR_REAR_RIGHT, 0.5F, 31.1F, -OPEN_DEGREES * state.rear);
+        door(poseStack, collector, state, RackModels.DOOR_FRONT, 14.5F, 0.5F, -OPEN_DEGREES * state.front);
+        door(poseStack, collector, state, RackModels.DOOR_REAR_LEFT, 14.5F, 31.1F, OPEN_DEGREES * state.rear);
+        door(poseStack, collector, state, RackModels.DOOR_REAR_RIGHT, 1.5F, 31.1F, -OPEN_DEGREES * state.rear);
 
         for (DeviceDraw device : state.devices) {
             BlockStateModelPart model = RackModels.get(device.type().model(device.status()));

@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RackTargeting;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
@@ -134,10 +135,14 @@ public class LinkCardItem extends Item {
         }
         RackBlockEntity rack = ServerRackBlock.rack(level, pos, state);
         Direction facing = state.getValue(ServerRackBlock.FACING);
-        if (rack == null || RackGeometry.face(context.getClickedFace(), facing) != RackGeometry.Face.FRONT || !rack.isFrontOpen()) {
+        if (rack == null || RackGeometry.face(context.getClickedFace(), facing) != RackGeometry.Face.FRONT) {
             return null;
         }
-        RackDevice device = rack.deviceAt(RackGeometry.unitAt(RackGeometry.toLocal(context.getClickLocation(), rack.getBlockPos(), facing).y));
+        RackTargeting.Target target = RackTargeting.pick(rack, context.getClickedFace(), player.getEyePosition(), player.getViewVector(1.0F));
+        if (target == null) {
+            return null;
+        }
+        RackDevice device = target.device();
         if (!(device instanceof RouterDevice router)) {
             if (level instanceof ServerLevel) {
                 player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.not_router"));

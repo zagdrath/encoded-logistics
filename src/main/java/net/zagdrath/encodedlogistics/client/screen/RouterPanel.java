@@ -31,7 +31,7 @@ public class RouterPanel extends RackScreen.Panel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/router.png");
     private static final Identifier DOT = EncodedLogistics.id("rack/router/segment_dot"), ARROW = EncodedLogistics.id("rack/router/arrow"),
             GHOST = EncodedLogistics.id("relay/ghost_transceiver"), BAR = EncodedLogistics.id("common/bar_fill_mint");
-    private static final int SEGMENTS_X = 10, LIST_Y = 32, ROWS = 6, ROW_H = 14, SEGMENTS_W = 52;
+    private static final int SEGMENTS_X = 10, LIST_Y = 31, ROWS = 6, ROW_H = 14, SEGMENTS_W = 52;
     private static final int ROUTES_X = 70, SOURCE_X = 72, ARROW_X = 98, DEST_X = 112, FILTER_X = 150, ROUTES_W = 98;
     private static final int ADD_X = 68, ADD_Y = 116, ADD_W = 100, ADD_H = 12, RATE_Y = 132, BAR_X = 69, BAR_Y = 144, BAR_W = 98;
 

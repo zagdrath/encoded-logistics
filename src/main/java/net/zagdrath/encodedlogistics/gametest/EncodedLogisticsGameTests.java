@@ -91,6 +91,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_places_and_breaks", RackGameTests::placesAndBreaks);
         TESTS.put("rack_unit_rules", RackGameTests::unitRules);
         TESTS.put("rack_geometry", RackGameTests::geometry);
+        TESTS.put("rack_targeting", RackGameTests::targeting);
         TESTS.put("rack_on_network", RackGameTests::onNetwork);
         TESTS.put("rack_firewall", RackGameTests::firewall);
         TESTS.put("rack_ups", RackGameTests::upsCoversAndRecharges);
