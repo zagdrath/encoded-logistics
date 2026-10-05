@@ -10,7 +10,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 |---|---|---|
 | Frame (id, title, system, clock, prompt, command line, message line, keys) | EXTENDED | `CrtTerminal.compose()` (logic moved out of `CrtScreen`, which now only draws and passes the game's input to it) |
 | Character grid 80x24, attributes, underline, reverse | EXTENDED | `CrtGrid`: the 12 extra glyphs (`EXTRA`, `glyph()`), `box()`, `ruler()`, `columnRuler()` (the editor's and listing's `*...+... 1` form) |
-| Glyph drawing, glow, scanlines, vignette, bezel | EXTENDED | `CrtScreen.extractRenderState()`: glyph index map, 96x70 / 160x98 sheets |
+| Glyph drawing, glow, scanlines, frame | EXTENDED | `CrtDisplay.draw()`: glyph index map, 96x70 / 160x98 sheets; the GUI-kit panel, title and screen well (docs/crt/HANDOFF.txt) - the CRT bezel and vignette are retired |
 | Font sheets | EXTENDED | `textures/font/terminal.png`, `terminal_glow.png`, `font/terminal.json` (replaced from the zip; rows 0-5 byte-identical) |
 | Input field | EXTENDED | `CrtField`: overwrite / Insert, Field Exit (Ctrl+Enter, keypad Enter), Field Advance, protected / numeric / uppercase / required, capacity beyond the shown length (scrolls) |
 | Cursor | EXTENDED | `CrtScreen` (draws at `CrtField.cursorColumn()`) |

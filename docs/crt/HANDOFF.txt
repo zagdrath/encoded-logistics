@@ -1,0 +1,31 @@
+ENCODED LOGISTICS - HANDOFF: GREEN-SCREEN GUI FRAME (all text screens)
+=====================================================================
+Every green-screen view now sits in a standard GUI-kit panel like the mod's other machine GUIs. The CRT bezel presentation
+(monitor bezel, tall pixels, vignette, curvature) is RETIRED everywhere - including the Terminal Desk and the Integrated
+Midrange System's console. The green screen itself is unchanged: same 80 x 24 grid, terminal font, phosphor colours
+(PHOSPHOR system value / the player's choice), attributes, fields, cursor, F-keys, command line, MW indicator.
+
+APPLIES TO (all CrtScreen content - one frame, shared input handling):
+  Terminal Desk - all Terminal OS screens (Sign On, Main Menu, the WRK/DSP screens, the source editor, prompter, help
+    pop-ups, Command Entry ...); title "Terminal Desk".
+  Integrated Midrange System console - the same Terminal OS screens; title "Integrated Midrange System".
+  Machines: Midrange System and Integrated control panels (MRCTL, IMCTL), Keypunch, Card Reader, Line Printer, Disk Drive,
+    Tape Drive, PLC (status, I/O table, modules); title = the machine's display name.
+  Any future text screen uses it too.
+
+FRAME (GUI px; previews/machine_*.png):
+  Panel 502 x 270: textures/gui/crt/machine_panel.png as a 9-slice (4 px borders) - the kit's outline, lit top-left bevel,
+    shaded bottom-right, flat face.
+  Title: display name at (8, 5) in the GUI font, colour TEXT (F0F0F0), as every other machine GUI.
+  Screen well at (8, 16), 486 x 246: textures/gui/crt/screen_well.png as a 9-slice (3 px borders), recessed.
+  Grid at (11, 19): 480 x 240, 1 screen px = 1 GUI px (square pixels), terminal font drawn glyph by glyph, a soft glow (35%),
+    light scanlines (every 2nd row, 10% black); no vignette, no curvature, no bezel.
+  Pop-up windows (help, confirmations) draw inside the grid with the box glyphs, as before.
+  Scale: the panel at the largest integer GUI scale that fits the window, centred. Hotbar hidden while any of these screens is
+    open (they have no slots - items are used on the machine itself).
+  Mouse: click fields / option rows, clickable F-key labels on the bottom row (as now).
+REMOVE / DISABLE: the CRT bezel drawing (textures/gui/crt/bezel.png, vignette.png and the tall-pixel scaling in CrtScreen);
+  keep the phosphor palettes, font and glow.
+FILES: textures/gui/crt/machine_panel.png, textures/gui/crt/screen_well.png; previews/machine_*.png (Terminal Desk: signon,
+  main_menu, source_editor, wrkactjob, command_entry; integrated_console_main_menu; machines: mrctl, imctl, keypunch, cardrdr,
+  printer, dskdrv, tapdrv, plcsts, plcio, plcmod), machine_keypunch_ingame.png; tools/machine_frame.py (reference renderer).

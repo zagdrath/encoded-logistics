@@ -22,8 +22,9 @@ import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.net.CrtRequestPayload;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 
-// The Terminal Desk's green screen (HANDOFF 3): an 80 x 24 text terminal on a CRT monitor drawn over the game (which
-// shows round it), drawn by CrtDisplay (the Midrange machines' screens share it, so they look the same). While it's
+// The Terminal Desk's green screen (HANDOFF 3), and the Integrated Midrange System console's: an 80 x 24 text terminal in
+// the GUI-kit panel every text screen has (CrtDisplay: titled with the desk's or the system's name; the Midrange machines'
+// screens share it, so they look the same). While it's
 // open it takes text input (typing reaches it).
 // What's on the glass, and what keys and clicks do, is the terminal's (CrtTerminal); this draws it and hands it the
 // game's keys, characters, clicks and the server's answers.
@@ -114,7 +115,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
         // The cursor: a block in the focused field, blinking.
         CrtField focused = terminal.focused();
         int[] cursor = focused != null && !terminal.connecting() && terminal.ticks() / 10 % 2 == 0 ? new int[] { focused.row, focused.cursorColumn() } : null;
-        display.draw(graphics, minecraft, terminal.compose(), cursor, null);
+        display.draw(graphics, minecraft, terminal.compose(), cursor, null, getTitle());
     }
 
     // --- Input ---

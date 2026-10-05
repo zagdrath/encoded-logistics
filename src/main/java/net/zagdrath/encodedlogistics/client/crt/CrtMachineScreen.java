@@ -29,7 +29,8 @@ import net.zagdrath.encodedlogistics.client.DeskSounds;
 import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
 import net.zagdrath.encodedlogistics.net.MachinePayloads;
 
-// A Midrange machine's green screen (HANDOFF 3; docs/midrange/layouts): the Terminal Desk's CRT (CrtDisplay) and the
+// A Midrange machine's green screen (HANDOFF 3; docs/midrange/layouts): the Terminal Desk's frame (CrtDisplay: the panel
+// titled with the machine's name) and the
 // Terminal OS frame - the panel's id and title, the system's name, the date and time, its body, "Selection or command"
 // and the command line (on the screens that have one), the message line and its function keys. Text only: no
 // buttons, no slots. Fields are underlined: values (sent when they change), options beside a list's rows (sent on
@@ -260,7 +261,7 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
                 cursor = new int[] { focused.row, focused.col + Math.min(focused.cursor, focused.length - 1) };
             }
         }
-        display.draw(graphics, minecraft, composed, cursor, null);
+        display.draw(graphics, minecraft, composed, cursor, null, getTitle());
     }
 
     // --- Input ---

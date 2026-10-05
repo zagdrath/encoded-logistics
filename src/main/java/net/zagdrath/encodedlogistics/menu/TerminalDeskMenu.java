@@ -54,9 +54,11 @@ public class TerminalDeskMenu extends AccessTerminalMenu implements CrtHost {
         return player.level().getBlockEntity(pos) instanceof MidrangeSystemBlockEntity system && system.integrated() ? system : null;
     }
 
+    // Its screen's title: "Terminal Desk", or "Integrated Midrange System" on that system's console.
     public static void open(ServerPlayer player, BlockPos desk) {
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new TerminalDeskMenu(id, inventory, desk),
-                Component.translatable("block.encodedlogistics.terminal_desk")), buf -> buf.writeBlockPos(desk));
+        Component title = player.level().getBlockEntity(desk) instanceof MidrangeSystemBlockEntity system && system.integrated()
+                ? Component.translatable("block.encodedlogistics.integrated_midrange") : Component.translatable("block.encodedlogistics.terminal_desk");
+        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new TerminalDeskMenu(id, inventory, desk), title), buf -> buf.writeBlockPos(desk));
     }
 
     public @Nullable TerminalDeskBlockEntity desk() {
