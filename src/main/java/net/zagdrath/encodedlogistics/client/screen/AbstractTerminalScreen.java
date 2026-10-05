@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 
@@ -26,6 +27,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -33,10 +35,15 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.CraftingClient;
 import net.zagdrath.encodedlogistics.client.ExternalSearch;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalClickPayload;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
+import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.ResourceContainers;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // The modular terminal screen, built from a TerminalLayout: a title bar with the search field, a grid of the network's
 // items (as many rows as fit the window, between the layout's min and max), a scrollbar, the player's inventory, and
@@ -56,6 +63,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
     // The search lasts the session, across terminals; the toolbar settings are saved (TerminalSettings).
     private static String lastSearch = "";
+
+    // The type tabs above the panel (All, Items, Fluids, Pressurized, Energy): TerminalSettings.TypeTab.
+    static final int TAB_STRIP = 20;
+    private static final int TAB_LEFT = 4, TAB_STEP = 20, TAB_SIZE = 18;
+    private static final Identifier TAB_PRESSED = EncodedLogistics.id("terminal/button_pressed");
 
     private final TerminalLayout layout;
     // The grid's rows: the menu's when it opened, until the height button changes them.
@@ -97,7 +109,8 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     protected boolean hasClickedOutside(double mouseX, double mouseY, int left, int top) {
         boolean onTab = mouseX >= left + layout.toolbarLeft - 3 && mouseX < left && mouseY >= top + layout.toolbarTop - 3
                 && mouseY < top + layout.toolbarTop + 1 + layout.buttonIcons.size() * layout.toolbarSpacing;
-        return !onTab && (mouseX < left || mouseY < top || mouseX >= left + imageWidth || mouseY >= top + screenHeight());
+        boolean onTypeTabs = mouseY >= top - TAB_STRIP && mouseY < top && mouseX >= left && mouseX < left + imageWidth;
+        return !onTab && !onTypeTabs && (mouseX < left || mouseY < top || mouseX >= left + imageWidth || mouseY >= top + screenHeight());
     }
 
     // The search mode button: synced with JEI's search bar or not. Turning it on hands the terminal's search to JEI.
@@ -135,7 +148,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     @Override
     protected void init() {
         super.init();
-        topPos = (height - screenHeight()) / 2;
+        topPos = (height - screenHeight() + TAB_STRIP) / 2;
         search = new EditBox(font, leftPos + layout.searchLeft + layout.searchTextLeft, topPos + layout.searchTop + layout.searchTextTop,
                 layout.searchWidth - layout.searchTextLeft - 2, 9, search, Component.translatable("gui.encodedlogistics.terminal.search"));
         search.setBordered(false);
@@ -209,43 +222,64 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         return kept;
     }
 
+    // The grid for a search: what the tab shows (TerminalSettings.TypeTab), matching by name, by mod with @mod (a gas's
+    // source mod too) or by tag with #tag (item or fluid tags), every type alike.
     private List<Map.Entry<StorageKey, Long>> filtered(String text) {
+        TerminalSettings.TypeTab tab = TerminalSettings.typeTab();
+        if (tab == TerminalSettings.TypeTab.ENERGY) {
+            return List.of();
+        }
         String query = text.trim().toLowerCase(Locale.ROOT);
-        boolean byMod = query.startsWith("@");
-        String needle = byMod ? query.substring(1) : query;
+        boolean byMod = query.startsWith("@"), byTag = query.startsWith("#");
+        String needle = byMod || byTag ? query.substring(1) : query;
         List<Map.Entry<StorageKey, Long>> entries = new ArrayList<>();
         for (Map.Entry<StorageKey, Long> entry : menu.items().entrySet()) {
-            ItemStack stack = entry.getKey().stack();
-            String haystack = byMod ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()
-                    : stack.getHoverName().getString().toLowerCase(Locale.ROOT);
-            if (needle.isEmpty() || haystack.contains(needle)) {
+            if (onTab(entry.getKey(), tab) && matches(entry.getKey(), needle, byMod, byTag)) {
                 entries.add(Map.entry(entry.getKey(), entry.getValue()));
             }
         }
         // What the network can make but has none of, with a count of 0.
         if (TerminalSettings.craftablesAlways() || !needle.isEmpty()) {
             for (StorageKey key : menu.craftables()) {
-                if (menu.items().containsKey(key)) {
-                    continue;
-                }
-                ItemStack stack = key.stack();
-                String haystack = byMod ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()
-                        : stack.getHoverName().getString().toLowerCase(Locale.ROOT);
-                if (needle.isEmpty() || haystack.contains(needle)) {
+                if (!menu.items().containsKey(key) && onTab(key, tab) && matches(key, needle, byMod, byTag)) {
                     entries.add(Map.entry(key, 0L));
                 }
             }
         }
-        Comparator<Map.Entry<StorageKey, Long>> byName = Comparator.comparing(entry -> entry.getKey().stack().getHoverName().getString(),
+        Comparator<Map.Entry<StorageKey, Long>> byName = Comparator.comparing(entry -> entry.getKey().displayName().getString(),
                 String.CASE_INSENSITIVE_ORDER);
         Comparator<Map.Entry<StorageKey, Long>> order = switch (TerminalSettings.sortMode()) {
             case NAME -> byName;
             case COUNT -> Comparator.<Map.Entry<StorageKey, Long>>comparingLong(Map.Entry::getValue).thenComparing(byName);
-            case MOD -> Comparator.<Map.Entry<StorageKey, Long>, String>comparing(
-                    entry -> BuiltInRegistries.ITEM.getKey(entry.getKey().stack().getItem()).getNamespace()).thenComparing(byName);
+            case MOD -> Comparator.<Map.Entry<StorageKey, Long>, String>comparing(entry -> entry.getKey().namespace()).thenComparing(byName);
         };
         entries.sort(TerminalSettings.descending() ? order.reversed() : order);
         return entries;
+    }
+
+    private static boolean onTab(StorageKey key, TerminalSettings.TypeTab tab) {
+        return switch (tab) {
+            case ALL -> true;
+            case ITEMS -> key.is(ResourceType.ITEM);
+            case FLUIDS -> key.is(ResourceType.FLUID);
+            case PRESSURIZED -> key.is(ResourceType.PRESSURIZED);
+            case ENERGY -> false;
+        };
+    }
+
+    private static boolean matches(StorageKey key, String needle, boolean byMod, boolean byTag) {
+        if (needle.isEmpty()) {
+            return true;
+        }
+        if (byMod) {
+            return key.namespace().contains(needle) || key.source() != null && key.source().contains(needle);
+        }
+        if (byTag) {
+            Stream<? extends TagKey<?>> tags = key.isItem() ? key.stack().typeHolder().tags()
+                    : key.fluid() != null ? BuiltInRegistries.FLUID.wrapAsHolder(key.fluid().getFluid()).tags() : Stream.empty();
+            return tags.anyMatch(tag -> tag.location().toString().contains(needle));
+        }
+        return key.displayName().getString().toLowerCase(Locale.ROOT).contains(needle);
     }
 
     private int maxScroll() {
@@ -280,6 +314,14 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         lastMouseX = mouseX;
         lastMouseY = mouseY;
         int x = leftPos, y = topPos;
+        TerminalSettings.TypeTab current = TerminalSettings.typeTab();
+        for (TerminalSettings.TypeTab tab : TerminalSettings.TypeTab.values()) {
+            int tx = x + TAB_LEFT + tab.ordinal() * TAB_STEP, ty = y - TAB_STRIP + 1;
+            boolean hover = mouseX >= tx && mouseX < tx + TAB_SIZE && mouseY >= ty && mouseY < ty + TAB_SIZE;
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, tab == current ? TAB_PRESSED : hover ? layout.buttonHover : layout.button, tx, ty,
+                    TAB_SIZE, TAB_SIZE);
+            graphics.item(tabIcon(tab), tx + 1, ty + 1);
+        }
         graphics.blit(RenderPipelines.GUI_TEXTURED, layout.top, x, y, 0.0F, 0.0F, layout.width, layout.topHeight, 256, 32);
         for (int row = 0; row < rows; row++) {
             graphics.blit(RenderPipelines.GUI_TEXTURED, layout.row, x, y + layout.topHeight + row * layout.rowHeight, 0.0F, 0.0F, layout.width,
@@ -323,7 +365,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             int cy = y + layout.topHeight + layout.gridTopInRow + (cell / layout.columns) * layout.cell;
             if (index < entries.size() && entries.get(index).getValue() >= 0) {
                 StorageKey key = entries.get(index).getKey();
-                graphics.item(key.stack(), cx, cy);
+                ResourceRender.icon(graphics, key, cx, cy);
                 coldMarks(graphics, key, cx, cy);
             }
             if (index == hovered || hovered == -2 && cell == cellUnder(mouseX, mouseY)) {
@@ -378,6 +420,45 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             lines.add(Component.translatable("tooltip.encodedlogistics.tape.no_drive").withColor(ERROR));
         } else {
             lines.add(Component.translatable("tooltip.encodedlogistics.tape.recall_eta", CraftPlanScreen.seconds(cold.eta(), true)).withColor(TEXT_MUTED));
+        }
+    }
+
+    private static ItemStack tabIcon(TerminalSettings.TypeTab tab) {
+        return switch (tab) {
+            case ALL -> new ItemStack(ModItems.DRIVE_BAY.get());
+            case ITEMS -> new ItemStack(ModItems.storageDrive(ResourceType.ITEM, StorageTier.K8).get());
+            case FLUIDS -> new ItemStack(ModItems.storageDrive(ResourceType.FLUID, StorageTier.K8).get());
+            case PRESSURIZED -> new ItemStack(ModItems.storageDrive(ResourceType.PRESSURIZED, StorageTier.K8).get());
+            case ENERGY -> new ItemStack(ModItems.storageDrive(ResourceType.ENERGY, StorageTier.K8).get());
+        };
+    }
+
+    // The type tab under the mouse, or null.
+    private TerminalSettings.@Nullable TypeTab tabAt(double mouseX, double mouseY) {
+        for (TerminalSettings.TypeTab tab : TerminalSettings.TypeTab.values()) {
+            int tx = leftPos + TAB_LEFT + tab.ordinal() * TAB_STEP, ty = topPos - TAB_STRIP + 1;
+            if (mouseX >= tx && mouseX < tx + TAB_SIZE && mouseY >= ty && mouseY < ty + TAB_SIZE) {
+                return tab;
+            }
+        }
+        return null;
+    }
+
+    // The Energy tab: the network's energy pool in the grid's place.
+    private void extractEnergy(GuiGraphicsExtractor graphics) {
+        TerminalItemsPayload.Energy energy = menu.networkEnergy();
+        int left = layout.gridLeft + 2, top = layout.topHeight + 4, width = layout.columns * layout.cell - 4;
+        graphics.text(font, Component.translatable("gui.encodedlogistics.terminal.energy.title"), left, top, TEXT, false);
+        graphics.text(font, Component.translatable("gui.encodedlogistics.terminal.energy.stored",
+                String.format(Locale.ROOT, "%,d", energy.stored()), String.format(Locale.ROOT, "%,d", energy.capacity())), left, top + 12, TEXT_MUTED, false);
+        int filled = energy.capacity() <= 0 ? 0 : (int) Math.round((double) width * Math.min(energy.stored(), energy.capacity()) / energy.capacity());
+        graphics.fill(left, top + 23, left + width, top + 28, 0xFF1E1E1E);
+        graphics.fill(left, top + 23, left + filled, top + 28, ACCENT);
+        if (rows * layout.rowHeight > 50) {
+            graphics.text(font, Component.translatable("gui.encodedlogistics.terminal.energy.drives", String.format(Locale.ROOT, "%,d", energy.driveStored()),
+                    String.format(Locale.ROOT, "%,d", energy.driveCapacity())), left, top + 32, TEXT_MUTED, false);
+            graphics.text(font, Component.translatable("gui.encodedlogistics.terminal.energy.flow", String.format(Locale.ROOT, "%,.1f", energy.generation()),
+                    String.format(Locale.ROOT, "%,.1f", energy.usage())), left, top + 44, TEXT_MUTED, false);
         }
     }
 
@@ -444,18 +525,24 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                     layout.topHeight + (rows * layout.rowHeight - 8) / 2, ERROR, false);
             return;
         }
-        // Counts at half size, bottom right, shadowed.
+        if (TerminalSettings.typeTab() == TerminalSettings.TypeTab.ENERGY) {
+            extractEnergy(graphics);
+            return;
+        }
+        // Counts at half size, bottom right, shadowed: items as numbers, fluids and gases as B / mB.
         List<Map.Entry<StorageKey, Long>> entries = view();
         for (int cell = 0; cell < rows * layout.columns; cell++) {
             int index = scrollRow * layout.columns + cell;
             if (index >= entries.size()) {
                 break;
             }
+            StorageKey key = entries.get(index).getKey();
             long count = entries.get(index).getValue();
-            if (count == 1 || count < 0) {
+            if (count == 1 && key.isItem() || count < 0) {
                 continue;
             }
-            String text = count == 0 ? Component.translatable("gui.encodedlogistics.terminal.craft").getString() : abbreviate(count);
+            String text = count == 0 ? Component.translatable("gui.encodedlogistics.terminal.craft").getString()
+                    : key.isItem() ? abbreviate(count) : key.type().abbreviate(count);
             int cx = layout.gridLeft + (cell % layout.columns) * layout.cell;
             int cy = layout.topHeight + layout.gridTopInRow + (cell / layout.columns) * layout.cell;
             graphics.pose().pushMatrix();
@@ -474,7 +561,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             Map.Entry<StorageKey, Long> entry = view().get(index);
             List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(entry.getKey().stack()));
             if (entry.getValue() > 0) {
-                lines.add(Component.literal(String.format(Locale.ROOT, "%,d", entry.getValue())).withColor(TEXT_MUTED));
+                lines.add(Component.literal(entry.getKey().isItem() ? String.format(Locale.ROOT, "%,d", entry.getValue())
+                        : entry.getKey().format(entry.getValue())).withColor(TEXT_MUTED));
+            }
+            if (!entry.getKey().isItem() && entry.getValue() > 0) {
+                lines.add(Component.translatable("gui.encodedlogistics.terminal.fill_hint").withColor(TEXT_MUTED));
             }
             coldLines(entry.getKey(), lines);
             TerminalItemsPayload.Entry shared = menu.shared(entry.getKey());
@@ -486,6 +577,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 lines.add(Component.translatable("gui.encodedlogistics.terminal.craft_hint").withColor(ACCENT));
             }
             graphics.setTooltipForNextFrame(font, lines, Optional.empty(), entry.getKey().stack(), mouseX, mouseY);
+            return;
+        }
+        TerminalSettings.TypeTab hoveredTab = tabAt(mouseX, mouseY);
+        if (hoveredTab != null) {
+            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.terminal.tab." + hoveredTab.name().toLowerCase(Locale.ROOT)),
+                    mouseX, mouseY);
             return;
         }
         for (int button = 0; button < layout.buttonIcons.size(); button++) {
@@ -542,6 +639,13 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double mx = event.x(), my = event.y();
+        TerminalSettings.TypeTab clickedTab = tabAt(mx, my);
+        if (clickedTab != null) {
+            TerminalSettings.typeTab(clickedTab);
+            viewVersion = -1;
+            scrollRow = 0;
+            return true;
+        }
         for (int button = 0; button < layout.buttonIcons.size(); button++) {
             int bx = leftPos + layout.toolbarLeft, by = topPos + layout.toolbarTop + button * layout.toolbarSpacing;
             if (mx >= bx && mx < bx + 18 && my >= by && my < by + 18) {
@@ -579,7 +683,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         // With an item held, a gap between the grid's squares puts it in too.
         if (index == -1 && menu.isOnline() && !menu.getCarried().isEmpty() && inInsertArea(mx, my)
                 && (event.button() == InputConstants.MOUSE_BUTTON_LEFT || event.button() == InputConstants.MOUSE_BUTTON_RIGHT)) {
-            int action = event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;
+            // On the Fluids or Pressurized tab a filled container is poured in; elsewhere it goes in as an item.
+            int action = fluidTab() && carriesResource() ? AccessTerminalMenu.EMPTY_CARRIED
+                    : event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.INSERT_CARRIED;
             ClientPacketDistributor.sendToServer(new TerminalClickPayload(menu.containerId, Optional.empty(), action));
             return true;
         }
@@ -597,7 +703,20 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 return true;
             }
             int action;
-            if (event.hasShiftDown() && event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
+            if (key != null && !key.isItem()) {
+                // A fluid or gas: a carried filled container is poured in, an empty one filled (a bucket's worth on a right
+                // click); shift-click fills a container in the inventory.
+                if (carrying) {
+                    action = carriesResource() ? AccessTerminalMenu.EMPTY_CARRIED
+                            : event.button() == InputConstants.MOUSE_BUTTON_RIGHT ? AccessTerminalMenu.TAKE_ONE : AccessTerminalMenu.TAKE_STACK;
+                } else if (event.hasShiftDown()) {
+                    action = AccessTerminalMenu.TAKE_TO_INVENTORY;
+                } else {
+                    return true;
+                }
+            } else if (carrying && fluidTab() && carriesResource()) {
+                action = AccessTerminalMenu.EMPTY_CARRIED;
+            } else if (event.hasShiftDown() && event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
                 if (key == null) {
                     return true;
                 }
@@ -615,6 +734,16 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             return true;
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    private static boolean fluidTab() {
+        TerminalSettings.TypeTab tab = TerminalSettings.typeTab();
+        return tab == TerminalSettings.TypeTab.FLUIDS || tab == TerminalSettings.TypeTab.PRESSURIZED;
+    }
+
+    // Whether the carried item holds a fluid or gas to pour in.
+    private boolean carriesResource() {
+        return ResourceContainers.contents(menu.getCarried(), null) != null;
     }
 
     @Override
@@ -653,6 +782,9 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         int index = hoveredIndex(mouseX, mouseY);
         if (index != -1 && scrollY != 0 && menu.isOnline() && minecraft.hasShiftDown()) {
             StorageKey key = index >= 0 ? view().get(index).getKey() : null;
+            if (key != null && !key.isItem()) {
+                return true;
+            }
             int action = scrollY > 0 ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.TAKE_ONE;
             if (action == AccessTerminalMenu.INSERT_ONE ? !menu.getCarried().isEmpty() : key != null) {
                 for (int i = 0; i < Math.max(1, (int) Math.abs(scrollY)); i++) {

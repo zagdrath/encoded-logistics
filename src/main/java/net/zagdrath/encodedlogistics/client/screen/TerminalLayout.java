@@ -193,7 +193,8 @@ public final class TerminalLayout {
     public int rowsFor(int screenHeight) {
         int fit = defaultRows;
         if (fitToWindow) {
-            int rows = (screenHeight - topHeight - sectionHeight - bottomHeight - 16) / rowHeight;
+            // A margin, and room above for the type tabs (AbstractTerminalScreen.TAB_STRIP).
+            int rows = (screenHeight - topHeight - sectionHeight - bottomHeight - 16 - AbstractTerminalScreen.TAB_STRIP) / rowHeight;
             fit = Math.max(minRows, Math.min(maxRows, rows));
         }
         int wanted = switch (TerminalSettings.height()) {

@@ -7,12 +7,17 @@ package net.zagdrath.encodedlogistics.client.screen;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-// The terminals' toolbar settings (sort mode and direction, craftables shown, grid height, search mode), shared by every
+// The terminals' toolbar settings (sort mode and direction, type tab, craftables shown, grid height, search mode), shared by every
 // terminal and kept in the client config (encodedlogistics-client.toml), so they last across restarts. Each change is
 // saved straight away. Before the config has loaded (it loads at startup) the defaults stand in.
 public final class TerminalSettings {
     public enum SortMode {
         NAME, COUNT, MOD
+    }
+
+    // The grid's type tab: everything, one resource type, or the network's energy (a summary, not a grid).
+    public enum TypeTab {
+        ALL, ITEMS, FLUIDS, PRESSURIZED, ENERGY
     }
 
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder().push("terminal");
@@ -26,6 +31,9 @@ public final class TerminalSettings {
     private static final ModConfigSpec.EnumValue<TerminalLayout.Height> HEIGHT = BUILDER
             .comment("The grid's height: a fixed size, or as many rows as fit the window.")
             .defineEnum("height", TerminalLayout.Height.FILL);
+    private static final ModConfigSpec.EnumValue<TypeTab> TYPE_TAB = BUILDER
+            .comment("The grid's tab: everything, items, fluids, pressurized gases, or the energy summary.")
+            .defineEnum("typeTab", TypeTab.ALL);
     private static final ModConfigSpec.BooleanValue SEARCH_SYNCED = BUILDER
             .comment("Keep the search field in step with JEI's search bar (needs JEI).")
             .define("searchSynced", false);
@@ -93,6 +101,14 @@ public final class TerminalSettings {
 
     public static void sortMode(SortMode mode) {
         set(SORT_MODE, mode);
+    }
+
+    public static TypeTab typeTab() {
+        return SPEC.isLoaded() ? TYPE_TAB.get() : TYPE_TAB.getDefault();
+    }
+
+    public static void typeTab(TypeTab tab) {
+        set(TYPE_TAB, tab);
     }
 
     public static boolean descending() {

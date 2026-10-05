@@ -31,18 +31,22 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
-import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
+import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
+import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceContainers;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The Access Terminal screen's menu: the player's inventory below a grid of the network's items. The grid isn't slots:
 // the server sends the network's items (what changed since last time, every SYNC_INTERVAL ticks) and the client asks
@@ -60,8 +64,13 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // into the inventory, shift-right-click (or Shift+wheel down) one onto the cursor; with an item carried, left-click
     // puts it all in and right-click (or Shift+wheel up) one; double-clicking an inventory stack puts every stack like it
     // in, along with the one picked up by the first click.
+    //
+    // A fluid or gas comes out only into a container: clicking it with an empty bucket, tank or gas container carried fills
+    // that (TAKE_STACK as much as fits, TAKE_HALF / TAKE_ONE a bucket's worth), and shift-clicking it fills a container in
+    // the inventory (TAKE_TO_INVENTORY). EMPTY_CARRIED pours the carried container's fluid or gas into the network (the
+    // screen sends it for a filled container clicked on a fluid or gas, or anywhere on the Fluids or Pressurized tab).
     public static final int TAKE_STACK = 0, TAKE_HALF = 1, TAKE_TO_INVENTORY = 2, INSERT_CARRIED = 3, INSERT_ONE = 4, TAKE_ONE = 5,
-            INSERT_ALL_LIKE_CARRIED = 6;
+            INSERT_ALL_LIKE_CARRIED = 6, EMPTY_CARRIED = 7;
 
     // The player's inventory slots come first (0-35); terminals with a crafting section add theirs after.
     public static final int INVENTORY_SLOTS = 36;
@@ -81,6 +90,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     private @Nullable Set<StorageKey> sentCraftables;
     private List<TerminalItemsPayload.Recall> sentRecalls = List.of();
     private boolean sentOnline, sentFailover;
+    private TerminalItemsPayload.@Nullable Energy sentEnergy;
     private int ticksUntilSync;
     private final Map<StorageKey, Long> waiting = new LinkedHashMap<>();
 
@@ -90,6 +100,7 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     private final Map<StorageKey, Integer> recalls = new HashMap<>();
     private final Set<StorageKey> craftables = new LinkedHashSet<>();
     private boolean online, failover;
+    private TerminalItemsPayload.Energy energy = TerminalItemsPayload.Energy.NONE;
     private int version;
 
     // Client constructor, with the terminal's position and side written by the server.
@@ -197,13 +208,21 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
             waiting.keySet().forEach(key -> recallsNow.add(new TerminalItemsPayload.Recall(key, Math.max(0, storage.cold().progress(key)))));
         }
         Set<StorageKey> craftable = isOnline && player.level() instanceof ServerLevel level ? CraftRequests.craftables(level.getServer(), network()) : Set.of();
+        TerminalItemsPayload.Energy energyNow = TerminalItemsPayload.Energy.NONE;
+        if (player.level() instanceof ServerLevel level) {
+            NetworkSnapshot snapshot = ControllerStructures.snapshotOf(level.getServer(), homeNetwork());
+            energyNow = new TerminalItemsPayload.Energy(snapshot.stored(), snapshot.capacity(), snapshot.driveStored(), snapshot.driveCapacity(),
+                    snapshot.usage(), snapshot.generation());
+        }
         boolean craftablesChanged = !craftable.equals(sentCraftables);
         boolean isFailover = !isOnline && player.level() instanceof ServerLevel level
                 && ControllerStructures.statusOf(level.getServer(), homeNetwork()) == NetworkStatus.FAILOVER;
-        if (full || !changes.isEmpty() || isOnline != sentOnline || isFailover != sentFailover || craftablesChanged || !recallsNow.equals(sentRecalls)) {
+        if (full || !changes.isEmpty() || isOnline != sentOnline || isFailover != sentFailover || craftablesChanged || !recallsNow.equals(sentRecalls)
+                || !energyNow.equals(sentEnergy)) {
             PacketDistributor.sendToPlayer(serverPlayer, new TerminalItemsPayload(containerId, isOnline, isFailover, full, changes,
-                    craftablesChanged ? Optional.of(List.copyOf(craftable)) : Optional.empty(), recallsNow));
+                    craftablesChanged ? Optional.of(List.copyOf(craftable)) : Optional.empty(), recallsNow, energyNow));
         }
+        sentEnergy = energyNow;
         sent = new HashMap<>(now);
         sentCraftables = craftable;
         sentRecalls = recallsNow;
@@ -278,14 +297,18 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // A click on the grid: take the clicked item (a stack, half a stack, one, or a stack into the inventory) or put the
     // carried stack (or one of it) in.
     public void handleClick(ServerPlayer player, @Nullable StorageKey key, int action) {
-        RackPermission permission = action == INSERT_CARRIED || action == INSERT_ONE || action == INSERT_ALL_LIKE_CARRIED ? RackPermission.INSERT
-                : RackPermission.EXTRACT;
+        RackPermission permission = action == INSERT_CARRIED || action == INSERT_ONE || action == INSERT_ALL_LIKE_CARRIED || action == EMPTY_CARRIED
+                ? RackPermission.INSERT : RackPermission.EXTRACT;
         NetworkStorage storage = storage();
         if (storage == null || !NetworkAccess.tell(allowed(permission), player, permission)) {
             return;
         }
         ItemStack carried = getCarried();
-        switch (action) {
+        if (action == EMPTY_CARRIED) {
+            emptyCarried(player, storage);
+        } else if (key != null && !key.isItem()) {
+            fillContainer(player, storage, key, action);
+        } else switch (action) {
             case INSERT_CARRIED, INSERT_ONE -> {
                 if (carried.isEmpty()) {
                     return;
@@ -365,6 +388,59 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
         broadcastChanges();
     }
 
+    // A fluid or gas out of the network into a container: the carried one, or (TAKE_TO_INVENTORY) the first one in the
+    // inventory with room. Never as an item.
+    private void fillContainer(ServerPlayer player, NetworkStorage storage, StorageKey key, int action) {
+        long limit = action == TAKE_STACK || action == TAKE_TO_INVENTORY ? Long.MAX_VALUE : FluidType.BUCKET_VOLUME;
+        long available = Math.min(limit, storage.count(key));
+        if (available <= 0) {
+            return;
+        }
+        if (action == TAKE_TO_INVENTORY) {
+            for (int i = 0; i < INVENTORY_SLOTS; i++) {
+                ItemAccess access = ItemAccess.forPlayerSlot(player, slots.get(i).getContainerSlot());
+                if (fill(storage, key, available, access)) {
+                    return;
+                }
+            }
+            return;
+        }
+        if (!getCarried().isEmpty()) {
+            fill(storage, key, available, ItemAccess.forPlayerCursor(player, this));
+        }
+    }
+
+    // Fills the container behind access from the network, as far as it takes and the network has; true when it took any.
+    private boolean fill(NetworkStorage storage, StorageKey key, long available, ItemAccess access) {
+        long room = ResourceContainers.fill(access, key, available, true);
+        long taken = room > 0 ? storage.extract(key, room, false) : 0;
+        if (taken <= 0) {
+            return false;
+        }
+        long filled = ResourceContainers.fill(access, key, taken, false);
+        if (filled < taken) {
+            storage.insert(key, taken - filled, false);
+        }
+        moved((int) Math.max(1, filled / FluidType.BUCKET_VOLUME));
+        return filled > 0;
+    }
+
+    // The carried container's fluid or gas into the network, as much as fits.
+    private void emptyCarried(ServerPlayer player, NetworkStorage storage) {
+        StorageKey contents = ResourceContainers.contents(getCarried(), null);
+        if (contents == null) {
+            return;
+        }
+        ItemAccess access = ItemAccess.forPlayerCursor(player, this);
+        long there = ResourceContainers.drain(access, contents, Long.MAX_VALUE, true);
+        long fits = there > 0 ? storage.insert(contents, there, true) : 0;
+        long drained = fits > 0 ? ResourceContainers.drain(access, contents, fits, false) : 0;
+        if (drained > 0) {
+            storage.insert(contents, drained, false);
+            moved((int) Math.max(1, drained / FluidType.BUCKET_VOLUME));
+        }
+    }
+
     // Shift-clicking a stack in the inventory puts it into the network.
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
@@ -392,8 +468,9 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
     // --- Client ---
 
     public void applyUpdate(boolean online, boolean failover, boolean full, List<TerminalItemsPayload.Entry> entries, @Nullable List<StorageKey> craftables,
-            List<TerminalItemsPayload.Recall> recalls) {
+            List<TerminalItemsPayload.Recall> recalls, TerminalItemsPayload.Energy energy) {
         this.online = online;
+        this.energy = energy;
         this.failover = failover;
         if (craftables != null) {
             this.craftables.clear();
@@ -452,6 +529,11 @@ public class AccessTerminalMenu extends AbstractContainerMenu {
 
     public boolean isOnline() {
         return online;
+    }
+
+    // Client: the network's energy, for the Energy tab.
+    public TerminalItemsPayload.Energy networkEnergy() {
+        return energy;
     }
 
     // Client: offline because its network is failing over (back shortly).

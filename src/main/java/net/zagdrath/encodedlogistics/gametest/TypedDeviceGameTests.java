@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.gametest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
@@ -29,6 +31,7 @@ import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
+import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.PartMenus;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.part.DeployerPlanePart;
@@ -250,6 +253,49 @@ final class TypedDeviceGameTests {
                 .thenExecute(() -> {
                     helper.assertTrue(helper.getBlockState(TARGET).getFluidState().isSource(), "Front is " + helper.getBlockState(TARGET));
                     helper.assertTrue(storage(helper).count(WATER) == 0, "Network still has " + storage(helper).count(WATER) + " mB water");
+                })
+                .thenSucceed();
+    }
+
+    // An Access Terminal moves fluids only through containers: an empty bucket on the cursor is filled from the network,
+    // a filled one poured back in, Shift-click fills a bucket in the inventory, and nothing ever comes out as an item.
+    static void terminalFluids(GameTestHelper helper) {
+        rig(helper);
+        helper.startSequence()
+                .thenExecute(() -> {
+                    ServerPlayer placer = helper.makeMockServerPlayerInLevel();
+                    ItemStack terminal = new ItemStack(PartType.ACCESS_TERMINAL.item());
+                    placer.setItemInHand(InteractionHand.MAIN_HAND, terminal);
+                    BlockPos cable = helper.absolutePos(CABLE);
+                    helper.getBlockState(CABLE).useItemOn(terminal, helper.getLevel(), placer, InteractionHand.MAIN_HAND,
+                            new BlockHitResult(Vec3.atCenterOf(cable).add(0, 0.2, 0), Direction.UP, cable, false));
+                })
+                .thenIdle(12)
+                .thenExecute(() -> {
+                    storage(helper).insert(WATER, 3_000, false);
+                    // A fake player: its connection drops the terminal's sync payloads.
+                    ServerPlayer player = FakePlayerFactory.getMinecraft(helper.getLevel());
+                    player.getInventory().clearContent();
+                    AccessTerminalMenu menu = new AccessTerminalMenu(2, player.getInventory(), helper.absolutePos(CABLE), Direction.UP);
+                    player.containerMenu = menu;
+                    // Empty hand: nothing comes out.
+                    menu.handleClick(player, WATER, AccessTerminalMenu.TAKE_STACK);
+                    helper.assertTrue(menu.getCarried().isEmpty() && storage(helper).count(WATER) == 3_000, "Took water into a bare hand: " + menu.getCarried());
+                    menu.setCarried(new ItemStack(Items.BUCKET));
+                    menu.handleClick(player, WATER, AccessTerminalMenu.TAKE_STACK);
+                    helper.assertTrue(menu.getCarried().is(Items.WATER_BUCKET), "Carried " + menu.getCarried());
+                    helper.assertTrue(storage(helper).count(WATER) == 2_000, "Network has " + storage(helper).count(WATER));
+                    menu.handleClick(player, null, AccessTerminalMenu.EMPTY_CARRIED);
+                    helper.assertTrue(menu.getCarried().is(Items.BUCKET) && storage(helper).count(WATER) == 3_000, "Pouring left " + menu.getCarried());
+                    menu.setCarried(ItemStack.EMPTY);
+                    player.getInventory().setItem(5, new ItemStack(Items.BUCKET));
+                    menu.handleClick(player, WATER, AccessTerminalMenu.TAKE_TO_INVENTORY);
+                    helper.assertTrue(player.getInventory().getItem(5).is(Items.WATER_BUCKET), "Inventory bucket " + player.getInventory().getItem(5));
+                    helper.assertTrue(storage(helper).count(WATER) == 2_000, "Network has " + storage(helper).count(WATER));
+                    // A filled bucket clicked in as an item stays an item.
+                    menu.setCarried(new ItemStack(Items.WATER_BUCKET));
+                    menu.handleClick(player, null, AccessTerminalMenu.INSERT_CARRIED);
+                    helper.assertTrue(storage(helper).count(StorageKey.of(new ItemStack(Items.WATER_BUCKET))) == 1, "Bucket not stored as an item");
                 })
                 .thenSucceed();
     }
