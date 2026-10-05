@@ -5,10 +5,14 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -16,6 +20,9 @@ import org.jspecify.annotations.Nullable;
 import net.zagdrath.encodedlogistics.elcl.Diagnostic;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
+import net.zagdrath.encodedlogistics.elcl.compile.FileResolver;
+import net.zagdrath.encodedlogistics.elcl.db.Dds;
+import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
 import net.zagdrath.encodedlogistics.elcl.parse.Parser;
 import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
@@ -32,11 +39,20 @@ import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 // command (F4 prompts it). F4 on a source line prompts its statement and writes the answer back. F11: full-screen edit
 // (all 80 columns, no margins); F10: the cursor to the command line. Read-only (5=Display, ELSYS): F3 only. Another
 // user editing it: ELC0208. The member comes in pages and goes back in pieces (ScreenQueries' source / save).
+// A PF member (a physical file's definition) is checked as DDS (Dds: each line its own statement) and has no prompter.
+// An ELCLP member's DCLFs are checked against the files' formats, which the editor asks the server for (fileformat)
+// as it meets them; until one has come, that file's variables go unchecked.
 final class EditorPanel extends CrtPanel {
     private static final int LAST = 19, MARGIN = 7, TEXT = 8, VISIBLE = 72, SHIFT = 8, CHUNK = 7_500;
 
     private final String library, member;
     private boolean readOnly, full, loaded;
+    // ELCLP or PF (the source query says).
+    private String type = "ELCLP";
+    // DCLF formats by LIB/FILE as written: those the server sent, those it hasn't got, those asked for (in order).
+    private final Map<String, RecordFormat> formats = new HashMap<>();
+    private final Set<String> missing = new HashSet<>();
+    private final Deque<String> asked = new ArrayDeque<>();
     private final List<SourceLine> incoming = new ArrayList<>();
     private EditorModel model = new EditorModel(List.of());
     private int top, offset;
@@ -119,6 +135,9 @@ final class EditorPanel extends CrtPanel {
             TerminalLine head = response.lines().getFirst();
             int total = Integer.parseInt(cell(head, 0));
             readOnly |= cell(head, 2).equals("1");
+            if (!cell(head, 3).isEmpty()) {
+                type = cell(head, 3);
+            }
             for (TerminalLine line : response.lines().subList(1, response.lines().size())) {
                 incoming.add(new SourceLine(Integer.parseInt(cell(line, 0)), cell(line, 2), Integer.parseInt(cell(line, 1))));
             }
@@ -129,13 +148,58 @@ final class EditorPanel extends CrtPanel {
             load(incoming);
         } else if (answers(response, "savecommit") && response.message().isPresent() && response.message().get().getString().startsWith("ELC0213")) {
             model.saved(today());
+        } else if (answers(response, "fileformat") && !asked.isEmpty()) {
+            String key = asked.poll();
+            RecordFormat format = response.lines().isEmpty() ? null : RecordFormat.load(cell(response.lines().getFirst(), 1));
+            if (format != null) {
+                formats.put(key, format);
+            } else {
+                missing.add(key);
+            }
         }
+    }
+
+    private boolean pf() {
+        return type.equals("PF");
+    }
+
+    // The formats of the files the source's DCLFs name that haven't been asked for yet, asked for.
+    private void askFormats(List<Stmt> statements) {
+        for (Stmt statement : statements) {
+            if (statement.is("DCLF")) {
+                String[] file = Compiler.qualified(statement.value("FILE"));
+                String key = FileResolver.key(file[0], file[1]);
+                if (!file[1].isEmpty() && !formats.containsKey(key) && !missing.contains(key) && !asked.contains(key)) {
+                    asked.add(key);
+                    screen.query("fileformat " + file[0] + " " + file[1]);
+                }
+            }
+        }
+    }
+
+    // The editor's resolver: the formats in hand; lenient while one is still to come.
+    private FileResolver resolver() {
+        boolean waiting = !asked.isEmpty();
+        return new FileResolver() {
+            @Override
+            public @Nullable RecordFormat format(String library, String file) {
+                return formats.get(FileResolver.key(library, file));
+            }
+
+            @Override
+            public boolean lenient() {
+                return waiting;
+            }
+        };
     }
 
     // The member in hand: an empty one opens on a blank line, the cursor on it.
     private void load(List<SourceLine> source) {
         model = new EditorModel(source);
         loaded = true;
+        if (!pf()) {
+            askFormats(Parser.parse(model.texts()).statements());
+        }
         if (model.lines.isEmpty() && !readOnly) {
             model.lines.add(EditorModel.blank());
         }
@@ -316,7 +380,7 @@ final class EditorPanel extends CrtPanel {
 
     @Override
     void draw(CrtGrid grid) {
-        grid.put(1, 1, library + "/" + member + "   ELCLP");
+        grid.put(1, 1, library + "/" + member + "   " + type);
         if (full) {
             grid.put(1, 27, tr("crt.encodedlogistics.edit.full_note"), CrtGrid.DIM);
         }
@@ -534,8 +598,17 @@ final class EditorPanel extends CrtPanel {
             return null;
         }
         List<String> texts = model.texts();
-        List<Stmt> statements = Parser.parse(texts).statements();
-        Compiler.Result result = Compiler.compileTexts(texts);
+        List<Stmt> statements;
+        List<Diagnostic> diagnostics;
+        if (pf()) {
+            // A definition: each line is its own statement.
+            statements = List.of();
+            diagnostics = Dds.compile(texts).diagnostics();
+        } else {
+            statements = Parser.parse(texts).statements();
+            askFormats(statements);
+            diagnostics = Compiler.compileTexts(texts, resolver()).diagnostics();
+        }
         Set<Integer> changed = new HashSet<>();
         for (EditorModel.Line line : unchecked) {
             int at = model.lines.indexOf(line);
@@ -545,8 +618,8 @@ final class EditorPanel extends CrtPanel {
         }
         unchecked.clear();
         error = null;
-        for (Diagnostic diagnostic : result.diagnostics()) {
-            if (!diagnostic.isError()) {
+        for (Diagnostic diagnostic : diagnostics) {
+            if (!diagnostic.isError() || diagnostic.line() < 0 || diagnostic.line() >= model.lines.size()) {
                 continue;
             }
             int first = diagnostic.line(), last = diagnostic.line();
@@ -776,6 +849,10 @@ final class EditorPanel extends CrtPanel {
 
     private void promptStatement() {
         sync();
+        if (pf()) {
+            screen.message(tr("crt.encodedlogistics.edit.no_prompt_pf"));
+            return;
+        }
         int[] at = cursor();
         List<Stmt> statements = Parser.parse(model.texts()).statements();
         for (Stmt statement : statements) {

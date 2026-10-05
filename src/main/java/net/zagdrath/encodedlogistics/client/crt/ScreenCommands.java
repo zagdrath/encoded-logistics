@@ -11,6 +11,7 @@ import java.util.Locale;
 import org.jspecify.annotations.Nullable;
 
 import net.zagdrath.encodedlogistics.elcl.Diagnostic;
+import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
 import net.zagdrath.encodedlogistics.elcl.parse.Parser;
@@ -18,8 +19,9 @@ import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 
 // The commands that open a screen (screens handoff D: WRKLIB, WRKMBR LIB(), EDTMBR MBR(), WRKACTJOB, WRKJOB JOB(),
 // DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF, WRKSYSVAL, and the desk's own WRKINV, WRKDEV, DSPNETSTS,
-// WRKCRFJOB), typed on any command line: the screen opens on this terminal, checked against the command's schema
-// first. GO MAIN goes back to the main menu, SIGNOFF signs off.
+// WRKCRFJOB; the database's WRKF LIB(), DSPPFM, DSPFD, UPDDTA, and RUNQRY OUTPUT(*DISPLAY)), typed on any command line:
+// the screen opens on this terminal, checked against the command's schema first. GO MAIN goes back to the main menu,
+// SIGNOFF signs off. RUNQRY's other outputs run on the server as any command does.
 final class ScreenCommands {
     private ScreenCommands() {}
 
@@ -78,6 +80,25 @@ final class ScreenCommands {
                 String job = value(statement, "JOB", "*ALL");
                 yield new WrkSplfPanel(screen, job.equals("*ALL") ? null : job);
             }
+            case "WRKF" -> {
+                String library = value(statement, "LIB", "*CURLIB");
+                yield new WrkFPanel(screen, library.equals("*CURLIB") ? screen.currentLibrary : library);
+            }
+            case "DSPPFM" -> new DspPfmPanel(screen, value(statement, "FILE", ""));
+            case "DSPFD" -> new DspFdPanel(screen, value(statement, "FILE", ""));
+            case "UPDDTA" -> {
+                // ELSYS's files are read-only (act says so).
+                String file = value(statement, "FILE", "");
+                yield file.startsWith("ELSYS/") ? null : new UpdDtaPanel(screen, file);
+            }
+            case "RUNQRY" -> {
+                if (!value(statement, "OUTPUT", "*DISPLAY").equals("*DISPLAY")) {
+                    yield null;
+                }
+                Stmt.Param sort = statement.param("SORT");
+                yield new DspPfmPanel(screen, value(statement, "FILE", ""), value(statement, "QRYSLT", "*ALL"),
+                        sort == null ? "" : String.join(" ", sort.values().stream().map(Expr::toString).toList()));
+            }
             case "EDTMBR" -> {
                 String member = value(statement, "MBR", "");
                 int slash = member.indexOf('/');
@@ -88,9 +109,9 @@ final class ScreenCommands {
         };
     }
 
-    // GO and SIGNOFF.
+    // GO, SIGNOFF and UPDDTA on ELSYS.
     private static boolean handled(CrtTerminal screen, Stmt statement) {
-        return statement.is("GO") || statement.is("SIGNOFF");
+        return statement.is("GO") || statement.is("SIGNOFF") || statement.is("UPDDTA");
     }
 
     private static void act(CrtTerminal screen, Stmt statement) {
@@ -105,6 +126,7 @@ final class ScreenCommands {
                     screen.message(CrtPanel.tr("crt.encodedlogistics.msg.no_menu", menu));
                 }
             }
+            case "UPDDTA" -> screen.message(ElclMessage.of("ELC0205", "ELSYS").toString());
             default -> screen.signOff();
         }
     }

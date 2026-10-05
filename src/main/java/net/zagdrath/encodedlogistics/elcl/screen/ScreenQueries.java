@@ -44,7 +44,9 @@ import net.zagdrath.encodedlogistics.terminal.TerminalOutput;
 //  sysvals / sysval S
 //  signon USER [CURLIB]   (the session signs on: ELC0402 for a name not the player's; the profile's class, current
 //                          library and library list come back)
-//  values <items|devices|libraries|members|programs|jobs|sysvals> [filter]   (the prompter's F4 lists)
+//  values <items|devices|libraries|members|programs|jobs|sysvals|files> [filter]   (the prompter's F4 lists)
+//  files / filedesc / filedata / runqry / record / putrecord / addrecord / delrecord / fileformat   (the database
+//                          screens and the editor's DCLF check: FileQueries)
 public final class ScreenQueries {
     // Lines of source a response carries (a longer member comes in pages).
     public static final int SOURCE_PAGE = 1_000;
@@ -137,6 +139,10 @@ public final class ScreenQueries {
                     yield new TerminalOutput();
                 }
                 case "values" -> values(context, system, arg(words, 1), words.size() > 2 ? words.get(2) : "");
+                case "files", "filedesc", "filedata", "runqry", "record", "putrecord", "addrecord", "delrecord", "fileformat" -> {
+                    TerminalOutput out = FileQueries.handle(context, system, first, text.strip());
+                    yield out != null ? out : new TerminalOutput();
+                }
                 default -> new TerminalOutput();
             };
         } catch (ElclException e) {
@@ -197,13 +203,14 @@ public final class ScreenQueries {
         return out;
     }
 
-    // First line: total lines, from, read-only (1 / 0); then seq, date, text for up to SOURCE_PAGE lines from `from`.
+    // First line: total lines, from, read-only (1 / 0), type (ELCLP / PF); then seq, date, text for up to SOURCE_PAGE
+    // lines from `from`.
     private static TerminalOutput source(ElclSystem system, String user, String library, String member, int from) throws ElclException {
         List<SourceLine> lines = ElclServices.libraries().source(system, library, member);
         LibraryService.Library lib = ElclServices.libraries().library(system, library);
         boolean readOnly = !StoredLibraryService.canChange(system, lib, user);
         TerminalOutput out = new TerminalOutput();
-        out.line(row(lines.size(), from, readOnly ? "1" : "0"));
+        out.line(row(lines.size(), from, readOnly ? "1" : "0", ElclServices.libraries().member(system, library, member).type()));
         for (int i = Math.max(0, from); i < Math.min(lines.size(), from + SOURCE_PAGE); i++) {
             SourceLine line = lines.get(i);
             out.line(row(line.seq(), line.date(), line.text()));
@@ -439,6 +446,14 @@ public final class ScreenQueries {
             }
             case "JOBS" -> ElclServices.jobs().jobs(system).forEach(job -> out.line(row(job.qualified(), job.status())));
             case "SYSVALS" -> ElclServices.sysvals().values(system).forEach(sysval -> out.line(row(sysval.name(), sysval.description())));
+            case "FILES" -> {
+                List<String> libraries = new ArrayList<>(filter.isEmpty() ? OsCommands.libraryList(system, context.user()) : List.of(filter.toUpperCase(Locale.ROOT)));
+                for (String library : libraries) {
+                    for (FileService.File file : ElclServices.files().files(system, library)) {
+                        out.line(row(library + "/" + file.name(), file.text()));
+                    }
+                }
+            }
             default -> {}
         }
         return out;

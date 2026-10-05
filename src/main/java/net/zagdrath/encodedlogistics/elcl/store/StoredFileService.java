@@ -168,22 +168,26 @@ public final class StoredFileService implements FileService {
     public synchronized List<File> files(ElclSystem system, String library) throws ElclException {
         SystemData.Library lib = StoredLibraryService.find(system, library);
         List<File> files = new ArrayList<>();
-        lib.files.values().forEach(file -> files.add(view(lib, file)));
+        for (DbFile file : lib.files.values()) {
+            files.add(shown(system, lib, file));
+        }
         return files;
     }
 
     @Override
     public synchronized File file(ElclSystem system, String library, String name) throws ElclException {
         SystemData.Library lib = StoredLibraryService.find(system, library);
-        DbFile file = find(lib, name);
-        File shown = view(lib, file);
-        if (file.system) {
-            // A system file's record count is what's there now.
-            DbFile rows = data(system, lib, file, true);
-            return new File(shown.library(), shown.name(), shown.attribute(), shown.text(), rows.size(), 0, shown.created(), shown.source(), false, true,
-                    shown.format());
+        return shown(system, lib, find(lib, name));
+    }
+
+    // A file as the screens show it; a system file's record count is what's there now.
+    private File shown(ElclSystem system, SystemData.Library library, DbFile file) {
+        File shown = view(library, file);
+        if (!file.system) {
+            return shown;
         }
-        return shown;
+        return new File(shown.library(), shown.name(), shown.attribute(), shown.text(), data(system, library, file, true).size(), 0, shown.created(),
+                shown.source(), false, true, shown.format());
     }
 
     @Override

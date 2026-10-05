@@ -12,12 +12,16 @@ import java.util.List;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
+import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
-// WRKMBR (screen 4): a library's source members - Member, Type (ELCLP), Chg ("*" when the source changed after its
-// program was compiled), Text. Options: 2=Edit, 3=Copy (a window: to library and member, CPYMBR), 4=Delete (confirmed,
-// DLTMBR), 5=Display (the editor, read-only), 6=Print (the source to a spooled file), 7=Rename (a window: the new name,
-// RNMMBR), 14=Compile (CRTELPGM: ELC0218 or ELC0206, the listing in Work with Output). In ELSYS 2, 4 and 7 are refused
-// (ELC0205). F6 prompts CRTMBR; F11 sorts by name, changed, text.
+// WRKMBR (screen 4): a library's source members - Member, Type (ELCLP, or PF: a file's definition), Chg ("*" when the
+// source changed after its program, or file, was made), Text - and after them the library's files (Type *FILE).
+// Options: 2=Edit, 3=Copy (a window: to library and member, CPYMBR), 4=Delete (confirmed, DLTMBR), 5=Display (the
+// editor, read-only), 6=Print (the source to a spooled file), 7=Rename (a window: the new name, RNMMBR), 14=Compile
+// (an ELCLP member CRTELPGM: ELC0218 or ELC0206; a PF member CRTPF, or CHGPF when its file is there already; the
+// listing in Work with Output). On a file: 2=Change data, 4=Delete (DLTF), 5=Display data, 8=Display description (as
+// Work with Files). In ELSYS 2, 4 and 7 are refused (ELC0205). F6 prompts CRTMBR; F11 sorts the members by name,
+// changed, text.
 final class WrkMbrPanel extends OsListPanel {
     private enum Sort {
         NAME, CHANGED, TEXT
@@ -25,6 +29,8 @@ final class WrkMbrPanel extends OsListPanel {
 
     private final String library;
     private Sort sort = Sort.NAME;
+    // The members (sorted) and the files, the files after the members.
+    private List<TerminalLine> members = List.of(), files = List.of();
 
     WrkMbrPanel(CrtTerminal screen, String library) {
         super(screen);
@@ -76,6 +82,12 @@ final class WrkMbrPanel extends OsListPanel {
     }
 
     @Override
+    void shown() {
+        screen.query("files " + library);
+        super.shown();
+    }
+
+    @Override
     void receive(CrtResponsePayload response) {
         if (answers(response, topic())) {
             List<TerminalLine> lines = new ArrayList<>(response.lines());
@@ -84,11 +96,48 @@ final class WrkMbrPanel extends OsListPanel {
                 case CHANGED -> Comparator.comparing((TerminalLine line) -> cell(line, 2)).reversed().thenComparing(line -> cell(line, 0));
                 case TEXT -> Comparator.comparing((TerminalLine line) -> cell(line, 3), String.CASE_INSENSITIVE_ORDER);
             });
-            setRows(lines);
+            members = lines;
+            combine();
             response.message().ifPresent(screen::message);
             return;
         }
+        if (answers(response, "files")) {
+            // A file as a row like a member's: name, *FILE, changed, text.
+            List<TerminalLine> lines = new ArrayList<>();
+            for (TerminalLine file : response.lines()) {
+                lines.add(TerminalLine.builder().left(cell(file, 0), 0).left(FILE, 0).left(cell(file, 7), 0).left(cell(file, 3), 0).build());
+            }
+            files = lines;
+            combine();
+            return;
+        }
+        if (response.kind() == TerminalService.COMMAND) {
+            screen.query("files " + library);
+        }
         super.receive(response);
+    }
+
+    private void combine() {
+        List<TerminalLine> all = new ArrayList<>(members);
+        all.addAll(files);
+        setRows(all);
+    }
+
+    static final String FILE = "*FILE";
+
+    private static boolean isFile(TerminalLine row) {
+        return cell(row, 1).equals(FILE);
+    }
+
+    // A file and a member may share a name.
+    @Override
+    Object key(TerminalLine row) {
+        return isFile(row) ? FILE + "/" + cell(row, 0) : cell(row, 0);
+    }
+
+    @Override
+    String rowLabel(TerminalLine row) {
+        return isFile(row) ? cell(row, 0) + "  " + FILE : cell(row, 0);
     }
 
     @Override
@@ -141,6 +190,9 @@ final class WrkMbrPanel extends OsListPanel {
     @Override
     boolean option(String code, TerminalLine row) {
         String member = cell(row, 0), qualified = library + "/" + member;
+        if (isFile(row)) {
+            return WrkFPanel.fileOption(screen, this, library, member, code);
+        }
         switch (code) {
             case "2" -> then(() -> {
                 if (readOnly()) {
@@ -169,7 +221,16 @@ final class WrkMbrPanel extends OsListPanel {
                         values -> screen.runCommand("RNMMBR MBR(" + qualified + ") NEWNAME(" + values.get(0) + ")"))
                         .field(tr("crt.encodedlogistics.wrkmbr.new_name"), 10, member, ""));
             });
-            case "14" -> then(() -> screen.runCommand("CRTELPGM PGM(" + qualified + ")"));
+            case "14" -> then(() -> {
+                if (!cell(row, 1).equals("PF")) {
+                    screen.runCommand("CRTELPGM PGM(" + qualified + ")");
+                } else if (files.stream().anyMatch(file -> cell(file, 0).equals(member))) {
+                    // Its file is there: made again, its records kept.
+                    screen.runCommand("CHGPF FILE(" + qualified + ") SRCMBR(" + qualified + ")");
+                } else {
+                    screen.runCommand("CRTPF FILE(" + qualified + ") SRCMBR(" + qualified + ")");
+                }
+            });
             default -> {
                 return false;
             }
@@ -192,6 +253,6 @@ final class WrkMbrPanel extends OsListPanel {
 
     @Override
     String deleteCommand(TerminalLine row) {
-        return "DLTMBR MBR(" + library + "/" + cell(row, 0) + ")";
+        return (isFile(row) ? "DLTF FILE(" : "DLTMBR MBR(") + library + "/" + cell(row, 0) + ")";
     }
 }

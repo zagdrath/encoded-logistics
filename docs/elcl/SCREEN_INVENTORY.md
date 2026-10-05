@@ -59,6 +59,12 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | - | The Midrange machines' frame | NEW | `CrtMachineScreen`: the desk's CRT (`CrtDisplay`, shared with `CrtScreen`) and the same frame as every screen (the panel's id: MRCTL, KEYPUNCH, ...). Text only (HANDOFF v4 3): no buttons, no slots, no inventory; the hotbar and HUD hidden while it's open. Fields: values, options beside a list's rows (sent on Enter, then cleared), the command line; F1 help, F4 a list, F12 back or close; Tab and Up / Down move between fields |
 | - | Integrated Midrange System console | EXTENDED | The Terminal Desk's session (`TerminalDeskMenu` opened at the system's master), while the system is running |
 | - | Work with Machines | NEW | `WrkMchPanel` (WRKMCH; `ScreenQueries` "machines"): Arcforge machines with a Small Wireless Bridge on - Machine, Type, Status, Prog, Energy, Rate; 2=Change (`CHGMCHCFG`), 5=Display (DSPMCH: `TextPanel`, `TerminalService` "machine"), 7=Enable/Disable (`CHGMCHSTS`) |
+| - | Work with Files | NEW | `WrkFPanel` (WRKF LIB(); `elcl/screen/FileQueries` files): File, Attr, Chg, Records, Text; 2=Change data (`UpdDtaPanel`), 4=Delete (DLTF), 5=Display data (`DspPfmPanel`), 8=Display description (`DspFdPanel`); F6 prompts CRTPF. ELSYS: 2 and 4 refused (ELC0205). Layout `17_wrkf` |
+| - | Work with Members' files | EXTENDED | `WrkMbrPanel`: PF members beside ELCLP; the library's files after the members (Type `*FILE`, the file options and 8); 14=Compile on a PF member runs CRTPF (CHGPF when its file is there). Layout `22_wrkmbr_files` |
+| - | Display Physical File Member / Display Report | NEW | `DspPfmPanel` (DSPPFM FILE(), RUNQRY OUTPUT(*DISPLAY); FileQueries filedata / runqry, 200 records a window): headings bright, Position to (a key, or a record number), PageUp / PageDown, F19 / F20 shift 40. Layouts `18_dsppfm`, `19_runqry` |
+| - | Display File Description | NEW | `DspFdPanel` (DSPFD FILE(); FileQueries filedesc). Layout `20_dspfd` |
+| - | Update Data | NEW | `UpdDtaPanel` (UPDDTA FILE(); FileQueries record / putrecord / addrecord / delrecord): change and entry modes, F6 / F10, F7 / F8, F11 delete (confirmed), Position to key, values checked by type (`FieldDef.convert`) and the cursor to the field an error names; 12 fields a page. Layout `21_upddta` |
+| - | Source Editor, PF members | EXTENDED | `EditorPanel`: the member's type on row 1; a PF member checked as DDS (`elcl/db/Dds`), no prompter; an ELCLP member's DCLFs checked against the files' formats (FileQueries fileformat, asked for as they're met) |
 | - | Display Panel configuration | NEW | `client/screen/DisplayPanelScreen` (`menu/DisplayPanelMenu`, `DisplayConfigPayload`): Mode, Layout (drag edges to move or split regions, right-click removes), Widgets (a picker for the widget, its source and colour). Not a green screen: the L3 Switch panel's frame |
 
 ### Main Menu options
@@ -80,7 +86,8 @@ on the message line; a number not on the menu shows "Option n is not on this men
 | 8 | Work with Output | WRKSPLF | `WrkSplfPanel` | Available | `elcl.store.StoredSpoolService`: spooled files in the system's saved data (200 by default); 6=Print through `elcl.device.Printers` (ELC1301 with no printer) |
 | 90 | Sign Off | SIGNOFF | - | Available | - |
 
-Every screen also opens from its command on any command line (`ScreenCommands`): WRKLIB, WRKMBR LIB(), EDTMBR MBR(),
+Every screen also opens from its command on any command line (`ScreenCommands`): WRKLIB, WRKMBR LIB(), WRKF LIB(), DSPPFM FILE(),
+DSPFD FILE(), UPDDTA FILE(), RUNQRY (OUTPUT(*DISPLAY)), EDTMBR MBR(),
 WRKACTJOB, WRKJOB JOB(), DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF JOB(), WRKSYSVAL, WRKINV, WRKDEV,
 WRKMCH, DSPNETSTS, WRKCRFJOB; GO MAIN / GO HELP, SIGNOFF.
 

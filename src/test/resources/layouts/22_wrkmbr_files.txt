@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKMBR                        Work with Members               System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Library . . . . :   ZAGLIB
+03 |  Type options, press Enter.
+04 |    2=Edit  3=Copy  4=Delete  5=Display  6=Print  7=Rename  14=Compile
+05 | 
+06 | Opt  Member      Type    Chg  Text
+07 |      NOCWALL     ELCLP        Refresh the NOC status display
+08 | 14   STOCK       PF       *   Stock levels
+09 | 5    STOCK       *FILE    *   Stock levels
+10 | 
+11 |                               Chg * = changed since last compile
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F11=Sort  F12=Cancel

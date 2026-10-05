@@ -483,6 +483,72 @@ final class DatabaseGameTests {
         }));
     }
 
+    // --- The screens' queries (FileQueries) ---
+
+    private static List<String> cells(net.zagdrath.encodedlogistics.terminal.TerminalOutput out, int line) {
+        List<String> cells = new ArrayList<>();
+        out.lines().get(line).cells().forEach(cell -> cells.add(cell.text().getString()));
+        return cells;
+    }
+
+    private static net.zagdrath.encodedlogistics.terminal.TerminalOutput screen(Rig rig, String text) {
+        return net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries.handle(rig.context(), text);
+    }
+
+    private static String message(net.zagdrath.encodedlogistics.terminal.TerminalOutput out) {
+        return out.message() != null ? out.message().getString() : "";
+    }
+
+    static void screens(GameTestHelper helper) {
+        rig(helper, (h, sequence, rig) -> sequence.thenExecute(() -> {
+            Rig r = rig[0];
+            stock(h, r);
+            var files = screen(r, "files DBLIB");
+            h.assertTrue(cells(files, 0).subList(0, 4).equals(List.of("STOCK", "PF", "3", "Stock record")), "files " + cells(files, 0));
+            var desc = screen(r, "filedesc DBLIB/STOCK");
+            h.assertTrue(desc.lines().size() == 6 && cells(desc, 0).get(12).equals("ITEM") && cells(desc, 1).subList(0, 5).equals(List.of("ITEM", "A", "20", "0",
+                    "1")), "filedesc " + cells(desc, 0));
+            // Display Physical File Member: headings, then a line a record in key order; by key.
+            var data = screen(r, "filedata DBLIB/STOCK 0");
+            h.assertTrue(cells(data, 0).equals(List.of("DBLIB/STOCK", "3", "0", "1", "1", "3")), "filedata " + cells(data, 0));
+            h.assertTrue(cells(data, 1).getFirst().startsWith("Item") && cells(data, 2).getFirst().startsWith("COAL") && data.lines().size() == 5,
+                    "filedata lines");
+            h.assertTrue(cells(screen(r, "filedata DBLIB/STOCK *KEY H"), 0).get(2).equals("2"), "Position to key");
+            var query = screen(r, "runqry DBLIB/STOCK 0\tQTY *LT 100\tQTY *DESCEND");
+            h.assertTrue(cells(query, 0).get(1).equals("2") && cells(query, 0).get(5).equals("3") && cells(query, 2).getFirst().startsWith("IRON_INGOT"),
+                    "runqry " + cells(query, 0));
+            // Update Data: records in turn, changed, added, deleted; a bad value refused with its field.
+            var first = screen(r, "record DBLIB/STOCK *FIRST");
+            h.assertTrue(cells(first, 0).subList(1, 3).equals(List.of("1", "3")) && cells(first, 1).getFirst().equals("COAL"), "*FIRST");
+            String coal = cells(first, 0).getFirst();
+            var next = screen(r, "record DBLIB/STOCK *NEXT " + coal);
+            h.assertTrue(cells(next, 1).getFirst().equals("GOLD_INGOT"), "*NEXT");
+            String gold = cells(next, 0).getFirst();
+            h.assertTrue(cells(screen(r, "record DBLIB/STOCK *KEY IRON"), 1).getFirst().equals("IRON_INGOT"), "*KEY");
+            h.assertTrue(message(screen(r, "record DBLIB/STOCK *KEY ZZZ")).startsWith("ELC2202"), "*KEY not found");
+            var bad = screen(r, "putrecord DBLIB/STOCK " + gold + "\tGOLD_INGOT\tmany\t9.99\t1\t");
+            h.assertTrue(message(bad).equals("ELC2209: Value 'many' not valid for field QTY."), "putrecord bad " + message(bad));
+            var changed = screen(r, "putrecord DBLIB/STOCK " + gold + "\tGOLD_INGOT\t4\t9.99\t1\t");
+            h.assertTrue(cells(changed, 1).get(1).equals("4") && !cells(changed, 1).get(4).isBlank(), "putrecord " + cells(changed, 1));
+            var added = screen(r, "addrecord DBLIB/STOCK\tSAND\t1\t0\t0\t");
+            h.assertTrue(cells(added, 0).get(2).equals("4") && cells(added, 1).getFirst().equals("SAND"), "addrecord");
+            h.assertTrue(message(screen(r, "addrecord DBLIB/STOCK\tSAND\t1\t0\t0\t")).startsWith("ELC2203"), "Duplicate added");
+            var deleted = screen(r, "delrecord DBLIB/STOCK " + gold);
+            h.assertTrue(cells(deleted, 1).getFirst().equals("IRON_INGOT") && cells(deleted, 0).get(2).equals("3"), "delrecord");
+            h.assertTrue(message(screen(r, "putrecord ELSYS/INVITEMS 0\tX\tX\t0\t0\tX")).startsWith("ELC0205"), "Changed ELSYS");
+            // The editor's DCLF check, and the prompter's list.
+            var format = screen(r, "fileformat DBLIB STOCK");
+            h.assertTrue(cells(format, 0).getFirst().equals("DBLIB/STOCK")
+                    && net.zagdrath.encodedlogistics.elcl.db.RecordFormat.load(cells(format, 0).get(1)) != null, "fileformat");
+            h.assertTrue(message(screen(r, "fileformat DBLIB NOPE")).startsWith("ELC2205"), "fileformat missing");
+            var values = screen(r, "values files DBLIB");
+            h.assertTrue(cells(values, 0).getFirst().equals("DBLIB/STOCK"), "values files");
+            var elsys = screen(r, "values files ELSYS");
+            h.assertTrue(elsys.lines().size() == 4, "ELSYS files listed " + elsys.lines().size());
+            h.assertTrue(!cells(screen(r, "files ELSYS"), 1).get(2).equals("0"), "INVITEMS' live count");
+        }));
+    }
+
     // --- The shipped example: ITEMSETUP, then LOGITEMS ---
 
     static void example(GameTestHelper helper) {

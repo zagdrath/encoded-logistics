@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKF                           Work with Files                System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Library . . . . :   ZAGLIB
+03 |  Type options, press Enter.
+04 |    2=Change data  4=Delete  5=Display data  8=Display description
+05 | 
+06 | Opt  File        Attr  Chg   Records  Text
+07 |      ITEMHIST    PF            1,240  Item count history
+08 | 5    STOCK       PF    *           3  Stock levels
+09 |      LOWSTOCK    PF                2  Query of ZAGLIB/STOCK
+10 | 
+11 |                                       Chg * = definition changed since made
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command                                                   Bottom
+21 |  ===>
+22 | 
+23 |  F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F12=Cancel

@@ -140,9 +140,6 @@ public record FieldDef(String name, Type type, int length, int decimals, String 
                 case TIME -> Timestamps.normalize(Values.text(value));
             };
         } catch (ElclException e) {
-            if (e.elclMessage().id().equals("ELC2209")) {
-                throw e;
-            }
             throw new ElclException("ELC2209", Values.text(value).strip(), name);
         }
     }

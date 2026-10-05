@@ -343,6 +343,7 @@ final class PrompterPanel extends CrtPanel {
             case PROGRAMS -> "programs";
             case JOBS -> "jobs";
             case SYSVALS -> "sysvals";
+            case FILES -> "files";
             default -> null;
         };
         valueList = new ValueListWindow(screen, param.label(), value -> {

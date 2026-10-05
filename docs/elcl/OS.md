@@ -163,6 +163,18 @@ New screens, all in the existing green-screen style:
 14. **Work with System Values**.
 15. **Help panels (F1)** — context help for every screen, field and command.
 16. **Command Entry** — the existing CLI screen, now running ELCL commands.
+17. **Work with Files** (`WRKF LIB()`) *(added)* — a library's physical files: file, attribute, Chg (definition
+    changed since the file was made), records, text; options 2=Change data 4=Delete 5=Display data 8=Display
+    description; F6 creates (CRTPF). Work with Members (WRKLIB 12) lists the library's files after its members (type
+    `*FILE`, the same options), shows `PF` members beside `ELCLP` ones, and its 14=Compile runs CRTPF for a `PF` member
+    (CHGPF when its file is there already).
+18. **Display Physical File Member** (`DSPPFM FILE()`) *(added)* — records in columns under the fields' headings,
+    paging, Position to (a key on a keyed file, else a record number), F19 / F20 to shift wide records. RUNQRY
+    `OUTPUT(*DISPLAY)` shows its result the same way (Display Report).
+19. **Display File Description** (`DSPFD FILE()`) *(added)* — fields, types, lengths, key, records, size.
+20. **Update Data** (`UPDDTA FILE()`, 2=Change data) *(added)* — a record-entry screen in the style of a midrange data
+    file utility: change mode (a record at a time; Enter changes it, F7 / F8 previous / next, F11 deletes, Position to
+    key) and entry mode (F6: new records, one after another); values checked by type.
 
 New block: **Control Interface** (redstone I/O for scripts), named
 `CTLIFnn` by default, 1 lane, six sides independently readable/writable.
