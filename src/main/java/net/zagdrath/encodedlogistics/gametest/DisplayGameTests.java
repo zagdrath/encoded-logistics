@@ -137,12 +137,22 @@ final class DisplayGameTests {
                     helper.assertTrue(names.contains("DSP01"), "Names " + names);
                     DisplayDevice display = Displays.find(system, "DSP01");
                     helper.assertTrue(display != null && display.online() && display.lines() == 6, "Not a display of 6 lines");
-                    // One panel wide: 5 characters a line.
+                    // One panel wide, inside the text's margins: 4 characters a line (6 small, 2 large).
                     display.write(0, "ONE", true);
                     display.write(0, "TWO", false);
-                    display.write(5, "TOO LONG", false);
-                    helper.assertTrue(at(helper, master).textLines().equals(List.of("ONE", "TWO", "", "", "TOO L")),
+                    display.write(5, "TOOLONG", false);
+                    helper.assertTrue(at(helper, master).textLines().equals(List.of("ONE", "TWO", "", "", "TOOL")),
                             "Lines " + at(helper, master).textLines());
+                    display.write(1, "SMALLTEXT", false, DisplayContent.SMALL, 0xFFBA3B37, DisplayContent.RIGHT);
+                    display.write(2, "LARGE", false, DisplayContent.LARGE, DisplayContent.KEEP, DisplayContent.KEEP);
+                    DisplayContent.TextLine small = at(helper, master).displayContent().lines.get(0);
+                    helper.assertTrue(small.text().equals("SMALLT") && small.scale() == DisplayContent.SMALL && small.color() == 0xFFBA3B37
+                            && small.align() == DisplayContent.RIGHT, "Small line " + small);
+                    helper.assertTrue(at(helper, master).displayContent().lines.get(1).text().equals("LA"), "Large line");
+                    // *SAME keeps the line's style.
+                    display.write(1, "AGAIN", false, DisplayContent.KEEP, DisplayContent.KEEP, DisplayContent.KEEP);
+                    helper.assertTrue(at(helper, master).displayContent().lines.get(0).scale() == DisplayContent.SMALL, "Size not kept");
+                    helper.assertTrue(display.maxLine() == 10, "Small lines " + display.maxLine());
                 })
                 .thenSucceed();
     }
@@ -180,6 +190,13 @@ final class DisplayGameTests {
                     ElclSystem system = new ElclSystem(context.server(), context.network());
                     ElclServices.jobs().interactive(system, context.user(), "test", "ELDESK01");
                     DisplayPanelBlockEntity display = at(helper, master);
+                    // Styled text: SIZE, COLOR, ALIGN (a colour name it doesn't know: ELC0103; a bad #RRGGBB: ELC0003).
+                    ok(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('HELLO') LINE(1) CLEAR(*YES) SIZE(*HUGE) COLOR(*MINT) ALIGN(*CENTER)");
+                    DisplayContent.TextLine huge = display.displayContent().lines.getFirst();
+                    helper.assertTrue(huge.scale() == DisplayContent.HUGE && huge.color() == 0xFF00D992 && huge.align() == DisplayContent.CENTRE
+                            && huge.text().equals("HELLO"), "Styled line " + huge);
+                    ElclGameTests.expect(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('X') COLOR(*PLAID)", "ELC0103");
+                    ElclGameTests.expect(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('X') COLOR('#12')", "ELC0003");
                     // Regions.
                     ok(helper, context, "CHGDSPRGN DEV(DSP01) RGN(A) W(48)");
                     ElclGameTests.expect(helper, context, "CHGDSPRGN DEV(DSP01) RGN(B) X(40)", "ELC1314");
@@ -189,7 +206,7 @@ final class DisplayGameTests {
                     helper.assertTrue(b != null && b.x() == 48 && b.w() == 48 && b.h() == 64, "Region B " + b);
                     // Widgets and graphs.
                     ok(helper, context, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*STORAGE)");
-                    helper.assertTrue(display.displayContent().mode == DisplayContent.Mode.SCRIPT, "A scripted screen isn't Script-controlled");
+                    helper.assertTrue(display.displayContent().mode == DisplayContent.Mode.DASHBOARD, "A scripted screen isn't a Dashboard");
                     ElclGameTests.expect(helper, context, "SNDDSPWDG DEV(DSP01) RGN(B) WDG(*ITEM)", "ELC1316");
                     ElclGameTests.expect(helper, context, "SNDDSPWDG DEV(DSP01) RGN(Z) WDG(*CLOCK)", "ELC1314");
                     ok(helper, context, "SNDDSPWDG DEV(DSP01) RGN(B) WDG(*ITEM) ITEM(minecraft:cobblestone)");

@@ -16,16 +16,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 // What a screen shows (HANDOFF 3), kept on its master:
-// - its mode: TEXT (its text lines, each with a colour, alignment and 1x / 2x), DASHBOARD (regions with widgets, set up
-//   on its screen) or SCRIPT (only ELCL draws; the screen keeps what it drew);
+// - its mode: TEXT (its text lines over the whole screen, each with a colour, alignment and size) or DASHBOARD (regions
+//   with widgets, set up on its screen or by ELCL - CHGDSPRGN and the SNDDSP* commands - alike);
 // - its background colour, and its text lines (SNDDSPTXT writes them; a *TEXT region shows them too);
 // - its regions: named rectangles in canvas px (A, B, C ...), never overlapping, each with a widget and a background.
 //   With none set up, region A is the whole screen.
 public final class DisplayContent {
     public enum Mode {
-        TEXT, DASHBOARD, SCRIPT;
+        TEXT, DASHBOARD;
 
+        // Saved screens from before the two were one: Script-controlled is a dashboard.
         public static Mode byName(String name) {
+            if (name.equalsIgnoreCase("SCRIPT")) {
+                return DASHBOARD;
+            }
             for (Mode mode : values()) {
                 if (mode.name().equalsIgnoreCase(name)) {
                     return mode;
@@ -36,8 +40,23 @@ public final class DisplayContent {
     }
 
     public static final int LEFT = 0, CENTRE = 1, RIGHT = 2;
+    // Text sizes (SNDDSPTXT SIZE): *SMALL (a 4 x 6 font), *NORMAL (the 6 x 10 terminal font), *LARGE (2x), *HUGE (3x).
+    public static final int SMALL = 0, NORMAL = 1, LARGE = 2, HUGE = 3;
+    // A write's size, colour or alignment left as the line had it (every int is a colour, so not -1).
+    public static final int KEEP = Integer.MIN_VALUE;
+    // Text stands this many canvas px in from the screen's edges.
+    public static final int TEXT_PAD = 3;
 
-    // A text line: its colour (ARGB; 0: the default text colour), alignment and scale (1 or 2).
+    // A character cell at a size, in canvas px.
+    public static int cellWidth(int size) {
+        return size <= SMALL ? 4 : 6 * Math.min(size, HUGE);
+    }
+
+    public static int cellHeight(int size) {
+        return size <= SMALL ? 6 : 10 * Math.min(size, HUGE);
+    }
+
+    // A text line: its colour (ARGB; 0: the default text colour), alignment and size (SMALL - HUGE).
     public record TextLine(String text, int color, int align, int scale) {
         public static final Codec<TextLine> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("text").forGetter(TextLine::text),
@@ -52,6 +71,11 @@ public final class DisplayContent {
 
         public TextLine withText(String text) {
             return new TextLine(text, color, align, scale);
+        }
+
+        // New text, and a new size, colour and alignment where they're given (KEEP: as it was).
+        public TextLine with(String text, int size, int color, int align) {
+            return new TextLine(text, color != KEEP ? color : this.color, align != KEEP ? align : this.align, size != KEEP ? size : scale);
         }
     }
 

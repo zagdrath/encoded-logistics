@@ -44,12 +44,15 @@ final class CanvasPainter {
 
     private final NativeImage image;
     private final NativeImage font;
+    // The small (4 x 6) font, for SIZE(*SMALL); null: small text uses the normal font.
+    private final @Nullable NativeImage small;
     // The clip: the region being painted.
     private int cx0, cy0, cx1, cy1;
 
-    CanvasPainter(NativeImage image, NativeImage font) {
+    CanvasPainter(NativeImage image, NativeImage font, @Nullable NativeImage small) {
         this.image = image;
         this.font = font;
+        this.small = small;
         clip(0, 0, image.getWidth(), image.getHeight());
     }
 
@@ -77,6 +80,13 @@ final class CanvasPainter {
     // --- Text ---
 
     void text(int x, int y, String text, int color, int scale) {
+        if (scale <= DisplayContent.SMALL) {
+            if (small != null) {
+                smallText(x, y, text, color);
+                return;
+            }
+            scale = 1;
+        }
         for (int i = 0; i < text.length(); i++) {
             int glyph = TerminalFont.glyph(text.charAt(i));
             int gx = glyph % TerminalFont.COLUMNS * TerminalFont.CELL_W, gy = glyph / TerminalFont.COLUMNS * TerminalFont.CELL_H;
@@ -90,23 +100,40 @@ final class CanvasPainter {
         }
     }
 
+    // The small font: ASCII 32-126 at 4 x 6 cells, 16 to a row; anything else as '?'.
+    private void smallText(int x, int y, String text, int color) {
+        int w = DisplayContent.cellWidth(DisplayContent.SMALL), h = DisplayContent.cellHeight(DisplayContent.SMALL);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            int glyph = c >= 32 && c < 127 ? c - 32 : '?' - 32;
+            int gx = glyph % 16 * w, gy = glyph / 16 * h;
+            for (int yy = 0; yy < h; yy++) {
+                for (int xx = 0; xx < w; xx++) {
+                    if ((small.getPixel(gx + xx, gy + yy) >>> 24) != 0) {
+                        set(x + i * w + xx, y + yy, color);
+                    }
+                }
+            }
+        }
+    }
+
     static int width(String text, int scale) {
-        return text.length() * TerminalFont.CELL_W * scale;
+        return text.length() * DisplayContent.cellWidth(scale);
     }
 
     // Text lines in a box, LINES_PAD px in from its edges so none touches the bezel: each with its colour (0: the text
     // colour), alignment and scale.
-    private static final int LINES_PAD = 3;
+    private static final int LINES_PAD = DisplayContent.TEXT_PAD;
 
     void lines(int x, int y, int w, int h, List<DisplayContent.TextLine> lines) {
         int top = y + LINES_PAD;
         for (DisplayContent.TextLine line : lines) {
-            int scale = Math.clamp(line.scale(), 1, 2);
+            int scale = Math.clamp(line.scale(), DisplayContent.SMALL, DisplayContent.HUGE);
             int lw = width(line.text(), scale);
             int lx = line.align() == DisplayContent.CENTRE ? x + (w - lw) / 2
                     : line.align() == DisplayContent.RIGHT ? x + w - lw - LINES_PAD : x + LINES_PAD;
             text(lx, top, line.text(), line.color() != 0 ? line.color() : TEXT, scale);
-            top += TerminalFont.CELL_H * scale;
+            top += DisplayContent.cellHeight(scale);
             if (top >= y + h) {
                 break;
             }

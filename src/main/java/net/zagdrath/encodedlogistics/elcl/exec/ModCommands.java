@@ -31,6 +31,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
+import net.zagdrath.encodedlogistics.display.DisplayContent;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
@@ -894,10 +895,28 @@ public final class ModCommands {
                 throw new ElclException("ELC1302", name);
             }
             int line = call.text("LINE").equals("*NEXT") ? 0 : (int) call.integer("LINE");
-            if (line > display.lines()) {
+            if (line > display.maxLine()) {
                 throw new ElclException("ELC0004", line);
             }
-            display.write(line, call.text("TEXT"), call.text("CLEAR").equals("*YES"));
+            int size = switch (call.text("SIZE").toUpperCase(Locale.ROOT)) {
+                case "*SMALL" -> DisplayContent.SMALL;
+                case "*NORMAL" -> DisplayContent.NORMAL;
+                case "*LARGE" -> DisplayContent.LARGE;
+                case "*HUGE" -> DisplayContent.HUGE;
+                default -> DisplayContent.KEEP;
+            };
+            String colorText = call.text("COLOR");
+            int color = colorText.equalsIgnoreCase("*SAME") ? DisplayContent.KEEP : DisplayContent.color(colorText);
+            if (color == -1) {
+                throw new ElclException("ELC0003", colorText, "COLOUR");
+            }
+            int align = switch (call.text("ALIGN").toUpperCase(Locale.ROOT)) {
+                case "*LEFT" -> DisplayContent.LEFT;
+                case "*CENTER" -> DisplayContent.CENTRE;
+                case "*RIGHT" -> DisplayContent.RIGHT;
+                default -> DisplayContent.KEEP;
+            };
+            display.write(line, call.text("TEXT"), call.text("CLEAR").equals("*YES"), size, color, align);
         });
         CommandRegistry.bind("PRTRPT", call -> {
             ElclContext context = context(call);

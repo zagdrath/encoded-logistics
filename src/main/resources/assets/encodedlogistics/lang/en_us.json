@@ -1647,7 +1647,6 @@
   "gui.encodedlogistics.display.tab.widgets": "Widgets",
   "gui.encodedlogistics.display.mode.text": "Text",
   "gui.encodedlogistics.display.mode.dashboard": "Dashboard",
-  "gui.encodedlogistics.display.mode.script": "Script-controlled",
   "gui.encodedlogistics.display.name": "Device name",
   "gui.encodedlogistics.display.background": "Background",
   "gui.encodedlogistics.display.size": "%s x %s",

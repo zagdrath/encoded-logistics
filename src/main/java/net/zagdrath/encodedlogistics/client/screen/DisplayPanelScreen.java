@@ -35,7 +35,7 @@ import net.zagdrath.encodedlogistics.net.DisplayConfigPayload;
 
 // A Display Panel screen's configuration (HANDOFF 4; previews/gui_display_*): the L3 Switch panel's frame
 // (gui/display_panel.png: title band, tab row, list inset, bottom row) with three tabs.
-// - Mode: Text / Dashboard / Script-controlled (the chosen one pressed, a dot and accent text), the device name, the
+// - Mode: Text / Dashboard (the chosen one pressed, a dot and accent text), the device name, the
 //   background (the default and the panel palette).
 // - Layout: the screen's canvas (at up to 1.5x) with its regions. Drag an edge between regions to move it; drag an edge
 //   on the screen's border inward to split a region there; right-click a region to remove it. Edges snap to SNAP px.
@@ -50,8 +50,8 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
     private static final String[] TABS = { "gui.encodedlogistics.display.tab.mode", "gui.encodedlogistics.display.tab.layout",
             "gui.encodedlogistics.display.tab.widgets" };
     private static final int TABS_X = 8, TABS_Y = 17, TAB_STEP = 53, TAB_W = 52;
-    private static final int INSET_X = 9, INSET_Y = 31, INSET_W = 146, INSET_H = 110, ROW_H = 14, ROWS = 8, FOOTER_Y = 150;
-    private static final int MODE_X = 10, MODE_W = 146, MODE_H = 14, FIELD_X = 74, NAME_Y = 92, SWATCH_Y = 108, SWATCH = 8;
+    private static final int INSET_X = 9, INSET_Y = 31, INSET_W = 158, INSET_H = 110, ROW_H = 14, ROWS = 8, FOOTER_Y = 150;
+    private static final int MODE_X = 11, MODE_W = 154, MODE_H = 14, FIELD_X = 74, NAME_Y = 92, SWATCH_Y = 108, SWATCH = 8;
     private static final int PREVIEW_H = 96, SNAP = 4, EDGE = 2;
     private static final int[] SWATCHES = { 0, 0xFF1F2228, 0xFF373C44, 0xFF555B65, 0xFF79808A, 0xFFA3A9B1, 0xFFD3D7DB, 0xFF2678A0, 0xFF50C2EC,
             0xFF89F9FF, 0xFFC65217, 0xFFFF9B44, 0xFFECC138, 0xFF3CE05A, 0xFF22A03C, 0xFFBA3B37, 0xFF6A4A2A };
@@ -88,7 +88,7 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
     protected void init() {
         super.init();
         DisplayPanelBlockEntity display = display();
-        name = box(leftPos + FIELD_X + 3, topPos + NAME_Y + 2, 76, 10, display != null ? display.name() : "");
+        name = box(leftPos + FIELD_X + 3, topPos + NAME_Y + 2, 84, 10, display != null ? display.name() : "");
         item = box(leftPos + 44, topPos + 99, 108, 32, "");
         devType = box(leftPos + 44, topPos + 99, 108, 10, "*ALL");
         file = box(leftPos + 44, topPos + 99, 108, 64, "");
@@ -168,7 +168,7 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
                 PartScreens.wideButton(graphics, font, x + MODE_X, by, MODE_W, MODE_H, Component.literal(label), true, mouseX, mouseY);
             }
         }
-        graphics.fill(x + FIELD_X, y + NAME_Y, x + FIELD_X + 82, y + NAME_Y + 12, 0xFF1A1A1A);
+        graphics.fill(x + FIELD_X, y + NAME_Y, x + FIELD_X + 90, y + NAME_Y + 12, 0xFF1A1A1A);
         int background = display.displayContent().background;
         for (int i = 0; i < SWATCHES.length; i++) {
             int sx = x + FIELD_X + (i % 9) * (SWATCH + 1), sy = y + SWATCH_Y + (i / 9) * (SWATCH + 1);
@@ -279,10 +279,19 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
             if (scroll + i == selected) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HIGHLIGHT, x + INSET_X, ry, INSET_W, ROW_H);
             }
+            if (i < ROWS - 1) {
+                graphics.fill(x + INSET_X, ry + ROW_H - 1, x + INSET_X + INSET_W, ry + ROW_H, 0xFF232323);
+            }
             int c = region.widget().color();
             if (c != 0) {
-                graphics.fill(x + 147, ry + 3, x + 154, ry + 10, c);
+                graphics.fill(x + INSET_X + INSET_W - 14, ry + 3, x + INSET_X + INSET_W - 7, ry + 10, c);
             }
+        }
+        // More regions than rows (the wheel scrolls them): a thumb at the list's right edge.
+        if (regions.size() > ROWS) {
+            int track = ROWS * ROW_H, thumb = Math.max(8, track * ROWS / regions.size());
+            int ty = y + INSET_Y + (track - thumb) * scroll / Math.max(1, regions.size() - ROWS);
+            graphics.fill(x + INSET_X + INSET_W - 4, ty, x + INSET_X + INSET_W - 1, ty + thumb, 0xFF707070);
         }
         PartScreens.wideButton(graphics, font, x + 8, y + 146, 160, 14, Component.translatable("gui.encodedlogistics.display.change_widget"),
                 !regions.isEmpty(), mouseX, mouseY);

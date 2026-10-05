@@ -5,6 +5,9 @@
 
 package net.zagdrath.encodedlogistics.elcl.cmd;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Auth.CONFIGURE;
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Auth.CRAFT;
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Auth.EXTRACT;
@@ -13,6 +16,7 @@ import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Auth.VIEW
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Context.INTERACTIVE;
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Context.PROGRAM;
 
+import net.zagdrath.encodedlogistics.display.DisplayContent;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.Kind;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.ValueList;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.VarType;
@@ -23,6 +27,14 @@ final class BuiltinCommands {
     private static final String[] SIDES = { "*NORTH", "*SOUTH", "*EAST", "*WEST", "*UP", "*DOWN" };
 
     private BuiltinCommands() {}
+
+    // A Display Panel colour: *DFT, a palette name (DisplayContent.COLORS) or #RRGGBB, and any extra special values.
+    private static ParamDef.Builder color(String... extra) {
+        List<String> specials = new ArrayList<>(List.of(extra));
+        specials.add("*DFT");
+        DisplayContent.COLORS.keySet().stream().sorted().forEach(specials::add);
+        return p("COLOR", "Colour", Kind.CHAR).sv(specials.toArray(String[]::new)).len(8);
+    }
 
     private static ParamDef.Builder p(String keyword, String label, Kind kind) {
         return ParamDef.of(keyword, label, kind);
@@ -324,7 +336,12 @@ final class BuiltinCommands {
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("TEXT", "Text", Kind.CHAR).req().len(64))
                 .p(p("LINE", "Line", Kind.INT).sv("*NEXT").dft("*NEXT").range(1, 64))
-                .p(yesNo("CLEAR", "Clear first", "*NO")));
+                .p(yesNo("CLEAR", "Clear first", "*NO"))
+                // [EXT] The line's size, colour and alignment; *SAME keeps the line's own (a new line: *NORMAL, the
+                // default colour, *LEFT).
+                .p(p("SIZE", "Text size", Kind.SPECIAL).sv("*SAME", "*SMALL", "*NORMAL", "*LARGE", "*HUGE").dft("*SAME"))
+                .p(color("*SAME").dft("*SAME"))
+                .p(p("ALIGN", "Alignment", Kind.SPECIAL).sv("*SAME", "*LEFT", "*CENTER", "*RIGHT").dft("*SAME")));
         // Display Panels (display handoff 6).
         add(CommandDefinition.of("CLRDSP", "Clear Display").positional(1)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
@@ -344,7 +361,7 @@ final class BuiltinCommands {
                         "*TEXT", "*TABLE", "*NONE"))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
                 .p(p("DEVTYPE", "Device type", Kind.NAME).sv("*ALL").dft("*ALL"))
-                .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8))
+                .p(color().dft("*DFT"))
                 // [EXT] A *TABLE's file, its record selection and sort (as RUNQRY's).
                 .p(file("FILE", "File").sv("*NONE").dft("*NONE"))
                 .p(p("QRYSLT", "Record selection expression", Kind.CHAR).sv("*ALL").dft("*ALL").len(64))
@@ -357,7 +374,7 @@ final class BuiltinCommands {
                 .p(p("ITEM", "Item (a machine's name for *MCHOPS / *MCHFE)", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
                 .p(p("RANGE", "Range", Kind.SPECIAL).sv("*1M", "*10M", "*1H", "*1D").dft("*10M"))
                 .p(p("TYPE", "Graph type", Kind.SPECIAL).sv("*LINE", "*BAR").dft("*LINE"))
-                .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8)));
+                .p(color().dft("*DFT")));
         add(CommandDefinition.of("SNDDSPIMG", "Send Display Image").positional(3)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("RGN", "Region", Kind.NAME).req())

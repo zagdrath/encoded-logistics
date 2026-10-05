@@ -170,7 +170,9 @@ registered in `ElclSetup.init()`. A Status Display, NOC Video Wall or Rack Conso
 |---|---|
 | `String name()` | Its device name (NOCDSP01). |
 | `boolean online()` | Offline: ELC1302. |
-| `int lines()` | Lines it shows. `LINE(n)` past them: ELC0004. |
+| `int lines()` | Lines it shows at its normal size. |
+| `int maxLine()` | The highest `LINE(n)` it takes (past it: ELC0004). Default: `lines()`; the Display Panel's is its `*SMALL` lines. |
 | `void write(int line, String text, boolean clear)` | One line (`0` for `*NEXT`), clearing first if asked. |
+| `void write(int line, String text, boolean clear, int size, int color, int align)` | The same with `SIZE`, `COLOR` and `ALIGN` (`DisplayContent.SMALL`-`HUGE`, ARGB, `LEFT` / `CENTRE` / `RIGHT`; `DisplayContent.KEEP` keeps the line's own). Default: the plain `write`, for a device without styles. |
 
 Tested by `ElclVmGameTests` with `FakeDisplay`, and the real screen by `DisplayGameTests` (`display_on_network`, `display_commands`).

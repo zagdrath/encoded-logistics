@@ -41,7 +41,8 @@ public final class DisplayCanvases {
     private record Canvas(Identifier id, DynamicTexture texture, int width, int height, int hash) {}
 
     private static final Map<BlockPos, Canvas> CANVASES = new HashMap<>();
-    private static @Nullable NativeImage font, pattern;
+    private static @Nullable NativeImage font, smallFont, pattern;
+    private static final Identifier SMALL_FONT = EncodedLogistics.id("textures/font/terminal_small.png");
 
     private DisplayCanvases() {}
 
@@ -134,7 +135,7 @@ public final class DisplayCanvases {
                 minute);
     }
 
-    // Text mode: the lines over the background; Dashboard and Script-controlled: the regions and their widgets.
+    // Text mode: the lines over the background; Dashboard: the regions and their widgets.
     private static void online(NativeImage image, DisplayPanelBlockEntity master) {
         DisplayContent content = master.displayContent();
         fill(image, 0, 0, image.getWidth(), image.getHeight(), content.background != 0 ? content.background : BACKGROUND);
@@ -142,7 +143,7 @@ public final class DisplayCanvases {
         if (sheet == null) {
             return;
         }
-        CanvasPainter painter = new CanvasPainter(image, sheet);
+        CanvasPainter painter = new CanvasPainter(image, sheet, smallFont());
         if (content.mode == DisplayContent.Mode.TEXT) {
             painter.lines(0, 0, image.getWidth(), image.getHeight(), content.lines);
             return;
@@ -185,6 +186,13 @@ public final class DisplayCanvases {
             font = load(TerminalFont.SHEET);
         }
         return font;
+    }
+
+    private static @Nullable NativeImage smallFont() {
+        if (smallFont == null) {
+            smallFont = load(SMALL_FONT);
+        }
+        return smallFont;
     }
 
     private static @Nullable NativeImage pattern() {

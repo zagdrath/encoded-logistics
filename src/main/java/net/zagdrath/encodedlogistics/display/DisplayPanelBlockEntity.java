@@ -332,23 +332,53 @@ public class DisplayPanelBlockEntity extends BlockEntity implements NetworkDevic
     // colour, alignment and scale.
     @Override
     public void write(int line, String text, boolean clear) {
+        write(line, text, clear, DisplayContent.KEEP, DisplayContent.KEEP, DisplayContent.KEEP);
+    }
+
+    // With a size, colour and alignment (DisplayContent.KEEP: the line's own). Cut to what fits across at its size; written after the
+    // last line (0) when the lines no longer fit down the screen, the top ones roll off.
+    @Override
+    public void write(int line, String text, boolean clear, int size, int color, int align) {
         List<DisplayContent.TextLine> lines = content.lines;
         if (clear) {
             lines.clear();
             content.next = 0;
         }
         int at = line > 0 ? line - 1 : content.next;
-        if (at >= lines()) {
-            lines.removeFirst();
-            at = lines() - 1;
-        }
         while (lines.size() <= at) {
             lines.add(DisplayContent.TextLine.of(""));
         }
-        String cut = text.length() > columns() ? text.substring(0, columns()) : text;
-        lines.set(at, lines.get(at).withText(cut));
+        DisplayContent.TextLine written = lines.get(at).with(text, size, color, align);
+        int fits = columns(written.scale());
+        lines.set(at, written.withText(text.length() > fits ? text.substring(0, fits) : text));
+        if (line <= 0) {
+            while (at > 0 && height(lines, at) > canvasHeight()) {
+                lines.removeFirst();
+                at--;
+            }
+        }
         content.next = at + 1;
         sync();
+    }
+
+    // How far down the screen lines 0 - last reach, in canvas px.
+    private static int height(List<DisplayContent.TextLine> lines, int last) {
+        int height = DisplayContent.TEXT_PAD;
+        for (int i = 0; i <= last; i++) {
+            height += DisplayContent.cellHeight(lines.get(i).scale());
+        }
+        return height;
+    }
+
+    // Characters a line at a size, inside the text's margins.
+    public int columns(int size) {
+        return Math.max(1, (canvasWidth() - 2 * DisplayContent.TEXT_PAD) / DisplayContent.cellWidth(size));
+    }
+
+    // Lines of small text fit down it: the highest LINE().
+    @Override
+    public int maxLine() {
+        return Math.max(1, canvasHeight() / DisplayContent.cellHeight(DisplayContent.SMALL));
     }
 
     // --- Name ---

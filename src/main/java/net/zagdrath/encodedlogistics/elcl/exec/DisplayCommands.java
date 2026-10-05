@@ -30,7 +30,7 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 // system's images folder, RTVDSPSIZ returns the size. ELC1301 (no such device), ELC1303 (not a display), ELC1314 (a
 // region outside the screen, overlapping another, or not there), ELC1316 (a data source the widget can't use), and
 // for images ELC1312 / ELC1313 / ELC1315, and ELC1317 (a diagnostic) when the colour mode is above the server's limit.
-// A screen in Text mode that a script sets up is Script-controlled after.
+// A screen in Text mode that a script sets regions up on is a Dashboard after.
 final class DisplayCommands {
     private DisplayCommands() {}
 
@@ -69,10 +69,10 @@ final class DisplayCommands {
         return color;
     }
 
-    // Set up by a script: a Text screen becomes Script-controlled.
+    // Regions set up by a script: a Text screen becomes a Dashboard.
     private static void scripted(DisplayPanelBlockEntity display) {
         if (display.displayContent().mode == DisplayContent.Mode.TEXT) {
-            display.displayContent().mode = DisplayContent.Mode.SCRIPT;
+            display.displayContent().mode = DisplayContent.Mode.DASHBOARD;
         }
     }
 

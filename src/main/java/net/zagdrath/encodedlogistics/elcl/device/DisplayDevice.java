@@ -18,4 +18,15 @@ public interface DisplayDevice {
 
     // Writes a line (1-based; 0: the line after the last one written), clearing everything first if asked.
     void write(int line, String text, boolean clear);
+
+    // The same with the line's size (DisplayContent.SMALL - HUGE), colour (ARGB, 0 the default) and alignment;
+    // DisplayContent.KEEP keeps what the line had. A device that has no styles just writes the text.
+    default void write(int line, String text, boolean clear, int size, int color, int align) {
+        write(line, text, clear);
+    }
+
+    // The highest line number LINE() takes.
+    default int maxLine() {
+        return lines();
+    }
 }
