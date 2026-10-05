@@ -16,6 +16,8 @@ import javax.imageio.ImageIO;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -33,8 +35,12 @@ import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.menu.DisplayPanelMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
@@ -239,6 +245,68 @@ final class DisplayGameTests {
                     helper.assertTrue(display.displayContent().region("B", 96, 64).widget().kind().equals("*NONE"), "Region B not cleared");
                     ok(helper, context, "CLRDSP DEV(DSP01)");
                     helper.assertTrue(display.displayContent().regions.isEmpty() && display.images().isEmpty(), "Screen not cleared");
+                })
+                .thenSucceed();
+    }
+
+    private static CompoundTag regionsTag(List<DisplayContent.Region> regions) {
+        CompoundTag data = new CompoundTag();
+        data.put("regions", DisplayContent.Region.CODEC.listOf().encodeStart(NbtOps.INSTANCE, regions).getOrThrow());
+        return data;
+    }
+
+    // The configuration screen's changes, as the server checks them: the mode, a layout (one overlapping refused), a
+    // widget (an item one resolved to its id), the device name; and nothing at all from a player the Firewall denies.
+    @SuppressWarnings("removal")
+    static void configuration(GameTestHelper helper) {
+        BlockPos rack = RackGameTests.networkedRack(helper), master = new BlockPos(3, 1, 3);
+        for (int x = 3; x <= 5; x++) {
+            for (int y = 1; y <= 2; y++) {
+                panel(helper, new BlockPos(x, y, 3), Direction.SOUTH);
+            }
+        }
+        ServerPlayer builder = helper.makeMockServerPlayerInLevel(), stranger = helper.makeMockServerPlayerInLevel();
+        helper.startSequence()
+                .thenIdle(4)
+                .thenExecute(() -> {
+                    DisplayPanelBlockEntity display = at(helper, master);
+                    DisplayPanelMenu menu = new DisplayPanelMenu(0, builder.getInventory(), helper.absolutePos(master));
+                    CompoundTag mode = new CompoundTag();
+                    mode.putString("mode", "DASHBOARD");
+                    menu.apply(builder, "mode", mode);
+                    helper.assertTrue(display.displayContent().mode == DisplayContent.Mode.DASHBOARD, "Mode not set");
+                    DisplayContent.Widget none = DisplayContent.Widget.NONE;
+                    menu.apply(builder, "regions", regionsTag(List.of(new DisplayContent.Region("A", 0, 0, 64, 64, 0, none),
+                            new DisplayContent.Region("B", 60, 0, 36, 64, 0, none))));
+                    helper.assertTrue(display.displayContent().regions.isEmpty(), "Overlapping regions accepted");
+                    menu.apply(builder, "regions", regionsTag(List.of(new DisplayContent.Region("A", 0, 0, 64, 64, 0, none),
+                            new DisplayContent.Region("B", 64, 0, 32, 64, 0, none))));
+                    helper.assertTrue(display.displayContent().regions.size() == 2, "Layout not set");
+                    CompoundTag widget = new CompoundTag();
+                    widget.putString("region", "B");
+                    widget.put("widget", DisplayContent.Widget.CODEC.encodeStart(NbtOps.INSTANCE,
+                            new DisplayContent.Widget("*ITEM", "cobblestone", "*ALL", 0xFF50C2EC, "", "*10M", "*LINE", "", "*DITHER", "*DFT")).getOrThrow());
+                    menu.apply(builder, "widget", widget);
+                    DisplayContent.Region b = display.displayContent().region("B", 96, 64);
+                    helper.assertTrue(b.widget().kind().equals("*ITEM") && b.widget().item().equals("minecraft:cobblestone") && b.widget().color() == 0xFF50C2EC,
+                            "Widget " + b.widget());
+                    CompoundTag name = new CompoundTag();
+                    name.putString("name", "lobby");
+                    menu.apply(builder, "name", name);
+                    helper.assertTrue(display.name().equals("LOBBY"), "Renamed to " + display.name());
+                    // A Firewall that denies the stranger: nothing changes.
+                    FirewallDevice firewall = RackGameTests.install(helper, rack, RackDeviceType.FIREWALL, 1, FirewallDevice.class);
+                    firewall.setPolicy(FirewallDevice.Policy.DENY);
+                    firewall.setPermission(builder.getUUID(), "builder", RackPermission.BUILD, FirewallDevice.ON);
+                })
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    DisplayPanelBlockEntity display = at(helper, master);
+                    DisplayPanelMenu menu = new DisplayPanelMenu(0, stranger.getInventory(), helper.absolutePos(master));
+                    CompoundTag mode = new CompoundTag();
+                    mode.putString("mode", "TEXT");
+                    menu.apply(stranger, "mode", mode);
+                    helper.assertTrue(display.displayContent().mode == DisplayContent.Mode.DASHBOARD, "A denied player changed the mode");
                 })
                 .thenSucceed();
     }

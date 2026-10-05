@@ -17,9 +17,12 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -42,9 +45,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.menu.DisplayPanelMenu;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
 // The Display Panel (HANDOFF 1): an 8 px slab on a wall, its screen toward FACING. Panels side by side or stacked merge
@@ -160,12 +166,33 @@ public class DisplayPanelBlock extends BaseEntityBlock implements NetworkNodeBlo
 
     // --- Touch ---
 
-    // Using the screen (not sneaking): *DSPTOUCH, with the screen's name, the region and the canvas point (no permission
-    // needed: scripts decide what a touch may do). At most TOUCHES a second for each player.
+    // Using the screen (HANDOFF 4, 5). With an empty hand: its configuration (the Firewall's build permission) - but once
+    // it has touch triggers, only while sneaking; without sneaking that's a touch. With an item, not sneaking: a touch.
+    // A touch fires *DSPTOUCH with the screen's name, the region and the canvas point (no permission needed: scripts
+    // decide what a touch may do); at most four a second for each player.
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (player.isSecondaryUseActive() || hit.getDirection() != state.getValue(FACING)) {
+        if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!(level.getBlockEntity(pos) instanceof DisplayPanelBlockEntity panel)
+                || !(level.getBlockEntity(panel.masterPos()) instanceof DisplayPanelBlockEntity master)) {
             return InteractionResult.PASS;
+        }
+        boolean touchable = hit.getDirection() == state.getValue(FACING) && DisplayTouch.hasTriggers(serverLevel, master);
+        if (touchable && !player.isSecondaryUseActive()) {
+            DisplayTouch.touch(serverLevel, master, pos, hit.getLocation(), player);
+        } else if (NetworkAccess.check(serverLevel, master.getBlockPos(), player, RackPermission.BUILD)) {
+            DisplayPanelMenu.open(serverPlayer, master.getBlockPos());
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+            BlockHitResult hit) {
+        if (player.isSecondaryUseActive() || hit.getDirection() != state.getValue(FACING)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (level instanceof ServerLevel serverLevel && level.getBlockEntity(pos) instanceof DisplayPanelBlockEntity panel
                 && level.getBlockEntity(panel.masterPos()) instanceof DisplayPanelBlockEntity master) {

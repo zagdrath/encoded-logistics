@@ -47,5 +47,6 @@ public final class ModNetwork {
         registrar.playToServer(MachinePayloads.Text.TYPE, MachinePayloads.Text.STREAM_CODEC, MachinePayloads.Text::handle);
         registrar.playToClient(MachinePayloads.Info.TYPE, MachinePayloads.Info.STREAM_CODEC, MachinePayloads.Info::handle);
         registrar.playToClient(DisplayFramePayload.TYPE, DisplayFramePayload.STREAM_CODEC, DisplayFramePayload::handle);
+        registrar.playToServer(DisplayConfigPayload.TYPE, DisplayConfigPayload.STREAM_CODEC, DisplayConfigPayload::handle);
     }
 }

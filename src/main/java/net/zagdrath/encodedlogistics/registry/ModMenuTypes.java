@@ -18,6 +18,7 @@ import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.CardReaderMenu;
 import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
+import net.zagdrath.encodedlogistics.menu.DisplayPanelMenu;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.FabricatorMenu;
@@ -124,6 +125,9 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<MidrangePanelMenu>> MIDRANGE_PANEL = MENU_TYPES.register("midrange_panel",
             () -> IMenuTypeExtension.create(MidrangePanelMenu::new));
+
+    public static final Supplier<MenuType<DisplayPanelMenu>> DISPLAY_PANEL = MENU_TYPES.register("display_panel",
+            () -> IMenuTypeExtension.create(DisplayPanelMenu::new));
 
     private ModMenuTypes() {}
 }

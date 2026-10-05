@@ -102,6 +102,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("display_merging", DisplayGameTests::merging);
         TESTS.put("display_on_network", DisplayGameTests::onNetwork);
         TESTS.put("display_commands", DisplayGameTests::commands);
+        TESTS.put("display_configuration", DisplayGameTests::configuration);
         TESTS.put("rack_ups", RackGameTests::upsCoversAndRecharges);
         TESTS.put("rack_ups_full_buffers", RackGameTests::upsOnFullBuffers);
         TESTS.put("rack_ups_on_battery", RackGameTests::upsOnBatteryIndication);
