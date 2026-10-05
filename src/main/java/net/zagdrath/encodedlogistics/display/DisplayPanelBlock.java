@@ -18,6 +18,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -153,6 +156,22 @@ public class DisplayPanelBlock extends BaseEntityBlock implements NetworkNodeBlo
             around.add(pos.relative(side));
         }
         DisplayScreens.remerge(level, around, facing);
+    }
+
+    // --- Touch ---
+
+    // Using the screen (not sneaking): *DSPTOUCH, with the screen's name, the region and the canvas point (no permission
+    // needed: scripts decide what a touch may do). At most TOUCHES a second for each player.
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.isSecondaryUseActive() || hit.getDirection() != state.getValue(FACING)) {
+            return InteractionResult.PASS;
+        }
+        if (level instanceof ServerLevel serverLevel && level.getBlockEntity(pos) instanceof DisplayPanelBlockEntity panel
+                && level.getBlockEntity(panel.masterPos()) instanceof DisplayPanelBlockEntity master) {
+            DisplayTouch.touch(serverLevel, master, pos, hit.getLocation(), player);
+        }
+        return InteractionResult.SUCCESS;
     }
 
     // --- Network ---

@@ -46,6 +46,7 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 //                         (a disabled part counts as offline)
 //  *CRAFTEND              a crafting job of ITEM (or *ANY) ends                         &DATA: C0042 *DONE
 //  *RSCHANGE              a Control Interface's input on DEV changes (VALUE: one side)  &DATA: *NORTH 7
+//  *DSPTOUCH              a Display Panel screen DEV is touched                         &DATA: DSP01 A 40 12
 // The first four are looked at every half second; device changes, ended crafts and redstone come as events
 // (ElclEvents). Held triggers don't fire. A job that can't be submitted (no job host: ELC0301) is reported to the
 // trigger's user's message queue.
@@ -211,6 +212,7 @@ public final class Triggers {
             case "*RSCHANGE" -> (device.isEmpty() || device.equals("*ANY") || device.equals(event.device()))
                     && (trigger.value().isBlank() || trigger.value().equalsIgnoreCase("*NONE") || event.data().startsWith(trigger.value().trim().toUpperCase(Locale.ROOT) + " "));
             case "*CRAFTEND" -> item.isEmpty() || item.equalsIgnoreCase("*ANY") || sameItem(item, event.item());
+            case "*DSPTOUCH" -> device.isEmpty() || device.equals("*ANY") || device.equals(event.device());
             default -> false;
         };
     }

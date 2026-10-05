@@ -18,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 
@@ -40,6 +41,19 @@ public final class DisplayScreens {
 
     public static BlockPos at(BlockPos origin, Direction facing, int u, int v) {
         return origin.relative(right(facing), u).above(v);
+    }
+
+    // Where a point on a screen's glass is on its canvas (px from the top left), from the block clicked and the point.
+    public static int[] canvasPoint(DisplayPanelBlockEntity master, BlockPos clicked, Vec3 hit) {
+        Direction facing = master.getBlockState().getValue(DisplayPanelBlock.FACING), right = right(facing);
+        BlockPos origin = master.getBlockPos();
+        int u = (clicked.getX() - origin.getX()) * right.getStepX() + (clicked.getZ() - origin.getZ()) * right.getStepZ();
+        int v = clicked.getY() - origin.getY();
+        double fx = hit.x - clicked.getX(), fz = hit.z - clicked.getZ(), fy = hit.y - clicked.getY();
+        double along = right.getStepX() > 0 ? fx : right.getStepX() < 0 ? 1 - fx : right.getStepZ() > 0 ? fz : 1 - fz;
+        int px = (int) Math.floor((u + along) * DisplayPanelBlockEntity.CANVAS);
+        int py = (int) Math.floor((master.height() - v - fy) * DisplayPanelBlockEntity.CANVAS);
+        return new int[] { Math.clamp(px, 0, master.canvasWidth() - 1), Math.clamp(py, 0, master.canvasHeight() - 1) };
     }
 
     // Re-merges the panels joined to these positions (a panel placed, or the neighbours of one broken).

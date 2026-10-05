@@ -5,21 +5,40 @@
 
 package net.zagdrath.encodedlogistics.gametest;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec3;
+import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
+import net.zagdrath.encodedlogistics.display.DisplayContent;
+import net.zagdrath.encodedlogistics.display.DisplayFrame;
+import net.zagdrath.encodedlogistics.display.DisplayImages;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlock;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
+import net.zagdrath.encodedlogistics.display.DisplayTouch;
 import net.zagdrath.encodedlogistics.elcl.device.DisplayDevice;
 import net.zagdrath.encodedlogistics.elcl.device.Displays;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
+import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
+import net.zagdrath.encodedlogistics.terminal.TerminalContext;
+import net.zagdrath.encodedlogistics.terminal.TerminalOutput;
 
 // Display Panels: merging into screens (the largest rectangles, at most displayMaxWidth wide; bezels and the LED from
 // the rectangle; content kept through a re-merge), and a screen on a network: booting, online, named DSP01, written to
@@ -118,6 +137,108 @@ final class DisplayGameTests {
                     display.write(5, "TOO LONG", false);
                     helper.assertTrue(at(helper, master).textLines().equals(List.of("ONE", "TWO", "", "", "TOO L")),
                             "Lines " + at(helper, master).textLines());
+                })
+                .thenSucceed();
+    }
+
+    private static String run(TerminalContext context, String line) {
+        TerminalOutput out = TerminalCommands.execute(context, line);
+        return out.message() != null ? out.message().getString() : "";
+    }
+
+    private static void ok(GameTestHelper helper, TerminalContext context, String line) {
+        String message = run(context, line);
+        helper.assertFalse(message.startsWith("ELC0") || message.startsWith("ELC1"), line + ": " + message);
+    }
+
+    // The display commands on a 3 x 2 screen beside ElclGameTests' desk: regions (overlapping and outside: ELC1314),
+    // widgets and graphs (a missing data source: ELC1316), their live frames, images (disabled: ELC1315; missing:
+    // ELC1312; above the colour limit: ELC1317, shown all the same), clearing, the wrong device (ELC1303, ELC1301); and a
+    // touch firing *DSPTOUCH with the region and point, at most four a second.
+    @SuppressWarnings("removal")
+    static void commands(GameTestHelper helper) {
+        ElclGameTests.desk(helper);
+        BlockPos master = new BlockPos(3, 1, 3);
+        for (int x = 3; x <= 5; x++) {
+            for (int y = 1; y <= 2; y++) {
+                panel(helper, new BlockPos(x, y, 3), Direction.SOUTH);
+            }
+        }
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        helper.startSequence()
+                .thenIdle(4)
+                .thenExecute(() -> {
+                    assertScreen(helper, master, 3, 2);
+                    TerminalDeskBlockEntity desk = helper.getBlockEntity(ElclGameTests.DESK, TerminalDeskBlockEntity.class);
+                    TerminalContext context = new TerminalContext(helper.getLevel().getServer(), desk.network(), desk, player);
+                    ElclSystem system = new ElclSystem(context.server(), context.network());
+                    ElclServices.jobs().interactive(system, context.user(), "test", "ELDESK01");
+                    DisplayPanelBlockEntity display = at(helper, master);
+                    // Regions.
+                    ok(helper, context, "CHGDSPRGN DEV(DSP01) RGN(A) W(48)");
+                    ElclGameTests.expect(helper, context, "CHGDSPRGN DEV(DSP01) RGN(B) X(40)", "ELC1314");
+                    ok(helper, context, "CHGDSPRGN DEV(DSP01) RGN(B) X(48)");
+                    ElclGameTests.expect(helper, context, "CHGDSPRGN DEV(DSP01) RGN(C) X(200)", "ELC1314");
+                    DisplayContent.Region b = display.displayContent().region("B", 96, 64);
+                    helper.assertTrue(b != null && b.x() == 48 && b.w() == 48 && b.h() == 64, "Region B " + b);
+                    // Widgets and graphs.
+                    ok(helper, context, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*STORAGE)");
+                    helper.assertTrue(display.displayContent().mode == DisplayContent.Mode.SCRIPT, "A scripted screen isn't Script-controlled");
+                    ElclGameTests.expect(helper, context, "SNDDSPWDG DEV(DSP01) RGN(B) WDG(*ITEM)", "ELC1316");
+                    ElclGameTests.expect(helper, context, "SNDDSPWDG DEV(DSP01) RGN(Z) WDG(*CLOCK)", "ELC1314");
+                    ok(helper, context, "SNDDSPWDG DEV(DSP01) RGN(B) WDG(*ITEM) ITEM(minecraft:cobblestone)");
+                    List<DisplayFrame> frames = display.liveFrames();
+                    helper.assertTrue(frames.size() == 2 && frames.get(0).label().equals("STORAGE") && frames.get(0).numbers().size() == 2,
+                            "Frames " + frames);
+                    helper.assertTrue(frames.get(1).label().equals("minecraft:cobblestone") && frames.get(1).value().equals("0"), "Item frame " + frames.get(1));
+                    ok(helper, context, "SNDDSPGPH DEV(DSP01) RGN(B) STAT(*ENERGY) RANGE(*1M) TYPE(*BAR)");
+                    helper.assertTrue(display.displayContent().region("B", 96, 64).widget().graph().equals("*BAR"), "Graph not placed");
+                    // The wrong device.
+                    ElclGameTests.expect(helper, context, "SNDDSPWDG DEV(ELDESK01) RGN(A) WDG(*CLOCK)", "ELC1303");
+                    ElclGameTests.expect(helper, context, "CLRDSP DEV(NOPE01)", "ELC1301");
+                    // Images: turned off, then missing, then shown.
+                    Config.ALLOW_IMAGES.set(Config.ImagesAllowed.FALSE);
+                    ElclGameTests.expect(helper, context, "SNDDSPIMG DEV(DSP01) RGN(A) FILE('logo.png')", "ELC1315");
+                    Config.ALLOW_IMAGES.set(Config.ImagesAllowed.TRUE);
+                    ElclGameTests.expect(helper, context, "SNDDSPIMG DEV(DSP01) RGN(A) FILE('missing.png')", "ELC1312");
+                    try {
+                        Path folder = DisplayImages.folder(context.server(), system.name());
+                        Files.createDirectories(folder);
+                        BufferedImage logo = new BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB);
+                        for (int i = 0; i < 64; i++) {
+                            for (int j = 0; j < 64; j++) {
+                                logo.setRGB(i, j, (i * 4) << 16 | (j * 4) << 8 | 0x40);
+                            }
+                        }
+                        ImageIO.write(logo, "png", folder.resolve("logo.png").toFile());
+                    } catch (IOException e) {
+                        helper.fail("Couldn't write the test image: " + e);
+                    }
+                    ElclGameTests.expect(helper, context, "SNDDSPIMG DEV(DSP01) RGN(A) FILE('logo.png') COLORS(*FULL)", "ELC1317");
+                    // Touch: the point on the top-left panel's middle-left; then the rate limit.
+                    BlockPos clicked = helper.absolutePos(master.above());
+                    Vec3 hit = new Vec3(clicked.getX() + 0.25, clicked.getY() + 0.5, clicked.getZ() + 0.5);
+                    helper.assertTrue(DisplayTouch.touch(helper.getLevel(), display, clicked, hit, player), "Touch not fired");
+                    ElclEvents.Event touched = ElclEvents.recent().getLast();
+                    helper.assertTrue(touched.event().equals("*DSPTOUCH") && touched.data().equals("DSP01 A 8 16"), "Touch " + touched);
+                    for (int i = 0; i < 3; i++) {
+                        DisplayTouch.touch(helper.getLevel(), display, clicked, hit, player);
+                    }
+                    helper.assertFalse(DisplayTouch.touch(helper.getLevel(), display, clicked, hit, player), "Fifth touch in a second fired");
+                })
+                .thenIdle(10)
+                .thenExecute(() -> {
+                    DisplayPanelBlockEntity display = at(helper, master);
+                    int[] pixels = display.images().get("A");
+                    helper.assertTrue(pixels != null && pixels.length == 48 * 64, "Image not rendered");
+                    helper.assertTrue(display.displayContent().region("A", 96, 64).widget().colors().equals("256"), "Colour mode not capped");
+                    Config.ALLOW_IMAGES.set(Config.ImagesAllowed.AUTO);
+                    TerminalDeskBlockEntity desk = helper.getBlockEntity(ElclGameTests.DESK, TerminalDeskBlockEntity.class);
+                    TerminalContext context = new TerminalContext(helper.getLevel().getServer(), desk.network(), desk, player);
+                    ok(helper, context, "CLRDSP DEV(DSP01) RGN(B)");
+                    helper.assertTrue(display.displayContent().region("B", 96, 64).widget().kind().equals("*NONE"), "Region B not cleared");
+                    ok(helper, context, "CLRDSP DEV(DSP01)");
+                    helper.assertTrue(display.displayContent().regions.isEmpty() && display.images().isEmpty(), "Screen not cleared");
                 })
                 .thenSucceed();
     }

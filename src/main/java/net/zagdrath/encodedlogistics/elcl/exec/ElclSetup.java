@@ -33,6 +33,7 @@ public final class ElclSetup {
         RedstoneCommands.bind();
         OsCommands.bind();
         ModCommands.bind();
+        DisplayCommands.bind();
         Midranges.register();
         Displays.register(system -> {
             ElclDevices.list(system.server(), system.network());

@@ -54,6 +54,12 @@ public final class ElclEvents {
         }
     }
 
+    // *DSPTOUCH: a Display Panel screen was touched. &DATA = "DSP01 A 40 12" (its name, the region, canvas px from the
+    // top left).
+    public static void displayTouched(MinecraftServer server, NetworkRef network, String device, String region, int x, int y) {
+        fire(server, new Event(network, "*DSPTOUCH", device, device + " " + region + " " + x + " " + y));
+    }
+
     // *RSCHANGE: a Control Interface's input on a face changed. &DATA = "*NORTH 7".
     public static void redstoneChanged(MinecraftServer server, NetworkRef network, String device, Direction side, int level) {
         fire(server, new Event(network, "*RSCHANGE", device, side(side) + " " + level));

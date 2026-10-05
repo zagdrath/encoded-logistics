@@ -507,6 +507,28 @@ public class Config {
             .comment("FE/t each Display Panel of a screen draws from its network.")
             .defineInRange("displayPanelDrain", 0.5, 0, 1_000);
 
+    public static final ModConfigSpec.IntValue DISPLAY_HISTORY_SECONDS = BUILDER
+            .comment("Seconds of graph history a Display Panel keeps itself (one sample a second, while loaded) for graphs no Monitoring Server serves.")
+            .defineInRange("displayHistorySeconds", 600, 10, 3_600);
+
+    public enum ImagesAllowed { AUTO, TRUE, FALSE }
+
+    public static final ModConfigSpec.EnumValue<ImagesAllowed> ALLOW_IMAGES = BUILDER
+            .comment("Whether Display Panels show images from <world>/encodedlogistics/images/<SYSNAME>/: AUTO is on in single-player and off on dedicated servers.")
+            .defineEnum("allowImages", ImagesAllowed.AUTO);
+
+    public static final ModConfigSpec.IntValue DISPLAY_MAX_IMAGE_SIZE = BUILDER
+            .comment("The largest source image a Display Panel takes, in pixels each way.")
+            .defineInRange("displayMaxImageSize", 4_096, 16, 16_384);
+
+    public static final ModConfigSpec.IntValue DISPLAY_MAX_IMAGE_BYTES = BUILDER
+            .comment("The largest source image file a Display Panel takes, in MB.")
+            .defineInRange("displayMaxImageBytes", 4, 1, 64);
+
+    public static final ModConfigSpec.ConfigValue<String> DISPLAY_IMAGE_COLORS = BUILDER
+            .comment("The most colours a player may pick for an image on a Display Panel: 16, 64, 256 or FULL.")
+            .define("displayImageColors", "256", value -> value instanceof String text && java.util.List.of("16", "64", "256", "FULL").contains(text));
+
     public static final ModConfigSpec.DoubleValue ACCESS_POINT_DRAIN = BUILDER
             .comment("FE per tick an Access Point drains while its network runs.")
             .defineInRange("accessPointDrain", 2.0, 0.0, 1_000.0);

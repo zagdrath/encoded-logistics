@@ -101,7 +101,7 @@ public final class Lexer {
                     col++;
                 }
                 emit(Kind.NAME, text.substring(start, col).toUpperCase(Locale.ROOT), start);
-            } else if ((c == '&' || c == '*' || c == '%') && isNameStart(at(col + 1))) {
+            } else if ((c == '&' || c == '*' || c == '%') && isNameStart(at(col + 1)) || c == '*' && digitsThenLetter(col + 1)) {
                 int start = col++;
                 while (isNameChar(at(col))) {
                     col++;
@@ -132,6 +132,15 @@ public final class Lexer {
 
     private static boolean digit(char c) {
         return c >= '0' && c <= '9';
+    }
+
+    // Digits then a letter from here: a special value such as *1M or *10M (a range), not a multiplication.
+    private boolean digitsThenLetter(int from) {
+        int at = from;
+        while (digit(at(at))) {
+            at++;
+        }
+        return at > from && Character.isLetter(at(at));
     }
 
     // A - starts a negative number after a blank or "(" (or at a statement's start).

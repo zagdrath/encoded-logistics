@@ -246,6 +246,46 @@ final class BuiltinCommands {
                 .p(p("TEXT", "Text", Kind.CHAR).req().len(64))
                 .p(p("LINE", "Line", Kind.INT).sv("*NEXT").dft("*NEXT").range(1, 64))
                 .p(yesNo("CLEAR", "Clear first", "*NO")));
+        // Display Panels (display handoff 6).
+        add(CommandDefinition.of("CLRDSP", "Clear Display").positional(1)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("RGN", "Region", Kind.NAME).sv("*ALL").dft("*ALL")));
+        add(CommandDefinition.of("CHGDSPRGN", "Change Display Region").positional(2)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("RGN", "Region", Kind.NAME).req())
+                .p(p("X", "Left (canvas px)", Kind.INT).sv("*SAME").dft("*SAME").range(0, 1024))
+                .p(p("Y", "Top (canvas px)", Kind.INT).sv("*SAME").dft("*SAME").range(0, 1024))
+                .p(p("W", "Width (canvas px)", Kind.INT).sv("*SAME").dft("*SAME").range(1, 1024))
+                .p(p("H", "Height (canvas px)", Kind.INT).sv("*SAME").dft("*SAME").range(1, 1024))
+                .p(p("BG", "Background colour", Kind.CHAR).sv("*SAME", "*DFT").dft("*SAME").len(8)));
+        add(CommandDefinition.of("SNDDSPWDG", "Send Display Widget").positional(3)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("RGN", "Region", Kind.NAME).req())
+                .p(p("WDG", "Widget", Kind.SPECIAL).req().sv("*STORAGE", "*COLD", "*ENERGY", "*LANES", "*JOBS", "*ITEM", "*CLOCK", "*DEVICES", "*UPS",
+                        "*TEXT", "*NONE"))
+                .p(p("ITEM", "Item", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
+                .p(p("DEVTYPE", "Device type", Kind.NAME).sv("*ALL").dft("*ALL"))
+                .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8)));
+        add(CommandDefinition.of("SNDDSPGPH", "Send Display Graph").positional(3)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("RGN", "Region", Kind.NAME).req())
+                .p(p("STAT", "Statistic", Kind.SPECIAL).req().sv("*ITEMFLOW", "*ENERGY", "*LANES", "*STORAGE", "*CRAFTING", "*ITEM"))
+                .p(p("ITEM", "Item", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
+                .p(p("RANGE", "Range", Kind.SPECIAL).sv("*1M", "*10M", "*1H", "*1D").dft("*10M"))
+                .p(p("TYPE", "Graph type", Kind.SPECIAL).sv("*LINE", "*BAR").dft("*LINE"))
+                .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8)));
+        add(CommandDefinition.of("SNDDSPIMG", "Send Display Image").positional(3)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("RGN", "Region", Kind.NAME).req())
+                .p(p("FILE", "Image file", Kind.CHAR).req().len(64))
+                .p(p("SCALE", "Scaling", Kind.SPECIAL).sv("*DITHER", "*NEAREST").dft("*DITHER"))
+                .p(p("COLORS", "Colours", Kind.CHAR).sv("*DFT", "*FULL").dft("*DFT").len(5)));
+        add(CommandDefinition.of("RTVDSPSIZ", "Retrieve Display Size").positional(1)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(rtn("RTNW", "Return width (panels)", VarType.INT))
+                .p(rtn("RTNH", "Return height (panels)", VarType.INT))
+                .p(rtn("RTNPXW", "Return width (canvas px)", VarType.INT))
+                .p(rtn("RTNPXH", "Return height (canvas px)", VarType.INT)));
         add(CommandDefinition.of("PRTTXT", "Print Text").positional(1)
                 .p(p("TEXT", "Text", Kind.CHAR).req().len(64))
                 .p(p("SPLF", "Spooled file", Kind.NAME).sv("*JOB").dft("*JOB")));
@@ -323,7 +363,7 @@ final class BuiltinCommands {
         add(CommandDefinition.of("ADDTRGEVT", "Add Trigger Event").positional(3)
                 .p(p("TRG", "Trigger", Kind.NAME).req())
                 .p(p("EVENT", "Event", Kind.SPECIAL).req().sv("*ITMBELOW", "*ITMABOVE", "*STGFULL", "*DEVFAULT", "*DEVONLINE", "*DEVOFFLINE",
-                        "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*RSCHANGE"))
+                        "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*RSCHANGE", "*DSPTOUCH"))
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ANY").dft("*ANY").len(64))
                 .p(p("DEV", "Device", Kind.DEVICE).sv("*ANY").dft("*ANY"))

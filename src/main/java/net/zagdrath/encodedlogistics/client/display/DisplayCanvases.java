@@ -23,14 +23,17 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.crt.TerminalFont;
+import net.zagdrath.encodedlogistics.display.DisplayContent;
+import net.zagdrath.encodedlogistics.display.DisplayFrame;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlock;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
+import net.zagdrath.encodedlogistics.net.DisplayFramePayload;
 
 // The Display Panels' canvases on the client (HANDOFF 2): a dynamic texture per screen, CANVAS px a panel, painted
 // again only when what it shows changes. Booting: the test pattern (textures/display/test_pattern.png) stretched over
 // it; no signal: "NO SIGNAL" in the warning colour, centred (2x where it fits) over the darkest steel, a rule under it;
-// online: the text lines in the terminal font on steel step 1. Off: none (the glass shows). The reference is
-// tools/dsp_canvas.py.
+// online: its content over its background (steel step 1 by default), painted by CanvasPainter. Off: none (the glass
+// shows). The reference is tools/dsp_canvas.py.
 public final class DisplayCanvases {
     public static final int BACKGROUND = 0xFF2B2F36, DARK = 0xFF1F2228, RULE = 0xFF555B65, TEXT = 0xFFF0F0F0, WARNING = 0xFFE8C24A;
     private static final Identifier PATTERN = EncodedLogistics.id("textures/display/test_pattern.png");
@@ -49,7 +52,7 @@ public final class DisplayCanvases {
             return null;
         }
         int width = master.canvasWidth(), height = master.canvasHeight();
-        int hash = Objects.hash(shown, width, height, shown == DisplayPanelBlock.Shown.ONLINE ? master.textLines() : List.of());
+        int hash = Objects.hash(shown, width, height, shown == DisplayPanelBlock.Shown.ONLINE ? onlineHash(master) : 0);
         BlockPos pos = master.getBlockPos().immutable();
         Canvas canvas = CANVASES.get(pos);
         if (canvas != null && canvas.hash() == hash) {
@@ -70,7 +73,7 @@ public final class DisplayCanvases {
             switch (shown) {
                 case BOOT -> testPattern(image);
                 case NO_SIGNAL -> noSignal(image);
-                default -> text(image, master.textLines());
+                default -> online(image, master);
             }
             canvas.texture().upload();
         }
@@ -117,10 +120,40 @@ public final class DisplayCanvases {
         return text.length() * TerminalFont.CELL_W * scale;
     }
 
-    private static void text(NativeImage image, List<String> lines) {
-        fill(image, 0, 0, image.getWidth(), image.getHeight(), BACKGROUND);
-        for (int i = 0; i < lines.size(); i++) {
-            text(image, 1, 1 + i * TerminalFont.CELL_H, lines.get(i), TEXT, 1);
+    // What changes an online canvas: the content, the live frames, the images, and the minute for a clock.
+    private static int onlineHash(DisplayPanelBlockEntity master) {
+        DisplayContent content = master.displayContent();
+        int images = 0;
+        for (Map.Entry<String, int[]> image : master.images().entrySet()) {
+            images = 31 * images + image.getKey().hashCode() * 17 + System.identityHashCode(image.getValue());
+        }
+        boolean clock = content.mode != DisplayContent.Mode.TEXT
+                && content.regions(master.canvasWidth(), master.canvasHeight()).stream().anyMatch(r -> r.widget().kind().equals("*CLOCK"));
+        long minute = clock && Minecraft.getInstance().level != null ? Minecraft.getInstance().level.getOverworldClockTime() / 16 : 0;
+        return Objects.hash(content.mode, content.background, content.lines, content.regions, DisplayFramePayload.frames(master.getBlockPos()), images,
+                minute);
+    }
+
+    // Text mode: the lines over the background; Dashboard and Script-controlled: the regions and their widgets.
+    private static void online(NativeImage image, DisplayPanelBlockEntity master) {
+        DisplayContent content = master.displayContent();
+        fill(image, 0, 0, image.getWidth(), image.getHeight(), content.background != 0 ? content.background : BACKGROUND);
+        NativeImage sheet = font();
+        if (sheet == null) {
+            return;
+        }
+        CanvasPainter painter = new CanvasPainter(image, sheet);
+        if (content.mode == DisplayContent.Mode.TEXT) {
+            painter.lines(0, 0, image.getWidth(), image.getHeight(), content.lines);
+            return;
+        }
+        Map<String, DisplayFrame> frames = new HashMap<>();
+        for (DisplayFrame frame : DisplayFramePayload.frames(master.getBlockPos())) {
+            frames.put(frame.region(), frame);
+        }
+        long dayTime = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.getOverworldClockTime() : 0;
+        for (DisplayContent.Region region : content.regions(master.canvasWidth(), master.canvasHeight())) {
+            painter.region(region, frames.get(region.name()), content.lines, master.images(), dayTime);
         }
     }
 

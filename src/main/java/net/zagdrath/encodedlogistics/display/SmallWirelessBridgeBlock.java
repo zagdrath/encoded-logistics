@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.display;
 
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 
 import net.minecraft.core.BlockPos;
@@ -32,7 +33,7 @@ public class SmallWirelessBridgeBlock extends Block {
 
         @Override
         public String getSerializedName() {
-            return name().toLowerCase(java.util.Locale.ROOT);
+            return name().toLowerCase(Locale.ROOT);
         }
     }
 

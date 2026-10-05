@@ -117,6 +117,13 @@ public final class ElclMessages {
         // Not in MESSAGES.md originally: 8" Diskettes (SAVLIB / RSTLIB).
         define("ELC1310", SEVERE, "No diskette in device &1.");
         define("ELC1311", SEVERE, "Library &1 needs &2 bytes; the diskette has &3 free.");
+        // Not in MESSAGES.md originally: Display Panels.
+        define("ELC1312", SEVERE, "Image &1 not found in the images folder.");
+        define("ELC1313", SEVERE, "Image &1 is larger than the allowed size (&2).");
+        define("ELC1314", SEVERE, "Region &1 is outside the screen or overlaps another region.");
+        define("ELC1315", SEVERE, "Images are disabled on this server.");
+        define("ELC1316", SEVERE, "Data source &1 is not available for this widget.");
+        define("ELC1317", WARNING, "Colour mode &1 is above the server's limit; &2 used.");
         // Crafting.
         define("ELC1401", SEVERE, "No Scheduler available.");
         define("ELC1402", SEVERE, "No recipe known for &1.");
