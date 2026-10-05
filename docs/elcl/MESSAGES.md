@@ -119,6 +119,12 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC1309 | 00 | Device &1 renamed to &2. | *(added: RNMDEV)*
 | ELC1310 | 30 | No diskette in device &1. | *(added: SAVLIB / RSTLIB)*
 | ELC1311 | 30 | Library &1 needs &2 bytes; the diskette has &3 free. | *(added: SAVLIB)*
+| ELC1312 | 30 | Image &1 not found in the images folder. | *(added: Display Panels)*
+| ELC1313 | 30 | Image &1 is larger than the allowed size (&2). | *(added: Display Panels)*
+| ELC1314 | 30 | Region &1 is outside the screen or overlaps another region. | *(added: Display Panels)*
+| ELC1315 | 30 | Images are disabled on this server. | *(added: Display Panels)*
+| ELC1316 | 30 | Data source &1 is not available for this widget. | *(added: Display Panels)*
+| ELC1317 | 10 | Colour mode &1 is above the server's limit; &2 used. | *(added: Display Panels; a diagnostic, the image still shows)*
 
 ## ELC14xx — Crafting
 

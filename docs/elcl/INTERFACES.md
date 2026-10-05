@@ -16,7 +16,7 @@ you test the real devices.
 | 8" Diskette | `midrange/DisketteStack` (over the item's `DisketteData`) | `Diskette` |
 
 They're tested by `gametest/MidrangeGameTests` (`midrange_peripherals`, `midrange_system_crafts`, `midrange_tiers`).
-Only the Mainframe and the display blocks still have nothing but the fakes.
+Only the Mainframe still has nothing but the fakes; the Display Panel is a `DisplayDevice` (below).
 
 Paths are under `src/main/java/net/zagdrath/encodedlogistics/`.
 
@@ -158,8 +158,9 @@ Tested by `gametest/InterfaceGameTests.recipeLibrary`: its recipe becomes crafta
 
 ## DisplayDevice — text displays (SNDDSPTXT)
 
-`elcl/device/DisplayDevice.java`, registry `elcl/device/Displays.java`. This isn't part of the Midrange line. It's here
-for the Status Display, NOC Video Wall and Rack Console screen when they come.
+`elcl/device/DisplayDevice.java`, registry `elcl/device/Displays.java`. This isn't part of the Midrange line. The
+Display Panel implements it: each merged screen's master (`display/DisplayPanelBlockEntity`, named DSP01...),
+registered in `ElclSetup.init()`. A Status Display, NOC Video Wall or Rack Console screen would join the same way.
 
 | Method | Meaning |
 |---|---|
@@ -168,4 +169,4 @@ for the Status Display, NOC Video Wall and Rack Console screen when they come.
 | `int lines()` | Lines it shows. `LINE(n)` past them: ELC0004. |
 | `void write(int line, String text, boolean clear)` | One line (`0` for `*NEXT`), clearing first if asked. |
 
-Tested by `ElclVmGameTests` with `FakeDisplay`.
+Tested by `ElclVmGameTests` with `FakeDisplay`, and the real screen by `DisplayGameTests` (`display_on_network`, `display_commands`).

@@ -220,7 +220,7 @@ final class ElclVmGameTests {
 
     // --- CALL in the interactive job ---
 
-    private static void member(ElclSystem system, String user, String library, String name, String... lines) {
+    static void member(ElclSystem system, String user, String library, String name, String... lines) {
         try {
             try {
                 ElclServices.libraries().createLibrary(system, user, library, "*PROD", "");
@@ -235,7 +235,7 @@ final class ElclVmGameTests {
         }
     }
 
-    private static boolean said(ElclSystem system, String user, String text) {
+    static boolean said(ElclSystem system, String user, String text) {
         return ElclServices.messages().messages(system, user).stream().map(MessageService.Message::text).anyMatch(t -> t.contains(text));
     }
 

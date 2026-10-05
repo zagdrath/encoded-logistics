@@ -107,7 +107,13 @@ ELC1303.)*
 |---------|-----------|---------|-------|
 | `SNDMSG` | `MSG`(P1, Req) `TOUSR(*REQUESTER\|*SYSOPR\|*ALL\|user)` `TOTRM(name)` | IB | `*SYSOPR` = network owner. Also shows a chat notice to online recipients (config). |
 | `DSPMSG` | `USR(*CURRENT\|user)` | I | Opens Display Messages screen |
-| `SNDDSPTXT` | `DEV`(P1, Req) `TEXT`(P2, Req) `LINE(*NEXT\|n)` `CLEAR(*NO\|*YES)` | IB | Status Display, NOC Video Wall, Rack Console. ELC1301, ELC1303. *(Implemented against `elcl.device.DisplayDevice`; the mod has none of these displays yet)* |
+| `SNDDSPTXT` | `DEV`(P1, Req) `TEXT`(P2, Req) `LINE(*NEXT\|n)` `CLEAR(*NO\|*YES)` | IB | A Display Panel screen (DSP01). ELC1301, ELC1303. *(Implemented against `elcl.device.DisplayDevice`: a screen has a line per 10 canvas px and a character per 6; longer text is cut, *NEXT past the bottom rolls the lines up)* |
+| `CLRDSP` **[EXT]** | `DEV`(P1, Req) `RGN(*ALL\|name)` | IB | Clears a region's widget, or (*ALL) the whole screen: its regions, text and images. ELC1301, ELC1303, ELC1314. |
+| `CHGDSPRGN` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req, name) `X(*SAME\|n)` `Y(*SAME\|n)` `W(*SAME\|n)` `H(*SAME\|n)` `BG(*SAME\|*DFT\|colour)` | IB | Defines or changes a region in canvas px (a new one: from 0, 0 to the screen's edge by default). ELC1301, ELC1303, ELC1314 (outside the screen or overlapping). |
+| `SNDDSPWDG` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `WDG`(P3, Req: `*STORAGE *COLD *ENERGY *LANES *JOBS *ITEM *CLOCK *DEVICES *UPS *TEXT *NONE`) `ITEM(*NONE\|id)` `DEVTYPE(*ALL\|type)` `COLOR(*DFT\|colour)` | IB | Places a dashboard widget. ELC1301, ELC1303, ELC1314 (no such region), ELC1316 (bad data source). |
+| `SNDDSPGPH` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `STAT`(P3, Req: `*ITEMFLOW *ENERGY *LANES *STORAGE *CRAFTING *ITEM`) `ITEM(*NONE\|id)` `RANGE(*1M\|*10M\|*1H\|*1D)` `TYPE(*LINE\|*BAR)` `COLOR(*DFT\|colour)` | IB | Draws a graph (a Monitoring Server's series when there is one; else the screen's own history). ELC1301, ELC1303, ELC1314, ELC1316. |
+| `SNDDSPIMG` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `FILE`(P3, Req, quoted: `FILE('logo.png')`) `SCALE(*DITHER\|*NEAREST)` `COLORS(*DFT\|16\|64\|256\|*FULL)` | IB | Shows a PNG from `<world>/encodedlogistics/images/<SYSNAME>/`. ELC1301, ELC1303, ELC1312, ELC1313, ELC1314, ELC1315; ELC1317 (a diagnostic) when the colours are above the server's limit. |
+| `RTVDSPSIZ` **[EXT]** | `DEV`(P1, Req) `RTNW`(*INT) `RTNH`(*INT) `RTNPXW`(*INT) `RTNPXH`(*INT) | IB | Size in panels and canvas px. ELC1301, ELC1303. |
 | `PRTTXT` | `TEXT`(P1, Req) `SPLF(*JOB\|name)` | IB | Writes a line to a spooled file |
 | `PRTRPT` | `RPT`(P1, Req: `*INV\|*DEV\|*JOBLOG\|*SPLF`) `SPLF(name)` `DEV(*DFT\|printer)` | IB | Line Printer. ELC1301, ELC1306 (out of paper) |
 
@@ -129,6 +135,10 @@ ELC1303.)*
 | `WRKDEV` / `WRKINV` / `DSPNETSTS` | existing screens | I |
 | `SIGNOFF` | | I |
 
+**Display colours** (`COLOR`, `BG`): `*DFT`, a panel palette name (`*DARK *STEEL *GREY *SILVER *LIGHT *WHITE *NAVY
+*BLUE *CYAN *RUST *ORANGE *YELLOW *GREEN *FOREST *RED *BROWN *MINT`) or `#RRGGBB`. `RANGE`'s `*1M`, `*10M`, `*1H` and
+`*1D` are special values (the lexer reads `*` with digits and a letter as one).
+
 **Trigger events** (`ADDTRGEVT EVENT(...)`). The triggered program receives
 two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 
@@ -140,6 +150,7 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 | `*PWRUPS` / `*PWRRESTORED` | — | UPS charge % |
 | `*CRAFTEND` | `ITEM` (or `*ANY`) | craft job id and status |
 | `*RSCHANGE` | `DEV`, optional `VALUE` (side) | side and new level |
+| `*DSPTOUCH` **[EXT]** | `DEV` (or `*ANY`) | screen, region and canvas point, e.g. `DSP01 A 40 12` |
 
 Triggers are edge-triggered (fire once per crossing) and debounced
 (minimum 1 second between firings of the same trigger).

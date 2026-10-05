@@ -160,7 +160,7 @@ final class DisplayGameTests {
     // The display commands on a 3 x 2 screen beside ElclGameTests' desk: regions (overlapping and outside: ELC1314),
     // widgets and graphs (a missing data source: ELC1316), their live frames, images (disabled: ELC1315; missing:
     // ELC1312; above the colour limit: ELC1317, shown all the same), clearing, the wrong device (ELC1303, ELC1301); and a
-    // touch firing *DSPTOUCH with the region and point, at most four a second.
+    // touch firing *DSPTOUCH with the region and point, at most four a second; RTVDSPSIZ in a program.
     @SuppressWarnings("removal")
     static void commands(GameTestHelper helper) {
         ElclGameTests.desk(helper);
@@ -245,6 +245,18 @@ final class DisplayGameTests {
                     helper.assertTrue(display.displayContent().region("B", 96, 64).widget().kind().equals("*NONE"), "Region B not cleared");
                     ok(helper, context, "CLRDSP DEV(DSP01)");
                     helper.assertTrue(display.displayContent().regions.isEmpty() && display.images().isEmpty(), "Screen not cleared");
+                    // RTVDSPSIZ in a program: panels and canvas px.
+                    ElclSystem system = new ElclSystem(context.server(), context.network());
+                    ElclVmGameTests.member(system, context.user(), "TST", "SIZE", "PGM", "DCL VAR(&W) TYPE(*INT)", "DCL VAR(&H) TYPE(*INT)",
+                            "DCL VAR(&PW) TYPE(*INT)", "DCL VAR(&PH) TYPE(*INT)", "RTVDSPSIZ DEV(DSP01) RTNW(&W) RTNH(&H) RTNPXW(&PW) RTNPXH(&PH)",
+                            "SNDMSG MSG('Size' *BCAT %CHAR(&W) *BCAT %CHAR(&H) *BCAT %CHAR(&PW) *BCAT %CHAR(&PH)) TOUSR(*REQUESTER)", "ENDPGM");
+                    ElclGameTests.expect(helper, context, "CALL PGM(TST/SIZE)", "ELC0108");
+                })
+                .thenWaitUntil(() -> {
+                    TerminalDeskBlockEntity desk = helper.getBlockEntity(ElclGameTests.DESK, TerminalDeskBlockEntity.class);
+                    ElclSystem system = new ElclSystem(helper.getLevel().getServer(), desk.network());
+                    helper.assertTrue(ElclVmGameTests.said(system, new TerminalContext(system.server(), desk.network(), desk, player).user(), "Size 3 2 96 64"),
+                            "RTVDSPSIZ didn't return 3 2 96 64");
                 })
                 .thenSucceed();
     }

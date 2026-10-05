@@ -55,6 +55,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | - | Keypunch, Card Reader, Line Printer | NEW | `KeypunchScreen`, `CardReaderScreen`, `LinePrinterScreen` (`menu/KeypunchMenu`, `CardReaderMenu`, `LinePrinterMenu`); F6 punches, reads or prints |
 | - | The Midrange machines' frame | NEW | `CrtMachineScreen`: the desk's CRT (`CrtDisplay`, shared with `CrtScreen`) and the same frame as every screen (the id is the device's name). Slots are phosphor frames on the glass, with the player's inventory at the lower right (columns 51-78, rows 12-19); reversed action labels on row 20 |
 | - | Integrated Midrange System console | EXTENDED | The Terminal Desk's session (`TerminalDeskMenu` opened at the system's master), while the system is running |
+| - | Display Panel configuration | NEW | `client/screen/DisplayPanelScreen` (`menu/DisplayPanelMenu`, `DisplayConfigPayload`): Mode, Layout (drag edges to move or split regions, right-click removes), Widgets (a picker for the widget, its source and colour). Not a green screen: the L3 Switch panel's frame |
 
 ### Main Menu options
 
@@ -125,7 +126,8 @@ statements (PGM, DCL, IF, DO, MONMSG and the rest) are program-only: on a comman
   `trigger_items`, `trigger_events`, `trigger_power`, `trigger_storage`; `security_authority`, `security_signon`;
   `diskette_save_restore`, `printer_print`, `recipe_library`; `folder_sync`; `midrange_footprints`,
   `midrange_expansion_cabinet`, `midrange_peripherals`, `midrange_printer_pages`, `midrange_system_crafts`,
-  `midrange_tiers`.
+  `midrange_tiers`; `rack_access`, `rack_access_open_and_offline`, `link_card_permissions`; `display_merging`,
+  `display_on_network`, `display_commands`, `display_configuration`. Unit: `display.DisplayImagesTest`.
 - Not automated: rendering in each phosphor at GUI scales 1-4 and small windows, the blinking locate box and the
   facade preview (client rendering), and the screens themselves in a running client (`LayoutTest` composes each one).
 
