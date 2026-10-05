@@ -144,12 +144,20 @@ final class DisplayCommands {
             DisplayContent.Region region = region(display, call.text("RGN"));
             String stat = call.text("STAT").toUpperCase(Locale.ROOT);
             String item = call.text("ITEM");
+            boolean machine = stat.equals("*MCHOPS") || stat.equals("*MCHFE");
             if (stat.equals("*ITEM")) {
                 item = item(item, stat);
+            } else if (machine) {
+                // A bridged machine's stat: ITEM names the machine (ELC1301 / ELC1318 otherwise).
+                if (item.isBlank() || item.equalsIgnoreCase("*NONE")) {
+                    throw new ElclException("ELC1316", "*NONE", stat);
+                }
+                ElclContext context = OsCommands.context(call);
+                item = MachineCommands.find(context.server(), context.network(), item).name();
             } else if (!item.equalsIgnoreCase("*NONE")) {
                 throw new ElclException("ELC1316", item, stat);
             }
-            DisplayContent.Widget widget = new DisplayContent.Widget("*GRAPH", stat.equals("*ITEM") ? item : "", "*ALL", color(call, "COLOR"), stat,
+            DisplayContent.Widget widget = new DisplayContent.Widget("*GRAPH", stat.equals("*ITEM") || machine ? item : "", "*ALL", color(call, "COLOR"), stat,
                     call.text("RANGE").toUpperCase(Locale.ROOT), call.text("TYPE").toUpperCase(Locale.ROOT), "", "*DITHER", "*DFT");
             put(display, region.with(widget));
         });

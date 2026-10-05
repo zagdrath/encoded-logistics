@@ -20,9 +20,11 @@ import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
+import net.zagdrath.encodedlogistics.elcl.exec.MachineCommands;
 import net.zagdrath.encodedlogistics.elcl.exec.ModCommands;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
+import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -66,8 +68,13 @@ final class DisplayData {
         return range.equals("*1M") ? 60 : Integer.MAX_VALUE;
     }
 
+    // A machine stat (*MCHOPS: operations a minute, *MCHFE: FE stored) of the machine named in the widget's item.
+    static boolean machineStat(String stat) {
+        return stat.equals("*MCHOPS") || stat.equals("*MCHFE");
+    }
+
     static String historyKey(DisplayContent.Widget widget) {
-        return widget.stat().equals("*ITEM") ? "*ITEM " + widget.item() : widget.stat();
+        return widget.stat().equals("*ITEM") || machineStat(widget.stat()) ? widget.stat() + " " + widget.item() : widget.stat();
     }
 
     // Samples the stats the screen's graphs show into its history.
@@ -108,8 +115,22 @@ final class DisplayData {
                 Long count = count(server, network, widget.item());
                 yield count == null ? null : count.floatValue();
             }
+            case "*MCHOPS", "*MCHFE" -> {
+                MachineInfo info = machine(server, network, widget.item());
+                yield info == null ? null : widget.stat().equals("*MCHOPS") ? (float) info.statistics().operationsPerMinute()
+                        : info.energy().map(energy -> (float) energy.stored()).orElse(null);
+            }
             default -> null;
         };
+    }
+
+    // The bridged machine with that device name now, or null.
+    private static @Nullable MachineInfo machine(MinecraftServer server, NetworkRef network, String name) {
+        try {
+            return MachineCommands.find(server, network, name).info();
+        } catch (ElclException e) {
+            return null;
+        }
     }
 
     // --- Frames ---
@@ -243,10 +264,11 @@ final class DisplayData {
     private static DisplayFrame graph(MinecraftServer server, NetworkRef network, String name, DisplayContent.Widget widget, DisplayHistory history) {
         float[] series = null;
         int stat = monitoringStat(widget.stat());
-        if (stat >= 0) {
+        if (stat >= 0 || machineStat(widget.stat())) {
             for (RackDevice device : ControllerStructures.rackDevicesServing(server, network)) {
                 if (device instanceof MonitoringServerDevice monitoring && device.isOnline()) {
-                    series = monitoring.series(stat, monitoringRange(widget.range()));
+                    series = stat >= 0 ? monitoring.series(stat, monitoringRange(widget.range()))
+                            : monitoring.machineSeries(historyKey(widget), monitoringRange(widget.range()));
                     break;
                 }
             }
@@ -271,6 +293,8 @@ final class DisplayData {
             case "*LANES" -> "LANES USED";
             case "*CRAFTING" -> "CRAFTS /MIN";
             case "*STORAGE" -> "STORAGE %";
+            case "*MCHOPS" -> widget.item().toUpperCase(Locale.ROOT) + " OPS /MIN";
+            case "*MCHFE" -> widget.item().toUpperCase(Locale.ROOT) + " FE";
             default -> widget.item().toUpperCase(Locale.ROOT);
         };
         String value = points.isEmpty() ? "-" : compact(Math.round(points.getLast()));

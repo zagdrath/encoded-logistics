@@ -124,6 +124,12 @@ public final class ElclMessages {
         define("ELC1315", SEVERE, "Images are disabled on this server.");
         define("ELC1316", SEVERE, "Data source &1 is not available for this widget.");
         define("ELC1317", WARNING, "Colour mode &1 is above the server's limit; &2 used.");
+        // Not in MESSAGES.md originally: machines with a Small Wireless Bridge (Arcforge).
+        define("ELC1318", SEVERE, "Device &1 is not an Arcforge machine.");
+        define("ELC1319", SEVERE, "Machine &1 is not formed.");
+        define("ELC1320", SEVERE, "Machine &1 does not support &2.");
+        define("ELC1321", SEVERE, "Machine &1 rejected &2(&3).");
+        define("ELC1322", INFO, "Machine &1 changed.");
         // Crafting.
         define("ELC1401", SEVERE, "No Scheduler available.");
         define("ELC1402", SEVERE, "No recipe known for &1.");

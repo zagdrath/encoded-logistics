@@ -24,9 +24,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -60,6 +66,7 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
     private SmallWirelessBridgeBlock.State led = SmallWirelessBridgeBlock.State.UNLINKED;
     // FE it put into the machine last tick, from the network.
     private int powered;
+    private MachineAccess.@Nullable Listener events;
 
     MachineBridge(ResourceKey<Level> dimension, BlockPos pos, Direction face, Identifier block, BlockPos machine, String type, Component shown,
             @Nullable WirelessLink link, String deviceName, boolean powerFromNetwork, @Nullable GlobalPos gateway) {
@@ -215,6 +222,39 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
         return typeCode(type);
     }
 
+    // --- Events ---
+
+    // What it tells ELCL of its machine while it's on a network (triggers): *MCHIDLE, *MCHFAULT and *MCHNOPWR as the
+    // machine's status becomes idle, faulted or short of power; *MCHDONE for each operation it finishes.
+    MachineAccess.Listener events(ServerLevel level) {
+        if (events == null) {
+            events = new MachineAccess.Listener() {
+                @Override
+                public void statusChanged(MachineInfo.State previous, MachineInfo.State current, Component reason) {
+                    String event = switch (current) {
+                        case IDLE -> "*MCHIDLE";
+                        case FAULT -> "*MCHFAULT";
+                        case NO_POWER -> "*MCHNOPWR";
+                        default -> null;
+                    };
+                    NetworkRef network = ControllerStructures.networkOf(level, pos);
+                    if (event != null && online && network != null) {
+                        ElclEvents.machineStatus(level.getServer(), network, event, deviceName, reason.getString());
+                    }
+                }
+
+                @Override
+                public void operationCompleted(List<ItemStack> produced) {
+                    NetworkRef network = ControllerStructures.networkOf(level, pos);
+                    if (online && network != null) {
+                        ElclEvents.machineDone(level.getServer(), network, deviceName, produced);
+                    }
+                }
+            };
+        }
+        return events;
+    }
+
     // --- WirelessClient ---
 
     @Override
@@ -343,6 +383,42 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
         }
         Component name = shown.getString().isEmpty() ? ModItems.SMALL_WIRELESS_BRIDGE.get().getName(ModItems.SMALL_WIRELESS_BRIDGE.toStack()) : shown;
         return new RackDeviceInfo(name, status(server, info), statusText(server, info), lines);
+    }
+
+    // The bridge's own popup (the crosshair on the bridge, not the machine), as an Access Point's: its link's status, then
+    // its controller, the machine it's on, its lane and drain, the Gateway that feeds the machine and power from network.
+    public RackDeviceInfo describeBridge(MinecraftServer server) {
+        MachineInfo info = info(server);
+        Wireless.Problem problem = Wireless.problem(server, this);
+        RackDeviceInfo.Status status = problem != Wireless.Problem.NONE ? problem.status() : !online ? RackDeviceInfo.Status.OFFLINE
+                : info == null ? RackDeviceInfo.Status.FAULT : RackDeviceInfo.Status.ONLINE;
+        Component text = problem != Wireless.Problem.NONE ? problem.text() : info == null && online
+                ? Component.translatable("hud.encodedlogistics.machine.missing") : status.text();
+        List<RackDeviceInfo.InfoLine> lines = new ArrayList<>();
+        String controller = controllerName(server);
+        Component none = Component.translatable("hud.encodedlogistics.wireless.none");
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.wireless.controller"),
+                link == null ? Component.translatable("hud.encodedlogistics.wireless.use_card") : controller.isEmpty() ? none : Component.literal(controller)));
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.machine.machine"), shown.getString().isEmpty() ? none : shown));
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.wireless.lanes"),
+                Component.literal(online ? "1 / 1" : "0 / 1")));
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.machine.drain"),
+                Component.translatable("hud.encodedlogistics.machine.fe_per_tick", String.format(Locale.ROOT, "%.1f", Config.SMALL_WIRELESS_BRIDGE_DRAIN.getAsDouble()))));
+        String gatewayName = gatewayName(server);
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.machine.gateway"),
+                gatewayName.isEmpty() ? none : Component.literal(gatewayName)));
+        lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.machine.power"), powerFromNetwork
+                ? Component.translatable("hud.encodedlogistics.machine.power_network", powered) : Component.translatable("hud.encodedlogistics.machine.power_off")));
+        return new RackDeviceInfo(ModItems.SMALL_WIRELESS_BRIDGE.get().getName(ModItems.SMALL_WIRELESS_BRIDGE.toStack()), status, text, lines);
+    }
+
+    // The device name of the Gateway it's set to (GATEWAY01), "" for none; "?" when it's gone or unloaded.
+    public String gatewayName(MinecraftServer server) {
+        if (gateway == null) {
+            return "";
+        }
+        return ControllerStructures.blockEntity(server, NodePos.of(gateway)) instanceof GatewayBlockEntity found
+                ? found.deviceName().isEmpty() ? "GATEWAY" : found.deviceName() : "?";
     }
 
     @Override

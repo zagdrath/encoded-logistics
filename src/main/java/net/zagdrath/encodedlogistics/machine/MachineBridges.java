@@ -243,6 +243,10 @@ public final class MachineBridges extends SavedData {
             return;
         }
         for (MachineBridge bridge : bridges.values()) {
+            if (level.isLoaded(bridge.pos())) {
+                // Its machine's events reach ELCL (following the machine when it's reloaded or re-formed).
+                access.watch(level, bridge.pos(), bridge.events(level));
+            }
             if (bridge.powerFromNetwork() && bridge.isOnline() && level.isLoaded(bridge.pos())) {
                 power(level, bridge);
             } else {

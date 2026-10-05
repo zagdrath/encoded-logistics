@@ -5,16 +5,27 @@
 
 package net.zagdrath.encodedlogistics.rack.device;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.elcl.exec.MachineCommands;
+import net.zagdrath.encodedlogistics.machine.MachineInfo;
+import net.zagdrath.encodedlogistics.machine.MachineSeries;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -23,6 +34,9 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 // storage per minute), energy use (FE/t), lane usage and crafting throughput (jobs finished per minute) - and keeps them
 // for its graph: the last 10 minutes a sample a second (the 1m and 10m views), the last hour a sample every 10 seconds,
 // and the last day a sample every 2 minutes, each the average over its interval. Kept with the device in its rack.
+// It also samples each machine with a Small Wireless Bridge on the network - its operations a minute and FE stored
+// ("*MCHOPS ARCCRU01", "*MCHFE ARCCRU01": machineSeries, for Display Panel graphs) - while the machine is there; those
+// are not saved.
 public class MonitoringServerDevice extends RackDevice {
     public static final int ITEMS = 0, ENERGY = 1, LANES = 2, JOBS = 3, STATS = 4;
     public static final int MINUTE = 0, TEN_MINUTES = 1, HOUR = 2, DAY = 3, RANGES = 4;
@@ -37,6 +51,10 @@ public class MonitoringServerDevice extends RackDevice {
     private long lastItems = -1, lastJobs = -1;
     private final float[] now = new float[STATS];
     private int stat, range;
+    // Bridged machines' stats, by key; their total operations a minute, and how many (not saved).
+    private final Map<String, MachineSeries> machines = new HashMap<>();
+    private float machineOps;
+    private int machineCount;
 
     public MonitoringServerDevice(RackDeviceType type) {
         super(type);
@@ -71,7 +89,44 @@ public class MonitoringServerDevice extends RackDevice {
             lastItems = lastJobs = -1;
         }
         record(sample);
+        if (stats != null) {
+            sampleMachines(level.getServer(), rack().network(this));
+        } else {
+            machines.clear();
+            machineCount = 0;
+        }
         saveOnly();
+    }
+
+    private void sampleMachines(MinecraftServer server, @Nullable NetworkRef network) {
+        Set<String> seen = new HashSet<>();
+        float total = 0;
+        int count = 0;
+        for (MachineCommands.Machine machine : MachineCommands.list(server, network)) {
+            MachineInfo info = machine.info();
+            if (info == null) {
+                continue;
+            }
+            count++;
+            float ops = (float) info.statistics().operationsPerMinute();
+            total += ops;
+            sampleMachine("*MCHOPS " + machine.name(), ops, seen);
+            info.energy().ifPresent(energy -> sampleMachine("*MCHFE " + machine.name(), energy.stored(), seen));
+        }
+        machines.keySet().retainAll(seen);
+        machineOps = total;
+        machineCount = count;
+    }
+
+    private void sampleMachine(String key, float value, Set<String> seen) {
+        seen.add(key);
+        machines.computeIfAbsent(key, k -> new MachineSeries()).add(value);
+    }
+
+    // A bridged machine's stat over a range ("*MCHOPS ARCCRU01"), oldest first; null when it isn't sampled here.
+    public float @Nullable [] machineSeries(String key, int range) {
+        MachineSeries series = machines.get(key);
+        return series != null ? series.series(range) : null;
     }
 
     private void record(float[] sample) {
@@ -140,7 +195,9 @@ public class MonitoringServerDevice extends RackDevice {
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.monitor.items"), Component.literal(format(ITEMS, now[ITEMS]))),
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.monitor.energy"), Component.literal(format(ENERGY, now[ENERGY]))),
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.monitor.lanes"), Component.literal(format(LANES, now[LANES]))),
-                new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.monitor.jobs"), Component.literal(format(JOBS, now[JOBS]))));
+                new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.monitor.jobs"), Component.literal(format(JOBS, now[JOBS]))),
+                new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.monitor.machines"),
+                        Component.translatable("hud.encodedlogistics.monitor.machines_value", machineCount, String.format(Locale.ROOT, "%.1f", machineOps))));
     }
 
     // --- Panel ---

@@ -64,6 +64,7 @@ final class ScreenCommands {
             }
             case "WRKINV" -> new InventoryPanel(screen);
             case "WRKDEV" -> new DevicesPanel(screen);
+            case "WRKMCH" -> new WrkMchPanel(screen);
             case "DSPNETSTS" -> new StatusPanel(screen);
             case "WRKCRFJOB" -> new JobsPanel(screen);
             case "WRKACTJOB" -> new WrkActJobPanel(screen);

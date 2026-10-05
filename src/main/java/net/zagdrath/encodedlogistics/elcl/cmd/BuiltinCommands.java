@@ -213,6 +213,40 @@ final class BuiltinCommands {
         add(CommandDefinition.of("RNMDEV", "Rename Device").auth(CONFIGURE).positional(2)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("NEWNAME", "New name", Kind.NAME).req()));
+        // [EXT] Machines with a Small Wireless Bridge on (Arcforge): MachineCommands.
+        add(CommandDefinition.of("RTVMCHSTS", "Retrieve Machine Status").auth(VIEW).positional(1)
+                .p(p("MCH", "Machine", Kind.DEVICE).req())
+                .p(rtn("RTNSTS", "Return status", VarType.CHAR))
+                .p(rtn("RTNRSN", "Return reason", VarType.CHAR))
+                .p(rtn("RTNPCT", "Return progress, percent", VarType.INT))
+                .p(rtn("RTNFE", "Return energy stored", VarType.INT))
+                .p(rtn("RTNFECAP", "Return energy capacity", VarType.INT))
+                .p(rtn("RTNRCP", "Return recipe", VarType.CHAR)));
+        add(CommandDefinition.of("RTVMCHSTAT", "Retrieve Machine Statistics").auth(VIEW).positional(1)
+                .p(p("MCH", "Machine", Kind.DEVICE).req())
+                .p(rtn("RTNOPS", "Return operations", VarType.INT))
+                .p(rtn("RTNPRD", "Return items produced", VarType.INT))
+                .p(rtn("RTNCNS", "Return items consumed", VarType.INT))
+                .p(rtn("RTNFLDPRD", "Return fluid produced (mB)", VarType.INT))
+                .p(rtn("RTNFLDCNS", "Return fluid consumed (mB)", VarType.INT))
+                .p(rtn("RTNUPTIME", "Return seconds running", VarType.INT))
+                .p(rtn("RTNOPM", "Return operations a minute", VarType.DEC)));
+        add(CommandDefinition.of("CHGMCHSTS", "Change Machine Status").auth(CONFIGURE).positional(2)
+                .p(p("MCH", "Machine", Kind.DEVICE).req())
+                .p(p("STATUS", "Status", Kind.SPECIAL).req().sv("*ENABLE", "*DISABLE")));
+        add(CommandDefinition.of("CHGMCHCFG", "Change Machine Configuration").auth(CONFIGURE).positional(1)
+                .p(p("MCH", "Machine", Kind.DEVICE).req())
+                .p(p("RSMODE", "Redstone mode", Kind.SPECIAL).sv("*SAME", "*IGNORE", "*HIGH", "*LOW", "*PULSE", "*THROTTLE").dft("*SAME"))
+                .p(p("SIDE", "Side", Kind.SPECIAL).sv("*SAME", "*TOP", "*BOTTOM", "*LEFT", "*RIGHT", "*BACK", "*FRONT").dft("*SAME"))
+                .p(p("SIDEMODE", "Side mode", Kind.NAME).sv("*SAME").dft("*SAME").len(24))
+                .p(p("AUTOEJECT", "Auto-eject", Kind.SPECIAL).sv("*SAME", "*YES", "*NO").dft("*SAME"))
+                .p(p("PWRNET", "Power from network", Kind.SPECIAL).sv("*SAME", "*YES", "*NO").dft("*SAME"))
+                .p(p("GATEWAY", "Gateway", Kind.DEVICE).sv("*SAME", "*NONE").dft("*SAME")));
+        add(CommandDefinition.of("RTVMCHLST", "Retrieve Machine List").auth(VIEW)
+                .p(p("TYPE", "Machine type", Kind.NAME).sv("*ALL").dft("*ALL").len(64))
+                .p(p("STATUS", "Status", Kind.SPECIAL).sv("*ALL", "*IDLE", "*RUNNING", "*NOPOWER", "*NOINPUT", "*BLOCKED", "*DISABLED", "*NOTFORMED",
+                        "*FAULT", "*OFFLINE").dft("*ALL"))
+                .p(rtn("RTNLST", "Return list", VarType.LIST).req()));
         add(CommandDefinition.of("RTVLANES", "Retrieve Lanes").auth(VIEW)
                 .p(rtn("RTNUSED", "Return lanes used", VarType.INT))
                 .p(rtn("RTNTOTAL", "Return lanes total", VarType.INT)));
@@ -269,8 +303,9 @@ final class BuiltinCommands {
         add(CommandDefinition.of("SNDDSPGPH", "Send Display Graph").positional(3)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("RGN", "Region", Kind.NAME).req())
-                .p(p("STAT", "Statistic", Kind.SPECIAL).req().sv("*ITEMFLOW", "*ENERGY", "*LANES", "*STORAGE", "*CRAFTING", "*ITEM"))
-                .p(p("ITEM", "Item", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
+                .p(p("STAT", "Statistic", Kind.SPECIAL).req().sv("*ITEMFLOW", "*ENERGY", "*LANES", "*STORAGE", "*CRAFTING", "*ITEM",
+                        "*MCHOPS", "*MCHFE"))
+                .p(p("ITEM", "Item (a machine's name for *MCHOPS / *MCHFE)", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
                 .p(p("RANGE", "Range", Kind.SPECIAL).sv("*1M", "*10M", "*1H", "*1D").dft("*10M"))
                 .p(p("TYPE", "Graph type", Kind.SPECIAL).sv("*LINE", "*BAR").dft("*LINE"))
                 .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8)));
@@ -363,7 +398,7 @@ final class BuiltinCommands {
         add(CommandDefinition.of("ADDTRGEVT", "Add Trigger Event").positional(3)
                 .p(p("TRG", "Trigger", Kind.NAME).req())
                 .p(p("EVENT", "Event", Kind.SPECIAL).req().sv("*ITMBELOW", "*ITMABOVE", "*STGFULL", "*DEVFAULT", "*DEVONLINE", "*DEVOFFLINE",
-                        "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*RSCHANGE", "*DSPTOUCH"))
+                        "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*RSCHANGE", "*DSPTOUCH", "*MCHIDLE", "*MCHDONE", "*MCHFAULT", "*MCHNOPWR"))
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ANY").dft("*ANY").len(64))
                 .p(p("DEV", "Device", Kind.DEVICE).sv("*ANY").dft("*ANY"))
@@ -389,6 +424,7 @@ final class BuiltinCommands {
                 .p(p("LIB", "Library", Kind.NAME).req())
                 .p(p("DEV", "Device", Kind.DEVICE).req()));
         add(CommandDefinition.of("WRKDEV", "Work with Devices").context(INTERACTIVE));
+        add(CommandDefinition.of("WRKMCH", "Work with Machines").context(INTERACTIVE));
         add(CommandDefinition.of("WRKINV", "Work with Inventory").context(INTERACTIVE).positional(1)
                 .p(p("FILTER", "Position to", Kind.CHAR).sv("*ALL").dft("*ALL").len(30)));
         add(CommandDefinition.of("WRKCRFJOB", "Work with Crafting Jobs").context(INTERACTIVE));

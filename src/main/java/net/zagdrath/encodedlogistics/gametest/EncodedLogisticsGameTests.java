@@ -205,6 +205,8 @@ public final class EncodedLogisticsGameTests {
         ARCFORGE_TESTS.put("arcforge_survives_reload", ArcforgeGameTests::survivesReload);
         ARCFORGE_TESTS.put("arcforge_gateway_job", ArcforgeGameTests::gatewayJob);
         ARCFORGE_TESTS.put("arcforge_power_from_network", ArcforgeGameTests::powerFromNetwork);
+        ARCFORGE_TESTS.put("arcforge_commands", ArcforgeGameTests::commands);
+        ARCFORGE_TESTS.put("arcforge_triggers", ArcforgeGameTests::triggers);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }

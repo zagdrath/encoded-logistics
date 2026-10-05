@@ -19,10 +19,13 @@ import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.MachineCommands;
 import net.zagdrath.encodedlogistics.elcl.exec.OsCommands;
 import net.zagdrath.encodedlogistics.elcl.job.JobHost;
 import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -124,6 +127,7 @@ public final class ScreenQueries {
                 case "printsplf" -> TerminalOutput.message(Component.literal(ElclServices.spool()
                         .print(system, user, Integer.parseInt(arg(words, 1)), words.size() > 2 ? words.get(2) : "*DFT").toString()));
                 case "sysvals" -> sysvals(system);
+                case "machines" -> machines(context);
                 case "signon" -> signOn(context, system, words.size() > 1 ? words.get(1) : "", arg(words, 2));
                 case "signoff" -> {
                     // SIGNOFF: the session needs signing on again.
@@ -356,6 +360,39 @@ public final class ScreenQueries {
             out.line(row(sysval.name(), sysval.value(), sysval.defaultValue(), sysval.description(), String.join(", ", sysval.allowed())));
         }
         return out;
+    }
+
+    // Work with Machines' rows: name, the machine's name, status, progress, energy, rate, then what 2=Change shows and
+    // 7=Enable/Disable reads - redstone mode, auto-eject, power from network, Gateway (*NONE for none or a setting it
+    // hasn't), the redstone modes it takes, and whether it's switched on.
+    private static TerminalOutput machines(TerminalContext context) {
+        TerminalOutput out = new TerminalOutput();
+        for (MachineCommands.Machine machine : MachineCommands.list(context.server(), context.network())) {
+            MachineInfo info = machine.info();
+            MachineBridge bridge = machine.bridge();
+            String gateway = bridge.gatewayName(context.server());
+            if (info == null) {
+                out.line(row(machine.name(), bridge.shown().getString(), machine.status(), "", "", "", "*NONE", "*NONE", bridge.powerFromNetwork() ? "*YES" : "*NO",
+                        gateway.isEmpty() ? "*NONE" : gateway, "", "*YES"));
+                continue;
+            }
+            MachineInfo.Settings settings = info.settings();
+            String energy = info.energy().map(e -> compact(e.stored()) + "/" + compact(e.capacity()) + " FE").orElse("");
+            StringBuilder modes = new StringBuilder();
+            settings.redstoneModes().forEach(mode -> modes.append(modes.isEmpty() ? "" : " ").append('*').append(mode.toUpperCase(Locale.ROOT)));
+            out.line(row(machine.name(), info.name().getString(), machine.status(), info.percent() < 0 ? "" : info.percent() + "%", energy,
+                    String.format(Locale.ROOT, "%.1f/min", info.statistics().operationsPerMinute()),
+                    settings.redstoneMode().map(mode -> "*" + mode.toUpperCase(Locale.ROOT)).orElse("*NONE"),
+                    settings.autoEjectSupported() ? settings.autoEject() ? "*YES" : "*NO" : "*NONE", bridge.powerFromNetwork() ? "*YES" : "*NO",
+                    gateway.isEmpty() ? "*NONE" : gateway, modes.toString(), settings.enabled() ? "*YES" : "*NO"));
+        }
+        return out;
+    }
+
+    // 12345 -> "12.3k", as the energy column fits it.
+    static String compact(long value) {
+        return value < 10_000 ? Long.toString(value) : value < 10_000_000 ? String.format(Locale.ROOT, "%.1fk", value / 1000.0)
+                : String.format(Locale.ROOT, "%.1fM", value / 1_000_000.0);
     }
 
     // --- The prompter's value lists: value, description ---

@@ -54,7 +54,7 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
     private static final int PREVIEW_H = 96, SNAP = 4, EDGE = 2;
     private static final int[] SWATCHES = { 0, 0xFF1F2228, 0xFF373C44, 0xFF555B65, 0xFF79808A, 0xFFA3A9B1, 0xFFD3D7DB, 0xFF2678A0, 0xFF50C2EC,
             0xFF89F9FF, 0xFFC65217, 0xFFFF9B44, 0xFFECC138, 0xFF3CE05A, 0xFF22A03C, 0xFFBA3B37, 0xFF6A4A2A };
-    private static final List<String> STATS = List.of("*ENERGY", "*ITEMFLOW", "*LANES", "*STORAGE", "*CRAFTING", "*ITEM"),
+    private static final List<String> STATS = List.of("*ENERGY", "*ITEMFLOW", "*LANES", "*STORAGE", "*CRAFTING", "*ITEM", "*MCHOPS", "*MCHFE"),
             RANGES = List.of("*1M", "*10M", "*1H", "*1D"), TYPES = List.of("*LINE", "*BAR"), SCALES = List.of("*DITHER", "*NEAREST"),
             COLORS = List.of("256", "64", "16", "*FULL");
 
@@ -110,7 +110,8 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
             return;
         }
         name.setVisible(tab == 0);
-        boolean graphItem = kind.equals("*GRAPH") && STATS.get(stat).equals("*ITEM");
+        // *ITEM's item, or a machine stat's machine (its device name), in the same field.
+        boolean graphItem = kind.equals("*GRAPH") && (STATS.get(stat).equals("*ITEM") || STATS.get(stat).startsWith("*MCH"));
         item.setVisible(tab == 2 && picking && (kind.equals("*ITEM") || graphItem));
         item.setY(topPos + (graphItem ? 111 : 99));
         devType.setVisible(tab == 2 && picking && kind.equals("*DEVICES"));
@@ -328,7 +329,8 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
                 graphics.centeredText(font, Component.translatable("gui.encodedlogistics.display.pick." + bare(k)), 10 + (i % 3) * 49 + 24,
                         INSET_Y + 3 + (i / 3) * 12, k.equals(kind) ? PartScreens.ACCENT : PartScreens.TEXT);
             }
-            String field = kind.equals("*ITEM") || kind.equals("*GRAPH") && STATS.get(stat).equals("*ITEM") ? "item"
+            String field = kind.equals("*GRAPH") && STATS.get(stat).startsWith("*MCH") ? "machine"
+                    : kind.equals("*ITEM") || kind.equals("*GRAPH") && STATS.get(stat).equals("*ITEM") ? "item"
                     : kind.equals("*DEVICES") ? "type" : kind.equals("*IMAGE") ? "file" : null;
             if (field != null) {
                 int fy = kind.equals("*GRAPH") ? 111 : 99;
@@ -352,7 +354,8 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
         return switch (widget.kind()) {
             case "*ITEM" -> itemName(widget.item());
             case "*DEVICES" -> widget.devType().equals("*ALL") ? tr("gui.encodedlogistics.display.source.all_devices") : widget.devType();
-            case "*GRAPH" -> (widget.stat().equals("*ITEM") ? itemName(widget.item()) : tr("gui.encodedlogistics.display.stat." + bare(widget.stat()))) + "  "
+            case "*GRAPH" -> (widget.stat().equals("*ITEM") ? itemName(widget.item()) : widget.stat().startsWith("*MCH")
+                    ? widget.item() + " " + tr("gui.encodedlogistics.display.stat." + bare(widget.stat())) : tr("gui.encodedlogistics.display.stat." + bare(widget.stat()))) + "  "
                     + bare(widget.range());
             case "*IMAGE" -> widget.file();
             case "*TEXT" -> tr("gui.encodedlogistics.display.source.text", display.textLines().size());

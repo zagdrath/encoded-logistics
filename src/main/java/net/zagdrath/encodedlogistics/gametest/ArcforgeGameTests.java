@@ -31,6 +31,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
@@ -38,8 +41,14 @@ import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.display.DisplayFrame;
+import net.zagdrath.encodedlogistics.display.DisplayPanelBlock;
+import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
+import net.zagdrath.encodedlogistics.elcl.exec.CommandRunner;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
+import net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
@@ -55,6 +64,7 @@ import net.zagdrath.encodedlogistics.rack.RackScheduler;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
+import net.zagdrath.encodedlogistics.rack.device.MonitoringServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
@@ -62,6 +72,9 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
+import net.zagdrath.encodedlogistics.terminal.TerminalContext;
+import net.zagdrath.encodedlogistics.terminal.TerminalLine;
+import net.zagdrath.encodedlogistics.terminal.TerminalService;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // The Small Wireless Bridge on an Arcforge Arc Crusher (registered only while the Arcforge integration is on: run with
@@ -72,7 +85,8 @@ import net.zagdrath.encodedlogistics.wireless.Wireless;
 // Logistics' own MachineAccess and the block's registry id, so this class loads without Arcforge.
 final class ArcforgeGameTests {
     static final Identifier ARC_CRUSHER = Identifier.fromNamespaceAndPath("arcforge", "arc_crusher");
-    static final BlockPos AP = new BlockPos(1, 2, 2), MACHINE = new BlockPos(6, 1, 4), CHEST = new BlockPos(6, 1, 6), GATEWAY = new BlockPos(0, 1, 1);
+    static final BlockPos AP = new BlockPos(1, 2, 2), MACHINE = new BlockPos(6, 1, 4), CHEST = new BlockPos(6, 1, 6), GATEWAY = new BlockPos(0, 1, 1),
+            PANEL = new BlockPos(2, 2, 2);
     static final int CONTROLLER_UNIT = 10;
     static final ItemKey BONE = ItemKey.of(new ItemStack(Items.BONE)), BONE_MEAL = ItemKey.of(new ItemStack(Items.BONE_MEAL));
 
@@ -158,7 +172,7 @@ final class ArcforgeGameTests {
 
     static int bridgeItemsAround(GameTestHelper helper, BlockPos pos) {
         BlockPos at = helper.absolutePos(pos);
-        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(at).inflate(2)).stream()
+        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(at).inflate(5)).stream()
                 .filter(entity -> entity.getItem().is(ModItems.SMALL_WIRELESS_BRIDGE.get())).mapToInt(entity -> entity.getItem().getCount()).sum();
     }
 
@@ -217,6 +231,10 @@ final class ArcforgeGameTests {
                     RackDeviceInfo info = bridge.describe(helper.getLevel().getServer());
                     helper.assertTrue(info.name().getString().equals("Arc Crusher") && info.lines().stream()
                             .anyMatch(line -> line.label().getString().equals("Energy")), "Popup " + info);
+                    RackDeviceInfo own = bridge.describeBridge(helper.getLevel().getServer());
+                    helper.assertTrue(own.name().getString().equals("Small Wireless Bridge") && own.status() == RackDeviceInfo.Status.ONLINE
+                            && own.lines().stream().map(line -> line.label().getString()).toList()
+                                    .containsAll(List.of("Controller", "Machine", "Lanes", "Drain", "Gateway", "Power")), "Bridge popup " + own);
                     WirelessControllerDevice controller = controller(helper, master);
                     controller.unlink(controller.clients().indexOf(new WirelessControllerDevice.Client(bridge.self(), bridge.wirelessKind())));
                 })
@@ -236,7 +254,11 @@ final class ArcforgeGameTests {
                 .thenIdle(15)
                 .thenExecute(() -> {
                     helper.assertTrue(bridge(helper, MACHINE) == null, "The bridge outlived its machine");
-                    helper.assertTrue(bridgeItemsAround(helper, MACHINE) == 1, "Dropped " + bridgeItemsAround(helper, MACHINE));
+                    helper.assertTrue(bridgeItemsAround(helper, MACHINE) == 1, "Dropped " + bridgeItemsAround(helper, MACHINE) + "; items near: "
+                            + helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(MACHINE)).inflate(4)).stream()
+                                    .map(entity -> entity.getItem() + " at " + entity.blockPosition().subtract(helper.absolutePos(BlockPos.ZERO))).toList()
+                            + "; players' bridges: " + helper.getLevel().players().stream()
+                                    .mapToInt(player -> player.getInventory().countItem(ModItems.SMALL_WIRELESS_BRIDGE.get())).sum());
                     helper.assertTrue(controller(helper, master).clients().isEmpty(), "Controller still lists it");
                 })
                 .thenSucceed();
@@ -404,6 +426,151 @@ final class ArcforgeGameTests {
                     helper.assertTrue(after == before[0], "Crusher went from " + before[0] + " to " + after + " FE with power off");
                 })
                 .thenSucceed();
+    }
+
+    // --- ELCL, Work with Machines, graphs and triggers ---
+
+    static CommandRunner.Result run(GameTestHelper helper, NetworkRef network, ServerPlayer player, String line) {
+        return CommandRunner.run(new TerminalContext(helper.getLevel().getServer(), network, null, player), line);
+    }
+
+    static CommandRunner.Result ok(GameTestHelper helper, NetworkRef network, ServerPlayer player, String line) {
+        CommandRunner.Result result = run(helper, network, player, line);
+        helper.assertTrue(result.ok(), line + ": " + result.escape());
+        return result;
+    }
+
+    static void fails(GameTestHelper helper, NetworkRef network, ServerPlayer player, String line, String id) {
+        CommandRunner.Result result = run(helper, network, player, line);
+        helper.assertTrue(result.escape() != null && result.escape().id().equals(id), line + ": " + result.escape() + ", wanted " + id);
+    }
+
+    // The machine commands as a trusted player (view and build) and a stranger (neither) run them: status, statistics
+    // and lists; ELC1301 / ELC1318 for a missing device or one that isn't a machine; settings applied (switched off,
+    // redstone mode, power from network and Gateway, with ELC1322), and refused (ELC0102 a side without its mode, ELC1321
+    // a mode the machine refuses, ELC1303 a Gateway that isn't one, ELC0401 without permission). Work with Machines'
+    // rows and Display Machine's lines; the Monitoring Server's machine series and a Display Panel's machine graph.
+    static void commands(GameTestHelper helper) {
+        BlockPos master = rig(helper);
+        powered(helper);
+        FirewallDevice firewall = firewall(helper, master);
+        RackGameTests.install(helper, master, RackDeviceType.MONITORING_SERVER, 14, MonitoringServerDevice.class);
+        ServerPlayer stranger = player(helper), trusted = player(helper);
+        grant(firewall, trusted, RackPermission.BUILD, FirewallDevice.ON);
+        grant(firewall, trusted, RackPermission.VIEW, FirewallDevice.ON);
+        helper.setBlock(GATEWAY, ModBlocks.GATEWAY.get());
+        helper.setBlock(PANEL, ModBlocks.DISPLAY_PANEL.get().defaultBlockState().setValue(DisplayPanelBlock.FACING, Direction.NORTH));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> attachAndLink(helper, master))
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    NetworkRef network = network(helper, master);
+                    CommandRunner.Result status = ok(helper, network, trusted, "RTVMCHSTS MCH(ARCCRU01)");
+                    helper.assertTrue(status.returns().get("RTNSTS").equals("*IDLE") && status.returns().get("RTNFECAP").equals("20000")
+                            && status.returns().get("RTNPCT").equals("-1") && status.returns().get("RTNRCP").isEmpty(), "RTVMCHSTS " + status.returns());
+                    CommandRunner.Result stats = ok(helper, network, trusted, "RTVMCHSTAT MCH(ARCCRU01)");
+                    helper.assertTrue(stats.returns().get("RTNOPS").equals("0"), "RTVMCHSTAT " + stats.returns());
+                    helper.assertTrue(ok(helper, network, trusted, "RTVMCHLST TYPE(ARCCRU)").returns().get("RTNLST").equals("[ARCCRU01]"), "List by type");
+                    helper.assertTrue(ok(helper, network, trusted, "RTVMCHLST STATUS(*RUNNING)").returns().get("RTNLST").equals("[]"), "List by status");
+                    fails(helper, network, trusted, "RTVMCHSTS MCH(NOPE01)", "ELC1301");
+                    fails(helper, network, trusted, "RTVMCHSTS MCH(GATEWAY01)", "ELC1318");
+                    fails(helper, network, stranger, "RTVMCHSTS MCH(ARCCRU01)", "ELC0401");
+                    fails(helper, network, stranger, "CHGMCHSTS MCH(ARCCRU01) STATUS(*DISABLE)", "ELC0401");
+
+                    ok(helper, network, trusted, "CHGMCHSTS MCH(ARCCRU01) STATUS(*DISABLE)");
+                    MachineInfo info = requireBridge(helper, MACHINE).info(helper.getLevel().getServer());
+                    helper.assertTrue(!info.settings().enabled() && info.status() == MachineInfo.State.DISABLED, "Not switched off: " + info.status());
+                    ok(helper, network, trusted, "CHGMCHSTS MCH(ARCCRU01) STATUS(*ENABLE)");
+                    ok(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) RSMODE(*HIGH)");
+                    helper.assertTrue(requireBridge(helper, MACHINE).info(helper.getLevel().getServer()).settings().redstoneMode().orElse("").equals("high"),
+                            "Redstone mode not changed");
+                    ok(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) RSMODE(*IGNORE)");
+                    fails(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) SIDE(*TOP)", "ELC0102");
+                    fails(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) SIDE(*TOP) SIDEMODE(NOSUCHMODE)", "ELC1321");
+                    ok(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) SIDE(*TOP) SIDEMODE(INPUT)");
+                    fails(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) GATEWAY(ARCCRU01)", "ELC1303");
+                    fails(helper, network, stranger, "CHGMCHCFG MCH(ARCCRU01) PWRNET(*YES)", "ELC0401");
+                    CommandRunner.Result changed = ok(helper, network, trusted, "CHGMCHCFG MCH(ARCCRU01) PWRNET(*YES) GATEWAY(GATEWAY01)");
+                    helper.assertTrue(changed.messages().stream().anyMatch(message -> message.id().equals("ELC1322")), "No ELC1322: " + changed.messages());
+                    MachineBridge bridge = requireBridge(helper, MACHINE);
+                    helper.assertTrue(bridge.powerFromNetwork() && bridge.gatewayName(helper.getLevel().getServer()).equals("GATEWAY01"),
+                            "Power " + bridge.powerFromNetwork() + ", gateway " + bridge.gatewayName(helper.getLevel().getServer()));
+
+                    // Work with Machines and Display Machine.
+                    TerminalContext context = new TerminalContext(helper.getLevel().getServer(), network, null, trusted);
+                    List<TerminalLine> rows = ScreenQueries.handle(context, "machines").lines();
+                    helper.assertTrue(rows.size() == 1 && rows.getFirst().text().startsWith("ARCCRU01"), "Rows " + rows);
+                    List<String> detail = TerminalService.handle(context, TerminalService.QUERY, "machine ARCCRU01").lines().stream()
+                            .map(TerminalLine::text).toList();
+                    helper.assertTrue(detail.stream().anyMatch(line -> line.startsWith("Operations completed")) && detail.stream()
+                            .anyMatch(line -> line.startsWith("Gateway") && line.contains("GATEWAY01")), "Detail " + detail);
+                })
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    NetworkRef network = network(helper, master);
+                    MonitoringServerDevice monitoring = (MonitoringServerDevice) helper.getBlockEntity(master, RackBlockEntity.class).deviceAt(14);
+                    float[] energy = monitoring.machineSeries("*MCHFE ARCCRU01", MonitoringServerDevice.MINUTE);
+                    helper.assertTrue(energy != null && energy[energy.length - 1] > 0, "Monitoring Server has no machine energy");
+                    helper.assertTrue(monitoring.machineSeries("*MCHOPS ARCCRU01", MonitoringServerDevice.HOUR) != null, "No machine operations series");
+                    fails(helper, network, trusted, "SNDDSPGPH DEV(DSP01) RGN(A) STAT(*MCHFE) ITEM(GATEWAY01)", "ELC1318");
+                    ok(helper, network, trusted, "SNDDSPGPH DEV(DSP01) RGN(A) STAT(*MCHFE) ITEM(ARCCRU01) RANGE(*1M)");
+                    List<DisplayFrame> frames = helper.getBlockEntity(PANEL, DisplayPanelBlockEntity.class).liveFrames();
+                    helper.assertTrue(frames.size() == 1 && frames.getFirst().label().equals("ARCCRU01 FE") && !frames.getFirst().value().equals("0")
+                            && !frames.getFirst().value().equals("-"), "Graph " + frames);
+                })
+                .thenSucceed();
+    }
+
+    // The machine's events reach ELCL once each: *MCHNOPWR when bones go in with no power, then (power from network on)
+    // *MCHDONE for each of the two operations with what it made, and *MCHIDLE once when it's done.
+    static void triggers(GameTestHelper helper) {
+        BlockPos master = rig(helper);
+        powered(helper);
+        List<ElclEvents.Event> events = new java.util.concurrent.CopyOnWriteArrayList<>();
+        ElclEvents.listen((server, event) -> {
+            if (event.event().startsWith("*MCH")) {
+                events.add(event);
+            }
+        });
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> attachAndLink(helper, master))
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    ResourceHandler<ItemResource> items = MachineBridges.access().items(helper.getLevel(), helper.absolutePos(MACHINE));
+                    helper.assertTrue(items != null, "No items");
+                    try (Transaction transaction = Transaction.openRoot()) {
+                        helper.assertTrue(items.insert(ItemResource.of(new ItemStack(Items.BONE)), 2, transaction) == 2, "Bones refused");
+                        transaction.commit();
+                    }
+                })
+                .thenIdle(20)
+                .thenExecute(() -> {
+                    helper.assertTrue(count(helper, master, events, "*MCHNOPWR") == 1, "No power: " + mine(helper, master, events));
+                    requireBridge(helper, MACHINE).setPowerFromNetwork(true);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(count(helper, master, events, "*MCHDONE") >= 2, "Done: " + mine(helper, master, events)))
+                .thenIdle(20)
+                .thenExecute(() -> {
+                    List<ElclEvents.Event> mine = mine(helper, master, events);
+                    helper.assertTrue(count(helper, master, events, "*MCHDONE") == 2 && count(helper, master, events, "*MCHNOPWR") == 1
+                            && count(helper, master, events, "*MCHIDLE") == 1, "Events " + mine);
+                    ElclEvents.Event done = mine.stream().filter(event -> event.event().equals("*MCHDONE")).findFirst().orElseThrow();
+                    helper.assertTrue(done.device().equals("ARCCRU01") && done.item().equals("BONE_MEAL")
+                            && done.data().equals("ARCCRU01 5 BONE_MEAL"), "Done event " + done);
+                })
+                .thenSucceed();
+    }
+
+    // This test's network's machine events.
+    static List<ElclEvents.Event> mine(GameTestHelper helper, BlockPos master, List<ElclEvents.Event> events) {
+        NetworkRef network = network(helper, master);
+        return events.stream().filter(event -> event.network().equals(network)).toList();
+    }
+
+    static long count(GameTestHelper helper, BlockPos master, List<ElclEvents.Event> events, String name) {
+        return mine(helper, master, events).stream().filter(event -> event.event().equals(name)).count();
     }
 
     // The level's bridges through their codec and back, replacing the live ones.

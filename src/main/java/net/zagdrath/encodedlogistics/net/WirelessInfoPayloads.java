@@ -37,10 +37,13 @@ public final class WirelessInfoPayloads {
 
     private WirelessInfoPayloads() {}
 
-    public record Query(BlockPos pos) implements CustomPacketPayload {
+    // bridge: about the Small Wireless Bridge on the machine at pos itself (answered as the space in front of its face),
+    // not the machine.
+    public record Query(BlockPos pos, boolean bridge) implements CustomPacketPayload {
         public static final Type<Query> TYPE = new Type<>(EncodedLogistics.id("wireless_info_query"));
 
-        public static final StreamCodec<RegistryFriendlyByteBuf, Query> STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, Query::pos, Query::new);
+        public static final StreamCodec<RegistryFriendlyByteBuf, Query> STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, Query::pos,
+                ByteBufCodecs.BOOL, Query::bridge, Query::new);
 
         @Override
         public Type<? extends CustomPacketPayload> type() {
@@ -57,6 +60,13 @@ public final class WirelessInfoPayloads {
             WirelessDevice device = Wireless.deviceAt(level.getServer(), NodePos.of(level.dimension(), query.pos()));
             if (device == null || device instanceof MachineBridge bridge && bridge.link() != null
                     && !NetworkAccess.allowed(level.getServer(), bridge.link().network(), player, RackPermission.VIEW)) {
+                return;
+            }
+            if (query.bridge()) {
+                if (device instanceof MachineBridge bridge) {
+                    PacketDistributor.sendToPlayer(player, new Info(query.pos().relative(bridge.face()), bridge.deviceName(),
+                            bridge.describeBridge(level.getServer())));
+                }
                 return;
             }
             PacketDistributor.sendToPlayer(player, new Info(query.pos(), device.deviceName(), device.describe(level.getServer())));

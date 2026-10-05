@@ -31,10 +31,13 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
+import net.zagdrath.encodedlogistics.elcl.exec.MachineCommands;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.ScreenQueries;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -107,6 +110,7 @@ public final class TerminalService {
             case "job" -> job(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "devices" -> devices(context, true);
             case "device" -> device(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
+            case "machine" -> machine(context, words.size() > 1 ? words.get(1) : "");
             case "locate" -> locate(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "status" -> status(context);
             case "detail" -> detail(context, words.size() > 1 ? words.get(1) : "");
@@ -492,6 +496,68 @@ public final class TerminalService {
                     .build());
         }
         return out;
+    }
+
+    // Display Machine (Work with Machines' 5): a bridged machine's status, operation, energy, heat and tanks, its
+    // statistics and its settings.
+    private static TerminalOutput machine(TerminalContext context, String name) {
+        MachineCommands.Machine machine;
+        try {
+            machine = MachineCommands.find(context.server(), context.network(), name);
+        } catch (ElclException e) {
+            return TerminalOutput.message(Component.literal(e.elclMessage().toString()));
+        }
+        TerminalOutput out = new TerminalOutput();
+        MachineBridge bridge = machine.bridge();
+        MachineInfo info = machine.info();
+        out.line(detail("machine", machine.name()).attr(TerminalLine.BRIGHT).build());
+        out.line(detail("type", (info != null ? info.name() : bridge.shown()).getString() + "  " + bridge.type()).build());
+        BlockPos pos = bridge.pos();
+        out.line(detail("location", pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "  " + bridge.dimension().identifier() + "  "
+                + bridge.face().getSerializedName()).build());
+        out.line(detail("status", machine.status() + "  " + bridge.statusText(context.server(), info).getString()).build());
+        String controller = bridge.controllerName(context.server());
+        out.line(detail("controller", controller.isEmpty() ? "*NONE" : controller).build());
+        if (info != null) {
+            out.line(detail("progress", info.percent() < 0 ? "-" : info.percent() + "%" + info.ticksRemaining().stream()
+                    .mapToObj(ticks -> "  (" + (ticks + 19) / 20 + "s left)").findFirst().orElse("")).build());
+            out.line(detail("recipe", info.recipe().isEmpty() ? "-" : info.recipe()).build());
+            info.energy().ifPresent(energy -> out.line(detail("energy", String.format(Locale.ROOT, "%,d / %,d FE  %s, %d FE/t", energy.stored(),
+                    energy.capacity(), energy.role(), energy.perTick())).build()));
+            info.heat().ifPresent(heat -> out.line(detail("heat", String.format(Locale.ROOT, "%d / %d C  %,d / %,d HU", heat.temperature(),
+                    heat.maxTemperature(), heat.stored(), heat.capacity())).build()));
+            for (MachineInfo.Tank tank : info.tanks()) {
+                out.line(detail("tank", tank.role() + ": " + (tank.amount() <= 0 ? "-" : tank.fluid().getString() + " " + tank.amount()) + " / "
+                        + tank.capacity() + " mB").build());
+            }
+            MachineInfo.Statistics stats = info.statistics();
+            out.line(TerminalLine.blank());
+            out.line(detail("operations", Long.toString(stats.operations())).build());
+            out.line(detail("rate", String.format(Locale.ROOT, "%.2f / min", stats.operationsPerMinute())).build());
+            out.line(detail("produced", stats.itemsProduced() + " items, " + stats.fluidProduced() + " mB").build());
+            out.line(detail("consumed", stats.itemsConsumed() + " items, " + stats.fluidConsumed() + " mB").build());
+            out.line(detail("uptime", String.format(Locale.ROOT, "%ds of %ds loaded", stats.uptimeTicks() / 20, stats.loadedTicks() / 20)).build());
+            MachineInfo.Settings settings = info.settings();
+            out.line(TerminalLine.blank());
+            out.line(detail("enabled", settings.enabled() ? "*YES" : "*NO").build());
+            out.line(detail("redstone", settings.redstoneMode().map(mode -> "*" + mode.toUpperCase(Locale.ROOT)).orElse("*NONE")).build());
+            if (!settings.sides().isEmpty()) {
+                StringBuilder sides = new StringBuilder();
+                settings.sides().forEach((side, mode) -> sides.append(sides.isEmpty() ? "" : "  ").append(side).append('=').append(mode));
+                out.line(detail("sides", sides.toString()).build());
+            } else if (settings.ports() > 0) {
+                out.line(detail("ports", Integer.toString(settings.ports())).build());
+            }
+            out.line(detail("eject", !settings.autoEjectSupported() ? "*NONE" : settings.autoEject() ? "*YES" : "*NO").build());
+        }
+        out.line(detail("power", bridge.powerFromNetwork() ? "*YES  " + bridge.powered() + " FE/t" : "*NO").build());
+        String gateway = bridge.gatewayName(context.server());
+        out.line(detail("gateway", gateway.isEmpty() ? "*NONE" : gateway).build());
+        return out;
+    }
+
+    private static TerminalLine.Builder detail(String key, String value) {
+        return TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.mch." + key), 28).text(value);
     }
 
     private static TerminalOutput locate(TerminalContext context, int index) {

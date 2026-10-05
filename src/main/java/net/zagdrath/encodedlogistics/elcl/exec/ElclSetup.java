@@ -34,6 +34,7 @@ public final class ElclSetup {
         OsCommands.bind();
         ModCommands.bind();
         DisplayCommands.bind();
+        MachineCommands.bind();
         Midranges.register();
         Displays.register(system -> {
             ElclDevices.list(system.server(), system.network());

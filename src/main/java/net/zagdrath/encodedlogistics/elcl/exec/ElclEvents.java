@@ -11,6 +11,7 @@ import java.util.Locale;
 
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobEvents;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -74,6 +75,20 @@ public final class ElclEvents {
         };
         String id = String.format(Locale.ROOT, "C%04d", ControllerStructures.jobNumber(server, network, job.id));
         fire(server, new Event(network, "*CRAFTEND", "", ElclItems.id(job.target.stack().getItem()), id + " " + status));
+    }
+
+    // *MCHIDLE, *MCHFAULT, *MCHNOPWR: a machine with a Small Wireless Bridge on went idle, faulted or ran short of power.
+    // &DATA = "ARCCRU01 Too hot" (its name, then the machine's own words).
+    public static void machineStatus(MinecraftServer server, NetworkRef network, String event, String device, String reason) {
+        fire(server, new Event(network, event, device, (device + " " + reason).trim()));
+    }
+
+    // *MCHDONE: a bridged machine finished an operation. &DATA = "ARCCRU01 5 minecraft:bone_meal" (its name, then what it
+    // made first); that item for ITEM().
+    public static void machineDone(MinecraftServer server, NetworkRef network, String device, List<ItemStack> produced) {
+        ItemStack first = produced.stream().filter(stack -> !stack.isEmpty()).findFirst().orElse(ItemStack.EMPTY);
+        String item = first.isEmpty() ? "" : ElclItems.id(first.getItem());
+        fire(server, new Event(network, "*MCHDONE", device, item, first.isEmpty() ? device : device + " " + first.getCount() + " " + item));
     }
 
     // A face as ELCL names it: *NORTH ... *UP, *DOWN.

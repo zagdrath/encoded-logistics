@@ -25,7 +25,7 @@ public final class ElclCommandLine {
     // The completion messages (MESSAGES.md, amendment 2): shown bright like escape messages.
     private static final Set<String> COMPLETION = Set.of("ELC0210", "ELC0211", "ELC0212", "ELC0213", "ELC0214", "ELC0215", "ELC0216", "ELC0217", "ELC0218",
             "ELC0219", "ELC0220", "ELC0221", "ELC0222", "ELC0304", "ELC0307", "ELC0308", "ELC0309", "ELC0311", "ELC0312", "ELC0313", "ELC0314", "ELC0315",
-            "ELC0108", "ELC0110", "ELC1307", "ELC1309");
+            "ELC0108", "ELC0110", "ELC1307", "ELC1309", "ELC1322");
 
     private ElclCommandLine() {}
 

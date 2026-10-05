@@ -212,7 +212,9 @@ public final class Triggers {
             case "*RSCHANGE" -> (device.isEmpty() || device.equals("*ANY") || device.equals(event.device()))
                     && (trigger.value().isBlank() || trigger.value().equalsIgnoreCase("*NONE") || event.data().startsWith(trigger.value().trim().toUpperCase(Locale.ROOT) + " "));
             case "*CRAFTEND" -> item.isEmpty() || item.equalsIgnoreCase("*ANY") || sameItem(item, event.item());
-            case "*DSPTOUCH" -> device.isEmpty() || device.equals("*ANY") || device.equals(event.device());
+            case "*DSPTOUCH", "*MCHIDLE", "*MCHFAULT", "*MCHNOPWR" -> device.isEmpty() || device.equals("*ANY") || device.equals(event.device());
+            case "*MCHDONE" -> (device.isEmpty() || device.equals("*ANY") || device.equals(event.device()))
+                    && (item.isEmpty() || item.equalsIgnoreCase("*ANY") || sameItem(item, event.item()));
             default -> false;
         };
     }
