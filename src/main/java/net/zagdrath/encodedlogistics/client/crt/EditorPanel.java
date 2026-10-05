@@ -31,7 +31,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 // EDTMBR (screen 5): a source member in the editor. Row 1 the member, row 2 the columns shown and the cursor's line and
 // column, row 3 the column ruler when it's on (COLS, F15), then "Beginning of data", the source - a margin field per row
 // with its sequence number (type a line command over it) and the text, 72 of the 80 columns at a time (F19 / F20) - and
-// "End of data" (an empty member opens on one blank line; "Beginning of data" takes I, A and COLS). Enter applies the line
+// "End of data" (an empty member opens on a page of blank lines, kept full as it's typed on; "Beginning of data" takes I, A and COLS). Enter applies the line
 // commands (EditorModel), drops new lines left blank, opens another after a new line just typed on (SEU's insert mode),
 // and checks the changed statements with the ELCL parser:
 // the first bad one shows reversed, the cursor goes to it, its message to the message line (saving is allowed anyway).
@@ -49,6 +49,8 @@ final class EditorPanel extends CrtPanel {
     // What it's checked for: a job's program, or a PLC's (on a network or not: ELC1502).
     private final Compiler.Target target;
     private boolean readOnly, full, loaded;
+    // A member opened empty: a page of blank lines to type on, kept full as it's written (fillPage).
+    private boolean filling;
     // ELCLP or PF (the source query says).
     private String type = "ELCLP";
     // DCLF formats by LIB/FILE as written: those the server sent, those it hasn't got, those asked for (in order).
@@ -212,10 +214,25 @@ final class EditorPanel extends CrtPanel {
             askFormats(Parser.parse(model.texts()).statements());
         }
         if (model.lines.isEmpty() && !readOnly) {
-            model.lines.add(EditorModel.blank());
+            filling = true;
+            fillPage();
         }
         rebuild();
         shown();
+    }
+
+    // A member opened empty: blank lines to the bottom of the page, and always one under the last line typed on.
+    private void fillPage() {
+        if (!filling) {
+            return;
+        }
+        while (model.lines.size() < rowCount() - 2) {
+            model.lines.add(EditorModel.blank());
+        }
+        EditorModel.Line last = model.lines.getLast();
+        if (!(last.fresh && last.text.isBlank())) {
+            model.lines.add(EditorModel.blank());
+        }
     }
 
     // The game day (a changed line's date), from the clock.
@@ -557,11 +574,18 @@ final class EditorPanel extends CrtPanel {
         if (!readOnly) {
             List<EditorModel.Line> before = new ArrayList<>(model.lines);
             message = model.apply(commands);
+            model.keepSpacing();
             // Lines this Enter inserted stay; so does the one the cursor is on.
             Set<EditorModel.Line> keep = new HashSet<>(model.lines);
             keep.removeAll(before);
             if (at != null) {
                 keep.add(at);
+            }
+            if (filling) {
+                // The blank lines under the last one typed on stay open, as the page they opened on.
+                for (int i = model.lines.size() - 1; i >= 0 && model.lines.get(i).fresh && model.lines.get(i).text.isBlank(); i--) {
+                    keep.add(model.lines.get(i));
+                }
             }
             // Typed on a new line, the last of its run: another under it, the cursor there.
             EditorModel.Line next = null;
@@ -571,10 +595,15 @@ final class EditorPanel extends CrtPanel {
                 next = EditorModel.blank();
                 model.lines.add(index + 1, next);
                 keep.add(next);
+            } else if (filling && commands.isEmpty() && index >= 0 && at.changed && !at.text.isBlank() && index + 1 < model.lines.size()
+                    && model.lines.get(index + 1).fresh) {
+                // Typed on, with an open line under it: the cursor goes there.
+                next = model.lines.get(index + 1);
             }
             model.dropFresh(keep);
             // The lines typed on are numbered now; the open one shows ' until it's typed on.
             model.numberTyped();
+            fillPage();
             if (next != null) {
                 rebuild();
                 show(model.lines.indexOf(next), 0);
@@ -630,7 +659,7 @@ final class EditorPanel extends CrtPanel {
         unchecked.clear();
         error = null;
         for (Diagnostic diagnostic : diagnostics) {
-            if (!diagnostic.isError() || diagnostic.line() < 0 || diagnostic.line() >= model.lines.size()) {
+            if (!diagnostic.isError() || diagnostic.line() < 0 || diagnostic.line() >= model.lines.size() || stillOpen(statements, diagnostic)) {
                 continue;
             }
             int first = diagnostic.line(), last = diagnostic.line();
@@ -650,6 +679,14 @@ final class EditorPanel extends CrtPanel {
             }
         }
         return null;
+    }
+
+    // A program still being written (no ENDPGM yet): its PGM, DO or SELECT not closed yet is for CRTPGM to say, not
+    // the line last typed.
+    private static boolean stillOpen(List<Stmt> statements, Diagnostic diagnostic) {
+        List<String> data = diagnostic.message().data();
+        return diagnostic.message().id().equals("ELC0009") && data.size() > 1 && data.get(1).startsWith("END")
+                && statements.stream().noneMatch(statement -> statement.name().equalsIgnoreCase("ENDPGM"));
     }
 
     // The editor's commands on the command line (any other command runs as ELCL): true when it was one of them.

@@ -158,7 +158,7 @@ class LayoutTest {
         CrtTerminal terminal = terminal();
         terminal.unread = 1;
         CrtGrid grid = terminal.compose();
-        compare("02_main_menu", grid, 0, 3, 6, 7, 8, 9, 10, 11, 12, 13, 15, 20, 21, 22, 23);
+        compare("02_main_menu", grid, 0, 3, 6, 7, 8, 9, 10, 11, 12, 13, 15, 18, 20, 21, 22, 23);
     }
 
     @Test

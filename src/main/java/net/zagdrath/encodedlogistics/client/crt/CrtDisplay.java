@@ -21,8 +21,8 @@ import net.minecraft.resources.Identifier;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 
 // The green screen as drawn (docs/crt HANDOFF: the green-screen GUI frame): an 80 x 24 text grid in a GUI-kit panel like
-// the mod's other machine GUIs - the panel (502 x 270 GUI px, a 9-slice), its title in the GUI font, a recessed well and
-// the grid in it (480 x 240, at (11, 19)), 1 screen px a GUI px, drawn character by character from the terminal font
+// the mod's other machine GUIs - the panel (514 x 282 GUI px, a 9-slice), its title in the GUI font, a recessed well and
+// the grid in it (480 x 240, at (17, 25), with PAD px of phosphor round it so no text touches the well's lip), 1 screen px a GUI px, drawn character by character from the terminal font
 // sheet (6 x 10 cells). Passes: the panel, the title, the well, the phosphor's background, the text, the cursor, anything
 // the screen adds in grid px. No glow, scanlines, CRT bezel, vignette, curvature or tall pixels. The panel goes at the
 // largest whole scale that keeps it within MAX_WIDTH / MAX_HEIGHT of the window (at least 1), centred, so it sits in the
@@ -32,9 +32,9 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 public final class CrtDisplay {
     private static final Identifier FONT = EncodedLogistics.id("textures/font/terminal.png"), PANEL = EncodedLogistics.id("textures/gui/crt/machine_panel.png"), WELL = EncodedLogistics.id("textures/gui/crt/screen_well.png");
     public static final int CW = 6, CH = 10, GRID_W = CrtGrid.COLS * CW, GRID_H = CrtGrid.ROWS * CH;
-    // The frame, in GUI px: the panel, the title, the well (a 3 px lip) and the grid inside it.
-    public static final int PANEL_W = 502, PANEL_H = 270, TITLE_X = 8, TITLE_Y = 5, WELL_X = 8, WELL_Y = 16, WELL_B = 3, GRID_X = WELL_X + WELL_B,
-            GRID_Y = WELL_Y + WELL_B;
+    // The frame, in GUI px: the panel, the title, the well (a 3 px lip), the phosphor's margin and the grid inside it.
+    public static final int PAD = 6, PANEL_W = 514, PANEL_H = 282, TITLE_X = 8, TITLE_Y = 5, WELL_X = 8, WELL_Y = 16, WELL_B = 3,
+            GRID_X = WELL_X + WELL_B + PAD, GRID_Y = WELL_Y + WELL_B + PAD;
     private static final int TITLE_COLOR = 0xFFF0F0F0;
     // The font sheet: 16 x 7 cells of 6 x 10.
     private static final int FONT_W = 96, FONT_H = 70;
@@ -88,10 +88,10 @@ public final class CrtDisplay {
         graphics.pose().scale(scale, scale);
         nine(graphics, PANEL, 0, 0, PANEL_W, PANEL_H, 4, 32);
         graphics.text(minecraft.font, title, TITLE_X, TITLE_Y, TITLE_COLOR, false);
-        nine(graphics, WELL, WELL_X, WELL_Y, GRID_W + 2 * WELL_B, GRID_H + 2 * WELL_B, WELL_B, 16);
+        nine(graphics, WELL, WELL_X, WELL_Y, GRID_W + 2 * (WELL_B + PAD), GRID_H + 2 * (WELL_B + PAD), WELL_B, 16);
         graphics.pose().pushMatrix();
         graphics.pose().translate(GRID_X, GRID_Y);
-        graphics.fill(0, 0, GRID_W, GRID_H, palette.bg());
+        graphics.fill(-PAD, -PAD, GRID_W + PAD, GRID_H + PAD, palette.bg());
         for (int row = 0; row < CrtGrid.ROWS; row++) {
             for (int col = 0; col < CrtGrid.COLS; col++) {
                 int x = col * CW, y = row * CH;

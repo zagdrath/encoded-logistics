@@ -246,6 +246,26 @@ final class EditorModel {
         return blank;
     }
 
+    // Blank lines left between new lines typed on: spacing, kept as blank lines of the member (no longer fresh). A blank
+    // new line with nothing typed under it in its run of new lines is still dropped.
+    void keepSpacing() {
+        for (int i = 0; i < lines.size(); i++) {
+            Line line = lines.get(i);
+            if (!line.fresh || !line.text.isBlank()) {
+                continue;
+            }
+            for (int j = i + 1; j < lines.size() && lines.get(j).seq == 0; j++) {
+                Line below = lines.get(j);
+                if (!below.fresh && !below.text.isBlank()) {
+                    line.fresh = false;
+                    line.changed = true;
+                    dirty = true;
+                    break;
+                }
+            }
+        }
+    }
+
     // Fresh lines still blank (from an earlier Enter) dropped; any kept are given.
     void dropFresh(Set<Line> keep) {
         lines.removeIf(line -> line.fresh && line.text.isBlank() && !keep.contains(line) && line != target && line != blockStart);
@@ -331,10 +351,15 @@ final class EditorModel {
     // --- Saving ---
 
     // The member's lines as saved: changed lines dated today, new and moved ones numbered between their neighbours.
+    // The member as saved: open lines never typed on (still fresh and blank) aren't part of it.
     List<SourceLine> save(int today) {
-        number();
+        keepSpacing();
+        numberTyped();
         List<SourceLine> out = new ArrayList<>();
         for (Line line : lines) {
+            if (line.fresh && line.text.isBlank()) {
+                continue;
+            }
             out.add(new SourceLine(line.seq, line.text, line.changed ? today : line.date));
         }
         return out;

@@ -315,6 +315,10 @@ final class CrtTerminal {
         }
         outstanding++;
         send(TerminalService.COMMAND, line);
+        // A system value changed here (SYSNAME, PHOSPHOR, SECLVL): the session's details again, after it.
+        if (line.trim().toUpperCase(Locale.ROOT).startsWith("CHGSYSVAL")) {
+            send(TerminalService.QUERY, "info");
+        }
     }
 
     void addHistory(String text, byte attr) {

@@ -48,9 +48,14 @@ class MainMenuTest {
     @Test
     void everyOptionIsDrawnAtItsRow() {
         CrtTerminal terminal = LayoutTest.terminal();
-        CrtGrid grid = terminal.compose();
-        for (MainMenu.Option option : MainMenu.OPTIONS) {
-            assertTrue(LayoutTest.row(grid, option.row()).contains(option.number() + ". " + option.label()), "Option " + option.number() + " not drawn");
+        for (int page = 0; page < MainMenu.PAGES; page++) {
+            CrtGrid grid = terminal.compose();
+            assertTrue(LayoutTest.row(grid, 18).strip().equals(page + 1 < MainMenu.PAGES ? "More..." : "Bottom"), "Page " + page + " marker");
+            for (MainMenu.Option option : MainMenu.OPTIONS) {
+                String drawn = option.number() + ". " + option.label();
+                assertEquals(option.page() == page, LayoutTest.row(grid, option.row()).contains(drawn), "Option " + option.number() + " on page " + page);
+            }
+            terminal.page(1);
         }
     }
 
@@ -75,7 +80,7 @@ class MainMenuTest {
     void anOptionNotAvailableSaysSo() {
         CrtTerminal terminal = LayoutTest.terminal();
         MainMenuPanel menu = (MainMenuPanel) terminal.current();
-        menu.choose(new MainMenu.Option(6, "WRKACTJOB", MainMenu.Availability.NOT_AVAILABLE, 11));
+        menu.choose(new MainMenu.Option(6, "WRKACTJOB", MainMenu.Availability.NOT_AVAILABLE, 0, 11));
         assertEquals("MAIN", terminal.current().id());
         assertEquals("Option 6 not available.", messageLine(terminal));
     }

@@ -545,7 +545,7 @@ Press Enter to continue.
 <h2>2. Using the terminal</h2>
 
 <h3 id="screen-layout">Screen layout</h3>
-<p>Every green screen - the Terminal Desk, the Integrated Midrange System's console, and the machines (the Midrange control panels, Card Punch, Card Reader, Line Printer, Disk and Tape Drives, PLCs) - sits in the same panel as the mod's other machine GUIs: the desk's, system's or machine's name at the top, and the 80 x 24 screen in a recessed well below it, one screen pixel to a GUI pixel, crisp (no glow or scanlines). The panel is drawn at the largest whole scale that keeps it within about 60% of the window's width and 70% of its height, centred; the hotbar is hidden while it's open. The phosphor (<code>PHOSPHOR</code>, or your own choice) colours the screen as before.</p>
+<p>Every green screen - the Terminal Desk, the Integrated Midrange System's console, and the machines (the Midrange control panels, Card Punch, Card Reader, Line Printer, Disk and Tape Drives, PLCs) - sits in the same panel as the mod's other machine GUIs: the desk's, system's or machine's name at the top, and the 80 x 24 screen in a recessed well below it, one screen pixel to a GUI pixel, crisp (no glow or scanlines), with a 6-pixel margin of the screen's background round the text so nothing touches the edge. The panel is drawn at the largest whole scale that keeps it within about 60% of the window's width and 70% of its height, centred; the hotbar is hidden while it's open. The phosphor (<code>PHOSPHOR</code>, or your own choice) colours the screen as before.</p>
 <figure>
 <pre class="term" aria-label="Main Menu mock-up">  MAIN                     <span class="b">ENCODED LOGISTICS MAIN MENU</span>          System:  ELNET01
                                                                  Day 2  07:14:22
@@ -553,25 +553,24 @@ Press Enter to continue.
 Select one of the following:
 
 
-      1. Work with Inventory                 9. Work with Machines
-      2. Work with Jobs                     10. Work with Files
-      3. Work with Devices                  11. Work with Schedules
-      4. Display Network Status             12. Work with Triggers
-      5. Work with Libraries                13. Work with System Values
+      1. Work with Inventory
+      2. Work with Jobs
+      3. Work with Devices
+      4. Display Network Status
+      5. Work with Libraries
       6. Work with Active Jobs
       7. Display Messages
       8. Work with Output
 
-     90. Sign Off
 
 
-
+                                                                        More...
 
  Selection or command
  ===> <span class="u">                                                                        </span>
                                                                             <span class="b">MW</span>
  <span class="b">F1=Help  F3=Exit  F5=Refresh  F9=Command Entry  F12=Cancel  F24=More keys</span></pre>
-<figcaption>The Main Menu, showing every part of the frame.</figcaption>
+<figcaption>The Main Menu's first page, showing every part of the frame. PageDown shows the second: 9. Work with Machines, 10. Work with Files, 11. Work with Schedules, 12. Work with Triggers, 13. Work with System Values and 90. Sign Off, with <em>Bottom</em>.</figcaption>
 </figure>
 <div class="table-wrap"><table>
   <thead><tr><th>Row</th><th>What is there</th></tr></thead>
@@ -750,7 +749,7 @@ Select one of the following:
     <tr><td><code>WRKSYSVAL</code></td><td>Work with System Values</td><td><code>WRKSYSVAL</code></td><td>F1=Help F3=Exit F5=Refresh F9=Command Entry F12=Cancel</td></tr>
     <tr><td><code>MOREKEYS</code></td><td>More Keys and Settings</td><td>F24 on any screen</td><td>F3=Exit F4=Prompt F12=Cancel</td></tr>
     <tr><td><code>MRCTL</code> / <code>IMCTL</code></td><td>Midrange Control Panel / Integrated System Control Panel</td><td>Right-clicking a Midrange System (on the Integrated system, its left body or magazine unit)</td><td>F1=Help F3=Exit F5=Refresh F7=IPL F10=Hold queue F11=Release F12=Cancel</td></tr>
-    <tr><td><code>KEYPUNCH</code></td><td>Card Punch - Punch a Card</td><td>Right-clicking a Card Punch</td><td>F1=Help F3=Exit F4=Prompt F6=Punch F12=Cancel F13=Clear</td></tr>
+    <tr><td><code>CARDPUNCH</code></td><td>Card Punch - Punch a Card</td><td>Right-clicking a Card Punch</td><td>F1=Help F3=Exit F4=Prompt F6=Punch F12=Cancel F13=Clear</td></tr>
     <tr><td><code>CARDRDR</code></td><td>Card Reader</td><td>Right-clicking a Card Reader</td><td>F1=Help F3=Exit F5=Refresh F6=Read F12=Cancel</td></tr>
     <tr><td><code>PRINTER</code></td><td>Line Printer</td><td>Right-clicking a Line Printer</td><td>F1=Help F3=Exit F4=Prompt F5=Refresh F6=Print F12=Cancel</td></tr>
     <tr><td><code>DSKDRV</code></td><td>Disk Drive</td><td>Right-clicking a Disk Drive</td><td>F1=Help F3=Exit F5=Refresh F12=Cancel</td></tr>
@@ -760,7 +759,7 @@ Select one of the following:
 <p class="muted">The Withdraw Item, Craft Item, Display Item Details, Display Device and crafting job display screens open from options on the desk's own lists. The Midrange machines' screens (the last four) open from the machines; see <a href="#midrange">the Midrange line</a>.</p>
 
 <h3 id="main-menu">Main Menu</h3>
-<p>Type an option's number on the command line and press Enter, or click an option (double-click to go). Any command can be typed there too. Each option runs its screen's command, just as typing that command would. A number that isn't on the menu answers <em>"Option 14 is not on this menu."</em>; an option whose screen isn't available yet answers <em>"Option 6 not available."</em> on the message line (all fourteen are available today). Options 1-8 are in the left column, 9-13 in the right.</p>
+<p>Type an option's number on the command line and press Enter, or click an option (double-click to go). Any command can be typed there too. Each option runs its screen's command, just as typing that command would. A number that isn't on the menu answers <em>"Option 14 is not on this menu."</em>; an option whose screen isn't available yet answers <em>"Option 6 not available."</em> on the message line (all fourteen are available today). The menu has two pages (PageDown / PageUp or the mouse wheel; <em>More...</em> and <em>Bottom</em> say where you are): options 1-8 on the first, 9-13 and Sign Off on the second. Any option's number works from either page.</p>
 <p>The menu and its F1 help come from one definition in the code (<code>client/crt/MainMenu.java</code>), so they always list the same options. The help shows all fourteen options (Sign Off last) in two columns on its first page, then how to use the menu, then a line on each option.</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Option</th><th>Text</th><th>Opens</th></tr></thead>
@@ -950,7 +949,7 @@ Select one of the following:
 <p>The system values: <code>SYSNAME</code>, <code>DATFMT</code>, <code>SECLVL</code>, <code>QMAXJOB</code>, <code>LOGRTN</code>, <code>CRFLOGRTN</code>, <code>PHOSPHOR</code>. Columns: System value, Value (bright), Description. Options: <strong>2=Change</strong> (a window with the new value and what it takes; runs <code>CHGSYSVAL</code>; needs <code>*SECOFR</code>, or a network with no Firewall), <strong>5=Display</strong> (value, default, description and allowed values). A changed <code>PHOSPHOR</code> takes effect at once. See <a href="#sysvals">system values</a> for each value.</p>
 
 <h3 id="scr-wrkmch">Work with Machines (<code>WRKMCH</code>)</h3>
-<p>The network's <a href="#arcforge">Arcforge machines</a>: each machine with a linked Small Wireless Bridge on it. Columns: Machine (its device name, <code>ARCCRU01</code>), Type (the machine's own name), Status (<code>*IDLE *RUNNING *NOPOWER *NOINPUT *BLOCKED *DISABLED *NOTFORMED *FAULT</code>, or <code>*OFFLINE</code> while the bridge isn't on the network or the machine is gone; bright when it needs attention), Prog (progress through the current operation), Energy (FE stored / capacity) and Rate (operations a minute over the last minute). Options: <strong>2=Change</strong> (a window with the redstone mode, auto-eject, power from network and Gateway; runs <code>CHGMCHCFG</code> with only the fields you changed; a setting the machine doesn't have shows <code>*NONE</code>), <strong>5=Display</strong> (<em>Display Machine</em>, <code>DSPMCH</code>: type and location, status in the machine's words, controller, progress and time left, what it's making, energy, heat, each tank, operations, rate, items and fluid produced and consumed, running time, and every setting including each side's mode or the number of ports), <strong>7=Enable/Disable</strong> (<code>CHGMCHSTS</code> to the other state: Arcforge's remote on/off switch). Viewing needs the Firewall's view permission; 2 and 7 need build. A side's mode is changed with <code>CHGMCHCFG SIDE() SIDEMODE()</code>.</p>
+<p>The network's <a href="#arcforge">Arcforge machines</a>: each machine with a linked Small Wireless Bridge on it. Columns: Machine (its device name, <code>ARCCRU01</code>), Type (the machine's own name), Status (<code>*IDLE *RUNNING *NOPOWER *NOINPUT *BLOCKED *DISABLED *NOTFORMED *FAULT</code>, or <code>*OFFLINE</code> while the bridge isn't on the network or the machine is gone; bright when it needs attention), Prog (progress through the current operation), Energy (FE stored / capacity) and Rate (operations a minute over the last minute). Options: <strong>2=Change</strong> (a window with the redstone mode, auto-eject, power from network and Gateway; runs <code>CHGMCHCFG</code> with only the fields you changed; a setting the machine doesn't have shows <code>*NONE</code>), <strong>5=Display</strong> (<em>Display Machine</em>, <code>DSPMCH</code>: type and location, status in the machine's words, controller, progress and time left, what it's making, energy, heat, each tank, operations, rate, items and fluid produced and consumed, running time, and every setting including each side's mode or the number of ports), <strong>7=Enable/Disable</strong> (<code>CHGMCHSTS</code> to the other state: Arcforge's remote on/off switch), <strong>8=Sides</strong> (a single-block machine's: a window with each side's mode, Top, Bottom, Left, Right, Back and Front from the machine's front; runs <code>CHGMCHCFG SIDE() SIDEMODE()</code> for each side you changed; a multiblock says it has none). In the 2=Change and 8=Sides windows, F4 on a field steps through its values (the redstone modes the machine offers, <code>*YES</code> / <code>*NO</code>, the side modes). Viewing needs the Firewall's view permission; 2 and 7 need build. A side's mode is changed with <code>CHGMCHCFG SIDE() SIDEMODE()</code>.</p>
 
 <h3 id="scr-morekeys">More Keys and Settings (F24)</h3>
 <p>Lists the keys the screens take (F3, F4, F5, F9, F11, F12, F13, F24, Tab, PgUp) and has the <em>Phosphor</em> field: <code>Green</code>, <code>Amber</code>, <code>White</code> or <code>*SYSVAL</code> (F4 there shows <em>1=Green 2=Amber 3=White 4=*SYSVAL</em>). Enter saves the choice (<em>"Phosphor: Amber."</em>) and returns.</p>
@@ -1017,7 +1016,7 @@ FMT **  <span class="d">...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+..
 </figure>
 <ul>
   <li>Row 1: the member (<code>LIB/NAME</code>) and its type. Row 2: the columns shown, and the cursor's line and column. Row 3: the column ruler, when it's on (<code>COLS</code> or F15).</li>
-  <li>Each source row has a 7-character <strong>margin</strong> holding the sequence number (type a line command over it) and the line's <strong>text</strong>, 72 of its 80 columns at a time. A new line shows <code>'''''''</code> in the margin until Enter, which numbers every line typed on (as SEU does); the open blank line under it keeps <code>'''''''</code> until it's typed on. Up and Down move the cursor a row, keeping its column (from one line's text to the next line's text); Tab moves from field to field.</li>
+  <li>Each source row has a 7-character <strong>margin</strong> holding the sequence number (type a line command over it) and the line's <strong>text</strong>, 72 of its 80 columns at a time. A new line shows <code>'''''''</code> in the margin until Enter, which numbers every line typed on (as SEU does); the open blank line under it keeps <code>'''''''</code> until it's typed on. A new (empty) member opens on a page of open lines, kept full as you type. A blank line left between lines you typed is kept as a blank line of the member (spacing); open lines never typed on are not saved. While a program has no <code>ENDPGM</code> yet, the check doesn't flag the unclosed <code>PGM</code>, <code>DO</code> or <code>SELECT</code> on the line last typed (<code>CRTPGM</code> still does). Up and Down move the cursor a row, keeping its column (from one line's text to the next line's text); Tab moves from field to field.</li>
   <li><em>Beginning of data</em> and <em>End of data</em> mark the ends; a run of excluded lines shows as one row, <em>"N data records excluded"</em>.</li>
   <li>Type over the text to change it. The Insert key switches between overwrite and insert.</li>
   <li>Opened read-only (WRKMBR 5=Display, a member in <code>ELSYS</code>, a library you can only read, or a member someone else is editing) the title is <em>Display Member</em>, every field is protected, and the command line takes only <code>FIND</code>, <code>TOP</code> and <code>BOTTOM</code>.</li>

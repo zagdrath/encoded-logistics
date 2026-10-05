@@ -380,18 +380,22 @@ public final class ScreenQueries {
             String gateway = bridge.gatewayName(context.server());
             if (info == null) {
                 out.line(row(machine.name(), bridge.shown().getString(), machine.status(), "", "", "", "*NONE", "*NONE", bridge.powerFromNetwork() ? "*YES" : "*NO",
-                        gateway.isEmpty() ? "*NONE" : gateway, "", "*YES"));
+                        gateway.isEmpty() ? "*NONE" : gateway, "", "*YES", "", ""));
                 continue;
             }
             MachineInfo.Settings settings = info.settings();
             String energy = info.energy().map(e -> compact(e.stored()) + "/" + compact(e.capacity()) + " FE").orElse("");
             StringBuilder modes = new StringBuilder();
             settings.redstoneModes().forEach(mode -> modes.append(modes.isEmpty() ? "" : " ").append('*').append(mode.toUpperCase(Locale.ROOT)));
+            // Its sides (a single-block machine's): "top=input bottom=output ...", and the modes a side takes.
+            StringBuilder sides = new StringBuilder();
+            settings.sides().forEach((side, mode) -> sides.append(sides.isEmpty() ? "" : " ").append(side).append('=').append(mode));
             out.line(row(machine.name(), info.name().getString(), machine.status(), info.percent() < 0 ? "" : info.percent() + "%", energy,
                     String.format(Locale.ROOT, "%.1f/min", info.statistics().operationsPerMinute()),
                     settings.redstoneMode().map(mode -> "*" + mode.toUpperCase(Locale.ROOT)).orElse("*NONE"),
                     settings.autoEjectSupported() ? settings.autoEject() ? "*YES" : "*NO" : "*NONE", bridge.powerFromNetwork() ? "*YES" : "*NO",
-                    gateway.isEmpty() ? "*NONE" : gateway, modes.toString(), settings.enabled() ? "*YES" : "*NO"));
+                    gateway.isEmpty() ? "*NONE" : gateway, modes.toString(), settings.enabled() ? "*YES" : "*NO", sides.toString(),
+                    String.join(" ", settings.sideModes())));
         }
         return out;
     }

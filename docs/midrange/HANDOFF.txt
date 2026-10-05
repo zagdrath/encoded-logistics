@@ -85,7 +85,7 @@ Screens (grids in layouts/*.txt, renders previews/crt_*.png):
   MRCTL  Midrange Control Panel - status line; diskette drives list (4=Eject 5=Display recipes 8=Make default library); job
          list (3=Hold 4=End 6=Release); F7=IPL F10=Hold queue F11=Release.
   IMCTL  Integrated System Control Panel - the same with the magazine's 4 positions (4=Remove from magazine) and 4 threads.
-  KEYPUNCH - 3 x 3 item-name fields (F4 = item list prompter), result line, blank / punched card counts, card image; F6=Punch.
+  CARDPUNCH - 3 x 3 item-name fields (F4 = item list prompter), result line, blank / punched card counts, card image; F6=Punch.
   CARDRDR - the deck in the hopper (recipe per card, new / replaces), the diskette before -> after; F6=Read.
   PRINTER - report field 1-4 (4 = ELCL spooled file + name / *LAST, F4 list), pages, paper loaded; F6=Print.
   DSKDRV - Disk Drive: pack (storage drive) type, capacity, types; 4=Unload (spins down first) 5=Display contents.

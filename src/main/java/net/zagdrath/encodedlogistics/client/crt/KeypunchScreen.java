@@ -35,7 +35,7 @@ public class KeypunchScreen extends CrtMachineScreen<KeypunchMenu> {
 
     @Override
     String panelId() {
-        return "KEYPUNCH";
+        return "CARDPUNCH";
     }
 
     @Override

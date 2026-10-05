@@ -19,12 +19,8 @@ final class MainMenu {
         AVAILABLE, NOT_AVAILABLE
     }
 
-    // row and col: where it's drawn, its number ending at col (the left column's at 8, the right's at RIGHT).
-    record Option(int number, String command, Availability availability, int row, int col) {
-        Option(int number, String command, Availability availability, int row) {
-            this(number, command, availability, row, LEFT);
-        }
-
+    // page and row: where it's drawn, its number ending at column NUMBER_END.
+    record Option(int number, String command, Availability availability, int page, int row) {
         String label() {
             return CrtPanel.tr("crt.encodedlogistics.menu." + number);
         }
@@ -38,24 +34,25 @@ final class MainMenu {
         }
     }
 
-    static final int LEFT = 8, RIGHT = 47;
+    static final int NUMBER_END = 8, PAGES = 2;
 
-    // Rows on the screen: 1-8 from row 6 on the left, 9-13 from row 6 on the right, Sign Off apart at row 15.
+    // Two pages, as a long menu pages (PageDown / PageUp, More... and Bottom): 1-8 from row 6 on the first; 9-13 from row 6
+    // on the second, Sign Off apart at row 12. Any option's number works from either page.
     static final List<Option> OPTIONS = List.of(
-            new Option(1, "WRKINV", Availability.AVAILABLE, 6),
-            new Option(2, "WRKCRFJOB", Availability.AVAILABLE, 7),
-            new Option(3, "WRKDEV", Availability.AVAILABLE, 8),
-            new Option(4, "DSPNETSTS", Availability.AVAILABLE, 9),
-            new Option(5, "WRKLIB", Availability.AVAILABLE, 10),
-            new Option(6, "WRKACTJOB", Availability.AVAILABLE, 11),
-            new Option(7, "DSPMSG", Availability.AVAILABLE, 12),
-            new Option(8, "WRKSPLF", Availability.AVAILABLE, 13),
-            new Option(9, "WRKMCH", Availability.AVAILABLE, 6, RIGHT),
-            new Option(10, "WRKF", Availability.AVAILABLE, 7, RIGHT),
-            new Option(11, "WRKJOBSCDE", Availability.AVAILABLE, 8, RIGHT),
-            new Option(12, "WRKTRGEVT", Availability.AVAILABLE, 9, RIGHT),
-            new Option(13, "WRKSYSVAL", Availability.AVAILABLE, 10, RIGHT),
-            new Option(90, "SIGNOFF", Availability.AVAILABLE, 15));
+            new Option(1, "WRKINV", Availability.AVAILABLE, 0, 6),
+            new Option(2, "WRKCRFJOB", Availability.AVAILABLE, 0, 7),
+            new Option(3, "WRKDEV", Availability.AVAILABLE, 0, 8),
+            new Option(4, "DSPNETSTS", Availability.AVAILABLE, 0, 9),
+            new Option(5, "WRKLIB", Availability.AVAILABLE, 0, 10),
+            new Option(6, "WRKACTJOB", Availability.AVAILABLE, 0, 11),
+            new Option(7, "DSPMSG", Availability.AVAILABLE, 0, 12),
+            new Option(8, "WRKSPLF", Availability.AVAILABLE, 0, 13),
+            new Option(9, "WRKMCH", Availability.AVAILABLE, 1, 6),
+            new Option(10, "WRKF", Availability.AVAILABLE, 1, 7),
+            new Option(11, "WRKJOBSCDE", Availability.AVAILABLE, 1, 8),
+            new Option(12, "WRKTRGEVT", Availability.AVAILABLE, 1, 9),
+            new Option(13, "WRKSYSVAL", Availability.AVAILABLE, 1, 10),
+            new Option(90, "SIGNOFF", Availability.AVAILABLE, 1, 12));
 
     private MainMenu() {}
 
@@ -68,11 +65,10 @@ final class MainMenu {
         return null;
     }
 
-    // The option drawn at a cell: its row, and the column's half of the screen.
-    static @Nullable Option at(int row, int col) {
-        boolean right = col >= RIGHT - 4;
+    // The option drawn on a page's row.
+    static @Nullable Option at(int page, int row) {
         for (Option option : OPTIONS) {
-            if (option.row() == row && (option.col() == RIGHT) == right) {
+            if (option.page() == page && option.row() == row) {
                 return option;
             }
         }

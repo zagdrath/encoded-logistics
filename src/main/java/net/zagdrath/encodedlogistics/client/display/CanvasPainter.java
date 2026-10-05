@@ -94,13 +94,17 @@ final class CanvasPainter {
         return text.length() * TerminalFont.CELL_W * scale;
     }
 
-    // Text lines in a box: each with its colour (0: the text colour), alignment and scale.
+    // Text lines in a box, LINES_PAD px in from its edges so none touches the bezel: each with its colour (0: the text
+    // colour), alignment and scale.
+    private static final int LINES_PAD = 3;
+
     void lines(int x, int y, int w, int h, List<DisplayContent.TextLine> lines) {
-        int top = y + 1;
+        int top = y + LINES_PAD;
         for (DisplayContent.TextLine line : lines) {
             int scale = Math.clamp(line.scale(), 1, 2);
             int lw = width(line.text(), scale);
-            int lx = line.align() == DisplayContent.CENTRE ? x + (w - lw) / 2 : line.align() == DisplayContent.RIGHT ? x + w - lw - 1 : x + 1;
+            int lx = line.align() == DisplayContent.CENTRE ? x + (w - lw) / 2
+                    : line.align() == DisplayContent.RIGHT ? x + w - lw - LINES_PAD : x + LINES_PAD;
             text(lx, top, line.text(), line.color() != 0 ? line.color() : TEXT, scale);
             top += TerminalFont.CELL_H * scale;
             if (top >= y + h) {

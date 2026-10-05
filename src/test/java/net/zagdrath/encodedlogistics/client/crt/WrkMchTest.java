@@ -25,9 +25,9 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // other way to how it is), and 2=Change's command, with only the fields that changed.
 class WrkMchTest {
     private static final TerminalLine CRUSHER = cells("ARCCRU01", "Arc Crusher", "*RUNNING", "45%", "12.0k/20000 FE", "2.5/min", "*IGNORE", "*NO", "*NO",
-            "*NONE", "*IGNORE *HIGH *LOW", "*YES");
+            "*NONE", "*IGNORE *HIGH *LOW", "*YES", "top=input bottom=output left=none right=none back=energy front=none", "input output energy none");
     private static final TerminalLine FURNACE = cells("INDFUR01", "Induction Furnace", "*NOPOWER", "", "0/40000 FE", "0.0/min", "*NONE", "*NONE", "*NO",
-            "*NONE", "", "*NO");
+            "*NONE", "", "*NO", "", "");
 
     @BeforeAll
     static void language() throws java.io.IOException {
@@ -71,6 +71,39 @@ class WrkMchTest {
         LayoutTest.option(other, 8, "7");
         other.submit();
         assertTrue(sent(other).contains(TerminalService.COMMAND + " CHGMCHSTS MCH(INDFUR01) STATUS(*ENABLE)"), "Sent " + sent(other));
+    }
+
+    // 8=Sides: a window with each side's mode (F4 steps through the modes), a CHGMCHCFG SIDE() SIDEMODE() for each one
+    // changed; a machine without sides says so. 2=Change's F4 steps the redstone mode.
+    @Test
+    void sidesAndChoices() {
+        CrtTerminal terminal = opened();
+        LayoutTest.option(terminal, 7, "8");
+        terminal.submit();
+        CrtWindow window = terminal.window();
+        assertTrue(window != null && window.title.contains("ARCCRU01"), "No sides window");
+        assertEquals(6, window.fields.size());
+        terminal.focus(window.fields.get(0));
+        terminal.functionKey(4);
+        assertEquals("output", window.fields.get(0).trimmed(), "F4 didn't step the mode");
+        window.fields.get(4).set("none");
+        terminal.submit();
+        assertTrue(sent(terminal).contains(TerminalService.COMMAND + " CHGMCHCFG MCH(ARCCRU01) SIDE(*TOP) SIDEMODE(output)"), "Sent " + sent(terminal));
+        assertTrue(sent(terminal).contains(TerminalService.COMMAND + " CHGMCHCFG MCH(ARCCRU01) SIDE(*BACK) SIDEMODE(none)"), "Sent " + sent(terminal));
+        assertEquals(2, sent(terminal).stream().filter(line -> line.contains("SIDE(")).count(), "Unchanged sides sent");
+        // No sides.
+        CrtTerminal other = opened();
+        LayoutTest.option(other, 8, "8");
+        other.submit();
+        assertEquals(null, other.window());
+        assertTrue(row(other.compose(), 22).contains("INDFUR01"), "No message: " + row(other.compose(), 22));
+        // 2=Change: F4 on the redstone mode.
+        CrtTerminal change = opened();
+        LayoutTest.option(change, 7, "2");
+        change.submit();
+        change.focus(change.window().fields.get(0));
+        change.functionKey(4);
+        assertEquals("*HIGH", change.window().fields.get(0).trimmed());
     }
 
     @Test

@@ -173,12 +173,16 @@ class EditorTest {
     void numbering() {
         EditorModel model = model("A", "B", "C");
         model.apply(List.of(cmd(model, 0, "I2")));
+        // Typed on (inserted lines never typed on aren't saved).
+        model.setText(model.lines.get(1), "A1");
+        model.setText(model.lines.get(2), "A2");
         List<SourceLine> saved = model.save(7);
         assertEquals(List.of(100, 133, 166, 200, 300), saved.stream().map(SourceLine::seq).toList());
         assertEquals(List.of(0, 7, 7, 0, 0), saved.stream().map(SourceLine::date).toList());
         // No room between 0001.00 and 0001.01: everything is renumbered.
         EditorModel tight = new EditorModel(List.of(new SourceLine(100, "A", 0), new SourceLine(101, "B", 0)));
         tight.apply(List.of(cmd(tight, 0, "I")));
+        tight.setText(tight.lines.get(1), "A1");
         assertEquals(List.of(100, 200, 300), tight.save(1).stream().map(SourceLine::seq).toList());
     }
 
@@ -255,21 +259,25 @@ class EditorTest {
         CrtTerminal terminal = LayoutTest.terminal();
         EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "NEW", List.of(), false);
         terminal.push(editor);
-        assertEquals(1, editor.model().lines.size());
-        assertFalse(editor.model().dirty, "an untouched blank line isn't a change");
+        int page = editor.model().lines.size();
+        assertTrue(page > 1, "a page of open lines");
+        assertTrue(editor.model().lines.stream().allMatch(open -> open.fresh && open.text.isEmpty()), "open lines");
+        assertFalse(editor.model().dirty, "untouched blank lines aren't a change");
         CrtField line = terminal.focused();
         assertNotNull(line);
         assertEquals(8, line.col, "the cursor on the line's text");
         line.set("PGM");
         terminal.submit();
-        assertEquals(List.of("PGM", ""), editor.model().texts(), "another line under the typed one");
+        assertEquals(List.of("PGM", ""), editor.model().texts().subList(0, 2), "an open line under the typed one");
+        assertEquals(1, terminal.focused().row - 4, "the cursor on the open line");
         terminal.focused().set("ENDPGM");
         terminal.submit();
-        assertEquals(List.of("PGM", "ENDPGM", ""), editor.model().texts());
-        // Off the blank line (to the command line) and Enter: it goes.
+        assertEquals(List.of("PGM", "ENDPGM", ""), editor.model().texts().subList(0, 3));
+        assertEquals(page, editor.model().lines.size(), "the page kept full");
+        // Off the open lines (to the command line) and Enter: they stay open, and aren't saved.
         terminal.focus(terminal.command);
         terminal.submit();
-        assertEquals(List.of("PGM", "ENDPGM"), editor.model().texts());
+        assertEquals(List.of("PGM", "ENDPGM"), SourceLine.texts(editor.model().save(5)));
         // I on "Beginning of data": a line before the first.
         terminal.focus(terminal.command);
         terminal.nextField(false);
@@ -278,7 +286,7 @@ class EditorTest {
         assertEquals(3, begin.row, "Beginning of data's margin");
         begin.set("I");
         terminal.submit();
-        assertEquals(List.of("", "PGM", "ENDPGM"), editor.model().texts());
+        assertEquals(List.of("", "PGM", "ENDPGM", ""), editor.model().texts().subList(0, 4));
     }
 
     // Lines typed into a new member get their sequence numbers on Enter (the open blank line keeps '''''''), and Up /
@@ -293,9 +301,9 @@ class EditorTest {
         terminal.focused().set("DCL VAR(&N) TYPE(*INT)");
         terminal.submit();
         List<EditorModel.Line> lines = editor.model().lines;
-        assertEquals(3, lines.size());
         assertTrue(lines.get(0).seq > 0 && lines.get(1).seq > lines.get(0).seq, "typed lines not numbered on Enter");
         assertEquals(0, lines.get(2).seq, "the open line numbered before it's typed on");
+        assertEquals(List.of("PGM", "DCL VAR(&N) TYPE(*INT)"), SourceLine.texts(editor.model().save(5)), "open lines saved");
         // The cursor on the open line: Up goes to the DCL's text at the same column, then up again to PGM's.
         CrtField open = terminal.focused();
         open.cursor = 4;
@@ -307,6 +315,33 @@ class EditorTest {
         assertEquals(column, above.cursorColumn(), "Up lost the column");
         terminal.moveVertical(false);
         assertEquals(open.row, terminal.focused().row, "Down didn't come back");
+    }
+
+    // A new member opens on a page of blank lines, kept full as it's typed on; a blank line left between typed ones
+    // stays (spacing); a program not finished yet (no ENDPGM) isn't flagged for it on the line last typed.
+    @Test
+    void newMemberPageSpacingAndOpenProgram() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "NEW", List.of(), false);
+        terminal.push(editor);
+        int page = editor.model().lines.size();
+        assertTrue(page > 10, "only " + page + " open lines");
+        List<CrtField> texts = terminal.current().fields.stream().filter(field -> field.col == 8).toList();
+        texts.get(0).set("PGM");
+        texts.get(1).set("DCL VAR(&STS) TYPE(*CHAR) LEN(10)");
+        texts.get(3).set("CHGVAR VAR(&STS) VALUE('X')");
+        terminal.focus(texts.get(3));
+        terminal.submit();
+        assertEquals(List.of("PGM", "DCL VAR(&STS) TYPE(*CHAR) LEN(10)", "", "CHGVAR VAR(&STS) VALUE('X')"),
+                SourceLine.texts(editor.model().save(5)), "spacing line dropped");
+        assertTrue(editor.model().lines.size() >= page, "page not kept full");
+        String message = LayoutTest.row(terminal.compose(), 22).strip();
+        assertFalse(message.contains("ELC0009"), "flagged an unfinished program: " + message);
+        for (int r = 0; r < 24; r++) {
+            for (int c = 0; c < 80; c++) {
+                assertFalse(terminal.compose().reverse[r][c], "a line shown reversed at row " + r);
+            }
+        }
     }
 
     // A click anywhere on "F11=Full screen" (its second word too) presses F11.

@@ -129,11 +129,12 @@ public final class TerminalService {
 
     private static TerminalOutput info(TerminalContext context) {
         TerminalOutput out = new TerminalOutput();
-        out.line(context.network() != null ? networkName(context.network()) : "*OFFLINE");
+        ElclSystem system = context.network() != null ? new ElclSystem(context.server(), context.network()) : null;
+        // Its SYSNAME (ELNET01 until it's changed).
+        out.line(system != null ? system.name() : "*OFFLINE");
         out.line(ControllerStructures.firewall(context.server(), context.network()) != null ? "1" : "0");
         out.line(context.player().getName().getString());
         // The system's PHOSPHOR (every terminal's default colour) and SECLVL (10: no sign-on).
-        ElclSystem system = context.network() != null ? new ElclSystem(context.server(), context.network()) : null;
         out.line(system != null ? ElclServices.sysvals().get(system, "PHOSPHOR") : "*GREEN");
         out.line(system != null ? ElclServices.sysvals().get(system, "SECLVL") : "30");
         return out;
