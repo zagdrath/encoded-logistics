@@ -109,7 +109,7 @@ public class MidrangePanelMenu extends PeripheralMenu {
     // Its status word's lang key for the status code.
     private static String word(MidrangeSystemBlockEntity system) {
         String code = system.statusCode();
-        String word = code.startsWith("E9") ? "offline" : code.startsWith("C") ? "ipl" : code.startsWith("E2") ? "attention"
+        String word = code.startsWith("E9") ? "offline" : code.startsWith("E8") ? "conflict" : code.startsWith("C") ? "ipl" : code.startsWith("E2") ? "attention"
                 : code.startsWith("E1") ? "no_library" : system.held() ? "held" : code.startsWith("A6b") ? "busy" : "running";
         return "crt.encodedlogistics.mrctl.word." + word;
     }

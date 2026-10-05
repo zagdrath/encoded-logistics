@@ -479,6 +479,22 @@ public class Config {
             .comment("FE per tick an Integrated Midrange System drains while its network runs.")
             .defineInRange("integratedMidrangeDrain", 8.0, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.IntValue MIDRANGE_ENERGY_BLOCKS = BUILDER
+            .comment("Controller blocks' worth of energy buffer and receive rate a Midrange System has as its network's controller.")
+            .defineInRange("midrangeEnergyBlocks", 4, 1, 343);
+
+    public static final ModConfigSpec.IntValue MIDRANGE_LANE_FACES = BUILDER
+            .comment("Connected controller faces' worth of lanes a Midrange System hands out as its network's controller.")
+            .defineInRange("midrangeLaneFaces", 4, 1, 1024);
+
+    public static final ModConfigSpec.IntValue INTEGRATED_MIDRANGE_ENERGY_BLOCKS = BUILDER
+            .comment("Controller blocks' worth of energy buffer and receive rate an Integrated Midrange System has (a 2U rack controller's by default).")
+            .defineInRange("integratedMidrangeEnergyBlocks", 20, 1, 343);
+
+    public static final ModConfigSpec.IntValue INTEGRATED_MIDRANGE_LANE_FACES = BUILDER
+            .comment("Connected controller faces' worth of lanes an Integrated Midrange System hands out (a 2U rack controller's by default).")
+            .defineInRange("integratedMidrangeLaneFaces", 6, 1, 1024);
+
     public static final ModConfigSpec.IntValue MIDRANGE_CRAFT_ENERGY = BUILDER
             .comment("FE a Midrange System (or Integrated Midrange System) spends per craft it runs itself.")
             .defineInRange("midrangeCraftEnergy", 20, 0, 1_000_000);

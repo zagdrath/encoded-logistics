@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.midrange;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
@@ -38,6 +40,8 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
@@ -54,9 +58,14 @@ import net.zagdrath.encodedlogistics.elcl.device.Diskette;
 import net.zagdrath.encodedlogistics.elcl.device.DisketteDevice;
 import net.zagdrath.encodedlogistics.menu.MidrangePanelMenu;
 import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
+import net.zagdrath.encodedlogistics.multiblock.ControllerBuffer;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.network.ListedDevice;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.network.NetworkNode;
+import net.zagdrath.encodedlogistics.network.NetworkStatus;
+import net.zagdrath.encodedlogistics.network.SourceNode;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -69,11 +78,14 @@ import net.zagdrath.encodedlogistics.registry.ModSounds;
 //   64 / 128 / 512, and a crafting provider for its diskettes' recipes, crafting each step itself (40 / 25 ticks,
 //   midrangeCraftEnergy FE a craft); steps other schematics need go to the network's Fabricators and Gateways;
 // - an ELCL batch job host for 1 / 2 / 4 jobs (Midranges registers it);
-// - its states: off while it has no lane on a running network; an IPL (midrangeIplTicks) each time it comes online or
-//   on F7; then run, busy while crafting, attn while a job waits for items. Hold (F10) stops its job queue until
-//   Release (F11).
+// - its network's controller (HANDOFF 4): a structure of its own in ControllerStructures, a lane source (SourceNode:
+//   midrangeLaneFaces / integratedMidrangeLaneFaces faces' worth of lanes) and the network's energy buffer
+//   (midrangeEnergyBlocks / integratedMidrangeEnergyBlocks controller blocks' worth). Any other controller on its
+//   network is a conflict (status E8);
+// - its states: off while its network isn't running; an IPL (midrangeIplTicks) each time it comes online or on F7;
+//   then run, busy while crafting, attn while a job waits for items. Hold (F10) stops its job queue until Release (F11).
 public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implements NetworkDevice, MidrangeDevice, JobHost, CraftingProvider,
-        RecipeLibrarySource, DisketteDevice {
+        RecipeLibrarySource, DisketteDevice, ControllerBuffer, ListedDevice {
     public static final String TYPE = "MIDRANGE";
     // Tier 1: diskette slots A and B (B with an Expansion Cabinet). Tier 2: the magazine in slot A.
     public static final int SLOT_A = 0, SLOT_B = 1;
@@ -91,6 +103,11 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     private String deviceName = "";
     // Terminal OS sessions open at an Integrated system's console (not saved).
     private int sessions;
+    // As its network's controller: its structure (kept, as a rack keeps its controllers'), its buffer, how its network
+    // stands.
+    private long structure;
+    private final Buffer energy = new Buffer();
+    private NetworkStatus networkStatus = NetworkStatus.NO_POWER;
 
     public MidrangeSystemBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.MIDRANGE_SYSTEM.get(), pos, state);
@@ -125,6 +142,131 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         return Math.max(1, integrated() ? Config.INTEGRATED_MIDRANGE_STEP_TICKS.getAsInt() : Config.MIDRANGE_STEP_TICKS.getAsInt());
     }
 
+    // --- Its network's controller ---
+
+    // Its node: a lane source of its own structure (none yet: an ordinary pass-through block until it has one).
+    public static NetworkNode node(Level level, BlockPos pos, double drain) {
+        long id = level.getBlockEntity(pos) instanceof MidrangeSystemBlockEntity system ? system.structure : 0;
+        boolean integrated = level.getBlockState(pos).getBlock() instanceof IntegratedMidrangeBlock;
+        int lanes = (integrated ? Config.INTEGRATED_MIDRANGE_LANE_FACES.getAsInt() : Config.MIDRANGE_LANE_FACES.getAsInt())
+                * Config.LANES_PER_CONTROLLER_FACE.getAsInt();
+        return new SourceNode(pos.immutable(), EnumSet.allOf(Direction.class), drain, id > 0 ? id : NetworkNode.NO_CONTROLLER, lanes);
+    }
+
+    public long controllerStructure() {
+        return structure;
+    }
+
+    // Its structure in ControllerStructures: made when it has none (or lost it), dropped when it goes.
+    private void keepStructure(ServerLevel level) {
+        ControllerStructures structures = ControllerStructures.get(level);
+        ControllerStructures.Structure own = structure > 0 ? structures.get(structure) : null;
+        if (own == null || !own.midrange() || !own.members().getFirst().equals(worldPosition)) {
+            structure = structures.addMidrange(worldPosition);
+            setChanged();
+        }
+    }
+
+    // How its network stands (ControllerStructures, each tick it runs).
+    public void setNetworkStatus(NetworkStatus status) {
+        networkStatus = status;
+    }
+
+    public NetworkStatus networkStatus() {
+        return networkStatus;
+    }
+
+    @Override
+    public int getEnergy() {
+        return energy.getAmountAsInt();
+    }
+
+    @Override
+    public int getCapacity() {
+        energy.refreshLimits();
+        return energy.getCapacityAsInt();
+    }
+
+    @Override
+    public int drain(int amount) {
+        int taken = Math.min(amount, energy.getAmountAsInt());
+        if (taken > 0) {
+            energy.set(energy.getAmountAsInt() - taken);
+        }
+        return taken;
+    }
+
+    @Override
+    public int fill(int amount, TransactionContext transaction) {
+        return energy.fill(amount, transaction);
+    }
+
+    @Override
+    public int takeReceived() {
+        int received = energy.receivedThisTick;
+        energy.receivedThisTick = 0;
+        energy.refreshLimits();
+        return received;
+    }
+
+    // Sets its buffer (game tests).
+    public void charge(int amount) {
+        energy.refreshLimits();
+        energy.set(Math.min(amount, energy.getCapacityAsInt()));
+    }
+
+    // Controller blocks' worth of buffer and receive rate.
+    private int energyBlocks() {
+        return integrated() ? Config.INTEGRATED_MIDRANGE_ENERGY_BLOCKS.getAsInt() : Config.MIDRANGE_ENERGY_BLOCKS.getAsInt();
+    }
+
+    // Its buffer, sized from the config (which may not be loaded when the block entity is made).
+    private final class Buffer extends SimpleEnergyHandler {
+        int receivedThisTick;
+
+        Buffer() {
+            super(Config.CONTROLLER_ENERGY_PER_BLOCK.getDefault() * 4, Config.CONTROLLER_MAX_RECEIVE.getDefault() * 4, 0);
+        }
+
+        void refreshLimits() {
+            if (Config.SPEC.isLoaded() && level != null) {
+                capacity = (int) Math.min(Integer.MAX_VALUE, (long) Config.CONTROLLER_ENERGY_PER_BLOCK.getAsInt() * energyBlocks());
+                maxInsert = (int) Math.min(Integer.MAX_VALUE, (long) Config.CONTROLLER_MAX_RECEIVE.getAsInt() * energyBlocks());
+            }
+        }
+
+        @Override
+        public int insert(int amount, TransactionContext transaction) {
+            refreshLimits();
+            return super.insert(Math.min(amount, Math.max(0, maxInsert - receivedThisTick)), transaction);
+        }
+
+        int fill(int amount, TransactionContext transaction) {
+            refreshLimits();
+            int limit = maxInsert;
+            maxInsert = Integer.MAX_VALUE;
+            try {
+                return super.insert(amount, transaction);
+            } finally {
+                maxInsert = limit;
+            }
+        }
+
+        @Override
+        public void deserialize(ValueInput input) {
+            refreshLimits();
+            super.deserialize(input);
+        }
+
+        @Override
+        protected void onEnergyChanged(int previousAmount) {
+            if (energy > previousAmount) {
+                receivedThisTick += energy - previousAmount;
+            }
+            setChanged();
+        }
+    }
+
     // --- State ---
 
     @Override
@@ -134,6 +276,11 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
 
     @Override
     public boolean isOnline() {
+        return online;
+    }
+
+    @Override
+    public boolean listedOnline() {
         return online;
     }
 
@@ -167,10 +314,10 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     // The status display's code (HANDOFF 2): Cn during IPL; A6 running (A6b and the threads in use while crafting);
-    // E1 no diskette, E2 a job waits for items, E9 network offline.
+    // E1 no diskette, E2 a job waits for items, E8 another controller on its network, E9 network offline (no power).
     public String statusCode() {
         if (!online) {
-            return "E9";
+            return networkStatus == NetworkStatus.CONFLICT ? "E8" : "E9";
         }
         if (ipl > 0) {
             String[] codes = { "C1", "C3", "C6", "C9", "CA", "CC" };
@@ -189,7 +336,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     // What the status code means, as a lang key.
     public String statusKey() {
         if (!online) {
-            return "crt.encodedlogistics.mrctl.status.offline";
+            return networkStatus == NetworkStatus.CONFLICT ? "crt.encodedlogistics.mrctl.status.conflict" : "crt.encodedlogistics.mrctl.status.offline";
         }
         if (ipl > 0) {
             return "crt.encodedlogistics.mrctl.status.ipl";
@@ -227,6 +374,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     private void tick(ServerLevel level) {
+        keepStructure(level);
         if (!online) {
             wasOnline = false;
             ipl = 0;
@@ -640,6 +788,10 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
+        // Its network has no controller now.
+        if (structure > 0) {
+            ControllerStructures.get(serverLevel).removeRack(serverLevel, structure);
+        }
         for (CraftTask task : List.copyOf(tasks)) {
             SchedulerCoreBlockEntity.refund(serverLevel, task, task.inputs(), worldPosition);
         }
@@ -766,6 +918,8 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         items = NonNullList.withSize(2, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         held = input.getBooleanOr("held", false);
+        structure = input.getLongOr("structure", 0);
+        input.child("energy_buffer").ifPresent(energy::deserialize);
         defaultDrive = input.getIntOr("default_drive", 0);
         ipl = input.getIntOr("ipl", 0);
         energyCredit = input.getDoubleOr("energy", 0);
@@ -791,6 +945,8 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
             output.putString("device_name", deviceName);
         }
         output.putBoolean("saved", true);
+        output.putLong("structure", structure);
+        energy.serialize(output.child("energy_buffer"));
         output.putBoolean("held", held);
         output.putInt("default_drive", defaultDrive);
         if (!runner.heldJobs().isEmpty()) {

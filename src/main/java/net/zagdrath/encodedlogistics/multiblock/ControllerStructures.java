@@ -118,18 +118,25 @@ public class ControllerStructures extends SavedData {
     private static final int GENERATION_WINDOW = 20;
 
     // A structure is a group of Network Controller blocks, or (rack) a Server Rack holding rack Network Controllers: its
-    // one member is the rack's master.
-    public record Structure(long id, List<BlockPos> members, ControllerFrame.Problem problem, boolean rack) {
+    // one member is the rack's master, or (midrange) a Midrange System or Integrated Midrange System, its network's
+    // controller on its own: its one member is its master block.
+    public record Structure(long id, List<BlockPos> members, ControllerFrame.Problem problem, boolean rack, boolean midrange) {
         public static final Codec<Structure> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.LONG.fieldOf("id").forGetter(Structure::id),
                 BlockPos.CODEC.listOf().fieldOf("members").forGetter(Structure::members),
                 Codec.STRING.xmap(ControllerStructures::problemByName, ControllerFrame.Problem::name).fieldOf("problem")
                         .forGetter(Structure::problem),
-                Codec.BOOL.optionalFieldOf("rack", false).forGetter(Structure::rack))
+                Codec.BOOL.optionalFieldOf("rack", false).forGetter(Structure::rack),
+                Codec.BOOL.optionalFieldOf("midrange", false).forGetter(Structure::midrange))
                 .apply(i, Structure::new));
 
         public Structure(long id, List<BlockPos> members, ControllerFrame.Problem problem) {
-            this(id, members, problem, false);
+            this(id, members, problem, false, false);
+        }
+
+        // Not controller blocks: a rack's or a Midrange System's.
+        public boolean single() {
+            return rack || midrange;
         }
 
         // INVALID_SHAPE or TOO_LARGE when the shape is wrong, otherwise null.
@@ -352,7 +359,19 @@ public class ControllerStructures extends SavedData {
     private void tickStructure(ServerLevel level, NetworkIndex index, Structure structure, Runtime runtime) {
         List<NetworkControllerBlockEntity> blocks = new ArrayList<>(structure.members().size());
         RackBlockEntity rack = null;
-        if (structure.rack()) {
+        MidrangeSystemBlockEntity midrange = null;
+        if (structure.midrange()) {
+            BlockPos pos = structure.members().getFirst();
+            if (!level.isLoaded(pos)) {
+                runtime.online = Set.of();
+                return;
+            }
+            if (!(level.getBlockEntity(pos) instanceof MidrangeSystemBlockEntity found) || found.controllerStructure() != structure.id()) {
+                dropStructure(level, index, structure.id());
+                return;
+            }
+            midrange = found;
+        } else if (structure.rack()) {
             BlockPos pos = structure.members().getFirst();
             if (!level.isLoaded(pos)) {
                 runtime.online = Set.of();
@@ -388,6 +407,7 @@ public class ControllerStructures extends SavedData {
         } else if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
             int lanesPerFace = Config.LANES_PER_CONTROLLER_FACE.getAsInt();
             runtime.discovered = rack != null ? NetworkDiscovery.discoverRack(level, rack.getBlockPos(), lanesPerFace)
+                    : midrange != null ? NetworkDiscovery.discoverRack(level, midrange.getBlockPos(), lanesPerFace)
                     : NetworkDiscovery.discover(level, structure.id(), structure.members(), lanesPerFace);
             runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
             runtime.dirty = false;
@@ -418,6 +438,9 @@ public class ControllerStructures extends SavedData {
 
         // The buffers that are the network's energy: the controller blocks, or the working rack controller.
         List<ControllerBuffer> buffers = new ArrayList<>(blocks);
+        if (midrange != null) {
+            buffers.add(midrange);
+        }
         runtime.working = null;
         runtime.standbys = List.of();
         if (rack != null && status == null && !conflict) {
@@ -493,6 +516,10 @@ public class ControllerStructures extends SavedData {
                 }
             }
         }
+        // A Midrange System that runs its network is on it, as a device is.
+        if (midrange != null && (status == NetworkStatus.ONLINE || status == NetworkStatus.FAILOVER)) {
+            online.add(NetworkGraph.at(level.dimension(), midrange.getBlockPos()));
+        }
         runtime.online = online;
         runtime.stored = stored;
         runtime.capacity = capacity;
@@ -501,6 +528,10 @@ public class ControllerStructures extends SavedData {
 
         if (rack != null) {
             showControllers(level.getServer(), runtime, conflict);
+            return;
+        }
+        if (midrange != null) {
+            midrange.setNetworkStatus(status);
             return;
         }
         applyStates(level, structure, status);
@@ -519,14 +550,24 @@ public class ControllerStructures extends SavedData {
     // A rack that has rack Network Controllers gets a structure of its own: its id, kept by the rack.
     public long addRack(BlockPos rack) {
         long id = nextId++;
-        structures.put(id, new Structure(id, List.of(rack.immutable()), ControllerFrame.Problem.NONE, true));
+        structures.put(id, new Structure(id, List.of(rack.immutable()), ControllerFrame.Problem.NONE, true, false));
         runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
         topologyChanged = true;
         setDirty();
         return id;
     }
 
-    // Its last controller went, or the rack did.
+    // A Midrange System's structure: its network's controller on its own (MidrangeSystemBlockEntity keeps the id).
+    public long addMidrange(BlockPos master) {
+        long id = nextId++;
+        structures.put(id, new Structure(id, List.of(master.immutable()), ControllerFrame.Problem.NONE, false, true));
+        runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
+        topologyChanged = true;
+        setDirty();
+        return id;
+    }
+
+    // Its last controller went, or the rack did (or the Midrange System).
     public void removeRack(ServerLevel level, long id) {
         dropStructure(level, NetworkIndex.get(level.getServer()), id);
     }
@@ -1224,7 +1265,7 @@ public class ControllerStructures extends SavedData {
         Runtime runtime = owner.runtime;
         boolean networkOnline = runtime.status == NetworkStatus.ONLINE || runtime.status == NetworkStatus.FAILOVER;
         List<DeviceRow> others = new ArrayList<>();
-        if (!owner.structure.rack() && !owner.structure.members().isEmpty()) {
+        if (!owner.structure.single() && !owner.structure.members().isEmpty()) {
             others.add(new DeviceRow("Controller", ModItems.NETWORK_CONTROLLER.get().getName(ModItems.NETWORK_CONTROLLER.get().getDefaultInstance()),
                     NetworkGraph.at(owner.ref.dimension(), owner.structure.members().getFirst()), 0, networkOnline, false, null, 0));
         }
@@ -1258,7 +1299,8 @@ public class ControllerStructures extends SavedData {
             if (item == null || item == Items.AIR || node.laneCost() <= 0 && item != ModItems.WIRELESS_BRIDGE.get() && !listed) {
                 continue;
             }
-            String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
+            String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal"
+                    : blockEntity(server, pos) instanceof MidrangeSystemBlockEntity ? "Controller" : "Device";
             Component name = item.getName(item.getDefaultInstance());
             // A Display Panel screen with its size: "Display Panel 3 x 2 (96 x 64)".
             if (blockEntity(server, pos) instanceof DisplayPanelBlockEntity display) {
@@ -1460,6 +1502,14 @@ public class ControllerStructures extends SavedData {
             }
             return buffers;
         }
+        if (owner.structure.midrange()) {
+            BlockPos pos = owner.structure.members().getFirst();
+            if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof MidrangeSystemBlockEntity midrange
+                    && midrange.controllerStructure() == owner.ref.id()) {
+                buffers.add(midrange);
+            }
+            return buffers;
+        }
         for (BlockPos pos : owner.structure.members()) {
             if (owner.home.isLoaded(pos) && owner.home.getBlockEntity(pos) instanceof NetworkControllerBlockEntity controller
                     && controller.getStructureId() == owner.ref.id()) {
@@ -1501,7 +1551,7 @@ public class ControllerStructures extends SavedData {
         List<NetworkSnapshot.DeviceEntry> devices = new ArrayList<>();
         boolean online = runtime.status == NetworkStatus.ONLINE || runtime.status == NetworkStatus.FAILOVER;
         // The structure's own blocks come first in the list (sorted with the rest by count).
-        if (!structure.rack()) {
+        if (!structure.single()) {
             devices.add(new NetworkSnapshot.DeviceEntry(BuiltInRegistries.ITEM.getKey(ModItems.NETWORK_CONTROLLER.get()), structure.members().size(),
                     Config.CONTROLLER_DRAIN.getAsDouble() * structure.members().size(), 0, !online));
         }

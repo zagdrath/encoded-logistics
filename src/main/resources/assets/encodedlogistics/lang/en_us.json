@@ -1503,7 +1503,7 @@
   "crt.encodedlogistics.imctl.title": "Integrated System Control Panel",
   "crt.encodedlogistics.mrctl.empty": "(empty)",
   "crt.encodedlogistics.mrctl.keys": "F1=Help F3=Exit F5=Refresh F7=IPL F10=Hold queue F11=Release F12=Cancel",
-  "crt.encodedlogistics.mrctl.status.offline": "OFFLINE - no lane on a running network",
+  "crt.encodedlogistics.mrctl.status.offline": "OFFLINE - its network has no power",
   "crt.encodedlogistics.mrctl.status.ipl": "IPL in progress",
   "crt.encodedlogistics.mrctl.status.waiting": "ATTENTION - a job waits for items",
   "crt.encodedlogistics.mrctl.status.no_diskette": "RUNNING - no library diskette",
@@ -1617,5 +1617,7 @@
   "crt.encodedlogistics.printer.paper_loaded": "Paper loaded . :",
   "crt.encodedlogistics.printer.sheets": "%s sheets",
   "crt.encodedlogistics.printer.status": "Printer status . :",
-  "crt.encodedlogistics.printer.bad_report": "Report %s: type 1, 2, 3 or 4."
+  "crt.encodedlogistics.printer.bad_report": "Report %s: type 1, 2, 3 or 4.",
+  "crt.encodedlogistics.mrctl.word.conflict": "CONFLICT",
+  "crt.encodedlogistics.mrctl.status.conflict": "CONTROLLER CONFLICT - another controller on its network"
 }

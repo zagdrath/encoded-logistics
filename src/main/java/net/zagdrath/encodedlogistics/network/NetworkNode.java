@@ -44,6 +44,16 @@ public interface NetworkNode {
         return controllerGroup() != NO_CONTROLLER;
     }
 
+    // For a block that's a controller on its own (SourceNode: a Midrange System): its structure's id, and the lanes it
+    // hands out. It's on the network as a device is; any other controller on it is a conflict.
+    default long sourceStructure() {
+        return NO_CONTROLLER;
+    }
+
+    default int sourceLanes() {
+        return 0;
+    }
+
     // Whether it's a device the network turns on and off: anything using lanes, and every Server Rack.
     default boolean isDevice() {
         return laneCost() > 0;

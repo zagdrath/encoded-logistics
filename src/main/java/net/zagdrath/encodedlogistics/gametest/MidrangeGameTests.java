@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.RecipeLibraries;
@@ -50,6 +51,7 @@ import net.zagdrath.encodedlogistics.midrange.MidrangeStates;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -168,24 +170,23 @@ final class MidrangeGameTests {
         helper.succeed();
     }
 
-    // On RackGameTests' networked rack: a Midrange System cabled to it, a Card Reader beside it, a Keypunch in front and a
-    // Line Printer beside its dummy. They're online and named (MIDRANGE01, KEYPUNCH01, CARDRDR01, PRT01); the Keypunch
+    // A Midrange System (its network's controller, charged) with a Card Reader beside it, a Keypunch in front and a Line
+    // Printer on its other side. They're online and named (MIDRANGE01, KEYPUNCH01, CARDRDR01, PRT01); the Keypunch
     // punches a log-to-planks card; the Card Reader reads it onto a diskette (twice: it replaces itself) and is ELCL's
     // diskette drive; the Line Printer prints the device list as a book, one paper a page, and is *DFT. With the system
     // gone, they're offline and refuse.
     static void peripherals(GameTestHelper helper) {
-        BlockPos rack = RackGameTests.networkedRack(helper);
         BlockPos system = new BlockPos(3, 1, 4), reader = new BlockPos(2, 1, 4), keypunch = new BlockPos(3, 1, 5), printer = new BlockPos(4, 1, 4);
-        RackGameTests.cable(helper, new BlockPos(3, 1, 3));
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
+        helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).charge(50_000);
         place(helper, ModBlocks.KEYPUNCH.get(), keypunch);
         place(helper, ModBlocks.LINE_PRINTER.get(), printer);
         helper.setBlock(reader, ModBlocks.CARD_READER.get().defaultBlockState().setValue(CardReaderBlock.FACING, Direction.NORTH));
         helper.startSequence()
-                .thenIdle(5)
+                .thenIdle(10)
                 .thenExecute(() -> {
                     MinecraftServer server = helper.getLevel().getServer();
-                    NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(rack));
+                    NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(system));
                     helper.assertTrue(network != null, "No network");
                     helper.assertTrue(helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).isOnline(), "Midrange System offline");
                     KeypunchBlockEntity punch = helper.getBlockEntity(keypunch, KeypunchBlockEntity.class);
@@ -304,6 +305,51 @@ final class MidrangeGameTests {
         helper.succeed();
     }
 
+    // A Midrange System is its network's controller (HANDOFF 4): with power, a Drive Bay beside it is online on its
+    // lanes (4 faces' worth); an Integrated system has 6 faces' worth and a 2U's buffer. Another controller cabled on
+    // (a Network Controller block) is a conflict: no lanes, the system shows E8; gone, it runs again.
+    static void controller(GameTestHelper helper) {
+        BlockPos system = new BlockPos(2, 1, 2), bay = new BlockPos(3, 1, 2), integrated = new BlockPos(2, 1, 6), cable = new BlockPos(1, 1, 2),
+                block = new BlockPos(0, 1, 2);
+        place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
+        place(helper, ModBlocks.INTEGRATED_MIDRANGE.get(), integrated);
+        RackGameTests.driveBay(helper, bay);
+        helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).charge(50_000);
+        helper.getBlockEntity(integrated, MidrangeSystemBlockEntity.class).charge(50_000);
+        helper.startSequence()
+                .thenIdle(10)
+                .thenExecute(() -> {
+                    MinecraftServer server = helper.getLevel().getServer();
+                    MidrangeSystemBlockEntity midrange = helper.getBlockEntity(system, MidrangeSystemBlockEntity.class);
+                    NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(bay));
+                    helper.assertTrue(network != null && network.equals(ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(system))),
+                            "The bay and system aren't on one network");
+                    ControllerStructures.NetworkStats stats = ControllerStructures.stats(server, network);
+                    int face = Config.LANES_PER_CONTROLLER_FACE.getAsInt();
+                    helper.assertTrue(stats != null && stats.online() && stats.laneCapacity() == 4 * face && stats.lanesUsed() == 1, "Lanes " + stats);
+                    helper.assertTrue(midrange.isOnline() && helper.getBlockEntity(bay, DriveBayBlockEntity.class).isOnline(), "Not online");
+                    helper.assertTrue(midrange.getCapacity() == 4 * Config.CONTROLLER_ENERGY_PER_BLOCK.getAsInt(), "Buffer " + midrange.getCapacity());
+                    MidrangeSystemBlockEntity tier2 = helper.getBlockEntity(integrated, MidrangeSystemBlockEntity.class);
+                    ControllerStructures.NetworkStats own = ControllerStructures.stats(server, ControllerStructures.networkOf(helper.getLevel(),
+                            helper.absolutePos(integrated)));
+                    helper.assertTrue(own != null && own.laneCapacity() == 6 * face && tier2.getCapacity() == 20 * Config.CONTROLLER_ENERGY_PER_BLOCK.getAsInt(),
+                            "Integrated " + own + " " + tier2.getCapacity());
+                    RackGameTests.cable(helper, cable);
+                    RackGameTests.controller(helper, block, 20_000);
+                })
+                .thenIdle(10)
+                .thenExecute(() -> {
+                    MidrangeSystemBlockEntity midrange = helper.getBlockEntity(system, MidrangeSystemBlockEntity.class);
+                    helper.assertTrue(midrange.networkStatus() == NetworkStatus.CONFLICT && midrange.statusCode().equals("E8"), "No conflict: "
+                            + midrange.networkStatus() + " " + midrange.statusCode());
+                    helper.assertFalse(helper.getBlockEntity(bay, DriveBayBlockEntity.class).isOnline(), "Bay online in a conflict");
+                    helper.setBlock(block, Blocks.AIR);
+                })
+                .thenIdle(10)
+                .thenExecute(() -> helper.assertTrue(helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).isOnline(), "Not back after the conflict"))
+                .thenSucceed();
+    }
+
     // Pages: 14 rows of about 19 characters; a long line takes more rows.
     static void printerPages(GameTestHelper helper) {
         List<String> lines = new java.util.ArrayList<>();
@@ -325,18 +371,17 @@ final class MidrangeGameTests {
         return diskette;
     }
 
-    // A Midrange System cabled to RackGameTests' networked rack, with a Drive Bay: it IPLs when it comes online, then
+    // A Midrange System as its network's controller (charged), with a Drive Bay beside it: it IPLs when it comes online, then
     // runs. With a diskette in, its recipe is the network's, it's a Craft Plan choice, ELCL's batch host (1 job) and
     // diskette drive; a job on it crafts the planks itself and puts them in the network. Held, it isn't a choice; an IPL
     // takes it down a while.
     static void systemCrafts(GameTestHelper helper) {
-        BlockPos rack = RackGameTests.networkedRack(helper);
-        BlockPos system = new BlockPos(3, 1, 4), bay = new BlockPos(1, 2, 1);
+        BlockPos system = new BlockPos(3, 1, 4), bay = new BlockPos(4, 1, 4);
         RackGameTests.driveBay(helper, bay);
-        RackGameTests.cable(helper, new BlockPos(3, 1, 3));
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
+        helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).charge(50_000);
         helper.startSequence()
-                .thenIdle(5)
+                .thenIdle(10)
                 .thenExecute(() -> {
                     MidrangeSystemBlockEntity midrange = helper.getBlockEntity(system, MidrangeSystemBlockEntity.class);
                     helper.assertTrue(midrange.isOnline() && !midrange.running() && midrange.iplLeft() > 0, "Not in IPL: " + midrange.statusCode());
@@ -351,7 +396,7 @@ final class MidrangeGameTests {
                     MidrangeSystemBlockEntity midrange = helper.getBlockEntity(system, MidrangeSystemBlockEntity.class);
                     helper.assertTrue(midrange.running() && midrange.statusCode().equals("A6"), "Not running: " + midrange.statusCode());
                     helper.assertBlockProperty(system, MidrangeStates.STATE, MidrangeStates.Run.RUN);
-                    NetworkRef network = ControllerStructures.networkOf(level, helper.absolutePos(rack));
+                    NetworkRef network = ControllerStructures.networkOf(level, helper.absolutePos(system));
                     helper.assertTrue(RecipeLibraries.recipes(server, network).contains(LOG_TO_PLANKS), "Diskette recipe not the network's");
                     ElclSystem elcl = new ElclSystem(server, network);
                     net.zagdrath.encodedlogistics.elcl.job.JobHost batch = JobHosts.find(elcl, "MIDRANGE01");

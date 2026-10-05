@@ -232,11 +232,13 @@ final class DisplayGameTests {
                     }
                     helper.assertFalse(DisplayTouch.touch(helper.getLevel(), display, clicked, hit, player), "Fifth touch in a second fired");
                 })
-                .thenIdle(10)
+                // The image renders off the server thread: however long that takes on a busy test server.
+                .thenWaitUntil(() -> {
+                    int[] pixels = at(helper, master).images().get("A");
+                    helper.assertTrue(pixels != null && pixels.length == 48 * 64, "Image not rendered");
+                })
                 .thenExecute(() -> {
                     DisplayPanelBlockEntity display = at(helper, master);
-                    int[] pixels = display.images().get("A");
-                    helper.assertTrue(pixels != null && pixels.length == 48 * 64, "Image not rendered");
                     helper.assertTrue(display.displayContent().region("A", 96, 64).widget().colors().equals("256"), "Colour mode not capped");
                     Config.ALLOW_IMAGES.set(Config.ImagesAllowed.AUTO);
                     TerminalDeskBlockEntity desk = helper.getBlockEntity(ElclGameTests.DESK, TerminalDeskBlockEntity.class);

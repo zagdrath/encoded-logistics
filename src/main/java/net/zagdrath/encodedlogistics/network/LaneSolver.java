@@ -38,15 +38,18 @@ import net.minecraft.core.Direction;
 // A rack source's own demands take lanes straight from the budget. Lanes passing through a rack to something beyond it
 // go along the tree as before.
 //
+// A block that's a controller on its own (SourceNode: a Midrange System) is a source too: its lanes are one budget for
+// everything drawing on it.
+//
 // With no controller the network is ad hoc: up to adHocLimit lanes work with no routing limits; more and none do.
-// Conflict (no device gets a lane): controller blocks from two or more structures; a controller structure and a rack
-// controller; more than two rack controllers; or two of different sizes.
+// Conflict (no device gets a lane): controller blocks from two or more structures (a Midrange System is one of its own);
+// a controller structure and a rack controller; more than two rack controllers; or two of different sizes.
 public final class LaneSolver {
     private LaneSolver() {}
 
     public static LaneResult solve(NetworkGraph graph, int adHocLimit) {
         List<NodePos> devices = new ArrayList<>();
-        List<NodePos> controllers = new ArrayList<>();
+        List<NodePos> controllers = new ArrayList<>(), ownSources = new ArrayList<>();
         Map<NodePos, RackNode> racks = new HashMap<>();
         Set<Long> groups = new HashSet<>();
         Set<Integer> rackSizes = new HashSet<>();
@@ -57,6 +60,9 @@ public final class LaneSolver {
             if (node.isController()) {
                 controllers.add(pos);
                 groups.add(node.controllerGroup());
+            } else if (node.sourceStructure() != NetworkNode.NO_CONTROLLER) {
+                ownSources.add(pos);
+                groups.add(node.sourceStructure());
             } else if (node.isDevice()) {
                 devices.add(pos);
             }
@@ -68,6 +74,7 @@ public final class LaneSolver {
         }
         devices.sort(NetworkGraph.ORDER);
         controllers.sort(NetworkGraph.ORDER);
+        ownSources.sort(NetworkGraph.ORDER);
 
         if (groups.size() > 1 || !groups.isEmpty() && rackControllers > 0 || rackControllers > 2 || rackSizes.size() > 1) {
             return new LaneResult(NetworkStatus.CONFLICT, false, 0, 0, allDevices(devices, false), Map.of());
@@ -109,6 +116,15 @@ public final class LaneSolver {
                 distance.put(controller, 0);
                 queue.add(controller);
             }
+        }
+        // Blocks that are controllers on their own: each its own budget {lanes, used}.
+        Map<NodePos, int[]> budgets = new HashMap<>();
+        for (NodePos pos : ownSources) {
+            int lanes = graph.node(pos).sourceLanes();
+            budgets.put(pos, new int[] { lanes, 0 });
+            capacity += lanes;
+            distance.put(pos, 0);
+            queue.add(pos);
         }
         // Rack sources: every block of a rack with a usable controller.
         Set<NodePos> rackSources = new HashSet<>();
@@ -160,7 +176,7 @@ public final class LaneSolver {
             NetworkNode node = graph.node(device);
             if (node instanceof RackNode rack) {
                 RackLanes result = rackSources.contains(device) ? sourceRack(rack, budget, budgetUsed)
-                        : bondedRack(graph, device, rack, rackOf, rackSources, distance, usage, budget, budgetUsed);
+                        : bondedRack(graph, device, rack, rackOf, rackSources, distance, usage, budget, budgetUsed, budgets);
                 rackLanes.put(device, result);
                 lanes.put(device, result.source() || result.activeUplinks() > 0);
                 used += result.used();
@@ -168,9 +184,9 @@ public final class LaneSolver {
             }
             int cost = node.laneCost();
             Path path = pathToSource(device, parent, distance);
-            boolean fits = path != null && fits(path, cost, usage, rackOf, rackSources, budget, budgetUsed);
+            boolean fits = path != null && fits(path, cost, usage, rackOf, rackSources, budget, budgetUsed, budgets);
             if (fits) {
-                take(path, cost, usage, rackOf, rackSources, budgetUsed);
+                take(path, cost, usage, rackOf, rackSources, budgetUsed, budgets);
                 used += cost;
             }
             lanes.put(device, fits);
@@ -234,7 +250,7 @@ public final class LaneSolver {
     }
 
     private static RackLanes bondedRack(NetworkGraph graph, NodePos master, RackNode rack, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources,
-            Map<NodePos, Integer> distance, Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed) {
+            Map<NodePos, Integer> distance, Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed, Map<NodePos, int[]> budgets) {
         // Shortest paths to the sources with this rack left out.
         Map<NodePos, NetworkLink> parent = new HashMap<>();
         Map<NodePos, Integer> without = new HashMap<>();
@@ -287,8 +303,8 @@ public final class LaneSolver {
                         continue;
                     }
                     Path path = candidate.path().prepend(candidate.link());
-                    if (fits(path, demand.cost(), usage, rackOf, rackSources, budget, budgetUsed)) {
-                        take(path, demand.cost(), usage, rackOf, rackSources, budgetUsed);
+                    if (fits(path, demand.cost(), usage, rackOf, rackSources, budget, budgetUsed, budgets)) {
+                        take(path, demand.cost(), usage, rackOf, rackSources, budgetUsed, budgets);
                         own.merge(candidate.link(), demand.cost(), Integer::sum);
                         placed = true;
                     }
@@ -346,19 +362,27 @@ public final class LaneSolver {
     }
 
     private static boolean fits(Path path, int cost, Map<NetworkLink, Integer> usage, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources, int budget,
-            int[] budgetUsed) {
+            int[] budgetUsed, Map<NodePos, int[]> budgets) {
         for (NetworkLink link : path.links()) {
             if (usage.getOrDefault(link, 0) + cost > link.capacity()) {
                 return false;
             }
         }
+        int[] own = budgets.get(path.end());
+        if (own != null && own[1] + cost > own[0]) {
+            return false;
+        }
         return !endsAtRack(path, rackOf, rackSources) || budgetUsed[0] + cost <= budget;
     }
 
     private static void take(Path path, int cost, Map<NetworkLink, Integer> usage, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources,
-            int[] budgetUsed) {
+            int[] budgetUsed, Map<NodePos, int[]> budgets) {
         for (NetworkLink link : path.links()) {
             usage.merge(link, cost, Integer::sum);
+        }
+        int[] own = budgets.get(path.end());
+        if (own != null) {
+            own[1] += cost;
         }
         if (endsAtRack(path, rackOf, rackSources)) {
             budgetUsed[0] += cost;

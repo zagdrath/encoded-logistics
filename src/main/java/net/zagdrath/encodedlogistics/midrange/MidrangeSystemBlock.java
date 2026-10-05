@@ -5,7 +5,6 @@
 
 package net.zagdrath.encodedlogistics.midrange;
 
-import java.util.EnumSet;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -21,7 +20,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.zagdrath.encodedlogistics.Config;
-import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 
@@ -82,10 +80,10 @@ public class MidrangeSystemBlock extends MidrangeHostBlock implements NetworkNod
 
     // --- Network ---
 
-    // A lane and its drain (the cabinet's too).
+    // Its network's controller (HANDOFF 4): a lane source with its drain (the cabinet's too).
     @Override
     public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
         double drain = Config.MIDRANGE_DRAIN.getAsDouble() + (state.getValue(MidrangeStates.EXPANSION) ? Config.EXPANSION_CABINET_DRAIN.getAsDouble() : 0);
-        return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), 1, drain, List.of(), true);
+        return MidrangeSystemBlockEntity.node(level, pos, drain);
     }
 }
