@@ -1,0 +1,121 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "t": "encodedlogistics:block/plc/plc",
+  "particle": "encodedlogistics:block/plc/plc"
+ },
+ "elements": [
+  {
+   "name": "module3",
+   "from": [
+    7.5,
+    3.5,
+    10.5
+   ],
+   "to": [
+    9.4,
+    12.5,
+    14.2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      5.75,
+      3.25,
+      6.25,
+      5.75
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      10.25,
+      3.25,
+      11.25,
+      5.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      11.25,
+      3.25,
+      10.25,
+      5.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      9.5,
+      3.25,
+      10.0,
+      4.25
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      9.5,
+      3.25,
+      10.0,
+      4.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "module3_term",
+   "from": [
+    7.5,
+    12.5,
+    11.5
+   ],
+   "to": [
+    9.4,
+    13.5,
+    14.2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      4.25,
+      3.25,
+      5.5,
+      3.75
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4.25,
+      3.25,
+      5.5,
+      3.75
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      5.5,
+      3.25,
+      4.25,
+      3.75
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      4.25,
+      3.25,
+      5.5,
+      3.75
+     ]
+    }
+   }
+  }
+ ]
+}

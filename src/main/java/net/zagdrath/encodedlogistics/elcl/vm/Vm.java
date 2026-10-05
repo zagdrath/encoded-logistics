@@ -103,6 +103,10 @@ public final class Vm {
     private final Map<String, Map<String, String>> fileFormats = new HashMap<>();
     private @Nullable Wait wait, resumed;
     private @Nullable ElclMessage failure;
+    private int failureLine = -1;
+    // The job's own program (the first frame) and its variables as it ended (a PLC's next scan carries them on).
+    private @Nullable VmProgram main;
+    private @Nullable Map<String, Object> ended;
     private long executed;
     private boolean ending;
 
@@ -124,9 +128,26 @@ public final class Vm {
             frame.bindings.add(null);
         }
         vm.frames.push(frame);
+        vm.main = frame.program;
         return vm;
     }
 
+    // A PLC's scan (docs/plc): its program from the top, its variables starting from those given (the last scan's, or
+    // the retained ones after STOP / RUN) where it still declares them; the rest are initialised as at a job's start.
+    public static Vm start(VmHost host, VmHost.Loaded program, Map<String, Object> carried) throws ElclException {
+        Vm vm = start(host, program, List.of());
+        Frame frame = vm.frames.peek();
+        for (Map.Entry<String, Object> entry : carried.entrySet()) {
+            if (frame.program.variables().containsKey(entry.getKey())) {
+                try {
+                    vm.assign(frame, entry.getKey(), copy(entry.getValue()));
+                } catch (ElclException e) {
+                    // Its type changed under it: initialised instead.
+                }
+            }
+        }
+        return vm;
+    }
     // The program a source compiles to, with the file formats it was compiled against (ELC0203 if it no longer does).
     static VmProgram compile(String key, List<String> source, Map<String, String> files) throws ElclException {
         ProgramKey cached = new ProgramKey(List.copyOf(source), Map.copyOf(files));
@@ -231,6 +252,26 @@ public final class Vm {
         return failure;
     }
 
+    // The source line (from 1) of the statement that failure came from, or -1.
+    public int failureLine() {
+        return failureLine;
+    }
+
+    // The job's own program's variables: as they are while it runs, as they were when it ended (a copy either way).
+    public Map<String, Object> variables() {
+        Map<String, Object> vars = !frames.isEmpty() ? frames.peekLast().vars : ended;
+        Map<String, Object> copy = new HashMap<>();
+        if (vars != null) {
+            vars.forEach((name, value) -> copy.put(name, copy(value)));
+        }
+        return copy;
+    }
+
+    // The job's own program's declarations (empty before it starts).
+    public Map<String, VarDecl> declarations() {
+        return main != null ? main.variables() : Map.of();
+    }
+
     public long executed() {
         return executed;
     }
@@ -329,6 +370,7 @@ public final class Vm {
         Frame done = frames.pop();
         Frame caller = frames.peek();
         if (caller == null) {
+            ended = done.vars;
             return;
         }
         for (int i = 0; i < done.bindings.size(); i++) {
@@ -359,6 +401,8 @@ public final class Vm {
             host.escaped(f.key, current);
             frames.pop();
             if (frames.isEmpty()) {
+                ended = f.vars;
+                failureLine = f.pc >= 0 && f.pc < f.program.code().size() ? f.program.code().get(f.pc).line + 1 : -1;
                 failure = current;
                 host.failed(current);
                 return;
@@ -480,6 +524,16 @@ public final class Vm {
             case "DLYJOB" -> {
                 if (resumed == null) {
                     wait = Wait.of("DELAY", "until", Long.toString(host.gameTime() + delay(f, s)));
+                    return;
+                }
+            }
+            case "DLYTICK" -> {
+                if (resumed == null) {
+                    long ticks = Values.integer(eval(f, s.value("TICKS")));
+                    if (ticks < 1 || ticks > 1_200) {
+                        throw new ElclException("ELC0004", ticks);
+                    }
+                    wait = Wait.of("DELAY", "until", Long.toString(host.gameTime() + ticks));
                     return;
                 }
             }
@@ -686,6 +740,10 @@ public final class Vm {
         if (host.interactive() ? command.context() == CommandDefinition.Context.BATCH : command.context() == CommandDefinition.Context.INTERACTIVE) {
             throw new ElclException(host.interactive() ? "ELC0106" : "ELC0105", command.name());
         }
+        ElclMessage refused = host.refuses(s);
+        if (refused != null) {
+            throw new ElclException(refused);
+        }
         ElclMessage denied = host.authorise(command.auth());
         if (denied != null) {
             throw new ElclException(denied);
@@ -711,6 +769,11 @@ public final class Vm {
         @Override
         public CommandDefinition command() {
             return command;
+        }
+
+        @Override
+        public int line() {
+            return statement.firstLine() + 1;
         }
 
         @Override
@@ -965,6 +1028,9 @@ public final class Vm {
             String key = saved.getStringOr("key", "");
             List<String> source = vm.sources.getOrDefault(key, List.of());
             Frame f = new Frame(key, compile(key, source, vm.fileFormats.getOrDefault(key, Map.of())));
+            if (i == 0) {
+                vm.main = f.program;
+            }
             f.pc = saved.getIntOr("pc", 0);
             f.resume = saved.getIntOr("resume", 0);
             CompoundTag vars = saved.getCompoundOrEmpty("vars");

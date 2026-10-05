@@ -109,7 +109,8 @@ public final class SystemData {
     // and the record formats of the files it declares (DCLF), as it was compiled with them - by "LIB/FILE" as written,
     // each RecordFormat.save()'s text.
     public static final class Program {
-        public final String name, sourceLibrary, sourceMember, compiled;
+        // target: what it was compiled for (CRTELPGM TGT): *JOB, or *PLC (SNDPLCPGM loads only those).
+        public final String name, sourceLibrary, sourceMember, compiled, target;
         public final int sourceVersion;
         public final List<SourceLine> source;
         public final Map<String, String> files;
@@ -121,6 +122,12 @@ public final class SystemData {
 
         public Program(String name, String sourceLibrary, String sourceMember, int sourceVersion, String compiled, List<SourceLine> source,
                 Map<String, String> files) {
+            this(name, sourceLibrary, sourceMember, sourceVersion, compiled, source, files, "*JOB");
+        }
+
+        public Program(String name, String sourceLibrary, String sourceMember, int sourceVersion, String compiled, List<SourceLine> source,
+                Map<String, String> files, String target) {
+            this.target = target;
             this.name = name;
             this.sourceLibrary = sourceLibrary;
             this.sourceMember = sourceMember;
@@ -363,6 +370,9 @@ public final class SystemData {
                 pgm.putString("source_member", program.sourceMember);
                 pgm.putInt("source_version", program.sourceVersion);
                 pgm.putString("compiled", program.compiled);
+                if (!program.target.equals("*JOB")) {
+                    pgm.putString("target", program.target);
+                }
                 pgm.put("lines", lines(program.source));
                 if (!program.files.isEmpty()) {
                     CompoundTag files = new CompoundTag();
@@ -483,7 +493,8 @@ public final class SystemData {
                     files.put(key, formats.getStringOr(key, ""));
                 }
                 Program program = new Program(pgm.getStringOr("name", ""), pgm.getStringOr("source_library", name), pgm.getStringOr("source_member", ""),
-                        pgm.getIntOr("source_version", 0), pgm.getStringOr("compiled", SHIPPED), lines(pgm.getListOrEmpty("lines")), files);
+                        pgm.getIntOr("source_version", 0), pgm.getStringOr("compiled", SHIPPED), lines(pgm.getListOrEmpty("lines")), files,
+                        pgm.getStringOr("target", "*JOB"));
                 library.programs.put(program.name, program);
             }
             ListTag files = lib.getListOrEmpty("files");

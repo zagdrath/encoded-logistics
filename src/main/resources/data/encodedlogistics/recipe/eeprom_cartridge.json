@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:logic_die",
+  "encodedlogistics:copper_foil",
+  "minecraft:iron_nugget",
+  "minecraft:iron_nugget"
+ ],
+ "result": {
+  "id": "encodedlogistics:eeprom_cartridge",
+  "count": 1
+ }
+}

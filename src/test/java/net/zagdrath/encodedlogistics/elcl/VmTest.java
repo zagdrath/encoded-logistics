@@ -47,6 +47,8 @@ class VmTest {
         @Nullable FileAccess files;
         long time = 1_000;
         int maxList = 4_096;
+        // A command it won't run (as a PLC without a network: ELC1502), or null.
+        @Nullable String refused;
 
         Host program(String name, String... lines) {
             programs.put(name, List.of(lines));
@@ -123,6 +125,11 @@ class VmTest {
         @Override
         public int maxList() {
             return maxList;
+        }
+
+        @Override
+        public @Nullable ElclMessage refuses(net.zagdrath.encodedlogistics.elcl.parse.Stmt statement) {
+            return statement.name().equals(refused) ? ElclMessage.of("ELC1502", statement.name()) : null;
         }
     }
 

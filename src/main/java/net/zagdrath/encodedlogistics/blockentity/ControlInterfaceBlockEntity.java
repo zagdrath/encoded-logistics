@@ -5,8 +5,6 @@
 
 package net.zagdrath.encodedlogistics.blockentity;
 
-import java.util.Arrays;
-
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -16,7 +14,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -29,18 +26,16 @@ import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
-// A Control Interface's six channels: per face, the level it gives out (out, 0-15, kept while it's offline and given
-// out again when it's back) and the level arriving there (in). Reading a face never sees this block's own output:
-// while it measures, it gives out nothing, and redstone dust it powers itself (dust keeps its level) only counts when
-// something else drives it higher. Its name (CTLIF01, ...) is given the first time it's on a network (ElclDevices): the
-// lowest number free there. A change of input fires *RSCHANGE.
-public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkDevice {
+// A Control Interface's six channels (RedstoneChannels): per face, the level it gives out (kept while it's offline and
+// given out again when it's back) and the level arriving there, its own output never seen. Its name (CTLIF01, ...) is
+// given the first time it's on a network (ElclDevices): the lowest number free there. A change of input fires *RSCHANGE.
+public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkDevice, RedstoneDevice {
     public static final String TYPE = "CTLIF";
-    private static final Direction[] FACES = Direction.values();
+    private static final Direction[] FACES = RedstoneChannels.FACES;
 
-    private final int[] out = new int[6], in = new int[6];
+    private final RedstoneChannels channels = new RedstoneChannels();
     private String name = "";
-    private boolean online, measuring, inputsDirty = true, ledsDirty = true;
+    private boolean online, inputsDirty = true, ledsDirty = true;
 
     public ControlInterfaceBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.CONTROL_INTERFACE.get(), pos, state);
@@ -55,6 +50,7 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
         setChanged();
     }
 
+    @Override
     public boolean isOnline() {
         return online;
     }
@@ -65,44 +61,41 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
 
     // What the face gives out to the block next to it: its level while online, else nothing.
     public int emitted(Direction face) {
-        return online && !measuring ? out[face.ordinal()] : 0;
+        return channels.emitted(face, online);
     }
 
     public int output(Direction face) {
-        return out[face.ordinal()];
+        return channels.output(face);
     }
 
+    @Override
     public int input(Direction face) {
         if (inputsDirty) {
             readInputs();
         }
-        return in[face.ordinal()];
+        return channels.input(face);
     }
 
-    // The highest level arriving on any face (RTVRSIN SIDE(*MAX)).
+    @Override
     public int maxInput() {
-        int max = 0;
-        for (Direction face : FACES) {
-            max = Math.max(max, input(face));
+        if (inputsDirty) {
+            readInputs();
         }
-        return max;
+        return channels.maxInput();
     }
 
     // CHGRSOUT: a face's output (null: every face).
     public void setOutput(@Nullable Direction face, int levelValue) {
-        int value = Math.clamp(levelValue, 0, 15);
-        boolean changed = false;
-        for (Direction side : FACES) {
-            if ((face == null || face == side) && out[side.ordinal()] != value) {
-                out[side.ordinal()] = value;
-                changed = true;
-            }
-        }
-        if (changed) {
+        if (channels.setOutput(face, levelValue).length > 0) {
             setChanged();
             ledsDirty = true;
             notifyNeighbours();
         }
+    }
+
+    @Override
+    public void setOutput(@Nullable Direction face, int levelValue, int line) {
+        setOutput(face, levelValue);
     }
 
     public void inputsChanged() {
@@ -142,28 +135,14 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
         if (level == null || level.isClientSide()) {
             return;
         }
-        int[] before = in.clone();
-        measuring = true;
-        try {
-            for (Direction face : FACES) {
-                BlockPos next = worldPosition.relative(face);
-                int value = level.getSignal(next, face);
-                // Dust this face powers holds that level itself: only more than that comes from elsewhere.
-                if (online && value > 0 && value <= out[face.ordinal()] && level.getBlockState(next).is(Blocks.REDSTONE_WIRE)) {
-                    value = 0;
-                }
-                in[face.ordinal()] = value;
-            }
-        } finally {
-            measuring = false;
-        }
-        if (!Arrays.equals(before, in)) {
+        int[] before = channels.read(level, worldPosition, online);
+        if (before != null) {
             ledsDirty = true;
             NetworkRef network = network();
             if (network != null && level instanceof ServerLevel serverLevel) {
                 for (Direction face : FACES) {
-                    if (before[face.ordinal()] != in[face.ordinal()]) {
-                        ElclEvents.redstoneChanged(serverLevel.getServer(), network, name, face, in[face.ordinal()]);
+                    if (before[face.ordinal()] != channels.input(face)) {
+                        ElclEvents.redstoneChanged(serverLevel.getServer(), network, name, face, channels.input(face));
                     }
                 }
             }
@@ -181,7 +160,7 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
         }
         BlockState next = state.setValue(ControlInterfaceBlock.ONLINE, online);
         for (Direction face : FACES) {
-            int shown = Math.max(in[face.ordinal()], out[face.ordinal()]);
+            int shown = Math.max(channels.input(face), channels.output(face));
             next = next.setValue(ControlInterfaceBlock.LEDS.get(face), ControlInterfaceBlock.Led.of(shown));
         }
         if (next != state) {
@@ -220,9 +199,7 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         name = input.getStringOr("name", "");
-        for (Direction face : FACES) {
-            out[face.ordinal()] = Math.clamp(input.getIntOr("out_" + face.getSerializedName(), 0), 0, 15);
-        }
+        channels.load(input);
         inputsDirty = true;
         ledsDirty = true;
     }
@@ -233,10 +210,6 @@ public class ControlInterfaceBlockEntity extends BlockEntity implements NetworkD
         if (!name.isEmpty()) {
             output.putString("name", name);
         }
-        for (Direction face : FACES) {
-            if (out[face.ordinal()] != 0) {
-                output.putInt("out_" + face.getSerializedName(), out[face.ordinal()]);
-            }
-        }
+        channels.save(output);
     }
 }

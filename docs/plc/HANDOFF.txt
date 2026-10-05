@@ -1,0 +1,128 @@
+ENCODED LOGISTICS - HANDOFF: PROGRAMMABLE LOGIC CONTROLLER (PLC), SENSOR MODULES, EEPROM CARTRIDGE
+=================================================================================================
+Reviewed against repo HEAD 1aa309f: docs/TEXTURE_STYLE.md, the existing GUIs, docs/terminal-os-elcl.html + docs/elcl/, the
+Control Interface (RedstoneCommands RTVRSIN / CHGRSOUT), the source editor (client/crt/EditorPanel, EditorModel), the
+compiler (elcl/compile/Compiler, CompiledProgram) and the VM (elcl/vm/Vm, VmHost, VmProgram; batch jobs run through
+elcl/exec/JobVmHost). The PLC REUSES all of them: a new VmHost implementation (PlcVmHost) - no second compiler, VM or editor.
+Paths relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. PLC BLOCK - encodedlogistics:plc
+=====================================================================================================
+Model (wall-mounted, facing = away from the wall; 1 block, not a full cube): steel backplate (14 x 12, mounting holes) flush
+to the wall, a DIN rail, the CPU module (5 x 10 x 4: LCD, RUN / ERROR LEDs, six I/O LEDs - one per face -, RUN/STOP
+keyswitch, screw-terminal strips top and bottom) and four module slots left of it (as seen from the front: the CPU sits to
+the viewer's left of the modules). All 1 texel per px (TEXTURE_STYLE); the ONLY high-res texture is the LCD insert (a display,
+12 x 8 texels over 3 x 2 px). Collision: shapes/collision_shapes.json (the model's boxes).
+BlockState: facing (4), state (off | stop | run | fault), slot1..slot4 (empty | presence_sensor | inventory_sensor |
+  fluid_sensor | light_sensor | timer_module). Multipart: plc (base), state_<state> (LEDs + LCD overlay, emissive; off = none),
+  slotN_<module> or slotN_empty. LEDs: stop - RUN LED amber steady; run - RUN green steady, I/O LEDs flicker with activity
+  (leds_run.png, 4 frames x 3 ticks; light only the LED of a face whose level changed in the last 10 ticks); fault - ERROR red
+  blinking (2 x 10). LCD: STP / RUN / F15 (+ code) blinking on fault.
+Power: 2 FE/t [config plcEnergy] from any face (FE capability, small buffer 1,000 FE), or from the network when cabled to one.
+  No power -> state off, program halted (resumes from the top on power, as STOP -> RUN).
+I/O: each of the six faces reads redstone in and drives redstone out 0-15 exactly as the Control Interface does (weak power,
+  own output suppressed when reading; ControlInterfaceBlockEntity's logic - share it, don't copy).
+Modules: 4 slots; insert by using a module on the PLC (or the Modules screen), sneak-use with an empty hand removes the last.
+Program: kept in the block entity (component encodedlogistics:plc_program: name, compiled CompiledProgram, source, size,
+  loaded-by player + authority, retained variables); breaking the PLC keeps it on the item (loot table copy_components).
+
+=====================================================================================================
+2. SENSOR MODULES (items) - each reads one value, polled once per scan
+=====================================================================================================
+  presence_sensor   players or mobs within a radius [setting 1-16, *PLAYERS | *MOBS | *ALL]   value: count
+  inventory_sensor  the container on a chosen face [setting face]                              value: fullness % ; also count
+  fluid_sensor      the tank on a chosen face [setting face]                                  value: fill % ; also amount mB
+  light_sensor      light level at the PLC                                                     value: 0-15 ; also *DAY / *NIGHT
+  timer_module      real-time clock                                                            value: game ticks ; also day, time
+Each: a plug-in module with its own dye-ramp accent (magenta, orange, light blue, yellow, lime), as installed (models
+block/plc/slotN_<module>) and as an item (textures/item/<module>.png).
+
+=====================================================================================================
+3. EEPROM CARTRIDGE - encodedlogistics:eeprom_cartridge
+=====================================================================================================
+Blank / written (items/eeprom_cartridge.json switches on encodedlogistics:plc_program). Written tooltip: program name and size.
+Save / load on the PLC's status screen (options 4 / 5): the cartridge goes in by using it on the PLC (held while selecting the
+option) - no item slots in the GUI. On a network, CRTPLCCTG / the Terminal Desk can also write a cartridge from a compiled
+program (open question 4).
+
+=====================================================================================================
+4. SCAN MODEL AND THE ELCL SUBSET
+=====================================================================================================
+  - The PLC runs one compiled ELCL program continuously, like a PLC scan: on ENDPGM it starts again from the top. Variables
+    with VALUE(...) are reset only on STOP -> RUN (and power-up), not on each scan; others keep their last value.
+  - Instruction budget per tick: plcInstructionsPerTick [config 50] (a batch job's is larger). When a scan exceeds it, it
+    continues next tick; scan time (ticks per full pass) and instructions per tick show on the status screen.
+  - Without a network, available: every language statement (DCL, CHGVAR, IF/ELSE, DOWHILE/DOUNTIL/DOFOR, LEAVE/ITERATE,
+    SELECT/WHEN, CALLSUBR/SUBR, MONMSG, SNDPGMMSG to the PLC's own log), RTVRSIN / CHGRSOUT with DEV(*SELF), DLYJOB, and the new
+    RTVSNSVAL and DLYTICK. Anything else -> ELC1502 at compile time (when compiled for a PLC without a network) or at run time.
+  - *SELF: a device name meaning this PLC's own faces (RTVRSIN / CHGRSOUT; SIDE(*NORTH ... *DOWN | *MAX | *ALL) as for CTLIF).
+  - RETAIN: DCL VAR(&COUNT) TYPE(*INT) RETAIN(*YES) keeps the value across STOP/RUN, power loss and world reloads (stored in
+    the program component), like PLC retentive memory. RETAIN(*NO) is the default.
+  - Cabled to a network: every other ELCL command works too, with the Firewall authority of the player who last loaded the
+    program; the PLC appears in Work with Devices as PLC01, PLC02 ... (type PLC).
+  - Fault: an unmonitored escape message puts the PLC in FAULT; the message (ID, text, line) shows on the status screen and
+    the LCD; outputs hold their last values [config plcFaultOutputs: *HOLD (default) | *ZERO]. F9 (or STRPLC) clears it and
+    runs from the top.
+  - Compiling happens when the program is saved in the editor (same compiler, target PLC); errors show as in the Terminal OS
+    editor (inverse line + message).
+New commands (COMMANDS.md style):
+| Command | Parameters | Context | Notes |
+| `RTVSNSVAL` | `MODULE`(P1, Req, 1-4) `RTNVAL`(*DEC) `RTNSTS`(*CHAR 10: *OK *NOMODULE *NOTARGET) `RTNAUX`(*CHAR 32) | PLC, B | Reads a sensor module. ELC1501, ELC1503. |
+| `DLYTICK` | `TICKS`(P1, Req, 1-1200) | PLC, B | Delays the program n ticks (outputs hold). ELC0004. |
+| `SNDPLCPGM` | `PGM`(P1, Req, lib/name) `DEV`(P2, Req, PLC name) `RUN(*YES\|*NO)` | I, B | Loads a compiled program into a networked PLC (stops it first). ELC1301, ELC1303, ELC1504, ELC0401. |
+| `STRPLC` | `DEV`(P1, Req) | I, B | RUN (clears a fault). ELC1301, ELC1303, ELC1505. |
+| `ENDPLC` | `DEV`(P1, Req) | I, B | STOP. ELC1301, ELC1303. |
+| `DCL ... RETAIN(*YES\|*NO)` | new DCL option | all | Retained variable (above). ELC1506 if used outside a PLC program (warning, ignored). |
+Messages (MESSAGES.md, new range 15xx):
+| ELC1501 | 30 | Module &1 is not installed or is not a &2. |
+| ELC1502 | 30 | Command &1 needs a network; this PLC is not cabled to one. |
+| ELC1503 | 20 | Sensor module &1 has no target (&2). |
+| ELC1504 | 30 | Program &1 was not compiled for a PLC. |
+| ELC1505 | 30 | PLC &1 has no program loaded. |
+| ELC1506 | 10 | RETAIN is only meaningful in a PLC program; ignored. |
+| ELC1507 | 00 | PLC &1 started. |
+| ELC1508 | 00 | PLC &1 stopped. |
+
+=====================================================================================================
+5. GUI - Terminal OS style, text only (hotbar hidden, as the Midrange screens)
+=====================================================================================================
+Right-click the PLC (Firewall CONFIGURE when networked; anyone otherwise - open question 5). Screens (grids in layouts/*.txt,
+renders previews/crt_*.png):
+  PLCSTS status: PLC, network, program, size, mode (RUN / STOP / FAULT), scan time, instructions per tick, loaded by, last
+    error (ID, line, text); menu 1 Edit program (opens the EXISTING source editor EditorPanel on the PLC's source - syntax
+    check, F4 prompter, compile on save), 2 I/O table, 3 Modules, 4 Save to cartridge, 5 Load from cartridge, 6 Display
+    retained variables; F6=Run F7=Stop F9=Clear fault F10=I/O F11=Modules.
+  PLCIO I/O table: face, input, output, driven by (the CHGRSOUT line or the neighbour), level bars; live, every 10 ticks.
+  PLCMOD modules: slot, module, setting, value, status; 2=Change setting (prompter), 4=Remove module.
+
+=====================================================================================================
+6. RECIPES (adjust freely)
+=====================================================================================================
+  plc               circuit substrate + logic die x2 + redstone x2 + iron + ferrite
+  presence_sensor   circuit substrate + logic die + stone pressure plate
+  inventory_sensor  circuit substrate + logic die + comparator
+  fluid_sensor      circuit substrate + logic die + bucket
+  light_sensor      circuit substrate + logic die + daylight detector
+  timer_module      circuit substrate + logic die + clock
+  eeprom_cartridge  logic die + copper foil + iron nugget x2
+
+=====================================================================================================
+7. FILES
+=====================================================================================================
+assets/encodedlogistics/ blockstates/plc.json; models/block/plc/{plc, state_{stop,run,fault}, slot{1-4}_{empty,<module>}}.json;
+  textures/block/plc/{plc (atlas), leds_*, lcd_*}.png (+ .mcmeta); textures/item/{plc,<5 modules>,eeprom_cartridge,
+  eeprom_cartridge_written}.png; models/item/*; items/*; lang/en_us.plc.json -> MERGE
+data/encodedlogistics/recipe/*.json, loot_table/blocks/plc.json (copies the program)
+shapes/collision_shapes.json; blockbench/plc_with_modules.bbmodel; layouts/*.txt; previews/ (plc_close, plc_pair,
+  item_icons, crt_plcsts, crt_plcio, crt_plcmod); tools/plc.py, plc_screens.py
+
+=====================================================================================================
+8. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+  1. Budget 50 instructions per tick per PLC; cap: plcMaxPerChunk [config 16] and plcMaxPerServer [config 512] - beyond the cap
+     a new PLC stays in STOP with "PLC limit reached".
+  2. Outputs on FAULT: hold (default) or drop to 0 - config plcFaultOutputs.
+  3. Ladder-logic editor later as an alternative to ELCL: yes, compiling ladder rungs to the same VM (a later feature).
+  4. Writing cartridges from the network (a CRTPLCCTG command) - include?
+  5. Opening the PLC GUI without a network: anyone (no Firewall to ask) - or only the player who placed it?

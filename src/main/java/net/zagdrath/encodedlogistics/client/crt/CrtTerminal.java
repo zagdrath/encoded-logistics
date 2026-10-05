@@ -90,6 +90,18 @@ final class CrtTerminal {
         }
     }
 
+    // Opened on one screen of its own (a PLC's source editor): no main menu, no sign-on, the session's details given;
+    // going back off it closes the terminal.
+    void start(CrtPanel first, String network, String user, String phosphor) {
+        if (panels.isEmpty()) {
+            this.network = network;
+            this.user = user;
+            systemPhosphor = phosphor;
+            signedOn = true;
+            push(first);
+        }
+    }
+
     boolean connecting() {
         return connecting;
     }

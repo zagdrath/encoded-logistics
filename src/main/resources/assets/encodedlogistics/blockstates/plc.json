@@ -1,0 +1,1092 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/plc"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "stop"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_stop"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_run"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_fault"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot1": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_empty"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot1": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_presence_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot1": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_inventory_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot1": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_fluid_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot1": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_light_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot1": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_timer_module"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot2": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_empty"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot2": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_presence_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot2": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_inventory_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot2": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_fluid_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot2": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_light_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot2": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_timer_module"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot3": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_empty"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot3": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_presence_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot3": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_inventory_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot3": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_fluid_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot3": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_light_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot3": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_timer_module"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot4": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_empty"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot4": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_presence_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot4": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_inventory_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot4": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_fluid_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot4": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_light_sensor"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "slot4": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_timer_module"
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/plc",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "stop"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_stop",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_run",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_fault",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot1": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_empty",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot1": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_presence_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot1": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_inventory_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot1": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_fluid_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot1": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_light_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot1": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_timer_module",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot2": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_empty",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot2": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_presence_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot2": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_inventory_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot2": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_fluid_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot2": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_light_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot2": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_timer_module",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot3": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_empty",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot3": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_presence_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot3": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_inventory_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot3": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_fluid_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot3": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_light_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot3": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_timer_module",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot4": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_empty",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot4": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_presence_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot4": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_inventory_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot4": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_fluid_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot4": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_light_sensor",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "slot4": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_timer_module",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/plc",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "stop"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_stop",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_run",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_fault",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot1": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_empty",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot1": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_presence_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot1": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_inventory_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot1": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_fluid_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot1": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_light_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot1": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_timer_module",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot2": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_empty",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot2": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_presence_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot2": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_inventory_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot2": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_fluid_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot2": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_light_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot2": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_timer_module",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot3": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_empty",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot3": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_presence_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot3": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_inventory_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot3": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_fluid_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot3": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_light_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot3": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_timer_module",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot4": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_empty",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot4": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_presence_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot4": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_inventory_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot4": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_fluid_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot4": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_light_sensor",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "slot4": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_timer_module",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/plc",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "stop"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_stop",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_run",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/state_fault",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot1": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_empty",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot1": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_presence_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot1": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_inventory_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot1": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_fluid_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot1": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_light_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot1": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot1_timer_module",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot2": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_empty",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot2": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_presence_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot2": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_inventory_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot2": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_fluid_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot2": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_light_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot2": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot2_timer_module",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot3": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_empty",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot3": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_presence_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot3": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_inventory_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot3": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_fluid_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot3": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_light_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot3": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot3_timer_module",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot4": "empty"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_empty",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot4": "presence_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_presence_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot4": "inventory_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_inventory_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot4": "fluid_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_fluid_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot4": "light_sensor"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_light_sensor",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "slot4": "timer_module"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/plc/slot4_timer_module",
+    "y": 270
+   }
+  }
+ ]
+}

@@ -34,9 +34,14 @@ public record LibraryImage(String library, String type, String text, String save
     }
 
     // files: the formats of the files it declares, by LIB/FILE as written (RecordFormat.save).
-    public record ProgramImage(String name, String sourceMember, List<SourceLine> source, Map<String, String> files) {
+    // target: what it was compiled for (CRTELPGM TGT: *JOB, *PLC).
+    public record ProgramImage(String name, String sourceMember, List<SourceLine> source, Map<String, String> files, String target) {
         public ProgramImage(String name, String sourceMember, List<SourceLine> source) {
             this(name, sourceMember, source, Map.of());
+        }
+
+        public ProgramImage(String name, String sourceMember, List<SourceLine> source, Map<String, String> files) {
+            this(name, sourceMember, source, files, "*JOB");
         }
     }
 
@@ -114,6 +119,9 @@ public record LibraryImage(String library, String type, String text, String save
             CompoundTag p = new CompoundTag();
             p.putString("name", program.name());
             p.putString("source_member", program.sourceMember());
+            if (!program.target().equals("*JOB")) {
+                p.putString("target", program.target());
+            }
             p.put("source", lines(program.source()));
             if (!program.files().isEmpty()) {
                 CompoundTag formats = new CompoundTag();
@@ -147,7 +155,7 @@ public record LibraryImage(String library, String type, String text, String save
                 formats.put(key, saved.getStringOr(key, ""));
             }
             programs.add(new ProgramImage(program.getStringOr("name", ""), program.getStringOr("source_member", ""),
-                    lines(program.getListOrEmpty("source")), Map.copyOf(formats)));
+                    lines(program.getListOrEmpty("source")), Map.copyOf(formats), program.getStringOr("target", "*JOB")));
         }
         List<FileImage> files = new ArrayList<>();
         ListTag f = tag.getListOrEmpty("files");

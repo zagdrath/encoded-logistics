@@ -234,6 +234,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#cmd-machines">Machines (Arcforge)</a></li>
       <li><a href="#cmd-power">Power</a></li>
       <li><a href="#cmd-redstone">Redstone</a></li>
+      <li><a href="#cmd-plc">PLCs</a></li>
       <li><a href="#cmd-messages">Messages and output</a></li>
       <li><a href="#cmd-os-libraries">Libraries, members, programs</a></li>
       <li><a href="#cmd-os-jobs">Jobs, schedules, triggers</a></li>
@@ -260,7 +261,11 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#sysvals">System values</a></li>
     </ol>
   </li>
-  <li><a href="#control-interface">10. The Control Interface</a></li>
+  <li><a href="#control-interface">10. The Control Interface and PLCs</a>
+    <ol>
+      <li><a href="#plc">Programmable Logic Controllers</a></li>
+    </ol>
+  </li>
   <li><a href="#status">11. Status, limits and server config</a>
     <ol>
       <li><a href="#hardware">Hardware still to come</a></li>
@@ -377,6 +382,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#cmd-machines">Machines (Arcforge)</a></li>
       <li><a href="#cmd-power">Power</a></li>
       <li><a href="#cmd-redstone">Redstone</a></li>
+      <li><a href="#cmd-plc">PLCs</a></li>
       <li><a href="#cmd-messages">Messages and output</a></li>
       <li><a href="#cmd-os-libraries">Libraries, members, programs</a></li>
       <li><a href="#cmd-os-jobs">Jobs, schedules, triggers</a></li>
@@ -403,7 +409,11 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#sysvals">System values</a></li>
     </ol>
   </li>
-  <li><a href="#control-interface">10. The Control Interface</a></li>
+  <li><a href="#control-interface">10. The Control Interface and PLCs</a>
+    <ol>
+      <li><a href="#plc">Programmable Logic Controllers</a></li>
+    </ol>
+  </li>
   <li><a href="#status">11. Status, limits and server config</a>
     <ol>
       <li><a href="#hardware">Hardware still to come</a></li>
@@ -430,6 +440,8 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
   <dd>The Encoded Logistics Control Language. It is modelled on midrange control languages: every statement is a command with keyword parameters such as <code>CRTLIB LIB(ZAGLIB) TEXT('My scripts')</code>, variables start with <code>&amp;</code>, special values start with <code>*</code>, and errors are handled with <code>MONMSG</code>. You type ELCL commands on any command line, and you write ELCL programs in source members, edit them in the source editor and compile them. The same command definitions drive the parser, the compiler, the F4 prompter, F1 help and the command line.</dd>
   <dt>Control Interface</dt>
   <dd>A network device block that gives ELCL redstone input and output: six faces, each readable with <code>RTVRSIN</code> and drivable with <code>CHGRSOUT</code>. It has no GUI of its own; it is named <code>CTLIF01</code>, <code>CTLIF02</code> and so on, and is driven from the terminal. See <a href="#control-interface">section 10</a>.</dd>
+  <dt>PLC</dt>
+  <dd>A Programmable Logic Controller: a wall-mounted block that runs one compiled ELCL program continuously (a scan), with the Control Interface's six redstone faces, four sensor module slots and its own green screens. It works on its own or as a network device (<code>PLC01</code>). See <a href="#plc">Programmable Logic Controllers</a>.</dd>
 </dl>
 
 <div class="callout">
@@ -1805,7 +1817,7 @@ ENDPGM</pre>
   <tbody>
     <tr><td>PGM</td><td>Program start</td><td class="params"><ul><li><code>PARM</code> P1: variable, list(255)</li></ul></td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
     <tr><td>ENDPGM</td><td>Program end</td><td class="params">none</td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
-    <tr><td>DCL</td><td>Declare Variable</td><td class="params"><ul><li><code>VAR</code> P1: variable, req</li><li><code>TYPE</code> P2: special, req: <code>*CHAR *INT *DEC *LGL *LIST</code></li><li><code>LEN</code> P3: number, list(2)</li><li><code>VALUE</code> P4: value (initial value)</li></ul></td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
+    <tr><td>DCL</td><td>Declare Variable</td><td class="params"><ul><li><code>VAR</code> P1: variable, req</li><li><code>TYPE</code> P2: special, req: <code>*CHAR *INT *DEC *LGL *LIST</code></li><li><code>LEN</code> P3: number, list(2)</li><li><code>VALUE</code> P4: value (initial value)</li><li><code>RETAIN</code>: <code>*NO *YES</code>, dft <code>*NO</code> (added: a <a href="#plc">PLC</a> keeps the value through STOP / RUN, power loss and reloads; elsewhere <code>ELC1506</code>, a warning, and ignored)</li></ul></td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
     <tr><td>CHGVAR</td><td>Change Variable</td><td class="params"><ul><li><code>VAR</code> P1: variable, req</li><li><code>VALUE</code> P2: value, req</li></ul></td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
     <tr><td>IF</td><td>If</td><td class="params"><ul><li><code>COND</code> P1: logical, req</li><li><code>THEN</code> P2: command</li></ul></td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
     <tr><td>ELSE</td><td>Else</td><td class="params"><ul><li><code>CMD</code> P1: command</li></ul></td><td>Program</td><td>&ndash;</td><td><span class="badge b-pgm">Program only</span></td></tr>
@@ -1832,6 +1844,7 @@ ENDPGM</pre>
     <tr><td>SNDPGMMSG</td><td>Send Program Message</td><td class="params"><ul><li><code>MSG</code> P1: text, len 64</li><li><code>MSGID</code>: message ID, dft <code>USR0001</code></li><li><code>MSGTYPE</code>: special <code>*INFO *ESCAPE</code>, dft <code>*INFO</code></li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">On the command line <code>*INFO</code> shows the message, <code>*ESCAPE</code> fails with it.</span></td></tr>
     <tr><td>CALL</td><td>Call Program</td><td class="params"><ul><li><code>PGM</code> P1: qualified, req (F4: programs)</li><li><code>PARM</code> P2: value, list(255)</li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">On a command line: runs in your interactive job, <code>ELC0108</code> at once, <code>ELC0110</code> when it ends; <code>ELC0109</code> while one runs. In a program: ELC0011, ELC0012, ELC0013, ELC0203.</span></td></tr>
     <tr><td>DLYJOB</td><td>Delay Job</td><td class="params"><ul><li><code>DLY</code> P1: number 1&ndash;86400 (seconds)</li><li><code>RSMTIME</code>: time (game clock)</li><li>One of the two is required (<code>ELC0102 DLY</code>).</li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">In a program the job waits (<code>*WAIT</code>, no budget used); seconds are game seconds (20 ticks). On a command line it completes at once.</span></td></tr>
+    <tr><td>DLYTICK</td><td>Delay Ticks</td><td class="params"><ul><li><code>TICKS</code> P1: number 1&ndash;1200, req</li></ul></td><td>Both</td><td>ELC0004</td><td><span class="badge b-ok">Available</span><br><span class="muted">Added with <a href="#plc">PLCs</a>: waits that many game ticks (a PLC's outputs hold meanwhile). On a command line it completes at once.</span></td></tr>
     <tr><td>RTVJOBA</td><td>Retrieve Job Attributes</td><td class="params"><ul><li><code>RTNUSR</code>: returns *CHAR (user)</li><li><code>RTNJOB</code>: returns *CHAR (job name)</li><li><code>RTNTYPE</code>: returns *CHAR (<code>*INTER</code> / <code>*BATCH</code>)</li><li><code>RTNHOST</code>: returns *CHAR (job host)</li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">The job it runs in: e.g. <code>QINTER</code>, <code>*INTER</code>, <code>ELDESK01</code> at a terminal; the job name, <code>*BATCH</code> and its host in a batch job.</span></td></tr>
   </tbody>
 </table></div>
@@ -1874,7 +1887,7 @@ ENDPGM</pre>
 </table></div>
 
 <h3 id="cmd-devices">Devices</h3>
-<p id="device-names">Each device that takes a name keeps it stored with the device: <code>CTLIF01</code> (Control Interfaces), <code>ELDESK01</code> (Terminal Desks), and rack devices <code>FIREWALL01</code>, <code>ROUTER01</code>, <code>UPS01</code>, <code>SWITCH01</code>, <code>L3SWITCH01</code>, <code>CMPSRV01</code>, <code>MEMSRV01</code>, <code>FABSRV01</code>, <code>MONSRV01</code>, <code>NAS01</code>, <code>SAN01</code>, <code>RACKCON01</code>, <code>WLC01</code>, <code>TAPELIB01</code>, and the parts on cables <code>INGRESS01</code> (Ingress Port), <code>EGRESS01</code> (Egress Port), <code>TAP01</code> (Inventory Tap), <code>SENSOR01</code> (Threshold Sensor), <code>COLLECTOR01</code>, <code>DEPLOYER01</code> (planes), <code>P2P01</code> (Point-to-Point Link), <code>TERM01</code> (Access Terminal), <code>FABTERM01</code> (Fabrication Terminal), <code>ENCODER01</code> (Schematic Encoder), and wireless <code>AP01</code> (Access Point), <code>WBRIDGE01</code> (Wireless Bridge), <code>WINGRESS01</code> / <code>WEGRESS01</code> (Wireless Ingress / Egress Ports: ELCL treats them exactly as the cabled ports), Gateways <code>GATEWAY01</code>, and machines with a Small Wireless Bridge on by a prefix from their type (<code>ARCCRU01</code> for an Arc Crusher, <code>ELECTR01</code> for an Electrolyzer: the first three letters of the type's first two words, or the first six of a one-word type; <a href="#arcforge">Arcforge machines</a>). A name is given once, the first time the device is on a network: its type and the lowest number free there. It never changes after that unless someone renames it (<code>RNMDEV DEV(UPS02) NEWNAME(MAINUPS)</code>, or Work with Devices 2=Change; Firewall build permission): <code>ELC1309 Device &amp;1 renamed to &amp;2.</code> Names are unique on a system: a rename to a name in use is <code>ELC1308 Device name &amp;1 is already used on &amp;2.</code>, and a name that isn't a valid name (up to 10 characters: a letter, then letters, digits, <code>_</code>, <code>@</code>, <code>#</code> or <code>$</code>) is <code>ELC0103</code>. Adding or removing a device never renames another; a removed device's name is free again. A rack device carries its name on its item, and a Terminal Desk or Control Interface on its block item (a cable part keeps its name while it is on its cable), so one moved to another network keeps its name there if it is free, and otherwise gets the next free number (the system remembers which device holds each name, so the device already there keeps it). Worlds from before names were stored get, on first load, exactly the names counting gave them (rack by rack, each rack from its lowest unit up). COMMANDS.md also mentions naming with the Label Maker; the mod has no Label Maker, so renaming is through <code>RNMDEV</code> and Work with Devices only. The prompter's F4 list on a device parameter shows the names in use.</p>
+<p id="device-names">Each device that takes a name keeps it stored with the device: <code>CTLIF01</code> (Control Interfaces), <code>ELDESK01</code> (Terminal Desks), and rack devices <code>FIREWALL01</code>, <code>ROUTER01</code>, <code>UPS01</code>, <code>SWITCH01</code>, <code>L3SWITCH01</code>, <code>CMPSRV01</code>, <code>MEMSRV01</code>, <code>FABSRV01</code>, <code>MONSRV01</code>, <code>NAS01</code>, <code>SAN01</code>, <code>RACKCON01</code>, <code>WLC01</code>, <code>TAPELIB01</code>, and the parts on cables <code>INGRESS01</code> (Ingress Port), <code>EGRESS01</code> (Egress Port), <code>TAP01</code> (Inventory Tap), <code>SENSOR01</code> (Threshold Sensor), <code>COLLECTOR01</code>, <code>DEPLOYER01</code> (planes), <code>P2P01</code> (Point-to-Point Link), <code>TERM01</code> (Access Terminal), <code>FABTERM01</code> (Fabrication Terminal), <code>ENCODER01</code> (Schematic Encoder), and wireless <code>AP01</code> (Access Point), <code>WBRIDGE01</code> (Wireless Bridge), <code>WINGRESS01</code> / <code>WEGRESS01</code> (Wireless Ingress / Egress Ports: ELCL treats them exactly as the cabled ports), Gateways <code>GATEWAY01</code>, <a href="#plc">PLCs</a> <code>PLC01</code>, and machines with a Small Wireless Bridge on by a prefix from their type (<code>ARCCRU01</code> for an Arc Crusher, <code>ELECTR01</code> for an Electrolyzer: the first three letters of the type's first two words, or the first six of a one-word type; <a href="#arcforge">Arcforge machines</a>). A name is given once, the first time the device is on a network: its type and the lowest number free there. It never changes after that unless someone renames it (<code>RNMDEV DEV(UPS02) NEWNAME(MAINUPS)</code>, or Work with Devices 2=Change; Firewall build permission): <code>ELC1309 Device &amp;1 renamed to &amp;2.</code> Names are unique on a system: a rename to a name in use is <code>ELC1308 Device name &amp;1 is already used on &amp;2.</code>, and a name that isn't a valid name (up to 10 characters: a letter, then letters, digits, <code>_</code>, <code>@</code>, <code>#</code> or <code>$</code>) is <code>ELC0103</code>. Adding or removing a device never renames another; a removed device's name is free again. A rack device carries its name on its item, and a Terminal Desk or Control Interface on its block item (a cable part keeps its name while it is on its cable), so one moved to another network keeps its name there if it is free, and otherwise gets the next free number (the system remembers which device holds each name, so the device already there keeps it). Worlds from before names were stored get, on first load, exactly the names counting gave them (rack by rack, each rack from its lowest unit up). COMMANDS.md also mentions naming with the Label Maker; the mod has no Label Maker, so renaming is through <code>RNMDEV</code> and Work with Devices only. The prompter's F4 list on a device parameter shows the names in use.</p>
 <p>A device's <strong>type</strong> (<code>RTVDEVLST TYPE()</code>, <code>RTVDEVSTS RTNTYPE</code>) is its name prefix: <code>CTLIF</code>, <code>DESK</code>, the rack devices' (<code>UPS</code>, <code>NAS</code>, <code>TAPELIB</code>...) and the cable parts' (<code>INGRESS</code>, <code>EGRESS</code>, <code>TAP</code>, <code>SENSOR</code>, <code>COLLECTOR</code>, <code>DEPLOYER</code>, <code>P2P</code>, <code>TERM</code>, <code>FABTERM</code>, <code>ENCODER</code>). Only cable parts can be enabled and disabled (a disabled part works as if it were offline, and its status is <code>*DISABLED</code>), and only ports, taps and planes have filters; anything else is <code>ELC1303</code>.</p>
 <div class="table-wrap"><table class="cmd-table">
   <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Errors</th><th>Auth</th><th>Status</th></tr></thead>
@@ -1913,15 +1926,27 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
   </tbody>
 </table></div>
 
-<h3 id="cmd-redstone">Redstone (Control Interface)</h3>
+<h3 id="cmd-redstone">Redstone (Control Interface, PLC)</h3>
 <div class="table-wrap"><table class="cmd-table">
   <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Errors</th><th>Auth</th><th>Status</th></tr></thead>
   <tbody>
-    <tr><td>RTVRSIN</td><td>Retrieve Redstone Input</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>SIDE</code> P2: special, req: <code>*NORTH *SOUTH *EAST *WEST *UP *DOWN *MAX</code></li><li><code>RTNLVL</code>: returns *INT (0&ndash;15), req</li></ul></td><td>ELC1301, ELC1302, ELC1303</td><td>view</td><td><span class="badge b-ok">Available</span></td></tr>
-    <tr><td>CHGRSOUT</td><td>Change Redstone Output</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>SIDE</code> P2: special, req: <code>*NORTH *SOUTH *EAST *WEST *UP *DOWN *ALL</code></li><li><code>LVL</code> P3: number 0&ndash;15, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC0004</td><td>configure</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>RTVRSIN</td><td>Retrieve Redstone Input</td><td class="params"><ul><li><code>DEV</code> P1: device or <code>*SELF</code>, req</li><li><code>SIDE</code> P2: special, req: <code>*NORTH *SOUTH *EAST *WEST *UP *DOWN *MAX</code></li><li><code>RTNLVL</code>: returns *INT (0&ndash;15), req</li></ul></td><td>ELC1301, ELC1302, ELC1303</td><td>view</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CHGRSOUT</td><td>Change Redstone Output</td><td class="params"><ul><li><code>DEV</code> P1: device or <code>*SELF</code>, req</li><li><code>SIDE</code> P2: special, req: <code>*NORTH *SOUTH *EAST *WEST *UP *DOWN *ALL</code></li><li><code>LVL</code> P3: number 0&ndash;15, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC0004</td><td>configure</td><td><span class="badge b-ok">Available</span></td></tr>
   </tbody>
 </table></div>
-<p>See <a href="#control-interface">section 10</a> for how the faces read and drive redstone.</p>
+<p>See <a href="#control-interface">section 10</a> for how the faces read and drive redstone. A <a href="#plc">PLC</a>'s faces work the same: by its name (<code>PLC01</code>) on its network, or <code>DEV(*SELF)</code> in its own program, which needs no network; <code>*SELF</code> anywhere else is <code>ELC1301</code>.</p>
+
+<h3 id="cmd-plc">PLCs</h3>
+<p>Added with the <a href="#plc">Programmable Logic Controller</a>. A PLC without a network runs only the language, <code>DLYJOB</code>, <code>DLYTICK</code>, <code>RTVSNSVAL</code> and <code>RTVRSIN</code> / <code>CHGRSOUT DEV(*SELF)</code>: anything else is <code>ELC1502</code>.</p>
+<div class="table-wrap"><table class="cmd-table">
+  <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Errors</th><th>Auth</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>RTVSNSVAL</td><td>Retrieve Sensor Value</td><td class="params"><ul><li><code>MODULE</code> P1: number 1&ndash;4, req</li><li><code>TYPE</code>: <code>*ANY *PRESENCE *INVENTORY *FLUID *LIGHT *TIMER</code>, dft <code>*ANY</code></li><li><code>DEV</code>: device or <code>*SELF</code>, dft <code>*SELF</code></li><li><code>RTNVAL</code>: returns *DEC</li><li><code>RTNSTS</code>: returns *CHAR (<code>*OK *NOMODULE *NOTARGET</code>)</li><li><code>RTNAUX</code>: returns *CHAR</li></ul></td><td>ELC1501, ELC1503, ELC1301, ELC1303</td><td>view</td><td><span class="badge b-ok">Available</span><br><span class="muted">A sensor module's reading. With <code>RTNSTS</code> given, an empty slot (or one not of <code>TYPE</code>) and a module with nothing to read come back as <code>*NOMODULE</code> / <code>*NOTARGET</code>; without it they're the escapes. <code>DEV</code> (added) reads a networked PLC's modules from a batch job.</span></td></tr>
+    <tr><td>SNDPLCPGM</td><td>Send PLC Program</td><td class="params"><ul><li><code>PGM</code> P1: qualified, req</li><li><code>DEV</code> P2: device, req</li><li><code>RUN</code>: <code>*NO *YES</code>, dft <code>*YES</code></li></ul></td><td>ELC1301, ELC1303, ELC1504, ELC0401; ELC1509</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">Loads a program compiled with <code>CRTELPGM TGT(*PLC)</code>: the PLC stops, takes it (loaded by you, with your Firewall authority), and with <code>RUN(*YES)</code> runs it from the top. The same program again keeps its retained variables.</span></td></tr>
+    <tr><td>STRPLC</td><td>Start PLC</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li></ul></td><td>ELC1301, ELC1303, ELC1505; ELC1507</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">RUN from the top, clearing a fault.</span></td></tr>
+    <tr><td>ENDPLC</td><td>End PLC</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li></ul></td><td>ELC1301, ELC1303; ELC1508</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">STOP: the program halts, its outputs go off, its retained variables stay.</span></td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="cmd-messages">Messages, displays and output</h3>
 <div class="table-wrap"><table class="cmd-table">
@@ -1955,7 +1980,7 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
     <tr><td>CPYMBR</td><td>Copy Member</td><td class="params"><ul><li><code>FROM</code> P1: qualified, req</li><li><code>TO</code> P2: qualified, req</li></ul></td><td>Both</td><td>ELC0215; ELC0202, ELC0204, ELC0205, ELC0207, ELC0401</td><td><span class="badge b-ok">Available</span></td></tr>
     <tr><td>RNMMBR</td><td>Rename Member</td><td class="params"><ul><li><code>MBR</code> P1: qualified, req</li><li><code>NEWNAME</code> P2: name, req</li></ul></td><td>Both</td><td>ELC0216; ELC0202, ELC0204, ELC0205, ELC0401</td><td><span class="badge b-ok">Available</span></td></tr>
     <tr><td>DLTMBR</td><td>Delete Member</td><td class="params"><ul><li><code>MBR</code> P1: qualified, req</li></ul></td><td>Both</td><td>ELC0217; ELC0202, ELC0205, ELC0208, ELC0401</td><td><span class="badge b-ok">Available</span></td></tr>
-    <tr><td>CRTELPGM</td><td>Create ELCL Program</td><td class="params"><ul><li><code>PGM</code> P1: qualified, req</li><li><code>SRCMBR</code> P2: qualified or <code>*PGM</code>, dft <code>*PGM</code></li></ul></td><td>Both</td><td>ELC0218 or ELC0206; listing spooled</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CRTELPGM</td><td>Create ELCL Program</td><td class="params"><ul><li><code>PGM</code> P1: qualified, req</li><li><code>SRCMBR</code> P2: qualified or <code>*PGM</code>, dft <code>*PGM</code></li><li><code>TGT</code>: <code>*JOB *PLC</code>, dft <code>*JOB</code> (added: <code>*PLC</code> compiles it for a <a href="#plc">PLC</a>; only those <code>SNDPLCPGM</code> loads)</li></ul></td><td>Both</td><td>ELC0218 or ELC0206; listing spooled</td><td><span class="badge b-ok">Available</span></td></tr>
     <tr><td>DLTPGM</td><td>Delete Program</td><td class="params"><ul><li><code>PGM</code> P1: qualified, req</li></ul></td><td>Both</td><td>ELC0219; ELC0203</td><td><span class="badge b-ok">Available</span></td></tr>
   </tbody>
 </table></div>
@@ -2071,7 +2096,7 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
 
 <section id="messages">
 <h2>8. Message reference</h2>
-<p>Every message defined in <code>elcl/ElclMessages.java</code> (132 IDs, the same as <code>docs/elcl/MESSAGES.md</code>, which marks the ones added during the implementation: <code>ELC0107</code>&ndash;<code>ELC0110</code>, <code>ELC1307</code>&ndash;<code>ELC1322</code> and the <a href="#msg-22">database files' <code>ELC22xx</code></a>). <code>&amp;1</code>, <code>&amp;2</code>, <code>&amp;3</code> are filled in with the message data.</p>
+<p>Every message defined in <code>elcl/ElclMessages.java</code> (141 IDs, the same as <code>docs/elcl/MESSAGES.md</code>, which marks the ones added during the implementation: <code>ELC0107</code>&ndash;<code>ELC0110</code>, <code>ELC1307</code>&ndash;<code>ELC1322</code>, the <a href="#msg-15">PLCs' <code>ELC15xx</code></a> and the <a href="#msg-22">database files' <code>ELC22xx</code></a>). <code>&amp;1</code>, <code>&amp;2</code>, <code>&amp;3</code> are filled in with the message data.</p>
 <ul>
   <li><strong>Severity</strong>: <code>00</code> information or completion, <code>10</code> warning, <code>20</code> error, <code>30</code> severe, <code>40</code> abnormal end. A compile with any message of 20 or more makes no program.</li>
   <li><strong>Monitoring</strong>: <code>MONMSG MSGID(ELCnn00)</code> covers the whole <code>ELCnnxx</code> range; <code>ELC0000</code> covers every message.</li>
@@ -2228,6 +2253,23 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
     <tr><td>ELC1402</td><td>30</td><td>No recipe known for &amp;1.</td><td>No schematic makes the item.</td></tr>
     <tr><td>ELC1403</td><td>30</td><td>Missing ingredients for &amp;1.</td><td>Not enough ingredients (with <code>MISSING(*FAIL)</code>).</td></tr>
     <tr><td>ELC1404</td><td>30</td><td>Craft job &amp;1 not found.</td><td>No crafting job with that ID.</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="msg-15">ELC15xx: PLCs</h3>
+<p>Added with <a href="#plc">PLCs</a>. <code>MONMSG MSGID(ELC1500)</code> covers them all.</p>
+<div class="table-wrap"><table class="msg-table">
+  <thead><tr><th>ID</th><th>Sev</th><th>Text</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>ELC1501</td><td>30</td><td>Module &amp;1 is not installed or is not a &amp;2.</td><td><code>RTVSNSVAL</code> without <code>RTNSTS</code>: the slot is empty, or not the <code>TYPE()</code> asked for.</td></tr>
+    <tr><td>ELC1502</td><td>30</td><td>Command &amp;1 needs a network; this PLC is not cabled to one.</td><td>A PLC on its own: when the editor's save compiles its program, and at run time (a FAULT).</td></tr>
+    <tr><td>ELC1503</td><td>20</td><td>Sensor module &amp;1 has no target (&amp;2).</td><td><code>RTVSNSVAL</code> without <code>RTNSTS</code>: no container or tank on the module's face.</td></tr>
+    <tr><td>ELC1504</td><td>30</td><td>Program &amp;1 was not compiled for a PLC.</td><td><code>SNDPLCPGM</code> of a program not made with <code>CRTELPGM TGT(*PLC)</code>.</td></tr>
+    <tr><td>ELC1505</td><td>30</td><td>PLC &amp;1 has no program loaded.</td><td><code>STRPLC</code>, F6 or option 4 on a PLC without one.</td></tr>
+    <tr><td>ELC1506</td><td>10</td><td>RETAIN is only meaningful in a PLC program; ignored.</td><td>A compile warning: the program is still created.</td></tr>
+    <tr><td>ELC1507</td><td>00</td><td>PLC &amp;1 started.</td><td><code>STRPLC</code> or F6.</td></tr>
+    <tr><td>ELC1508</td><td>00</td><td>PLC &amp;1 stopped.</td><td><code>ENDPLC</code> or F7.</td></tr>
+    <tr><td>ELC1509</td><td>00</td><td>Program &amp;1 loaded into PLC &amp;2.</td><td><code>SNDPLCPGM</code> done (added).</td></tr>
   </tbody>
 </table></div>
 
@@ -2486,7 +2528,7 @@ SNDDSPWDG DEV(DSP02) RGN(B) WDG(*TABLE) FILE(ELSYS/DEVICES) +
 </section>
 
 <section id="control-interface">
-<h2>10. The Control Interface</h2>
+<h2>10. The Control Interface and PLCs</h2>
 <p>The Control Interface is a network device block that gives ELCL redstone input and output. It has no GUI: you drive it from a terminal with <code>RTVRSIN</code> and <code>CHGRSOUT</code>.</p>
 <ul>
   <li><strong>Network device.</strong> It takes one lane and drains <code>controlInterfaceDrain</code> FE/t while its network runs (server config, default 1.0, range 0&ndash;1000). It is <em>online</em> while its network is.</li>
@@ -2504,11 +2546,35 @@ SNDDSPWDG DEV(DSP02) RGN(B) WDG(*TABLE) FILE(ELSYS/DEVICES) +
 <pre class="code">RTVRSIN CTLIF01 *MAX                   <span class="c">/* Command Entry shows RTNLVL = 9            */</span>
 CHGRSOUT CTLIF01 *ALL 15               <span class="c">/* every face on, full strength              */</span>
 CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off                              */</span></pre>
+
+<h3 id="plc">Programmable Logic Controllers</h3>
+<p>The PLC is a wall-mounted block that runs one compiled ELCL program over and over, like a PLC scan: the Control Interface's six redstone faces, four slots for sensor modules, and its own green screens. It works on its own, or as a device on a network. Craft it from a circuit substrate, two logic dies, two redstone, an iron ingot and ferrite (each module: a circuit substrate, a logic die and a pressure plate, comparator, bucket, daylight detector or clock; the EEPROM Cartridge: a logic die, copper foil and two iron nuggets).</p>
+<ul>
+  <li><strong>Placing.</strong> On a wall it faces out from it (else toward you). Cabled on any face but its front it joins that network: one lane, its power the network's, named <code>PLC01</code>, <code>PLC02</code>... (type PLC in Work with Devices, with its program's name). Off a network it runs on FE from any face: <code>plcEnergy</code> (2) FE a tick from a 1,000 FE buffer (<code>plcBuffer</code>).</li>
+  <li><strong>Modes.</strong> OFF (no power: outputs dark, the program halted), STOP (amber RUN LED, <em>STP</em> on the LCD; outputs off), RUN (green RUN LED, <em>RUN</em>; each face's I/O LED flickers for 10 ticks after its level changes) and FAULT (red ERROR LED blinking, <em>F15</em>). When power comes back it runs again from the top if it was running; a world reload counts as a power-up.</li>
+  <li><strong>The scan.</strong> <code>plcInstructionsPerTick</code> (50) instructions a tick; a pass that needs more carries on next tick. On <code>ENDPGM</code> the next pass starts from the top next tick, its variables carried on from this one: a <code>VALUE</code> is set only on STOP &rarr; RUN and power-up. The status screen shows the scan time (ticks per pass) and the instructions a tick.</li>
+  <li><strong>Retained variables.</strong> <code>DCL VAR(&amp;COUNT) TYPE(*INT) RETAIN(*YES)</code> keeps its value through STOP / RUN, power loss and reloads, and goes with the program onto its item and cartridges. Option 6 shows them, with the PLC's log (its <code>SNDPGMMSG</code> messages and escapes).</li>
+  <li><strong>Without a network</strong> it runs the language statements, the list commands, <code>DLYJOB</code>, <code>DLYTICK</code>, its modules (<code>RTVSNSVAL</code>) and its own faces (<code>RTVRSIN</code> / <code>CHGRSOUT DEV(*SELF)</code>); anything else is <code>ELC1502</code>, when the editor saves it and at run time. <strong>On a network</strong> every command works, with the Firewall authority of the player who last loaded the program.</li>
+  <li><strong>Faults.</strong> An unmonitored escape puts it in FAULT: the message, its line and text show on the status screen; outputs hold their last levels (<code>plcFaultOutputs</code>: <code>HOLD</code>, or <code>ZERO</code>). F9 (or <code>STRPLC</code>) clears it and runs from the top.</li>
+  <li><strong>Sensor modules.</strong> Use one on the PLC to put it in the first free slot; sneak-use with an empty hand takes the last one out (breaking the PLC drops them). Presence Sensor: players, mobs or both within 1&ndash;16 blocks (count; the nearest's name). Inventory Sensor and Fluid Sensor: the container or tank on their face, behind the PLC by default (percent full; item count or mB). Light Sensor: the light at the PLC (0&ndash;15; <code>*DAY</code> / <code>*NIGHT</code>). Timer Module: game ticks (the day and time). <code>RTVSNSVAL MODULE(1) RTNVAL(&amp;V) RTNSTS(&amp;S) RTNAUX(&amp;A)</code> reads one.</li>
+  <li><strong>Screens.</strong> Right-click it (on a network, the Firewall's build permission; off one, anyone - or with <code>plcOpenToAnyone</code> off only whoever placed it and operators). <em>PLCSTS</em>: the PLC, network, program, size, mode, scan time, instructions a tick, who loaded it, the last error; options 1 Edit program (the Terminal OS source editor, with its syntax check and F4 prompter, checking for this PLC; saving compiles it - an error shows on its line - and restarts it if it was running), 2 I/O table, 3 Modules, 4 / 5 save the program to or load it from an EEPROM Cartridge held in your hand, 6 retained variables; F6 Run, F7 Stop, F9 Clear fault, F10 I/O, F11 Modules; anything else on the command line runs as a command on its network. <em>PLCIO</em>: each face's input and output and what drives it (the <code>CHGRSOUT</code> line, or the block next to it), with level bars, every 10 ticks. <em>PLCMOD</em>: each slot's module, setting, value and status; 2=Change setting (radius and what it counts, or the face; F4 lists them), 4=Remove module.</li>
+  <li><strong>Programs.</strong> The program lives in the PLC (and on its item when it's broken). On a network, <code>CRTELPGM PGM(MYLIB/DOORCTL) TGT(*PLC)</code> then <code>SNDPLCPGM PGM(MYLIB/DOORCTL) DEV(PLC01)</code> loads one from a library; <code>STRPLC</code> / <code>ENDPLC</code> run and stop it.</li>
+  <li><strong>Limits.</strong> At most <code>plcMaxPerChunk</code> (16) PLCs run in a chunk and <code>plcMaxPerServer</code> (512) on the server; another stays in STOP with <em>PLC limit reached</em> until there's room.</li>
+</ul>
+<pre class="code">PGM
+  DCL VAR(&amp;IN) TYPE(*INT)
+  DCL VAR(&amp;OPENS) TYPE(*INT) RETAIN(*YES)    <span class="c">/* counted across STOP / RUN and reloads      */</span>
+  DCL VAR(&amp;WAS) TYPE(*INT)
+  RTVRSIN DEV(*SELF) SIDE(*WEST) RTNLVL(&amp;IN)  <span class="c">/* a button on the west face                  */</span>
+  IF COND(&amp;IN *GT 0 *AND &amp;WAS *EQ 0) THEN(CHGVAR VAR(&amp;OPENS) VALUE(&amp;OPENS + 1))
+  CHGVAR VAR(&amp;WAS) VALUE(&amp;IN)                 <span class="c">/* kept from scan to scan                     */</span>
+  CHGRSOUT DEV(*SELF) SIDE(*EAST) LVL(&amp;IN)    <span class="c">/* the door on the east face                  */</span>
+ENDPGM</pre>
 </section>
 
 <section id="status">
 <h2>11. Status, limits and server config</h2>
-<p>The Terminal OS and ELCL are complete as specified in <code>docs/elcl/</code>: every screen, all 99 commands, every message, the VM, interactive and batch jobs, job hosts, schedule entries and triggers, persistence, stable device names, sign-on and security, folder sync, and <code>SAVLIB</code> / <code>RSTLIB</code>. <code>docs/elcl/IMPLEMENTATION_STATUS.md</code> has the details, part by part. What remains is hardware the mod doesn't have yet, and a few known limits.</p>
+<p>The Terminal OS and ELCL are complete as specified in <code>docs/elcl/</code>: every screen, all 99 commands (and those added since: PLCs' <code>RTVSNSVAL</code>, <code>DLYTICK</code>, <code>SNDPLCPGM</code>, <code>STRPLC</code>, <code>ENDPLC</code>), every message, the VM, interactive and batch jobs, job hosts, schedule entries and triggers, persistence, stable device names, sign-on and security, folder sync, and <code>SAVLIB</code> / <code>RSTLIB</code>. <code>docs/elcl/IMPLEMENTATION_STATUS.md</code> has the details, part by part. What remains is hardware the mod doesn't have yet, and a few known limits.</p>
 
 <h3 id="hardware">Hardware still to come</h3>
 <p>Some devices ELCL talks to aren't in the mod yet: the Mainframe, and displays other than the Display Panel. The OS is built against an interface for each (<code>docs/elcl/INTERFACES.md</code>), with fakes in the game tests, so those devices only have to implement it and register. Until they exist, the commands that need them answer <code>ELC1301 Device &amp;1 not found.</code></p>
@@ -2559,6 +2625,19 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
   </tbody>
 </table></div>
 <p>Elsewhere in the config: <code>controlInterfaceDrain</code> (the Control Interface's power use, FE/t) and <code>firewallFailClosed</code> (whether an offline Firewall still enforces its rules; default <code>true</code>).</p>
+<p>The <code>plc</code> section (<a href="#plc">PLCs</a>):</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Option</th><th>Default</th><th>Range</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>plcEnergy</code></td><td>2</td><td>0&ndash;1,000</td><td>FE a tick a PLC uses while powered (its buffer's, or its network's upkeep).</td></tr>
+    <tr><td><code>plcBuffer</code></td><td>1,000</td><td>1&ndash;1,000,000</td><td>FE a PLC's own buffer holds.</td></tr>
+    <tr><td><code>plcInstructionsPerTick</code></td><td>50</td><td>1&ndash;100,000</td><td>VM instructions a PLC runs a tick.</td></tr>
+    <tr><td><code>plcMaxPerChunk</code></td><td>16</td><td>1&ndash;4,096</td><td>PLCs that may run in one chunk.</td></tr>
+    <tr><td><code>plcMaxPerServer</code></td><td>512</td><td>1&ndash;1,000,000</td><td>PLCs that may run on the server.</td></tr>
+    <tr><td><code>plcFaultOutputs</code></td><td><code>HOLD</code></td><td><code>HOLD</code> / <code>ZERO</code></td><td>What outputs do on FAULT.</td></tr>
+    <tr><td><code>plcOpenToAnyone</code></td><td><code>true</code></td><td>true / false</td><td>Whether anyone may open a PLC that isn't on a network (false: its placer and operators).</td></tr>
+  </tbody>
+</table></div>
 </section>
 
 <section id="developers">
@@ -2658,6 +2737,7 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
     <tr><td><code>elcl.db.DdsTest</code>, <code>DbFileTest</code>, <code>QueryCsvTest</code>, <code>elcl.DbVmTest</code>, <code>client.crt.DbScreensTest</code></td><td>Database files: every field type and each definition error on its line, the listing; records in key and arrival order, positions, unique keys, values by type, saving; QRYSLT and SORT, the report layout, CSV both ways; DCLF and every file operation in the VM (end of file monitored, level check, a saved job reading on); the screens against layouts 17&ndash;22, the editor's PF and DCLF checks. Game tests <code>db_files</code>, <code>db_programs</code>, <code>db_query</code>, <code>db_system_files</code>, <code>db_copies</code>, <code>db_persistence</code>, <code>db_limits</code>, <code>db_authority</code>, <code>db_example</code>, <code>db_screens</code>, <code>db_save_restore</code>, <code>db_display_table</code>.</td></tr>
     <tr><td><code>elcl.LexerParserTest</code></td><td>Lexing and parsing, examples, schemas.</td></tr>
     <tr><td><code>elcl.VmTest</code></td><td>The VM without a game (13 tests): arithmetic and precedence, strings, lists and <code>FOREACH</code>, loops, <code>SELECT</code> / <code>IF</code> / <code>ELSE</code> / <code>GOTO</code>, subroutines, <code>CALL</code> by reference, monitors (command and program level, ranges), an unmonitored escape ending the job, parameter count and call depth, an endless loop keeping to its budget and being ended, a saved job carrying on where it was, every example starting.</td></tr>
+    <tr><td><code>elcl.PlcProgramTest</code></td><td>The PLC's ELCL: <code>RETAIN</code> and <code>ELC1506</code>, the compile target of a PLC on its own (<code>ELC1502</code>, nested too; <code>*SELF</code> and the modules allowed), <code>DLYTICK</code>'s range and wait, a scan's variables carried into the next (a <code>VALUE</code> set once), a fault's line, a host refusing a command, retained values kept as text.</td></tr>
     <tr><td><code>elcl.SystemDataTest</code></td><td>A system's data round-trips through NBT; members' storage cost.</td></tr>
     <tr><td><code>elcl.ResequenceTest</code></td><td>Folder sync's renumbering: unchanged lines keep their numbers, new lines go between their neighbours, a changed line is new, no room numbers it again.</td></tr>
     <tr><td><code>client.crt.CrtGridFieldTest</code></td><td>Extra glyphs, box and ruler; field cursor, overwrite / insert, Field Exit, Field Advance, flags; window text wrapping.</td></tr>
@@ -2671,6 +2751,7 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
   <thead><tr><th>Game test</th><th>Class</th><th>Covers</th></tr></thead>
   <tbody>
     <tr><td><code>control_interface</code></td><td><code>ControlInterfaceGameTests</code></td><td>Naming <code>CTLIF01</code>/<code>CTLIF02</code>; <code>RTVRSIN</code> per face and <code>*MAX</code>; <code>CHGRSOUT</code> per face and <code>*ALL</code> powering a lamp and dust; no read-back; LEDs; <code>*RSCHANGE</code> once per change; <code>ELC1301</code>/<code>ELC1302</code>/<code>ELC1303</code>/<code>ELC0004</code>; offline behaviour.</td></tr>
+    <tr><td><code>plc_standalone</code>, <code>plc_networked</code></td><td><code>PlcGameTests</code></td><td>A PLC on its own: OFF without power, RUN on its buffer echoing a face to a lamp, the line that drives it, a retained counter through STOP / RUN, STOP clearing outputs, FAULT with its line, <code>ELC1502</code> at run time and on the editor's save, a Light Sensor, <code>*NOMODULE</code> and <code>ELC1501</code>, the slot's model. On a network: <code>PLC01</code>, <code>SNDPLCPGM</code> (<code>ELC1504</code>, <code>ELC1301</code>, <code>ELC1303</code>), <code>STRPLC</code> (<code>ELC1505</code>), <code>ENDPLC</code>, <code>RTVRSIN</code> / <code>CHGRSOUT</code> by name, <code>*SELF</code> off a PLC.</td></tr>
     <tr><td><code>elcl_os_commands</code></td><td><code>ElclGameTests</code></td><td>Each OS command's completion message and job log entry; ELSYS read-only; screen queries; <code>SNDMSG</code> leaving a message waiting (<code>MW</code>).</td></tr>
     <tr><td><code>desk_commands</code></td><td><code>DeskGameTests</code></td><td>The command line is ELCL only (the old words are unknown commands); the Withdraw Item request; completion of ELCL commands and items.</td></tr>
     <tr><td><code>elcl_persistence</code>, <code>elcl_storage_full</code>, <code>elcl_retention</code>, <code>elcl_library_authority</code>, <code>device_locate_box</code></td><td><code>ElclStoreGameTests</code></td><td>What survives a save and load; <code>ELC0207</code>; the spooled file and message caps; library authority; Work with Devices 8=Locate's box.</td></tr>

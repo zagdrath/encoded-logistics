@@ -68,6 +68,7 @@ import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
 import net.zagdrath.encodedlogistics.network.ListedDevice;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
 import net.zagdrath.encodedlogistics.network.NetworkLink;
@@ -1328,6 +1329,11 @@ public class ControllerStructures extends SavedData {
             if (blockEntity(server, pos) instanceof ControlInterfaceBlockEntity ci && !ci.name().isEmpty()) {
                 type = ControlInterfaceBlockEntity.TYPE;
                 name = Component.literal(ci.name());
+            }
+            // A PLC is type PLC, by its program's name.
+            if (blockEntity(server, pos) instanceof PlcBlockEntity plc) {
+                type = PlcBlockEntity.TYPE;
+                name = Component.translatable("gui.encodedlogistics.plc.device", name, plc.programName());
             }
             if (node.parts().isEmpty()) {
                 boolean shown = online || item == ModItems.WIRELESS_BRIDGE.get() && networkOnline

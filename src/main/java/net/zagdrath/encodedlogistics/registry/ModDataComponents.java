@@ -26,6 +26,7 @@ import net.zagdrath.encodedlogistics.item.LinkAddress;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
+import net.zagdrath.encodedlogistics.plc.PlcProgram;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
 public final class ModDataComponents {
@@ -39,6 +40,10 @@ public final class ModDataComponents {
     // The name scripts know a Terminal Desk or Control Interface by (ELDESK01, CTLIF01), kept on the item when it's broken.
     public static final Supplier<DataComponentType<String>> DEVICE_NAME = DATA_COMPONENTS.registerComponentType("device_name",
             builder -> builder.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+
+    // A PLC's program (docs/plc): in the PLC, on its item when it's broken, on a written EEPROM Cartridge.
+    public static final Supplier<DataComponentType<PlcProgram>> PLC_PROGRAM = DATA_COMPONENTS.registerComponentType("plc_program",
+            builder -> builder.persistent(PlcProgram.CODEC).networkSynchronized(PlcProgram.STREAM_CODEC));
 
     // A Storage Drive's id: its contents live in DriveStorage under it. Given when the drive first goes into a Drive Bay.
     public static final Supplier<DataComponentType<UUID>> DRIVE_ID = DATA_COMPONENTS.registerComponentType("drive_id",

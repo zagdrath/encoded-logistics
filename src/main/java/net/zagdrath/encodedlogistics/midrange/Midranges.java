@@ -26,6 +26,7 @@ import net.zagdrath.encodedlogistics.elcl.device.Diskettes;
 import net.zagdrath.encodedlogistics.elcl.device.PrinterDevice;
 import net.zagdrath.encodedlogistics.elcl.device.Printers;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.NamedDevice;
 import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
@@ -52,7 +53,7 @@ public final class Midranges {
     }
 
     // A screen's header: the system's name, the device's (named now if it has none yet) and the system's PHOSPHOR.
-    public static void writeOpening(BlockEntity entity, MidrangeDevice device, RegistryFriendlyByteBuf buf) {
+    public static void writeOpening(BlockEntity entity, NamedDevice device, RegistryFriendlyByteBuf buf) {
         String system = "", phosphor = "*GREEN";
         if (entity.getLevel() instanceof ServerLevel level) {
             NetworkRef network = ControllerStructures.networkOf(level, entity.getBlockPos());

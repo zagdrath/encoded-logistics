@@ -90,6 +90,27 @@ public final class Compiler {
     // Files a program may declare (DCLF).
     public static final int MAX_FILES = 5;
 
+    // What a program is compiled for: a job (batch or interactive), a PLC on a network (every command, RETAIN), or a
+    // PLC that isn't cabled to one (only the language, its own faces and modules: anything else is ELC1502).
+    public enum Target {
+        JOB, PLC, PLC_LOCAL;
+
+        public boolean plc() {
+            return this != JOB;
+        }
+    }
+
+    // What a PLC runs without a network: the language statements, the list commands, the delays, its own faces
+    // (RTVRSIN / CHGRSOUT DEV(*SELF)) and its sensor modules (RTVSNSVAL).
+    private static final Set<String> PLC_LOCAL_COMMANDS = Set.of("PGM", "ENDPGM", "DCL", "CHGVAR", "IF", "ELSE", "DO", "ENDDO", "DOWHILE", "DOUNTIL",
+            "DOFOR", "FOREACH", "ENDFOR", "LEAVE", "ITERATE", "SELECT", "WHEN", "OTHERWISE", "ENDSELECT", "GOTO", "RETURN", "SUBR", "ENDSUBR", "CALLSUBR",
+            "MONMSG", "RCVMSG", "SNDPGMMSG", "ADDLSTE", "RMVLSTE", "CLRLST", "DLYJOB", "DLYTICK", "RTVSNSVAL", "RTVRSIN", "CHGRSOUT");
+
+    // Whether a PLC without a network can run a command (by name; DEV given or not: anything but *SELF needs a network).
+    public static boolean plcLocal(String command, @Nullable String device) {
+        return PLC_LOCAL_COMMANDS.contains(command.toUpperCase(Locale.ROOT)) && (device == null || device.trim().equalsIgnoreCase("*SELF"));
+    }
+
     private Compiler() {}
 
     public static Result compile(List<SourceLine> source) {
@@ -104,9 +125,17 @@ public final class Compiler {
         return compileTexts(texts, FileResolver.NONE);
     }
 
+    public static Result compile(List<SourceLine> source, FileResolver files, Target target) {
+        return compileTexts(SourceLine.texts(source), files, target);
+    }
+
     public static Result compileTexts(List<String> texts, FileResolver files) {
+        return compileTexts(texts, files, Target.JOB);
+    }
+
+    public static Result compileTexts(List<String> texts, FileResolver files, Target target) {
         Parser.Result parsed = Parser.parse(texts);
-        Checker checker = new Checker(false, files);
+        Checker checker = new Checker(false, files, target);
         checker.diagnostics.addAll(parsed.diagnostics());
         CompiledProgram program = checker.program(parsed.statements(), Math.max(0, texts.size() - 1));
         List<Diagnostic> diagnostics = new ArrayList<>(checker.diagnostics);
@@ -119,7 +148,7 @@ public final class Compiler {
     // One command typed on a command line (no variables there): its problems, empty when it can run. RTN*
     // parameters aren't required on the command line - their values are shown instead.
     public static List<Diagnostic> checkCommand(Stmt statement) {
-        Checker checker = new Checker(true, FileResolver.NONE);
+        Checker checker = new Checker(true, FileResolver.NONE, Target.JOB);
         checker.statement(statement, null);
         return checker.diagnostics;
     }
@@ -203,9 +232,12 @@ public final class Compiler {
         final Map<String, RecordFormat> formats = new LinkedHashMap<>();
         boolean unknownVariables;
 
-        Checker(boolean interactive, FileResolver files) {
+        final Target target;
+
+        Checker(boolean interactive, FileResolver files, Target target) {
             this.interactive = interactive;
             this.files = files;
+            this.target = target;
         }
 
         void report(int line, String id, Object... data) {
@@ -549,7 +581,12 @@ public final class Compiler {
                         default -> report(s.firstLine(), "ELC0103", len.values().getFirst(), "LEN");
                     }
                 }
-                VarDecl decl = new VarDecl(var.name(), type, length, decimals, s.value("VALUE"), s.firstLine());
+                Expr retainValue = s.value("RETAIN");
+                boolean retain = retainValue != null && retainValue.toString().equalsIgnoreCase("*YES");
+                if (retain && !target.plc()) {
+                    report(s.firstLine(), "ELC1506");
+                }
+                VarDecl decl = new VarDecl(var.name(), type, length, decimals, s.value("VALUE"), s.firstLine(), retain);
                 variables.put(var.name(), decl);
                 variableRefs.computeIfAbsent(var.name(), k -> new ArrayList<>()).add(new Ref(s.firstLine(), false));
             }
@@ -660,6 +697,12 @@ public final class Compiler {
             if (nestedIn != null && NOT_NESTED.contains(s.name())) {
                 report(s.firstLine(), "ELC0103", s.name(), nestedIn);
                 return;
+            }
+            if (target == Target.PLC_LOCAL) {
+                Expr device = s.value("DEV");
+                if (!plcLocal(s.name(), device == null ? null : device.toString())) {
+                    report(s.firstLine(), "ELC1502", s.name());
+                }
             }
             for (Stmt.Param param : s.params()) {
                 ParamDef def = param.keyword() != null ? definition.param(param.keyword()) : null;

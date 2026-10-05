@@ -20,6 +20,7 @@ import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 
@@ -38,6 +39,8 @@ public final class ModCapabilities {
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntityTypes.LITHOGRAPHY_PRESS.get(), LithographyPressBlockEntity::getEnergyHandler);
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntityTypes.LITHOGRAPHY_PRESS.get(), LithographyPressBlockEntity::getItemHandler);
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModBlockEntityTypes.GATEWAY.get(), GatewayBlockEntity::getItemHandler);
+        // A PLC's own buffer, from any face (cabled to a network, the network powers it instead).
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModBlockEntityTypes.PLC.get(), PlcBlockEntity::getEnergyHandler);
         // The Terminal Desk's drawer, through its pedestal half.
         event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, blockEntity, side) -> state.getValue(TerminalDeskBlock.PART) == TerminalDeskBlock.Part.DUMMY
                 && level.getBlockEntity(TerminalDeskBlock.master(state, pos)) instanceof TerminalDeskBlockEntity desk ? VanillaContainerWrapper.of(desk) : null,

@@ -140,6 +140,20 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC1403 | 30 | Missing ingredients for &1. |
 | ELC1404 | 30 | Craft job &1 not found. |
 
+## ELC15xx — PLCs *(added)*
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC1501 | 30 | Module &1 is not installed or is not a &2. | *(`RTVSNSVAL` without `RTNSTS`: the slot is empty, or not the `TYPE()` asked for)*
+| ELC1502 | 30 | Command &1 needs a network; this PLC is not cabled to one. | *(when the editor's save compiles the program for a PLC on its own, and at run time)*
+| ELC1503 | 20 | Sensor module &1 has no target (&2). | *(`RTVSNSVAL` without `RTNSTS`: nothing to read on its face)*
+| ELC1504 | 30 | Program &1 was not compiled for a PLC. | *(`SNDPLCPGM` of a program not made with `CRTELPGM TGT(*PLC)`)*
+| ELC1505 | 30 | PLC &1 has no program loaded. | *(`STRPLC`, F6, option 4)*
+| ELC1506 | 10 | RETAIN is only meaningful in a PLC program; ignored. | *(a compile warning: the program is still created)*
+| ELC1507 | 00 | PLC &1 started. |
+| ELC1508 | 00 | PLC &1 stopped. |
+| ELC1509 | 00 | Program &1 loaded into PLC &2. | *(added: `SNDPLCPGM` completed)*
+
 ## ELC22xx — Database files *(added)*
 
 Reading and writing files (`ELC2201` is how `RCVF` says the file has no more records; monitor it, or the range with

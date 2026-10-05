@@ -40,11 +40,14 @@ import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
 import net.zagdrath.encodedlogistics.client.crt.CrtMachineScreen;
 import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
 import net.zagdrath.encodedlogistics.client.crt.DiskDriveScreen;
+import net.zagdrath.encodedlogistics.client.crt.PlcEditorScreen;
+import net.zagdrath.encodedlogistics.client.crt.PlcScreen;
 import net.zagdrath.encodedlogistics.client.crt.KeypunchScreen;
 import net.zagdrath.encodedlogistics.client.crt.LinePrinterScreen;
 import net.zagdrath.encodedlogistics.client.crt.MidrangePanelScreen;
 import net.zagdrath.encodedlogistics.client.crt.TapeDriveScreen;
 import net.zagdrath.encodedlogistics.client.display.DisplayRenderer;
+import net.zagdrath.encodedlogistics.client.PlcRenderer;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
@@ -131,6 +134,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.KEYPUNCH.get(), KeypunchScreen::new);
         event.register(ModMenuTypes.CARD_READER.get(), CardReaderScreen::new);
         event.register(ModMenuTypes.DISK_DRIVE.get(), DiskDriveScreen::new);
+        event.register(ModMenuTypes.PLC.get(), PlcScreen::new);
         event.register(ModMenuTypes.TAPE_DRIVE.get(), TapeDriveScreen::new);
         event.register(ModMenuTypes.LINE_PRINTER.get(), LinePrinterScreen::new);
         event.register(ModMenuTypes.MIDRANGE_PANEL.get(), MidrangePanelScreen::new);
@@ -166,6 +170,7 @@ public class EncodedLogisticsClient {
         // The Swivel Chair's seat, turned (SwivelChairRenderer); what it's sat on isn't drawn.
         event.registerBlockEntityRenderer(ModBlockEntityTypes.SWIVEL_CHAIR.get(), SwivelChairRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntityTypes.DISPLAY_PANEL.get(), DisplayRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntityTypes.PLC.get(), PlcRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.SEAT.get(), NoopRenderer::new);
     }
 
@@ -184,7 +189,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void hideHudUnderCrt(RenderGuiLayerEvent.Pre event) {
         Screen screen = Minecraft.getInstance().gui.screen();
-        if ((screen instanceof CrtScreen || screen instanceof CrtMachineScreen<?>) && CRT_HIDDEN.contains(event.getName())) {
+        if ((screen instanceof CrtScreen || screen instanceof CrtMachineScreen<?> || screen instanceof PlcEditorScreen) && CRT_HIDDEN.contains(event.getName())) {
             event.setCanceled(true);
         }
     }

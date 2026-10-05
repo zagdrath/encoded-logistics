@@ -37,6 +37,7 @@ public final class ElclSetup {
         DisplayCommands.bind();
         MachineCommands.bind();
         DbCommands.bind();
+        PlcCommands.bind();
         StoredFileService.setLive(new LiveFiles());
         Midranges.register();
         Displays.register(system -> {

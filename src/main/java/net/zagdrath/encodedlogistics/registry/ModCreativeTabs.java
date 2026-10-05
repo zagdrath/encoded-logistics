@@ -40,7 +40,7 @@ public final class ModCreativeTabs {
                         ModItems.EXPANSION_CABINET, ModItems.INTEGRATED_MIDRANGE, ModItems.KEYPUNCH, ModItems.CARD_READER, ModItems.LINE_PRINTER,
                         ModItems.DISK_DRIVE, ModItems.TAPE_DRIVE,
                         ModItems.SERVER_RACK,
-                        ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR, ModItems.CONTROL_INTERFACE)) {
+                        ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR, ModItems.CONTROL_INTERFACE, ModItems.PLC)) {
                     output.accept(block.get());
                 }
             })
@@ -66,7 +66,8 @@ public final class ModCreativeTabs {
                     output.accept(ModItems.part(part).get());
                 }
                 for (var item : List.of(ModItems.FILTER_MODULE, ModItems.THROUGHPUT_MODULE, ModItems.FUZZY_MATCH_MODULE,
-                        ModItems.REDSTONE_CONTROL_MODULE, ModItems.PUNCH_CARD, ModItems.DISKETTE_8IN, ModItems.DISKETTE_MAGAZINE,
+                        ModItems.REDSTONE_CONTROL_MODULE, ModItems.PRESENCE_SENSOR, ModItems.INVENTORY_SENSOR,
+                        ModItems.FLUID_SENSOR, ModItems.LIGHT_SENSOR, ModItems.TIMER_MODULE, ModItems.EEPROM_CARTRIDGE, ModItems.PUNCH_CARD, ModItems.DISKETTE_8IN, ModItems.DISKETTE_MAGAZINE,
                         ModItems.TAPE_REEL)) {
                     output.accept(item.get());
                 }

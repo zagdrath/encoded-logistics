@@ -715,6 +715,42 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("plc");
+    }
+
+    // Programmable Logic Controllers (docs/plc).
+    public static final ModConfigSpec.IntValue PLC_ENERGY = BUILDER
+            .comment("FE per tick a PLC uses while it's powered (from its own buffer, or from its network when cabled to one).")
+            .defineInRange("plcEnergy", 2, 0, 1_000);
+
+    public static final ModConfigSpec.IntValue PLC_BUFFER = BUILDER
+            .comment("FE a PLC's own buffer holds (filled from any face).")
+            .defineInRange("plcBuffer", 1_000, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue PLC_INSTRUCTIONS_PER_TICK = BUILDER
+            .comment("VM instructions a PLC runs per tick; a scan that needs more carries on next tick.")
+            .defineInRange("plcInstructionsPerTick", 50, 1, 100_000);
+
+    public static final ModConfigSpec.IntValue PLC_MAX_PER_CHUNK = BUILDER
+            .comment("PLCs that may run in one chunk; another stays in STOP (PLC limit reached).")
+            .defineInRange("plcMaxPerChunk", 16, 1, 4_096);
+
+    public static final ModConfigSpec.IntValue PLC_MAX_PER_SERVER = BUILDER
+            .comment("PLCs that may run on the server at once; another stays in STOP (PLC limit reached).")
+            .defineInRange("plcMaxPerServer", 512, 1, 1_000_000);
+
+    public enum PlcFaultOutputs { HOLD, ZERO }
+
+    public static final ModConfigSpec.EnumValue<PlcFaultOutputs> PLC_FAULT_OUTPUTS = BUILDER
+            .comment("What a PLC's outputs do on FAULT: HOLD keeps their last levels, ZERO drops them to 0.")
+            .defineEnum("plcFaultOutputs", PlcFaultOutputs.HOLD);
+
+    public static final ModConfigSpec.BooleanValue PLC_OPEN_TO_ANYONE = BUILDER
+            .comment("Whether anyone may open a PLC that isn't cabled to a network (false: only the player who placed it, and operators).")
+            .define("plcOpenToAnyone", true);
+
+    static {
+        BUILDER.pop();
     }
 
     public static final ModConfigSpec SPEC = BUILDER.build();

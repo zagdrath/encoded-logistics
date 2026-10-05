@@ -24,7 +24,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.zagdrath.encodedlogistics.midrange.MidrangeDevice;
+import net.zagdrath.encodedlogistics.elcl.exec.NamedDevice;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.MachinePayloads;
@@ -53,7 +53,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
 
     protected final Container machine;
     protected final Player player;
-    protected final @Nullable MidrangeDevice peripheral;
+    protected final @Nullable NamedDevice peripheral;
     private final Opening opening;
     private final DataSlot online = DataSlot.standalone();
     private int timer;
@@ -63,7 +63,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
     private List<Integer> numbers = List.of();
     private int received;
 
-    protected PeripheralMenu(@Nullable MenuType<?> type, int containerId, Inventory inventory, Container machine, @Nullable MidrangeDevice peripheral,
+    protected PeripheralMenu(@Nullable MenuType<?> type, int containerId, Inventory inventory, Container machine, @Nullable NamedDevice peripheral,
             Opening opening) {
         super(type, containerId);
         this.machine = machine;
@@ -89,7 +89,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
 
     @Override
     public void broadcastChanges() {
-        if (peripheral != null && ++timer >= REFRESH) {
+        if (peripheral != null && ++timer >= refreshTicks()) {
             timer = 0;
             online.set(peripheral.isOnline() ? 1 : 0);
             refresh();
@@ -97,8 +97,13 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
         super.broadcastChanges();
     }
 
-    // What the screen shows: every second while it's open, after each action, and once when it opens.
+    // What the screen shows: every second while it's open (or refreshTicks()), after each action, and once when it opens.
     protected void refresh() {}
+
+    // How often it's sent while the screen's open.
+    protected int refreshTicks() {
+        return REFRESH;
+    }
 
     @Override
     public void sendAllDataToRemote() {

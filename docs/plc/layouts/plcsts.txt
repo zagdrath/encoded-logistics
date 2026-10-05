@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  PLCSTS                            PLC Status                  System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  PLC  . . . . . :   PLC01          Network . . :   ELNET01 (cabled)
+03 |  Program  . . . :   DOORCTL        Size  . . :   1,284 bytes  (Day 2 14:02)
+04 | 
+05 |  Mode . . . . . :   RUN             Scan time . :   3 ticks
+06 |  Instructions . :   38 / 50 per tick   (76%)
+07 |  Loaded by  . . :   ZAGDRATH  (authority *CONFIGURE)
+08 | 
+09 |  Last error . . :   ELC1501  Line 0014
+10 |    Module 2 is not an Inventory Sensor.
+11 | 
+12 |  Select one of the following:
+13 | 
+14 |      1. Edit program (source editor)
+15 |      2. Display I/O table
+16 |      3. Display modules
+17 |      4. Save program to cartridge
+18 |      5. Load program from cartridge
+19 |      6. Display retained variables
+20 |  Selection or command
+21 |  ===>
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F6=Run F7=Stop F9=Clear fault F10=I/O F11=Modules
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command)

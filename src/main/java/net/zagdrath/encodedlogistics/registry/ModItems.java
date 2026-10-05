@@ -31,6 +31,8 @@ import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.item.TapeReelItem;
 import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.plc.PlcModule;
+import net.zagdrath.encodedlogistics.plc.PlcModuleItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
@@ -141,6 +143,16 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> SERVER_RACK = ITEMS.registerSimpleBlockItem(ModBlocks.SERVER_RACK);
     public static final DeferredItem<BlockItem> TERMINAL_DESK = ITEMS.registerSimpleBlockItem(ModBlocks.TERMINAL_DESK);
     public static final DeferredItem<BlockItem> CONTROL_INTERFACE = ITEMS.registerSimpleBlockItem(ModBlocks.CONTROL_INTERFACE);
+    // The PLC (docs/plc), its sensor modules and the EEPROM Cartridge its program goes on.
+    public static final DeferredItem<BlockItem> PLC = ITEMS.registerSimpleBlockItem(ModBlocks.PLC);
+    public static final DeferredItem<PlcModuleItem> PRESENCE_SENSOR = ITEMS.registerItem("presence_sensor",
+            p -> new PlcModuleItem(PlcModule.PRESENCE_SENSOR, p));
+    public static final DeferredItem<PlcModuleItem> INVENTORY_SENSOR = ITEMS.registerItem("inventory_sensor",
+            p -> new PlcModuleItem(PlcModule.INVENTORY_SENSOR, p));
+    public static final DeferredItem<PlcModuleItem> FLUID_SENSOR = ITEMS.registerItem("fluid_sensor", p -> new PlcModuleItem(PlcModule.FLUID_SENSOR, p));
+    public static final DeferredItem<PlcModuleItem> LIGHT_SENSOR = ITEMS.registerItem("light_sensor", p -> new PlcModuleItem(PlcModule.LIGHT_SENSOR, p));
+    public static final DeferredItem<PlcModuleItem> TIMER_MODULE = ITEMS.registerItem("timer_module", p -> new PlcModuleItem(PlcModule.TIMER_MODULE, p));
+    public static final DeferredItem<Item> EEPROM_CARTRIDGE = ITEMS.registerSimpleItem("eeprom_cartridge", p -> p.stacksTo(16));
     public static final DeferredItem<BlockItem> SWIVEL_CHAIR = ITEMS.registerSimpleBlockItem(ModBlocks.SWIVEL_CHAIR);
     public static final DeferredItem<RackDeviceItem> FIREWALL = ITEMS.registerItem("firewall", p -> new RackDeviceItem(p, RackDeviceType.FIREWALL),
             p -> p.stacksTo(1));

@@ -49,6 +49,7 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
+import net.zagdrath.encodedlogistics.plc.PlcProgram;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -128,6 +129,15 @@ public final class ItemInfoTooltips {
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.link_card.address", kind, address.pos().pos().getX(),
                         address.pos().pos().getY(), address.pos().pos().getZ()).withStyle(ChatFormatting.GRAY));
                 tooltip.add(at++, Component.literal(address.pos().dimension().identifier().toString()).withStyle(ChatFormatting.DARK_GRAY));
+            }
+        } else if (stack.is(ModItems.EEPROM_CARTRIDGE.get()) || stack.is(ModItems.PLC.get())) {
+            // A PLC's program: on a written cartridge, or carried by a PLC's item; a blank cartridge says so.
+            PlcProgram program = stack.get(ModDataComponents.PLC_PROGRAM.get());
+            if (program != null) {
+                tooltip.add(at++, Component.translatable(stack.is(ModItems.PLC.get()) ? "tooltip.encodedlogistics.plc.program" : "tooltip.encodedlogistics.eeprom.program",
+                        program.name(), String.format(Locale.ROOT, "%,d", program.size())).withStyle(ChatFormatting.GRAY));
+            } else if (stack.is(ModItems.EEPROM_CARTRIDGE.get())) {
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.eeprom.blank").withStyle(ChatFormatting.GRAY));
             }
         } else if (stack.getItem() instanceof HandheldTerminalItem) {
             // Its network and battery.

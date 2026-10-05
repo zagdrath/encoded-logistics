@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:bucket"
+ ],
+ "result": {
+  "id": "encodedlogistics:fluid_sensor",
+  "count": 1
+ }
+}

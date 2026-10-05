@@ -38,6 +38,7 @@ import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
+import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -63,6 +64,8 @@ public final class ModBlockEntityTypes {
     public static final Supplier<BlockEntityType<TerminalDeskBlockEntity>> TERMINAL_DESK = BLOCK_ENTITY_TYPES.register(
             "terminal_desk", () -> new BlockEntityType<>(TerminalDeskBlockEntity::new, ModBlocks.TERMINAL_DESK.get()));
 
+    public static final Supplier<BlockEntityType<PlcBlockEntity>> PLC = BLOCK_ENTITY_TYPES.register(
+            "plc", () -> new BlockEntityType<>(PlcBlockEntity::new, ModBlocks.PLC.get()));
     public static final Supplier<BlockEntityType<ControlInterfaceBlockEntity>> CONTROL_INTERFACE = BLOCK_ENTITY_TYPES.register(
             "control_interface", () -> new BlockEntityType<>(ControlInterfaceBlockEntity::new, ModBlocks.CONTROL_INTERFACE.get()));
 

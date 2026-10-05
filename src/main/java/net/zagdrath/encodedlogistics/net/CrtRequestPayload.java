@@ -12,7 +12,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
-import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
+import net.zagdrath.encodedlogistics.menu.CrtHost;
 
 // Client to server: a Terminal Desk screen's request (TerminalService.COMMAND / QUERY / COMPLETE / SCREEN) and its text.
 public record CrtRequestPayload(int containerId, int kind, String text) implements CustomPacketPayload {
@@ -32,9 +32,9 @@ public record CrtRequestPayload(int containerId, int kind, String text) implemen
     }
 
     static void handle(CrtRequestPayload payload, IPayloadContext context) {
-        if (context.player() instanceof ServerPlayer player && player.containerMenu instanceof TerminalDeskMenu menu
-                && menu.containerId == payload.containerId() && menu.stillValid(player)) {
-            menu.handle(player, payload.kind(), payload.text());
+        if (context.player() instanceof ServerPlayer player && player.containerMenu instanceof CrtHost host
+                && player.containerMenu.containerId == payload.containerId() && player.containerMenu.stillValid(player)) {
+            host.handle(player, payload.kind(), payload.text());
         }
     }
 }

@@ -405,8 +405,8 @@ public final class StoredLibraryService implements LibraryService {
     }
 
     @Override
-    public CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember)
-            throws ElclException {
+    public CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember,
+            Compiler.Target compileTarget) throws ElclException {
         SystemData.Library target;
         SystemData.Member source;
         List<SourceLine> lines;
@@ -422,14 +422,14 @@ public final class StoredLibraryService implements LibraryService {
             version = source.version;
         }
         String name = upper(program);
-        Compiler.Result result = Compiler.compile(lines, files(system, user));
+        Compiler.Result result = Compiler.compile(lines, files(system, user), compileTarget);
         List<String> listing = Listing.build(target.name, name, system.nowShort().replace("  ", " "), system.name(), lines, result);
         JobService.Job job = interactiveJob(system, user);
         int file = ElclServices.spool().create(system, name, job.number(), job.name(), upper(user), listing);
         if (result.ok()) {
             synchronized (this) {
                 target.programs.put(name, new SystemData.Program(name, upper(sourceLibrary), source.name, version, system.nowShort(), lines,
-                        SystemData.saved(result.formats())));
+                        SystemData.saved(result.formats()), compileTarget.plc() ? "*PLC" : "*JOB"));
                 ElclStore.of(system).changed();
             }
         }
@@ -480,7 +480,7 @@ public final class StoredLibraryService implements LibraryService {
         List<LibraryImage.MemberImage> members = new ArrayList<>();
         lib.members.values().forEach(m -> members.add(new LibraryImage.MemberImage(m.name, m.type, m.text, List.copyOf(m.lines))));
         List<LibraryImage.ProgramImage> programs = new ArrayList<>();
-        lib.programs.values().forEach(p -> programs.add(new LibraryImage.ProgramImage(p.name, p.sourceMember, p.source, p.files)));
+        lib.programs.values().forEach(p -> programs.add(new LibraryImage.ProgramImage(p.name, p.sourceMember, p.source, p.files, p.target)));
         // Its files and their records (not ELSYS's system files: those are the network's own data).
         List<LibraryImage.FileImage> files = new ArrayList<>();
         lib.files.values().stream().filter(file -> !file.system).forEach(file -> files.add(LibraryImage.FileImage.of(file)));
@@ -545,7 +545,7 @@ public final class StoredLibraryService implements LibraryService {
             SystemData.Member source = lib.members.get(upper(program.sourceMember()));
             String pgm = upper(program.name());
             lib.programs.put(pgm, new SystemData.Program(pgm, name, upper(program.sourceMember()), source != null ? source.version : 0, system.nowShort(),
-                    program.source(), program.files()));
+                    program.source(), program.files(), program.target()));
         }
         // Its files become the diskette's too, each made from a member here as its definition now is.
         lib.files.clear();
@@ -577,6 +577,16 @@ public final class StoredLibraryService implements LibraryService {
             throw new ElclException("ELC0203", upper(program), lib.name);
         }
         return found.files;
+    }
+
+    @Override
+    public synchronized String programTarget(ElclSystem system, String library, String program) throws ElclException {
+        SystemData.Library lib = find(system, library);
+        SystemData.Program found = lib.programs.get(upper(program));
+        if (found == null) {
+            throw new ElclException("ELC0203", upper(program), lib.name);
+        }
+        return found.target;
     }
 
     @Override

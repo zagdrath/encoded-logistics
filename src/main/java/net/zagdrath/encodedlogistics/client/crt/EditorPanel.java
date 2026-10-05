@@ -46,6 +46,8 @@ final class EditorPanel extends CrtPanel {
     private static final int LAST = 19, MARGIN = 7, TEXT = 8, VISIBLE = 72, SHIFT = 8, CHUNK = 7_500;
 
     private final String library, member;
+    // What it's checked for: a job's program, or a PLC's (on a network or not: ELC1502).
+    private final Compiler.Target target;
     private boolean readOnly, full, loaded;
     // ELCLP or PF (the source query says).
     private String type = "ELCLP";
@@ -72,10 +74,15 @@ final class EditorPanel extends CrtPanel {
     private final List<RowFields> rows = new ArrayList<>();
 
     EditorPanel(CrtTerminal screen, String library, String member, boolean readOnly) {
+        this(screen, library, member, readOnly, Compiler.Target.JOB);
+    }
+
+    EditorPanel(CrtTerminal screen, String library, String member, boolean readOnly, Compiler.Target target) {
         super(screen);
         this.library = library;
         this.member = member;
         this.readOnly = readOnly;
+        this.target = target;
     }
 
     // For the tests: a member already in hand.
@@ -148,6 +155,10 @@ final class EditorPanel extends CrtPanel {
             load(incoming);
         } else if (answers(response, "savecommit") && response.message().isPresent() && response.message().get().getString().startsWith("ELC0213")) {
             model.saved(today());
+        } else if (answers(response, "savecommit") && response.message().isPresent() && target.plc()) {
+            // A PLC compiles what's saved: its error shows on its line, as Enter's check does.
+            unchecked.addAll(model.lines);
+            check();
         } else if (answers(response, "fileformat") && !asked.isEmpty()) {
             String key = asked.poll();
             RecordFormat format = response.lines().isEmpty() ? null : RecordFormat.load(cell(response.lines().getFirst(), 1));
@@ -607,7 +618,7 @@ final class EditorPanel extends CrtPanel {
         } else {
             statements = Parser.parse(texts).statements();
             askFormats(statements);
-            diagnostics = Compiler.compileTexts(texts, resolver()).diagnostics();
+            diagnostics = Compiler.compileTexts(texts, resolver(), target).diagnostics();
         }
         Set<Integer> changed = new HashSet<>();
         for (EditorModel.Line line : unchecked) {

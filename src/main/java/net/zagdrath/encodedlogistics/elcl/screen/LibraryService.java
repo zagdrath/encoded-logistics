@@ -14,6 +14,7 @@ import net.zagdrath.encodedlogistics.elcl.Diagnostic;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.compile.CompiledProgram;
+import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
 import net.zagdrath.encodedlogistics.elcl.device.LibraryImage;
 
 // Libraries, source members and programs (OS.md 2-3): what Work with Libraries, Work with Members, the editor and
@@ -68,7 +69,19 @@ public interface LibraryService {
     // Every lock the user holds (their terminal closed).
     void unlockAll(ElclSystem system, String user);
 
-    CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember) throws ElclException;
+    default CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember)
+            throws ElclException {
+        return compile(system, user, library, program, sourceLibrary, sourceMember, Compiler.Target.JOB);
+    }
+
+    // target: CRTELPGM TGT (*PLC: RETAIN is meaningful, and SNDPLCPGM will load it).
+    CompileOutcome compile(ElclSystem system, String user, String library, String program, String sourceLibrary, String sourceMember,
+            Compiler.Target target) throws ElclException;
+
+    // What a program was compiled for: *JOB or *PLC (ELC0201 / ELC0203 when there's none).
+    default String programTarget(ElclSystem system, String library, String program) throws ElclException {
+        return "*JOB";
+    }
 
     List<String> programs(ElclSystem system, String library) throws ElclException;
 

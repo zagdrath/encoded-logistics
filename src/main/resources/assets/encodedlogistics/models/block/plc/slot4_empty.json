@@ -1,0 +1,34 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "t": "encodedlogistics:block/plc/plc",
+  "particle": "encodedlogistics:block/plc/plc"
+ },
+ "elements": [
+  {
+   "name": "empty",
+   "from": [
+    7.7,
+    3.5,
+    14.19
+   ],
+   "to": [
+    9.2,
+    12.5,
+    14.2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      11.5,
+      3.25,
+      12.0,
+      5.5
+     ]
+    }
+   }
+  }
+ ]
+}

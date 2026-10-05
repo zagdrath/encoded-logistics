@@ -54,6 +54,7 @@ import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangePeripheralBlock;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlock;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlock;
+import net.zagdrath.encodedlogistics.plc.PlcBlock;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(EncodedLogistics.MODID);
@@ -107,6 +108,9 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 
     // Scripts (the Terminal OS): redstone in and out.
+    public static final DeferredBlock<PlcBlock> PLC = BLOCKS.registerBlock("plc", PlcBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(2.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .lightLevel(PlcBlock::lightLevel));
     public static final DeferredBlock<ControlInterfaceBlock> CONTROL_INTERFACE = BLOCKS.registerBlock("control_interface", ControlInterfaceBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
 

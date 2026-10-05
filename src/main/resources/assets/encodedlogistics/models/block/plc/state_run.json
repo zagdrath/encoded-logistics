@@ -1,0 +1,69 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "leds": "encodedlogistics:block/plc/leds_run",
+  "lcd": "encodedlogistics:block/plc/lcd_run",
+  "particle": "encodedlogistics:block/plc/leds_run"
+ },
+ "elements": [
+  {
+   "name": "leds",
+   "from": [
+    9.5,
+    3,
+    9.99
+   ],
+   "to": [
+    14.5,
+    13,
+    9.99
+   ],
+   "faces": {
+    "north": {
+     "texture": "#leds",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "name": "lcd",
+   "from": [
+    10.5,
+    10.5,
+    9.98
+   ],
+   "to": [
+    13.5,
+    12.5,
+    9.98
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lcd",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

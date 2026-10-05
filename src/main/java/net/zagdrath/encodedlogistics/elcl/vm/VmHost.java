@@ -15,6 +15,7 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
 import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
 import net.zagdrath.encodedlogistics.elcl.db.FileAccess;
+import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 
 // What the VM needs from the job running it: programs to CALL, its waits, the game (item names, its context for
 // commands, the clock), the job's authority, and where its messages go (job log, the user's message queue).
@@ -72,6 +73,11 @@ public interface VmHost {
 
     // The job's files (RCVF, WRTRCD...), or null where there are none to be had (ELC0107).
     default @Nullable FileAccess files() {
+        return null;
+    }
+
+    // A registered command this host won't run (a PLC without a network: ELC1502), or null.
+    default @Nullable ElclMessage refuses(Stmt statement) {
         return null;
     }
 }

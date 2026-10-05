@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  PLCIO                           PLC I/O Table                 System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  PLC01   DOORCTL   RUN   scan 3 ticks
+03 | 
+04 |  Face      Input  Output  Driven by
+05 |  *UP           0       0
+06 |  *DOWN        15       0   lever
+07 |  *NORTH        0      15   CHGRSOUT line 0022
+08 |  *SOUTH        7       0   comparator
+09 |  *EAST         0       4   CHGRSOUT line 0031
+10 |  *WEST         0       0
+11 | 
+12 |  Bars
+13 |  *DOWN   in  ###############
+14 |  *NORTH  out ###############
+15 |  *SOUTH  in  #######
+16 |  *EAST   out ####
+17 | 
+18 | 
+19 | 
+20 | 
+21 | 
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F12=Cancel     (live, refreshes every 10 ticks)

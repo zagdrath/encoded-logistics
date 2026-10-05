@@ -12,7 +12,7 @@ general errors ELC0101–ELC0106 and ELC0401.
 |---------|-----------|---------|-------|
 | `PGM` | `PARM(&v ...)` | — | Program start |
 | `ENDPGM` | — | — | Program end |
-| `DCL` | `VAR`(P1, Req) `TYPE`(P2, Req) `LEN` `VALUE` | — | Declaration |
+| `DCL` | `VAR`(P1, Req) `TYPE`(P2, Req) `LEN` `VALUE` `RETAIN(*NO\|*YES)` **[EXT]** | — | Declaration. `RETAIN(*YES)`: a PLC keeps the value across STOP / RUN, power loss and reloads (§7a); anywhere else ELC1506 (a warning) and it's ignored |
 | `CHGVAR` | `VAR`(P1, Req) `VALUE`(P2, Req) | IB | Assignment |
 | `IF` `ELSE` `DO` `ENDDO` `DOWHILE` `DOUNTIL` `DOFOR` `FOREACH` `ENDFOR` `LEAVE` `ITERATE` `SELECT` `WHEN` `OTHERWISE` `ENDSELECT` `GOTO` `RETURN` `SUBR` `ENDSUBR` `CALLSUBR` | see spec §6 | IB | |
 | `MONMSG` | `MSGID`(P1, Req, list) `CMPDTA` `EXEC` | IB | Spec §8 |
@@ -20,6 +20,7 @@ general errors ELC0101–ELC0106 and ELC0401.
 | `SNDPGMMSG` | `MSG` `MSGID(USRnnnn)` `MSGTYPE(*INFO\|*ESCAPE)` | IB | |
 | `CALL` | `PGM`(P1, Req, qualified) `PARM`(P2, list) | IB | Spec §7 |
 | `DLYJOB` | `DLY`(P1, seconds, 1–86400) or `RSMTIME(HHMMSS)` (game clock) | IB | Async (seconds are game ticks / 20); on a command line it's done at once |
+| `DLYTICK` **[EXT]** | `TICKS`(P1, Req, 1–1200) | IB | Delays the program that many game ticks (a PLC's outputs hold meanwhile); on a command line it's done at once. ELC0004 |
 | `RTVJOBA` | `RTNUSR` `RTNJOB` `RTNTYPE` (*CHAR: `*INTER`/`*BATCH`) `RTNHOST` | IB | Current job |
 
 ## 2. Lists [EXT]
@@ -71,7 +72,7 @@ stored with the device, given once (type + the lowest number free on the
 system) and kept until renamed; it goes with the device's item. *(Implemented:
 Control Interfaces, Terminal Desks, rack devices, cable parts and wireless - `AP01`, `WBRIDGE01`, `WINGRESS01`,
 `WEGRESS01`, the Wireless Ports working exactly as cabled ports - Gateways (`GATEWAY01`) and Arcforge machines with a
-Small Wireless Bridge on, by a prefix from their type (`ARCCRU01`); the mod has no Label Maker.)*
+Small Wireless Bridge on, by a prefix from their type (`ARCCRU01`), and PLCs (`PLC01`, type PLC); the mod has no Label Maker.)*
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
@@ -107,12 +108,42 @@ refused. `PWRNET(*YES)`: power from the network (`machinePowerRate`, `machinePow
 |---------|-----------|------|
 | `RTVPWRSTS` | `RTNSRC`(*CHAR: `*NETWORK\|*UPS\|*NONE`) `RTNCHG`(*DEC, UPS %) `RTNLOAD`(*INT, FE/t) `RTNSTORED`(*INT, FE) | view |
 
-## 7. Redstone (Control Interface block)
+## 7. Redstone (Control Interface block, PLC)
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
-| `RTVRSIN` | `DEV`(P1, Req) `SIDE`(P2, Req: `*NORTH\|*SOUTH\|*EAST\|*WEST\|*UP\|*DOWN\|*MAX`) `RTNLVL`(*INT, 0–15) | view | ELC1301, ELC1302, ELC1303 |
-| `CHGRSOUT` | `DEV`(P1, Req) `SIDE`(P2, Req, or `*ALL`) `LVL`(P3, Req, 0–15) | configure | ELC1301, ELC1302, ELC1303, ELC0004 |
+| `RTVRSIN` | `DEV`(P1, Req, or `*SELF`) `SIDE`(P2, Req: `*NORTH\|*SOUTH\|*EAST\|*WEST\|*UP\|*DOWN\|*MAX`) `RTNLVL`(*INT, 0–15) | view | ELC1301, ELC1302, ELC1303 |
+| `CHGRSOUT` | `DEV`(P1, Req, or `*SELF`) `SIDE`(P2, Req, or `*ALL`) `LVL`(P3, Req, 0–15) | configure | ELC1301, ELC1302, ELC1303, ELC0004 |
+
+*(Added: a PLC's faces work exactly as a Control Interface's - by its name (`PLC01`) on its network, or `DEV(*SELF)` in
+the PLC's own program, which needs no network. `*SELF` anywhere else is ELC1301.)*
+
+## 7a. PLCs **[EXT]**
+
+A Programmable Logic Controller (docs/plc) runs one compiled program continuously, like a PLC scan: on ENDPGM the next
+pass starts from the top (next tick), its variables carried on - a `VALUE` is set again only on STOP -> RUN and
+power-up; `RETAIN(*YES)` variables are kept in the program itself. `plcInstructionsPerTick` instructions a tick (a pass
+that needs more carries on next tick). Without a network it runs only the language statements, the list commands,
+`DLYJOB`, `DLYTICK`, `RTVSNSVAL` and `RTVRSIN` / `CHGRSOUT DEV(*SELF)`; anything else is ELC1502, when it's compiled
+for that PLC (the editor's save) and at run time. Cabled to a network, everything works, with the Firewall authority of
+the player who last loaded the program. An unmonitored escape puts it in FAULT (outputs hold; `plcFaultOutputs`).
+
+| Command | Parameters | Context | Auth | Notes |
+|---------|-----------|---------|------|-------|
+| `RTVSNSVAL` | `MODULE`(P1, Req, 1–4) `TYPE(*ANY\|*PRESENCE\|*INVENTORY\|*FLUID\|*LIGHT\|*TIMER)` `DEV(*SELF\|name)` `RTNVAL`(*DEC) `RTNSTS`(*CHAR 10: `*OK\|*NOMODULE\|*NOTARGET`) `RTNAUX`(*CHAR 32) | IB | view | A sensor module's reading (below). With `RTNSTS` given, a missing module (or one not of `TYPE`) or one with nothing to read comes back as `*NOMODULE` / `*NOTARGET`; without it they're ELC1501 / ELC1503. `DEV` (added): a networked PLC's modules from a batch job; `*SELF` (the default) outside a PLC is ELC1301 |
+| `SNDPLCPGM` | `PGM`(P1, Req, lib/name) `DEV`(P2, Req) `RUN(*YES\|*NO)` | IB | configure | Loads a program compiled with `CRTELPGM TGT(*PLC)` into a PLC on the network (it stops first; `RUN(*YES)` then runs it from the top). The loader is the user running it. The same program again keeps its retained variables. ELC1301, ELC1303, ELC1504, ELC0401; ELC1509 on success |
+| `STRPLC` | `DEV`(P1, Req) | IB | configure | RUN, clearing a fault, from the top. ELC1301, ELC1303, ELC1505; ELC1507 |
+| `ENDPLC` | `DEV`(P1, Req) | IB | configure | STOP (its outputs off). ELC1301, ELC1303; ELC1508 |
+
+Sensor modules, as `RTVSNSVAL` reads them (`RTNVAL`, `RTNAUX`):
+
+| Module | Setting (PLCMOD 2) | RTNVAL | RTNAUX |
+|--------|-------------------|--------|--------|
+| Presence Sensor | radius 1–16, `*PLAYERS\|*MOBS\|*ALL` | how many within the radius | the nearest one's name |
+| Inventory Sensor | face (default: behind the PLC) | how full, percent (by slot, as a comparator) | the item count |
+| Fluid Sensor | face (default: behind the PLC) | how full, percent | the amount, mB |
+| Light Sensor | — | the light level at the PLC, 0–15 | `*DAY` / `*NIGHT` |
+| Timer Module | — | game ticks | the day and time (`Day 2 14:32`) |
 
 ## 8. Messages, displays and output
 
@@ -137,7 +168,7 @@ refused. `PWRNET(*YES)`: power from the network (`machinePowerRate`, `machinePow
 | `WRKLIB` / `CRTLIB LIB() TEXT()` / `DLTLIB LIB()` | | I / IB / IB |
 | `WRKMBR LIB()` / `EDTMBR MBR(LIB/NAME)` | | I |
 | `CRTMBR MBR() TEXT() SRCTYPE(ELCLP\|PF)` / `CPYMBR FROM() TO()` / `RNMMBR MBR() NEWNAME()` / `DLTMBR MBR()` | `SRCTYPE(PF)`: a physical file's definition (11) | IB |
-| `CRTELPGM PGM(LIB/NAME) SRCMBR(*PGM\|LIB/NAME)` / `DLTPGM PGM()` | From an `ELCLP` member (ELC2247 otherwise) | IB |
+| `CRTELPGM PGM(LIB/NAME) SRCMBR(*PGM\|LIB/NAME) TGT(*JOB\|*PLC)` / `DLTPGM PGM()` | From an `ELCLP` member (ELC2247 otherwise). *(Added: `TGT(*PLC)` compiles it for a PLC - `RETAIN` without ELC1506 - and only those `SNDPLCPGM` loads; SAVLIB / RSTLIB keep the target)* | IB |
 | `SBMJOB CMD(command) JOB(name) HOST(*ANY\|device)` | Batch job; ELC0301 if no host | IB |
 | `WRKACTJOB` / `WRKJOB JOB()` / `DSPJOBLOG JOB(*\|id)` | | I |
 | `HLDJOB JOB()` / `RLSJOB JOB()` / `ENDJOB JOB() OPTION(*CNTRLD\|*IMMED)` | | IB |

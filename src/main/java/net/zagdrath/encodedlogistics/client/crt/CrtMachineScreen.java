@@ -90,6 +90,11 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
         return false;
     }
 
+    // What the message line says while the machine's offline and there's no message ("" for nothing).
+    String offlineMessage() {
+        return tr("crt.encodedlogistics.machine.no_host");
+    }
+
     // Whether it has "Selection or command" and the command line.
     boolean commandLine() {
         return false;
@@ -154,6 +159,23 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
         }
     }
 
+    // The value fields (Kind.VALUE) a view has now: those given, a field already there with the same key and place kept
+    // (with what's typed in it); the focus moves to the first when the one it was in is gone.
+    void valueFields(List<Field> wanted) {
+        List<Field> keep = new ArrayList<>();
+        for (Field want : wanted) {
+            Field have = fields.stream().filter(f -> f.kind == Kind.VALUE && f.key == want.key && f.row == want.row && f.col == want.col).findFirst()
+                    .orElse(null);
+            keep.add(have != null ? have : want);
+        }
+        fields.removeIf(f -> f.kind == Kind.VALUE);
+        fields.addAll(keep);
+        fields.sort(Comparator.comparingInt((Field f) -> f.row).thenComparingInt(f -> f.col));
+        if (focused == null || !fields.contains(focused)) {
+            focused = fields.stream().filter(f -> f.kind != Kind.COMMAND).findFirst().orElse(fields.isEmpty() ? null : fields.getFirst());
+        }
+    }
+
     // --- Lifecycle ---
 
     @Override
@@ -211,7 +233,7 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
         }
         String message = menu.message().getString();
         if (message.isEmpty() && !menu.online()) {
-            message = tr("crt.encodedlogistics.machine.no_host");
+            message = offlineMessage();
         }
         grid.put(22, 1, message, CrtGrid.BRIGHT);
         grid.put(23, 1, keys(), CrtGrid.BRIGHT);

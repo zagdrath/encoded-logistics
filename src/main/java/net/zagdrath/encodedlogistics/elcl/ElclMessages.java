@@ -174,6 +174,17 @@ public final class ElclMessages {
         define("ELC1402", SEVERE, "No recipe known for &1.");
         define("ELC1403", SEVERE, "Missing ingredients for &1.");
         define("ELC1404", SEVERE, "Craft job &1 not found.");
+        // PLCs (docs/plc): sensor modules, programs, RUN / STOP.
+        define("ELC1501", SEVERE, "Module &1 is not installed or is not a &2.");
+        define("ELC1502", SEVERE, "Command &1 needs a network; this PLC is not cabled to one.");
+        define("ELC1503", ERROR, "Sensor module &1 has no target (&2).");
+        define("ELC1504", SEVERE, "Program &1 was not compiled for a PLC.");
+        define("ELC1505", SEVERE, "PLC &1 has no program loaded.");
+        define("ELC1506", WARNING, "RETAIN is only meaningful in a PLC program; ignored.");
+        define("ELC1507", INFO, "PLC &1 started.");
+        define("ELC1508", INFO, "PLC &1 stopped.");
+        // Not in the PLC handoff: SNDPLCPGM's completion message.
+        define("ELC1509", INFO, "Program &1 loaded into PLC &2.");
     }
 
     public static Map<String, Definition> all() {

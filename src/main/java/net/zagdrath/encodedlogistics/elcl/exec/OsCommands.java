@@ -16,6 +16,7 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.ElclMessages;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
+import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
 import net.zagdrath.encodedlogistics.elcl.device.Diskette;
 import net.zagdrath.encodedlogistics.elcl.device.DisketteDevice;
 import net.zagdrath.encodedlogistics.elcl.device.Diskettes;
@@ -142,7 +143,8 @@ public final class OsCommands {
             ElclSystem system = system(call);
             String[] pgm = qualified(system, user(call), call.text("PGM"));
             String[] src = call.text("SRCMBR").equals("*PGM") ? pgm : qualified(system, user(call), call.text("SRCMBR"));
-            LibraryService.CompileOutcome outcome = libraries.compile(system, user(call), pgm[0], pgm[1], src[0], src[1]);
+            Compiler.Target target = call.text("TGT").equals("*PLC") ? Compiler.Target.PLC : Compiler.Target.JOB;
+            LibraryService.CompileOutcome outcome = libraries.compile(system, user(call), pgm[0], pgm[1], src[0], src[1], target);
             if (!outcome.created()) {
                 throw new ElclException("ELC0206", pgm[1]);
             }
@@ -158,6 +160,7 @@ public final class OsCommands {
         CommandRegistry.bind("CALL", InteractiveCalls::call);
         // In a program the VM waits; typed on a command line there's nothing to hold up, so it's done at once.
         CommandRegistry.bind("DLYJOB", call -> {});
+        CommandRegistry.bind("DLYTICK", call -> {});
 
         // SAVLIB / RSTLIB: a library to or from the 8" Diskette in the device DEV() names (the Midrange line's
         // DisketteDevice): ELC1301 with no such device, ELC1310 with no diskette, ELC1311 when it doesn't fit.

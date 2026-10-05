@@ -17,6 +17,11 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 public interface Invocation {
     CommandDefinition command();
 
+    // The source line (from 1) of the statement in a program, or 0 on a command line.
+    default int line() {
+        return 0;
+    }
+
     // Whether the parameter was given (not just defaulted).
     boolean given(String keyword);
 

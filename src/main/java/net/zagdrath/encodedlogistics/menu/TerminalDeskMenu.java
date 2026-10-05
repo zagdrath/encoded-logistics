@@ -34,7 +34,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // cold) for Work with Inventory, and requests - commands, screen queries, completions - answered by TerminalService.
 // Open while the desk is there and the player near it. An Integrated Midrange System's console opens the same session
 // (its pos the system's master), while the system is running.
-public class TerminalDeskMenu extends AccessTerminalMenu {
+public class TerminalDeskMenu extends AccessTerminalMenu implements CrtHost {
     // The session signed on (needed at SECLVL 30 on a network with a Firewall).
     private boolean signedOn;
 
@@ -70,6 +70,7 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
 
     // A request from the screen: a command line, a screen's query or a completion. The session's interactive job
     // starts with its first request; every answer says how many of the player's messages wait unread.
+    @Override
     public void handle(ServerPlayer player, int kind, String text) {
         TerminalContext context = new TerminalContext(player.level().getServer(), network(), desk(), player);
         ElclSystem system = context.network() != null ? new ElclSystem(context.server(), context.network()) : null;

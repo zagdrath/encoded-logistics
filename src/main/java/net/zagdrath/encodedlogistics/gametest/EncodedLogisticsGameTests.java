@@ -139,6 +139,8 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("desk_withdraws", DeskGameTests::deskWithdraws);
         TESTS.put("desk_commands", DeskGameTests::deskCommands);
         TESTS.put("control_interface", ControlInterfaceGameTests::controlInterface);
+        TESTS.put("plc_standalone", PlcGameTests::standalone);
+        TESTS.put("plc_networked", PlcGameTests::networked);
         TESTS.put("elcl_os_commands", ElclGameTests::osCommands);
         TESTS.put("elcl_persistence", ElclStoreGameTests::persistence);
         TESTS.put("elcl_storage_full", ElclStoreGameTests::storageFull);

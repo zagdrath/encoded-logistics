@@ -69,7 +69,8 @@ final class BuiltinCommands {
                 .p(p("VAR", "Variable", Kind.VARIABLE).req())
                 .p(p("TYPE", "Type", Kind.SPECIAL).req().sv("*CHAR", "*INT", "*DEC", "*LGL", "*LIST"))
                 .p(p("LEN", "Length", Kind.INT).list(2))
-                .p(p("VALUE", "Initial value", Kind.VALUE)));
+                .p(p("VALUE", "Initial value", Kind.VALUE))
+                .p(yesNo("RETAIN", "Retain value (PLC)", "*NO")));
         add(CommandDefinition.of("CHGVAR", "Change Variable").context(PROGRAM).positional(2)
                 .p(p("VAR", "Variable", Kind.VARIABLE).req())
                 .p(p("VALUE", "New value", Kind.VALUE).req()));
@@ -133,6 +134,9 @@ final class BuiltinCommands {
         add(CommandDefinition.of("DLYJOB", "Delay Job").positional(1)
                 .p(p("DLY", "Delay time, in seconds", Kind.INT).range(1, 86_400))
                 .p(p("RSMTIME", "Resume time", Kind.TIME)));
+        // A PLC's (or a batch job's) delay in game ticks.
+        add(CommandDefinition.of("DLYTICK", "Delay Ticks").positional(1)
+                .p(p("TICKS", "Delay, in game ticks", Kind.INT).req().range(1, 1_200)));
         add(CommandDefinition.of("RTVJOBA", "Retrieve Job Attributes")
                 .p(rtn("RTNUSR", "Return user", VarType.CHAR))
                 .p(rtn("RTNJOB", "Return job name", VarType.CHAR))
@@ -267,15 +271,32 @@ final class BuiltinCommands {
                 .p(rtn("RTNLOAD", "Return load (FE/t)", VarType.INT))
                 .p(rtn("RTNSTORED", "Return energy stored", VarType.INT)));
 
-        // --- 7. Redstone (Control Interface) ---
+        // --- 7. Redstone (Control Interface; a PLC's own faces are DEV(*SELF)) ---
         add(CommandDefinition.of("RTVRSIN", "Retrieve Redstone Input").auth(VIEW).positional(2)
-                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("DEV", "Device", Kind.DEVICE).req().sv("*SELF"))
                 .p(p("SIDE", "Side", Kind.SPECIAL).req().sv(sides("*MAX")))
                 .p(rtn("RTNLVL", "Return level", VarType.INT).req()));
         add(CommandDefinition.of("CHGRSOUT", "Change Redstone Output").auth(CONFIGURE).positional(3)
-                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("DEV", "Device", Kind.DEVICE).req().sv("*SELF"))
                 .p(p("SIDE", "Side", Kind.SPECIAL).req().sv(sides("*ALL")))
                 .p(p("LVL", "Level", Kind.INT).req().range(0, 15)));
+
+        // --- 7a. PLCs (docs/plc) ---
+        add(CommandDefinition.of("RTVSNSVAL", "Retrieve Sensor Value").auth(VIEW).positional(1)
+                .p(p("MODULE", "Module slot", Kind.INT).req().range(1, 4))
+                .p(p("TYPE", "Module type", Kind.SPECIAL).sv("*ANY", "*PRESENCE", "*INVENTORY", "*FLUID", "*LIGHT", "*TIMER").dft("*ANY"))
+                .p(p("DEV", "PLC", Kind.DEVICE).sv("*SELF").dft("*SELF"))
+                .p(rtn("RTNVAL", "Return value", VarType.DEC))
+                .p(rtn("RTNSTS", "Return status", VarType.CHAR))
+                .p(rtn("RTNAUX", "Return extra value", VarType.CHAR)));
+        add(CommandDefinition.of("SNDPLCPGM", "Send PLC Program").auth(CONFIGURE).positional(2)
+                .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
+                .p(p("DEV", "PLC", Kind.DEVICE).req())
+                .p(yesNo("RUN", "Run after loading", "*YES")));
+        add(CommandDefinition.of("STRPLC", "Start PLC").auth(CONFIGURE).positional(1)
+                .p(p("DEV", "PLC", Kind.DEVICE).req()));
+        add(CommandDefinition.of("ENDPLC", "End PLC").auth(CONFIGURE).positional(1)
+                .p(p("DEV", "PLC", Kind.DEVICE).req()));
 
         // --- 8. Messages, displays and output ---
         add(CommandDefinition.of("SNDMSG", "Send Message").positional(1)
@@ -372,7 +393,8 @@ final class BuiltinCommands {
                 .p(p("MBR", "Member", Kind.QUALIFIED).req().values(ValueList.MEMBERS)));
         add(CommandDefinition.of("CRTELPGM", "Create ELCL Program").positional(2)
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.MEMBERS))
-                .p(p("SRCMBR", "Source member", Kind.QUALIFIED).sv("*PGM").dft("*PGM").values(ValueList.MEMBERS)));
+                .p(p("SRCMBR", "Source member", Kind.QUALIFIED).sv("*PGM").dft("*PGM").values(ValueList.MEMBERS))
+                .p(p("TGT", "Target", Kind.SPECIAL).sv("*JOB", "*PLC").dft("*JOB")));
         add(CommandDefinition.of("DLTPGM", "Delete Program").positional(1)
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS)));
         add(CommandDefinition.of("SBMJOB", "Submit Job").positional(1)

@@ -16,6 +16,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.CardReaderMenu;
+import net.zagdrath.encodedlogistics.menu.PlcMenu;
 import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DiskDriveMenu;
@@ -136,6 +137,8 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<DisplayPanelMenu>> DISPLAY_PANEL = MENU_TYPES.register("display_panel",
             () -> IMenuTypeExtension.create(DisplayPanelMenu::new));
+
+    public static final Supplier<MenuType<PlcMenu>> PLC = MENU_TYPES.register("plc", () -> IMenuTypeExtension.create(PlcMenu::new));
 
     private ModMenuTypes() {}
 }
