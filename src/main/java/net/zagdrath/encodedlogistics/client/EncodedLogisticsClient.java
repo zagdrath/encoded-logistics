@@ -29,17 +29,20 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.crt.CardReaderScreen;
 import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
 import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
+import net.zagdrath.encodedlogistics.client.crt.KeypunchScreen;
+import net.zagdrath.encodedlogistics.client.crt.LinePrinterScreen;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
-import net.zagdrath.encodedlogistics.client.rack.WirelessHud;
 import net.zagdrath.encodedlogistics.client.rack.RackModels;
 import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
+import net.zagdrath.encodedlogistics.client.rack.WirelessHud;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
 import net.zagdrath.encodedlogistics.client.screen.CollectorPlaneScreen;
@@ -112,6 +115,9 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.DEPLOYER_PLANE.get(), DeployerPlaneScreen::new);
         event.register(ModMenuTypes.SERVER_RACK.get(), RackScreen::new);
         event.register(ModMenuTypes.TERMINAL_DESK.get(), CrtScreen::new);
+        event.register(ModMenuTypes.KEYPUNCH.get(), KeypunchScreen::new);
+        event.register(ModMenuTypes.CARD_READER.get(), CardReaderScreen::new);
+        event.register(ModMenuTypes.LINE_PRINTER.get(), LinePrinterScreen::new);
     }
 
     // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).

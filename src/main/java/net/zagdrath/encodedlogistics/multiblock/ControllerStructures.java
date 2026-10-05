@@ -61,6 +61,7 @@ import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
+import net.zagdrath.encodedlogistics.network.ListedDevice;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
@@ -1245,8 +1246,9 @@ public class ControllerStructures extends SavedData {
             }
             Item item = runtime.discovered.items().get(pos);
             // A cable (lanes through it, none of its own) or a part host (its parts are listed instead); a Wireless Bridge,
-            // with no lanes of its own either, is listed all the same.
-            if (item == null || item == Items.AIR || node.laneCost() <= 0 && item != ModItems.WIRELESS_BRIDGE.get()) {
+            // with no lanes of its own either, is listed all the same, as is a ListedDevice (a Midrange peripheral).
+            boolean listed = blockEntity(server, pos) instanceof ListedDevice;
+            if (item == null || item == Items.AIR || node.laneCost() <= 0 && item != ModItems.WIRELESS_BRIDGE.get() && !listed) {
                 continue;
             }
             String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
@@ -1257,7 +1259,9 @@ public class ControllerStructures extends SavedData {
                 name = Component.literal(ci.name());
             }
             if (node.parts().isEmpty()) {
-                others.add(new DeviceRow(type, name, pos, node.laneCost(), online || item == ModItems.WIRELESS_BRIDGE.get() && networkOnline, missing, null, 0));
+                boolean shown = online || item == ModItems.WIRELESS_BRIDGE.get() && networkOnline
+                        || listed && blockEntity(server, pos) instanceof ListedDevice device && device.listedOnline();
+                others.add(new DeviceRow(type, name, pos, node.laneCost(), shown, missing, null, 0));
             }
         }
         rows.addAll(others);

@@ -15,6 +15,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
+import net.zagdrath.encodedlogistics.menu.CardReaderMenu;
 import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
@@ -23,6 +24,8 @@ import net.zagdrath.encodedlogistics.menu.FabricatorMenu;
 import net.zagdrath.encodedlogistics.menu.GatewayMenu;
 import net.zagdrath.encodedlogistics.menu.HandheldTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
+import net.zagdrath.encodedlogistics.menu.KeypunchMenu;
+import net.zagdrath.encodedlogistics.menu.LinePrinterMenu;
 import net.zagdrath.encodedlogistics.menu.LithographyPressMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkBridgeMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
@@ -108,6 +111,15 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<RackMenu>> SERVER_RACK = MENU_TYPES.register("server_rack",
             () -> IMenuTypeExtension.create(RackMenu::new));
+
+    public static final Supplier<MenuType<KeypunchMenu>> KEYPUNCH = MENU_TYPES.register("keypunch",
+            () -> IMenuTypeExtension.create(KeypunchMenu::new));
+
+    public static final Supplier<MenuType<CardReaderMenu>> CARD_READER = MENU_TYPES.register("card_reader",
+            () -> IMenuTypeExtension.create(CardReaderMenu::new));
+
+    public static final Supplier<MenuType<LinePrinterMenu>> LINE_PRINTER = MENU_TYPES.register("line_printer",
+            () -> IMenuTypeExtension.create(LinePrinterMenu::new));
 
     private ModMenuTypes() {}
 }

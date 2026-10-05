@@ -7,19 +7,25 @@ package net.zagdrath.encodedlogistics.midrange;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.BlockHitResult;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
@@ -31,11 +37,14 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNodeBlock {
     private final String key;
     private final List<Vec3i> footprint;
+    private final BiFunction<BlockPos, BlockState, ? extends PeripheralBlockEntity> entity;
 
-    public MidrangePeripheralBlock(String key, List<Vec3i> footprint, BlockBehaviour.Properties properties) {
+    public MidrangePeripheralBlock(String key, List<Vec3i> footprint, BiFunction<BlockPos, BlockState, ? extends PeripheralBlockEntity> entity,
+            BlockBehaviour.Properties properties) {
         super(properties);
         this.key = key;
         this.footprint = List.copyOf(footprint);
+        this.entity = entity;
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, Part.MASTER).setValue(MidrangeStates.ACTIVE, false));
     }
 
@@ -65,8 +74,28 @@ public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNo
         return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), 0, 0, List.of(), false);
     }
 
+    // On the master only.
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return null;
+        return state.getValue(PART) == Part.MASTER ? entity.apply(pos, state) : null;
+    }
+
+    @Override
+    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide() || state.getValue(PART) != Part.MASTER ? null
+                : (tickLevel, pos, tickState, blockEntity) -> {
+                    if (blockEntity instanceof PeripheralBlockEntity peripheral) {
+                        PeripheralBlockEntity.serverTick(tickLevel, pos, tickState, peripheral);
+                    }
+                };
+    }
+
+    // Its green screen.
+    @Override
+    protected InteractionResult use(Level level, BlockPos master, BlockState state, Player player, BlockHitResult hit) {
+        if (!level.isClientSide() && level.getBlockEntity(master) instanceof PeripheralBlockEntity peripheral) {
+            player.openMenu(peripheral, peripheral::writeOpening);
+        }
+        return InteractionResult.SUCCESS;
     }
 }

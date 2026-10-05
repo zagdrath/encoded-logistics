@@ -744,50 +744,25 @@ public final class ModCommands {
             ElclContext context = context(call);
             ElclSystem system = new ElclSystem(context.server(), context.network());
             String report = call.text("RPT");
-            List<String> lines = new ArrayList<>();
+            List<String> lines;
             String title = report.substring(1);
-            lines.add(String.format(Locale.ROOT, "%-40s %s   %s", report + " report", system.nowShort(), system.name()));
-            lines.add("");
             switch (report) {
-                case "*INV" -> {
-                    NetworkStorage storage = storage(context);
-                    lines.add(String.format(Locale.ROOT, "%-40s %14s %14s", "Item", "Hot", "Cold"));
-                    Map<Item, Long> hot = ElclItems.totals(storage, "*HOT"), cold = ElclItems.totals(storage, "*COLD");
-                    List<Item> items = new ArrayList<>(ElclItems.totals(storage, "*ALL").keySet());
-                    items.sort(Comparator.comparing(ElclItems::id));
-                    for (Item item : items) {
-                        lines.add(String.format(Locale.ROOT, "%-40s %,14d %,14d", ElclItems.id(item), hot.getOrDefault(item, 0L), cold.getOrDefault(item, 0L)));
-                    }
-                }
-                case "*DEV" -> {
-                    lines.add(String.format(Locale.ROOT, "%-12s %-10s %s", "Device", "Type", "Status"));
-                    for (ElclDevices.Device device : ElclDevices.list(context.server(), context.network())) {
-                        lines.add(String.format(Locale.ROOT, "%-12s %-10s %s", device.name(), device.type(), status(device)));
-                    }
-                }
+                case "*INV" -> lines = Reports.inventory(system, storage(context));
+                case "*DEV" -> lines = Reports.devices(system);
                 case "*JOBLOG" -> {
                     JobService.Job job = OsCommands.currentJob(call, system);
                     title = job.name();
-                    for (JobService.LogEntry entry : ElclServices.jobs().log(system, job.number())) {
-                        lines.add(entry.command() ? "> " + entry.text() : entry.id() + "  " + entry.text());
-                    }
+                    lines = Reports.jobLog(system, job);
                 }
                 default -> {
                     JobService.Job job = OsCommands.currentJob(call, system);
                     String name = call.text("SPLF").toUpperCase(Locale.ROOT);
-                    SpoolService.SpooledFile found = null;
-                    for (SpoolService.SpooledFile file : ElclServices.spool().files(system, null, job.number())) {
-                        if (name.equals("*LAST") || file.name().equalsIgnoreCase(name)) {
-                            found = file;
-                            break;
-                        }
-                    }
+                    SpoolService.SpooledFile found = Reports.spooled(system, null, job.number(), name);
                     if (found == null) {
                         throw new ElclException("ELC0103", name, "SPLF");
                     }
                     title = found.name();
-                    // Under the heading, as every report.
-                    lines.addAll(found.lines());
+                    lines = Reports.spooled(system, found);
                 }
             }
             call.send(Printers.print(system, call.text("DEV"), title, lines));

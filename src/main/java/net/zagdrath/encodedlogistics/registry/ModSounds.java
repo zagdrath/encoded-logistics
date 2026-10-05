@@ -42,5 +42,16 @@ public final class ModSounds {
     public static final Holder<SoundEvent> DESK_KEY_CLACK = SOUND_EVENTS.register("block.terminal_desk.key_clack",
             SoundEvent::createVariableRangeEvent);
 
+    // The Midrange line.
+    public static final Holder<SoundEvent> MIDRANGE_FAN = SOUND_EVENTS.register("block.midrange.midrange_fan", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> DISKETTE_LATCH = SOUND_EVENTS.register("block.midrange.diskette_latch", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> DRIVE_SEEK = SOUND_EVENTS.register("block.midrange.drive_seek", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> KEYPUNCH_CLATTER = SOUND_EVENTS.register("block.midrange.keypunch_clatter",
+            SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> CARD_READER_WHIRR = SOUND_EVENTS.register("block.midrange.card_reader_whirr",
+            SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> LINE_PRINTER_CHATTER = SOUND_EVENTS.register("block.midrange.line_printer_chatter",
+            SoundEvent::createVariableRangeEvent);
+
     private ModSounds() {}
 }

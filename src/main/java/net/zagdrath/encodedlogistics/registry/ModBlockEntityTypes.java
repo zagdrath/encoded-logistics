@@ -31,6 +31,10 @@ import net.zagdrath.encodedlogistics.blockentity.SwivelChairBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -89,6 +93,19 @@ public final class ModBlockEntityTypes {
     public static final Supplier<BlockEntityType<WirelessPortBlockEntity>> WIRELESS_PORT = BLOCK_ENTITY_TYPES.register(
             "wireless_port", () -> new BlockEntityType<>(WirelessPortBlockEntity::new, ModBlocks.WIRELESS_INGRESS_PORT.get(),
                     ModBlocks.WIRELESS_EGRESS_PORT.get()));
+
+    // The Midrange line, on a footprint's master: a Midrange System's or Integrated Midrange System's, the peripherals'.
+    public static final Supplier<BlockEntityType<MidrangeSystemBlockEntity>> MIDRANGE_SYSTEM = BLOCK_ENTITY_TYPES.register(
+            "midrange_system", () -> new BlockEntityType<>(MidrangeSystemBlockEntity::new, ModBlocks.MIDRANGE_SYSTEM.get(), ModBlocks.INTEGRATED_MIDRANGE.get()));
+
+    public static final Supplier<BlockEntityType<KeypunchBlockEntity>> KEYPUNCH = BLOCK_ENTITY_TYPES.register(
+            "keypunch", () -> new BlockEntityType<>(KeypunchBlockEntity::new, ModBlocks.KEYPUNCH.get()));
+
+    public static final Supplier<BlockEntityType<CardReaderBlockEntity>> CARD_READER = BLOCK_ENTITY_TYPES.register(
+            "card_reader", () -> new BlockEntityType<>(CardReaderBlockEntity::new, ModBlocks.CARD_READER.get()));
+
+    public static final Supplier<BlockEntityType<LinePrinterBlockEntity>> LINE_PRINTER = BLOCK_ENTITY_TYPES.register(
+            "line_printer", () -> new BlockEntityType<>(LinePrinterBlockEntity::new, ModBlocks.LINE_PRINTER.get()));
 
     // On the rack's master block only.
     public static final Supplier<BlockEntityType<RackBlockEntity>> SERVER_RACK = BLOCK_ENTITY_TYPES.register(

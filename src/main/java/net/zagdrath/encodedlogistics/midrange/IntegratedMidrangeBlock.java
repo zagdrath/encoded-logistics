@@ -72,6 +72,6 @@ public class IntegratedMidrangeBlock extends FootprintBlock implements NetworkNo
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return null;
+        return state.getValue(PART) == Part.MASTER ? new MidrangeSystemBlockEntity(pos, state) : null;
     }
 }

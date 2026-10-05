@@ -11,6 +11,7 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.elcl.sync.FolderSync;
+import net.zagdrath.encodedlogistics.midrange.Midranges;
 
 // Binds the game side's executors to the built-in commands' schemas (CommandRegistry), once at startup.
 public final class ElclSetup {
@@ -26,6 +27,7 @@ public final class ElclSetup {
         RedstoneCommands.bind();
         OsCommands.bind();
         ModCommands.bind();
+        Midranges.register();
         ParamDef.listLimit(ElclConfig::maxListSize);
         ElclEvents.listen(Triggers::fired);
         if (ElclServices.libraries() instanceof StoredLibraryService libraries) {
