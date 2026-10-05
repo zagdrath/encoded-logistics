@@ -18,11 +18,18 @@ import net.minecraft.world.item.Item;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.db.DbRecord;
+import net.zagdrath.encodedlogistics.elcl.db.FieldDef;
+import net.zagdrath.encodedlogistics.elcl.db.Query;
+import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.elcl.exec.MachineCommands;
 import net.zagdrath.encodedlogistics.elcl.exec.ModCommands;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.elcl.screen.FileService;
+import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -35,7 +42,8 @@ import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The live widgets' data (HANDOFF 3), worked out on the server once a second for each region of a screen: storage hot
-// and cold, energy, lanes, active crafting jobs, an item's count, the devices (by type), the UPSes, and graphs - of
+// and cold, energy, lanes, active crafting jobs, an item's count, the devices (by type), the UPSes, a file's records (a
+// table: a RUNQRY's selection and sort; the first TABLE_ROWS), and graphs - of
 // item flow, energy, lanes and crafting from a Monitoring Server on the network when there is one, else (and always for
 // *STORAGE and *ITEM) from the screen's own history.
 final class DisplayData {
@@ -181,6 +189,7 @@ final class DisplayData {
             case "*DEVICES" -> devices(server, network, name, widget.devType());
             case "*UPS" -> ups(server, network, name);
             case "*GRAPH" -> graph(server, network, name, widget, history);
+            case "*TABLE" -> table(server, network, name, widget);
             default -> new DisplayFrame(name, "", "", List.of(), List.of(), List.of());
         };
     }
@@ -299,6 +308,46 @@ final class DisplayData {
         };
         String value = points.isEmpty() ? "-" : compact(Math.round(points.getLast()));
         return new DisplayFrame(name, label, value, List.of(), List.of(), points);
+    }
+
+    // A table's rows (TABLE_ROWS at most): the headings, then the records the selection takes in its order, each a row of
+    // tab-separated values; numbers: 1 for a numeric column (right-aligned), 0 else. The label is the file, the value how
+    // many records it selected; a file gone or a selection that fails shows "!" and its message.
+    static final int TABLE_ROWS = 64;
+    private static final String TAB = "\t";
+
+    private static DisplayFrame table(MinecraftServer server, NetworkRef network, String name, DisplayContent.Widget widget) {
+        ElclSystem system = new ElclSystem(server, network);
+        String file = widget.file();
+        try {
+            int slash = file.indexOf('/');
+            String library = slash >= 0 ? file.substring(0, slash) : "*LIBL", member = file.substring(slash + 1);
+            FileService.Who who = new FileService.Who(SystemData.SYSTEM_OWNER, true);
+            RecordFormat format = ElclServices.files().format(system, library, member);
+            List<DbRecord> records = Query.run(ElclServices.files().records(system, who, library, member), Query.selection(widget.select(), format, file),
+                    Query.sort(widget.sort().isBlank() ? List.of() : List.of(widget.sort().split(" +")), format, file));
+            List<String> rows = new ArrayList<>();
+            List<String> heading = new ArrayList<>();
+            List<Long> numeric = new ArrayList<>();
+            for (FieldDef field : format.fields()) {
+                heading.add(String.join(" ", field.heading()));
+                numeric.add(field.numeric() ? 1L : 0L);
+            }
+            rows.add(String.join(TAB, heading));
+            for (DbRecord record : records) {
+                if (rows.size() >= TABLE_ROWS) {
+                    break;
+                }
+                List<String> cells = new ArrayList<>();
+                for (int i = 0; i < format.fields().size(); i++) {
+                    cells.add(format.fields().get(i).text(record.value(i)));
+                }
+                rows.add(String.join(TAB, cells));
+            }
+            return new DisplayFrame(name, file, compact(records.size()), numeric.subList(0, Math.min(16, numeric.size())), rows, List.of());
+        } catch (ElclException e) {
+            return new DisplayFrame(name, file, "!", List.of(), List.of("!" + e.elclMessage().text()), List.of());
+        }
     }
 
     // --- Formatting ---

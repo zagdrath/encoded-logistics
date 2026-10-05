@@ -18,12 +18,15 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
+import net.zagdrath.encodedlogistics.elcl.db.Query;
 import net.zagdrath.encodedlogistics.elcl.device.DisplayDevice;
 import net.zagdrath.encodedlogistics.elcl.device.Displays;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 
 // The Display Panel commands (display handoff 6): CLRDSP clears a region or the whole screen, CHGDSPRGN defines or
-// changes a region (canvas px), SNDDSPWDG places a dashboard widget, SNDDSPGPH a graph, SNDDSPIMG an image from the
+// changes a region (canvas px), SNDDSPWDG places a dashboard widget (a *TABLE: a file's records, selected and sorted as
+// RUNQRY does them), SNDDSPGPH a graph, SNDDSPIMG an image from the
 // system's images folder, RTVDSPSIZ returns the size. ELC1301 (no such device), ELC1303 (not a display), ELC1314 (a
 // region outside the screen, overlapping another, or not there), ELC1316 (a data source the widget can't use), and
 // for images ELC1312 / ELC1313 / ELC1315, and ELC1317 (a diagnostic) when the colour mode is above the server's limit.
@@ -134,8 +137,25 @@ final class DisplayCommands {
             if (!devType.equals("*ALL") && !kind.equals("*DEVICES")) {
                 throw new ElclException("ELC1316", devType, kind);
             }
+            // *TABLE: a file (ELC1316 without one), its selection and sort checked against it now.
+            String file = call.text("FILE").toUpperCase(Locale.ROOT), select = "", sort = "";
+            if (kind.equals("*TABLE")) {
+                if (file.equals("*NONE") || file.isBlank()) {
+                    throw new ElclException("ELC1316", "*NONE", kind);
+                }
+                String[] found = DbCommands.existing(OsCommands.system(call), OsCommands.user(call), file);
+                file = found[0] + "/" + found[1];
+                var format = ElclServices.files().format(OsCommands.system(call), found[0], found[1]);
+                select = call.text("QRYSLT").equalsIgnoreCase("*ALL") ? "" : call.text("QRYSLT");
+                Query.selection(select, format, file);
+                List<String> fields = call.list("SORT").stream().filter(field -> !field.equalsIgnoreCase("*NONE")).toList();
+                Query.sort(fields, format, file);
+                sort = String.join(" ", fields);
+            } else if (!file.equals("*NONE")) {
+                throw new ElclException("ELC1316", file, kind);
+            }
             DisplayContent.Widget widget = new DisplayContent.Widget(kind, kind.equals("*ITEM") ? item : "", devType, color(call, "COLOR"), "", "*10M",
-                    "*LINE", "", "*DITHER", "*DFT");
+                    "*LINE", kind.equals("*TABLE") ? file : "", "*DITHER", "*DFT", select, sort);
             put(display, region.with(widget));
         });
 

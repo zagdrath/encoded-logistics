@@ -65,7 +65,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | - | Display File Description | NEW | `DspFdPanel` (DSPFD FILE(); FileQueries filedesc). Layout `20_dspfd` |
 | - | Update Data | NEW | `UpdDtaPanel` (UPDDTA FILE(); FileQueries record / putrecord / addrecord / delrecord): change and entry modes, F6 / F10, F7 / F8, F11 delete (confirmed), Position to key, values checked by type (`FieldDef.convert`) and the cursor to the field an error names; 12 fields a page. Layout `21_upddta` |
 | - | Source Editor, PF members | EXTENDED | `EditorPanel`: the member's type on row 1; a PF member checked as DDS (`elcl/db/Dds`), no prompter; an ELCLP member's DCLFs checked against the files' formats (FileQueries fileformat, asked for as they're met) |
-| - | Display Panel configuration | NEW | `client/screen/DisplayPanelScreen` (`menu/DisplayPanelMenu`, `DisplayConfigPayload`): Mode, Layout (drag edges to move or split regions, right-click removes), Widgets (a picker for the widget, its source and colour). Not a green screen: the L3 Switch panel's frame |
+| - | Display Panel configuration | NEW | `client/screen/DisplayPanelScreen` (`menu/DisplayPanelMenu`, `DisplayConfigPayload`): Mode, Layout (drag edges to move or split regions, right-click removes), Widgets (a picker for the widget, its source and colour; a Table takes a file, LIB/NAME). Not a green screen: the L3 Switch panel's frame |
 
 ### Main Menu options
 
@@ -129,7 +129,8 @@ statements (PGM, DCL, IF, DO, MONMSG and the rest) are program-only: on a comman
   compile-time message; schemas), `elcl.VmTest` (arithmetic, strings, lists, every loop, SELECT, GOTO, subroutines,
   CALL by reference, monitors, runtime errors, budget, save and load mid-run, examples start), `elcl.SystemDataTest`,
   `elcl.ResequenceTest`, `client.crt.CrtGridFieldTest`, `client.crt.LayoutTest` (every screen composed and compared
-  with `src/test/resources/layouts/*.txt`), `client.crt.EditorTest`, `client.crt.MainMenuTest`.
+  with `src/test/resources/layouts/*.txt`), `client.crt.EditorTest`, `client.crt.MainMenuTest`; database files:
+  `elcl.db.DdsTest`, `DbFileTest`, `QueryCsvTest`, `elcl.DbVmTest`, `client.crt.DbScreensTest` (layouts 17-22).
 - Game tests (`gradlew runGameTestServer`): `control_interface`, `elcl_os_commands`, `desk_commands`; `elcl_persistence`,
   `elcl_storage_full`, `elcl_retention`, `elcl_library_authority`; `device_names_migration`, `device_names_stable`,
   `device_names_moved`, `device_locate_box`; `elcl_mod_commands`, `elcl_interactive_call`, `elcl_examples`;
@@ -138,7 +139,9 @@ statements (PGM, DCL, IF, DO, MONMSG and the rest) are program-only: on a comman
   `diskette_save_restore`, `printer_print`, `recipe_library`; `folder_sync`; `midrange_footprints`,
   `midrange_expansion_cabinet`, `midrange_peripherals`, `midrange_printer_pages`, `midrange_system_crafts`,
   `midrange_tiers`, `midrange_integrated_zones`, `midrange_screens`, `midrange_controller`, `midrange_storage_drives`; `rack_access`, `rack_access_open_and_offline`, `link_card_permissions`; `display_merging`,
-  `display_on_network`, `display_commands`, `display_configuration`. Unit: `display.DisplayImagesTest`.
+  `display_on_network`, `display_commands`, `display_configuration`; `db_files`, `db_programs`, `db_query`,
+  `db_system_files`, `db_copies`, `db_persistence`, `db_limits`, `db_authority`, `db_example`, `db_screens`,
+  `db_save_restore`, `db_display_table`. Unit: `display.DisplayImagesTest`.
 - Not automated: rendering in each phosphor at GUI scales 1-4 and small windows, the blinking locate box and the
   facade preview (client rendering), and the screens themselves in a running client (`LayoutTest` composes each one).
 

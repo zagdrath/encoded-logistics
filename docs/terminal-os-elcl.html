@@ -126,7 +126,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
 <body>
 <header class="site-header" id="top">
   <h1>Terminal OS and ELCL Reference</h1>
-  <p>The Encoded Logistics Terminal Desk runs a small midrange-style operating system, the <strong>Terminal OS</strong>, and a control language, <strong>ELCL</strong> (Encoded Logistics Control Language). This page covers using the terminal and its screens, writing and compiling ELCL programs, running programs as interactive and batch jobs, schedules and triggers, every command and message, the Control Interface block, the server config, and the hardware that is still to come.</p>
+  <p>The Encoded Logistics Terminal Desk runs a small midrange-style operating system, the <strong>Terminal OS</strong>, and a control language, <strong>ELCL</strong> (Encoded Logistics Control Language). This page covers using the terminal and its screens, writing and compiling ELCL programs, database files and queries, running programs as interactive and batch jobs, schedules and triggers, every command and message, the Control Interface block, the server config, and the hardware that is still to come.</p>
   <p>It is written for players and server admins, with a short section for mod contributors at the end. The design documents live in <code>docs/elcl/</code>; where they and the code disagree, this page describes what the code does and points out the difference.</p>
 </header>
 <div class="layout">
@@ -192,7 +192,20 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#savlib">Saving to diskette</a></li>
     </ol>
   </li>
-  <li><a href="#language">5. The ELCL language</a>
+  <li><a href="#database">5. Database files</a>
+    <ol>
+      <li><a href="#db-objects">Files, records and system files</a></li>
+      <li><a href="#db-define">Defining a file</a></li>
+      <li><a href="#db-create">Creating, changing and deleting files</a></li>
+      <li><a href="#db-programs">Files in programs</a></li>
+      <li><a href="#db-screens">The screens</a></li>
+      <li><a href="#db-query">Queries (RUNQRY)</a></li>
+      <li><a href="#db-copy">Copying, export and import</a></li>
+      <li><a href="#db-limits">Storage, limits and authority</a></li>
+      <li><a href="#db-example">Example: logging item counts</a></li>
+    </ol>
+  </li>
+  <li><a href="#language">6. The ELCL language</a>
     <ol>
       <li><a href="#lexical">Lexical rules</a></li>
       <li><a href="#structure">Program structure</a></li>
@@ -210,7 +223,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#examples">Annotated examples</a></li>
     </ol>
   </li>
-  <li><a href="#commands">6. Command reference</a>
+  <li><a href="#commands">7. Command reference</a>
     <ol>
       <li><a href="#cmd-overview">Reading the tables</a></li>
       <li><a href="#cmd-program">Program control</a></li>
@@ -225,13 +238,14 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#cmd-os-libraries">Libraries, members, programs</a></li>
       <li><a href="#cmd-os-jobs">Jobs, schedules, triggers</a></li>
       <li><a href="#cmd-os-sysvals">System values, save/restore</a></li>
+      <li><a href="#cmd-db">Database files</a></li>
       <li><a href="#cmd-screens">Screen and session commands</a></li>
       <li><a href="#cmd-desk">The desk's old words (removed)</a></li>
       <li><a href="#cmd-extra">Not in COMMANDS.md</a></li>
     </ol>
   </li>
-  <li><a href="#messages">7. Message reference</a></li>
-  <li><a href="#jobs">8. Jobs, scheduling, triggers, queues, output, system values</a>
+  <li><a href="#messages">8. Message reference</a></li>
+  <li><a href="#jobs">9. Jobs, scheduling, triggers, queues, output, system values</a>
     <ol>
       <li><a href="#job-basics">Jobs</a></li>
       <li><a href="#job-logs">Job logs</a></li>
@@ -246,16 +260,16 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#sysvals">System values</a></li>
     </ol>
   </li>
-  <li><a href="#control-interface">9. The Control Interface</a></li>
-  <li><a href="#status">10. Status, limits and server config</a>
+  <li><a href="#control-interface">10. The Control Interface</a></li>
+  <li><a href="#status">11. Status, limits and server config</a>
     <ol>
       <li><a href="#hardware">Hardware still to come</a></li>
       <li><a href="#known-limits">Known limits</a></li>
       <li><a href="#config">Server config (elcl)</a></li>
     </ol>
   </li>
-  <li><a href="#developers">11. For developers</a></li>
-  <li><a href="#differences">12. Where the spec and the code differ</a></li>
+  <li><a href="#developers">12. For developers</a></li>
+  <li><a href="#differences">13. Where the spec and the code differ</a></li>
 </ol>
 </nav>
 </aside>
@@ -321,7 +335,20 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#savlib">Saving to diskette</a></li>
     </ol>
   </li>
-  <li><a href="#language">5. The ELCL language</a>
+  <li><a href="#database">5. Database files</a>
+    <ol>
+      <li><a href="#db-objects">Files, records and system files</a></li>
+      <li><a href="#db-define">Defining a file</a></li>
+      <li><a href="#db-create">Creating, changing and deleting files</a></li>
+      <li><a href="#db-programs">Files in programs</a></li>
+      <li><a href="#db-screens">The screens</a></li>
+      <li><a href="#db-query">Queries (RUNQRY)</a></li>
+      <li><a href="#db-copy">Copying, export and import</a></li>
+      <li><a href="#db-limits">Storage, limits and authority</a></li>
+      <li><a href="#db-example">Example: logging item counts</a></li>
+    </ol>
+  </li>
+  <li><a href="#language">6. The ELCL language</a>
     <ol>
       <li><a href="#lexical">Lexical rules</a></li>
       <li><a href="#structure">Program structure</a></li>
@@ -339,7 +366,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#examples">Annotated examples</a></li>
     </ol>
   </li>
-  <li><a href="#commands">6. Command reference</a>
+  <li><a href="#commands">7. Command reference</a>
     <ol>
       <li><a href="#cmd-overview">Reading the tables</a></li>
       <li><a href="#cmd-program">Program control</a></li>
@@ -354,13 +381,14 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#cmd-os-libraries">Libraries, members, programs</a></li>
       <li><a href="#cmd-os-jobs">Jobs, schedules, triggers</a></li>
       <li><a href="#cmd-os-sysvals">System values, save/restore</a></li>
+      <li><a href="#cmd-db">Database files</a></li>
       <li><a href="#cmd-screens">Screen and session commands</a></li>
       <li><a href="#cmd-desk">The desk's old words (removed)</a></li>
       <li><a href="#cmd-extra">Not in COMMANDS.md</a></li>
     </ol>
   </li>
-  <li><a href="#messages">7. Message reference</a></li>
-  <li><a href="#jobs">8. Jobs, scheduling, triggers, queues, output, system values</a>
+  <li><a href="#messages">8. Message reference</a></li>
+  <li><a href="#jobs">9. Jobs, scheduling, triggers, queues, output, system values</a>
     <ol>
       <li><a href="#job-basics">Jobs</a></li>
       <li><a href="#job-logs">Job logs</a></li>
@@ -375,16 +403,16 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#sysvals">System values</a></li>
     </ol>
   </li>
-  <li><a href="#control-interface">9. The Control Interface</a></li>
-  <li><a href="#status">10. Status, limits and server config</a>
+  <li><a href="#control-interface">10. The Control Interface</a></li>
+  <li><a href="#status">11. Status, limits and server config</a>
     <ol>
       <li><a href="#hardware">Hardware still to come</a></li>
       <li><a href="#known-limits">Known limits</a></li>
       <li><a href="#config">Server config (elcl)</a></li>
     </ol>
   </li>
-  <li><a href="#developers">11. For developers</a></li>
-  <li><a href="#differences">12. Where the spec and the code differ</a></li>
+  <li><a href="#developers">12. For developers</a></li>
+  <li><a href="#differences">13. Where the spec and the code differ</a></li>
 </ol>
 </nav>
 </details>
@@ -401,12 +429,12 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
   <dt>ELCL</dt>
   <dd>The Encoded Logistics Control Language. It is modelled on midrange control languages: every statement is a command with keyword parameters such as <code>CRTLIB LIB(ZAGLIB) TEXT('My scripts')</code>, variables start with <code>&amp;</code>, special values start with <code>*</code>, and errors are handled with <code>MONMSG</code>. You type ELCL commands on any command line, and you write ELCL programs in source members, edit them in the source editor and compile them. The same command definitions drive the parser, the compiler, the F4 prompter, F1 help and the command line.</dd>
   <dt>Control Interface</dt>
-  <dd>A network device block that gives ELCL redstone input and output: six faces, each readable with <code>RTVRSIN</code> and drivable with <code>CHGRSOUT</code>. It has no GUI of its own; it is named <code>CTLIF01</code>, <code>CTLIF02</code> and so on, and is driven from the terminal. See <a href="#control-interface">section 9</a>.</dd>
+  <dd>A network device block that gives ELCL redstone input and output: six faces, each readable with <code>RTVRSIN</code> and drivable with <code>CHGRSOUT</code>. It has no GUI of its own; it is named <code>CTLIF01</code>, <code>CTLIF02</code> and so on, and is driven from the terminal. See <a href="#control-interface">section 10</a>.</dd>
 </dl>
 
 <div class="callout">
   <p><strong>Read this first.</strong> Everything on this page works: the screens, the command line, libraries and members, the editor and compiler, <strong>running programs</strong> (interactively with <code>CALL</code>, or as batch jobs on Compute Servers), schedule entries and triggers, sign-on and Firewall authority, and every inventory, crafting, device, power and redstone command. What the OS keeps is <a href="#persistence">saved with the world</a>, per network.</p>
-  <p>The Midrange line is in: its Line Printer prints, its 8" Diskettes take <code>SAVLIB</code>, and its Midrange Systems run batch jobs and crafting (<a href="#midrange">the Midrange line</a>). A few commands still talk to hardware that isn't in the mod yet (the Mainframe). Display Panels show what scripts send them (<a href="#display">Display Panels</a>). They are built and tested against interfaces, and answer <code>ELC1301 Device &amp;1 not found.</code> until that hardware exists. See <a href="#status">section 10</a>.</p>
+  <p>The Midrange line is in: its Line Printer prints, its 8" Diskettes take <code>SAVLIB</code>, and its Midrange Systems run batch jobs and crafting (<a href="#midrange">the Midrange line</a>). A few commands still talk to hardware that isn't in the mod yet (the Mainframe). Display Panels show what scripts send them (<a href="#display">Display Panels</a>). They are built and tested against interfaces, and answer <code>ELC1301 Device &amp;1 not found.</code> until that hardware exists. See <a href="#status">section 11</a>.</p>
 </div>
 
 <h3 id="systems">Systems and networks</h3>
@@ -420,14 +448,15 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
 <h3 id="persistence">What is saved</h3>
 <p>Each system's data is saved with the world (in the overworld's saved data, one record per network, keyed by its controller structure) and loaded with it:</p>
 <ul>
-  <li>libraries, source members (with their sequence numbers and change dates) and compiled programs (kept as source with their compile date and source version, and compiled again on load);</li>
+  <li>libraries, source members (with their type, sequence numbers and change dates) and compiled programs (kept as source with their compile date and source version, and the formats of the files they declare, and compiled again on load);</li>
+  <li>physical files and their records (<a href="#database">database files</a>);</li>
   <li>message queues, spooled files and system values;</li>
   <li>batch jobs: queued, held and running ones, a running one with its whole VM state; the logs of the last <code>LOGRTN</code> ended jobs; job schedule entries and trigger events, with the player who made each;</li>
   <li>the crafting job history: a record of each of the last <code>CRFLOGRTN</code> crafting jobs that ended (see <a href="#crafthistory">crafting job history</a>);</li>
   <li>user profiles (library list, current library, last sign-on) and which device holds each <a href="#device-names">device name</a>.</li>
 </ul>
 <p>Not saved: interactive jobs (they belong to an open terminal session and end with it) and member edit locks. <code>ELSYS</code> is never saved: it is rebuilt from the mod's bundled examples, and its programs compiled, every time a system is made or loaded, so a mod update brings new samples with it.</p>
-<p>Two caps keep a system's data in bounds (server config, <a href="#config">section 10</a>): at most <strong>200 spooled files</strong> per system and <strong>500 messages</strong> per user's queue; past either, the oldest go first. Source members also cost <a href="#storage-cost">network storage</a>.</p>
+<p>Two caps keep a system's data in bounds (server config, <a href="#config">section 11</a>): at most <strong>200 spooled files</strong> per system and <strong>500 messages</strong> per user's queue; past either, the oldest go first. Source members also cost <a href="#storage-cost">network storage</a>.</p>
 
 <h3 id="sign-on">Signing on</h3>
 <p>The <strong>Sign On</strong> screen appears when you open a desk on a network that has a <strong>Firewall</strong>, unless the system value <code>SECLVL</code> is <code>10</code>. Without a Firewall there is no sign-on: the desk opens on the Main Menu (and everyone has full authority anyway). Signing on happens on the server: until the session has signed on, the desk answers nothing but the screen's system information and the sign-on itself, so another screen can't be reached around it.</p>
@@ -685,6 +714,11 @@ Select one of the following:
     <tr><td><code>WRKCRFJOB</code></td><td>Work with Jobs</td><td>Menu 2; <code>WRKCRFJOB</code></td><td>F1=Help F3=Exit F5=Refresh F9=Command Entry F10=History F12=Cancel; in the history: F10=Active jobs F11=Sort</td></tr>
     <tr><td><code>WRKDEV</code></td><td>Work with Devices</td><td>Menu 3; <code>WRKDEV</code></td><td>F3=Exit F5=Refresh F9=Command Entry F12=Cancel</td></tr>
     <tr><td><code>WRKMCH</code></td><td>Work with Machines</td><td><code>WRKMCH</code></td><td>F1=Help F3=Exit F5=Refresh F9=Command Entry F12=Cancel</td></tr>
+    <tr><td><code>WRKF</code></td><td>Work with Files</td><td><code>WRKF LIB()</code> (<a href="#db-screens">database files</a>)</td><td>F1=Help F3=Exit F5=Refresh F6=Create F9=Command Entry F12=Cancel</td></tr>
+    <tr><td><code>DSPPFM</code></td><td>Display Physical File Member</td><td><code>DSPPFM FILE()</code>; WRKF 5</td><td>F1=Help F3=Exit F5=Refresh F12=Cancel F19=Left F20=Right</td></tr>
+    <tr><td><code>RUNQRY</code></td><td>Display Report</td><td><code>RUNQRY FILE() OUTPUT(*DISPLAY)</code></td><td>F1=Help F3=Exit F5=Refresh F12=Cancel F19=Left F20=Right</td></tr>
+    <tr><td><code>DSPFD</code></td><td>Display File Description</td><td><code>DSPFD FILE()</code>; WRKF 8</td><td>F1=Help F3=Exit F5=Refresh F12=Cancel</td></tr>
+    <tr><td><code>UPDDTA</code></td><td>Update Data</td><td><code>UPDDTA FILE()</code>; WRKF 2</td><td>F1=Help F3=Exit F5=Refresh F6=Add F7=Previous F8=Next F11=Delete F12=Cancel; entry mode F5=Clear F10=Change mode</td></tr>
     <tr><td><code>DSPMCH</code></td><td>Display Machine</td><td>WRKMCH 5</td><td>Enter=Back F3=Exit PgUp/PgDn</td></tr>
     <tr><td><code>DSPNETSTS</code></td><td>Display Network Status</td><td>Menu 4; <code>DSPNETSTS</code></td><td>F3=Exit F5=Refresh F12=Cancel</td></tr>
     <tr><td><code>WRKLIB</code></td><td>Work with Libraries</td><td>Menu 5; <code>WRKLIB</code></td><td>F1=Help F3=Exit F5=Refresh F6=Create F9=Command Entry F12=Cancel</td></tr>
@@ -803,7 +837,7 @@ Select one of the following:
  <span class="b">F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F11=Sort  F12=Cancel</span></pre>
 <figcaption>Work with Members. The text of a member copied from ELSYS comes from its first comment.</figcaption>
 </figure>
-<p>The source members of one library. Columns: Opt, Member, Type (always <code>ELCLP</code>), Chg (<code>*</code> when the source changed after its program was compiled), Text. Clicking a row types 2.</p>
+<p>The source members of one library, then its files. Columns: Opt, Member, Type (<code>ELCLP</code> a program's source, <code>PF</code> a file's definition, <code>*FILE</code> a file), Chg (<code>*</code> when the source changed after its program, or file, was made), Text. Clicking a row types 2. On a <code>PF</code> member, 14=Compile runs <code>CRTPF</code> (<code>CHGPF</code>, keeping the records, when its file is there already); on a file, the options are Work with Files': 2=Change data, 4=Delete, 5=Display data, 8=Display description (<a href="#db-screens">database files</a>).</p>
 <div class="table-wrap"><table>
   <thead><tr><th>Option</th><th>What it does</th></tr></thead>
   <tbody>
@@ -1069,7 +1103,7 @@ FMT **  <span class="d">...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+..
 <p>Severities: <code>00</code> information, <code>10</code> warning, <code>20</code> error, <code>30</code> severe, <code>40</code> abnormal end.</p>
 
 <h3 id="storage-cost">Storage cost</h3>
-<p>Source members take room on the network's drives: <strong>one byte of drive space per 64 characters</strong> of source, rounded up per member (server config <code>charsPerStorageByte</code>). <code>ELSYS</code>, compiled programs, job logs and spooled files cost nothing.</p>
+<p>Source members take room on the network's drives: <strong>one byte of drive space per 64 characters</strong> of source, rounded up per member (server config <code>charsPerStorageByte</code>). <code>ELSYS</code>, compiled programs, job logs and spooled files cost nothing. A file's records cost the same way (<a href="#db-limits">database files</a>).</p>
 <ul>
   <li>Saving a member, creating, copying or restoring one, or a folder-sync import, that needs more than the drives have free fails with <code>ELC0207 Not enough network storage to save &amp;1.</code> A network with no drives at all can only hold empty members.</li>
   <li>The bytes the members take count as used hot storage on Display Network Status, in <code>RTVSTGSTS</code> and for the <code>*STGFULL</code> trigger. Work with Libraries 5=Display shows a library's size in characters.</li>
@@ -1078,29 +1112,244 @@ FMT **  <span class="d">...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+..
 
 <h3 id="folder-sync">Folder sync</h3>
 <p>A system's libraries can also live as plain files in the world save, so you can edit members in any text editor or keep them under version control:</p>
-<pre class="code">&lt;world&gt;/encodedlogistics/libraries/&lt;SYSNAME&gt;/&lt;LIB&gt;/&lt;MEMBER&gt;.elclp</pre>
+<pre class="code">&lt;world&gt;/encodedlogistics/libraries/&lt;SYSNAME&gt;/&lt;LIB&gt;/&lt;MEMBER&gt;.elclp   <span class="c">(a program's source)</span>
+&lt;world&gt;/encodedlogistics/libraries/&lt;SYSNAME&gt;/&lt;LIB&gt;/&lt;MEMBER&gt;.pf      <span class="c">(a file's definition)</span></pre>
 <ul>
   <li><strong>Out:</strong> saving a member in the editor, and creating, copying, renaming or restoring one, writes its file at once.</li>
   <li><strong>In:</strong> while the network is loaded the folder is read every two seconds. A new or changed file becomes the member: lines that didn't change keep their sequence numbers and change dates, changed and new lines are numbered between their neighbours and dated today (if there's no room, the member is numbered again in steps of 1.00). A new folder becomes a library, owned by the system (<code>QSYS</code>) with public authority <code>*CHANGE</code>.</li>
   <li><strong>Conflicts:</strong> the system remembers what it last synced for each member, so a file and a member that both changed since are a conflict. The last write wins (an in-game save is always the later one), and the losing version is kept beside it as <code>&lt;MEMBER&gt;.elclp.bak</code>.</li>
   <li><strong>Deletes:</strong> deleting a file never deletes its member (for safety). Deleting a member in the game moves its file to <code>&lt;LIB&gt;/.deleted/</code>.</li>
   <li><code>ELSYS</code> is never synced, in or out: it comes from the mod.</li>
+  <li>A file's records don't sync: <code>CPYTOIMPF</code> and <code>CPYFRMIMPF</code> copy them as CSV to and from the system's folder (<a href="#db-copy">database files</a>), only while folder sync is on.</li>
   <li>The folder is named after <code>SYSNAME</code>, so changing that system value starts a new folder.</li>
   <li>Server config <code>allowFolderSync</code>: <code>AUTO</code> (the default: on in single-player, off on dedicated servers), <code>TRUE</code> or <code>FALSE</code>.</li>
 </ul>
 
 <h3 id="savlib">Saving to diskette (<code>SAVLIB</code> / <code>RSTLIB</code>)</h3>
-<p><code>SAVLIB LIB(ZAGLIB) DEV(MIDRANGE01)</code> writes a library (its members with their sequence numbers and dates, and its programs) to the 8" Diskette in a diskette drive; <code>RSTLIB LIB(ZAGLIB) DEV(MIDRANGE01)</code> restores it, on this system or any other. Diskettes are items, so a library can be carried to another network or handed to another player.</p>
+<p><code>SAVLIB LIB(ZAGLIB) DEV(MIDRANGE01)</code> writes a library (its members with their types, sequence numbers and dates, its programs, and its files with their records) to the 8" Diskette in a diskette drive; <code>RSTLIB LIB(ZAGLIB) DEV(MIDRANGE01)</code> restores it, on this system or any other. Diskettes are items, so a library can be carried to another network or handed to another player.</p>
 <ul>
   <li><code>SAVLIB</code> writes to the first diskette in the drive, replacing a library of the same name on it: <code>ELC0220 Library &amp;1 saved to &amp;2.</code>, where &amp;2 is the device and the diskette's label. A diskette holds 64 KB of source (server config <code>disketteBytes</code>); a library that won't fit in what's free is <code>ELC1311 Library &amp;1 needs &amp;2 bytes; the diskette has &amp;3 free.</code></li>
-  <li><code>RSTLIB</code> reads from the first diskette holding that library (<code>ELC0201</code> if none does). It creates the library, owned by you, or replaces an existing one's members and programs (that needs <code>*CHANGE</code> on it: <code>ELC0401</code>); it never writes to <code>ELSYS</code> (<code>ELC0205</code>), and the members must fit in the network's storage (<code>ELC0207</code>). Programs are compiled again from their saved source. <code>ELC0221 Library &amp;1 restored from &amp;2.</code></li>
+  <li><code>RSTLIB</code> reads from the first diskette holding that library (<code>ELC0201</code> if none does). It creates the library, owned by you, or replaces an existing one's members, programs and files (that needs <code>*CHANGE</code> on it: <code>ELC0401</code>); it never writes to <code>ELSYS</code> (<code>ELC0205</code>), and the members must fit in the network's storage (<code>ELC0207</code>). Programs are compiled again from their saved source. <code>ELC0221 Library &amp;1 restored from &amp;2.</code></li>
   <li>No such device is <code>ELC1301</code>, an offline one <code>ELC1302</code>, a drive with no diskette <code>ELC1310 No diskette in device &amp;1.</code></li>
 </ul>
 <div class="callout"><p>The drives are the Midrange System (its diskette slot, and a second with an Expansion Cabinet), the Integrated Midrange System (every diskette in its magazine) and the Card Reader. Their names are <code>MIDRANGE01</code> and <code>CARDRDR01</code> unless renamed. The library is kept on the diskette item, so it goes wherever the diskette goes. See <a href="#midrange">the Midrange line</a>.</p></div>
 </section>
 
+<section id="database">
+<h2>5. Database files</h2>
+<p>A library can hold <strong>physical files</strong> as well as members and programs: tables of records, each record a row of named, typed fields. Programs read and write them with <code>DCLF</code> and <code>RCVF</code>, as CL programs do; <code>RUNQRY</code> selects and sorts them; screens show and change them a record at a time; and four files in <code>ELSYS</code> are the network itself (its items, devices, crafting history and jobs), live, so a script or a query can work on them like any other file.</p>
+<pre class="term"><span class="b">ITEMHIST</span> (a <span class="b">PF</span> member)  --CRTPF-->  ELGPL/ITEMHIST (a *FILE)  &lt;--WRTRCD--  a program (DCLF FILE(ELGPL/ITEMHIST))
+                                         |
+                                         +--RUNQRY / DSPPFM / UPDDTA / CPYTOIMPF ...</pre>
+
+<h3 id="db-objects">Files, records and system files</h3>
+<ul>
+  <li><strong>A file</strong> (<code>*FILE</code>, attribute <code>PF</code>) has a <strong>record format</strong> (up to 50 fields), an optional <strong>key</strong> (up to 4 fields, optionally <code>UNIQUE</code>) and one data member of records. A keyed file is read in key order; one without a key in the order its records were written. Each record has a relative record number, given when it's written and never reused.</li>
+  <li><strong>Its definition</strong> is a source member of type <code>PF</code>, edited in the source editor like a program's; <code>CRTPF</code> compiles it into the file. A file and a member (or a program) may share a name: they are different objects.</li>
+  <li><strong>Records are saved with the system</strong>, cost network storage like source (see <a href="#db-limits">limits</a>) and go to a diskette with <code>SAVLIB</code>.</li>
+</ul>
+<p>The <strong>system files</strong> in <code>ELSYS</code> have no records of their own: they're made from the network each time they're read (a read from the top sees it as it is now; a program reading on sees the same picture for the rest of that tick). They're read-only, and need the Firewall's <strong>view</strong> permission.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>File</th><th>Fields (the key first)</th><th>What's in it</th></tr></thead>
+  <tbody>
+    <tr><td><code>ELSYS/INVITEMS</code></td><td><code>ITEM</code> 64A, <code>NAME</code> 48A, <code>HOT</code> 18S, <code>COLD</code> 18S, <code>MOD</code> 32A</td><td>Every item in storage: its ID as scripts write it (<code>IRON_INGOT</code>, <code>encodedlogistics:logic_die</code>), display name, count on the drives and on tape, mod.</td></tr>
+    <tr><td><code>ELSYS/DEVICES</code></td><td><code>NAME</code> 10A, <code>TYPE</code> 10A, <code>LOCATION</code> 40A, <code>LANES</code> 9S, <code>STATUS</code> 10A</td><td>Every named device: type, <code>x,y,z dimension</code>, lanes it uses, <code>*ONLINE</code> / <code>*OFFLINE</code> / <code>*FAULT</code> / <code>*DISABLED</code>.</td></tr>
+    <tr><td><code>ELSYS/CRFHIST</code></td><td><code>NUMBER</code> 9S, <code>JOBID</code> 8A, <code>ITEM</code> 64A, <code>REQUESTED</code> 18S, <code>PRODUCED</code> 18S, <code>STATUS</code> 10A, <code>USER</code> 10A, <code>STARTED</code> T, <code>ENDED</code> T</td><td>The <a href="#crafthistory">crafting job history</a>.</td></tr>
+    <tr><td><code>ELSYS/JOBS</code></td><td><code>NUMBER</code> 6A, <code>JOB</code> 10A, <code>USER</code> 10A, <code>TYPE</code> 3A, <code>HOST</code> 10A, <code>STATUS</code> 7A, <code>PRIORITY</code> 1S, <code>BUDGET</code> 3S</td><td>The script jobs, as Work with Active Jobs shows them.</td></tr>
+  </tbody>
+</table></div>
+
+<h3 id="db-define">Defining a file</h3>
+<p>Make a definition member with <code>CRTMBR MBR(ZAGLIB/STOCK) SRCTYPE(PF)</code> (or F6 on Work with Members), then edit it. Each line starts with <code>A</code>; type in the midrange editor's columns or anywhere on the line. <code>A*</code> (or <code>*</code>) starts a comment; a line with only keywords goes with the line before it. The member's text comes from a first comment of the form <code>A* NAME - text</code>.</p>
+<pre class="code">     A* STOCK - stock levels
+     A                                      UNIQUE
+     A          R STOCKREC                  TEXT('Stock record')
+     A            ITEM          20A         COLHDG('Item')
+     A            QTY            9S 0       COLHDG('Quantity')
+     A            COST           7P 2       TEXT('Unit cost')
+     A            HOT            1L
+     A            SEEN            T         TEXT('Last counted')
+     A          K ITEM</pre>
+<p><code>R</code> names the record format (one a file). <code>K</code> names a key field, in order. Every other line is a field: its name (up to 10 characters), its length and type, then keywords.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Type</th><th>Meaning</th><th>Length</th><th>Its variable in a program</th></tr></thead>
+  <tbody>
+    <tr><td><code>A</code></td><td>Character</td><td>1&ndash;1,024 (<code>64A</code>)</td><td><code>*CHAR</code> of that length</td></tr>
+    <tr><td><code>S</code></td><td>Integer</td><td>1&ndash;18 digits, 0 decimals (<code>11S 0</code>)</td><td><code>*INT</code></td></tr>
+    <tr><td><code>P</code></td><td>Decimal</td><td>1&ndash;31 digits and its decimals (<code>9P 2</code> or <code>9P2</code>)</td><td><code>*DEC</code> of that length and decimals</td></tr>
+    <tr><td><code>L</code></td><td>Logical</td><td>1</td><td><code>*LGL</code></td></tr>
+    <tr><td><code>T</code></td><td>Game timestamp: the day and the time on the game clock, <code>00012 06:30:15</code>; it sorts and compares as text</td><td>any (ignored)</td><td><code>*CHAR 14</code></td></tr>
+  </tbody>
+</table></div>
+<dl class="defs">
+  <dt>Keywords</dt>
+  <dd><code>UNIQUE</code> before the <code>R</code>: no two records may have the same key (<code>ELC2203</code>). <code>TEXT('...')</code> on the <code>R</code> (the file's text when its member has none) or on a field. <code>COLHDG('...' ['...' ['...']])</code> on a field: its column heading on screens and reports, up to three lines (otherwise the field's name). Anything else is <code>ELC2226</code>.</dd>
+  <dt>Timestamps</dt>
+  <dd>Typed, imported or assigned, a <code>T</code> value may be <code>Day 12 06:30</code>, <code>12 06:30:15</code> or <code>00012 06:30:15</code>. Written blank (or <code>*NOW</code>) it takes the moment it's written; a program's variable gets that time back after <code>WRTRCD</code> or <code>UPDRCD</code>.</dd>
+  <dt>Checking</dt>
+  <dd>The editor checks a definition on Enter as it does a program: the bad line reversed, its message on the message line (<code>ELC2220</code>&ndash;<code>ELC2228</code>). There is no prompter for definition lines.</dd>
+</dl>
+
+<h3 id="db-create">Creating, changing and deleting files</h3>
+<ul>
+  <li><code>CRTPF FILE(ZAGLIB/STOCK)</code> compiles the member of the same name in the same library (<code>SRCMBR(LIB/NAME)</code> for another) and makes the file: <code>ELC2230 File &amp;1 created in library &amp;2.</code> The listing goes to Work with Output (a spooled file of the file's name): the source with sequence numbers, the record format (fields, record length, key), and each message with the sequence number of its line. With errors there's no file: <code>ELC2239</code>. Option <strong>14=Compile</strong> on a <code>PF</code> member in Work with Members does the same.</li>
+  <li><code>CHGPF FILE(ZAGLIB/STOCK)</code> makes the file again from its (changed) definition, <strong>keeping its records</strong>: each keeps its value in every field whose name and type are still there, and the other fields' values are dropped, a warning for each (<code>ELC2232 Field &amp;1 dropped from file &amp;2: its values are lost.</code>). A text field shorter now is cut; a number that no longer fits stops it (<code>ELC2209</code>), as does a key made <code>UNIQUE</code> over duplicates (<code>ELC2203</code>): then nothing changes. <code>ELC2231</code>. 14=Compile on a <code>PF</code> member whose file is there runs <code>CHGPF</code>. Work with Members and Work with Files mark a file whose definition changed since with <code>*</code> in Chg.</li>
+  <li><code>DLTF FILE()</code> deletes a file and its records (<code>ELC2233</code>); <code>CLRPFM FILE()</code> deletes every record (<code>ELC2234</code>).</li>
+</ul>
+
+<h3 id="db-programs">Files in programs</h3>
+<p><code>DCLF</code> goes with the <code>DCL</code>s and declares a variable for every field: <code>&amp;ITEM</code>, <code>&amp;QTY</code>&hellip;, or with an open ID <code>&amp;STK_ITEM</code>, <code>&amp;STK_QTY</code>&hellip; (<code>DCLF FILE(ZAGLIB/STOCK) OPNID(STK)</code>). A program may declare up to five files, each open ID once. The file operations name the file by its open ID (none: the file declared without one).</p>
+<pre class="code">PGM
+  DCLF FILE(ELSYS/INVITEMS)                   <span class="c">/* &amp;ITEM &amp;NAME &amp;HOT &amp;COLD &amp;MOD */</span>
+  DCLF FILE(ZAGLIB/LOW) OPNID(LOW)            <span class="c">/* &amp;LOW_ITEM &amp;LOW_QTY ...   */</span>
+  DCL  VAR(&amp;TOTAL) TYPE(*INT)
+READ:
+  RCVF
+  MONMSG MSGID(ELC2201) EXEC(GOTO CMDLBL(DONE))  <span class="c">/* end of file */</span>
+  CHGVAR VAR(&amp;TOTAL) VALUE(&amp;TOTAL + &amp;HOT + &amp;COLD)
+  IF COND(&amp;HOT + &amp;COLD *LT 64) THEN(DO)
+    CHGVAR VAR(&amp;LOW_ITEM) VALUE(&amp;ITEM)
+    CHGVAR VAR(&amp;LOW_QTY)  VALUE(&amp;HOT + &amp;COLD)
+    WRTRCD OPNID(LOW)
+    MONMSG MSGID(ELC2203)                     <span class="c">/* already listed */</span>
+  ENDDO
+  GOTO CMDLBL(READ)
+DONE:
+  SNDPGMMSG MSG('Items:' *BCAT %CHAR(&amp;TOTAL))
+ENDPGM</pre>
+<div class="table-wrap"><table>
+  <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>RCVF [OPNID()]</code></td><td>Reads the next record into the variables (key order; arrival order without a key). At the end: <code>ELC2201 End of file &amp;1 reached.</code>, monitorable, and again on every <code>RCVF</code> until the file is repositioned or closed.</td></tr>
+    <tr><td><code>POSDBF POSITION(*START|*END)</code></td><td>Back to the start (the next <code>RCVF</code> reads the first record) or on to the end.</td></tr>
+    <tr><td><code>CLOF</code></td><td>Closes the file: the next <code>RCVF</code> reads it again from the top.</td></tr>
+    <tr><td><code>CHNRCD KEY(value ...)</code> [EXT]</td><td>Reads the first record whose leading key fields are these values (all of the key, or its first fields): <code>ELC2202</code> when there's none. <code>RCVF</code> carries on after it.</td></tr>
+    <tr><td><code>WRTRCD</code> [EXT]</td><td>Writes a new record from the variables (fields the program doesn't declare are blank): <code>ELC2203</code> for a duplicate unique key, <code>ELC2208</code> when the file is full, <code>ELC0207</code> when storage is.</td></tr>
+    <tr><td><code>UPDRCD</code> [EXT]</td><td>Changes the record last read (<code>RCVF</code> or <code>CHNRCD</code>) to the variables' values: <code>ELC2204</code> when none has been read.</td></tr>
+    <tr><td><code>DLTRCD</code> [EXT]</td><td>Deletes the record last read (<code>ELC2204</code> with none).</td></tr>
+  </tbody>
+</table></div>
+<ul>
+  <li><strong>The file must exist when the program is compiled</strong> (<code>ELC2205 File &amp;1 not found in library &amp;2.</code>); an unqualified name is looked for down the compiling user's library list. The program keeps the record formats it was compiled with, so it compiles again the same after a restart, and a saved job goes on reading from where it was.</li>
+  <li><strong>Level check.</strong> Each operation opens the file as it is now (an unqualified name: down the job user's library list). If a field the program declares has gone or changed type since it was compiled (<code>CHGPF</code>), that's <code>ELC2207 Level check on file &amp;1: &amp;2 changed since the program was compiled.</code>: compile it again. Fields added since don't matter.</li>
+  <li>A value that doesn't fit its field (a number too big for <code>9S 0</code>) is <code>ELC2209</code>; text too long for an <code>A</code> field is cut, as a <code>*CHAR</code> assignment is.</li>
+  <li>A file operation naming an open ID no <code>DCLF</code> declares is a compile error, <code>ELC2206</code>. The file commands are program-only: typed on a command line they're <code>ELC0106</code>.</li>
+  <li>The editor checks <code>DCLF</code> against the file's real format, which it asks the server for when it meets one; until the answer comes, that file's variables aren't checked.</li>
+</ul>
+
+<h3 id="db-screens">The screens</h3>
+<p><code>WRKF LIB(ZAGLIB)</code> (or Work with Members, which lists a library's files after its members, Type <code>*FILE</code>) works with a library's files:</p>
+<pre class="term"> WRKF                           <span class="b">Work with Files</span>                System:  ELNET01
+                                                                 Day 2  07:14:22
+ Library . . . . :   <span class="b">ZAGLIB</span>
+ Type options, press Enter.
+   2=Change data  4=Delete  5=Display data  8=Display description
+
+<span class="b">Opt  File        Attr  Chg   Records  Text</span>
+<span class="u">   </span>  ITEMHIST    PF            1,240  Item count history
+<span class="u">5  </span>  STOCK       PF    <span class="b">*</span>           3  Stock levels
+<span class="u">   </span>  LOWSTOCK    PF                2  Query of ZAGLIB/STOCK
+
+                                      <span class="d">Chg * = definition changed since made</span></pre>
+<p>Options: <strong>2=Change data</strong> (Update Data), <strong>4=Delete</strong> (asks first; <code>DLTF</code>), <strong>5=Display data</strong>, <strong>8=Display description</strong>. F6 prompts <code>CRTPF</code>. ELSYS's files can be shown, not changed (<code>ELC0205</code>).</p>
+<p><code>DSPPFM FILE(ZAGLIB/STOCK)</code>, <strong>Display Physical File Member</strong>, shows the records in columns under their headings. PageUp / PageDown roll it; <strong>Position to</strong> takes a key on a keyed file (its fields' values, separated by blanks; the first fields alone will do: the first record at or after it comes to the top) or a record number; <strong>F19 / F20</strong> shift 40 columns for records wider than the screen.</p>
+<pre class="term"> DSPPFM                   <span class="b">Display Physical File Member</span>         System:  ELNET01
+                                                                 Day 2  07:14:22
+ File  . . . . . :   <span class="b">ZAGLIB/STOCK</span>               Records . . :   <span class="b">3</span>
+ Position to key . . . <span class="u">                              </span>   Columns . . :  1 - 78
+<span class="d">*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...</span>
+<span class="b">Item                   Quantity        COST  HOT  SEEN</span>
+COAL                        900        0.25  0    00002 07:00:00
+GOLD_INGOT                    3        9.99  1    00003 07:00:00
+IRON_INGOT                   40        1.50  1    00002 07:00:00</pre>
+<p><code>DSPFD FILE()</code>, <strong>Display File Description</strong>: the file's text, record format, source member (and whether it changed since), when it was made, records of the limit, record length, storage, key, and each field's type, length, decimals, place in the key and text.</p>
+<p><code>UPDDTA FILE()</code>, <strong>Update Data</strong>, changes records one at a time, as a midrange data file utility does:</p>
+<pre class="term"> UPDDTA                           <span class="b">Update Data</span>                  System:  ELNET01
+                                                                 Day 2  07:14:22
+ File  . . . . . :   <span class="b">ZAGLIB/STOCK</span>               Mode  . . . :   <span class="b">CHANGE</span>
+ Format  . . . . :   <span class="b">STOCKREC</span>                   Record  . . :   <span class="b">2 of 3</span>
+ Position to key . . . <span class="u">                              </span>
+
+ Type changes, press Enter.
+
+ ITEM       Item . . . . . . . . . . : <span class="u">GOLD_INGOT          </span> <span class="d">20A</span>
+ QTY        Quantity . . . . . . . . : <span class="u">3         </span> <span class="d">9S 0</span>
+ COST       Unit cost  . . . . . . . : <span class="u">9.99     </span> <span class="d">7P 2</span>
+ HOT         . . . . . . . . . . . . : <span class="u">1</span> <span class="d">1L</span>
+ SEEN       Last counted . . . . . . : <span class="u">00003 07:00:00</span> <span class="d">T</span>
+
+ F1=Help F3=Exit F5=Refresh F6=Add F7=Previous F8=Next F11=Delete F12=Cancel</pre>
+<ul>
+  <li><strong>Change mode</strong> shows a record. Change its values and press Enter to change it; Enter with nothing changed goes on to the next record. <strong>F7 / F8</strong> the record before or after (PageUp / PageDown too, when the fields fit one page); <strong>F11</strong> deletes it (asks first); a key in Position to and Enter shows the first record at or after it.</li>
+  <li><strong>Entry mode</strong> (F6, and an empty file opens in it): type a new record's values and press Enter to add it; the fields clear for the next. <strong>F10</strong> goes back to change mode.</li>
+  <li>Values are checked by type before anything is sent (a whole number for <code>S</code>, a number for <code>P</code>, <code>1</code> or <code>0</code> for <code>L</code>, a timestamp or blank for <code>T</code>), and again on the server: an error (<code>ELC2209</code>, <code>ELC2203</code>) puts the cursor on the field it names. A file with more than 12 fields has more pages of them.</li>
+</ul>
+
+<h3 id="db-query">Queries (<code>RUNQRY</code>)</h3>
+<pre class="code">RUNQRY FILE(ZAGLIB/STOCK) QRYSLT('QTY *LT 100 *AND HOT') SORT(QTY *DESCEND)
+RUNQRY FILE(ELSYS/INVITEMS) QRYSLT('%SST(ITEM 1 4) *EQ "IRON"') SORT(ITEM) OUTPUT(*PRINT)
+RUNQRY FILE(ELSYS/DEVICES) QRYSLT('STATUS *NE "*ONLINE"') OUTPUT(*OUTFILE) OUTFILE(ZAGLIB/DOWN)</pre>
+<ul>
+  <li><strong><code>QRYSLT</code></strong> is an ELCL expression over the file's field names: every operator and built-in of the language (<a href="#expressions">expressions</a>); a field written bare or as <code>&amp;FIELD</code>; a literal in double quotes (or doubled single quotes, as in any quoted value). A name that isn't a field is <code>ELC2242</code>. <code>*ALL</code> (the default) takes every record.</li>
+  <li><strong><code>SORT</code></strong> names up to four fields, each followed by <code>*DESCEND</code> to go highest first; records it can't tell apart keep the file's order. <code>*NONE</code> (the default): the file's order.</li>
+  <li><strong><code>OUTPUT(*DISPLAY)</code></strong> (the default) shows the result on the terminal, laid out as Display Physical File Member (titled <strong>Display Report</strong>; Position to takes a line number). In a program or a batch job, where there's no screen, it's printed instead. <strong><code>*PRINT</code></strong> writes the report (title, selection, headings, records, the count) to the spooled file <code>QPQUPRFIL</code> in Work with Output. <strong><code>*OUTFILE</code></strong> makes or replaces <code>OUTFILE()</code> with the records selected, in the query's order (a file without a key).</li>
+  <li>Each run says <code>ELC2238 Query selected &amp;1 of &amp;2 records.</code></li>
+</ul>
+
+<h3 id="db-copy">Copying, export and import</h3>
+<ul>
+  <li><code>CPYF FROMFILE() TOFILE() MBROPT(*ADD|*REPLACE) CRTFILE(*NO|*YES)</code> copies records, each field of the file copied to from the field of the same name (<code>ELC2244</code> when they share none; others left blank). <code>CRTFILE(*YES)</code> makes a file that isn't there with the copied file's format. All or nothing: a duplicate key or a value that doesn't fit (<code>ELC2243</code>, with its row) copies nothing. <code>ELC2235</code>.</li>
+  <li><code>CPYTOIMPF FILE() TOSTMF('stock.csv')</code> writes the records as CSV - a heading row of field names, then a row a record (numbers plain, logicals <code>1</code>/<code>0</code>, timestamps as text) - to the system's folder-sync folder: <code>&lt;world&gt;/encodedlogistics/libraries/&lt;SYSNAME&gt;/stock.csv</code>. <code>ELC2236</code>.</li>
+  <li><code>CPYFRMIMPF FROMSTMF('stock.csv') FILE() MBROPT(*ADD|*REPLACE)</code> reads one back. A heading row naming the fields maps columns by name (any order; fields left out are blank); without one the columns are the fields in order. All or nothing. <code>ELC2237</code>; <code>ELC2240</code> no such file.</li>
+  <li>Both need folder sync on (<a href="#folder-sync">folder sync</a>: <code>allowFolderSync</code>), else <code>ELC2241</code>; the name must be a plain name ending <code>.csv</code> (<code>ELC2245</code>).</li>
+</ul>
+
+<h3 id="db-limits">Storage, limits and authority</h3>
+<ul>
+  <li><strong>Storage.</strong> A file's records cost network storage as source does: each record its record length in characters (A its length, S and P their digits, L 1, T 14), a byte of drive space per 64 (<code>charsPerStorageByte</code>), rounded up per file. Writing records past the drives' room is <code>ELC0207</code>. ELSYS's files cost nothing.</li>
+  <li><strong>Records per file.</strong> At most <code>maxRecordsPerFile</code> (server config, 10,000): <code>ELC2208 File &amp;1 is full: limit of &amp;2 records.</code></li>
+  <li><strong>Authority.</strong> Reading a file needs its library (every library gives <code>*USE</code>); writing it - records, <code>CRTPF</code>, <code>CHGPF</code>, <code>DLTF</code>, <code>CLRPFM</code>, copies and imports into it - needs <code>*CHANGE</code> on the library: its owner, <code>*SECOFR</code>, or a <code>*CHANGE</code> library (<code>ELC0401</code>); ELSYS never (<code>ELC0205</code>). ELSYS's system files need the Firewall's view permission (<code>ELC0401</code>).</li>
+  <li><strong>Saving.</strong> Files and their records are saved with the system. <code>SAVLIB</code> writes a library's files and records to the diskette with its members (their types kept) and programs, and <code>RSTLIB</code> puts them back; the records count against the diskette's 64 KB. <a href="#folder-sync">Folder sync</a> writes <code>PF</code> members as <code>&lt;MEMBER&gt;.pf</code>; records don't sync (use <code>CPYTOIMPF</code>).</li>
+  <li><strong>Display Panels</strong> can show a file as a table (<a href="#display">Display Panels</a>: <code>SNDDSPWDG WDG(*TABLE) FILE() QRYSLT() SORT()</code>).</li>
+</ul>
+
+<h3 id="db-example">Example: logging item counts (<code>ITEMSETUP</code>, <code>LOGITEMS</code>)</h3>
+<p><code>ELSYS</code> ships a worked example: <code>CALL ELSYS/ITEMSETUP</code> sets it all up. It makes <code>ELGPL/ITEMHIST</code> from <code>ELSYS/ITEMHIST</code> (its records kept if it's there already), compiles <code>ELSYS/LOGITEMS</code> into <code>ELGPL</code>, and adds a schedule entry running it every 10 minutes as a batch job (which needs a <a href="#job-basics">job host</a>). Copy the members to a library of your own to change them.</p>
+<pre class="code">     A* ITEMHIST - Item counts logged by LOGITEMS
+     A                                      UNIQUE
+     A          R ITEMREC                   TEXT('Item count history')
+     A            LOGGED          14T       COLHDG('Logged')
+     A            ITEM           64A        COLHDG('Item')
+     A            COUNT          18S 0      COLHDG('Count')
+     A          K LOGGED
+     A          K ITEM</pre>
+<pre class="code">PGM
+  DCLF FILE(ELSYS/INVITEMS) OPNID(INV)
+  DCLF FILE(ELGPL/ITEMHIST) OPNID(HIST)
+  DCL  VAR(&amp;N)     TYPE(*INT) VALUE(0)
+  DCL  VAR(&amp;STAMP) TYPE(*CHAR) LEN(14)
+
+  DOWHILE COND('1')
+    RCVF OPNID(INV)                           <span class="c">/* every item on the network */</span>
+    MONMSG MSGID(ELC2201) EXEC(LEAVE)
+    CHGVAR VAR(&amp;HIST_LOGGED) VALUE(&amp;STAMP)    <span class="c">/* blank the first time: now */</span>
+    CHGVAR VAR(&amp;HIST_ITEM)   VALUE(&amp;INV_ITEM)
+    CHGVAR VAR(&amp;HIST_COUNT)  VALUE(&amp;INV_HOT + &amp;INV_COLD)
+    WRTRCD OPNID(HIST)
+    CHGVAR VAR(&amp;STAMP) VALUE(&amp;HIST_LOGGED)    <span class="c">/* the rest of the run shares it */</span>
+    CHGVAR VAR(&amp;N) VALUE(&amp;N + 1)
+  ENDDO
+
+  RUNQRY FILE(ELGPL/ITEMHIST) +
+         QRYSLT('LOGGED *EQ "' *TCAT &amp;STAMP *TCAT '" *AND COUNT *LT 64') +
+         SORT(COUNT ITEM) OUTPUT(*PRINT)
+  SNDPGMMSG MSG('LOGITEMS logged' *BCAT %CHAR(&amp;N) *BCAT 'items')
+ENDPGM</pre>
+<p>Each run writes one record an item, all with the same <code>LOGGED</code> time (the key keeps them apart), then prints that run's items under a stack, fewest first, to Work with Output. To see the history: <code>RUNQRY FILE(ELGPL/ITEMHIST)</code>, or for one item <code>RUNQRY ELGPL/ITEMHIST QRYSLT('ITEM *EQ "IRON_INGOT"')</code>; <code>CPYTOIMPF FILE(ELGPL/ITEMHIST) TOSTMF('itemhist.csv')</code> takes it to a spreadsheet. <code>RMVJOBSCDE JOB(LOGITEMS)</code> stops the logging.</p>
+</section>
+
 <section id="language">
-<h2>5. The ELCL language</h2>
+<h2>6. The ELCL language</h2>
 <p>ELCL is a small, sandboxed control language modelled on midrange control languages. A program is a list of commands with keyword parameters. Extensions that real CL doesn't have are marked <strong>[EXT]</strong> in the spec (<code>docs/elcl/ELCL_SPEC.md</code>); this section follows it, with notes where the code goes further or differs.</p>
 
 <h3 id="lexical">Lexical rules</h3>
@@ -1531,8 +1780,8 @@ ENDPGM</pre>
 </section>
 
 <section id="commands">
-<h2>6. Command reference</h2>
-<p>Every command registered in <code>elcl/cmd/BuiltinCommands.java</code>: 112 in all. The schemas match <code>docs/elcl/COMMANDS.md</code> except where noted in <a href="#cmd-extra">Not in COMMANDS.md</a> and <a href="#differences">section 12</a>.</p>
+<h2>7. Command reference</h2>
+<p>Every command registered in <code>elcl/cmd/BuiltinCommands.java</code>: 132 in all. The schemas match <code>docs/elcl/COMMANDS.md</code> except where noted in <a href="#cmd-extra">Not in COMMANDS.md</a> and <a href="#differences">section 13</a>.</p>
 
 <h3 id="cmd-overview">Reading the tables</h3>
 <ul>
@@ -1672,7 +1921,7 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
     <tr><td>CHGRSOUT</td><td>Change Redstone Output</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>SIDE</code> P2: special, req: <code>*NORTH *SOUTH *EAST *WEST *UP *DOWN *ALL</code></li><li><code>LVL</code> P3: number 0&ndash;15, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC0004</td><td>configure</td><td><span class="badge b-ok">Available</span></td></tr>
   </tbody>
 </table></div>
-<p>See <a href="#control-interface">section 9</a> for how the faces read and drive redstone.</p>
+<p>See <a href="#control-interface">section 10</a> for how the faces read and drive redstone.</p>
 
 <h3 id="cmd-messages">Messages, displays and output</h3>
 <div class="table-wrap"><table class="cmd-table">
@@ -1683,7 +1932,7 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
     <tr><td>SNDDSPTXT</td><td>Send Display Text</td><td class="params"><ul><li><code>DEV</code> P1: device, req (a Display Panel screen, <code>DSP01</code>)</li><li><code>TEXT</code> P2: text, req, len 64</li><li><code>LINE</code>: number 1&ndash;64 or <code>*NEXT</code>, dft <code>*NEXT</code></li><li><code>CLEAR</code>: <code>*NO *YES</code>, dft <code>*NO</code></li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">On a Display Panel screen (<a href="#display">Display Panels</a>). ELC1301, ELC1302, ELC1303 (a device that isn't a display), ELC0004 (a line past the screen's last).</span></td></tr>
     <tr><td>CLRDSP</td><td>Clear Display [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RGN</code>: name or <code>*ALL</code>, dft <code>*ALL</code></li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">Clears a region's widget, or the whole screen (regions, text, images). ELC1301, ELC1303, ELC1314.</span></td></tr>
     <tr><td>CHGDSPRGN</td><td>Change Display Region [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RGN</code> P2: name, req</li><li><code>X</code> <code>Y</code> <code>W</code> <code>H</code>: number (canvas px) or <code>*SAME</code>, dft <code>*SAME</code></li><li><code>BG</code>: colour, <code>*DFT</code> or <code>*SAME</code>, dft <code>*SAME</code></li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">Defines or changes a region (a new one runs from 0, 0 to the screen's edge unless given). ELC1301, ELC1303, ELC1314 (outside the screen or overlapping).</span></td></tr>
-    <tr><td>SNDDSPWDG</td><td>Send Display Widget [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RGN</code> P2: name, req</li><li><code>WDG</code> P3: special, req: <code>*STORAGE *COLD *ENERGY *LANES *JOBS *ITEM *CLOCK *DEVICES *UPS *TEXT *NONE</code></li><li><code>ITEM</code>: item or <code>*NONE</code> (for <code>*ITEM</code>)</li><li><code>DEVTYPE</code>: type code or <code>*ALL</code> (for <code>*DEVICES</code>)</li><li><code>COLOR</code>: colour or <code>*DFT</code></li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">Places a dashboard widget in a region. ELC1301, ELC1303, ELC1314 (no such region), ELC1316 (a data source the widget can't use).</span></td></tr>
+    <tr><td>SNDDSPWDG</td><td>Send Display Widget [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RGN</code> P2: name, req</li><li><code>WDG</code> P3: special, req: <code>*STORAGE *COLD *ENERGY *LANES *JOBS *ITEM *CLOCK *DEVICES *UPS *TEXT *TABLE *NONE</code></li><li><code>ITEM</code>: item or <code>*NONE</code> (for <code>*ITEM</code>)</li><li><code>DEVTYPE</code>: type code or <code>*ALL</code> (for <code>*DEVICES</code>)</li><li><code>COLOR</code>: colour or <code>*DFT</code></li><li><code>FILE</code>: qualified or <code>*NONE</code> (for <code>*TABLE</code>)</li><li><code>QRYSLT</code>, <code>SORT</code>: as <code>RUNQRY</code>'s (for <code>*TABLE</code>)</li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">Places a dashboard widget in a region. ELC1301, ELC1303, ELC1314 (no such region), ELC1316 (a data source the widget can't use); for <code>*TABLE</code> ELC2205, ELC2242.</span></td></tr>
     <tr><td>SNDDSPGPH</td><td>Send Display Graph [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RGN</code> P2: name, req</li><li><code>STAT</code> P3: special, req: <code>*ITEMFLOW *ENERGY *LANES *STORAGE *CRAFTING *ITEM *MCHOPS *MCHFE</code></li><li><code>ITEM</code>: item or <code>*NONE</code> (for <code>*ITEM</code>); for <code>*MCHOPS</code> / <code>*MCHFE</code>, the machine's device name</li><li><code>RANGE</code>: <code>*1M *10M *1H *1D</code>, dft <code>*10M</code></li><li><code>TYPE</code>: <code>*LINE *BAR</code>, dft <code>*LINE</code></li><li><code>COLOR</code>: colour or <code>*DFT</code></li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">A graph from a Monitoring Server on the network, else the screen's own history. ELC1301, ELC1303, ELC1314, ELC1316; ELC1318 for a machine stat on a device that isn't a machine.</span></td></tr>
     <tr><td>SNDDSPIMG</td><td>Send Display Image [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RGN</code> P2: name, req</li><li><code>FILE</code> P3: text, req, quoted (<code>FILE('logo.png')</code>)</li><li><code>SCALE</code>: <code>*DITHER *NEAREST</code>, dft <code>*DITHER</code></li><li><code>COLORS</code>: <code>*DFT 16 64 256 *FULL</code>, dft <code>*DFT</code> (256)</li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">A PNG from the system's images folder. ELC1301, ELC1303, ELC1312, ELC1313, ELC1314, ELC1315; ELC1317 (a diagnostic) when the colours are above the server's limit.</span></td></tr>
     <tr><td>RTVDSPSIZ</td><td>Retrieve Display Size [EXT]</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>RTNW</code> <code>RTNH</code>: return *INT (panels)</li><li><code>RTNPXW</code> <code>RTNPXH</code>: return *INT (canvas px)</li></ul></td><td>Both</td><td>&ndash;</td><td><span class="badge b-ok">Available</span><br><span class="muted">ELC1301, ELC1303.</span></td></tr>
@@ -1749,6 +1998,34 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
   </tbody>
 </table></div>
 
+<h3 id="cmd-db">Database files</h3>
+<p>See <a href="#database">section 5</a>. The file operations run only inside programs; a file named without a library is looked for down the user's library list, and one being made goes in their current library.</p>
+<div class="table-wrap"><table class="cmd-table">
+  <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Where</th><th>Result</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>DCLF</td><td>Declare File</td><td class="params"><ul><li><code>FILE</code> P1: qualified, req</li><li><code>OPNID</code> P2: name or <code>*NONE</code>, dft <code>*NONE</code></li></ul></td><td>Program</td><td>A variable for each field (<code>&amp;FIELD</code> / <code>&amp;OPNID_FIELD</code>); with the <code>DCL</code>s. ELC2205, ELC0103, ELC0016</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>RCVF</td><td>Receive File</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li></ul></td><td>Program</td><td>The next record into the variables; ELC2201 at the end, ELC2206, ELC2207</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>POSDBF</td><td>Position Database File</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li><li><code>POSITION</code> P2: <code>*START *END</code>, req</li></ul></td><td>Program</td><td>The next <code>RCVF</code> from the start, or at the end</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>CLOF</td><td>Close File</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li></ul></td><td>Program</td><td>The next <code>RCVF</code> from the top</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>CHNRCD [EXT]</td><td>Chain to Record</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li><li><code>KEY</code> P2: 1&ndash;4 values, req</li></ul></td><td>Program</td><td>The record with that key into the variables; ELC2202, ELC0103 (more values than key fields)</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>WRTRCD [EXT]</td><td>Write Record</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li></ul></td><td>Program</td><td>A new record from the variables; ELC2203, ELC2208, ELC2209, ELC0207, ELC0401, ELC0205</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>UPDRCD [EXT]</td><td>Update Record</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li></ul></td><td>Program</td><td>The record last read changed; ELC2204, ELC2203, ELC2209</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>DLTRCD [EXT]</td><td>Delete Record</td><td class="params"><ul><li><code>OPNID</code> P1, dft <code>*NONE</code></li></ul></td><td>Program</td><td>The record last read deleted; ELC2204</td><td><span class="badge b-pgm">In programs</span></td></tr>
+    <tr><td>CRTPF</td><td>Create Physical File</td><td class="params"><ul><li><code>FILE</code> P1: qualified, req</li><li><code>SRCMBR</code> P2: <code>*FILE</code> or qualified, dft <code>*FILE</code></li><li><code>TEXT</code>: <code>*SRCMBRTXT *BLANK</code> or text, dft <code>*SRCMBRTXT</code></li></ul></td><td>Both</td><td>ELC2230; ELC2239 (listing in Work with Output), ELC2247, ELC0204, ELC0205, ELC0401</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CHGPF</td><td>Change Physical File</td><td class="params"><ul><li><code>FILE</code> P1: qualified, req</li><li><code>SRCMBR</code> P2: <code>*FILE</code> or qualified, dft <code>*FILE</code> (the member it was made from)</li><li><code>TEXT</code>: <code>*SAME *BLANK</code> or text, dft <code>*SAME</code></li></ul></td><td>Both</td><td>ELC2232 for each field dropped, ELC2231; ELC2246, ELC2203, ELC2209</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>DLTF</td><td>Delete File</td><td class="params"><ul><li><code>FILE</code> P1: qualified, req</li></ul></td><td>Both</td><td>ELC2233; ELC2205, ELC0205, ELC0401</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CLRPFM</td><td>Clear Physical File Member</td><td class="params"><ul><li><code>FILE</code> P1: qualified, req</li></ul></td><td>Both</td><td>ELC2234</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CPYF</td><td>Copy File</td><td class="params"><ul><li><code>FROMFILE</code> P1, req</li><li><code>TOFILE</code> P2, req</li><li><code>MBROPT</code>: <code>*ADD *REPLACE</code>, dft <code>*ADD</code></li><li><code>CRTFILE</code>: <code>*NO *YES</code>, dft <code>*NO</code></li></ul></td><td>Both</td><td>ELC2235; ELC2244, ELC2243, ELC2203, ELC2208</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CPYTOIMPF</td><td>Copy To Import File</td><td class="params"><ul><li><code>FILE</code> P1, req</li><li><code>TOSTMF</code> P2: <code>'name.csv'</code>, req</li></ul></td><td>Both</td><td>ELC2236; ELC2241, ELC2245</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>CPYFRMIMPF</td><td>Copy From Import File</td><td class="params"><ul><li><code>FROMSTMF</code> P1: <code>'name.csv'</code>, req</li><li><code>FILE</code> P2, req</li><li><code>MBROPT</code>: <code>*ADD *REPLACE</code>, dft <code>*ADD</code></li></ul></td><td>Both</td><td>ELC2237; ELC2240, ELC2241, ELC2243, ELC2245</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>RUNQRY</td><td>Run Query</td><td class="params"><ul><li><code>FILE</code> P1, req</li><li><code>QRYSLT</code>: expression or <code>*ALL</code>, dft <code>*ALL</code>, len 64</li><li><code>SORT</code>: up to 8 values (4 fields, each optionally <code>*DESCEND</code>), dft <code>*NONE</code></li><li><code>OUTPUT</code>: <code>*DISPLAY *PRINT *OUTFILE</code>, dft <code>*DISPLAY</code></li><li><code>OUTFILE</code>: qualified (req with <code>*OUTFILE</code>)</li></ul></td><td>Both</td><td>ELC2238; <code>*DISPLAY</code> opens Display Report (printed where there's no screen), <code>*PRINT</code> spooled file <code>QPQUPRFIL</code>; ELC2242</td><td><span class="badge b-ok">Available</span></td></tr>
+    <tr><td>WRKF</td><td>Work with Files</td><td class="params"><ul><li><code>LIB</code> P1: name or <code>*CURLIB</code>, dft <code>*CURLIB</code></li></ul></td><td>Interactive</td><td>Screen</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
+    <tr><td>DSPPFM</td><td>Display Physical File Member</td><td class="params"><ul><li><code>FILE</code> P1, req</li></ul></td><td>Interactive</td><td>Screen</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
+    <tr><td>DSPFD</td><td>Display File Description</td><td class="params"><ul><li><code>FILE</code> P1, req</li></ul></td><td>Interactive</td><td>Screen</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
+    <tr><td>UPDDTA</td><td>Update Data</td><td class="params"><ul><li><code>FILE</code> P1, req</li></ul></td><td>Interactive</td><td>Screen (not for ELSYS: ELC0205)</td><td><span class="badge b-scr">Opens a screen</span></td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="cmd-screens">Screen and session commands</h3>
 <p>These open a screen on the desk where they're typed (they're handled by the terminal itself, after a schema check).</p>
 <div class="table-wrap"><table class="cmd-table">
@@ -1793,8 +2070,8 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
 </section>
 
 <section id="messages">
-<h2>7. Message reference</h2>
-<p>Every message defined in <code>elcl/ElclMessages.java</code> (96 IDs, the same as <code>docs/elcl/MESSAGES.md</code>, which marks the ones added during the implementation: <code>ELC0107</code>&ndash;<code>ELC0110</code> and <code>ELC1307</code>&ndash;<code>ELC1322</code>). <code>&amp;1</code>, <code>&amp;2</code>, <code>&amp;3</code> are filled in with the message data.</p>
+<h2>8. Message reference</h2>
+<p>Every message defined in <code>elcl/ElclMessages.java</code> (132 IDs, the same as <code>docs/elcl/MESSAGES.md</code>, which marks the ones added during the implementation: <code>ELC0107</code>&ndash;<code>ELC0110</code>, <code>ELC1307</code>&ndash;<code>ELC1322</code> and the <a href="#msg-22">database files' <code>ELC22xx</code></a>). <code>&amp;1</code>, <code>&amp;2</code>, <code>&amp;3</code> are filled in with the message data.</p>
 <ul>
   <li><strong>Severity</strong>: <code>00</code> information or completion, <code>10</code> warning, <code>20</code> error, <code>30</code> severe, <code>40</code> abnormal end. A compile with any message of 20 or more makes no program.</li>
   <li><strong>Monitoring</strong>: <code>MONMSG MSGID(ELCnn00)</code> covers the whole <code>ELCnnxx</code> range; <code>ELC0000</code> covers every message.</li>
@@ -1954,12 +2231,56 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
   </tbody>
 </table></div>
 
+<h3 id="msg-22">ELC22xx: database files</h3>
+<p>Added with <a href="#database">database files</a>. <code>MONMSG MSGID(ELC2200)</code> covers them all.</p>
+<div class="table-wrap"><table class="msg-table">
+  <thead><tr><th>ID</th><th>Sev</th><th>Text</th><th>Meaning and when it appears</th></tr></thead>
+  <tbody>
+    <tr><td>ELC2201</td><td>30</td><td>End of file &amp;1 reached.</td><td><code>RCVF</code> past the last record (and again until <code>POSDBF</code> or <code>CLOF</code>). Monitor it to end a read loop.</td></tr>
+    <tr><td>ELC2202</td><td>30</td><td>Record with key &amp;1 not found in file &amp;2.</td><td><code>CHNRCD</code> with no such key; Update Data's Position to past the last record.</td></tr>
+    <tr><td>ELC2203</td><td>30</td><td>Duplicate key &amp;1 in file &amp;2.</td><td>A second record with a <code>UNIQUE</code> key: <code>WRTRCD</code>, <code>UPDRCD</code>, Update Data, <code>CPYF</code>, <code>CPYFRMIMPF</code>, or <code>CHGPF</code> making a key unique over duplicates.</td></tr>
+    <tr><td>ELC2204</td><td>30</td><td>No record read from file &amp;1 to change or delete.</td><td><code>UPDRCD</code> / <code>DLTRCD</code> before any <code>RCVF</code> or <code>CHNRCD</code>, or after the record was deleted.</td></tr>
+    <tr><td>ELC2205</td><td>30</td><td>File &amp;1 not found in library &amp;2.</td><td>No such file: compiling a <code>DCLF</code>, running, any file command (<code>*LIBL</code> when none on the library list has it).</td></tr>
+    <tr><td>ELC2206</td><td>30</td><td>File with open identifier &amp;1 not declared.</td><td>Compiler: a file operation whose <code>OPNID</code> no <code>DCLF</code> declares.</td></tr>
+    <tr><td>ELC2207</td><td>30</td><td>Level check on file &amp;1: &amp;2 changed since the program was compiled.</td><td>A field the program declares is gone or changed type (<code>CHGPF</code>): compile the program again.</td></tr>
+    <tr><td>ELC2208</td><td>30</td><td>File &amp;1 is full: limit of &amp;2 records.</td><td>Past <code>maxRecordsPerFile</code>.</td></tr>
+    <tr><td>ELC2209</td><td>30</td><td>Value '&amp;1' not valid for field &amp;2.</td><td>A value that isn't its field's type or doesn't fit it (a number too big, text in a number, not 1 / 0 for a logical, not a timestamp).</td></tr>
+    <tr><td>ELC2220</td><td>30</td><td>Definition statement not valid at '&amp;1'.</td><td>A definition line that can't be read (an unclosed quote or parenthesis, an <code>R</code> after fields).</td></tr>
+    <tr><td>ELC2221</td><td>30</td><td>Field &amp;1 defined more than once.</td><td>Two fields (or key fields) of one name.</td></tr>
+    <tr><td>ELC2222</td><td>30</td><td>Length &amp;1 not valid for field &amp;2 (type &amp;3).</td><td>A length or decimals the type doesn't take (<code>19S 0</code>, <code>5S 2</code>, <code>5P 6</code>, <code>2L</code>).</td></tr>
+    <tr><td>ELC2223</td><td>30</td><td>Key field &amp;1 is not a field of the record.</td><td>A <code>K</code> line naming no field.</td></tr>
+    <tr><td>ELC2224</td><td>30</td><td>Too many &amp;1 (max &amp;2).</td><td>More than 50 fields, 4 key fields, one record format, 3 <code>COLHDG</code> lines, 4 <code>SORT</code> fields, 5 <code>DCLF</code>s; no fields at all.</td></tr>
+    <tr><td>ELC2225</td><td>30</td><td>No record format (R) defined before the fields.</td><td>Fields with no <code>R</code> line before them, or none at all.</td></tr>
+    <tr><td>ELC2226</td><td>30</td><td>Keyword &amp;1 not valid here.</td><td>A keyword the definition doesn't take, or in the wrong place (<code>UNIQUE</code> on a field, or with no key).</td></tr>
+    <tr><td>ELC2227</td><td>30</td><td>Type &amp;1 not valid for field &amp;2.</td><td>A type that isn't A, S, P, L or T, or none.</td></tr>
+    <tr><td>ELC2228</td><td>30</td><td>Name &amp;1 not valid.</td><td>A field or format name that isn't a name of up to 10 characters.</td></tr>
+    <tr><td>ELC2230</td><td>00</td><td>File &amp;1 created in library &amp;2.</td><td><code>CRTPF</code> completed.</td></tr>
+    <tr><td>ELC2231</td><td>00</td><td>File &amp;1 changed in library &amp;2: &amp;3 records kept.</td><td><code>CHGPF</code> completed.</td></tr>
+    <tr><td>ELC2232</td><td>10</td><td>Field &amp;1 dropped from file &amp;2: its values are lost.</td><td><code>CHGPF</code>: a field gone, or changed type.</td></tr>
+    <tr><td>ELC2233</td><td>00</td><td>File &amp;1 deleted from library &amp;2.</td><td><code>DLTF</code> completed.</td></tr>
+    <tr><td>ELC2234</td><td>00</td><td>File &amp;1 cleared: &amp;2 records removed.</td><td><code>CLRPFM</code> completed.</td></tr>
+    <tr><td>ELC2235</td><td>00</td><td>&amp;1 records copied to file &amp;2.</td><td><code>CPYF</code> completed.</td></tr>
+    <tr><td>ELC2236</td><td>00</td><td>&amp;1 records copied to &amp;2.</td><td><code>CPYTOIMPF</code> completed.</td></tr>
+    <tr><td>ELC2237</td><td>00</td><td>&amp;1 records copied from &amp;2.</td><td><code>CPYFRMIMPF</code> completed.</td></tr>
+    <tr><td>ELC2238</td><td>00</td><td>Query selected &amp;1 of &amp;2 records.</td><td><code>RUNQRY</code> completed.</td></tr>
+    <tr><td>ELC2239</td><td>30</td><td>File &amp;1 was not created: definition errors.</td><td><code>CRTPF</code>: see its listing in Work with Output.</td></tr>
+    <tr><td>ELC2240</td><td>30</td><td>Stream file &amp;1 not found.</td><td><code>CPYFRMIMPF</code>: no such CSV in the system's folder.</td></tr>
+    <tr><td>ELC2241</td><td>30</td><td>Folder sync is off: &amp;1 needs the system's folder.</td><td><code>CPYTOIMPF</code> / <code>CPYFRMIMPF</code> where <code>allowFolderSync</code> is off.</td></tr>
+    <tr><td>ELC2242</td><td>30</td><td>Field &amp;1 not found in file &amp;2.</td><td>A name in <code>QRYSLT</code> or <code>SORT</code> that isn't a field.</td></tr>
+    <tr><td>ELC2243</td><td>30</td><td>Row &amp;1: value '&amp;2' not valid for field &amp;3.</td><td><code>CPYFRMIMPF</code> / <code>CPYF</code>: a value that doesn't fit, and its row.</td></tr>
+    <tr><td>ELC2244</td><td>30</td><td>Files &amp;1 and &amp;2 have no fields in common.</td><td><code>CPYF</code> between unrelated files.</td></tr>
+    <tr><td>ELC2245</td><td>30</td><td>Stream file name &amp;1 not valid.</td><td>Not a plain name ending <code>.csv</code>.</td></tr>
+    <tr><td>ELC2246</td><td>30</td><td>File &amp;1 was not changed: definition errors.</td><td><code>CHGPF</code>: see its listing.</td></tr>
+    <tr><td>ELC2247</td><td>30</td><td>Member &amp;1 is not a &amp;2 source member.</td><td><code>CRTPF</code> from an ELCLP member, <code>CRTELPGM</code> from a PF member, <code>CHGPF</code> on a file made by a query.</td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="msg-usr">USRxxxx: user messages</h3>
 <p>Raised with <code>SNDPGMMSG MSGTYPE(*ESCAPE)</code>, default ID <code>USR0001</code> (choose another with <code>MSGID(USRnnnn)</code>). The text is whatever <code>MSG()</code> says; a user escape message has severity 30. <code>MONMSG MSGID(USR0000)</code> catches all of them.</p>
 </section>
 
 <section id="jobs">
-<h2>8. Jobs, scheduling, triggers, message queues, spooled output and system values</h2>
+<h2>9. Jobs, scheduling, triggers, message queues, spooled output and system values</h2>
 
 <h3 id="job-basics">Jobs</h3>
 <p>ELCL work runs in <strong>jobs</strong>. These are script jobs, separate from the network's crafting jobs (<code>WRKCRFJOB</code>).</p>
@@ -2118,7 +2439,7 @@ ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) PGM(ELSYS/UPSALERT)</pre>
   <li><strong>States.</strong> No signal (yellow LED, <code>NO SIGNAL</code> on the screen) with no network or its controller down; off (plain glass) on a running network without its lane; the boot test pattern for 2 seconds as it comes on; then online.</li>
   <li><strong>Modes.</strong> <em>Text</em>: its lines, each with a colour, alignment and 1x / 2x size (<code>SNDDSPTXT</code> writes them). <em>Dashboard</em>: regions with widgets, set up on its configuration screen. <em>Script-controlled</em>: only ELCL draws, and the screen keeps what it drew. A Text screen that a script sets up regions or widgets on becomes Script-controlled.</li>
   <li><strong>Regions</strong> are named rectangles in canvas px (<code>A</code>, <code>B</code>&hellip;) that never overlap; with none set up, region <code>A</code> is the whole screen. Each has a background and a widget.</li>
-  <li><strong>Widgets</strong>: storage (hot) and cold storage gauges, energy, lanes, active crafting jobs, an item counter, a clock (game time and day), the devices (all, or one type), UPS status, text (the screen's lines), a graph, an image. Live ones are worked out once a second on the server.</li>
+  <li><strong>Widgets</strong>: storage (hot) and cold storage gauges, energy, lanes, active crafting jobs, an item counter, a clock (game time and day), the devices (all, or one type), UPS status, text (the screen's lines), a graph, an image, a table (a file's records: <code>SNDDSPWDG WDG(*TABLE) FILE(LIB/NAME) QRYSLT() SORT()</code>, selected and sorted as <a href="#db-query"><code>RUNQRY</code></a> does them, refreshed every second: the headings on a bar in the widget's colour, then a row a record, numbers right-aligned, as many records and columns as fit, at most 63). Live ones are worked out once a second on the server.</li>
   <li><strong>Graphs</strong> of item flow, energy draw, lanes or crafting come from a Monitoring Server on the network when there is one (<code>RANGE</code> <code>*1M</code>, <code>*10M</code>, <code>*1H</code>, <code>*1D</code>). Otherwise, and always for storage and an item's count, they use the screen's own history: one sample a second while it's loaded, the last 10 minutes (<code>displayHistorySeconds</code>). <code>*MCHOPS</code> (operations a minute) and <code>*MCHFE</code> (FE stored) graph one <a href="#arcforge">Arcforge machine</a>, named by its device name where an item would go (<em>Machine</em> on the configuration screen); they come from a Monitoring Server when there is one, else the screen's history.</li>
   <li><strong>Colours</strong>: <code>*DFT</code>, a panel palette name (<code>*DARK *STEEL *GREY *SILVER *LIGHT *WHITE *NAVY *BLUE *CYAN *RUST *ORANGE *YELLOW *GREEN *FOREST *RED *BROWN *MINT</code>) or <code>#RRGGBB</code>.</li>
   <li><strong>Images</strong> are PNGs in <code>&lt;world&gt;/encodedlogistics/images/&lt;SYSNAME&gt;/</code>, scaled to their region. They're decoded off the server thread; players are sent the rendered region, never the file. Colour modes: <code>16</code> (the panel palette), <code>64</code> / <code>256</code> (a palette picked for the image), <code>*FULL</code>; the palettes use a stable ordered dither, and <code>SCALE(*NEAREST)</code> isn't dithered. Server config: <code>allowImages</code> (AUTO: on in single-player, off on dedicated servers; <code>ELC1315</code>), <code>displayMaxImageSize</code> (4096 px) and <code>displayMaxImageBytes</code> (4 MB; <code>ELC1313</code>), <code>displayImageColors</code> (256, the most a player may pick; above it <code>ELC1317</code>, and the image shows in the limit).</li>
@@ -2129,7 +2450,9 @@ ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) PGM(ELSYS/UPSALERT)</pre>
 CHGDSPRGN DEV(DSP01) RGN(B) X(64)                       <span class="c">/* B: the rest                */</span>
 SNDDSPGPH DEV(DSP01) RGN(A) STAT(*ENERGY) RANGE(*1H)   <span class="c">/* energy draw, the last hour */</span>
 SNDDSPWDG DEV(DSP01) RGN(B) WDG(*ITEM) ITEM(LOGIC_DIE) COLOR(*MINT)
-SNDDSPIMG DEV(DSP02) RGN(A) FILE('logo.png') COLORS(64) <span class="c">/* a file name is quoted      */</span></pre>
+SNDDSPIMG DEV(DSP02) RGN(A) FILE('logo.png') COLORS(64) <span class="c">/* a file name is quoted      */</span>
+SNDDSPWDG DEV(DSP02) RGN(B) WDG(*TABLE) FILE(ELSYS/DEVICES) +
+          QRYSLT('STATUS *NE "*ONLINE"') SORT(TYPE NAME)  <span class="c">/* devices that aren't online */</span></pre>
 
 <h3 id="arcforge">Arcforge machines (the Small Wireless Bridge)</h3>
 <p>With <a href="https://github.com/zagdrath/arcforge">Arcforge</a> installed (2.5.0 or later: the release with its machine control API), a <strong>Small Wireless Bridge</strong> puts an Arcforge machine on a network. Arcforge is optional: without it, or with an API of another major version, the integration is off, the log says why (<em>"Arcforge integration disabled: ..."</em>), bridges already placed are kept but do nothing, and every machine command answers <code>ELC1318</code>.</p>
@@ -2163,7 +2486,7 @@ SNDDSPIMG DEV(DSP02) RGN(A) FILE('logo.png') COLORS(64) <span class="c">/* a fil
 </section>
 
 <section id="control-interface">
-<h2>9. The Control Interface</h2>
+<h2>10. The Control Interface</h2>
 <p>The Control Interface is a network device block that gives ELCL redstone input and output. It has no GUI: you drive it from a terminal with <code>RTVRSIN</code> and <code>CHGRSOUT</code>.</p>
 <ul>
   <li><strong>Network device.</strong> It takes one lane and drains <code>controlInterfaceDrain</code> FE/t while its network runs (server config, default 1.0, range 0&ndash;1000). It is <em>online</em> while its network is.</li>
@@ -2184,7 +2507,7 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
 </section>
 
 <section id="status">
-<h2>10. Status, limits and server config</h2>
+<h2>11. Status, limits and server config</h2>
 <p>The Terminal OS and ELCL are complete as specified in <code>docs/elcl/</code>: every screen, all 99 commands, every message, the VM, interactive and batch jobs, job hosts, schedule entries and triggers, persistence, stable device names, sign-on and security, folder sync, and <code>SAVLIB</code> / <code>RSTLIB</code>. <code>docs/elcl/IMPLEMENTATION_STATUS.md</code> has the details, part by part. What remains is hardware the mod doesn't have yet, and a few known limits.</p>
 
 <h3 id="hardware">Hardware still to come</h3>
@@ -2200,6 +2523,8 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
 
 <h3 id="known-limits">Known limits</h3>
 <ul>
+  <li><strong>Reading files.</strong> Every library gives the public <code>*USE</code>, so any user may read any library's files; only ELSYS's system files are guarded (the Firewall's view permission). There is no <code>*EXCLUDE</code> authority.</li>
+  <li><strong>Update Data and long records.</strong> A record whose values add up to more than 8,000 characters can't be sent from the Update Data screen (a terminal request's limit): change it with a program. Long values scroll in their field.</li>
   <li><strong>Source storage is counted, not reserved.</strong> Members count against free drive space (and <code>ELC0207</code> stops a save that doesn't fit), but items going into the network don't check for them, so items can fill the drives past the members' share (<a href="#storage-cost">storage cost</a>).</li>
   <li><strong><code>%NAME</code> on dedicated servers.</strong> Item names are worked out on the server, which may not have a mod's translations: <code>%NAME</code> of a mod's item can come back as its translation key (<code>item.encodedlogistics.logic_die</code>).</li>
   <li><strong>Long event names.</strong> In the <code>*CHAR 10</code> <code>&amp;EVENT</code> the spec gives a trigger program, <code>*DEVOFFLINE</code> and <code>*PWRRESTORED</code> arrive as <code>*DEVOFFLIN</code> and <code>*PWRRESTOR</code>.</li>
@@ -2217,6 +2542,7 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
 <div class="table-wrap"><table>
   <thead><tr><th>Option</th><th>Default</th><th>Range</th><th>What it does</th></tr></thead>
   <tbody>
+    <tr><td><code>maxRecordsPerFile</code></td><td>10,000</td><td>1&ndash;1,000,000</td><td>Records a physical file may hold; a write past this is refused (<code>ELC2208</code>).</td></tr>
     <tr><td><code>spooledFileCap</code></td><td>200</td><td>1&ndash;100,000</td><td>Spooled files a system keeps; past this the oldest is removed.</td></tr>
     <tr><td><code>messageCap</code></td><td>500</td><td>1&ndash;100,000</td><td>Messages each user's message queue keeps; past this the oldest is removed.</td></tr>
     <tr><td><code>charsPerStorageByte</code></td><td>64</td><td>1&ndash;1,000,000</td><td>Characters of source member text that take one byte of the network's drive storage (rounded up per member).</td></tr>
@@ -2236,7 +2562,7 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
 </section>
 
 <section id="developers">
-<h2>11. For developers</h2>
+<h2>12. For developers</h2>
 
 <h3 id="dev-packages">Package layout</h3>
 <p>All under <code>net.zagdrath.encodedlogistics</code> in <code>src/main/java</code>.</p>
@@ -2253,6 +2579,7 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
     <tr><td><code>elcl.job</code></td><td><code>StoredJobService</code> (interactive and batch jobs, the job queue, hold / release / end, logs, schedule entries, triggers), <code>JobManager</code> (runs every job's VM each server tick within the budgets), <code>JobVmHost</code>, <code>InteractiveCalls</code> (<code>CALL</code> on a command line), <code>BatchContext</code> (a batch job's user and player id), <code>JobHost</code> / <code>JobHosts</code> (Compute Servers built in), <code>Waits</code> (<code>RECALL</code>, <code>CRAFT</code>), <code>Schedules</code>, <code>Triggers</code>, <code>RealTime</code> (the real-time clock <code>INTERVAL</code> and the debounce use).</td></tr>
     <tr><td><code>elcl.store</code></td><td><code>ElclStore</code> (saved data with the overworld, one <code>SystemData</code> per network), <code>SystemData</code> (libraries, queues, spool, system values, profiles, device names, sync hashes; ELSYS rebuilt on load; storage cost), <code>JobData</code> (batch jobs with their VM state, ended jobs' logs, schedule entries, triggers), <code>StoredLibraryService</code>, <code>StoredMessageService</code>, <code>StoredSpoolService</code>, <code>StoredSysvalService</code>, <code>StoredUserService</code>, <code>ElclConfig</code> (the config's <code>elcl</code> section).</td></tr>
     <tr><td><code>elcl.device</code></td><td>The interfaces for hardware (the Midrange line's, the Display Panel's, the Mainframe's to come), each with a registry of sources (<code>DeviceSources</code>): <code>PrinterDevice</code> / <code>Printers</code>, <code>DisketteDevice</code> / <code>Diskette</code> / <code>Diskettes</code> / <code>LibraryImage</code>, <code>DisplayDevice</code> / <code>Displays</code>. (<code>RecipeLibrarySource</code> / <code>RecipeLibraries</code> are in <code>crafting</code>.) See <code>docs/elcl/INTERFACES.md</code>.</td></tr>
+    <tr><td><code>elcl.db</code></td><td>Database files, free of the game: <code>FieldDef</code> (a field: types A, S, P, L, T; converting and checking values), <code>RecordFormat</code> (fields, key, unique; as text to keep with programs), <code>Dds</code> (a PF member to a format, and its listing), <code>DbFile</code> (records by relative record number, a key index, unique keys, positions), <code>DbRecord</code>, <code>Query</code> (QRYSLT and SORT), <code>Csv</code>, <code>Report</code> (columns and headings), <code>Timestamps</code>, <code>SystemFiles</code> (ELSYS's live files' formats), <code>FileAccess</code> (what the VM reads and writes through). The game side: <code>elcl.store.StoredFileService</code> (behind <code>elcl.screen.FileService</code>), <code>elcl.exec.DbCommands</code>, <code>elcl.exec.LiveFiles</code>, <code>elcl.screen.FileQueries</code> (the screens' requests); the compiler's <code>FileResolver</code> and <code>DeclaredFile</code>.</td></tr>
     <tr><td><code>elcl.sync</code></td><td><code>FolderSync</code> (the world folder, both ways), <code>Resequence</code> (sequence numbers kept for unchanged lines).</td></tr>
     <tr><td><code>elcl.screen</code></td><td><code>ElclServices</code> (the service holder), <code>ElclSystem</code> (a network on a server, and the game clock and <code>DATFMT</code>), the service interfaces <code>LibraryService</code>, <code>JobService</code>, <code>MessageService</code>, <code>SpoolService</code>, <code>SysvalService</code>, <code>UserService</code>, and <code>ScreenQueries</code> (the screens' data requests, and the sign-on).</td></tr>
     <tr><td><code>client.crt</code></td><td>The terminal: <code>CrtScreen</code> (drawing and game input), <code>CrtTerminal</code> (screen stack, windows, frame, keys), <code>CrtPanel</code>, <code>CrtGrid</code>, <code>CrtField</code>, <code>CrtWindow</code>, <code>FormWindow</code>, <code>ValueListWindow</code>, <code>ListPanel</code>, <code>OsListPanel</code>, <code>InfoPanel</code>, <code>TextPanel</code>, <code>ScreenCommands</code>, <code>PrompterPanel</code>, <code>EditorPanel</code> / <code>EditorModel</code>, and one panel per screen.</td></tr>
@@ -2328,6 +2655,7 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
   <thead><tr><th>Test</th><th>Covers</th></tr></thead>
   <tbody>
     <tr><td><code>elcl.CompilerTest</code></td><td>Every example compiles with no messages; one negative test per compile-time message ID (00xx, 01xx) on the right line; the listing's parts.</td></tr>
+    <tr><td><code>elcl.db.DdsTest</code>, <code>DbFileTest</code>, <code>QueryCsvTest</code>, <code>elcl.DbVmTest</code>, <code>client.crt.DbScreensTest</code></td><td>Database files: every field type and each definition error on its line, the listing; records in key and arrival order, positions, unique keys, values by type, saving; QRYSLT and SORT, the report layout, CSV both ways; DCLF and every file operation in the VM (end of file monitored, level check, a saved job reading on); the screens against layouts 17&ndash;22, the editor's PF and DCLF checks. Game tests <code>db_files</code>, <code>db_programs</code>, <code>db_query</code>, <code>db_system_files</code>, <code>db_copies</code>, <code>db_persistence</code>, <code>db_limits</code>, <code>db_authority</code>, <code>db_example</code>, <code>db_screens</code>, <code>db_save_restore</code>, <code>db_display_table</code>.</td></tr>
     <tr><td><code>elcl.LexerParserTest</code></td><td>Lexing and parsing, examples, schemas.</td></tr>
     <tr><td><code>elcl.VmTest</code></td><td>The VM without a game (13 tests): arithmetic and precedence, strings, lists and <code>FOREACH</code>, loops, <code>SELECT</code> / <code>IF</code> / <code>ELSE</code> / <code>GOTO</code>, subroutines, <code>CALL</code> by reference, monitors (command and program level, ranges), an unmonitored escape ending the job, parameter count and call depth, an endless loop keeping to its budget and being ended, a saved job carrying on where it was, every example starting.</td></tr>
     <tr><td><code>elcl.SystemDataTest</code></td><td>A system's data round-trips through NBT; members' storage cost.</td></tr>
@@ -2364,10 +2692,10 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
 </section>
 
 <section id="differences">
-<h2>12. Where the spec and the code differ</h2>
+<h2>13. Where the spec and the code differ</h2>
 <p>This page follows the code. These are the places where it differs from <code>docs/elcl/</code> (spec, COMMANDS.md, MESSAGES.md, OS.md), or where the code goes further than they say:</p>
 <ol>
-  <li><strong>Added messages</strong>: <code>ELC0107</code>&ndash;<code>ELC0110</code> and <code>ELC1307</code>&ndash;<code>ELC1322</code> came with the implementation; MESSAGES.md lists them, marked <em>added</em>.</li>
+  <li><strong>Added messages</strong>: <code>ELC0107</code>&ndash;<code>ELC0110</code>, <code>ELC1307</code>&ndash;<code>ELC1322</code> and the database files' <code>ELC2201</code>&ndash;<code>ELC2247</code> came with the implementation; MESSAGES.md lists them, marked <em>added</em>.</li>
   <li><strong>Range values</strong>: <code>*1M</code>, <code>*10M</code>, <code>*1H</code> and <code>*1D</code> start with a digit; the lexer reads <code>*</code> followed by digits and a letter as one special value (a multiplication like <code>&amp;X*10</code> is unchanged).</li>
   <li><strong>Extra commands</strong>: <code>CHGLIB</code>, <code>CRTMBR</code>, <code>CHGJOB</code>, <code>HLDJOBSCDE</code>, <code>RLSJOBSCDE</code>, <code>HLDTRGEVT</code>, <code>RLSTRGEVT</code>, <code>WRKCRFJOB</code>, <code>GO</code>, <code>CLEAR</code> are registered but not in COMMANDS.md; <code>WRKSPLF</code> isn't in its table either. <code>RNMDEV</code> and the machine commands (<code>RTVMCHSTS</code>, <code>RTVMCHSTAT</code>, <code>RTVMCHLST</code>, <code>CHGMCHSTS</code>, <code>CHGMCHCFG</code>, <code>WRKMCH</code>) are in COMMANDS.md, marked [EXT].</li>
   <li><strong>Extra parameters</strong>: <code>CRTLIB TYPE(*PROD|*TEST)</code>, <code>SBMJOB LOG(*NO|*YES)</code>, <code>RTVITMCNT NOTFND(*ERROR|*ZERO)</code>, <code>WRKINV FILTER()</code>, <code>WRKSPLF JOB()</code>.</li>

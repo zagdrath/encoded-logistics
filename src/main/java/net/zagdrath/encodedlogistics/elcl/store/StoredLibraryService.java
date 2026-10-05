@@ -478,11 +478,14 @@ public final class StoredLibraryService implements LibraryService {
     public synchronized LibraryImage image(ElclSystem system, String library) throws ElclException {
         SystemData.Library lib = find(system, library);
         List<LibraryImage.MemberImage> members = new ArrayList<>();
-        lib.members.values().forEach(m -> members.add(new LibraryImage.MemberImage(m.name, m.text, List.copyOf(m.lines))));
+        lib.members.values().forEach(m -> members.add(new LibraryImage.MemberImage(m.name, m.type, m.text, List.copyOf(m.lines))));
         List<LibraryImage.ProgramImage> programs = new ArrayList<>();
-        lib.programs.values().forEach(p -> programs.add(new LibraryImage.ProgramImage(p.name, p.sourceMember, p.source)));
+        lib.programs.values().forEach(p -> programs.add(new LibraryImage.ProgramImage(p.name, p.sourceMember, p.source, p.files)));
+        // Its files and their records (not ELSYS's system files: those are the network's own data).
+        List<LibraryImage.FileImage> files = new ArrayList<>();
+        lib.files.values().stream().filter(file -> !file.system).forEach(file -> files.add(LibraryImage.FileImage.of(file)));
         return new LibraryImage(lib.name, lib.system() ? "*PROD" : lib.type, lib.text, system.name(), system.nowShort(), List.copyOf(members),
-                List.copyOf(programs));
+                List.copyOf(programs), List.copyOf(files));
     }
 
     @Override
@@ -493,15 +496,26 @@ public final class StoredLibraryService implements LibraryService {
         if (lib != null) {
             writable(system, lib, user);
         }
-        // What it'll take of the network's storage, less what the library's members took: they're all replaced.
+        // What it'll take of the network's storage, less what the library's members and files took: they're all replaced.
         long more = 0;
         for (LibraryImage.MemberImage member : image.members()) {
             lineLimit(member.lines());
             more += cost(member.lines());
         }
+        List<DbFile> files = new ArrayList<>();
+        for (LibraryImage.FileImage saved : image.files()) {
+            DbFile file = saved.file();
+            if (file != null) {
+                files.add(file);
+                more += SystemData.cost(file.characters(), ElclConfig.charsPerStorageByte());
+            }
+        }
         if (lib != null) {
             for (SystemData.Member old : lib.members.values()) {
                 more -= cost(old.lines);
+            }
+            for (DbFile old : lib.files.values()) {
+                more -= SystemData.cost(old.characters(), ElclConfig.charsPerStorageByte());
             }
         }
         room(system, name, more);
@@ -523,14 +537,24 @@ public final class StoredLibraryService implements LibraryService {
         for (LibraryImage.MemberImage member : image.members()) {
             String mbr = upper(member.name());
             SystemData.Member old = lib.members.get(mbr);
-            lib.members.put(mbr, new SystemData.Member(mbr, member.text(), List.copyOf(member.lines()), old != null ? old.version + 1 : 0, system.nowShort()));
+            lib.members.put(mbr, new SystemData.Member(mbr, member.type(), member.text(), List.copyOf(member.lines()), old != null ? old.version + 1 : 0,
+                    system.nowShort()));
             listener.saved(system, name, mbr, member.lines());
         }
         for (LibraryImage.ProgramImage program : image.programs()) {
             SystemData.Member source = lib.members.get(upper(program.sourceMember()));
             String pgm = upper(program.name());
             lib.programs.put(pgm, new SystemData.Program(pgm, name, upper(program.sourceMember()), source != null ? source.version : 0, system.nowShort(),
-                    program.source()));
+                    program.source(), program.files()));
+        }
+        // Its files become the diskette's too, each made from a member here as its definition now is.
+        lib.files.clear();
+        for (DbFile file : files) {
+            SystemData.Member source = file.sourceLibrary.equals(name) ? lib.members.get(file.sourceMember) : null;
+            if (source != null) {
+                file.sourceVersion = source.version;
+            }
+            lib.files.put(file.name, file);
         }
         ElclStore.of(system).changed();
     }

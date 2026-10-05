@@ -483,6 +483,90 @@ final class DatabaseGameTests {
         }));
     }
 
+    // --- SAVLIB / RSTLIB: files, their records and PF members go with the library ---
+
+    static void saveRestore(GameTestHelper helper) {
+        InterfaceGameTests.FakeDrive drive = new InterfaceGameTests.FakeDrive();
+        InterfaceGameTests.FakeDiskette diskette = new InterfaceGameTests.FakeDiskette();
+        drive.mounted.add(diskette);
+        ElclSystem[] system = new ElclSystem[1];
+        net.zagdrath.encodedlogistics.elcl.device.DeviceSources.Source<net.zagdrath.encodedlogistics.elcl.device.DisketteDevice> source = s -> s
+                .equals(system[0]) ? List.of(drive) : List.of();
+        rig(helper, (h, sequence, rig) -> sequence.thenExecute(() -> {
+            Rig r = rig[0];
+            system[0] = r.system();
+            stock(h, r);
+            program(r, "DBLIB", "READER", "PGM", "DCLF FILE(DBLIB/STOCK)", "RCVF", "ENDPGM");
+            List<DbRecord> before = records(h, r, "DBLIB", "STOCK");
+            net.zagdrath.encodedlogistics.elcl.device.Diskettes.register(source);
+            try {
+                ElclGameTests.expect(h, r.context(), "SAVLIB LIB(DBLIB) DEV(MIDRANGE01)", "ELC0220");
+                var image = diskette.library("DBLIB");
+                h.assertTrue(image != null && image.files().size() == 1 && image.members().stream().anyMatch(m -> m.type().equals("PF")),
+                        "Image " + image);
+                h.assertTrue(net.zagdrath.encodedlogistics.elcl.device.LibraryImage.load(image.save()).equals(image), "Image doesn't survive NBT");
+                ElclGameTests.expect(h, r.context(), "DLTLIB LIB(DBLIB)", "ELC0211");
+                ElclGameTests.expect(h, r.context(), "RSTLIB LIB(DBLIB) DEV(MIDRANGE01)", "ELC0221");
+                List<DbRecord> after = records(h, r, "DBLIB", "STOCK");
+                h.assertTrue(after.size() == before.size(), "Records not restored");
+                for (int i = 0; i < after.size(); i++) {
+                    h.assertTrue(List.of(after.get(i).values()).equals(List.of(before.get(i).values())), "Record " + i + " changed");
+                }
+                LibraryService.Member member = ElclServices.libraries().member(r.system(), "DBLIB", "STOCK");
+                h.assertTrue(member.type().equals("PF") && member.program() && !member.changed(), "PF member " + member);
+                h.assertTrue(!ElclServices.libraries().programFiles(r.system(), "DBLIB", "READER").isEmpty(), "READER's formats");
+                // A too-small diskette: the records count against it.
+                diskette.capacity = image.bytes() - 10;
+                diskette.saved.clear();
+                ElclGameTests.expect(h, r.context(), "SAVLIB LIB(DBLIB) DEV(MIDRANGE01)", "ELC1311");
+            } catch (ElclException e) {
+                h.fail(e.getMessage());
+            } finally {
+                net.zagdrath.encodedlogistics.elcl.device.Diskettes.unregister(source);
+            }
+        }));
+    }
+
+    // --- A Display Panel's table ---
+
+    static void displayTable(GameTestHelper helper) {
+        net.minecraft.core.BlockPos master = new net.minecraft.core.BlockPos(3, 1, 3);
+        for (int x = 3; x <= 5; x++) {
+            for (int y = 1; y <= 2; y++) {
+                DisplayGameTests.panel(helper, new net.minecraft.core.BlockPos(x, y, 3), net.minecraft.core.Direction.SOUTH);
+            }
+        }
+        rig(helper, (h, sequence, rig) -> sequence.thenIdle(1).thenExecute(() -> {
+            Rig r = rig[0];
+            TerminalContext c = r.context();
+            stock(h, r);
+            var display = DisplayGameTests.at(h, master);
+            ElclGameTests.expect(h, c, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*TABLE)", "ELC1316");
+            ElclGameTests.expect(h, c, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*CLOCK) FILE(DBLIB/STOCK)", "ELC1316");
+            ElclGameTests.expect(h, c, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*TABLE) FILE(DBLIB/STOCK) QRYSLT('WEIGHT *GT 1')", "ELC2242");
+            ElclGameTests.expect(h, c, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*TABLE) FILE(DBLIB/NOPE)", "ELC2205");
+            String message = run(c, "SNDDSPWDG DEV(DSP01) RGN(A) WDG(*TABLE) FILE(DBLIB/STOCK) QRYSLT('QTY *LT 100') SORT(QTY *DESCEND)");
+            h.assertTrue(message.isEmpty(), "SNDDSPWDG *TABLE: " + message);
+            var widget = display.displayContent().region("A", display.canvasWidth(), display.canvasHeight()).widget();
+            h.assertTrue(widget.kind().equals("*TABLE") && widget.file().equals("DBLIB/STOCK") && widget.select().equals("QTY *LT 100")
+                    && widget.sort().equals("QTY *DESCEND"), "Widget " + widget);
+            var frame = display.liveFrames().getFirst();
+            h.assertTrue(frame.label().equals("DBLIB/STOCK") && frame.value().equals("2") && frame.rows().size() == 3, "Frame " + frame);
+            h.assertTrue(frame.rows().get(0).startsWith("Item\tQuantity") && frame.rows().get(1).startsWith("IRON_INGOT\t40\t1.50"), "Rows " + frame.rows());
+            h.assertTrue(frame.numbers().equals(List.of(0L, 1L, 1L, 0L, 0L)), "Numeric columns " + frame.numbers());
+            // The file gone: the table says so.
+            ElclGameTests.expect(h, c, "DLTF FILE(DBLIB/STOCK)", "ELC2233");
+            var gone = display.liveFrames().getFirst();
+            h.assertTrue(gone.value().equals("!") && gone.rows().getFirst().contains("STOCK"), "After DLTF " + gone);
+        }));
+    }
+
+    // A command line's message ("" for none).
+    private static String run(TerminalContext context, String line) {
+        var out = net.zagdrath.encodedlogistics.terminal.TerminalCommands.execute(context, line);
+        return out.message() != null ? out.message().getString() : "";
+    }
+
     // --- The screens' queries (FileQueries) ---
 
     private static List<String> cells(net.zagdrath.encodedlogistics.terminal.TerminalOutput out, int line) {

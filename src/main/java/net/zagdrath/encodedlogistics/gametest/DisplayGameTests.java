@@ -52,11 +52,11 @@ import net.zagdrath.encodedlogistics.terminal.TerminalOutput;
 final class DisplayGameTests {
     private DisplayGameTests() {}
 
-    private static void panel(GameTestHelper helper, BlockPos pos, Direction facing) {
+    static void panel(GameTestHelper helper, BlockPos pos, Direction facing) {
         helper.setBlock(pos, ModBlocks.DISPLAY_PANEL.get().defaultBlockState().setValue(DisplayPanelBlock.FACING, facing));
     }
 
-    private static DisplayPanelBlockEntity at(GameTestHelper helper, BlockPos pos) {
+    static DisplayPanelBlockEntity at(GameTestHelper helper, BlockPos pos) {
         return helper.getBlockEntity(pos, DisplayPanelBlockEntity.class);
     }
 

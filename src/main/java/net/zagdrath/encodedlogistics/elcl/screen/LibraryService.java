@@ -78,8 +78,8 @@ public interface LibraryService {
     // A library as SAVLIB writes it (ELC0201 when there's none).
     LibraryImage image(ElclSystem system, String library) throws ElclException;
 
-    // RSTLIB: the library made (owned by the user) or its members and programs replaced from the image; ELC0205 for
-    // ELSYS, ELC0401 without *CHANGE, ELC0207 when the network can't store it.
+    // RSTLIB: the library made (owned by the user) or its members, programs and files replaced from the image; ELC0205
+    // for ELSYS, ELC0401 without *CHANGE, ELC0207 when the network can't store it.
     void restore(ElclSystem system, String user, LibraryImage image) throws ElclException;
 
     // A program's source as it was compiled (what a job runs): ELC0201 / ELC0203 when there's none.

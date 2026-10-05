@@ -210,6 +210,8 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("db_authority", DatabaseGameTests::authority);
         TESTS.put("db_example", DatabaseGameTests::example);
         TESTS.put("db_screens", DatabaseGameTests::screens);
+        TESTS.put("db_save_restore", DatabaseGameTests::saveRestore);
+        TESTS.put("db_display_table", DatabaseGameTests::displayTable);
         ARCFORGE_TESTS.put("arcforge_attach_adopt_break", ArcforgeGameTests::attachAdoptAndBreak);
         ARCFORGE_TESTS.put("arcforge_take_off", ArcforgeGameTests::takeOff);
         ARCFORGE_TESTS.put("arcforge_survives_reload", ArcforgeGameTests::survivesReload);

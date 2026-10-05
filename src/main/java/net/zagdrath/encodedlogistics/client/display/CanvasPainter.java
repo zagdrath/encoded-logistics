@@ -322,6 +322,11 @@ final class CanvasPainter {
                     item(x, y, w, h, widget.item(), frame.value(), widget.color() != 0 ? widget.color() : TEXT);
                 }
             }
+            case "*TABLE" -> {
+                if (frame != null) {
+                    table(x, y, w, h, frame, widget.color() != 0 ? widget.color() : ACCENT);
+                }
+            }
             case "*GRAPH" -> {
                 if (frame != null) {
                     int[] col = widget.color() != 0 ? new int[] { shade(widget.color(), 0.5F), shade(widget.color(), 0.7F), shade(widget.color(), 0.85F),
@@ -332,6 +337,58 @@ final class CanvasPainter {
             default -> {}
         }
         clip(0, 0, image.getWidth(), image.getHeight());
+    }
+
+    // A file's records (DisplayData's table): the file and how many were selected on top, the headings on a bar in the
+    // widget's colour, then a row a record (alternating backgrounds), each column as wide as its widest value (up to 24
+    // characters), numbers right-aligned; columns that don't fit are left off. A file gone or a selection that fails:
+    // its message, in the fault colour.
+    private static final int TABLE_ROW = 11, TABLE_GAP = 6, TABLE_COLUMN = 24;
+
+    private void table(int x, int y, int w, int h, DisplayFrame frame, int color) {
+        text(x + 2, y + 1, frame.label(), MUTED, 1);
+        text(x + w - 2 - width(frame.value(), 1), y + 1, frame.value(), TEXT, 1);
+        List<String> rows = frame.rows();
+        if (rows.isEmpty()) {
+            return;
+        }
+        if (rows.getFirst().startsWith("!")) {
+            String message = rows.getFirst().substring(1);
+            int room = Math.max(1, (w - 4) / TerminalFont.CELL_W);
+            for (int line = 0, at = 0; at < message.length() && y + TABLE_ROW * (line + 2) <= y + h; line++, at += room) {
+                text(x + 2, y + TABLE_ROW * (line + 1) + 1, message.substring(at, Math.min(message.length(), at + room)), FAULT, 1);
+            }
+            return;
+        }
+        List<String[]> cells = new java.util.ArrayList<>();
+        for (String row : rows) {
+            cells.add(row.split("\t", -1));
+        }
+        int columns = cells.getFirst().length;
+        int[] chars = new int[columns];
+        for (String[] row : cells) {
+            for (int c = 0; c < Math.min(columns, row.length); c++) {
+                chars[c] = Math.min(TABLE_COLUMN, Math.max(chars[c], row[c].length()));
+            }
+        }
+        for (int r = 0; r < cells.size() && y + TABLE_ROW * (r + 2) <= y + h; r++) {
+            int ry = y + TABLE_ROW * (r + 1);
+            fill(x, ry, w, TABLE_ROW, r == 0 ? shade(color, 0.45F) : r % 2 == 1 ? S[1] : S[2]);
+            int cx = x + 2;
+            for (int c = 0; c < columns && c < cells.get(r).length; c++) {
+                int cw = chars[c] * TerminalFont.CELL_W;
+                if (cx + cw > x + w - 1) {
+                    break;
+                }
+                String value = cells.get(r)[c];
+                if (value.length() > chars[c]) {
+                    value = value.substring(0, chars[c]);
+                }
+                boolean right = r > 0 && frame.number(c) == 1;
+                text(right ? cx + cw - width(value, 1) : cx, ry + 1, value, r == 0 ? color : TEXT, 1);
+                cx += cw + TABLE_GAP;
+            }
+        }
     }
 
     // The count large beside the icon (2x where it fits), the item's name under it.

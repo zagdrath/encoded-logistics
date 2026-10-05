@@ -305,10 +305,14 @@ final class BuiltinCommands {
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("RGN", "Region", Kind.NAME).req())
                 .p(p("WDG", "Widget", Kind.SPECIAL).req().sv("*STORAGE", "*COLD", "*ENERGY", "*LANES", "*JOBS", "*ITEM", "*CLOCK", "*DEVICES", "*UPS",
-                        "*TEXT", "*NONE"))
+                        "*TEXT", "*TABLE", "*NONE"))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*NONE").dft("*NONE").len(64))
                 .p(p("DEVTYPE", "Device type", Kind.NAME).sv("*ALL").dft("*ALL"))
-                .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8)));
+                .p(p("COLOR", "Colour", Kind.CHAR).sv("*DFT").dft("*DFT").len(8))
+                // [EXT] A *TABLE's file, its record selection and sort (as RUNQRY's).
+                .p(file("FILE", "File").sv("*NONE").dft("*NONE"))
+                .p(p("QRYSLT", "Record selection expression", Kind.CHAR).sv("*ALL").dft("*ALL").len(64))
+                .p(p("SORT", "Sort fields", Kind.NAME).sv("*NONE", "*ASCEND", "*DESCEND").dft("*NONE").list(8)));
         add(CommandDefinition.of("SNDDSPGPH", "Send Display Graph").positional(3)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("RGN", "Region", Kind.NAME).req())

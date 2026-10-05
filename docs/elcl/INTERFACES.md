@@ -86,12 +86,14 @@ Tested by `gametest/BatchJobGameTests` with `FakeHost`: `batch_queue_and_hosts` 
 | `List<LibraryImage> libraries()` | The libraries saved on it. |
 | `void write(LibraryImage)` | Saves a library, replacing one of the same name. SAVLIB calls it only once the image fits (ELC1311 otherwise). |
 
-**`LibraryImage`** is the library as saved: its members, with their sequence numbers and change dates, and its
-programs, as source compiled again on restore. `save()` / `load()` turn it into NBT, so a diskette item can keep it in
-a `CustomData` component.
+**`LibraryImage`** is the library as saved: its members, with their type (ELCLP or PF), sequence numbers and change
+dates, its programs, as source compiled again on restore (with the formats of the files they declare), and its physical
+files with their records (`FileImage`; not ELSYS's system files). `bytes()` counts the source and each record's length.
+`save()` / `load()` turn it into NBT, so a diskette item can keep it in a `CustomData` component; an image saved before
+files existed loads with none.
 
 SAVLIB and RSTLIB are in `elcl/exec/OsCommands.java`. RSTLIB creates the library (owned by the user restoring it) or
-replaces its members and programs. It needs `*CHANGE` on an existing library (ELC0401), never writes to ELSYS
+replaces its members, programs and files. It needs `*CHANGE` on an existing library (ELC0401), never writes to ELSYS
 (ELC0205), and the network must have storage for the members (ELC0207).
 
 | Device | Implements |

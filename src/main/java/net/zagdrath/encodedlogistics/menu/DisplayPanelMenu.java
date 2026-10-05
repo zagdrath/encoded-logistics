@@ -34,6 +34,8 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.elcl.store.SystemData;
+import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -180,6 +182,21 @@ public class DisplayPanelMenu extends AbstractContainerMenu {
             String id = BuiltInRegistries.ITEM.getKey(ElclItems.resolve(wanted.item())).toString();
             widget = new DisplayContent.Widget(kind, id, wanted.devType(), wanted.color(), wanted.stat(), wanted.range(), wanted.graph(), wanted.file(),
                     wanted.scale(), wanted.colors());
+        }
+        if (kind.equals("*TABLE")) {
+            // A file that's there (ELC2205; a name alone on QSYS's library list), stored qualified.
+            NetworkRef network = display.network();
+            if (network == null) {
+                throw new ElclException("ELC1302", display.name());
+            }
+            ElclSystem system = new ElclSystem(level.getServer(), network);
+            String spec = wanted.file().strip().toUpperCase(Locale.ROOT);
+            int slash = spec.indexOf('/');
+            String[] found = ElclServices.files().resolve(system, SystemData.SYSTEM_OWNER, slash >= 0 ? spec.substring(0, slash) : "*LIBL",
+                    spec.substring(slash + 1));
+            ElclServices.files().format(system, found[0], found[1]);
+            widget = new DisplayContent.Widget(kind, "", "*ALL", wanted.color(), "", "*10M", "*LINE", found[0] + "/" + found[1], "*DITHER", "*DFT",
+                    wanted.select(), wanted.sort());
         }
         display.displayContent().put(region.with(widget), display.canvasWidth(), display.canvasHeight());
         display.forgetImage(region.name());

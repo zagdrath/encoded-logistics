@@ -56,13 +56,19 @@ public final class DisplayContent {
     }
 
     // A region's widget: its kind (*NONE, *TEXT, *STORAGE, *COLD, *ENERGY, *LANES, *JOBS, *ITEM, *CLOCK, *DEVICES, *UPS,
-    // *GRAPH, *IMAGE) and what it needs: an item, a device type, a colour (0: its own), a graph's stat, range and type,
-    // an image's file, scaling and colour mode.
+    // *GRAPH, *IMAGE, *TABLE) and what it needs: an item, a device type, a colour (0: its own), a graph's stat, range and
+    // type, an image's file, scaling and colour mode; a table's file (LIB/NAME, in file), record selection (select, a
+    // RUNQRY QRYSLT; blank: all) and sort (blank-joined SORT fields; blank: the file's order).
     public record Widget(String kind, String item, String devType, int color, String stat, String range, String graph, String file, String scale,
-            String colors) {
+            String colors, String select, String sort) {
         public static final Widget NONE = new Widget("*NONE", "", "*ALL", 0, "", "*10M", "*LINE", "", "*DITHER", "*DFT");
         public static final List<String> KINDS = List.of("*NONE", "*TEXT", "*STORAGE", "*COLD", "*ENERGY", "*LANES", "*JOBS", "*ITEM", "*CLOCK",
-                "*DEVICES", "*UPS", "*GRAPH", "*IMAGE");
+                "*DEVICES", "*UPS", "*GRAPH", "*IMAGE", "*TABLE");
+
+        public Widget(String kind, String item, String devType, int color, String stat, String range, String graph, String file, String scale,
+                String colors) {
+            this(kind, item, devType, color, stat, range, graph, file, scale, colors, "", "");
+        }
 
         public static final Codec<Widget> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.optionalFieldOf("kind", "*NONE").forGetter(Widget::kind),
@@ -74,7 +80,9 @@ public final class DisplayContent {
                 Codec.STRING.optionalFieldOf("graph", "*LINE").forGetter(Widget::graph),
                 Codec.STRING.optionalFieldOf("file", "").forGetter(Widget::file),
                 Codec.STRING.optionalFieldOf("scale", "*DITHER").forGetter(Widget::scale),
-                Codec.STRING.optionalFieldOf("colors", "*DFT").forGetter(Widget::colors))
+                Codec.STRING.optionalFieldOf("colors", "*DFT").forGetter(Widget::colors),
+                Codec.STRING.optionalFieldOf("select", "").forGetter(Widget::select),
+                Codec.STRING.optionalFieldOf("sort", "").forGetter(Widget::sort))
                 .apply(i, Widget::new));
 
         public static Widget of(String kind) {
@@ -82,7 +90,7 @@ public final class DisplayContent {
         }
 
         public Widget withColor(int color) {
-            return new Widget(kind, item, devType, color, stat, range, graph, file, scale, colors);
+            return new Widget(kind, item, devType, color, stat, range, graph, file, scale, colors, select, sort);
         }
 
         // Whether it shows values from the network (refreshed every second).

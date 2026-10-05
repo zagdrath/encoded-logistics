@@ -40,7 +40,8 @@ import net.zagdrath.encodedlogistics.net.DisplayConfigPayload;
 // - Layout: the screen's canvas (at up to 1.5x) with its regions. Drag an edge between regions to move it; drag an edge
 //   on the screen's border inward to split a region there; right-click a region to remove it. Edges snap to SNAP px.
 // - Widgets: a row per region (its letter, widget, data source, colour); "Change widget" opens the picker: the widget,
-//   its source (an item, a device type; a graph's stat, range and type; an image's file, scaling and colours) and colour.
+//   its source (an item, a device type; a graph's stat, range and type; an image's file, scaling and colours; a table's
+//   file, LIB/NAME - its selection and sort come from SNDDSPWDG) and colour.
 // Changes go to the server (DisplayConfigPayload), which checks the build permission and each change.
 public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu> {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/display_panel.png"),
@@ -115,7 +116,8 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
         item.setVisible(tab == 2 && picking && (kind.equals("*ITEM") || graphItem));
         item.setY(topPos + (graphItem ? 111 : 99));
         devType.setVisible(tab == 2 && picking && kind.equals("*DEVICES"));
-        file.setVisible(tab == 2 && picking && kind.equals("*IMAGE"));
+        // An image's file, or a table's (LIB/NAME).
+        file.setVisible(tab == 2 && picking && (kind.equals("*IMAGE") || kind.equals("*TABLE")));
     }
 
     private List<DisplayContent.Region> regions(DisplayPanelBlockEntity display) {
@@ -331,7 +333,7 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
             }
             String field = kind.equals("*GRAPH") && STATS.get(stat).startsWith("*MCH") ? "machine"
                     : kind.equals("*ITEM") || kind.equals("*GRAPH") && STATS.get(stat).equals("*ITEM") ? "item"
-                    : kind.equals("*DEVICES") ? "type" : kind.equals("*IMAGE") ? "file" : null;
+                    : kind.equals("*DEVICES") ? "type" : kind.equals("*IMAGE") ? "file" : kind.equals("*TABLE") ? "table" : null;
             if (field != null) {
                 int fy = kind.equals("*GRAPH") ? 111 : 99;
                 graphics.text(font, Component.translatable("gui.encodedlogistics.display.field." + field), 12, fy, PartScreens.TEXT_MUTED, false);
@@ -358,6 +360,7 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
                     ? widget.item() + " " + tr("gui.encodedlogistics.display.stat." + bare(widget.stat())) : tr("gui.encodedlogistics.display.stat." + bare(widget.stat()))) + "  "
                     + bare(widget.range());
             case "*IMAGE" -> widget.file();
+            case "*TABLE" -> widget.file() + (widget.select().isBlank() ? "" : "  " + widget.select());
             case "*TEXT" -> tr("gui.encodedlogistics.display.source.text", display.textLines().size());
             case "*NONE" -> "-";
             default -> tr("gui.encodedlogistics.display.source." + bare(widget.kind()));
@@ -631,9 +634,12 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
 
     private void applyWidget(DisplayContent.Region region) {
         String itemValue = item != null ? item.getValue().trim() : "", devValue = devType != null ? devType.getValue().trim().toUpperCase(Locale.ROOT) : "*ALL";
+        // A table keeps the selection and sort a script gave it (SNDDSPWDG QRYSLT() SORT()).
+        DisplayContent.Widget old = region.widget();
+        boolean table = kind.equals("*TABLE") && old.kind().equals("*TABLE");
         DisplayContent.Widget widget = new DisplayContent.Widget(kind, itemValue, devValue.isEmpty() ? "*ALL" : devValue, color,
                 kind.equals("*GRAPH") ? STATS.get(stat) : "", RANGES.get(range), TYPES.get(type), file != null ? file.getValue().trim() : "", SCALES.get(scale),
-                COLORS.get(colors));
+                COLORS.get(colors), table ? old.select() : "", table ? old.sort() : "");
         CompoundTag data = new CompoundTag();
         data.putString("region", region.name());
         DisplayContent.Widget.CODEC.encodeStart(NbtOps.INSTANCE, widget).result().ifPresent(tag -> data.put("widget", tag));
