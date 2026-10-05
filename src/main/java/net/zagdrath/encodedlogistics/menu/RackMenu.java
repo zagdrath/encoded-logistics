@@ -179,14 +179,14 @@ public class RackMenu extends AbstractContainerMenu {
         return false;
     }
 
-    // An action from the picked device's panel. The Firewall decides who may change it; everything else needs build
-    // permission on the rack's network.
+    // An action from the picked device's panel. The Firewall decides who may change it; everything else needs rack
+    // access on the rack's network.
     public void handleAction(ServerPlayer player, int u, int action, int value, String text) {
         RackDevice device = rack != null && u == picked.get() ? rack.deviceAt(u) : null;
         if (device == null) {
             return;
         }
-        if (!(device instanceof FirewallDevice) && !NetworkAccess.check(player.level(), pos, player, RackPermission.BUILD)) {
+        if (!(device instanceof FirewallDevice) && !NetworkAccess.guard(player.level(), pos, player, RackPermission.RACK)) {
             return;
         }
         if (action == RackDevice.ACTION_PRIORITY) {

@@ -306,6 +306,10 @@ public class Config {
             .comment("Whether a Firewall that's offline (no lane, no power) still enforces its rules.")
             .define("firewallFailClosed", true);
 
+    public static final ModConfigSpec.BooleanValue RACK_BREAK_PROTECTION = BUILDER
+            .comment("Whether breaking a Server Rack (and so pulling its devices out) needs the Firewall's rack access permission on its network.")
+            .define("rackBreakProtection", true);
+
     public static final ModConfigSpec.DoubleValue ROUTER_DRAIN = BUILDER
             .comment("FE per tick a Router drains while its network runs.")
             .defineInRange("routerDrain", 4.0, 0.0, 1_000.0);

@@ -479,6 +479,17 @@ Press Enter to continue.
     <tr><td><code>30</code> (default)</td><td>Sign-on (when the network has a Firewall), then the Firewall's authority for everything.</td></tr>
   </tbody>
 </table></div>
+<h4 id="rack-security">Server Racks and Link Cards</h4>
+<p>The Firewall also guards the network's hardware. These rules work the same as in the OS: no Firewall means everyone may; an offline Firewall follows <code>firewallFailClosed</code>; server operators are never stopped. <code>SECLVL</code> doesn't change them, because it only relaxes the OS.</p>
+<ul>
+  <li><strong>Rack access.</strong> The Firewall has a sixth per-player permission, <em>Rack access</em> (the padlock column). It's needed to open a Server Rack's front or rear doors, open its screen, install or remove devices, use a device through the open front, and change device settings on its panels. Left on Inherit, it follows the player's <em>build</em> permission, so by default the players who may build may open racks. An owner can grant rack access without build, or build without rack access. The Firewall's own panel is still edited by players with build.</li>
+  <li><strong>Denied.</strong> The door doesn't open, the latch rattles, and the action bar shows <code>Access denied: SYSNAME Firewall</code>.</li>
+  <li><strong>Unlocked racks.</strong> A rack on no network (no controller) is open to everyone, as is a rack on a network with no Firewall.</li>
+  <li><strong>Breaking.</strong> Breaking any network block needs build. Breaking a Server Rack, which drops its devices, needs rack access as well, unless the server config option <code>rackBreakProtection</code> (default on) is turned off.</li>
+  <li><strong>Automation.</strong> A rack has no inventory for hoppers or pipes, so nothing can pull devices or drives out of it.</li>
+  <li><strong>Link Cards.</strong> Pairing with a Link Card needs build on the network at <em>each</em> end. Where an end is a device in a Server Rack (a Router, a switch, a Wireless Controller), that end needs rack access instead. The check happens twice: when the card is written (the end clicked) and when it's applied (both ends). That covers Network Bridges, Point-to-Point Links, Routers, switch segments behind Segment Isolators, and Wireless Bridges and Ports. Adopting a Wireless Bridge or Port into a Wireless Controller needs build on the controller's network. Denied, the card isn't written or applied, and the action bar shows the same <code>Access denied</code> message.</li>
+  <li><strong>Existing links</strong> made before these checks, or before a player lost permission, keep working.</li>
+</ul>
 </section>
 
 <section id="using">
@@ -548,7 +559,7 @@ Select one of the following:
     <tr><td><kbd>F19</kbd> / <kbd>F20</kbd></td><td>Shift the columns shown left / right: editor (columns 1&ndash;72 or 9&ndash;80), Display Spooled File (40 columns at a time).</td></tr>
     <tr><td><kbd>F24</kbd> More keys</td><td>Opens <a href="#scr-morekeys">More Keys and Settings</a> (the key list and the phosphor choice).</td></tr>
     <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Next / previous field. On Command Entry with text on the command line, <kbd>Tab</kbd> completes the last word instead (see <a href="#command-line">below</a>).</td></tr>
-    <tr><td><kbd>Up</kbd> / <kbd>Down</kbd></td><td>Previous / next field.</td></tr>
+    <tr><td><kbd>Up</kbd> / <kbd>Down</kbd></td><td>The cursor a row up / down, keeping its column, into the field there (or the nearest one on the nearest row that has any; past the last row it goes round to the first).</td></tr>
     <tr><td><kbd>Left</kbd> <kbd>Right</kbd> <kbd>Home</kbd> <kbd>End</kbd></td><td>Move the cursor in the field.</td></tr>
     <tr><td><kbd>Backspace</kbd> / <kbd>Delete</kbd></td><td>Delete before / at the cursor; the rest of the field closes up.</td></tr>
     <tr><td><kbd>Insert</kbd></td><td>Switches between overwrite (the default: typing replaces the character at the cursor) and insert (typing pushes the rest along). Applies to every field.</td></tr>
@@ -938,7 +949,7 @@ FMT **  <span class="d">...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+..
 </figure>
 <ul>
   <li>Row 1: the member (<code>LIB/NAME</code>) and its type. Row 2: the columns shown, and the cursor's line and column. Row 3: the column ruler, when it's on (<code>COLS</code> or F15).</li>
-  <li>Each source row has a 7-character <strong>margin</strong> holding the sequence number (type a line command over it) and the line's <strong>text</strong>, 72 of its 80 columns at a time. New lines show <code>'''''''</code> in the margin until they are saved.</li>
+  <li>Each source row has a 7-character <strong>margin</strong> holding the sequence number (type a line command over it) and the line's <strong>text</strong>, 72 of its 80 columns at a time. A new line shows <code>'''''''</code> in the margin until Enter, which numbers every line typed on (as SEU does); the open blank line under it keeps <code>'''''''</code> until it's typed on. Up and Down move the cursor a row, keeping its column (from one line's text to the next line's text); Tab moves from field to field.</li>
   <li><em>Beginning of data</em> and <em>End of data</em> mark the ends; a run of excluded lines shows as one row, <em>"N data records excluded"</em>.</li>
   <li>Type over the text to change it. The Insert key switches between overwrite and insert.</li>
   <li>Opened read-only (WRKMBR 5=Display, a member in <code>ELSYS</code>, a library you can only read, or a member someone else is editing) the title is <em>Display Member</em>, every field is protected, and the command line takes only <code>FIND</code>, <code>TOP</code> and <code>BOTTOM</code>.</li>

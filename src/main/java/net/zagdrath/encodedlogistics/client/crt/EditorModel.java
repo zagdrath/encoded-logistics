@@ -351,6 +351,16 @@ final class EditorModel {
         dirty = false;
     }
 
+    // After Enter, as SEU does: every new line typed on gets its sequence number; an open blank one (still fresh) keeps
+    // ' until something's typed on it.
+    void numberTyped() {
+        List<Line> all = new ArrayList<>(lines);
+        lines.removeIf(line -> line.fresh && line.text.isBlank());
+        number();
+        lines.clear();
+        lines.addAll(all);
+    }
+
     // Sequence numbers for the lines without one (0): spread over the gap to the next numbered line, or everything
     // renumbered by 1.00 when a gap is too small.
     void number() {

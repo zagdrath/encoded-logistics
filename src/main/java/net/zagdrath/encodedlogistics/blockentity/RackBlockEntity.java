@@ -190,10 +190,10 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         return device;
     }
 
-    // A player mounts the device in their hand at u (the open front, or the screen).
+    // A player mounts the device in their hand at u (the open front, or the screen); rack access on its network.
     public boolean installFromHand(ServerPlayer player, ItemStack stack, int u) {
         RackDeviceType type = RackDeviceType.of(stack);
-        if (type == null || !(level instanceof ServerLevel serverLevel) || !NetworkAccess.check(serverLevel, worldPosition, player, RackPermission.BUILD)) {
+        if (type == null || !(level instanceof ServerLevel serverLevel) || !NetworkAccess.rack(serverLevel, worldPosition, player)) {
             return false;
         }
         if (!fits(u, type.size())) {
@@ -211,8 +211,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
 
     // A player takes the device at u out: it (with its settings) and whatever it held go to their inventory.
     public boolean takeOut(ServerPlayer player, int u) {
-        if (!(level instanceof ServerLevel serverLevel) || deviceAt(u) == null
-                || !NetworkAccess.check(serverLevel, worldPosition, player, RackPermission.BUILD)) {
+        if (!(level instanceof ServerLevel serverLevel) || deviceAt(u) == null || !NetworkAccess.rack(serverLevel, worldPosition, player)) {
             return false;
         }
         RackDevice device = remove(u);
@@ -784,7 +783,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     // --- The screen ---
 
     public void openMenu(ServerPlayer player) {
-        if (!NetworkAccess.check(player.level(), worldPosition, player, RackPermission.VIEW)) {
+        if (!NetworkAccess.rack(player.level(), worldPosition, player)) {
             return;
         }
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new RackMenu(id, inventory, this),

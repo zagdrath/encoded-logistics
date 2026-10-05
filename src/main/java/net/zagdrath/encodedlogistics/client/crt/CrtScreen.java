@@ -29,9 +29,9 @@ import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 // game's keys, characters, clicks and the server's answers.
 //
 // Every screen has the same frame: id, title and system name, the date and time, its body, a prompt and the command
-// line ("===> "), the message line and its function keys. Keys: typing goes to the focused field; Tab / Shift+Tab and
-// Up / Down move between fields; Enter submits (the command line first, when there's anything on it); PageUp / PageDown
-// roll lists; F3 exits, F4 prompts, F5 refreshes, F9 opens Command Entry, F11 sorts, F12 (or Esc) goes back, Shift+F12
+// line ("===> "), the message line and its function keys. Keys: typing goes to the focused field; Tab / Shift+Tab move
+// between fields, Up / Down the cursor a row (keeping its column); Enter submits (the command line first, when there's
+// anything on it); PageUp / PageDown roll lists; F3 exits, F4 prompts, F5 refreshes, F9 opens Command Entry, F11 sorts, F12 (or Esc) goes back, Shift+F12
 // (F24) shows more keys and the phosphor. Clicking a function key presses it.
 public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, CrtTerminal.Host {
     private final TerminalDeskMenu menu;
@@ -143,7 +143,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
         } else if (key == InputConstants.KEY_TAB) {
             terminal.tab(shift);
         } else if (event.isDown() || event.isUp()) {
-            terminal.nextField(event.isUp());
+            terminal.moveVertical(event.isUp());
         } else if (key == InputConstants.KEY_PAGEUP || key == InputConstants.KEY_PAGEDOWN) {
             terminal.page(key == InputConstants.KEY_PAGEUP ? -1 : 1);
         } else if (key == InputConstants.KEY_INSERT) {

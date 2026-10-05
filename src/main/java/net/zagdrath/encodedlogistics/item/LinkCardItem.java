@@ -63,8 +63,12 @@ import net.zagdrath.encodedlogistics.wireless.WirelessClient;
 // of a network to store that network, then use it on a Router's unit to link the Router to it.
 //
 // Wireless: use it on a Wireless Controller's unit in an open rack to take the controller, then on a Wireless Bridge or
-// Wireless Port to link it to that controller (build permission on the controller's network). A card from another
-// controller relinks it there.
+// Wireless Port to link it to that controller. A card from another controller relinks it there.
+//
+// Permissions: the Firewall's build permission (rack access, for a device in a Server Rack) on the network at each end -
+// checked when the card is written (the end clicked) and when it's applied (both ends; adopting a Wireless Bridge or Port
+// needs build on the controller's network). Denied, nothing is written or linked and the player is told "Access denied:
+// SYSNAME Firewall". Links made before stay as they are.
 public class LinkCardItem extends Item {
     public LinkCardItem(Item.Properties properties) {
         super(properties);
@@ -106,7 +110,7 @@ public class LinkCardItem extends Item {
         }
         Target target = target(level, context.getClickedPos(), context.getClickLocation());
         if (target == null && player != null && player.isSecondaryUseActive() && onNetwork(level, context.getClickedPos())) {
-            if (level instanceof ServerLevel) {
+            if (level instanceof ServerLevel serverLevel && NetworkAccess.guard(serverLevel, context.getClickedPos(), player, RackPermission.BUILD)) {
                 store(stack, player, context.getHand(), LinkAddress.network(GlobalPos.of(level.dimension(), context.getClickedPos())));
                 player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.network_stored"));
                 level.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
@@ -119,6 +123,9 @@ public class LinkCardItem extends Item {
         if (!(level instanceof ServerLevel serverLevel)) {
             return InteractionResult.SUCCESS;
         }
+        if (!NetworkAccess.guard(serverLevel, context.getClickedPos(), player, RackPermission.BUILD)) {
+            return InteractionResult.SUCCESS;
+        }
         if (player.isSecondaryUseActive()) {
             store(stack, player, context.getHand(), target.address());
             player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.stored"));
@@ -128,6 +135,10 @@ public class LinkCardItem extends Item {
         LinkAddress stored = address(stack);
         if (stored == null) {
             player.sendOverlayMessage(Component.translatable("tooltip.encodedlogistics.link_card.hint"));
+            return InteractionResult.SUCCESS;
+        }
+        // The other end's network too.
+        if (!NetworkAccess.guard(serverLevel.getServer(), stored.pos(), player, RackPermission.BUILD)) {
             return InteractionResult.SUCCESS;
         }
         Component message = pair(serverLevel, stored, target);
@@ -167,7 +178,8 @@ public class LinkCardItem extends Item {
                 player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.gone"));
                 return InteractionResult.SUCCESS;
             }
-            if (!NetworkAccess.check(serverLevel.getServer(), controller.network(), player, RackPermission.BUILD)) {
+            if (!NetworkAccess.guard(serverLevel.getServer(), controller.network(), player, RackPermission.BUILD)
+                    || !NetworkAccess.guard(serverLevel, pos, player, RackPermission.BUILD)) {
                 return InteractionResult.SUCCESS;
             }
             if (!controller.link(client)) {
@@ -190,7 +202,7 @@ public class LinkCardItem extends Item {
         if (target == null || !(target.device() instanceof WirelessControllerDevice controller)) {
             return null;
         }
-        if (level instanceof ServerLevel serverLevel && NetworkAccess.check(serverLevel, rack.getBlockPos(), player, RackPermission.BUILD)) {
+        if (level instanceof ServerLevel serverLevel && NetworkAccess.guard(serverLevel, rack.getBlockPos(), player, RackPermission.RACK)) {
             store(stack, player, context.getHand(), LinkAddress.wireless(GlobalPos.of(level.dimension(), rack.getBlockPos()), controller.id()));
             player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.wireless_stored"));
             level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
@@ -233,7 +245,7 @@ public class LinkCardItem extends Item {
             double along = context.getClickLocation().get(axis) - pos.get(axis) - 0.5;
             Direction side = context.getClickedFace().getAxis() == axis ? context.getClickedFace()
                     : Direction.fromAxisAndDirection(axis, along >= 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
-            if (level instanceof ServerLevel) {
+            if (level instanceof ServerLevel serverLevel && NetworkAccess.guard(serverLevel, pos.relative(side), player, RackPermission.BUILD)) {
                 store(stack, player, context.getHand(), LinkAddress.segment(GlobalPos.of(level.dimension(), pos.relative(side)), side));
                 player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_stored"));
                 level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
@@ -256,7 +268,8 @@ public class LinkCardItem extends Item {
         }
         RackDevice device = target.device();
         if (device instanceof SwitchDevice && stored.kind() == LinkAddress.Kind.SEGMENT) {
-            if (level instanceof ServerLevel serverLevel && NetworkAccess.check(serverLevel, rack.getBlockPos(), player, RackPermission.BUILD)) {
+            if (level instanceof ServerLevel serverLevel && NetworkAccess.guard(serverLevel, rack.getBlockPos(), player, RackPermission.RACK)
+                    && NetworkAccess.guard(serverLevel.getServer(), stored.pos(), player, RackPermission.BUILD)) {
                 RackBlockEntity.SegmentResult result = rack.toggleSegment(stored.pos());
                 player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.segment_" + result.name().toLowerCase(Locale.ROOT)));
                 level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.8F);
@@ -270,7 +283,8 @@ public class LinkCardItem extends Item {
             }
             return InteractionResult.SUCCESS;
         }
-        if (level instanceof ServerLevel serverLevel && NetworkAccess.check(serverLevel, rack.getBlockPos(), player, RackPermission.BUILD)) {
+        if (level instanceof ServerLevel serverLevel && NetworkAccess.guard(serverLevel, rack.getBlockPos(), player, RackPermission.RACK)
+                && NetworkAccess.guard(serverLevel.getServer(), stored.pos(), player, RackPermission.BUILD)) {
             String result = switch (router.link(stored.pos())) {
                 case LINKED -> "router_linked";
                 case ALREADY -> "router_already";

@@ -44,12 +44,14 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
-import net.zagdrath.encodedlogistics.network.RackPartNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+import net.zagdrath.encodedlogistics.network.RackPartNode;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
@@ -59,7 +61,8 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // block up and back; breaking any of it breaks all of it.
 //
 // Right-click the front to open or close the front door, the back for both rear doors; sneak-right-click the front for
-// the rack's screen. With the front door open, using a rack device on the front mounts it at the unit looked at.
+// the rack's screen. With the front door open, using a rack device on the front mounts it at the unit looked at. All of
+// it needs the Firewall's rack access on the rack's network (NetworkAccess.rack): denied, the latch rattles.
 //
 // On the network: cables join it on the back face of the back blocks and on the top of the top blocks. Its blocks pass
 // lanes through to each other; the master is the network device, using a lane for each device in it (RackBlockEntity).
@@ -212,7 +215,7 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
         if (target == null) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        if (level instanceof ServerLevel && player instanceof ServerPlayer serverPlayer) {
+        if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer && NetworkAccess.rack(serverLevel, rack.getBlockPos(), player)) {
             rack.installFromHand(serverPlayer, stack, target.u());
         }
         return InteractionResult.SUCCESS;
@@ -221,10 +224,14 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
     private static InteractionResult useItemOnDevice(ItemStack stack, RackBlockEntity rack, Level level, Player player, BlockHitResult hit,
             boolean front) {
         RackDevice target = front ? targeted(rack, hit, player) : null;
-        if (!(level instanceof ServerLevel) || !(player instanceof ServerPlayer serverPlayer)) {
+        if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
             // The server decides; the client just doesn't open the door.
             return target != null || rack.devices().stream().anyMatch(device -> device.type() == RackDeviceType.WIRELESS_CONTROLLER)
                     ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        // Without rack access no device takes it; the empty-hand use then rattles the latch.
+        if (!NetworkAccess.allowed(serverLevel, rack.getBlockPos(), player, RackPermission.RACK)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (target != null && target.useItem(serverPlayer, stack, true)) {
             return InteractionResult.SUCCESS;
@@ -256,6 +263,9 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
         // A device used through the open front (the Rack Console's drawer).
         RackDevice device = face == RackGeometry.Face.FRONT ? targeted(rack, hit, player) : null;
         if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!NetworkAccess.rack(serverPlayer.level(), rack.getBlockPos(), player)) {
             return InteractionResult.SUCCESS;
         }
         if (device != null && device.use(serverPlayer)) {

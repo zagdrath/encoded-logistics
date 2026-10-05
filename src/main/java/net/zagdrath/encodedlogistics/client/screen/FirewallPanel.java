@@ -39,7 +39,7 @@ public class FirewallPanel extends RackScreen.Panel {
     private static final int POLICY_X = 8, POLICY_Y = 18, POLICY_W = 160, POLICY_H = 14;
     // The list is the inset at (8, 36, 160, 108): a header row, then seven rows of 13 from y 51; the five toggles end at its
     // inner right edge (x 165), each header icon over its toggle.
-    private static final int LIST_X = 10, LIST_Y = 51, ROWS = 7, ROW_H = 13, PERM_X = 112, PERM_STEP = 11, HEADER_Y = 41, TOGGLE = 9;
+    private static final int LIST_X = 10, LIST_Y = 51, ROWS = 7, ROW_H = 13, PERM_X = 101, PERM_STEP = 11, HEADER_Y = 41, TOGGLE = 9;
     private static final int FIELD_X = 10, FIELD_Y = 151, FIELD_W = 106, ADD_X = 122, ADD_Y = 148, ADD_W = 46, ADD_H = 14;
 
     // A row: the owner (fixed) or a listed player.
@@ -174,6 +174,10 @@ public class FirewallPanel extends RackScreen.Panel {
         }
         byte value = row.permissions()[permission.ordinal()];
         String state = value == FirewallDevice.ON ? "on" : value == FirewallDevice.OFF ? "off" : "inherit";
+        // Rack access left alone follows build.
+        if (value == FirewallDevice.INHERIT && permission == RackPermission.RACK) {
+            state = "inherit_build";
+        }
         return Component.translatable("gui.encodedlogistics.firewall.toggle." + state, permission.label());
     }
 

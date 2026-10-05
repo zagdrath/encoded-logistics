@@ -28,8 +28,8 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 
-// The Firewall (1U): who may use its network. Each player listed has five permissions (RackPermission), each ON, OFF or
-// INHERIT (the default policy: no access, view only, or full access). Its owner (whoever installed it) always has
+// The Firewall (1U): who may use its network. Each player listed has six permissions (RackPermission), each ON, OFF or
+// INHERIT (the default policy: no access, view only, or full access; rack access inherits the player's build). Its owner (whoever installed it) always has
 // every permission. Players who may build on the network may change its rules. A network uses one Firewall; any other
 // shows a fault and is ignored (see ControllerStructures.firewall).
 public class FirewallDevice extends RackDevice {
@@ -99,7 +99,23 @@ public class FirewallDevice extends RackDevice {
         }
         Entry entry = players.get(player);
         byte value = entry != null ? entry.permission(permission) : INHERIT;
-        return value == INHERIT ? policy.allows(permission) : value == ON;
+        if (value == INHERIT) {
+            // Rack access follows build until it's set.
+            return permission == RackPermission.RACK ? allows(player, RackPermission.BUILD) : policy.allows(permission);
+        }
+        return value == ON;
+    }
+
+    // Sets a player's permission (ON, OFF or INHERIT), listing them if they aren't yet.
+    public void setPermission(UUID player, String name, RackPermission permission, byte value) {
+        Entry entry = players.computeIfAbsent(player, id -> new Entry(id, name, new byte[RackPermission.values().length]));
+        entry.permissions()[permission.ordinal()] = (byte) Math.clamp(value, INHERIT, OFF);
+        changed(false);
+    }
+
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
+        changed(false);
     }
 
     public boolean canEdit(ServerPlayer player) {

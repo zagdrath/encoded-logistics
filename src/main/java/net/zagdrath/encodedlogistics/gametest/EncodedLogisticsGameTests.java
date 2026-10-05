@@ -96,6 +96,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_targeting", RackGameTests::targeting);
         TESTS.put("rack_on_network", RackGameTests::onNetwork);
         TESTS.put("rack_firewall", RackGameTests::firewall);
+        TESTS.put("rack_access", RackSecurityGameTests::rackAccess);
+        TESTS.put("rack_access_open_and_offline", RackSecurityGameTests::openAndOffline);
+        TESTS.put("link_card_permissions", RackSecurityGameTests::linkCards);
         TESTS.put("rack_ups", RackGameTests::upsCoversAndRecharges);
         TESTS.put("rack_ups_full_buffers", RackGameTests::upsOnFullBuffers);
         TESTS.put("rack_ups_on_battery", RackGameTests::upsOnBatteryIndication);

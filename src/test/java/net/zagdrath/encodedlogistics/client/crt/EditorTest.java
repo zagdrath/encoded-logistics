@@ -281,6 +281,34 @@ class EditorTest {
         assertEquals(List.of("", "PGM", "ENDPGM"), editor.model().texts());
     }
 
+    // Lines typed into a new member get their sequence numbers on Enter (the open blank line keeps '''''''), and Up /
+    // Down move the cursor between the lines' text at the same column, not into the margins.
+    @Test
+    void typedLinesNumberedAndArrowKeys() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "NEW", List.of(), false);
+        terminal.push(editor);
+        terminal.focused().set("PGM");
+        terminal.submit();
+        terminal.focused().set("DCL VAR(&N) TYPE(*INT)");
+        terminal.submit();
+        List<EditorModel.Line> lines = editor.model().lines;
+        assertEquals(3, lines.size());
+        assertTrue(lines.get(0).seq > 0 && lines.get(1).seq > lines.get(0).seq, "typed lines not numbered on Enter");
+        assertEquals(0, lines.get(2).seq, "the open line numbered before it's typed on");
+        // The cursor on the open line: Up goes to the DCL's text at the same column, then up again to PGM's.
+        CrtField open = terminal.focused();
+        open.cursor = 4;
+        int column = open.cursorColumn();
+        terminal.moveVertical(true);
+        CrtField above = terminal.focused();
+        assertEquals(open.row - 1, above.row, "Up didn't go one row up");
+        assertEquals(open.col, above.col, "Up went into the margin");
+        assertEquals(column, above.cursorColumn(), "Up lost the column");
+        terminal.moveVertical(false);
+        assertEquals(open.row, terminal.focused().row, "Down didn't come back");
+    }
+
     // A click anywhere on "F11=Full screen" (its second word too) presses F11.
     @Test
     void clickingAKeyLabel() {

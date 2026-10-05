@@ -498,6 +498,8 @@ final class EditorPanel extends CrtPanel {
                 keep.add(next);
             }
             model.dropFresh(keep);
+            // The lines typed on are numbered now; the open one shows ' until it's typed on.
+            model.numberTyped();
             if (next != null) {
                 rebuild();
                 show(model.lines.indexOf(next), 0);

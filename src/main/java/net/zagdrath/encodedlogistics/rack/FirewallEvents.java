@@ -16,7 +16,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
+import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
@@ -24,7 +26,7 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // A Firewall's build permission, where players change a network: breaking or placing a network block on (or next to) a
-// network, and mounting parts, anchors or facades on its cables.
+// network, and mounting parts, anchors or facades on its cables. Breaking a Server Rack needs rack access too.
 public final class FirewallEvents {
     private FirewallEvents() {}
 
@@ -40,8 +42,16 @@ public final class FirewallEvents {
     }
 
     private static void onBreak(BreakBlockEvent event) {
-        if (event.getLevel() instanceof ServerLevel level && isNetworkBlock(level, event.getPos(), event.getState())
-                && !NetworkAccess.tell(NetworkAccess.allowedToBuild(level, event.getPos(), event.getPlayer()), event.getPlayer(), RackPermission.BUILD)) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !isNetworkBlock(level, event.getPos(), event.getState())) {
+            return;
+        }
+        if (!NetworkAccess.tell(NetworkAccess.allowedToBuild(level, event.getPos(), event.getPlayer()), event.getPlayer(), RackPermission.BUILD)) {
+            event.setCanceled(true);
+            return;
+        }
+        // A Server Rack (and the devices in it) also needs rack access to break, unless rackBreakProtection is off.
+        if (event.getState().getBlock() instanceof ServerRackBlock && Config.RACK_BREAK_PROTECTION.getAsBoolean()
+                && !NetworkAccess.rack(level, event.getPos(), event.getPlayer())) {
             event.setCanceled(true);
         }
     }

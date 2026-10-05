@@ -454,6 +454,50 @@ final class CrtTerminal {
         focused.cursor = Math.min(focused.value.length(), focused.capacity - 1);
     }
 
+    // Up / Down: the cursor a row up or down at the same column, as on a 5250 - into the field there, or the nearest one
+    // on the nearest row that has any (round to the other end past the last).
+    void moveVertical(boolean up) {
+        List<CrtField> fields = focusable();
+        if (focused == null || fields.isEmpty() || !fields.contains(focused)) {
+            nextField(up);
+            return;
+        }
+        int row = focused.row, column = focused.cursorColumn();
+        Integer target = null;
+        for (CrtField field : fields) {
+            boolean beyond = up ? field.row < row : field.row > row;
+            if (beyond && (target == null || (up ? field.row > target : field.row < target))) {
+                target = field.row;
+            }
+        }
+        if (target == null) {
+            // Past the edge: round to the farthest row the other way.
+            for (CrtField field : fields) {
+                if (target == null || (up ? field.row > target : field.row < target)) {
+                    target = field.row;
+                }
+            }
+        }
+        CrtField best = null;
+        int distance = Integer.MAX_VALUE;
+        for (CrtField field : fields) {
+            if (field.row != target) {
+                continue;
+            }
+            int away = column < field.col ? field.col - column : column >= field.col + field.length ? column - (field.col + field.length - 1) : 0;
+            if (away < distance) {
+                distance = away;
+                best = field;
+            }
+        }
+        if (best == null) {
+            nextField(up);
+            return;
+        }
+        focused = best;
+        best.clickAt(Math.clamp(column, best.col, best.col + best.length - 1));
+    }
+
     void page(int direction) {
         if (window() != null) {
             window().page(direction);
