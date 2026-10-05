@@ -15,16 +15,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Client to server: a click on an open terminal's grid - the item clicked (if any) and what to do (AccessTerminalMenu's
 // actions).
-public record TerminalClickPayload(int containerId, Optional<ItemKey> key, int action) implements CustomPacketPayload {
+public record TerminalClickPayload(int containerId, Optional<StorageKey> key, int action) implements CustomPacketPayload {
     public static final Type<TerminalClickPayload> TYPE = new Type<>(EncodedLogistics.id("terminal_click"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, TerminalClickPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, TerminalClickPayload::containerId,
-            ByteBufCodecs.optional(ItemKey.STREAM_CODEC), TerminalClickPayload::key,
+            ByteBufCodecs.optional(StorageKey.STREAM_CODEC), TerminalClickPayload::key,
             ByteBufCodecs.VAR_INT, TerminalClickPayload::action,
             TerminalClickPayload::new);
 

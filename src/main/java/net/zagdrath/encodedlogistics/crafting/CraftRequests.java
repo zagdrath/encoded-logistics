@@ -22,7 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // Crafting requests from a terminal, by the network it reaches (or a device position on it): what the network can
@@ -59,8 +59,8 @@ public final class CraftRequests {
     }
 
     // What the network can make: every schematic's outputs.
-    public static Set<ItemKey> craftables(MinecraftServer server, @Nullable NetworkRef network) {
-        Set<ItemKey> craftables = new LinkedHashSet<>();
+    public static Set<StorageKey> craftables(MinecraftServer server, @Nullable NetworkRef network) {
+        Set<StorageKey> craftables = new LinkedHashSet<>();
         if (network == null) {
             return craftables;
         }
@@ -70,11 +70,11 @@ public final class CraftRequests {
         return craftables;
     }
 
-    public static Set<ItemKey> craftables(ServerLevel level, BlockPos device) {
+    public static Set<StorageKey> craftables(ServerLevel level, BlockPos device) {
         return craftables(level.getServer(), network(level, device));
     }
 
-    public static CraftPlanner.@Nullable Plan plan(MinecraftServer server, @Nullable NetworkRef network, ItemKey target, long amount) {
+    public static CraftPlanner.@Nullable Plan plan(MinecraftServer server, @Nullable NetworkRef network, StorageKey target, long amount) {
         NetworkStorage storage = network != null ? ControllerStructures.sharedStorageOf(server, network, true) : null;
         if (storage == null) {
             return null;
@@ -83,13 +83,13 @@ public final class CraftRequests {
                 amount);
         // The recall time: the longest of the items' (they run in parallel on the libraries' drives).
         int ticks = 0;
-        for (ItemKey key : plan.recall().keySet()) {
+        for (StorageKey key : plan.recall().keySet()) {
             ticks = Math.max(ticks, Math.max(0, storage.cold().eta(key)));
         }
         return plan.withRecallTicks(ticks);
     }
 
-    public static CraftPlanner.@Nullable Plan plan(ServerLevel level, BlockPos device, ItemKey target, long amount) {
+    public static CraftPlanner.@Nullable Plan plan(ServerLevel level, BlockPos device, StorageKey target, long amount) {
         return plan(level.getServer(), network(level, device), target, amount);
     }
 
@@ -144,12 +144,12 @@ public final class CraftRequests {
         if (storage == null || !plan.complete()) {
             return null;
         }
-        for (Map.Entry<ItemKey, Long> entry : plan.take().entrySet()) {
+        for (Map.Entry<StorageKey, Long> entry : plan.take().entrySet()) {
             if (storage.extract(entry.getKey(), entry.getValue(), true) < entry.getValue()) {
                 return null;
             }
         }
-        for (Map.Entry<ItemKey, Long> entry : plan.recall().entrySet()) {
+        for (Map.Entry<StorageKey, Long> entry : plan.recall().entrySet()) {
             if (storage.cold().count(entry.getKey()) < entry.getValue()) {
                 return null;
             }
@@ -163,7 +163,7 @@ public final class CraftRequests {
         job.origin = requester.origin();
         job.started = server.overworld().getGameTime();
         job.startedClock = server.overworld().getOverworldClockTime();
-        for (Map.Entry<ItemKey, Long> entry : plan.take().entrySet()) {
+        for (Map.Entry<StorageKey, Long> entry : plan.take().entrySet()) {
             long taken = storage.extract(entry.getKey(), entry.getValue(), false);
             if (taken > 0) {
                 job.held.merge(entry.getKey(), taken, Long::sum);

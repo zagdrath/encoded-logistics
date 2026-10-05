@@ -26,7 +26,7 @@ import net.zagdrath.encodedlogistics.elcl.device.LibraryImage;
 import net.zagdrath.encodedlogistics.elcl.device.Printers;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
@@ -181,9 +181,9 @@ final class InterfaceGameTests {
         DeviceSources.Source<RecipeLibrarySource> source = s -> s.equals(system[0]) ? List.of(library) : List.of();
         ElclStoreGameTests.withDesk(helper, (c, sys) -> {
             system[0] = sys;
-            ItemKey ironBlock = ItemKey.of(new ItemStack(Items.IRON_BLOCK));
+            StorageKey ironBlock = StorageKey.of(new ItemStack(Items.IRON_BLOCK));
             helper.assertFalse(CraftRequests.craftables(sys.server(), sys.network()).contains(ironBlock), "Craftable before the library");
-            RackGameTests.storage(helper, ElclGameTests.BAY).insert(ItemKey.of(new ItemStack(Items.IRON_INGOT)), 9, false);
+            RackGameTests.storage(helper, ElclGameTests.BAY).insert(StorageKey.of(new ItemStack(Items.IRON_INGOT)), 9, false);
             RecipeLibraries.register(source);
             try {
                 helper.assertTrue(CraftRequests.craftables(sys.server(), sys.network()).contains(ironBlock), "The library's recipe isn't craftable");

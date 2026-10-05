@@ -13,14 +13,14 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A job as its screens show it: what it makes and how many, its runs done of all, whether it has a thread, and (for the
 // Job Status screen) each step's output and runs, and how many items it still awaits from tape.
-public record JobInfo(UUID id, ItemKey item, long amount, int done, int total, boolean running, List<StepInfo> steps, long awaiting) {
-    public record StepInfo(ItemKey output, int done, int total) {
+public record JobInfo(UUID id, StorageKey item, long amount, int done, int total, boolean running, List<StepInfo> steps, long awaiting) {
+    public record StepInfo(StorageKey output, int done, int total) {
         public static final StreamCodec<RegistryFriendlyByteBuf, StepInfo> STREAM_CODEC = StreamCodec.composite(
-                ItemKey.STREAM_CODEC, StepInfo::output,
+                StorageKey.STREAM_CODEC, StepInfo::output,
                 ByteBufCodecs.VAR_INT, StepInfo::done,
                 ByteBufCodecs.VAR_INT, StepInfo::total,
                 StepInfo::new);
@@ -28,7 +28,7 @@ public record JobInfo(UUID id, ItemKey item, long amount, int done, int total, b
 
     public static final StreamCodec<RegistryFriendlyByteBuf, JobInfo> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC, JobInfo::id,
-            ItemKey.STREAM_CODEC, JobInfo::item,
+            StorageKey.STREAM_CODEC, JobInfo::item,
             ByteBufCodecs.VAR_LONG, JobInfo::amount,
             ByteBufCodecs.VAR_INT, JobInfo::done,
             ByteBufCodecs.VAR_INT, JobInfo::total,
@@ -42,7 +42,7 @@ public record JobInfo(UUID id, ItemKey item, long amount, int done, int total, b
         List<StepInfo> list = new ArrayList<>();
         if (steps) {
             for (CraftingJob.Step step : job.steps) {
-                list.add(new StepInfo(ItemKey.of(step.schematic.output()), Math.min(step.done, step.total), step.total));
+                list.add(new StepInfo(StorageKey.of(step.schematic.output()), Math.min(step.done, step.total), step.total));
             }
         }
         return new JobInfo(job.id, job.target, job.amount, job.done(), job.total(), job.running, list,

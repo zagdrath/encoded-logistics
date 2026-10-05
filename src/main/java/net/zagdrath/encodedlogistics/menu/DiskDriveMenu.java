@@ -23,7 +23,7 @@ import net.zagdrath.encodedlogistics.midrange.DiskDriveBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.PeripheralBlockEntity;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // DSKDRV (HANDOFF 3; layout dskdrv): the Disk Drive's state and pack. Lines, tab-separated: S state (its State), P itemKey
 // items capacity percent types typeLimit (its pack), and while 5=Display contents shows them, V and C itemKey count (most
@@ -54,7 +54,7 @@ public class DiskDriveMenu extends PeripheralMenu {
         ItemStack pack = drive.pack();
         if (pack.getItem() instanceof StorageDriveItem item) {
             DriveStats stats = StorageDriveItem.stats(pack);
-            List<Map.Entry<ItemKey, Long>> contents = drive.contents();
+            List<Map.Entry<StorageKey, Long>> contents = drive.contents();
             long items = contents.stream().mapToLong(Map.Entry::getValue).sum();
             long percent = stats.bytesTotal() <= 0 ? 0 : stats.bytesUsed() * 100 / stats.bytesTotal();
             lines.add(String.join("\t", "P", pack.getItem().getDescriptionId(), Long.toString(items), Long.toString(item.getTier().bytes() * 8),

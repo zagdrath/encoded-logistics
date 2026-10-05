@@ -48,7 +48,7 @@ import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
@@ -141,7 +141,7 @@ public final class TerminalService {
     // --- Inventory ---
 
     // Whether an item matches a filter: its name or id contains it, or (#tag) it's in that tag. Empty matches all.
-    public static boolean matchesFilter(ItemKey key, String filter) {
+    public static boolean matchesFilter(StorageKey key, String filter) {
         if (filter.isEmpty() || filter.equals("*all")) {
             return true;
         }
@@ -160,7 +160,7 @@ public final class TerminalService {
 
     private static TerminalOutput detail(TerminalContext context, String spec) {
         NetworkStorage storage = context.storage();
-        ItemKey key = TerminalItems.resolve(context, spec);
+        StorageKey key = TerminalItems.resolve(context, spec);
         if (storage == null || key == null) {
             return TerminalOutput.message(storage == null ? TerminalActions.offline() : Component.translatable("crt.encodedlogistics.msg.no_item", spec));
         }
@@ -191,7 +191,7 @@ public final class TerminalService {
     }
 
     private static TerminalOutput plan(TerminalContext context, String spec, long amount) {
-        ItemKey key = TerminalItems.resolve(context, spec);
+        StorageKey key = TerminalItems.resolve(context, spec);
         if (key == null) {
             return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_item", spec));
         }
@@ -232,7 +232,7 @@ public final class TerminalService {
         if (!context.allowed(RackPermission.EXTRACT)) {
             return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.EXTRACT));
         }
-        ItemKey key = args.isEmpty() ? null : TerminalItems.resolve(context, args.get(0));
+        StorageKey key = args.isEmpty() ? null : TerminalItems.resolve(context, args.get(0));
         if (key == null) {
             return noItem(context, args.isEmpty() ? "" : args.get(0));
         }
@@ -249,7 +249,7 @@ public final class TerminalService {
         if (!context.allowed(RackPermission.CRAFT)) {
             return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.CRAFT));
         }
-        ItemKey key = args.isEmpty() ? null : TerminalItems.resolve(context, args.get(0));
+        StorageKey key = args.isEmpty() ? null : TerminalItems.resolve(context, args.get(0));
         if (key == null) {
             return noItem(context, args.isEmpty() ? "" : args.get(0));
         }

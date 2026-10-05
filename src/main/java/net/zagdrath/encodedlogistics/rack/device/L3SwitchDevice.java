@@ -24,7 +24,7 @@ import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The L3 Switch (1U): an L2 Switch's lane pool (32 lanes), plus routing between the segments its rack knows (the rack's
@@ -42,7 +42,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
 
     // Items matching filter (any item when empty) have this priority level.
     public record QosRule(ItemStack filter, int level) {
-        boolean matches(ItemKey key) {
+        boolean matches(StorageKey key) {
             return filter.isEmpty() || key.stack().is(filter.getItem());
         }
     }
@@ -79,7 +79,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
     }
 
     // An item's priority level: the highest of the rules it matches, or normal.
-    public int level(ItemKey key) {
+    public int level(StorageKey key) {
         int level = ItemRouting.NORMAL;
         boolean matched = false;
         for (QosRule rule : qos) {

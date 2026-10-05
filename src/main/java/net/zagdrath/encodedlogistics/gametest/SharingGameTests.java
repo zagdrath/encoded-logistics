@@ -27,7 +27,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -38,7 +38,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 final class SharingGameTests {
     private static final BlockPos CABLE_B = new BlockPos(3, 1, 0), CABLE_C = new BlockPos(1, 1, -2), BAY_A = new BlockPos(1, 1, 1),
             BAY_B = new BlockPos(3, 1, 1), BAY_C = new BlockPos(2, 1, -2);
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE)), DIRT = ItemKey.of(new ItemStack(Items.DIRT));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), DIRT = StorageKey.of(new ItemStack(Items.DIRT));
     private static final int A = 0, B = 1, C = 2;
 
     private SharingGameTests() {}

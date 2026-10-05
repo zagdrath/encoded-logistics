@@ -34,12 +34,11 @@ import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
-import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
-import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The Disk Drive (HANDOFF 5): one Storage Drive (any tier) served as hot storage exactly as a Drive Bay slot is (same
 // capacity, priority, fullness rules), while it has its lane. A drive used on it goes in and spins up (diskSpinUpTicks)
@@ -162,6 +161,7 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
     // The pack comes out: to the player who asked, when they're near, else out of its front.
     private void out(ServerLevel level) {
         ItemStack pack = removeItemNoUpdate(0);
+        refresh(level);
         setChanged();
         showSpinning();
         ControllerStructures.get(level).markTopologyChanged();
@@ -184,31 +184,24 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
         showActive(state == State.SPIN_UP || state == State.SPINNING);
     }
 
-    // Its id and its fill on the item.
+    // Its id and its fill on the item, and the pack it shows (its drive's type).
     private void refresh(ServerLevel level) {
-        ItemStack stack = getItem(0);
-        if (!(stack.getItem() instanceof StorageDriveItem drive)) {
-            return;
-        }
-        UUID id = StorageDriveItem.id(stack);
-        if (id == null) {
-            id = UUID.randomUUID();
-            stack.set(ModDataComponents.DRIVE_ID.get(), id);
-        }
-        DriveStats stats = DriveStorage.get(level.getServer()).stats(id, drive.getTier());
-        if (!stats.equals(stack.get(ModDataComponents.DRIVE_STATS.get()))) {
-            stack.set(ModDataComponents.DRIVE_STATS.get(), stats);
+        StorageDriveItem.refresh(level.getServer(), getItem(0));
+        BlockState state = getBlockState();
+        ResourceType type = StorageDriveItem.type(getItem(0));
+        if (state.hasProperty(DiskDriveBlock.DRIVE_TYPE) && state.getValue(DiskDriveBlock.DRIVE_TYPE) != type) {
+            level.setBlock(worldPosition, state.setValue(DiskDriveBlock.DRIVE_TYPE, type), Block.UPDATE_CLIENTS);
         }
     }
 
     // What's on its pack, most first (5=Display contents).
-    public List<Map.Entry<ItemKey, Long>> contents() {
+    public List<Map.Entry<StorageKey, Long>> contents() {
         UUID id = StorageDriveItem.id(getItem(0));
         if (id == null || !(level instanceof ServerLevel serverLevel)) {
             return List.of();
         }
-        List<Map.Entry<ItemKey, Long>> list = new ArrayList<>(DriveStorage.get(serverLevel.getServer()).contents(id).entrySet());
-        list.sort(Map.Entry.<ItemKey, Long>comparingByValue(Comparator.reverseOrder()));
+        List<Map.Entry<StorageKey, Long>> list = new ArrayList<>(DriveStorage.get(serverLevel.getServer()).contents(id).entrySet());
+        list.sort(Map.Entry.<StorageKey, Long>comparingByValue(Comparator.reverseOrder()));
         return list;
     }
 

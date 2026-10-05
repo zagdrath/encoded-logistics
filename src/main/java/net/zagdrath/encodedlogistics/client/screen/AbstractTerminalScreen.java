@@ -36,7 +36,7 @@ import net.zagdrath.encodedlogistics.client.ExternalSearch;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalClickPayload;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The modular terminal screen, built from a TerminalLayout: a title bar with the search field, a grid of the network's
 // items (as many rows as fit the window, between the layout's min and max), a scrollbar, the player's inventory, and
@@ -61,7 +61,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     // The grid's rows: the menu's when it opened, until the height button changes them.
     private int rows;
     private @Nullable EditBox search;
-    private List<Map.Entry<ItemKey, Long>> view = List.of();
+    private List<Map.Entry<StorageKey, Long>> view = List.of();
     private int viewVersion = -1;
     private String viewSearch = "";
     // The view was last built in the order it already had (the mouse was over the grid), not sorted afresh.
@@ -179,12 +179,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     // What the grid shows. While the mouse is over the grid the order holds, as in AE2: counts change in place, an item
     // that runs out leaves a gap (a negative count) and new ones go on the end, so nothing moves under the cursor. The
     // list is sorted afresh once the mouse leaves the grid, or the search or a toolbar setting changes.
-    private List<Map.Entry<ItemKey, Long>> view() {
+    private List<Map.Entry<StorageKey, Long>> view() {
         String text = search != null ? search.getValue() : "";
         boolean hold = inInsertArea(lastMouseX, lastMouseY);
         boolean resort = viewVersion == -1 || !text.equals(viewSearch) || viewHeld && !hold;
         if (resort || viewVersion != menu.version()) {
-            List<Map.Entry<ItemKey, Long>> fresh = filtered(text);
+            List<Map.Entry<StorageKey, Long>> fresh = filtered(text);
             view = resort || !hold ? fresh : keepOrder(view, fresh);
             viewHeld = !resort && hold;
             viewVersion = menu.version();
@@ -194,11 +194,11 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     }
 
     // The fresh list in the old one's order: what's still there where it was, a gap for what's gone, new items after.
-    private static List<Map.Entry<ItemKey, Long>> keepOrder(List<Map.Entry<ItemKey, Long>> old, List<Map.Entry<ItemKey, Long>> fresh) {
-        Map<ItemKey, Long> counts = new LinkedHashMap<>();
+    private static List<Map.Entry<StorageKey, Long>> keepOrder(List<Map.Entry<StorageKey, Long>> old, List<Map.Entry<StorageKey, Long>> fresh) {
+        Map<StorageKey, Long> counts = new LinkedHashMap<>();
         fresh.forEach(entry -> counts.put(entry.getKey(), entry.getValue()));
-        List<Map.Entry<ItemKey, Long>> kept = new ArrayList<>(Math.max(old.size(), fresh.size()));
-        for (Map.Entry<ItemKey, Long> entry : old) {
+        List<Map.Entry<StorageKey, Long>> kept = new ArrayList<>(Math.max(old.size(), fresh.size()));
+        for (Map.Entry<StorageKey, Long> entry : old) {
             Long count = counts.remove(entry.getKey());
             kept.add(Map.entry(entry.getKey(), count != null ? count : -1L));
         }
@@ -209,12 +209,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         return kept;
     }
 
-    private List<Map.Entry<ItemKey, Long>> filtered(String text) {
+    private List<Map.Entry<StorageKey, Long>> filtered(String text) {
         String query = text.trim().toLowerCase(Locale.ROOT);
         boolean byMod = query.startsWith("@");
         String needle = byMod ? query.substring(1) : query;
-        List<Map.Entry<ItemKey, Long>> entries = new ArrayList<>();
-        for (Map.Entry<ItemKey, Long> entry : menu.items().entrySet()) {
+        List<Map.Entry<StorageKey, Long>> entries = new ArrayList<>();
+        for (Map.Entry<StorageKey, Long> entry : menu.items().entrySet()) {
             ItemStack stack = entry.getKey().stack();
             String haystack = byMod ? BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace()
                     : stack.getHoverName().getString().toLowerCase(Locale.ROOT);
@@ -224,7 +224,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         }
         // What the network can make but has none of, with a count of 0.
         if (TerminalSettings.craftablesAlways() || !needle.isEmpty()) {
-            for (ItemKey key : menu.craftables()) {
+            for (StorageKey key : menu.craftables()) {
                 if (menu.items().containsKey(key)) {
                     continue;
                 }
@@ -236,12 +236,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 }
             }
         }
-        Comparator<Map.Entry<ItemKey, Long>> byName = Comparator.comparing(entry -> entry.getKey().stack().getHoverName().getString(),
+        Comparator<Map.Entry<StorageKey, Long>> byName = Comparator.comparing(entry -> entry.getKey().stack().getHoverName().getString(),
                 String.CASE_INSENSITIVE_ORDER);
-        Comparator<Map.Entry<ItemKey, Long>> order = switch (TerminalSettings.sortMode()) {
+        Comparator<Map.Entry<StorageKey, Long>> order = switch (TerminalSettings.sortMode()) {
             case NAME -> byName;
-            case COUNT -> Comparator.<Map.Entry<ItemKey, Long>>comparingLong(Map.Entry::getValue).thenComparing(byName);
-            case MOD -> Comparator.<Map.Entry<ItemKey, Long>, String>comparing(
+            case COUNT -> Comparator.<Map.Entry<StorageKey, Long>>comparingLong(Map.Entry::getValue).thenComparing(byName);
+            case MOD -> Comparator.<Map.Entry<StorageKey, Long>, String>comparing(
                     entry -> BuiltInRegistries.ITEM.getKey(entry.getKey().stack().getItem()).getNamespace()).thenComparing(byName);
         };
         entries.sort(TerminalSettings.descending() ? order.reversed() : order);
@@ -315,14 +315,14 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
 
         // Grid.
         scrollRow = Math.min(scrollRow, maxScroll());
-        List<Map.Entry<ItemKey, Long>> entries = view();
+        List<Map.Entry<StorageKey, Long>> entries = view();
         int hovered = hoveredIndex(mouseX, mouseY);
         for (int cell = 0; cell < rows * layout.columns; cell++) {
             int index = scrollRow * layout.columns + cell;
             int cx = x + layout.gridLeft + (cell % layout.columns) * layout.cell;
             int cy = y + layout.topHeight + layout.gridTopInRow + (cell / layout.columns) * layout.cell;
             if (index < entries.size() && entries.get(index).getValue() >= 0) {
-                ItemKey key = entries.get(index).getKey();
+                StorageKey key = entries.get(index).getKey();
                 graphics.item(key.stack(), cx, cy);
                 coldMarks(graphics, key, cx, cy);
             }
@@ -344,7 +344,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     private static final Identifier TAPE_BADGE = EncodedLogistics.id("terminal/tape_badge"), RECALL_TRACK = EncodedLogistics.id("terminal/recall_track"),
             RECALL_FILL = EncodedLogistics.id("terminal/recall_fill"), RECALL_SPINNER = EncodedLogistics.id("terminal/recall_spinner");
 
-    private void coldMarks(GuiGraphicsExtractor graphics, ItemKey key, int cx, int cy) {
+    private void coldMarks(GuiGraphicsExtractor graphics, StorageKey key, int cx, int cy) {
         if (menu.cold(key) != null) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TAPE_BADGE, cx, cy + 11, 7, 5);
         }
@@ -360,7 +360,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
     }
 
     // The tooltip's tape lines: on tape, and how long a recall would take (or how far along the player's is).
-    private void coldLines(ItemKey key, List<Component> lines) {
+    private void coldLines(StorageKey key, List<Component> lines) {
         TerminalItemsPayload.Entry cold = menu.cold(key);
         int recall = menu.recall(key);
         if (cold == null && recall < 0) {
@@ -445,7 +445,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             return;
         }
         // Counts at half size, bottom right, shadowed.
-        List<Map.Entry<ItemKey, Long>> entries = view();
+        List<Map.Entry<StorageKey, Long>> entries = view();
         for (int cell = 0; cell < rows * layout.columns; cell++) {
             int index = scrollRow * layout.columns + cell;
             if (index >= entries.size()) {
@@ -471,7 +471,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         super.extractTooltip(graphics, mouseX, mouseY);
         int index = hoveredIndex(mouseX, mouseY);
         if (index >= 0 && menu.getCarried().isEmpty()) {
-            Map.Entry<ItemKey, Long> entry = view().get(index);
+            Map.Entry<StorageKey, Long> entry = view().get(index);
             List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(entry.getKey().stack()));
             if (entry.getValue() > 0) {
                 lines.add(Component.literal(String.format(Locale.ROOT, "%,d", entry.getValue())).withColor(TEXT_MUTED));
@@ -585,7 +585,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         }
         if (index != -1 && menu.isOnline()) {
             boolean carrying = !menu.getCarried().isEmpty();
-            ItemKey key = index >= 0 ? view().get(index).getKey() : null;
+            StorageKey key = index >= 0 ? view().get(index).getKey() : null;
             // Crafting: middle-click or Ctrl-click a craftable, or click one the network has none of.
             if (key != null && !carrying && menu.craftables().contains(key)
                     && (event.button() == InputConstants.MOUSE_BUTTON_MIDDLE || event.hasControlDown() || view().get(index).getValue() == 0)) {
@@ -652,7 +652,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         // mouse onto the cursor.
         int index = hoveredIndex(mouseX, mouseY);
         if (index != -1 && scrollY != 0 && menu.isOnline() && minecraft.hasShiftDown()) {
-            ItemKey key = index >= 0 ? view().get(index).getKey() : null;
+            StorageKey key = index >= 0 ? view().get(index).getKey() : null;
             int action = scrollY > 0 ? AccessTerminalMenu.INSERT_ONE : AccessTerminalMenu.TAKE_ONE;
             if (action == AccessTerminalMenu.INSERT_ONE ? !menu.getCarried().isEmpty() : key != null) {
                 for (int i = 0; i < Math.max(1, (int) Math.abs(scrollY)); i++) {

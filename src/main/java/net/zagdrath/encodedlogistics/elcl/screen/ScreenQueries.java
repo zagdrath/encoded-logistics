@@ -27,7 +27,7 @@ import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
@@ -411,11 +411,11 @@ public final class ScreenQueries {
             case "ITEMS" -> {
                 NetworkStorage storage = context.storage();
                 if (storage != null) {
-                    List<ItemKey> keys = new ArrayList<>(storage.listAll().keySet());
+                    List<StorageKey> keys = new ArrayList<>(storage.listAll().keySet());
                     keys.removeIf(key -> !match.isEmpty() && !key.stack().getHoverName().getString().toLowerCase(Locale.ROOT).contains(match)
                             && !BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString().contains(match));
                     keys.sort((a, b) -> a.stack().getHoverName().getString().compareToIgnoreCase(b.stack().getHoverName().getString()));
-                    for (ItemKey key : keys.subList(0, Math.min(200, keys.size()))) {
+                    for (StorageKey key : keys.subList(0, Math.min(200, keys.size()))) {
                         var id = BuiltInRegistries.ITEM.getKey(key.stack().getItem());
                         String value = id.getNamespace().equals("minecraft") ? id.getPath().toUpperCase(Locale.ROOT) : id.toString();
                         out.line(row(value, key.stack().getHoverName().getString()));

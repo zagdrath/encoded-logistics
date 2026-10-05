@@ -19,12 +19,12 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.CraftingClient;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Server to client: a crafting plan for an open terminal - the ingredient tree, how many items are missing, the job
 // memory it needs, whether it can be made (complete), the network's Schedulers and whether the chosen one has room,
 // the job when it was just started, and how long recalling its ingredients from tape should take (ticks, 0 for none).
-public record CraftPlanPayload(int containerId, ItemKey key, long amount, List<CraftPlanner.Line> lines, int missing, long memory, boolean complete,
+public record CraftPlanPayload(int containerId, StorageKey key, long amount, List<CraftPlanner.Line> lines, int missing, long memory, boolean complete,
         List<BlockPos> schedulers, boolean room, Optional<Started> started, int recallTicks) implements CustomPacketPayload {
     public static final Type<CraftPlanPayload> TYPE = new Type<>(EncodedLogistics.id("craft_plan"));
 
@@ -42,7 +42,7 @@ public record CraftPlanPayload(int containerId, ItemKey key, long amount, List<C
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CraftPlanPayload> STREAM_CODEC = StreamCodec.of((buf, payload) -> {
         ByteBufCodecs.VAR_INT.encode(buf, payload.containerId());
-        ItemKey.STREAM_CODEC.encode(buf, payload.key());
+        StorageKey.STREAM_CODEC.encode(buf, payload.key());
         ByteBufCodecs.VAR_LONG.encode(buf, payload.amount());
         LINES.encode(buf, payload.lines());
         ByteBufCodecs.VAR_INT.encode(buf, payload.missing());
@@ -52,7 +52,7 @@ public record CraftPlanPayload(int containerId, ItemKey key, long amount, List<C
         ByteBufCodecs.BOOL.encode(buf, payload.room());
         STARTED.encode(buf, payload.started());
         ByteBufCodecs.VAR_INT.encode(buf, payload.recallTicks());
-    }, buf -> new CraftPlanPayload(ByteBufCodecs.VAR_INT.decode(buf), ItemKey.STREAM_CODEC.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf),
+    }, buf -> new CraftPlanPayload(ByteBufCodecs.VAR_INT.decode(buf), StorageKey.STREAM_CODEC.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf),
             LINES.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.BOOL.decode(buf),
             POSITIONS.decode(buf), ByteBufCodecs.BOOL.decode(buf), STARTED.decode(buf), ByteBufCodecs.VAR_INT.decode(buf)));
 

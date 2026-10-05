@@ -22,7 +22,7 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageView;
 
 // The Inventory Tap: makes the inventory it faces part of its network's storage, in place (nothing is copied). Access:
@@ -124,17 +124,17 @@ public class InventoryTapPart extends CablePart {
         }
 
         @Override
-        public void listInto(Map<ItemKey, Long> all) {
+        public void listInto(Map<StorageKey, Long> all) {
             for (int slot = 0; slot < handler.size(); slot++) {
                 ItemResource resource = handler.getResource(slot);
                 if (!resource.isEmpty() && visible(resource.toStack(1))) {
-                    all.merge(ItemKey.of(resource.toStack(1)), handler.getAmountAsLong(slot), Long::sum);
+                    all.merge(StorageKey.of(resource.toStack(1)), handler.getAmountAsLong(slot), Long::sum);
                 }
             }
         }
 
         @Override
-        public long count(ItemKey key) {
+        public long count(StorageKey key) {
             if (!visible(key.stack())) {
                 return 0;
             }
@@ -149,7 +149,7 @@ public class InventoryTapPart extends CablePart {
         }
 
         @Override
-        public long insert(ItemKey key, long amount, boolean simulate) {
+        public long insert(StorageKey key, long amount, boolean simulate) {
             if (access == READ || !visible(key.stack()) || amount <= 0) {
                 return 0;
             }
@@ -163,7 +163,7 @@ public class InventoryTapPart extends CablePart {
         }
 
         @Override
-        public long extract(ItemKey key, long amount, boolean simulate) {
+        public long extract(StorageKey key, long amount, boolean simulate) {
             if (access == WRITE || !visible(key.stack()) || amount <= 0) {
                 return 0;
             }

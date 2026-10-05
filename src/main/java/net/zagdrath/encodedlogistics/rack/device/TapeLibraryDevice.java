@@ -45,7 +45,7 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
@@ -79,13 +79,13 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         final boolean write;
         final int slot;
         final UUID tape;
-        final ItemKey key;
+        final StorageKey key;
         final long amount;
         // Writing: the item's last access when it was picked (touched since, it stays hot).
         final long touched;
         int phase, done, work;
 
-        Op(boolean write, int slot, UUID tape, ItemKey key, long amount, long touched, int work) {
+        Op(boolean write, int slot, UUID tape, StorageKey key, long amount, long touched, int work) {
             this.write = write;
             this.slot = slot;
             this.tape = tape;
@@ -108,9 +108,9 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
     private long pickerStart;
     private boolean pickerLoad;
     private int archiveTimer, assignTimer, backlog, lastBusy;
-    private final List<ItemKey> toArchive = new ArrayList<>();
+    private final List<StorageKey> toArchive = new ArrayList<>();
     // Items sent to tape now (CHGITMTIER *COLD): archived next, whatever their age or the trigger.
-    private final Set<ItemKey> forced = new LinkedHashSet<>();
+    private final Set<StorageKey> forced = new LinkedHashSet<>();
     // Tests: the archive age in ticks, overriding the setting.
     private long ageTicksOverride = -1;
 
@@ -171,7 +171,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
 
     // Looks for items to archive on its next tick (tests: instead of waiting for tapeArchiveInterval).
     // Archives an item on the next go, whatever its age and the free-space trigger (not saved: a restart forgets it).
-    public void archiveNow(ItemKey key) {
+    public void archiveNow(StorageKey key) {
         forced.add(key);
         if (!toArchive.contains(key)) {
             toArchive.addFirst(key);
@@ -281,7 +281,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
     }
 
     // How many of an item are on its tapes.
-    public long count(DriveStorage data, ItemKey key) {
+    public long count(DriveStorage data, StorageKey key) {
         long count = 0;
         for (Tape tape : tapes()) {
             count += data.count(tape.id(), key);
@@ -327,7 +327,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
 
     // The first tape holding the item: the picker's trip to it and the read.
     @Override
-    public int recallTicks(DriveStorage data, ItemKey key, long amount) {
+    public int recallTicks(DriveStorage data, StorageKey key, long amount) {
         for (Tape tape : tapes()) {
             if (data.count(tape.id(), key) > 0) {
                 return loadTicks(tape.slot()) + workTicks(tape.generation(), amount);
@@ -574,7 +574,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
 
     private @Nullable Op nextRecall(DriveStorage data, TapeRecalls recalls) {
         Set<Integer> used = slotsInUse();
-        for (ItemKey key : recalls.waiting()) {
+        for (StorageKey key : recalls.waiting()) {
             if (recalls.busy(key)) {
                 continue;
             }
@@ -606,7 +606,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         }
         Set<Integer> used = slotsInUse();
         while (!toArchive.isEmpty()) {
-            ItemKey key = toArchive.removeFirst();
+            StorageKey key = toArchive.removeFirst();
             backlog = toArchive.size();
             long last = storage.lastAccess(key);
             long amount = storage.extractFromDrives(key, Long.MAX_VALUE, true);
@@ -625,7 +625,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
     }
 
     // Where an item goes: a tape already holding it with room, else the fullest with room.
-    private @Nullable Tape tapeFor(DriveStorage data, ItemKey key, Set<Integer> used) {
+    private @Nullable Tape tapeFor(DriveStorage data, StorageKey key, Set<Integer> used) {
         Tape best = null;
         long bestUsed = -1;
         for (Tape tape : tapes()) {
@@ -644,13 +644,13 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         return best;
     }
 
-    private boolean archivable(ItemKey key, long lastAccess, long now) {
+    private boolean archivable(StorageKey key, long lastAccess, long now) {
         return now - lastAccess >= ageTicks() && !keepHot.test(key.stack(), true, false, true) && !isPinned(key);
     }
 
-    public boolean isPinned(ItemKey key) {
+    public boolean isPinned(StorageKey key) {
         for (ItemStack stack : pinned) {
-            if (!stack.isEmpty() && ItemKey.of(stack).equals(key)) {
+            if (!stack.isEmpty() && StorageKey.of(stack).equals(key)) {
                 return true;
             }
         }
@@ -667,8 +667,8 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
             return;
         }
         long now = DriveStorage.get(server).clock();
-        List<Map.Entry<ItemKey, Long>> due = new ArrayList<>();
-        for (ItemKey key : storage.driveContents().keySet()) {
+        List<Map.Entry<StorageKey, Long>> due = new ArrayList<>();
+        for (StorageKey key : storage.driveContents().keySet()) {
             long last = storage.lastAccess(key);
             if (last >= 0 && archivable(key, last, now) && !recalls.busy(key)) {
                 due.add(Map.entry(key, last));
@@ -703,7 +703,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         DriveStorage data = DriveStorage.get(server);
         for (ItemStack stack : pinned) {
             if (!stack.isEmpty()) {
-                ItemKey key = ItemKey.of(stack);
+                StorageKey key = StorageKey.of(stack);
                 long count = count(data, key);
                 if (count > 0) {
                     recalls.request(key, count);
@@ -910,7 +910,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
                 child.putBoolean("write", op.write);
                 child.putInt("slot", op.slot);
                 child.store("tape", UUIDUtil.CODEC, op.tape);
-                child.store("item", ItemKey.CODEC, op.key);
+                child.store("item", StorageKey.CODEC, op.key);
                 child.putLong("amount", op.amount);
                 child.putLong("touched", op.touched);
                 // A tape mid-move restarts its move.
@@ -932,7 +932,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         for (ValueInput child : input.childrenListOrEmpty("ops")) {
             int bay = child.getIntOr("bay", -1);
             Optional<UUID> tape = child.read("tape", UUIDUtil.CODEC);
-            Optional<ItemKey> key = child.read("item", ItemKey.CODEC);
+            Optional<StorageKey> key = child.read("item", StorageKey.CODEC);
             int slot = child.getIntOr("slot", -1);
             if (bay < 0 || bay >= bays || tape.isEmpty() || key.isEmpty() || slot < 0 || slot >= tapes) {
                 continue;

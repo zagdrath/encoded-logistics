@@ -26,7 +26,8 @@ final class RecipeGameTests {
     private RecipeGameTests() {}
 
     private static boolean obtainedElsewhere(String path) {
-        return path.endsWith("_ore") || path.startsWith("raw_") || path.endsWith("_dust") || path.startsWith("encoded_schematic_") || path.equals("printout");
+        return path.endsWith("_ore") || path.startsWith("raw_") || path.endsWith("_dust") || path.startsWith("encoded_schematic_") || path.equals("printout")
+                || path.equals("resource_entry");
     }
 
     static void everyItemCraftable(GameTestHelper helper) {

@@ -11,7 +11,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -28,18 +31,34 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 // world (in the overworld's data, so a drive keeps its contents wherever it goes). The item itself only caches
 // DriveStats.
 //
-// Capacity (DriveCapacity): a medium of K bytes holds 8 items per byte, and each type it stores reserves K / 128 bytes;
-// it holds at most driveTypeLimit types.
+// Capacity (DriveCapacity): a medium of K bytes holds 8 items per byte (a Fluid or Pressurized Storage Drive: 1,000 mB,
+// a bucket, per byte; ResourceType.unitsPerByte), and each type it stores reserves K / 128 bytes; it holds at most
+// driveTypeLimit types. A drive holds only its own resource type (StorageDriveItem); tapes hold items.
+//
+// Entries save an item as before ("item"), so item-only worlds load unchanged, and a fluid or gas as "resource".
 //
 // Each stored type also remembers the game tick it was last put in or taken out (archiving to tape goes by it); a type
 // stored before that was kept counts as touched when it's first asked about.
 public class DriveStorage extends SavedData {
-    private record Entry(ItemStack item, long count, long touched) {
+    private record Entry(Optional<ItemStack> item, Optional<StorageKey> resource, long count, long touched) {
         static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ItemStack.CODEC.fieldOf("item").forGetter(Entry::item),
+                ItemStack.CODEC.optionalFieldOf("item").forGetter(Entry::item),
+                StorageKey.TYPED_CODEC.optionalFieldOf("resource").forGetter(Entry::resource),
                 Codec.LONG.fieldOf("count").forGetter(Entry::count),
                 Codec.LONG.optionalFieldOf("touched", -1L).forGetter(Entry::touched))
                 .apply(i, Entry::new));
+
+        static Entry of(StorageKey key, long count, long touched) {
+            return key.isItem() ? new Entry(Optional.of(key.stack()), Optional.empty(), count, touched)
+                    : new Entry(Optional.empty(), Optional.of(key), count, touched);
+        }
+
+        @Nullable StorageKey key() {
+            if (resource.isPresent()) {
+                return resource.get();
+            }
+            return item.filter(stack -> !stack.isEmpty()).map(StorageKey::of).orElse(null);
+        }
     }
 
     private record SavedDrive(UUID id, List<Entry> items) {
@@ -54,9 +73,9 @@ public class DriveStorage extends SavedData {
 
     public static final SavedDataType<DriveStorage> TYPE = new SavedDataType<>(EncodedLogistics.id("drives"), DriveStorage::new, CODEC);
 
-    private final Map<UUID, Map<ItemKey, Long>> drives = new HashMap<>();
+    private final Map<UUID, Map<StorageKey, Long>> drives = new HashMap<>();
     // Per drive, the tick each type was last put in or taken out.
-    private final Map<UUID, Map<ItemKey, Long>> touched = new HashMap<>();
+    private final Map<UUID, Map<StorageKey, Long>> touched = new HashMap<>();
     // The game time, as of the last get().
     private long clock;
 
@@ -64,11 +83,11 @@ public class DriveStorage extends SavedData {
 
     private DriveStorage(List<SavedDrive> saved) {
         for (SavedDrive drive : saved) {
-            Map<ItemKey, Long> items = new LinkedHashMap<>();
-            Map<ItemKey, Long> times = new HashMap<>();
+            Map<StorageKey, Long> items = new LinkedHashMap<>();
+            Map<StorageKey, Long> times = new HashMap<>();
             for (Entry entry : drive.items()) {
-                if (!entry.item().isEmpty() && entry.count() > 0) {
-                    ItemKey key = ItemKey.of(entry.item());
+                StorageKey key = entry.key();
+                if (key != null && entry.count() > 0) {
                     items.merge(key, entry.count(), Long::sum);
                     if (entry.touched() >= 0) {
                         times.merge(key, entry.touched(), Math::max);
@@ -86,9 +105,9 @@ public class DriveStorage extends SavedData {
         List<SavedDrive> saved = new ArrayList<>(drives.size());
         drives.forEach((id, items) -> {
             if (!items.isEmpty()) {
-                Map<ItemKey, Long> times = touched.getOrDefault(id, Map.of());
+                Map<StorageKey, Long> times = touched.getOrDefault(id, Map.of());
                 List<Entry> entries = new ArrayList<>(items.size());
-                items.forEach((key, count) -> entries.add(new Entry(key.stack(), count, times.getOrDefault(key, -1L))));
+                items.forEach((key, count) -> entries.add(Entry.of(key, count, times.getOrDefault(key, -1L))));
                 saved.add(new SavedDrive(id, entries));
             }
         });
@@ -102,19 +121,25 @@ public class DriveStorage extends SavedData {
     }
 
     // A drive's contents; empty for a drive that has never held anything.
-    public Map<ItemKey, Long> contents(UUID drive) {
-        Map<ItemKey, Long> items = drives.get(drive);
+    public Map<StorageKey, Long> contents(UUID drive) {
+        Map<StorageKey, Long> items = drives.get(drive);
         return items == null ? Map.of() : Collections.unmodifiableMap(items);
     }
 
-    public long count(UUID drive, ItemKey key) {
-        Map<ItemKey, Long> items = drives.get(drive);
+    public long count(UUID drive, StorageKey key) {
+        Map<StorageKey, Long> items = drives.get(drive);
         return items == null ? 0 : items.getOrDefault(key, 0L);
     }
 
-    // Puts up to amount of an item into a drive of that capacity; returns how many fit.
-    public long insert(UUID drive, DriveCapacity capacity, ItemKey key, long amount, boolean simulate) {
-        long accepted = Math.min(amount, room(drive, capacity, key));
+    // Puts up to amount of an item into an item drive (or tape) of that capacity; returns how many fit.
+    public long insert(UUID drive, DriveCapacity capacity, StorageKey key, long amount, boolean simulate) {
+        return insert(drive, capacity, ResourceType.ITEM, key, amount, simulate);
+    }
+
+    // Puts up to amount of a resource into a drive of that capacity holding that type (none of any other type fits);
+    // returns how much fit.
+    public long insert(UUID drive, DriveCapacity capacity, ResourceType type, StorageKey key, long amount, boolean simulate) {
+        long accepted = key.type() == type ? Math.min(amount, room(drive, capacity, type, key)) : 0;
         if (accepted > 0 && !simulate) {
             drives.computeIfAbsent(drive, id -> new LinkedHashMap<>()).merge(key, accepted, Long::sum);
             touch(drive, key);
@@ -123,9 +148,14 @@ public class DriveStorage extends SavedData {
         return Math.max(0, accepted);
     }
 
-    // How many more of an item fit in a drive of that capacity.
-    public long room(UUID drive, DriveCapacity capacity, ItemKey key) {
-        Map<ItemKey, Long> items = drives.get(drive);
+    // How many more of an item fit in an item drive of that capacity.
+    public long room(UUID drive, DriveCapacity capacity, StorageKey key) {
+        return room(drive, capacity, ResourceType.ITEM, key);
+    }
+
+    // How much more of a resource fits in a drive of that capacity and type, in the type's unit.
+    public long room(UUID drive, DriveCapacity capacity, ResourceType type, StorageKey key) {
+        Map<StorageKey, Long> items = drives.get(drive);
         int types = items == null ? 0 : items.size();
         long total = items == null ? 0 : items.values().stream().mapToLong(Long::longValue).sum();
         if (items == null || !items.containsKey(key)) {
@@ -134,18 +164,19 @@ public class DriveStorage extends SavedData {
             }
             types++;
         }
-        return Math.max(0, (capacity.bytes() - types * capacity.bytesPerType()) * 8 - total);
+        long free = capacity.bytes() - types * capacity.bytesPerType();
+        return Math.max(0, free * type.unitsPerByte() - total);
     }
 
     // Takes up to amount of an item out of a drive; returns how many it had.
-    public long extract(UUID drive, ItemKey key, long amount, boolean simulate) {
-        Map<ItemKey, Long> items = drives.get(drive);
+    public long extract(UUID drive, StorageKey key, long amount, boolean simulate) {
+        Map<StorageKey, Long> items = drives.get(drive);
         long have = items == null ? 0 : items.getOrDefault(key, 0L);
         long taken = Math.max(0, Math.min(amount, have));
         if (taken > 0 && !simulate) {
             if (taken == have) {
                 items.remove(key);
-                Map<ItemKey, Long> times = touched.get(drive);
+                Map<StorageKey, Long> times = touched.get(drive);
                 if (times != null) {
                     times.remove(key);
                 }
@@ -158,16 +189,16 @@ public class DriveStorage extends SavedData {
         return taken;
     }
 
-    private void touch(UUID drive, ItemKey key) {
+    private void touch(UUID drive, StorageKey key) {
         touched.computeIfAbsent(drive, id -> new HashMap<>()).put(key, clock);
     }
 
     // The tick a type in a drive was last put in or taken out (now, for one never stamped); -1 when it isn't there.
-    public long lastAccess(UUID drive, ItemKey key) {
+    public long lastAccess(UUID drive, StorageKey key) {
         if (count(drive, key) <= 0) {
             return -1;
         }
-        Map<ItemKey, Long> times = touched.computeIfAbsent(drive, id -> new HashMap<>());
+        Map<StorageKey, Long> times = touched.computeIfAbsent(drive, id -> new HashMap<>());
         Long time = times.get(key);
         if (time == null) {
             times.put(key, clock);
@@ -182,12 +213,17 @@ public class DriveStorage extends SavedData {
     }
 
     public DriveStats stats(UUID drive, DriveCapacity capacity) {
-        Map<ItemKey, Long> items = drives.get(drive);
+        return stats(drive, capacity, ResourceType.ITEM);
+    }
+
+    public DriveStats stats(UUID drive, DriveCapacity capacity, ResourceType type) {
+        Map<StorageKey, Long> items = drives.get(drive);
         if (items == null || items.isEmpty()) {
             return DriveStats.empty(capacity);
         }
         long total = items.values().stream().mapToLong(Long::longValue).sum();
-        long bytes = items.size() * capacity.bytesPerType() + (total + 7) / 8;
+        long perByte = type.unitsPerByte();
+        long bytes = items.size() * capacity.bytesPerType() + (total + perByte - 1) / perByte;
         return new DriveStats(bytes, capacity.bytes(), items.size());
     }
 }

@@ -18,11 +18,11 @@ import net.minecraft.network.chat.Component;
 // for putting in and taking out alike. Not a drive here (archiving and drive stats are the source's own business).
 public final class SharedView implements StorageView {
     private final StorageView inner;
-    private final Predicate<ItemKey> filter;
+    private final Predicate<StorageKey> filter;
     private final boolean readWrite;
     private final Component from;
 
-    public SharedView(StorageView inner, Predicate<ItemKey> filter, boolean readWrite, Component from) {
+    public SharedView(StorageView inner, Predicate<StorageKey> filter, boolean readWrite, Component from) {
         this.inner = inner;
         this.filter = filter;
         this.readWrite = readWrite;
@@ -50,8 +50,8 @@ public final class SharedView implements StorageView {
     }
 
     @Override
-    public void listInto(Map<ItemKey, Long> all) {
-        Map<ItemKey, Long> mine = new HashMap<>();
+    public void listInto(Map<StorageKey, Long> all) {
+        Map<StorageKey, Long> mine = new HashMap<>();
         inner.listInto(mine);
         mine.forEach((key, count) -> {
             if (filter.test(key)) {
@@ -61,17 +61,17 @@ public final class SharedView implements StorageView {
     }
 
     @Override
-    public long count(ItemKey key) {
+    public long count(StorageKey key) {
         return filter.test(key) ? inner.count(key) : 0;
     }
 
     @Override
-    public long insert(ItemKey key, long amount, boolean simulate) {
+    public long insert(StorageKey key, long amount, boolean simulate) {
         return readWrite && filter.test(key) ? inner.insert(key, amount, simulate) : 0;
     }
 
     @Override
-    public long extract(ItemKey key, long amount, boolean simulate) {
+    public long extract(StorageKey key, long amount, boolean simulate) {
         return filter.test(key) ? inner.extract(key, amount, simulate) : 0;
     }
 }

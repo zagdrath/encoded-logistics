@@ -15,24 +15,24 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Server to client: the network's items for an open terminal - everything (full) or just what changed since the last
 // update (a count of 0 means gone) - whether the terminal is online (or its network is failing over, which pauses it),
 // what the network can craft (when that changed), and the recalls the player is waiting on (every update).
-public record TerminalItemsPayload(int containerId, boolean online, boolean failover, boolean full, List<Entry> entries, Optional<List<ItemKey>> craftables,
+public record TerminalItemsPayload(int containerId, boolean online, boolean failover, boolean full, List<Entry> entries, Optional<List<StorageKey>> craftables,
         List<Recall> recalls) implements CustomPacketPayload {
     public static final Type<TerminalItemsPayload> TYPE = new Type<>(EncodedLogistics.id("terminal_items"));
 
     // An item: how many there are, hot and cold; of them how many are on tape; for those, the ticks a recall would take
     // (-1: it can't, no drive) and whether the last one found hot storage full; and how many are shared in from another
     // segment (a Share route), from where.
-    public record Entry(ItemKey key, long count, long cold, int eta, boolean hotFull, long shared, String sharedFrom) {
-        public Entry(ItemKey key, long count) {
+    public record Entry(StorageKey key, long count, long cold, int eta, boolean hotFull, long shared, String sharedFrom) {
+        public Entry(StorageKey key, long count) {
             this(key, count, 0, -1, false, 0, "");
         }
 
-        public Entry(ItemKey key, long count, long cold, int eta, boolean hotFull) {
+        public Entry(StorageKey key, long count, long cold, int eta, boolean hotFull) {
             this(key, count, cold, eta, hotFull, 0, "");
         }
 
@@ -41,7 +41,7 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean fail
         }
 
         static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC = StreamCodec.composite(
-                ItemKey.STREAM_CODEC, Entry::key,
+                StorageKey.STREAM_CODEC, Entry::key,
                 ByteBufCodecs.VAR_LONG, Entry::count,
                 ByteBufCodecs.VAR_LONG, Entry::cold,
                 ByteBufCodecs.VAR_INT, Entry::eta,
@@ -52,9 +52,9 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean fail
     }
 
     // A recall the player asked for (taking an item that was on tape), and how far along it is (0-100).
-    public record Recall(ItemKey key, int percent) {
+    public record Recall(StorageKey key, int percent) {
         static final StreamCodec<RegistryFriendlyByteBuf, Recall> STREAM_CODEC = StreamCodec.composite(
-                ItemKey.STREAM_CODEC, Recall::key,
+                StorageKey.STREAM_CODEC, Recall::key,
                 ByteBufCodecs.VAR_INT, Recall::percent,
                 Recall::new);
     }
@@ -65,7 +65,7 @@ public record TerminalItemsPayload(int containerId, boolean online, boolean fail
             ByteBufCodecs.BOOL, TerminalItemsPayload::failover,
             ByteBufCodecs.BOOL, TerminalItemsPayload::full,
             Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), TerminalItemsPayload::entries,
-            ByteBufCodecs.optional(ItemKey.STREAM_CODEC.apply(ByteBufCodecs.list())), TerminalItemsPayload::craftables,
+            ByteBufCodecs.optional(StorageKey.STREAM_CODEC.apply(ByteBufCodecs.list())), TerminalItemsPayload::craftables,
             Recall.STREAM_CODEC.apply(ByteBufCodecs.list()), TerminalItemsPayload::recalls,
             TerminalItemsPayload::new);
 

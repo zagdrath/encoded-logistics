@@ -24,7 +24,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // What the Terminal Desk does for its screens and its command line alike: withdraw (to the desk's drawer or the
@@ -94,7 +94,7 @@ public final class TerminalActions {
             if (stack.isEmpty()) {
                 continue;
             }
-            long in = storage.insert(ItemKey.of(stack), stack.getCount(), false);
+            long in = storage.insert(StorageKey.of(stack), stack.getCount(), false);
             put += in;
             kept += stack.getCount() - in;
             stack.shrink((int) in);
@@ -110,7 +110,7 @@ public final class TerminalActions {
     // The player's inventory a deposit takes from: the hotbar and the main inventory (not armour or the offhand).
     private static final int INVENTORY_SLOTS = 36;
 
-    public static TerminalOutput withdraw(TerminalContext context, ItemKey key, long amount, Destination destination) {
+    public static TerminalOutput withdraw(TerminalContext context, StorageKey key, long amount, Destination destination) {
         if (!context.allowed(RackPermission.EXTRACT)) {
             return TerminalOutput.message(notAuthorised(RackPermission.EXTRACT));
         }
@@ -147,7 +147,7 @@ public final class TerminalActions {
     }
 
     // Puts taken items where they go; what doesn't fit goes back to the network. Returns how many went.
-    private static long give(TerminalContext context, ItemKey key, long count, Destination destination, NetworkStorage storage) {
+    private static long give(TerminalContext context, StorageKey key, long count, Destination destination, NetworkStorage storage) {
         long given = 0, left = count;
         while (left > 0) {
             ItemStack stack = key.toStack((int) Math.min(left, key.maxStackSize()));
@@ -162,7 +162,7 @@ public final class TerminalActions {
             }
             given += size - rest.getCount();
             if (!rest.isEmpty()) {
-                storage.insert(ItemKey.of(rest), rest.getCount(), false);
+                storage.insert(StorageKey.of(rest), rest.getCount(), false);
             }
         }
         return given;
@@ -171,7 +171,7 @@ public final class TerminalActions {
     // --- Crafting ---
 
     // The plan in a line: steps, missing items, recall time.
-    public static Component planSummary(TerminalContext context, ItemKey key, long amount) {
+    public static Component planSummary(TerminalContext context, StorageKey key, long amount) {
         CraftPlanner.Plan plan = CraftRequests.plan(context.server(), context.network(), key, amount);
         if (plan == null) {
             return offline();
@@ -204,7 +204,7 @@ public final class TerminalActions {
         return -2;
     }
 
-    public static TerminalOutput craft(TerminalContext context, ItemKey key, long amount, String schedulerSpec, Destination destination) {
+    public static TerminalOutput craft(TerminalContext context, StorageKey key, long amount, String schedulerSpec, Destination destination) {
         if (!context.allowed(RackPermission.CRAFT)) {
             return TerminalOutput.message(notAuthorised(RackPermission.CRAFT));
         }
@@ -254,7 +254,7 @@ public final class TerminalActions {
 
     // A job as Work with Jobs lists it.
     // scheduler: its full name ("Rack 12, 64, -30"); schedulerShort: its number (as CRAFT's scheduler takes it) and kind.
-    public record JobRow(String number, UUID id, ItemKey item, long amount, String status, int percent, String scheduler, String schedulerShort,
+    public record JobRow(String number, UUID id, StorageKey item, long amount, String status, int percent, String scheduler, String schedulerShort,
             CraftingJob job) {}
 
     public static List<JobRow> jobs(TerminalContext context) {

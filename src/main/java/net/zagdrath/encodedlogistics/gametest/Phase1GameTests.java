@@ -41,7 +41,7 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -126,12 +126,12 @@ final class Phase1GameTests {
                     helper.assertTrue(StorageDriveItem.id(bay.getItem(0)) != null, "Drive has no id");
                     NetworkStorage storage = ControllerStructures.get(helper.getLevel()).storageAt(helper.getLevel(), helper.absolutePos(bayPos));
                     helper.assertTrue(storage != null, "No storage");
-                    ItemKey stone = ItemKey.of(new ItemStack(Items.STONE));
+                    StorageKey stone = StorageKey.of(new ItemStack(Items.STONE));
                     helper.assertTrue(storage.insert(stone, 1_000, false) == 1_000, "Stone didn't fit");
                     helper.assertTrue(storage.extract(stone, 400, false) == 400, "Couldn't take stone out");
-                    Map<ItemKey, Long> items = storage.list();
+                    Map<StorageKey, Long> items = storage.list();
                     helper.assertTrue(items.get(stone) == 600, "Network holds " + items);
-                    accepted[0] = storage.insert(ItemKey.of(new ItemStack(Items.COBBLESTONE)), 1_000_000, false);
+                    accepted[0] = storage.insert(StorageKey.of(new ItemStack(Items.COBBLESTONE)), 1_000_000, false);
                 })
                 .thenIdle(1)
                 .thenExecute(() -> {

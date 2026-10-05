@@ -57,7 +57,7 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalActions;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
@@ -159,7 +159,7 @@ public final class ModCommands {
             String filter = call.text("FILTER");
             List<Map.Entry<Item, Long>> items = new ArrayList<>();
             for (Map.Entry<Item, Long> entry : ElclItems.totals(storage, call.text("TIER")).entrySet()) {
-                if (entry.getValue() > 0 && ElclItems.matches(ItemKey.of(new ItemStack(entry.getKey())), filter)) {
+                if (entry.getValue() > 0 && ElclItems.matches(StorageKey.of(new ItemStack(entry.getKey())), filter)) {
                     items.add(entry);
                 }
             }
@@ -232,7 +232,7 @@ public final class ModCommands {
         }
         // Short of hot items with more on tape: recall them (a program waits for them, once).
         if (hot < want && all > hot && call.resumed() == null) {
-            for (ItemKey key : ElclItems.keys(storage, item)) {
+            for (StorageKey key : ElclItems.keys(storage, item)) {
                 long cold = storage.cold().count(key);
                 if (cold > 0) {
                     storage.cold().recall(key, Math.min(cold, want - hot));
@@ -245,7 +245,7 @@ public final class ModCommands {
             }
         }
         long moved = 0;
-        for (ItemKey key : ElclItems.keys(storage, item)) {
+        for (StorageKey key : ElclItems.keys(storage, item)) {
             long left = want - moved;
             if (left <= 0) {
                 break;
@@ -258,7 +258,7 @@ public final class ModCommands {
         }
     }
 
-    private static long toDesk(NetworkStorage storage, TerminalDeskBlockEntity desk, ItemKey key, long amount) {
+    private static long toDesk(NetworkStorage storage, TerminalDeskBlockEntity desk, StorageKey key, long amount) {
         long moved = 0;
         while (moved < amount) {
             long chunk = Math.min(Math.min(amount - moved, key.maxStackSize()), Math.min(desk.drawerRoom(key), storage.count(key)));
@@ -281,7 +281,7 @@ public final class ModCommands {
         return moved;
     }
 
-    private static long toHandler(NetworkStorage storage, ResourceHandler<ItemResource> target, ItemKey key, long amount) {
+    private static long toHandler(NetworkStorage storage, ResourceHandler<ItemResource> target, StorageKey key, long amount) {
         long moved = 0;
         ItemResource resource = ItemResource.of(key.stack());
         while (moved < amount) {
@@ -327,7 +327,7 @@ public final class ModCommands {
             if (resource.isEmpty() || only != null && !resource.toStack(1).is(only)) {
                 continue;
             }
-            ItemKey key = ItemKey.of(resource.toStack(1));
+            StorageKey key = StorageKey.of(resource.toStack(1));
             int amount = (int) Math.min(want - moved, source.getAmountAsInt(slot));
             int fits = (int) storage.insert(key, amount, true);
             if (fits <= 0) {
@@ -403,7 +403,7 @@ public final class ModCommands {
                     }
                 }
                 library.policyChanged();
-                for (ItemKey key : ElclItems.keys(storage, item)) {
+                for (StorageKey key : ElclItems.keys(storage, item)) {
                     long cold = storage.cold().count(key);
                     if (cold > 0) {
                         storage.cold().recall(key, cold);
@@ -429,7 +429,7 @@ public final class ModCommands {
             }
             case "*COLD" -> {
                 TapeLibraryDevice library = libraries.stream().filter(RackDevice::isOnline).findFirst().orElse(libraries.getFirst());
-                for (ItemKey key : ElclItems.keys(storage, item)) {
+                for (StorageKey key : ElclItems.keys(storage, item)) {
                     if (storage.count(key) > 0) {
                         library.archiveNow(key);
                     }
@@ -547,8 +547,8 @@ public final class ModCommands {
         }
         ElclContext context = context(call);
         Item item = ElclItems.resolve(call.text("ITEM"));
-        ItemKey key = null;
-        for (ItemKey craftable : CraftRequests.craftables(context.server(), context.network())) {
+        StorageKey key = null;
+        for (StorageKey craftable : CraftRequests.craftables(context.server(), context.network())) {
             if (craftable.stack().is(item)) {
                 key = craftable;
                 break;
@@ -599,7 +599,7 @@ public final class ModCommands {
     }
 
     // The plan for the most of an item that can be made (under amount), or null when none can.
-    private static CraftPlanner.@Nullable Plan mostMakeable(ElclContext context, ItemKey key, long amount) {
+    private static CraftPlanner.@Nullable Plan mostMakeable(ElclContext context, StorageKey key, long amount) {
         long low = 0, high = amount - 1;
         CraftPlanner.Plan best = null;
         while (low < high) {

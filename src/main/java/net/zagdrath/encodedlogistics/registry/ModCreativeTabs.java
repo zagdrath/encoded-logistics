@@ -16,6 +16,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
@@ -84,8 +85,10 @@ public final class ModCreativeTabs {
                 output.accept(ModItems.HANDHELD_TERMINAL.get());
                 output.accept(ModItems.LINK_CARD.get());
                 output.accept(ModItems.SCHEMATIC_CARD.get());
-                for (StorageTier tier : StorageTier.REGISTERED) {
-                    output.accept(ModItems.storageDrive(tier).get());
+                for (ResourceType type : ResourceType.values()) {
+                    for (StorageTier tier : StorageTier.REGISTERED) {
+                        output.accept(ModItems.storageDrive(type, tier).get());
+                    }
                 }
             })
             .build());

@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // Items as the command line names them (HANDOFF 7.3): a registry id (minecraft:iron_ingot; the namespace may be left
@@ -26,13 +26,13 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 public final class TerminalItems {
     private TerminalItems() {}
 
-    public static String id(ItemKey key) {
+    public static String id(StorageKey key) {
         return BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString();
     }
 
     // Everything the network knows of: what it holds, hot and cold, and what it can craft.
-    public static Set<ItemKey> known(TerminalContext context) {
-        Set<ItemKey> keys = new LinkedHashSet<>();
+    public static Set<StorageKey> known(TerminalContext context) {
+        Set<StorageKey> keys = new LinkedHashSet<>();
         NetworkStorage storage = context.storage();
         if (storage != null) {
             keys.addAll(storage.listAll().keySet());
@@ -43,11 +43,11 @@ public final class TerminalItems {
 
     // The items a name or id could mean, best first (an exact id, then names; of several stacks of one item, the
     // plainest first).
-    public static List<ItemKey> matches(TerminalContext context, String spec) {
+    public static List<StorageKey> matches(TerminalContext context, String spec) {
         String wanted = spec.toLowerCase(Locale.ROOT).trim();
         String asName = wanted.replace('_', ' ');
-        List<ItemKey> exact = new ArrayList<>(), named = new ArrayList<>();
-        for (ItemKey key : known(context)) {
+        List<StorageKey> exact = new ArrayList<>(), named = new ArrayList<>();
+        for (StorageKey key : known(context)) {
             Identifier id = BuiltInRegistries.ITEM.getKey(key.stack().getItem());
             String name = key.stack().getHoverName().getString().toLowerCase(Locale.ROOT);
             if (id.toString().equals(wanted) || !wanted.contains(":") && id.getPath().equals(wanted)) {
@@ -56,7 +56,7 @@ public final class TerminalItems {
                 named.add(key);
             }
         }
-        Comparator<ItemKey> plainest = Comparator.comparingInt(key -> key.stack().getComponentsPatch().size());
+        Comparator<StorageKey> plainest = Comparator.comparingInt(key -> key.stack().getComponentsPatch().size());
         exact.sort(plainest);
         named.sort(plainest);
         exact.addAll(named);
@@ -64,12 +64,12 @@ public final class TerminalItems {
     }
 
     // The one item a spec means, or null (none, or several different items: the caller lists them).
-    public static @Nullable ItemKey resolve(TerminalContext context, String spec) {
-        List<ItemKey> found = matches(context, spec);
+    public static @Nullable StorageKey resolve(TerminalContext context, String spec) {
+        List<StorageKey> found = matches(context, spec);
         if (found.isEmpty()) {
             return null;
         }
-        ItemKey first = found.getFirst();
+        StorageKey first = found.getFirst();
         return found.stream().allMatch(key -> key.stack().getItem() == first.stack().getItem()) ? first : null;
     }
 
@@ -109,7 +109,7 @@ public final class TerminalItems {
     public static List<String> complete(TerminalContext context, String partial) {
         String start = partial.toLowerCase(Locale.ROOT);
         Set<String> out = new LinkedHashSet<>();
-        for (ItemKey key : known(context)) {
+        for (StorageKey key : known(context)) {
             Identifier id = BuiltInRegistries.ITEM.getKey(key.stack().getItem());
             if (id.toString().startsWith(start)) {
                 out.add(id.toString());
@@ -123,7 +123,7 @@ public final class TerminalItems {
     }
 
     // Hot and cold counts of an item.
-    public static long[] counts(NetworkStorage storage, ItemKey key) {
+    public static long[] counts(NetworkStorage storage, StorageKey key) {
         return new long[] { storage.count(key), storage.cold().count(key) };
     }
 }

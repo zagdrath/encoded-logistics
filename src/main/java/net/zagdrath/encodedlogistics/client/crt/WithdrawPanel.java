@@ -11,7 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalItems;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
@@ -19,11 +19,11 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // long a recall from tape would take. Enter withdraws (what's on tape is recalled first) and goes back.
 final class WithdrawPanel extends CrtPanel {
     static final int LABEL = 34;
-    private final ItemKey key;
+    private final StorageKey key;
     private final CrtField item, quantity, destination;
     private boolean sent;
 
-    WithdrawPanel(CrtTerminal screen, ItemKey key) {
+    WithdrawPanel(CrtTerminal screen, StorageKey key) {
         super(screen);
         this.key = key;
         long count = screen.getMenu().items().getOrDefault(key, 0L);

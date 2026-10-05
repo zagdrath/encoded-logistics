@@ -35,6 +35,7 @@ import net.zagdrath.encodedlogistics.client.screen.SwitchPanel;
 import net.zagdrath.encodedlogistics.client.screen.TapeLibraryPanel;
 import net.zagdrath.encodedlogistics.client.screen.UpsPanel;
 import net.zagdrath.encodedlogistics.client.screen.WirelessControllerPanel;
+import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -42,6 +43,7 @@ import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.SanDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 
 // The client side of each rack device type, by type: its settings panel in the rack's screen (none: picking it just
 // shows its name and status) and anything its renderer draws over its model.
@@ -129,10 +131,16 @@ public final class RackClientDevices {
     // The same at depth frontZ (OVER_Z over another front quad).
     static void frontQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
             float u, float v, float uw, float vh, int color, int light, float frontZ) {
+        frontQuad(buffer, pose, size, x, y, w, h, sprite, 128, sheetHeight(size), u, v, uw, vh, color, light, frontZ);
+    }
+
+    // The same from a sheet of another size (sheetWidth x sheetHeight pixels): the typed drives' sled sheets.
+    static void frontQuad(VertexConsumer buffer, PoseStack.Pose pose, int size, float x, float y, float w, float h, TextureAtlasSprite sprite,
+            float sheetWidth, float sheetHeight, float u, float v, float uw, float vh, int color, int light, float frontZ) {
         float x1 = (RIGHT_X - x / 8) / 16, x0 = (RIGHT_X - (x + w) / 8) / 16;
         float y1 = (size - y / 8) / 16, y0 = (size - (y + h) / 8) / 16;
-        float z = frontZ / 16, sheet = sheetHeight(size);
-        float u0 = sprite.getU(u / 128), u1 = sprite.getU((u + uw) / 128), v0 = sprite.getV(v / sheet), v1 = sprite.getV((v + vh) / sheet);
+        float z = frontZ / 16, sheet = sheetHeight;
+        float u0 = sprite.getU(u / sheetWidth), u1 = sprite.getU((u + uw) / sheetWidth), v0 = sprite.getV(v / sheet), v1 = sprite.getV((v + vh) / sheet);
         vertex(buffer, pose, x1, y1, z, u0, v0, color, light);
         vertex(buffer, pose, x1, y0, z, u0, v1, color, light);
         vertex(buffer, pose, x0, y0, z, u1, v1, color, light);
@@ -333,17 +341,39 @@ public final class RackClientDevices {
                 return;
             }
             TextureAtlasSprite sprite = sprite(type.id().withPath("block/rack_device/" + type.id().getPath()));
+            // A fluid, pressurized or energy drive's sled (and its lights) come from <nas|san>_sleds_<type>.png, row 0.
+            TextureAtlasSprite[] typed = new TextureAtlasSprite[ResourceType.values().length];
+            for (ResourceType kind : ResourceType.values()) {
+                typed[kind.ordinal()] = kind == ResourceType.ITEM ? sprite
+                        : sprite(type.id().withPath("block/rack_device/" + (san ? "san" : "nas") + "_sleds_" + kind.getSerializedName()));
+            }
+            TextureAtlasSprite charging = sprite(type.id().withPath("block/drive_bay/leds_energy_charging"));
             int bays = data.length - 1, w = san ? 6 : 12, h = 14, sledRow = san ? 80 : 64;
             collector.submitCustomGeometry(poseStack, Sheets.cutoutBlockItemSheet(), (pose, buffer) -> {
                 for (int i = 0; i < bays; i++) {
                     if (data[i] < 0) {
                         continue;
                     }
-                    int tier = data[i] / 8, lit = Math.min(4, data[i] % 8);
+                    ResourceType kind = StorageDriveItem.sledType(data[i]);
+                    int tier = StorageDriveItem.sledTier(data[i]), lit = StorageDriveItem.sledLight(data[i]);
                     int x = san ? 14 + 6 * (i % 12) : 15 + 12 * i, y = san ? 1 + 15 * (i / 12) : 1;
-                    frontQuad(buffer, pose, type.size(), x, y, w, h, sprite, tier * (w + 1), sledRow, w, h, -1, light);
-                    frontQuad(buffer, pose, type.size(), x + w - 3, y + h - 4, 2, 2, sprite, 70 + 3 * lit, sledRow, 2, 2, -1,
-                            lit == 4 ? light : LightCoordsUtil.FULL_BRIGHT, OVER_Z);
+                    if (kind == ResourceType.ITEM) {
+                        lit = Math.min(4, lit);
+                        frontQuad(buffer, pose, type.size(), x, y, w, h, sprite, tier * (w + 1), sledRow, w, h, -1, light);
+                        frontQuad(buffer, pose, type.size(), x + w - 3, y + h - 4, 2, 2, sprite, 70 + 3 * lit, sledRow, 2, 2, -1,
+                                lit == 4 ? light : LightCoordsUtil.FULL_BRIGHT, OVER_Z);
+                        continue;
+                    }
+                    TextureAtlasSprite sheet = typed[kind.ordinal()];
+                    frontQuad(buffer, pose, type.size(), x, y, w, h, sheet, 128, 16, tier * (w + 1), 0, w, h, -1, light, FRONT_Z);
+                    if (lit == StorageDriveItem.LIGHT_CHARGING) {
+                        frontQuad(buffer, pose, type.size(), x + w - 3, y + h - 4, 2, 2, charging, 16, 16, 0, 0, 2, 2, -1,
+                                LightCoordsUtil.FULL_BRIGHT, OVER_Z);
+                    } else {
+                        lit = Math.min(4, lit);
+                        frontQuad(buffer, pose, type.size(), x + w - 3, y + h - 4, 2, 2, sheet, 128, 16, 70 + 3 * lit, 0, 2, 2, -1,
+                                lit == 4 ? light : LightCoordsUtil.FULL_BRIGHT, OVER_Z);
+                    }
                 }
                 int cages = data[bays];
                 for (int j = 0; j < SanDevice.CAGES; j++) {

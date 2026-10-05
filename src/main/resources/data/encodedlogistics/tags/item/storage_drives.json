@@ -4,6 +4,21 @@
   "encodedlogistics:storage_drive_32k",
   "encodedlogistics:storage_drive_128k",
   "encodedlogistics:storage_drive_512k",
-  "encodedlogistics:storage_drive_2m"
+  "encodedlogistics:storage_drive_2m",
+  "encodedlogistics:fluid_storage_drive_8k",
+  "encodedlogistics:fluid_storage_drive_32k",
+  "encodedlogistics:fluid_storage_drive_128k",
+  "encodedlogistics:fluid_storage_drive_512k",
+  "encodedlogistics:fluid_storage_drive_2m",
+  "encodedlogistics:pressurized_storage_drive_8k",
+  "encodedlogistics:pressurized_storage_drive_32k",
+  "encodedlogistics:pressurized_storage_drive_128k",
+  "encodedlogistics:pressurized_storage_drive_512k",
+  "encodedlogistics:pressurized_storage_drive_2m",
+  "encodedlogistics:energy_storage_drive_8k",
+  "encodedlogistics:energy_storage_drive_32k",
+  "encodedlogistics:energy_storage_drive_128k",
+  "encodedlogistics:energy_storage_drive_512k",
+  "encodedlogistics:energy_storage_drive_2m"
  ]
 }

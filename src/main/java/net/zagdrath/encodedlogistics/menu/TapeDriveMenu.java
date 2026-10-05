@@ -22,7 +22,7 @@ import net.zagdrath.encodedlogistics.item.TapeReelItem;
 import net.zagdrath.encodedlogistics.midrange.PeripheralBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // TAPDRV (HANDOFF 3; layout tapdrv): the Tape Drive's state and reel. Lines, tab-separated: S state loadPoint (its State,
 // 1 at the load point), R volume used capacity percent lastAccess (its reel; the last access as the overworld's clock,
@@ -57,7 +57,7 @@ public class TapeDriveMenu extends PeripheralMenu {
                     Long.toString(capacity <= 0 ? 0 : used * 100 / capacity), Long.toString(tape.lastAccess())));
             if (showing) {
                 lines.add("V");
-                List<Map.Entry<ItemKey, Long>> contents = tape.contents();
+                List<Map.Entry<StorageKey, Long>> contents = tape.contents();
                 for (int i = 0; i < Math.min(CONTENTS_SHOWN, contents.size()); i++) {
                     lines.add(String.join("\t", "C", contents.get(i).getKey().stack().getItem().getDescriptionId(), Long.toString(contents.get(i).getValue())));
                 }

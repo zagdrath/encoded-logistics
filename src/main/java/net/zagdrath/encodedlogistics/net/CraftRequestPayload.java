@@ -28,17 +28,17 @@ import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Client to server: plan crafting an item from an open terminal (start false), or plan and start it (start true) on a
 // Scheduler (-1: Auto, else its index in the plan's list). The server answers with a CraftPlanPayload.
-public record CraftRequestPayload(int containerId, ItemKey key, long amount, int scheduler, boolean start) implements CustomPacketPayload {
+public record CraftRequestPayload(int containerId, StorageKey key, long amount, int scheduler, boolean start) implements CustomPacketPayload {
     public static final Type<CraftRequestPayload> TYPE = new Type<>(EncodedLogistics.id("craft_request"));
     public static final long MAX_AMOUNT = 999_999;
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CraftRequestPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, CraftRequestPayload::containerId,
-            ItemKey.STREAM_CODEC, CraftRequestPayload::key,
+            StorageKey.STREAM_CODEC, CraftRequestPayload::key,
             ByteBufCodecs.VAR_LONG, CraftRequestPayload::amount,
             ByteBufCodecs.VAR_INT, CraftRequestPayload::scheduler,
             ByteBufCodecs.BOOL, CraftRequestPayload::start,

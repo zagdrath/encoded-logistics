@@ -15,7 +15,7 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A network's tape traffic (kept with its live state, not saved): the recalls waiting for a Tape Library drive, oldest
 // first - an item asked for again while it waits takes the larger amount - the ones running (with their progress, which
@@ -41,14 +41,14 @@ public final class TapeRecalls {
         }
     }
 
-    private final Map<ItemKey, Long> waiting = new LinkedHashMap<>();
-    private final Map<ItemKey, Running> running = new HashMap<>();
-    private final Set<ItemKey> archiving = new HashSet<>();
+    private final Map<StorageKey, Long> waiting = new LinkedHashMap<>();
+    private final Map<StorageKey, Running> running = new HashMap<>();
+    private final Set<StorageKey> archiving = new HashSet<>();
     // Items whose last recall couldn't all come back (hot storage full).
-    private final Set<ItemKey> hotFull = new HashSet<>();
+    private final Set<StorageKey> hotFull = new HashSet<>();
 
     // Asks for amount of an item back; merges with a recall already waiting, or adds to one running for less.
-    public void request(ItemKey key, long amount) {
+    public void request(StorageKey key, long amount) {
         if (amount <= 0) {
             return;
         }
@@ -61,18 +61,18 @@ public final class TapeRecalls {
         }
     }
 
-    public List<ItemKey> waiting() {
+    public List<StorageKey> waiting() {
         return new ArrayList<>(waiting.keySet());
     }
 
-    public long waitingAmount(ItemKey key) {
+    public long waitingAmount(StorageKey key) {
         return waiting.getOrDefault(key, 0L);
     }
 
     // Where an item is in the queue (0 first), or -1 when it isn't waiting.
-    public int position(ItemKey key) {
+    public int position(StorageKey key) {
         int at = 0;
-        for (ItemKey waited : waiting.keySet()) {
+        for (StorageKey waited : waiting.keySet()) {
             if (waited.equals(key)) {
                 return at;
             }
@@ -82,7 +82,7 @@ public final class TapeRecalls {
     }
 
     // A library starts a recall of up to amount of an item, taking it off the queue; total: the ticks it'll take.
-    public Running claim(ItemKey key, long amount, int total) {
+    public Running claim(StorageKey key, long amount, int total) {
         waiting.remove(key);
         hotFull.remove(key);
         Running run = new Running(amount, total);
@@ -90,11 +90,11 @@ public final class TapeRecalls {
         return run;
     }
 
-    public @Nullable Running running(ItemKey key) {
+    public @Nullable Running running(StorageKey key) {
         return running.get(key);
     }
 
-    public void progress(ItemKey key, int done, int total) {
+    public void progress(StorageKey key, int done, int total) {
         Running run = running.get(key);
         if (run != null) {
             run.done = done;
@@ -103,14 +103,14 @@ public final class TapeRecalls {
     }
 
     // A recall finished (or was dropped): short means hot storage couldn't take it all.
-    public void finish(ItemKey key, boolean short_) {
+    public void finish(StorageKey key, boolean short_) {
         running.remove(key);
         if (short_) {
             hotFull.add(key);
         }
     }
 
-    public boolean hotFull(ItemKey key) {
+    public boolean hotFull(StorageKey key) {
         return hotFull.contains(key);
     }
 
@@ -121,15 +121,15 @@ public final class TapeRecalls {
     // --- Archiving ---
 
     // Claims an item for archiving; false when another library already is.
-    public boolean startArchiving(ItemKey key) {
+    public boolean startArchiving(StorageKey key) {
         return archiving.add(key);
     }
 
-    public void stopArchiving(ItemKey key) {
+    public void stopArchiving(StorageKey key) {
         archiving.remove(key);
     }
 
-    public boolean busy(ItemKey key) {
+    public boolean busy(StorageKey key) {
         return archiving.contains(key) || running.containsKey(key);
     }
 }

@@ -57,7 +57,7 @@ import net.zagdrath.encodedlogistics.network.NetworkStatus;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -66,7 +66,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // a Midrange System on their network, and the Line Printer's pages; the systems' IPL, crafting and hosting, and their
 // tiers.
 final class MidrangeGameTests {
-    private static final ItemKey LOG = ItemKey.of(new ItemStack(Items.OAK_LOG)), PLANKS = ItemKey.of(new ItemStack(Items.OAK_PLANKS));
+    private static final StorageKey LOG = StorageKey.of(new ItemStack(Items.OAK_LOG)), PLANKS = StorageKey.of(new ItemStack(Items.OAK_PLANKS));
     private MidrangeGameTests() {}
 
     // Places a footprint block's master as a player would (its dummies with it), facing north.
@@ -375,7 +375,7 @@ final class MidrangeGameTests {
                     net.zagdrath.encodedlogistics.terminal.TerminalService.handle(context, net.zagdrath.encodedlogistics.terminal.TerminalService.QUERY,
                             "deposit *all");
                     helper.assertTrue(player.getInventory().getItem(9).isEmpty() && player.getInventory().getItem(0).getCount() == 5, "Deposit took the wrong stacks");
-                    helper.assertTrue(RackGameTests.storage(helper, bay).count(ItemKey.of(new ItemStack(Items.COBBLESTONE))) == 32, "Not deposited");
+                    helper.assertTrue(RackGameTests.storage(helper, bay).count(StorageKey.of(new ItemStack(Items.COBBLESTONE))) == 32, "Not deposited");
                     net.zagdrath.encodedlogistics.terminal.TerminalService.handle(context, net.zagdrath.encodedlogistics.terminal.TerminalService.QUERY,
                             "deposit 0");
                     helper.assertTrue(player.getInventory().getItem(0).isEmpty(), "Hotbar slot not deposited");
@@ -401,7 +401,7 @@ final class MidrangeGameTests {
     @SuppressWarnings("removal")
     static void storageDrives(GameTestHelper helper) {
         BlockPos system = new BlockPos(2, 1, 2), disk = new BlockPos(3, 1, 2), tape = new BlockPos(2, 1, 3);
-        ItemKey cobble = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+        StorageKey cobble = StorageKey.of(new ItemStack(Items.COBBLESTONE));
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
         helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).charge(50_000);
         helper.setBlock(disk, ModBlocks.DISK_DRIVE.get().defaultBlockState().setValue(FootprintBlock.FACING, Direction.NORTH));

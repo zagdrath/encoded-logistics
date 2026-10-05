@@ -115,6 +115,10 @@ public class Config {
             .comment("Different item types one Storage Drive holds, whatever its size.")
             .defineInRange("driveTypeLimit", 63, 1, 4096);
 
+    public static final ModConfigSpec.IntValue ENERGY_DRIVE_MAX_TRANSFER = BUILDER
+            .comment("FE per tick an Energy Storage Drive takes in or gives out as a battery item, out of a drive holder (in one it is part of the network's energy pool, with no limit of its own).")
+            .defineInRange("energyDriveMaxTransfer", 65_536, 0, Integer.MAX_VALUE);
+
     public static final ModConfigSpec.DoubleValue TERMINAL_DRAIN = BUILDER
             .comment("FE per tick an Access Terminal drains.")
             .defineInRange("terminalDrain", 0.5, 0.0, 1_000.0);
@@ -138,6 +142,18 @@ public class Config {
     public static final ModConfigSpec.DoubleValue PORT_ENERGY_PER_ITEM = BUILDER
             .comment("FE a port spends from its network for each item it moves.")
             .defineInRange("portEnergyPerItem", 0.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends Integer>> PORT_FLUID_RATES = BUILDER
+            .comment("mB of fluid or gas an Ingress or Egress Port moves per operation (one every 20 ticks), with 0, 1, 2 and 3 Throughput Modules.")
+            .defineList("portFluidRates", List.of(1_000, 4_000, 8_000, 16_000), () -> 1_000, entry -> entry instanceof Integer value && value >= 0);
+
+    public static final ModConfigSpec.DoubleValue PORT_ENERGY_PER_BUCKET = BUILDER
+            .comment("FE a port spends from its network for each 1,000 mB of fluid or gas it moves.")
+            .defineInRange("portEnergyPerBucket", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends Integer>> PORT_ENERGY_RATES = BUILDER
+            .comment("FE per tick an Ingress or Egress Port in Energy mode moves, with 0, 1, 2 and 3 Throughput Modules.")
+            .defineList("portEnergyRates", List.of(1_024, 4_096, 16_384, 65_536), () -> 1_024, entry -> entry instanceof Integer value && value >= 0);
 
     static {
         BUILDER.pop();

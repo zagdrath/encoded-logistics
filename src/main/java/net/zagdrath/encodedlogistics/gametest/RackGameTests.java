@@ -59,7 +59,7 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -68,7 +68,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // Router moving items across a Segment Isolator.
 final class RackGameTests {
     static final BlockPos CONTROLLER = new BlockPos(0, 1, 0);
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE));
 
     private RackGameTests() {}
 

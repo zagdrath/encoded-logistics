@@ -24,7 +24,7 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // Job schedule entries and trigger events (Part 5): *ONCE (and gone after), *INTERVAL on real seconds, *DAILY on the
@@ -97,7 +97,7 @@ final class SchedulingGameTests {
     // --- Triggers: an item count crossing, edge and debounce, held, reload ---
 
     static void itemTrigger(GameTestHelper helper) {
-        ItemKey cobble = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+        StorageKey cobble = StorageKey.of(new ItemStack(Items.COBBLESTONE));
         BatchJobGameTests.rig(helper, host(), (h, sequence, rig) -> sequence
                 .thenExecute(() -> {
                     note(rig);
@@ -194,7 +194,7 @@ final class SchedulingGameTests {
                     expect(h, rig, "ADDTRGEVT TRG(FULL) EVENT(*STGFULL) PGM(TST/NOTE) VALUE(5)", "ELC0314");
                 })
                 .thenIdle(15)
-                .thenExecute(() -> storage(h).insert(ItemKey.of(new ItemStack(Items.COBBLESTONE)), 10_000, false))
+                .thenExecute(() -> storage(h).insert(StorageKey.of(new ItemStack(Items.COBBLESTONE)), 10_000, false))
                 .thenWaitUntil(() -> h.assertTrue(said(rig, "*STGFULL") == 1, "*STGFULL didn't fire")));
     }
 }

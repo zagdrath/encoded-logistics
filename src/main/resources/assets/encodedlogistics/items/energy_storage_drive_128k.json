@@ -1,0 +1,6 @@
+{
+ "model": {
+  "type": "minecraft:model",
+  "model": "encodedlogistics:item/energy_storage_drive_128k"
+ }
+}

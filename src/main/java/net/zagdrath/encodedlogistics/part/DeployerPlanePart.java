@@ -27,7 +27,7 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Deployer Plane: every deployerInterval ticks, takes the first item its 3x3 ghost filter lists that the network
@@ -73,13 +73,13 @@ public class DeployerPlanePart extends PlanePart {
     }
 
     // The first stored item matching a filter entry (in entry order) that passes test.
-    private @Nullable ItemKey next(NetworkStorage storage, Predicate<ItemKey> test) {
-        Map<ItemKey, Long> stored = storage.list();
+    private @Nullable StorageKey next(NetworkStorage storage, Predicate<StorageKey> test) {
+        Map<StorageKey, Long> stored = storage.list();
         for (int index = 0; index < PartFilter.SIZE; index++) {
             if (filter.entries().get(index).isEmpty()) {
                 continue;
             }
-            for (Map.Entry<ItemKey, Long> entry : stored.entrySet()) {
+            for (Map.Entry<StorageKey, Long> entry : stored.entrySet()) {
                 if (entry.getValue() > 0 && filter.matches(index, entry.getKey().stack(), false, false) && test.test(entry.getKey())) {
                     return entry.getKey();
                 }
@@ -93,7 +93,7 @@ public class DeployerPlanePart extends PlanePart {
         if (!level.getBlockState(target).canBeReplaced()) {
             return false;
         }
-        ItemKey key = next(storage, candidate -> candidate.stack().getItem() instanceof BlockItem);
+        StorageKey key = next(storage, candidate -> candidate.stack().getItem() instanceof BlockItem);
         if (key == null || !(key.stack().getItem() instanceof BlockItem blockItem)) {
             return false;
         }
@@ -111,7 +111,7 @@ public class DeployerPlanePart extends PlanePart {
     }
 
     private boolean dropOne(ServerLevel level, NetworkStorage storage) {
-        ItemKey key = next(storage, candidate -> true);
+        StorageKey key = next(storage, candidate -> true);
         if (key == null || storage.extract(key, 1, false) <= 0) {
             return false;
         }

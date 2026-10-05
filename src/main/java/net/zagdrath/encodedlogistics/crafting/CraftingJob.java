@@ -19,7 +19,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.item.ItemStack;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A crafting job on a Scheduler: the item and amount asked for, the job memory it takes, its steps (each a schematic
 // and how many times to run it), and the items it holds - what it took from storage when it started and what its
@@ -60,16 +60,16 @@ public final class CraftingJob {
         }
     }
 
-    private record Held(ItemKey key, long count) {
+    private record Held(StorageKey key, long count) {
         static final Codec<Held> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ItemKey.CODEC.fieldOf("item").forGetter(Held::key),
+                StorageKey.CODEC.fieldOf("item").forGetter(Held::key),
                 Codec.LONG.fieldOf("count").forGetter(Held::count))
                 .apply(i, Held::new));
     }
 
     public static final Codec<CraftingJob> CODEC = RecordCodecBuilder.create(i -> i.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(job -> job.id),
-            ItemKey.CODEC.fieldOf("target").forGetter(job -> job.target),
+            StorageKey.CODEC.fieldOf("target").forGetter(job -> job.target),
             Codec.LONG.fieldOf("amount").forGetter(job -> job.amount),
             Codec.LONG.fieldOf("memory").forGetter(job -> job.memory),
             Step.CODEC.listOf().fieldOf("steps").forGetter(job -> job.steps),
@@ -101,13 +101,13 @@ public final class CraftingJob {
             }));
 
     public final UUID id;
-    public final ItemKey target;
+    public final StorageKey target;
     public final long amount, memory;
     public final List<Step> steps;
     // The items the job holds, in the order they arrived.
-    public final Map<ItemKey, Long> held = new LinkedHashMap<>();
+    public final Map<StorageKey, Long> held = new LinkedHashMap<>();
     // Items it's still to take from storage, being recalled from tape.
-    public final Map<ItemKey, Long> awaiting = new LinkedHashMap<>();
+    public final Map<StorageKey, Long> awaiting = new LinkedHashMap<>();
     // Running (has a thread) or waiting in the queue.
     public boolean running;
     // Who asked for it (none for jobs saved before this was kept), their Terminal OS user, the user it runs as (empty:
@@ -116,17 +116,17 @@ public final class CraftingJob {
     public String user = "", runAs = "";
     public long started = -1;
     // What it took from storage (at the start, and back from tape): what it consumed, less what it gives back.
-    public final Map<ItemKey, Long> taken = new LinkedHashMap<>();
+    public final Map<StorageKey, Long> taken = new LinkedHashMap<>();
     // The ELCL job that started it ("000123/USER/NAME", and " *SCDE NAME" or " *TRGEVT NAME" when a schedule entry or
     // trigger submitted that); empty for a player's request. The overworld clock when it started (-1 unknown).
     public String origin = "";
     public long startedClock = -1;
     // What it held when it finished, before that went into the network (not saved: a job finishing across a restart
     // reports what it still held).
-    public @Nullable Map<ItemKey, Long> returned;
+    public @Nullable Map<StorageKey, Long> returned;
 
     // What it holds at its end: what went back to the network, or what it holds still.
-    public Map<ItemKey, Long> atEnd() {
+    public Map<StorageKey, Long> atEnd() {
         return returned != null ? returned : held;
     }
 
@@ -145,7 +145,7 @@ public final class CraftingJob {
         return false;
     }
 
-    public CraftingJob(UUID id, ItemKey target, long amount, long memory, List<Step> steps) {
+    public CraftingJob(UUID id, StorageKey target, long amount, long memory, List<Step> steps) {
         this.id = id;
         this.target = target;
         this.amount = amount;
@@ -167,13 +167,13 @@ public final class CraftingJob {
 
     public void add(ItemStack stack) {
         if (!stack.isEmpty()) {
-            held.merge(ItemKey.of(stack), (long) stack.getCount(), Long::sum);
+            held.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
         }
     }
 
     // Whether it holds everything in amounts.
-    public boolean holds(Map<ItemKey, Long> amounts) {
-        for (Map.Entry<ItemKey, Long> entry : amounts.entrySet()) {
+    public boolean holds(Map<StorageKey, Long> amounts) {
+        for (Map.Entry<StorageKey, Long> entry : amounts.entrySet()) {
             if (held.getOrDefault(entry.getKey(), 0L) < entry.getValue()) {
                 return false;
             }
@@ -186,7 +186,7 @@ public final class CraftingJob {
         List<ItemStack> taken = new ArrayList<>();
         for (Schematic.Input input : schematic.inputs()) {
             ItemStack stack = input.item().create();
-            ItemKey key = ItemKey.of(stack);
+            StorageKey key = StorageKey.of(stack);
             long left = held.getOrDefault(key, 0L) - stack.getCount();
             if (left > 0) {
                 held.put(key, left);

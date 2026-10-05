@@ -38,6 +38,7 @@ import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.PrintoutItem;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
@@ -52,7 +53,9 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.plc.PlcProgram;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // A short description of what each Encoded Logistics item does, under its name, the same way as Arcforge: "Hold
@@ -80,8 +83,16 @@ public final class ItemInfoTooltips {
         int at = Math.min(1, tooltip.size());
         // Drives, dies and photomasks always say their tier, fill or that they're reusable.
         ItemStack stack = event.getItemStack();
-        if (stack.getItem() instanceof StorageDriveItem) {
+        if (EnergyDrives.is(stack)) {
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.charge", String.format(Locale.ROOT, "%,d", EnergyDrives.stored(stack)),
+                    String.format(Locale.ROOT, "%,d", EnergyDrives.capacity(stack))).withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof StorageDriveItem drive) {
             DriveStats stats = StorageDriveItem.stats(stack);
+            if (drive.getType() != ResourceType.ITEM) {
+                // As buckets: a byte of a fluid or pressurized drive is 1,000 mB.
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.holds",
+                        ResourceType.buckets(stats.bytesTotal() * drive.getType().unitsPerByte())).withStyle(ChatFormatting.GRAY));
+            }
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.bytes", String.format(Locale.ROOT, "%,d", stats.bytesUsed()),
                     String.format(Locale.ROOT, "%,d", stats.bytesTotal())).withStyle(ChatFormatting.GRAY));
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
@@ -155,9 +166,10 @@ public final class ItemInfoTooltips {
             Schematic schematic = SchematicItem.schematic(stack);
             ItemStack output = schematic.output();
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.schematic.output",
-                    Component.literal(output.getCount() + " x ").append(output.getHoverName())).withStyle(ChatFormatting.GRAY));
-            for (Map.Entry<ItemKey, Long> input : schematic.inputTotals().entrySet()) {
-                tooltip.add(at++, Component.literal("  " + input.getValue() + " x ").append(input.getKey().stack().getHoverName())
+                    Component.literal(StorageKey.entry(output).format(ResourceEntryItem.amount(output)) + " x ").append(output.getHoverName()))
+                    .withStyle(ChatFormatting.GRAY));
+            for (Map.Entry<StorageKey, Long> input : schematic.inputTotals().entrySet()) {
+                tooltip.add(at++, Component.literal("  " + input.getKey().format(input.getValue()) + " x ").append(input.getKey().displayName())
                         .withStyle(ChatFormatting.DARK_GRAY));
             }
             if (!Minecraft.getInstance().hasShiftDown()) {
@@ -173,7 +185,7 @@ public final class ItemInfoTooltips {
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.punch_card.recipe", output.getHoverName(), output.getCount())
                         .withStyle(ChatFormatting.GRAY));
                 if (Minecraft.getInstance().hasShiftDown()) {
-                    for (Map.Entry<ItemKey, Long> input : recipe.inputTotals().entrySet()) {
+                    for (Map.Entry<StorageKey, Long> input : recipe.inputTotals().entrySet()) {
                         tooltip.add(at++, Component.literal("  " + input.getValue() + " x ").append(input.getKey().stack().getHoverName())
                                 .withStyle(ChatFormatting.DARK_GRAY));
                     }

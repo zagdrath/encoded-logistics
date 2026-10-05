@@ -22,6 +22,9 @@ import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 
 public final class ModCapabilities {
@@ -54,5 +57,9 @@ public final class ModCapabilities {
         // The Handheld Terminal's battery charges in any FE charger.
         event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new ItemAccessEnergyHandler(access, ModDataComponents.ENERGY.get(),
                 Config.HANDHELD_CAPACITY.getAsInt(), Config.HANDHELD_CHARGE_RATE.getAsInt(), 0), ModItems.HANDHELD_TERMINAL.get());
+        // An Energy Storage Drive out of a holder is a battery item.
+        for (StorageTier tier : StorageTier.REGISTERED) {
+            event.registerItem(Capabilities.Energy.ITEM, (stack, access) -> new EnergyDrives.Handler(access), ModItems.storageDrive(ResourceType.ENERGY, tier).get());
+        }
     }
 }

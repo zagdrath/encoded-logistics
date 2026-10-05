@@ -19,6 +19,7 @@ import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.energy.SimpleEnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.multiblock.EnergyCell;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
@@ -26,7 +27,7 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // direct alike). On a controller's network it's part of the energy pool (ControllerStructures fills controllers, then
 // banks, and drains banks first). With capacitorDirectIO, every face also takes and gives FE directly. Keeps 20-tick
 // averages of what went in and out for its screen, and shows its fill (0-4) in the blockstate, at most once a second.
-public class CapacitorBankBlockEntity extends BlockEntity {
+public class CapacitorBankBlockEntity extends BlockEntity implements EnergyCell {
     private static final int WINDOW = 20;
     private static final int FILL_INTERVAL = 20;
 
@@ -46,21 +47,25 @@ public class CapacitorBankBlockEntity extends BlockEntity {
         return side == null || Config.CAPACITOR_DIRECT_IO.getAsBoolean() ? energy : null;
     }
 
+    @Override
     public long getStored() {
         return energy.getAmountAsLong();
     }
 
+    @Override
     public long getCapacity() {
         energy.refreshLimits();
         return energy.getCapacityAsLong();
     }
 
     // Network side: FE in, as far as this tick's allowance goes.
+    @Override
     public int fill(int amount, TransactionContext transaction) {
         return energy.insert(amount, transaction);
     }
 
     // Network side: FE out to cover the network's drain, as far as this tick's allowance goes; returns what it gave.
+    @Override
     public int drain(int amount) {
         energy.refreshLimits();
         int taken = Math.min(amount, Math.min(energy.getAmountAsInt(), Math.max(0, energy.maxExtract() - energy.extractedThisTick)));

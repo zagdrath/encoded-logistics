@@ -26,7 +26,7 @@ import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.DisketteStack;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // MRCTL / IMCTL (HANDOFF 3; layouts mrctl, imctl): a Midrange System's or Integrated Midrange System's control panel.
 // Data: threads, max job, batch jobs, expanded, integrated, held. Every second the server sends, tab-separated:
@@ -175,7 +175,7 @@ public class MidrangePanelMenu extends PeripheralMenu {
     }
 
     // An item's name, as its lang key (the client translates it).
-    private static String itemKey(ItemKey key) {
+    private static String itemKey(StorageKey key) {
         return key.stack().getItem().getDescriptionId();
     }
 

@@ -6,14 +6,16 @@
 package net.zagdrath.encodedlogistics.compat.arcforge;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 
-// The Arcforge integration's version check (the API it was built against: 1.0) and the device-name prefixes bridged
+// The Arcforge integration's version checks (machines need API 1.0, gases 1.1) and the device-name prefixes bridged
 // machines get from their types.
 class ArcforgeCompatTest {
     @Test
@@ -21,6 +23,14 @@ class ArcforgeCompatTest {
         assertNull(ArcforgeCompat.incompatibility(1, 0));
         // Newer minor versions only add.
         assertNull(ArcforgeCompat.incompatibility(1, 4));
+    }
+
+    @Test
+    void gasesNeedOneOne() {
+        assertFalse(ArcforgeCompat.gasesSupported(1, 0));
+        assertTrue(ArcforgeCompat.gasesSupported(1, 1));
+        assertTrue(ArcforgeCompat.gasesSupported(1, 3));
+        assertFalse(ArcforgeCompat.gasesSupported(2, 1));
     }
 
     @Test

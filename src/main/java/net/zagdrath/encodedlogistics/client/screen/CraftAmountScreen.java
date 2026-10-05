@@ -21,7 +21,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // How many to craft (screens/craft_amount.json): the item, the amount (typed, or stepped by the +/- buttons), and Next,
 // which asks the server for the plan (Enter too). Escape goes back to the terminal.
@@ -33,11 +33,11 @@ public class CraftAmountScreen extends Screen {
 
     private final Screen terminal;
     private final AccessTerminalMenu menu;
-    private final ItemKey key;
+    private final StorageKey key;
     private @Nullable EditBox amount;
     private int left, top;
 
-    public CraftAmountScreen(Screen terminal, AccessTerminalMenu menu, ItemKey key) {
+    public CraftAmountScreen(Screen terminal, AccessTerminalMenu menu, StorageKey key) {
         super(Component.translatable("gui.encodedlogistics.craft.amount"));
         this.terminal = terminal;
         this.menu = menu;

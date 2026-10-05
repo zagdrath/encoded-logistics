@@ -15,13 +15,13 @@ import java.util.Map;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.zagdrath.encodedlogistics.net.TerminalItemsPayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // WRKINV: the network's items (what the desk's terminal sync brings: hot and cold) - Opt, Item, Quantity, Location
 // (Hot, Cold on tape, Hot+Cold) - eleven a page, those whose names start with "Position to" (blank or *ALL: all).
 // Options: 1=Withdraw (WITHDRAW prompt), 5=Display details, 7=Craft (CRAFT prompt). Several are done one after another.
 // F11 sorts by name, quantity or mod; F6 deposits from your inventory (DepositPanel).
-final class InventoryPanel extends ListPanel<ItemKey> {
+final class InventoryPanel extends ListPanel<StorageKey> {
     private enum Sort {
         NAME, QUANTITY, MOD
     }
@@ -64,7 +64,7 @@ final class InventoryPanel extends ListPanel<ItemKey> {
     }
 
     @Override
-    Object key(ItemKey row) {
+    Object key(StorageKey row) {
         return row;
     }
 
@@ -95,20 +95,20 @@ final class InventoryPanel extends ListPanel<ItemKey> {
         }
     }
 
-    private List<ItemKey> list() {
+    private List<StorageKey> list() {
         String start = filtered.equalsIgnoreCase("*all") ? "" : filtered.toLowerCase(Locale.ROOT);
-        Map<ItemKey, Long> items = screen.getMenu().items();
-        List<ItemKey> keys = new ArrayList<>();
-        for (ItemKey key : items.keySet()) {
+        Map<StorageKey, Long> items = screen.getMenu().items();
+        List<StorageKey> keys = new ArrayList<>();
+        for (StorageKey key : items.keySet()) {
             if (start.isEmpty() || key.stack().getHoverName().getString().toLowerCase(Locale.ROOT).startsWith(start)) {
                 keys.add(key);
             }
         }
-        Comparator<ItemKey> byName = Comparator.comparing(key -> key.stack().getHoverName().getString(), String.CASE_INSENSITIVE_ORDER);
+        Comparator<StorageKey> byName = Comparator.comparing(key -> key.stack().getHoverName().getString(), String.CASE_INSENSITIVE_ORDER);
         keys.sort(switch (sort) {
             case NAME -> byName;
-            case QUANTITY -> Comparator.<ItemKey>comparingLong(key -> items.getOrDefault(key, 0L)).reversed().thenComparing(byName);
-            case MOD -> Comparator.<ItemKey, String>comparing(key -> BuiltInRegistries.ITEM.getKey(key.stack().getItem()).getNamespace()).thenComparing(byName);
+            case QUANTITY -> Comparator.<StorageKey>comparingLong(key -> items.getOrDefault(key, 0L)).reversed().thenComparing(byName);
+            case MOD -> Comparator.<StorageKey, String>comparing(key -> BuiltInRegistries.ITEM.getKey(key.stack().getItem()).getNamespace()).thenComparing(byName);
         });
         return keys;
     }
@@ -143,7 +143,7 @@ final class InventoryPanel extends ListPanel<ItemKey> {
     }
 
     @Override
-    void drawRow(CrtGrid grid, int screenRow, ItemKey key) {
+    void drawRow(CrtGrid grid, int screenRow, StorageKey key) {
         long count = screen.getMenu().items().getOrDefault(key, 0L);
         TerminalItemsPayload.Entry cold = screen.getMenu().cold(key);
         long onTape = cold != null ? cold.cold() : 0;
@@ -154,10 +154,10 @@ final class InventoryPanel extends ListPanel<ItemKey> {
     }
 
     @Override
-    boolean process(List<Option<ItemKey>> chosen) {
+    boolean process(List<Option<StorageKey>> chosen) {
         queued.clear();
-        for (Option<ItemKey> option : chosen) {
-            ItemKey key = option.row();
+        for (Option<StorageKey> option : chosen) {
+            StorageKey key = option.row();
             switch (option.option()) {
                 case "1" -> queued.add(() -> screen.push(new WithdrawPanel(screen, key)));
                 case "5" -> queued.add(() -> screen.push(new TextPanel(screen, "DSPITM", tr("crt.encodedlogistics.detail.title"),

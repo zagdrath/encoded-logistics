@@ -29,7 +29,7 @@ import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The network's crafting job history: a record of every job that ended (JobEvents.ended) - done, failed or cancelled -
 // kept with its Terminal OS data (SystemData.craftLog, oldest first) and saved with it. The last CRFLOGRTN of them
@@ -178,7 +178,7 @@ public final class CraftLog {
 
     // A job ended (JobEvents.ended): its record, the oldest past CRFLOGRTN removed.
     static void record(MinecraftServer server, NetworkRef network, @Nullable JobHost host, CraftingJob job, JobEvents.Outcome outcome, String reason) {
-        Map<ItemKey, Long> atEnd = job.atEnd();
+        Map<StorageKey, Long> atEnd = job.atEnd();
         Map<String, Long> consumed = new LinkedHashMap<>();
         job.taken.forEach((key, count) -> {
             long used = count - atEnd.getOrDefault(key, 0L);

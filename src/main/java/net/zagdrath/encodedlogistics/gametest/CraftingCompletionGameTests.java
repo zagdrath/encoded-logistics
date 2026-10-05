@@ -48,7 +48,7 @@ import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // Processing jobs finishing whatever way their outputs come back. The rig (RackGameTests.networkedRack): a rack Scheduler
@@ -59,7 +59,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 final class CraftingCompletionGameTests {
     static final BlockPos GATEWAY = new BlockPos(0, 1, 1), INPUT = new BlockPos(0, 2, 1), OUTPUT = new BlockPos(2, 2, 2),
             PORT_CABLE = new BlockPos(2, 1, 2);
-    static final ItemKey RAW_IRON = ItemKey.of(new ItemStack(Items.RAW_IRON)), INGOT = ItemKey.of(new ItemStack(Items.IRON_INGOT));
+    static final StorageKey RAW_IRON = StorageKey.of(new ItemStack(Items.RAW_IRON)), INGOT = StorageKey.of(new ItemStack(Items.IRON_INGOT));
 
     private CraftingCompletionGameTests() {}
 

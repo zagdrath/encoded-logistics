@@ -42,7 +42,7 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Tape Drive (HANDOFF 5): one Tape Reel as cold storage in the same tier as the Tape Libraries (TapeSource) - one
@@ -62,7 +62,7 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
     }
 
     // The reel at work: reading (a recall) or writing (archiving) one item type.
-    private record Op(boolean write, ItemKey key, long amount, long touched, int work) {}
+    private record Op(boolean write, StorageKey key, long amount, long touched, int work) {}
 
     private boolean online;
     private int load, rewind, done, assignTimer, archiveTimer;
@@ -234,13 +234,13 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
         return DriveStorage.get(serverLevel.getServer()).contents(id).values().stream().mapToLong(Long::longValue).sum();
     }
 
-    public List<Map.Entry<ItemKey, Long>> contents() {
+    public List<Map.Entry<StorageKey, Long>> contents() {
         UUID id = reelId();
         if (id == null || !(level instanceof ServerLevel serverLevel)) {
             return List.of();
         }
-        List<Map.Entry<ItemKey, Long>> list = new ArrayList<>(DriveStorage.get(serverLevel.getServer()).contents(id).entrySet());
-        list.sort(Map.Entry.<ItemKey, Long>comparingByValue(Comparator.reverseOrder()));
+        List<Map.Entry<StorageKey, Long>> list = new ArrayList<>(DriveStorage.get(serverLevel.getServer()).contents(id).entrySet());
+        list.sort(Map.Entry.<StorageKey, Long>comparingByValue(Comparator.reverseOrder()));
         return list;
     }
 
@@ -348,7 +348,7 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
     private @Nullable Op nextRecall(MinecraftServer server, TapeRecalls recalls) {
         DriveStorage data = DriveStorage.get(server);
         UUID id = reelId();
-        for (ItemKey key : recalls.waiting()) {
+        for (StorageKey key : recalls.waiting()) {
             long count = data.count(id, key);
             if (count <= 0 || recalls.busy(key)) {
                 continue;
@@ -370,9 +370,9 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
         DriveStorage data = DriveStorage.get(server);
         UUID id = reelId();
         long now = data.clock(), age = archiveForTest ? 0 : Config.TAPE_DEFAULT_AGE_HOURS.getAsInt() * 72_000L;
-        ItemKey oldest = null;
+        StorageKey oldest = null;
         long oldestAccess = Long.MAX_VALUE;
-        for (ItemKey key : storage.driveContents().keySet()) {
+        for (StorageKey key : storage.driveContents().keySet()) {
             long last = storage.lastAccess(key);
             if (last >= 0 && now - last >= age && last < oldestAccess && !recalls.busy(key) && data.room(id, TapeReelItem.CAPACITY, key) > 0) {
                 oldest = key;
@@ -448,7 +448,7 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
     }
 
     @Override
-    public int recallTicks(DriveStorage data, ItemKey key, long amount) {
+    public int recallTicks(DriveStorage data, StorageKey key, long amount) {
         UUID id = reelId();
         return id != null && data.count(id, key) > 0 ? load + rewind + workTicks(amount) : -1;
     }

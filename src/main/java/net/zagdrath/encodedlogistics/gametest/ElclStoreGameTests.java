@@ -28,7 +28,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
@@ -107,7 +107,7 @@ final class ElclStoreGameTests {
             ElclGameTests.expect(helper, context, "CRTLIB LIB(FULL)", "ELC0210");
             ElclGameTests.expect(helper, context, "CRTMBR MBR(FULL/EMPTY)", "ELC0214");
             // Fill the drive.
-            RackGameTests.storage(helper, ElclGameTests.BAY).insert(ItemKey.of(new ItemStack(Items.COBBLESTONE)), Long.MAX_VALUE / 4, false);
+            RackGameTests.storage(helper, ElclGameTests.BAY).insert(StorageKey.of(new ItemStack(Items.COBBLESTONE)), Long.MAX_VALUE / 4, false);
             ElclGameTests.expect(helper, context, "CPYMBR FROM(ELSYS/RESTOCK) TO(FULL/RESTOCK)", "ELC0207");
             try {
                 ElclServices.libraries().save(system, context.user(), "FULL", "EMPTY", SourceLine.number(List.of("PGM", "ENDPGM"), 1));
@@ -116,7 +116,7 @@ final class ElclStoreGameTests {
                 helper.assertTrue(e.elclMessage().id().equals("ELC0207"), "Wanted ELC0207, got " + e.getMessage());
             }
             // Room again: the save goes through.
-            RackGameTests.storage(helper, ElclGameTests.BAY).extract(ItemKey.of(new ItemStack(Items.COBBLESTONE)), 4_096, false);
+            RackGameTests.storage(helper, ElclGameTests.BAY).extract(StorageKey.of(new ItemStack(Items.COBBLESTONE)), 4_096, false);
             try {
                 ElclServices.libraries().save(system, context.user(), "FULL", "EMPTY", SourceLine.number(List.of("PGM", "ENDPGM"), 1));
             } catch (ElclException e) {

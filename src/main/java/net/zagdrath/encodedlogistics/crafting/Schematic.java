@@ -21,7 +21,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // What an Encoded Schematic holds (the encodedlogistics:schematic component), written by the Schematic Encoder.
 // Crafting: up to nine grid slots of one item each and the recipe's result; a Fabricator crafts it. Processing: up to
@@ -117,26 +117,26 @@ public record Schematic(Kind kind, List<Input> inputs, List<ItemStackTemplate> o
     }
 
     // What one craft (or one processing run) takes, added up by item.
-    public Map<ItemKey, Long> inputTotals() {
-        Map<ItemKey, Long> totals = new LinkedHashMap<>();
+    public Map<StorageKey, Long> inputTotals() {
+        Map<StorageKey, Long> totals = new LinkedHashMap<>();
         for (Input input : inputs) {
             ItemStack stack = input.item().create();
-            totals.merge(ItemKey.of(stack), (long) stack.getCount(), Long::sum);
+            totals.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
         }
         return totals;
     }
 
     // What one craft gives, added up by item.
-    public Map<ItemKey, Long> outputTotals() {
-        Map<ItemKey, Long> totals = new LinkedHashMap<>();
+    public Map<StorageKey, Long> outputTotals() {
+        Map<StorageKey, Long> totals = new LinkedHashMap<>();
         for (ItemStackTemplate output : outputs) {
             ItemStack stack = output.create();
-            totals.merge(ItemKey.of(stack), (long) stack.getCount(), Long::sum);
+            totals.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
         }
         return totals;
     }
 
-    public long outputCount(ItemKey key) {
+    public long outputCount(StorageKey key) {
         return outputTotals().getOrDefault(key, 0L);
     }
 }

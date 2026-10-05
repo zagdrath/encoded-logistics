@@ -48,7 +48,7 @@ import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -56,8 +56,8 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // Fabrication Server, a device serving a segment and an L3 Switch routing to it, the Router linking two unconnected
 // networks, and the Monitoring Server sampling.
 final class Rack2GameTests {
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE)), LOG = ItemKey.of(new ItemStack(Items.OAK_LOG)),
-            PLANKS = ItemKey.of(new ItemStack(Items.OAK_PLANKS));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), LOG = StorageKey.of(new ItemStack(Items.OAK_LOG)),
+            PLANKS = StorageKey.of(new ItemStack(Items.OAK_PLANKS));
 
     private Rack2GameTests() {}
 

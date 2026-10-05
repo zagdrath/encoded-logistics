@@ -1,0 +1,18 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "ICI",
+  "CDC",
+  "ICI"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "C": "encodedlogistics:tantalum_capacitor",
+  "D": "encodedlogistics:storage_die_128k"
+ },
+ "result": {
+  "id": "encodedlogistics:energy_storage_drive_128k",
+  "count": 1
+ }
+}

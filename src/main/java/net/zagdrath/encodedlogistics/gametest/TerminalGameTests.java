@@ -33,7 +33,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -42,7 +42,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // Drive Bay (2,1,0).
 final class TerminalGameTests {
     private static final BlockPos CONTROLLER = new BlockPos(0, 1, 0), CABLE = new BlockPos(1, 1, 0), BAY = new BlockPos(2, 1, 0);
-    private static final ItemKey NUGGET = ItemKey.of(new ItemStack(Items.GOLD_NUGGET)), INGOT = ItemKey.of(new ItemStack(Items.GOLD_INGOT));
+    private static final StorageKey NUGGET = StorageKey.of(new ItemStack(Items.GOLD_NUGGET)), INGOT = StorageKey.of(new ItemStack(Items.GOLD_INGOT));
     private static final int RESULT = AccessTerminalMenu.INVENTORY_SLOTS + 9;
 
     private TerminalGameTests() {}

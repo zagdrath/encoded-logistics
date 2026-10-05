@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "IGI",
+  "FDF",
+  "III"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "G": "minecraft:glass",
+  "F": "encodedlogistics:copper_foil",
+  "D": "encodedlogistics:storage_die_2m"
+ },
+ "result": {
+  "id": "encodedlogistics:fluid_storage_drive_2m",
+  "count": 1
+ }
+}

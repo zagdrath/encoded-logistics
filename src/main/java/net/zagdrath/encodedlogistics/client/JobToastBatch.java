@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.zagdrath.encodedlogistics.crafting.JobEvents;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // What one job toast shows: one job's end, or several of the same kind (completed, failed or cancelled) that ended
 // within WINDOW of each other ("3 jobs complete"). Plain logic, so it can be tested without a client.
@@ -17,7 +17,7 @@ public final class JobToastBatch {
     // How close together jobs have to end to share a toast, in milliseconds.
     public static final long WINDOW = 3_000;
 
-    public record Event(ItemKey item, long amount, JobEvents.Outcome outcome, boolean processing, String reason) {}
+    public record Event(StorageKey item, long amount, JobEvents.Outcome outcome, boolean processing, String reason) {}
 
     private final JobEvents.Outcome outcome;
     private final List<Event> events = new ArrayList<>();

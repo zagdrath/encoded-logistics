@@ -23,6 +23,7 @@ import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.PrintoutItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.SmallWirelessBridgeItem;
@@ -35,6 +36,7 @@ import net.zagdrath.encodedlogistics.plc.PlcModule;
 import net.zagdrath.encodedlogistics.plc.PlcModuleItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
@@ -214,16 +216,27 @@ public final class ModItems {
 
     public static final DeferredItem<PartItem> ACCESS_TERMINAL = PARTS.get(PartType.ACCESS_TERMINAL);
 
-    // Storage Dies and Drives of the registered tiers (StorageTier.REGISTERED).
+    // Storage Dies and Drives of the registered tiers (StorageTier.REGISTERED): item Storage Drives, and Fluid,
+    // Pressurized and Energy Storage Drives built on the same dies.
     private static final Map<StorageTier, DeferredItem<StorageTierItem>> DIES = new EnumMap<>(StorageTier.class);
-    private static final Map<StorageTier, DeferredItem<StorageDriveItem>> DRIVES = new EnumMap<>(StorageTier.class);
+    private static final Map<ResourceType, Map<StorageTier, DeferredItem<StorageDriveItem>>> DRIVES = new EnumMap<>(ResourceType.class);
 
     static {
         for (StorageTier tier : StorageTier.REGISTERED) {
             DIES.put(tier, ITEMS.registerItem("storage_die_" + tier.id(), p -> new StorageTierItem(p, tier)));
-            DRIVES.put(tier, ITEMS.registerItem("storage_drive_" + tier.id(), p -> new StorageDriveItem(p, tier), p -> p.stacksTo(1)));
+        }
+        for (ResourceType type : ResourceType.values()) {
+            Map<StorageTier, DeferredItem<StorageDriveItem>> drives = new EnumMap<>(StorageTier.class);
+            String prefix = type == ResourceType.ITEM ? "" : type.getSerializedName() + "_";
+            for (StorageTier tier : StorageTier.REGISTERED) {
+                drives.put(tier, ITEMS.registerItem(prefix + "storage_drive_" + tier.id(), p -> new StorageDriveItem(p, tier, type), p -> p.stacksTo(1)));
+            }
+            DRIVES.put(type, drives);
         }
     }
+
+    // A fluid or gas standing in an item's place (ghost slots, schematics); not obtainable.
+    public static final DeferredItem<ResourceEntryItem> RESOURCE_ENTRY = ITEMS.registerItem("resource_entry", ResourceEntryItem::new, p -> p.stacksTo(1));
 
     // In the same order as ModBlocks.allCables().
     private static final List<DeferredItem<BlockItem>> CABLES = new ArrayList<>();
@@ -249,7 +262,11 @@ public final class ModItems {
     }
 
     public static DeferredItem<StorageDriveItem> storageDrive(StorageTier tier) {
-        return DRIVES.get(tier);
+        return storageDrive(ResourceType.ITEM, tier);
+    }
+
+    public static DeferredItem<StorageDriveItem> storageDrive(ResourceType type, StorageTier tier) {
+        return DRIVES.get(type).get(tier);
     }
 
     public static DeferredItem<LtoTapeItem> tape(TapeGeneration generation) {

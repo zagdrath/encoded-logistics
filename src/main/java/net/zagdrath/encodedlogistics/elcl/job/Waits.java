@@ -15,7 +15,7 @@ import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclContext;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The game's async waits (ELCL_SPEC.md 9; DLYJOB's DELAY the VM checks itself):
@@ -50,7 +50,7 @@ public final class Waits {
         if (ElclItems.count(storage, item, "*HOT") >= wait.number("need")) {
             return true;
         }
-        for (ItemKey key : ElclItems.keys(storage, item)) {
+        for (StorageKey key : ElclItems.keys(storage, item)) {
             if (storage.cold().progress(key) >= 0) {
                 return false;
             }

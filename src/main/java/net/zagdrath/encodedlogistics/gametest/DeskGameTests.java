@@ -28,7 +28,7 @@ import net.zagdrath.encodedlogistics.entity.SeatEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalActions;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
@@ -39,7 +39,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // The Terminal Desk (its screen coming on, withdrawing to its drawer, the command line) and the Swivel Chair.
 final class DeskGameTests {
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE));
     // On the networked rack's cables: the desk faces south, its back on the cable at (1, 1, 2); its drawer half west.
     private static final BlockPos DESK = new BlockPos(1, 1, 3), BAY = new BlockPos(1, 2, 1);
 

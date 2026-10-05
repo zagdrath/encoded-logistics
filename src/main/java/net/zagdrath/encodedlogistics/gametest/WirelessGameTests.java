@@ -29,7 +29,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // Wireless on RackGameTests' networked rack, with a Wireless Controller in it, a Drive Bay at BAY and an Access Point
@@ -40,7 +40,7 @@ import net.zagdrath.encodedlogistics.wireless.Wireless;
 final class WirelessGameTests {
     private static final BlockPos BAY = new BlockPos(1, 2, 1), AP = new BlockPos(1, 2, 2), CHEST = new BlockPos(5, 1, 4), PORT = new BlockPos(5, 1, 3),
             BRIDGE = new BlockPos(6, 1, 6), REMOTE_BAY = new BlockPos(7, 1, 6);
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE));
 
     private WirelessGameTests() {}
 

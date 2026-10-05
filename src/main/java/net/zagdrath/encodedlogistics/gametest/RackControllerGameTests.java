@@ -22,14 +22,14 @@ import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice.Shown;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // Rack Network Controllers: a rack running a network on its own, a conflict with a controller block and between sizes,
 // a redundant pair failing over (and switched over on purpose), and cables into the rack's bottom grommets.
 final class RackControllerGameTests {
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE));
 
     private RackControllerGameTests() {}
 

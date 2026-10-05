@@ -6,7 +6,6 @@
 package net.zagdrath.encodedlogistics.blockentity;
 
 import java.util.Arrays;
-import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -37,10 +36,7 @@ import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
-import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
-import net.zagdrath.encodedlogistics.storage.DriveStats;
-import net.zagdrath.encodedlogistics.storage.DriveStorage;
 
 // A Drive Bay's ten drive slots (two columns of five, slot i in column i / 5, row i % 5). A drive gets its id the first
 // time it goes in; its stats are refreshed from DriveStorage whenever the bay or the network changes it. The client gets
@@ -172,19 +168,7 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
     }
 
     private void refreshDrive(ServerLevel level, int slot) {
-        ItemStack stack = items.get(slot);
-        if (!(stack.getItem() instanceof StorageDriveItem drive)) {
-            return;
-        }
-        UUID id = StorageDriveItem.id(stack);
-        if (id == null) {
-            id = UUID.randomUUID();
-            stack.set(ModDataComponents.DRIVE_ID.get(), id);
-        }
-        DriveStats stats = DriveStorage.get(level.getServer()).stats(id, drive.getTier());
-        if (!stats.equals(stack.get(ModDataComponents.DRIVE_STATS.get()))) {
-            stack.set(ModDataComponents.DRIVE_STATS.get(), stats);
-        }
+        StorageDriveItem.refresh(level.getServer(), items.get(slot));
     }
 
     // The drive in a slot as the network uses it, or null when the slot is empty.
@@ -199,12 +183,7 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
     private int[] computeSleds() {
         int[] codes = new int[SLOTS];
         for (int slot = 0; slot < SLOTS; slot++) {
-            ItemStack stack = items.get(slot);
-            if (stack.getItem() instanceof StorageDriveItem drive) {
-                codes[slot] = drive.getTier().ordinal() * 8 + (online ? StorageDriveItem.stats(stack).light() : LIGHT_OFF);
-            } else {
-                codes[slot] = -1;
-            }
+            codes[slot] = StorageDriveItem.sledCode(items.get(slot), online);
         }
         return codes;
     }

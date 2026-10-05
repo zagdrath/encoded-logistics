@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Threshold Sensor: emits redstone while the network's count of its item is above, below or equal to its
@@ -89,7 +89,7 @@ public class ThresholdSensorPart extends CablePart {
         boolean now = false;
         NetworkStorage storage = isOnline() && !item.isEmpty() ? storage(level) : null;
         if (storage != null) {
-            long count = storage.count(ItemKey.of(item));
+            long count = storage.count(StorageKey.of(item));
             now = switch (mode) {
                 case BELOW -> count < threshold;
                 case EQUAL -> count == threshold;

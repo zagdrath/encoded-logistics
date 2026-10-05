@@ -70,7 +70,7 @@ import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
@@ -88,7 +88,7 @@ final class ArcforgeGameTests {
     static final BlockPos AP = new BlockPos(1, 2, 2), MACHINE = new BlockPos(6, 1, 4), CHEST = new BlockPos(6, 1, 6), GATEWAY = new BlockPos(0, 1, 1),
             PANEL = new BlockPos(2, 2, 2);
     static final int CONTROLLER_UNIT = 10;
-    static final ItemKey BONE = ItemKey.of(new ItemStack(Items.BONE)), BONE_MEAL = ItemKey.of(new ItemStack(Items.BONE_MEAL));
+    static final StorageKey BONE = StorageKey.of(new ItemStack(Items.BONE)), BONE_MEAL = StorageKey.of(new ItemStack(Items.BONE_MEAL));
 
     private ArcforgeGameTests() {}
 

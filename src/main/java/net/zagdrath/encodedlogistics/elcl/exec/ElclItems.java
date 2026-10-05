@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
@@ -78,9 +78,9 @@ public final class ElclItems {
     }
 
     // The stored kinds of an item (it may be stored with different components), hot and cold.
-    public static List<ItemKey> keys(NetworkStorage storage, Item item) {
-        List<ItemKey> keys = new ArrayList<>();
-        for (ItemKey key : storage.listAll().keySet()) {
+    public static List<StorageKey> keys(NetworkStorage storage, Item item) {
+        List<StorageKey> keys = new ArrayList<>();
+        for (StorageKey key : storage.listAll().keySet()) {
             if (key.stack().is(item)) {
                 keys.add(key);
             }
@@ -91,7 +91,7 @@ public final class ElclItems {
     // How many of an item there are: hot, cold or both (*HOT, *COLD, *ALL).
     public static long count(NetworkStorage storage, Item item, String tier) {
         long count = 0;
-        for (ItemKey key : keys(storage, item)) {
+        for (StorageKey key : keys(storage, item)) {
             if (!tier.equals("*COLD")) {
                 count += storage.count(key);
             }
@@ -103,7 +103,7 @@ public final class ElclItems {
     }
 
     // RTVITMLST's FILTER: *ALL, text with * wildcards (on the ID, its path or the display name), or #tag.
-    public static boolean matches(ItemKey key, String filter) {
+    public static boolean matches(StorageKey key, String filter) {
         String f = filter.strip();
         if (f.isEmpty() || f.equalsIgnoreCase("*ALL")) {
             return true;

@@ -95,7 +95,9 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.DriveView;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.SharedView;
 import net.zagdrath.encodedlogistics.storage.StorageView;
 
@@ -472,6 +474,16 @@ public class ControllerStructures extends SavedData {
             stored += bank.getStored();
             capacity += bank.getCapacity();
         }
+        // Energy Storage Drives in the network's drive holders: pool capacity, drained and filled with the banks.
+        List<EnergyDrives.Cell> driveCells = driveCells(level.getServer(), runtime, new NetworkRef(level.dimension(), structure.id()));
+        long driveCapacity = 0;
+        for (EnergyDrives.Cell cell : driveCells) {
+            stored += cell.getStored();
+            driveCapacity += cell.getCapacity();
+        }
+        capacity += driveCapacity;
+        List<EnergyCell> cells = new ArrayList<>(banks);
+        cells.addAll(driveCells);
         runtime.received[runtime.receivedIndex] = received;
         runtime.receivedIndex = (runtime.receivedIndex + 1) % GENERATION_WINDOW;
         long window = 0;
@@ -501,10 +513,10 @@ public class ControllerStructures extends SavedData {
             List<UpsDevice> upses = upses(level.getServer(), runtime);
             int supply = capacity - stored <= toDrain ? Math.max(received, toDrain) : received;
             int fromUps = upses.isEmpty() ? 0 : UpsDevice.cover(upses, toDrain, supply, level.getGameTime());
-            stored -= drain(banks, buffers, toDrain - fromUps);
+            stored -= drain(cells, buffers, toDrain - fromUps);
             if (!upses.isEmpty() && fromUps == 0) {
                 long spare = Math.max(0, stored - capacity / 2);
-                int charge = drain(banks, buffers, UpsDevice.wantedCharge(upses, (int) Math.min(Integer.MAX_VALUE, spare)));
+                int charge = drain(cells, buffers, UpsDevice.wantedCharge(upses, (int) Math.min(Integer.MAX_VALUE, spare)));
                 UpsDevice.charge(upses, charge);
                 stored -= charge;
             }
@@ -532,6 +544,7 @@ public class ControllerStructures extends SavedData {
         runtime.stored = stored;
         runtime.capacity = capacity;
         runtime.usage = usage;
+        drivesTicked(runtime, driveCells, driveCapacity);
         runtime.generation = (double) window / GENERATION_WINDOW;
 
         if (rack != null) {
@@ -745,10 +758,10 @@ public class ControllerStructures extends SavedData {
         return text.append(pos.getX() + "," + pos.getY() + "," + pos.getZ() + " " + unit);
     }
 
-    // Takes up to amount FE out of a network's banks, then its controllers; returns what it got.
-    private static int drain(List<CapacitorBankBlockEntity> banks, List<ControllerBuffer> controllers, int amount) {
+    // Takes up to amount FE out of a network's banks and Energy Storage Drives, then its controllers; returns what it got.
+    private static int drain(List<? extends EnergyCell> banks, List<ControllerBuffer> controllers, int amount) {
         int left = amount;
-        for (CapacitorBankBlockEntity bank : banks) {
+        for (EnergyCell bank : banks) {
             if (left <= 0) {
                 break;
             }
@@ -829,6 +842,61 @@ public class ControllerStructures extends SavedData {
         runtime.relays = List.copyOf(relays);
         runtime.racks = List.copyOf(racks);
         index.racks.addAll(racks);
+    }
+
+    // A network's Capacitor Banks, then the Energy Storage Drives in its drive holders: its energy besides the controllers.
+    private static List<EnergyCell> cells(MinecraftServer server, Owner owner) {
+        List<EnergyCell> cells = new ArrayList<>(banks(server, owner.runtime));
+        cells.addAll(driveCells(server, owner.runtime, owner.ref));
+        return cells;
+    }
+
+    // The Energy Storage Drives in a network's Drive Bays and Disk Drives (whether or not those have their lanes: like
+    // banks, they keep the network powered) and in the rack storage devices serving it.
+    private static List<EnergyDrives.Cell> driveCells(MinecraftServer server, Runtime runtime, NetworkRef ref) {
+        List<EnergyDrives.Cell> cells = new ArrayList<>();
+        Set<UUID> seen = new HashSet<>();
+        for (NodePos pos : runtime.driveBays) {
+            if (blockEntity(server, pos) instanceof DriveHolder bay) {
+                for (int slot = 0; slot < bay.driveSlots(); slot++) {
+                    ItemStack stack = bay.drive(slot);
+                    if (stack != null && EnergyDrives.is(stack) && seen.add(StorageDriveItem.id(stack))) {
+                        int changed = slot;
+                        cells.add(new EnergyDrives.Cell(stack, () -> bay.driveChanged(changed)));
+                    }
+                }
+            }
+        }
+        for (RackDevice device : rackDevicesServing(server, ref)) {
+            if (device instanceof StorageDevice storage) {
+                cells.addAll(storage.energyCells(seen));
+            }
+        }
+        return cells;
+    }
+
+    // After a tick's energy: the drives' share of it, and which drives are charging (their lights).
+    private static void drivesTicked(Runtime runtime, List<EnergyDrives.Cell> cells, long capacity) {
+        Map<UUID, Long> charge = new HashMap<>();
+        long stored = 0;
+        for (EnergyDrives.Cell cell : cells) {
+            long now = cell.getStored();
+            stored += now;
+            UUID id = cell.id();
+            if (id != null) {
+                Long before = runtime.driveCharge.get(id);
+                charge.put(id, now);
+                cell.charging(before != null && now > before);
+            }
+        }
+        for (UUID gone : runtime.driveCharge.keySet()) {
+            if (!charge.containsKey(gone)) {
+                EnergyDrives.forget(gone);
+            }
+        }
+        runtime.driveCharge = charge;
+        runtime.driveStored = stored;
+        runtime.driveCapacity = capacity;
     }
 
     private static List<CapacitorBankBlockEntity> banks(MinecraftServer server, Runtime runtime) {
@@ -1007,8 +1075,9 @@ public class ControllerStructures extends SavedData {
             if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveHolder bay) {
                 for (int slot = 0; slot < bay.driveSlots(); slot++) {
                     ItemStack stack = bay.drive(slot);
-                    if (stack != null && stack.getItem() instanceof StorageDriveItem drive && seen.add(StorageDriveItem.id(stack))) {
-                        views.add(new DriveView(drives, bay, slot, StorageDriveItem.id(stack), drive.getTier()));
+                    if (stack != null && stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY
+                            && seen.add(StorageDriveItem.id(stack))) {
+                        views.add(new DriveView(drives, bay, slot, StorageDriveItem.id(stack), drive.getTier(), drive.getType()));
                     }
                 }
             }
@@ -1476,7 +1545,7 @@ public class ControllerStructures extends SavedData {
         if (owner == null || owner.runtime.status != NetworkStatus.ONLINE || amount <= 0) {
             return 0;
         }
-        return drain(banks(server, owner.runtime), buffers(owner), amount);
+        return drain(cells(server, owner), buffers(owner), amount);
     }
 
     // The same, but never taking the network's stored energy below reserve (a share of its capacity): for energy given
@@ -1486,14 +1555,14 @@ public class ControllerStructures extends SavedData {
         if (owner == null || owner.runtime.status != NetworkStatus.ONLINE || amount <= 0) {
             return 0;
         }
-        List<CapacitorBankBlockEntity> banks = banks(server, owner.runtime);
+        List<EnergyCell> banks = cells(server, owner);
         List<ControllerBuffer> buffers = buffers(owner);
         long stored = 0, capacity = 0;
         for (ControllerBuffer buffer : buffers) {
             stored += buffer.getEnergy();
             capacity += buffer.getCapacity();
         }
-        for (CapacitorBankBlockEntity bank : banks) {
+        for (EnergyCell bank : banks) {
             stored += bank.getStored();
             capacity += bank.getCapacity();
         }
@@ -1509,7 +1578,8 @@ public class ControllerStructures extends SavedData {
         return networkOf(level, pos);
     }
 
-    // Puts up to amount FE into a network's energy: its controllers first, then its banks. Returns what went in.
+    // Puts up to amount FE into a network's energy: its controllers first, then its banks and Energy Storage Drives.
+    // Returns what went in.
     public static int fill(MinecraftServer server, NetworkRef network, int amount, TransactionContext transaction) {
         Owner owner = owner(server, network);
         if (owner == null || owner.runtime.status.isError()) {
@@ -1522,7 +1592,7 @@ public class ControllerStructures extends SavedData {
             }
             left -= controller.fill(left, transaction);
         }
-        for (CapacitorBankBlockEntity bank : banks(server, owner.runtime)) {
+        for (EnergyCell bank : cells(server, owner)) {
             if (left <= 0) {
                 break;
             }
@@ -1637,7 +1707,7 @@ public class ControllerStructures extends SavedData {
         }
         devices.sort(Comparator.comparingInt(NetworkSnapshot.DeviceEntry::count).reversed()
                 .thenComparing(entry -> entry.item().toString()));
-        return new NetworkSnapshot(runtime.status, runtime.stored, runtime.capacity, runtime.usage, runtime.generation,
+        return new NetworkSnapshot(runtime.status, runtime.stored, runtime.capacity, runtime.driveStored, runtime.driveCapacity, runtime.usage, runtime.generation,
                 lanes != null ? lanes.used() : 0, lanes != null ? lanes.capacity() : 0,
                 max.getX() - min.getX() + 1, max.getY() - min.getY() + 1, max.getZ() - min.getZ() + 1, structure.members().size(),
                 devices);
@@ -1677,6 +1747,9 @@ public class ControllerStructures extends SavedData {
         double drainCarry;
         NetworkStatus status = NetworkStatus.NO_POWER;
         long stored, capacity;
+        // The part of it in Energy Storage Drives; and each drive's charge as of the last tick, for its charging light.
+        long driveStored, driveCapacity;
+        Map<UUID, Long> driveCharge = new HashMap<>();
         double usage, generation;
         int comparator = -1;
         // Counted for Monitoring Servers: items moved in or out of storage, crafting jobs finished.

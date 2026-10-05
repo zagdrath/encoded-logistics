@@ -30,7 +30,7 @@ import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
 import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.elcl.sync.FolderSync;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 
@@ -86,8 +86,8 @@ final class DatabaseGameTests {
                     rig[0] = new Rig(context, new ElclSystem(context.server(), context.network()));
                     ElclServices.jobs().interactive(rig[0].system(), context.user(), "db", "ELDESK01");
                     NetworkStorage storage = RackGameTests.storage(helper, ElclGameTests.BAY);
-                    storage.insert(ItemKey.of(new ItemStack(Items.COBBLESTONE)), 64, false);
-                    storage.insert(ItemKey.of(new ItemStack(Items.IRON_INGOT)), 10, false);
+                    storage.insert(StorageKey.of(new ItemStack(Items.COBBLESTONE)), 64, false);
+                    storage.insert(StorageKey.of(new ItemStack(Items.IRON_INGOT)), 10, false);
                 });
         body.accept(helper, sequence, rig);
         sequence.thenSucceed();
@@ -321,7 +321,7 @@ final class DatabaseGameTests {
                     program(r, "DBLIB", "COUNTS", "PGM", "DCLF FILE(ELSYS/INVITEMS)", "DCL VAR(&N) TYPE(*INT)",
                             "DOWHILE COND('1')", "RCVF", "MONMSG MSGID(ELC2201) EXEC(LEAVE)", "CHGVAR VAR(&N) VALUE(&N + &HOT + &COLD)", "ENDDO",
                             "SNDMSG MSG('Items' *BCAT %CHAR(&N)) TOUSR(*REQUESTER)", "ENDPGM");
-                    RackGameTests.storage(h, ElclGameTests.BAY).insert(ItemKey.of(new ItemStack(Items.COBBLESTONE)), 6, false);
+                    RackGameTests.storage(h, ElclGameTests.BAY).insert(StorageKey.of(new ItemStack(Items.COBBLESTONE)), 6, false);
                     ElclGameTests.expect(h, r.context(), "CALL PGM(DBLIB/COUNTS)", "ELC0108");
                 })
                 // Live: the six more are there now.
@@ -432,7 +432,7 @@ final class DatabaseGameTests {
             // Storage full: no more records.
             try {
                 files.clear(r.system(), r.user(), "DBLIB", "TINY");
-                RackGameTests.storage(h, ElclGameTests.BAY).insert(ItemKey.of(new ItemStack(Items.COBBLESTONE)), Long.MAX_VALUE / 4, false);
+                RackGameTests.storage(h, ElclGameTests.BAY).insert(StorageKey.of(new ItemStack(Items.COBBLESTONE)), Long.MAX_VALUE / 4, false);
                 files.add(r.system(), r.who(), "DBLIB", "TINY", rows.subList(0, 640), false);
                 h.fail("Records written with storage full");
             } catch (ElclException e) {

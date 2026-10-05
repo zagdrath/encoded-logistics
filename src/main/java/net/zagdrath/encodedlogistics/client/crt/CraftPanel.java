@@ -10,7 +10,7 @@ import java.util.Locale;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalItems;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
@@ -23,11 +23,11 @@ final class CraftPanel extends CrtPanel {
     private int planTimer;
     private boolean sent;
 
-    CraftPanel(CrtTerminal screen, ItemKey key) {
+    CraftPanel(CrtTerminal screen, StorageKey key) {
         this(screen, key, 1);
     }
 
-    CraftPanel(CrtTerminal screen, ItemKey key, long amount) {
+    CraftPanel(CrtTerminal screen, StorageKey key, long amount) {
         this(screen, BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString(), amount);
     }
 

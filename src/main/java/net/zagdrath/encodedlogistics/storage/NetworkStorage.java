@@ -13,13 +13,17 @@ import java.util.Map;
 import java.util.function.LongConsumer;
 
 import net.minecraft.network.chat.Component;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 
 // A network's storage as its parts see it: every drive in its online Drive Bays (and NAS / SAN devices) and every
 // inventory its online Inventory Taps face - the hot tier. Items go in by priority (highest first; drives before taps
 // on a tie), and within a priority to the places already holding that item first; they come out lowest priority first
 // (taps before drives on a tie).
 //
-// Behind it, the cold tier (ColdTier: tapes in Tape Libraries). list() and count() are hot only; taking more of an item
+// It holds every keyed resource type (ResourceType.KEYED): items, fluids and pressurized gases, each in the drives and
+// taps that take it, through the same paths. Energy is the network's energy pool, not storage.
+//
+// Behind it, the cold tier (ColdTier: tapes in Tape Libraries; items only). list() and count() are hot only; taking more of an item
 // than is hot asks for the rest of it (what's on tape) to be recalled, and it can be taken once it's back.
 //
 // Crafting jobs waiting for outputs get first claim on items coming in (Claim): whatever path they arrive by (a Gateway, an
@@ -31,12 +35,12 @@ public final class NetworkStorage {
     public interface Claim {
         Claim NONE = (key, amount, simulate) -> 0;
 
-        long claim(ItemKey key, long amount, boolean simulate);
+        long claim(StorageKey key, long amount, boolean simulate);
     }
 
     private final List<StorageView> fillOrder, emptyOrder;
     private final Claim claim;
-    // Told how many items really went in or came out (not simulations): the network's item flow.
+    // Told how many items really went in or came out (not simulations; not fluids or gases): the network's item flow.
     private final LongConsumer moved;
     private final ColdTier cold;
 
@@ -65,15 +69,22 @@ public final class NetworkStorage {
     }
 
     // Everything stored hot, added up.
-    public Map<ItemKey, Long> list() {
-        Map<ItemKey, Long> all = new LinkedHashMap<>();
+    public Map<StorageKey, Long> list() {
+        Map<StorageKey, Long> all = new LinkedHashMap<>();
         for (StorageView view : fillOrder) {
             view.listInto(all);
         }
         return all;
     }
 
-    public long count(ItemKey key) {
+    // Everything of one type stored hot.
+    public Map<StorageKey, Long> list(ResourceType type) {
+        Map<StorageKey, Long> all = list();
+        all.keySet().removeIf(key -> !key.is(type));
+        return all;
+    }
+
+    public long count(StorageKey key) {
         long count = 0;
         for (StorageView view : fillOrder) {
             count += view.count(key);
@@ -84,13 +95,13 @@ public final class NetworkStorage {
     // How much of each item is shared in (SharedView), and from where (the first place sharing it).
     public record Shared(long count, Component from) {}
 
-    public Map<ItemKey, Shared> shared() {
-        Map<ItemKey, Shared> all = new LinkedHashMap<>();
+    public Map<StorageKey, Shared> shared() {
+        Map<StorageKey, Shared> all = new LinkedHashMap<>();
         for (StorageView view : fillOrder) {
             if (!view.isShared()) {
                 continue;
             }
-            Map<ItemKey, Long> mine = new LinkedHashMap<>();
+            Map<StorageKey, Long> mine = new LinkedHashMap<>();
             view.listInto(mine);
             mine.forEach((key, count) -> all.merge(key, new Shared(count, view.sharedFrom()), (a, b) -> new Shared(a.count() + b.count(), a.from())));
         }
@@ -109,15 +120,15 @@ public final class NetworkStorage {
     }
 
     // Everything on tape, added up.
-    public Map<ItemKey, Long> coldList() {
-        Map<ItemKey, Long> all = new LinkedHashMap<>();
+    public Map<StorageKey, Long> coldList() {
+        Map<StorageKey, Long> all = new LinkedHashMap<>();
         cold.listInto(all);
         return all;
     }
 
     // Hot and cold, added up (what terminals show).
-    public Map<ItemKey, Long> listAll() {
-        Map<ItemKey, Long> all = list();
+    public Map<StorageKey, Long> listAll() {
+        Map<StorageKey, Long> all = list();
         cold.listInto(all);
         return all;
     }
@@ -125,13 +136,17 @@ public final class NetworkStorage {
     // --- Moving items ---
 
     // Puts up to amount of an item into the network (waiting jobs taking what they expect first); returns how many went in.
-    public long insert(ItemKey key, long amount, boolean simulate) {
+    public long insert(StorageKey key, long amount, boolean simulate) {
         long claimed = amount > 0 ? Math.min(amount, claim.claim(key, amount, simulate)) : 0;
         return claimed + store(key, amount - claimed, simulate);
     }
 
     // Puts up to amount of an item into storage itself, with no job claiming any; returns how many went in.
-    public long store(ItemKey key, long amount, boolean simulate) {
+    public long store(StorageKey key, long amount, boolean simulate) {
+        if (amount <= 0 || key.isItem() && key.stack().getItem() instanceof ResourceEntryItem) {
+            // A Resource Entry only ever stands for a fluid or gas; it's never stored as an item.
+            return 0;
+        }
         long left = amount;
         int start = 0;
         while (start < fillOrder.size() && left > 0) {
@@ -155,7 +170,7 @@ public final class NetworkStorage {
             }
             start = end;
         }
-        if (!simulate && amount - left > 0) {
+        if (!simulate && amount - left > 0 && key.isItem()) {
             moved.accept(amount - left);
         }
         return amount - left;
@@ -163,7 +178,7 @@ public final class NetworkStorage {
 
     // Takes up to amount of an item out of the network; returns how many came out. What hot storage is short of is
     // recalled from tape, if any is there (not for a simulation).
-    public long extract(ItemKey key, long amount, boolean simulate) {
+    public long extract(StorageKey key, long amount, boolean simulate) {
         long left = amount;
         for (StorageView view : emptyOrder) {
             if (left <= 0) {
@@ -171,10 +186,10 @@ public final class NetworkStorage {
             }
             left -= view.extract(key, left, simulate);
         }
-        if (!simulate && amount - left > 0) {
+        if (!simulate && amount - left > 0 && key.isItem()) {
             moved.accept(amount - left);
         }
-        if (!simulate && left > 0) {
+        if (!simulate && left > 0 && key.isItem()) {
             long onTape = cold.count(key);
             if (onTape > 0) {
                 cold.recall(key, Math.min(left, onTape));
@@ -185,11 +200,11 @@ public final class NetworkStorage {
 
     // --- The drives (what archiving works on) ---
 
-    // Everything the drives hold (not the taps' inventories).
-    public Map<ItemKey, Long> driveContents() {
-        Map<ItemKey, Long> all = new LinkedHashMap<>();
+    // Everything the item drives hold (not the taps' inventories, nor fluid or pressurized drives).
+    public Map<StorageKey, Long> driveContents() {
+        Map<StorageKey, Long> all = new LinkedHashMap<>();
         for (StorageView view : fillOrder) {
-            if (view.driveId() != null) {
+            if (view.driveId() != null && view.driveType() == ResourceType.ITEM) {
                 view.listInto(all);
             }
         }
@@ -197,7 +212,7 @@ public final class NetworkStorage {
     }
 
     // The tick an item was last put into or taken out of any drive holding it, or -1 when none does.
-    public long lastAccess(ItemKey key) {
+    public long lastAccess(StorageKey key) {
         long last = -1;
         for (StorageView view : fillOrder) {
             if (view.driveId() != null) {
@@ -208,7 +223,7 @@ public final class NetworkStorage {
     }
 
     // Takes up to amount of an item out of the drives only (archiving; no recall); returns how many came out.
-    public long extractFromDrives(ItemKey key, long amount, boolean simulate) {
+    public long extractFromDrives(StorageKey key, long amount, boolean simulate) {
         long left = amount;
         for (StorageView view : emptyOrder) {
             if (left <= 0) {
@@ -221,18 +236,23 @@ public final class NetworkStorage {
         return amount - left;
     }
 
-    // How full the drives are, 0-1, by bytes (0 with no drives).
+    // How full the item drives are, 0-1, by bytes (0 with no drives): what archiving to tape goes by.
     public double hotFill() {
         long[] bytes = hotBytes();
         return bytes[1] <= 0 ? 0 : (double) bytes[0] / bytes[1];
     }
 
-    // The drives' bytes used and in all.
+    // The item drives' bytes used and in all.
     public long[] hotBytes() {
+        return hotBytes(ResourceType.ITEM);
+    }
+
+    // The bytes used and in all of the drives of one type.
+    public long[] hotBytes(ResourceType type) {
         long used = 0, total = 0;
         for (StorageView view : fillOrder) {
             DriveStats stats = view.stats();
-            if (stats != null) {
+            if (stats != null && view.driveType() == type) {
                 used += stats.bytesUsed();
                 total += stats.bytesTotal();
             }

@@ -68,6 +68,9 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("lithography_press_etches", Phase1GameTests::lithographyPressEtches);
         TESTS.put("drive_storage", Phase1GameTests::driveStorage);
         TESTS.put("access_terminals", Phase1GameTests::terminals);
+        TESTS.put("typed_drives", TypedStorageGameTests::typedDrives);
+        TESTS.put("storage_key_codecs", TypedStorageGameTests::keyCodecs);
+        TESTS.put("energy_drives", TypedStorageGameTests::energyDrives);
         TESTS.put("ingress_port", Phase2GameTests::ingressPort);
         TESTS.put("egress_port", Phase2GameTests::egressPort);
         TESTS.put("inventory_tap", Phase2GameTests::inventoryTap);

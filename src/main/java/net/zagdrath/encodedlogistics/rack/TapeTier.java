@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.zagdrath.encodedlogistics.storage.ColdTier;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A network's cold tier: the tapes in its online Tape Libraries and the reels on its Tape Drives (TapeSource; each tape
 // once, as with copied drives), and its recall queue. A recall's time is guessed from where it is in the queue, the
@@ -47,24 +47,24 @@ public final class TapeTier implements ColdTier {
     }
 
     @Override
-    public void listInto(Map<ItemKey, Long> all) {
+    public void listInto(Map<StorageKey, Long> all) {
         forEachTape(tape -> data.contents(tape).forEach((key, count) -> all.merge(key, count, Long::sum)));
     }
 
     @Override
-    public long count(ItemKey key) {
+    public long count(StorageKey key) {
         long[] count = { 0 };
         forEachTape(tape -> count[0] += data.count(tape, key));
         return count[0];
     }
 
     @Override
-    public void recall(ItemKey key, long amount) {
+    public void recall(StorageKey key, long amount) {
         recalls.request(key, amount);
     }
 
     @Override
-    public int eta(ItemKey key) {
+    public int eta(StorageKey key) {
         TapeRecalls.Running running = recalls.running(key);
         if (running != null) {
             return running.ticksLeft();
@@ -92,7 +92,7 @@ public final class TapeTier implements ColdTier {
     }
 
     // The library or drive holding the most of an item, or null.
-    public @Nullable TapeSource holder(ItemKey key) {
+    public @Nullable TapeSource holder(StorageKey key) {
         TapeSource best = null;
         long most = 0;
         for (TapeSource library : libraries) {
@@ -109,7 +109,7 @@ public final class TapeTier implements ColdTier {
     }
 
     @Override
-    public int progress(ItemKey key) {
+    public int progress(StorageKey key) {
         TapeRecalls.Running running = recalls.running(key);
         if (running != null) {
             return running.progress();
@@ -118,7 +118,7 @@ public final class TapeTier implements ColdTier {
     }
 
     @Override
-    public boolean hotFull(ItemKey key) {
+    public boolean hotFull(StorageKey key) {
         return recalls.hotFull(key);
     }
 }

@@ -43,7 +43,7 @@ import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Collector Plane: breaks the block in front of it as an iron pickaxe would - hardness x collectorTicksPerHardness
@@ -116,7 +116,7 @@ public class CollectorPlanePart extends PlanePart {
             if (!passes(stack)) {
                 continue;
             }
-            int stored = (int) storage.insert(ItemKey.of(stack), stack.getCount(), false);
+            int stored = (int) storage.insert(StorageKey.of(stack), stack.getCount(), false);
             if (stored > 0) {
                 collected = true;
                 ItemStack left = stack.copyWithCount(stack.getCount() - stored);
@@ -155,16 +155,16 @@ public class CollectorPlanePart extends PlanePart {
         player.setItemInHand(InteractionHand.MAIN_HAND, TOOL.copy());
         List<ItemStack> drops = Block.getDrops(state, level, target, level.getBlockEntity(target), player, TOOL);
         // Everything it drops has to pass, and fit; otherwise it waits.
-        Map<ItemKey, Long> totals = new HashMap<>();
+        Map<StorageKey, Long> totals = new HashMap<>();
         for (ItemStack drop : drops) {
             if (!drop.isEmpty()) {
                 if (!passes(drop)) {
                     return;
                 }
-                totals.merge(ItemKey.of(drop), (long) drop.getCount(), Long::sum);
+                totals.merge(StorageKey.of(drop), (long) drop.getCount(), Long::sum);
             }
         }
-        for (Map.Entry<ItemKey, Long> total : totals.entrySet()) {
+        for (Map.Entry<StorageKey, Long> total : totals.entrySet()) {
             if (storage.insert(total.getKey(), total.getValue(), true) < total.getValue()) {
                 return;
             }
@@ -179,7 +179,7 @@ public class CollectorPlanePart extends PlanePart {
             if (drop.isEmpty()) {
                 continue;
             }
-            int stored = (int) storage.insert(ItemKey.of(drop), drop.getCount(), false);
+            int stored = (int) storage.insert(StorageKey.of(drop), drop.getCount(), false);
             if (stored < drop.getCount()) {
                 Block.popResource(level, target, drop.copyWithCount(drop.getCount() - stored));
             }

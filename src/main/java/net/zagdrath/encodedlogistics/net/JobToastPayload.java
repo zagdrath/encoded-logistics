@@ -12,17 +12,17 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.JobToasts;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Server to client: a crafting job ended (JobEvents) - what it made and how many, how it ended (JobEvents.Outcome), from a
 // Processing Schematic or crafting, why it failed (a reason key, or empty), how long it ran (ticks), and whether the
 // player asked for it. The client decides whether to show a toast (JobToasts).
-public record JobToastPayload(ItemKey item, long amount, int outcome, boolean processing, String reason, long duration, boolean mine)
+public record JobToastPayload(StorageKey item, long amount, int outcome, boolean processing, String reason, long duration, boolean mine)
         implements CustomPacketPayload {
     public static final Type<JobToastPayload> TYPE = new Type<>(EncodedLogistics.id("job_toast"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, JobToastPayload> STREAM_CODEC = StreamCodec.composite(
-            ItemKey.STREAM_CODEC, JobToastPayload::item,
+            StorageKey.STREAM_CODEC, JobToastPayload::item,
             ByteBufCodecs.VAR_LONG, JobToastPayload::amount,
             ByteBufCodecs.VAR_INT, JobToastPayload::outcome,
             ByteBufCodecs.BOOL, JobToastPayload::processing,

@@ -27,7 +27,7 @@ import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
 import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
@@ -38,7 +38,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // way its outputs came back; what it keeps across a save and load, CRFLOGRTN; RTVCRFSTS and RTVCRFLOG on it; and the
 // queries Work with Jobs' history view asks.
 final class CraftHistoryGameTests {
-    private static final ItemKey GOLD = ItemKey.of(new ItemStack(Items.GOLD_INGOT));
+    private static final StorageKey GOLD = StorageKey.of(new ItemStack(Items.GOLD_INGOT));
 
     private CraftHistoryGameTests() {}
 
@@ -144,7 +144,7 @@ final class CraftHistoryGameTests {
     }
 
     // A job that ended, straight to the history (as a Scheduler reports it).
-    private static UUID ended(GameTestHelper helper, BlockPos master, ItemKey item, JobEvents.Outcome outcome) {
+    private static UUID ended(GameTestHelper helper, BlockPos master, StorageKey item, JobEvents.Outcome outcome) {
         CraftingJob job = new CraftingJob(UUID.randomUUID(), item, 4, 0, List.of());
         job.user = "ZAGDRATH";
         JobHost host = CraftingCompletionGameTests.scheduler(helper, master);

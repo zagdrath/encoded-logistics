@@ -20,7 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // Runs a job host's jobs (JobHost). Each job holds the items it took from storage from the moment it's accepted (and
@@ -134,7 +134,7 @@ public final class JobRunner {
         }
         boolean changed = false;
         for (CraftingJob job : jobs) {
-            for (ItemKey key : List.copyOf(job.awaiting.keySet())) {
+            for (StorageKey key : List.copyOf(job.awaiting.keySet())) {
                 long want = job.awaiting.get(key);
                 long taken = storage.extract(key, want, false);
                 if (taken > 0) {
@@ -188,7 +188,7 @@ public final class JobRunner {
         if (job.returned == null) {
             job.returned = new java.util.LinkedHashMap<>(job.held);
         }
-        for (ItemKey key : List.copyOf(job.held.keySet())) {
+        for (StorageKey key : List.copyOf(job.held.keySet())) {
             long count = job.held.get(key);
             long stored = storage.store(key, count, false);
             if (stored >= count) {
@@ -232,7 +232,7 @@ public final class JobRunner {
             }
             ItemStack left = stack.copy();
             if (storage != null) {
-                left.shrink((int) storage.store(ItemKey.of(left), left.getCount(), false));
+                left.shrink((int) storage.store(StorageKey.of(left), left.getCount(), false));
             }
             if (!left.isEmpty()) {
                 Block.popResource(level, pos, left);

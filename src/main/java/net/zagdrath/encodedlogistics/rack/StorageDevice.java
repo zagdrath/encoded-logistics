@@ -26,7 +26,9 @@ import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.storage.StorageView;
 
@@ -102,14 +104,30 @@ public abstract class StorageDevice extends RackDevice {
         DriveStorage data = DriveStorage.get(server);
         for (int slot = 0; slot < drives(); slot++) {
             ItemStack stack = items().get(slot);
-            if (stack.getItem() instanceof StorageDriveItem drive) {
+            if (stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY) {
                 UUID id = assignId(stack);
                 if (seen.add(id)) {
-                    views.add(new DriveView(data, slot, id, drive.getTier()));
+                    views.add(new DriveView(data, slot, id, drive.getTier(), drive.getType()));
                 }
             }
         }
         return views;
+    }
+
+    // Its Energy Storage Drives, as part of its network's energy pool (when it's ready), skipping ids in seen.
+    public List<EnergyDrives.Cell> energyCells(Set<UUID> seen) {
+        List<EnergyDrives.Cell> cells = new ArrayList<>();
+        if (!ready()) {
+            return cells;
+        }
+        for (int slot = 0; slot < drives(); slot++) {
+            ItemStack stack = items().get(slot);
+            if (EnergyDrives.is(stack) && seen.add(assignId(stack))) {
+                int changed = slot;
+                cells.add(new EnergyDrives.Cell(stack, () -> driveChanged(changed)));
+            }
+        }
+        return cells;
     }
 
     private static UUID assignId(ItemStack stack) {
@@ -123,13 +141,7 @@ public abstract class StorageDevice extends RackDevice {
 
     // A drive's stats, refreshed from DriveStorage.
     private void refresh(MinecraftServer server, int slot) {
-        ItemStack stack = items().get(slot);
-        if (stack.getItem() instanceof StorageDriveItem drive) {
-            DriveStats stats = DriveStorage.get(server).stats(assignId(stack), drive.getTier());
-            if (!stats.equals(stack.get(ModDataComponents.DRIVE_STATS.get()))) {
-                stack.set(ModDataComponents.DRIVE_STATS.get(), stats);
-            }
-        }
+        StorageDriveItem.refresh(server, items().get(slot));
     }
 
     private void driveChanged(int slot) {
@@ -150,12 +162,12 @@ public abstract class StorageDevice extends RackDevice {
         changed(true);
     }
 
-    // Bytes used and in all, over its drives.
+    // Bytes used and in all, over its storage drives (not Energy Storage Drives).
     public long[] capacity() {
         long used = 0, total = 0;
         for (int slot = 0; slot < drives(); slot++) {
             ItemStack stack = items().get(slot);
-            if (stack.getItem() instanceof StorageDriveItem) {
+            if (stack.getItem() instanceof StorageDriveItem && !EnergyDrives.is(stack)) {
                 DriveStats stats = StorageDriveItem.stats(stack);
                 used += stats.bytesUsed();
                 total += stats.bytesTotal();
@@ -246,9 +258,7 @@ public abstract class StorageDevice extends RackDevice {
     public void writeClient(ValueOutput output) {
         int[] bays = new int[drives()];
         for (int slot = 0; slot < drives(); slot++) {
-            ItemStack stack = items().get(slot);
-            bays[slot] = stack.getItem() instanceof StorageDriveItem drive
-                    ? drive.getTier().ordinal() * 8 + (ready() ? StorageDriveItem.stats(stack).light() : LIGHT_OFF) : -1;
+            bays[slot] = StorageDriveItem.sledCode(items().get(slot), ready());
         }
         output.putIntArray("bays", bays);
     }
@@ -258,7 +268,7 @@ public abstract class StorageDevice extends RackDevice {
         shownBays = input.getIntArray("bays").orElse(new int[0]);
     }
 
-    // Client: a bay's tier ordinal * 8 + light, or -1.
+    // Client: a bay's drive as StorageDriveItem.sledCode has it, or -1.
     public int shownBay(int bay) {
         return bay < shownBays.length ? shownBays[bay] : -1;
     }
@@ -269,12 +279,19 @@ public abstract class StorageDevice extends RackDevice {
         private final int slot;
         private final UUID id;
         private final StorageTier tier;
+        private final ResourceType type;
 
-        DriveView(DriveStorage data, int slot, UUID id, StorageTier tier) {
+        DriveView(DriveStorage data, int slot, UUID id, StorageTier tier, ResourceType type) {
             this.data = data;
             this.slot = slot;
             this.id = id;
             this.tier = tier;
+            this.type = type;
+        }
+
+        @Override
+        public ResourceType driveType() {
+            return type;
         }
 
         @Override
@@ -288,21 +305,21 @@ public abstract class StorageDevice extends RackDevice {
         }
 
         @Override
-        public void listInto(Map<ItemKey, Long> all) {
+        public void listInto(Map<StorageKey, Long> all) {
             data.contents(id).forEach((key, count) -> all.merge(key, count, Long::sum));
         }
 
         @Override
-        public long count(ItemKey key) {
+        public long count(StorageKey key) {
             return data.count(id, key);
         }
 
         @Override
-        public long insert(ItemKey key, long amount, boolean simulate) {
+        public long insert(StorageKey key, long amount, boolean simulate) {
             if (access == READ) {
                 return 0;
             }
-            long accepted = data.insert(id, tier, key, amount, simulate);
+            long accepted = data.insert(id, tier, type, key, amount, simulate);
             if (accepted > 0 && !simulate) {
                 driveChanged(slot);
             }
@@ -315,17 +332,17 @@ public abstract class StorageDevice extends RackDevice {
         }
 
         @Override
-        public long lastAccess(ItemKey key) {
+        public long lastAccess(StorageKey key) {
             return data.lastAccess(id, key);
         }
 
         @Override
         public DriveStats stats() {
-            return data.stats(id, tier);
+            return data.stats(id, tier, type);
         }
 
         @Override
-        public long extract(ItemKey key, long amount, boolean simulate) {
+        public long extract(StorageKey key, long amount, boolean simulate) {
             if (access == WRITE) {
                 return 0;
             }

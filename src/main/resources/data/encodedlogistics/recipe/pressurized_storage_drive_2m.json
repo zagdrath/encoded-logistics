@@ -1,0 +1,19 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "IGI",
+  "TDT",
+  "III"
+ ],
+ "key": {
+  "I": "minecraft:iron_ingot",
+  "G": "minecraft:glass",
+  "T": "encodedlogistics:tantalum_ingot",
+  "D": "encodedlogistics:storage_die_2m"
+ },
+ "result": {
+  "id": "encodedlogistics:pressurized_storage_drive_2m",
+  "count": 1
+ }
+}

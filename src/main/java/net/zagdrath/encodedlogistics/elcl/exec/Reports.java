@@ -33,7 +33,7 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.TapeSource;
 import net.zagdrath.encodedlogistics.rack.TapeTier;
 import net.zagdrath.encodedlogistics.storage.DriveView;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageView;
 
@@ -78,8 +78,8 @@ public final class Reports {
         Map<Item, Long> hot = ElclItems.totals(storage, "*HOT"), cold = ElclItems.totals(storage, "*COLD");
         List<Item> items = new ArrayList<>(ElclItems.totals(storage, "*ALL").keySet());
         items.sort(Comparator.comparing(Reports::itemName));
-        Map<Item, List<ItemKey>> keys = new HashMap<>();
-        for (ItemKey key : storage.listAll().keySet()) {
+        Map<Item, List<StorageKey>> keys = new HashMap<>();
+        for (StorageKey key : storage.listAll().keySet()) {
             keys.computeIfAbsent(key.stack().getItem(), k -> new ArrayList<>()).add(key);
         }
         List<StorageView> views = storage.views();
@@ -101,11 +101,11 @@ public final class Reports {
     }
 
     // The device whose drive holds the most of an item in hot storage.
-    private static String hotLocation(List<StorageView> views, List<ElclDevices.Device> devices, List<ItemKey> keys) {
+    private static String hotLocation(List<StorageView> views, List<ElclDevices.Device> devices, List<StorageKey> keys) {
         Map<String, Long> by = new HashMap<>();
         for (StorageView view : views) {
             long count = 0;
-            for (ItemKey key : keys) {
+            for (StorageKey key : keys) {
                 count += view.count(key);
             }
             if (count > 0) {
@@ -125,9 +125,9 @@ public final class Reports {
     }
 
     // The Tape Library or Tape Drive holding an item.
-    private static String coldLocation(NetworkStorage storage, List<ElclDevices.Device> devices, List<ItemKey> keys) {
+    private static String coldLocation(NetworkStorage storage, List<ElclDevices.Device> devices, List<StorageKey> keys) {
         if (storage.cold() instanceof TapeTier tier) {
-            for (ItemKey key : keys) {
+            for (StorageKey key : keys) {
                 TapeSource source = tier.holder(key);
                 if (source instanceof TapeDriveBlockEntity drive) {
                     return drive.deviceName();

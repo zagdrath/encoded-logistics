@@ -37,7 +37,7 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.part.FabricationTerminalPart;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Fabrication Terminal: the Access Terminal's grid of network items, then a 3x3 crafting grid (the part's own items)
@@ -166,7 +166,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
         }
         for (int i = 0; i < 9; i++) {
             if (craftSlots.getItem(i).isEmpty() && !before[i].isEmpty()) {
-                ItemKey key = ItemKey.of(before[i]);
+                StorageKey key = StorageKey.of(before[i]);
                 if (storage.extract(key, 1, false) > 0) {
                     craftSlots.setItem(i, key.toStack(1));
                 }
@@ -197,7 +197,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
             ItemStack stack = slot.getItem();
             NetworkStorage storage = storageFor(RackPermission.INSERT);
             if (storage != null && !stack.isEmpty()) {
-                stack.shrink((int) storage.insert(ItemKey.of(stack), stack.getCount(), false));
+                stack.shrink((int) storage.insert(StorageKey.of(stack), stack.getCount(), false));
             }
             if (!stack.isEmpty()) {
                 moveItemStackTo(stack, 0, INVENTORY_SLOTS, true);
@@ -250,7 +250,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
                 continue;
             }
             if (storage != null) {
-                stack.shrink((int) storage.insert(ItemKey.of(stack), stack.getCount(), false));
+                stack.shrink((int) storage.insert(StorageKey.of(stack), stack.getCount(), false));
             }
             if (!stack.isEmpty() && !player.getInventory().add(stack)) {
                 Block.popResource(player.level(), player.blockPosition(), stack);
@@ -271,7 +271,7 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
                 if (option.isEmpty()) {
                     continue;
                 }
-                ItemKey key = ItemKey.of(option);
+                StorageKey key = StorageKey.of(option);
                 if (storage != null && storage.extract(key, 1, false) > 0) {
                     craftSlots.setItem(i, key.toStack(1));
                     break;

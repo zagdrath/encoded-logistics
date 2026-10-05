@@ -34,7 +34,7 @@ import net.zagdrath.encodedlogistics.part.PortPart;
 import net.zagdrath.encodedlogistics.part.ThresholdSensorPart;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -43,7 +43,7 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 final class Phase2GameTests {
     private static final BlockPos CONTROLLER = new BlockPos(0, 1, 0), CABLE = new BlockPos(1, 1, 0), BAY = new BlockPos(2, 1, 0),
             CHEST = new BlockPos(1, 1, 1);
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE)), STONE = ItemKey.of(new ItemStack(Items.STONE));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), STONE = StorageKey.of(new ItemStack(Items.STONE));
 
     private Phase2GameTests() {}
 

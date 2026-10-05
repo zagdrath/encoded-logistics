@@ -13,7 +13,7 @@ import net.zagdrath.encodedlogistics.client.screen.JobStatusScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.CraftPlanPayload;
 import net.zagdrath.encodedlogistics.net.JobStatusPayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The crafting request screens, opened over a terminal (whose menu stays open underneath): Craft Amount, then Craft Plan
 // once the server answers, then Job Status once the job starts. Each goes back to the terminal when closed. Called from
@@ -21,7 +21,7 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 public final class CraftingClient {
     private CraftingClient() {}
 
-    public static void openAmount(Screen terminal, AccessTerminalMenu menu, ItemKey key) {
+    public static void openAmount(Screen terminal, AccessTerminalMenu menu, StorageKey key) {
         Minecraft.getInstance().gui.setScreen(new CraftAmountScreen(terminal, menu, key));
     }
 

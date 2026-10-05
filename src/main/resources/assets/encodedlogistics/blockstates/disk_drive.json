@@ -10,6 +10,42 @@
   },
   {
    "when": {
+    "facing": "north",
+    "drive_type": "item"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_item"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "drive_type": "fluid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_fluid"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "drive_type": "pressurized"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_pressurized"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "drive_type": "energy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_energy"
+   }
+  },
+  {
+   "when": {
     "facing": "north"
    },
    "apply": {
@@ -31,6 +67,46 @@
    },
    "apply": {
     "model": "encodedlogistics:block/disk_drive/disk_drive",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "drive_type": "item"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_item",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "drive_type": "fluid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_fluid",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "drive_type": "pressurized"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_pressurized",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "drive_type": "energy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_energy",
     "y": 90
    }
   },
@@ -64,6 +140,46 @@
   },
   {
    "when": {
+    "facing": "south",
+    "drive_type": "item"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_item",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "drive_type": "fluid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_fluid",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "drive_type": "pressurized"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_pressurized",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "drive_type": "energy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_energy",
+    "y": 180
+   }
+  },
+  {
+   "when": {
     "facing": "south"
    },
    "apply": {
@@ -87,6 +203,46 @@
    },
    "apply": {
     "model": "encodedlogistics:block/disk_drive/disk_drive",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "drive_type": "item"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_item",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "drive_type": "fluid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_fluid",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "drive_type": "pressurized"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_pressurized",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "drive_type": "energy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_pack_energy",
     "y": 270
    }
   },

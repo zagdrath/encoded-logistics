@@ -48,7 +48,7 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
@@ -57,9 +57,9 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // whatever a test put round it.
 final class Phase3GameTests {
     private static final BlockPos CONTROLLER = new BlockPos(0, 1, 0), CABLE = new BlockPos(1, 1, 0), BAY = new BlockPos(2, 1, 0);
-    private static final ItemKey LOG = ItemKey.of(new ItemStack(Items.OAK_LOG)), PLANKS = ItemKey.of(new ItemStack(Items.OAK_PLANKS)),
-            RAW_IRON = ItemKey.of(new ItemStack(Items.RAW_IRON)), INGOT = ItemKey.of(new ItemStack(Items.IRON_INGOT)),
-            COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+    private static final StorageKey LOG = StorageKey.of(new ItemStack(Items.OAK_LOG)), PLANKS = StorageKey.of(new ItemStack(Items.OAK_PLANKS)),
+            RAW_IRON = StorageKey.of(new ItemStack(Items.RAW_IRON)), INGOT = StorageKey.of(new ItemStack(Items.IRON_INGOT)),
+            COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE));
 
     private Phase3GameTests() {}
 

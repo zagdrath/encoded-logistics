@@ -30,15 +30,15 @@ import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
 // Batch 3: Tape Libraries (archiving, recalling, cold items in plans), the Wireless Controller, the Rack Console, 6U
 // devices and tape upgrades.
 final class Rack3GameTests {
-    private static final ItemKey COBBLESTONE = ItemKey.of(new ItemStack(Items.COBBLESTONE)), DIRT = ItemKey.of(new ItemStack(Items.DIRT)),
-            LOG = ItemKey.of(new ItemStack(Items.OAK_LOG)), PLANKS = ItemKey.of(new ItemStack(Items.OAK_PLANKS));
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), DIRT = StorageKey.of(new ItemStack(Items.DIRT)),
+            LOG = StorageKey.of(new ItemStack(Items.OAK_LOG)), PLANKS = StorageKey.of(new ItemStack(Items.OAK_PLANKS));
     private static final BlockPos BAY = new BlockPos(1, 2, 1);
 
     private Rack3GameTests() {}

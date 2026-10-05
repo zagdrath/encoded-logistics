@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "encodedlogistics:item/pressurized_storage_drive_512k"
+ }
+}

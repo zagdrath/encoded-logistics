@@ -27,7 +27,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Ingress Port (pulls items from the inventory it faces into the network) and Egress Port (pushes items from the
@@ -212,7 +212,7 @@ public class PortPart extends CablePart {
             if (!filter.test(stack, options, true, fuzzy)) {
                 continue;
             }
-            ItemKey key = ItemKey.of(stack);
+            StorageKey key = StorageKey.of(stack);
             int fits = (int) storage.insert(key, Math.min(left, source.getAmountAsInt(slot)), true);
             if (fits <= 0) {
                 continue;
@@ -237,16 +237,16 @@ public class PortPart extends CablePart {
             return 0;
         }
         boolean options = hasFilterModule(), fuzzy = hasFuzzyModule();
-        List<ItemKey> candidates = new ArrayList<>();
-        Map<ItemKey, Long> stored = storage.list();
-        for (ItemKey key : stored.keySet()) {
+        List<StorageKey> candidates = new ArrayList<>();
+        Map<StorageKey, Long> stored = storage.list();
+        for (StorageKey key : stored.keySet()) {
             if (filter.test(key.stack(), options, false, fuzzy)) {
                 candidates.add(key);
             }
         }
         candidates.sort((a, b) -> a.stack().getItem().getDescriptionId().compareTo(b.stack().getItem().getDescriptionId()));
         for (int tried = 0; tried < candidates.size(); tried++) {
-            ItemKey key = candidates.get(Math.floorMod(roundRobin + tried, candidates.size()));
+            StorageKey key = candidates.get(Math.floorMod(roundRobin + tried, candidates.size()));
             int want = (int) Math.min(budget, stored.getOrDefault(key, 0L));
             ItemResource resource = ItemResource.of(key.stack());
             int room;

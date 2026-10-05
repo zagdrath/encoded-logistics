@@ -12,10 +12,11 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 
-// Everything the Network screen shows, as the server last saw it.
-public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, double usage, double generation,
-        int lanesUsed, int laneCapacity, int sizeX, int sizeY, int sizeZ, int blocks, List<DeviceEntry> devices) {
-    public static final NetworkSnapshot EMPTY = new NetworkSnapshot(NetworkStatus.NO_POWER, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, List.of());
+// Everything the Network screen shows, as the server last saw it. stored and capacity are the whole energy pool;
+// driveStored and driveCapacity the part of it in Energy Storage Drives.
+public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, long driveStored, long driveCapacity, double usage,
+        double generation, int lanesUsed, int laneCapacity, int sizeX, int sizeY, int sizeZ, int blocks, List<DeviceEntry> devices) {
+    public static final NetworkSnapshot EMPTY = new NetworkSnapshot(NetworkStatus.NO_POWER, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, List.of());
 
     // One type of device on the network (grouped by item): how many, their total drain, and how many of them are
     // missing a lane. unpowered: the whole network is offline.
@@ -44,6 +45,8 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                 buf.writeVarInt(snapshot.status.ordinal());
                 buf.writeVarLong(snapshot.stored);
                 buf.writeVarLong(snapshot.capacity);
+                buf.writeVarLong(snapshot.driveStored);
+                buf.writeVarLong(snapshot.driveCapacity);
                 buf.writeDouble(snapshot.usage);
                 buf.writeDouble(snapshot.generation);
                 buf.writeVarInt(snapshot.lanesUsed);
@@ -59,6 +62,8 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                 NetworkStatus status = NetworkStatus.byId(buf.readVarInt());
                 long stored = buf.readVarLong();
                 long capacity = buf.readVarLong();
+                long driveStored = buf.readVarLong();
+                long driveCapacity = buf.readVarLong();
                 double usage = buf.readDouble();
                 double generation = buf.readDouble();
                 int used = buf.readVarInt();
@@ -72,7 +77,7 @@ public record NetworkSnapshot(NetworkStatus status, long stored, long capacity, 
                 for (int i = 0; i < count; i++) {
                     devices.add(DeviceEntry.STREAM_CODEC.decode(buf));
                 }
-                return new NetworkSnapshot(status, stored, capacity, usage, generation, used, laneCapacity, sizeX, sizeY, sizeZ,
+                return new NetworkSnapshot(status, stored, capacity, driveStored, driveCapacity, usage, generation, used, laneCapacity, sizeX, sizeY, sizeZ,
                         blocks, devices);
             });
 }

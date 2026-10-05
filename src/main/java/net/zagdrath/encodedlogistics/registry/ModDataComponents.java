@@ -23,6 +23,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.HandheldLinkState;
 import net.zagdrath.encodedlogistics.item.LinkAddress;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
@@ -92,6 +93,14 @@ public final class ModDataComponents {
     // FE in a Handheld Terminal's battery.
     public static final Supplier<DataComponentType<Integer>> ENERGY = DATA_COMPONENTS.registerComponentType("energy",
             builder -> builder.persistent(Codec.intRange(0, Integer.MAX_VALUE)).networkSynchronized(ByteBufCodecs.VAR_INT));
+
+    // A Resource Entry's fluid or gas and amount (ResourceEntryItem).
+    public static final Supplier<DataComponentType<ResourceEntryItem.Entry>> RESOURCE_ENTRY = DATA_COMPONENTS.registerComponentType("resource_entry",
+            builder -> builder.persistent(ResourceEntryItem.Entry.CODEC).networkSynchronized(ResourceEntryItem.Entry.STREAM_CODEC));
+
+    // FE in an Energy Storage Drive: it keeps its charge out of a drive holder (EnergyDrives).
+    public static final Supplier<DataComponentType<Long>> DRIVE_ENERGY = DATA_COMPONENTS.registerComponentType("drive_energy",
+            builder -> builder.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG));
 
     // A rack device's settings while it's out of a rack (RackDeviceItem).
     public static final Supplier<DataComponentType<CustomData>> RACK_DEVICE_STATE = DATA_COMPONENTS.registerComponentType("rack_device_state",

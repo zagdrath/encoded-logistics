@@ -34,7 +34,7 @@ import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalRecipePayload;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // JEI's "+" on a crafting recipe in a Fabrication Terminal: sends each grid slot's options to the server, which fills the
 // grid from the network first, then the player's inventory (FabricationTerminalMenu.fillGrid). Before that, as AE2 does,
@@ -83,20 +83,20 @@ public class FabricationTransferHandler implements IRecipeTransferHandler<Fabric
     // and what's already in the grid (it goes back to the network first). Each slot takes one of the first option there
     // is; null when every slot is covered.
     private static @Nullable IRecipeTransferError availability(FabricationTerminalMenu menu, List<IRecipeSlotView> slots) {
-        Map<ItemKey, Long> pool = new HashMap<>(menu.items());
+        Map<StorageKey, Long> pool = new HashMap<>(menu.items());
         for (int i = 0; i < AccessTerminalMenu.INVENTORY_SLOTS + 9; i++) {
             ItemStack stack = menu.getSlot(i).getItem();
             if (!stack.isEmpty()) {
-                pool.merge(ItemKey.of(stack), (long) stack.getCount(), Long::sum);
+                pool.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
             }
         }
         List<IRecipeSlotView> missing = new ArrayList<>(), craftable = new ArrayList<>();
         for (IRecipeSlotView slot : slots) {
-            List<ItemKey> options = slot.getItemStacks().filter(stack -> !stack.isEmpty()).map(ItemKey::of).toList();
+            List<StorageKey> options = slot.getItemStacks().filter(stack -> !stack.isEmpty()).map(StorageKey::of).toList();
             if (options.isEmpty()) {
                 continue;
             }
-            Optional<ItemKey> have = options.stream().filter(key -> pool.getOrDefault(key, 0L) > 0).findFirst();
+            Optional<StorageKey> have = options.stream().filter(key -> pool.getOrDefault(key, 0L) > 0).findFirst();
             if (have.isPresent()) {
                 pool.merge(have.get(), -1L, Long::sum);
             } else if (options.stream().anyMatch(menu.craftables()::contains)) {

@@ -52,7 +52,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // A Gateway's nine Processing Schematics, its stock settings (nine ghost items, each with the amount to keep) and its
@@ -74,9 +74,9 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
 
     // A run: its task, the inputs not yet pushed, and the outputs still expected.
     private static final class Run {
-        private record Expected(ItemKey key, long count) {
+        private record Expected(StorageKey key, long count) {
             static final Codec<Expected> CODEC = RecordCodecBuilder.create(i -> i.group(
-                    ItemKey.CODEC.fieldOf("item").forGetter(Expected::key),
+                    StorageKey.CODEC.fieldOf("item").forGetter(Expected::key),
                     Codec.LONG.fieldOf("count").forGetter(Expected::count))
                     .apply(i, Expected::new));
         }
@@ -95,7 +95,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
 
         final CraftTask task;
         final List<ItemStack> toPush = new ArrayList<>();
-        final Map<ItemKey, Long> expected = new LinkedHashMap<>();
+        final Map<StorageKey, Long> expected = new LinkedHashMap<>();
 
         Run(CraftTask task, List<ItemStack> toPush) {
             this.task = task;
@@ -268,7 +268,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 continue;
             }
             handler.set(slot, ItemResource.EMPTY, 0);
-            int left = receive(level, ItemKey.of(resource.toStack(1)), amount);
+            int left = receive(level, StorageKey.of(resource.toStack(1)), amount);
             if (left > 0) {
                 SchedulerCoreBlockEntity.returnToNetwork(level, worldPosition, List.of(resource.toStack(left)));
             }
@@ -281,12 +281,12 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
     // other faces (a furnace gives up its result only from below).
     private boolean pull(ServerLevel level) {
         boolean moved = false;
-        Map<ItemKey, Long> expected = expectedTotals();
+        Map<StorageKey, Long> expected = expectedTotals();
         if (expected.isEmpty()) {
             return false;
         }
         List<ResourceHandler<ItemResource>> remote = MachineBridges.gatewayTargets(level, worldPosition);
-        for (Map.Entry<ItemKey, Long> want : expected.entrySet()) {
+        for (Map.Entry<StorageKey, Long> want : expected.entrySet()) {
             long left = want.getValue();
             ItemResource resource = ItemResource.of(want.getKey().stack());
             List<ResourceHandler<ItemResource>> sources = new ArrayList<>();
@@ -327,7 +327,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
     }
 
     // Hands arriving outputs to the oldest runs expecting them; returns how many nobody wanted.
-    private int receive(ServerLevel level, ItemKey key, int amount) {
+    private int receive(ServerLevel level, StorageKey key, int amount) {
         int left = amount;
         for (Run run : List.copyOf(runs)) {
             long expected = run.expected.getOrDefault(key, 0L);
@@ -366,7 +366,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
 
     // An item coming into the network some other way (an Ingress Port under the machine, a terminal): the runs expecting
     // it take it for their jobs, as if it had come back here (NetworkStorage.Claim). Returns how many they took.
-    public long claim(ItemKey key, long amount, boolean simulate) {
+    public long claim(StorageKey key, long amount, boolean simulate) {
         if (!online || !(level instanceof ServerLevel serverLevel)) {
             return 0;
         }
@@ -383,8 +383,8 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         return offered - left;
     }
 
-    private Map<ItemKey, Long> expectedTotals() {
-        Map<ItemKey, Long> totals = new LinkedHashMap<>();
+    private Map<StorageKey, Long> expectedTotals() {
+        Map<StorageKey, Long> totals = new LinkedHashMap<>();
         for (Run run : runs) {
             run.expected.forEach((key, count) -> {
                 if (count > 0) {
@@ -407,7 +407,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
             ItemResource held = handler.getResource(slot);
             int count = handler.getAmountAsInt(slot);
             if (!held.isEmpty() && (want.isEmpty() || !held.matches(want))) {
-                int stored = (int) storage.store(ItemKey.of(held.toStack(1)), count, false);
+                int stored = (int) storage.store(StorageKey.of(held.toStack(1)), count, false);
                 handler.set(slot, stored >= count ? ItemResource.EMPTY : held, count - stored);
                 moved |= stored > 0;
                 continue;
@@ -416,7 +416,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 continue;
             }
             int target = Math.min(want.getCount(), want.getMaxStackSize());
-            ItemKey key = ItemKey.of(want);
+            StorageKey key = StorageKey.of(want);
             if (count < target) {
                 int taken = (int) storage.extract(key, target - count, false);
                 if (taken > 0) {
@@ -455,7 +455,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         }
 
         private long room(ItemResource resource) {
-            ItemKey key = ItemKey.of(resource.toStack(1));
+            StorageKey key = StorageKey.of(resource.toStack(1));
             long room = expectedTotals().getOrDefault(key, 0L);
             for (int slot = BUFFER; slot < BUFFER + INTAKE; slot++) {
                 if (getResource(slot).equals(resource)) {

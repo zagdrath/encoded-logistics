@@ -44,7 +44,7 @@ import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // A Terminal Desk's master: its drawer (9 slots - where *DRAWER withdrawals go; opened from the pedestal half, a plain
@@ -58,7 +58,7 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
 
     // Items to take from the network once they're there - a craft's output once its job is done (job), or a withdrawal
     // once its recall from tape is in - to a player's inventory (player set, while they're online), else the drawer.
-    public record Delivery(Optional<UUID> job, ItemKey item, long amount, Optional<UUID> player) {}
+    public record Delivery(Optional<UUID> job, StorageKey item, long amount, Optional<UUID> player) {}
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private boolean online;
@@ -163,7 +163,7 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
     }
 
     // How many of an item the drawer has room for.
-    public long drawerRoom(ItemKey key) {
+    public long drawerRoom(StorageKey key) {
         long room = 0;
         for (ItemStack there : items) {
             if (there.isEmpty()) {
@@ -211,7 +211,7 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
                 left -= stack.getCount();
                 ItemStack rest = player != null ? give(player, stack) : addToDrawer(stack);
                 if (!rest.isEmpty()) {
-                    storage.insert(ItemKey.of(rest), rest.getCount(), false);
+                    storage.insert(StorageKey.of(rest), rest.getCount(), false);
                     taken -= rest.getCount();
                 }
             }
@@ -293,7 +293,7 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
         deviceName = input.getStringOr("device_name", "");
         deliveries.clear();
         for (ValueInput child : input.childrenListOrEmpty("deliveries")) {
-            Optional<ItemKey> item = child.read("item", ItemKey.CODEC);
+            Optional<StorageKey> item = child.read("item", StorageKey.CODEC);
             if (item.isPresent()) {
                 deliveries.add(new Delivery(child.read("job", UUIDUtil.CODEC), item.get(), child.getLongOr("amount", 0), child.read("player", UUIDUtil.CODEC)));
             }
@@ -311,7 +311,7 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
         for (Delivery delivery : deliveries) {
             ValueOutput child = list.addChild();
             delivery.job().ifPresent(job -> child.store("job", UUIDUtil.CODEC, job));
-            child.store("item", ItemKey.CODEC, delivery.item());
+            child.store("item", StorageKey.CODEC, delivery.item());
             child.putLong("amount", delivery.amount());
             delivery.player().ifPresent(player -> child.store("player", UUIDUtil.CODEC, player));
         }

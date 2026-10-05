@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.part.PartFilter;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // Moving items between networks' storage by route, for the Router (between networks) and the L3 Switch (between
@@ -67,7 +67,7 @@ public final class ItemRouting {
             return shares() && (source == from && dest == to || bidirectional && source == to && dest == from);
         }
 
-        public boolean matches(ItemKey key) {
+        public boolean matches(StorageKey key) {
             return passes(filter, key.stack());
         }
 
@@ -192,7 +192,7 @@ public final class ItemRouting {
 
     // Moves up to budget items over the legs, starting with the leg at cursor; level gives an item's priority level.
     // Returns how many moved.
-    public static int move(List<Leg> legs, int budget, int cursor, ToIntFunction<ItemKey> level) {
+    public static int move(List<Leg> legs, int budget, int cursor, ToIntFunction<StorageKey> level) {
         int total = 0;
         if (legs.isEmpty()) {
             return 0;
@@ -211,13 +211,13 @@ public final class ItemRouting {
         return total;
     }
 
-    private static int moveLevel(Leg leg, int limit, ToIntFunction<ItemKey> level, int priority) {
+    private static int moveLevel(Leg leg, int limit, ToIntFunction<StorageKey> level, int priority) {
         int left = limit;
-        for (Map.Entry<ItemKey, Long> entry : leg.from().list().entrySet()) {
+        for (Map.Entry<StorageKey, Long> entry : leg.from().list().entrySet()) {
             if (left <= 0) {
                 break;
             }
-            ItemKey key = entry.getKey();
+            StorageKey key = entry.getKey();
             if (!leg.route().matches(key) || level.applyAsInt(key) != priority) {
                 continue;
             }

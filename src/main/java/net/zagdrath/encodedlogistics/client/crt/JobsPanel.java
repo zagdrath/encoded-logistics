@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
-import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
@@ -355,7 +355,7 @@ final class JobsPanel extends ListPanel<TerminalLine> {
 
     // Whether the desk's terminal sync lists the item (by id) as one the network can craft.
     private boolean craftable(String id) {
-        for (ItemKey craftable : screen.getMenu().craftables()) {
+        for (StorageKey craftable : screen.getMenu().craftables()) {
             if (BuiltInRegistries.ITEM.getKey(craftable.stack().getItem()).toString().equals(id)) {
                 return true;
             }
