@@ -1,0 +1,28 @@
+/* LOGITEMS - log every item's count to ITEMHIST, report the low ones */
+/* ITEMSETUP makes ELGPL/ITEMHIST, compiles this into ELGPL and runs  */
+/* it every 10 minutes. Each run's records share one LOGGED time.     */
+PGM
+  DCLF FILE(ELSYS/INVITEMS) OPNID(INV)
+  DCLF FILE(ELGPL/ITEMHIST) OPNID(HIST)
+  DCL  VAR(&N)     TYPE(*INT) VALUE(0)
+  DCL  VAR(&STAMP) TYPE(*CHAR) LEN(14)
+
+  /* Every item on the network, in item order, into the history      */
+  DOWHILE COND('1')
+    RCVF OPNID(INV)
+    MONMSG MSGID(ELC2201) EXEC(LEAVE)
+    CHGVAR VAR(&HIST_LOGGED) VALUE(&STAMP)
+    CHGVAR VAR(&HIST_ITEM)   VALUE(&INV_ITEM)
+    CHGVAR VAR(&HIST_COUNT)  VALUE(&INV_HOT + &INV_COLD)
+    WRTRCD OPNID(HIST)
+    /* Written blank, LOGGED took the time: the rest of the run too  */
+    CHGVAR VAR(&STAMP) VALUE(&HIST_LOGGED)
+    CHGVAR VAR(&N) VALUE(&N + 1)
+  ENDDO
+
+  /* This run's items under a stack, fewest first, to a spooled file */
+  RUNQRY FILE(ELGPL/ITEMHIST) +
+         QRYSLT('LOGGED *EQ "' *TCAT &STAMP *TCAT '" *AND COUNT *LT 64') +
+         SORT(COUNT ITEM) OUTPUT(*PRINT)
+  SNDPGMMSG MSG('LOGITEMS logged' *BCAT %CHAR(&N) *BCAT 'items')
+ENDPGM

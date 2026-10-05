@@ -703,6 +703,10 @@ public class Config {
             .comment("Ended crafting jobs each network's history keeps by default (the CRFLOGRTN system value's default); past this the oldest is removed.")
             .defineInRange("craftLogRetention", 200, 0, 999);
 
+    public static final ModConfigSpec.IntValue ELCL_MAX_RECORDS_PER_FILE = BUILDER
+            .comment("Records a physical file (CRTPF) may hold; a write past this is refused (ELC2208).")
+            .defineInRange("maxRecordsPerFile", 10_000, 1, 1_000_000);
+
     public enum FolderSync { AUTO, TRUE, FALSE }
 
     public static final ModConfigSpec.EnumValue<FolderSync> ELCL_ALLOW_FOLDER_SYNC = BUILDER

@@ -39,7 +39,7 @@ public record ParamDef(String keyword, String label, Kind kind, boolean required
 
     // Where F4 on the prompter finds a parameter's values.
     public enum ValueList {
-        NONE, SPECIALS, ITEMS, DEVICES, LIBRARIES, MEMBERS, PROGRAMS, JOBS, SYSVALS, COMMAND
+        NONE, SPECIALS, ITEMS, DEVICES, LIBRARIES, MEMBERS, PROGRAMS, JOBS, SYSVALS, COMMAND, FILES
     }
 
     public enum VarType {

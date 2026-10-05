@@ -17,7 +17,8 @@ ENDPGM
 ```
 
 - Every program starts with `PGM` and ends with `ENDPGM`.
-- `DCL` statements must come before any other command.
+- `DCL` statements must come before any other command. **[EXT]** So must `DCLF`,
+  which declares a variable for each field of a database file (§11).
 - Program-level `MONMSG` statements come directly after the `DCL`s.
 - Source members have type `ELCLP` and compile to a `*PGM` object.
 
@@ -58,7 +59,8 @@ program     = "PGM" [ "PARM" "(" { variable } ")" ] NL
 
 declaration = "DCL" "VAR" "(" variable ")" "TYPE" "(" type ")"
               [ "LEN" "(" integer [ integer ] ")" ]
-              [ "VALUE" "(" value ")" ] ;
+              [ "VALUE" "(" value ")" ]
+            | "DCLF" "FILE" "(" qualified ")" [ "OPNID" "(" name ")" ] ;   (* §11 *)
 
 type        = "*CHAR" | "*INT" | "*DEC" | "*LGL" | "*LIST" ;
 
@@ -231,3 +233,37 @@ spooled file) containing: source with sequence numbers, a cross-reference of
 variables and labels, and messages with sequence number, ID, severity and
 text. Severity: 00 info, 10 warning, 20 error, 30 severe. Any 20+ message
 means no program object is created.
+
+## 11. Database files **[EXT]**
+
+A program works on a physical file (COMMANDS.md 11) through the variables `DCLF` declares, one for each field of the
+file's record format: `&FIELD`, or `&OPNID_FIELD` when the file has an open ID (`DCLF FILE(ELGPL/STOCK) OPNID(STK)`
+gives `&STK_ITEM`, `&STK_QTY`...). Their types come from the fields: A `*CHAR` of its length, S `*INT`, P `*DEC` of its
+length and decimals, L `*LGL`, T (a game timestamp, `00012 06:30:15`) `*CHAR 14`. A program declares up to 5 files.
+
+```
+PGM
+  DCLF FILE(ELSYS/INVITEMS)            /* &ITEM &NAME &HOT &COLD &MOD */
+  DCL  VAR(&TOTAL) TYPE(*INT)
+READ:
+  RCVF
+  MONMSG MSGID(ELC2201) EXEC(GOTO CMDLBL(DONE))   /* end of file */
+  CHGVAR VAR(&TOTAL) VALUE(&TOTAL + &HOT + &COLD)
+  GOTO CMDLBL(READ)
+DONE:
+  SNDPGMMSG MSG('Items:' *BCAT %CHAR(&TOTAL))
+ENDPGM
+```
+
+- **Compile time:** the file must exist (`ELC2205`); `*LIBL` is the compiling user's library list. The program keeps
+  the record formats it was compiled with (saved with it), so it compiles again the same on load and in a saved job.
+  A file operation naming an open ID no `DCLF` declares is `ELC2206`.
+- **Run time:** each operation opens the file as it is now (`*LIBL`: the job user's library list) and checks it against
+  the format the program was compiled with: a field the program declares that is gone, or of another type, is a level
+  check (`ELC2207`). Fields added since don't matter (a write leaves them blank).
+- **Reading:** `RCVF` reads in key order (arrival order without a key); `CHNRCD` reads by key and `RCVF` carries on
+  after it. At the end, `RCVF` raises `ELC2201` - again on every `RCVF` until `POSDBF` or `CLOF`. Where a file's reads
+  have got to, and the record last read (what `UPDRCD` and `DLTRCD` change), are part of the job's saved state.
+- **Writing:** `WRTRCD` and `UPDRCD` write the variables as the file's fields hold them (a value that doesn't fit is
+  `ELC2209`; text is cut to its length as for a `*CHAR`). A timestamp written blank (or `*NOW`) takes the game time,
+  and the variable gets it back.

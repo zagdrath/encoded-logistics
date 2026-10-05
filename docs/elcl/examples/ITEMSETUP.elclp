@@ -1,0 +1,14 @@
+/* ITEMSETUP - set up item count logging every 10 minutes            */
+/* CALL ELSYS/ITEMSETUP makes the file ELGPL/ITEMHIST (its records    */
+/* kept when it's there already), compiles ELGPL/LOGITEMS and runs it */
+/* every 10 minutes as a batch job (that needs a job host: a Compute  */
+/* Server or a Midrange System). Then: RUNQRY FILE(ELGPL/ITEMHIST)    */
+PGM
+  CRTPF FILE(ELGPL/ITEMHIST) SRCMBR(ELSYS/ITEMHIST)
+  MONMSG MSGID(ELC0204) /* there already: its records stay */
+  CRTELPGM PGM(ELGPL/LOGITEMS) SRCMBR(ELSYS/LOGITEMS)
+  ADDJOBSCDE JOB(LOGITEMS) CMD(CALL PGM(ELGPL/LOGITEMS)) FRQ(*INTERVAL) +
+             INTERVAL(600)
+  MONMSG MSGID(ELC0305) /* scheduled already */
+  SNDPGMMSG MSG('Item logging set up: ELGPL/LOGITEMS every 10 minutes')
+ENDPGM

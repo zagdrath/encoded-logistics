@@ -87,7 +87,7 @@ final class ElclStoreGameTests {
                 LibraryService.Member member = ElclServices.libraries().member(system, "KEEP", "RESTOCK");
                 helper.assertTrue(member.program() && member.changed(), "Program link or changed-since-compile lost: " + member);
                 helper.assertTrue(ElclServices.libraries().program(system, "KEEP", "RESTOCK") != null, "Program not runnable");
-                helper.assertTrue(ElclServices.libraries().members(system, "ELSYS").size() == 5, "ELSYS not rebuilt");
+                helper.assertTrue(ElclServices.libraries().members(system, "ELSYS").size() == 8, "ELSYS not rebuilt");
                 helper.assertTrue(ElclServices.libraries().program(system, "ELSYS", "NOCWALL") != null, "ELSYS program missing");
             } catch (ElclException e) {
                 helper.fail("After reload: " + e.getMessage());

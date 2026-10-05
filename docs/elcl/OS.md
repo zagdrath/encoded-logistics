@@ -9,17 +9,26 @@ network's saved data.
 
 ## 2. Objects
 
-- **Library** (`*LIB`): up to 10-character name. Contains members and programs.
+- **Library** (`*LIB`): up to 10-character name. Contains members, programs and files.
   - `ELSYS`: read-only, ships with the mod. Holds the sample programs in
     `examples/` so players can browse, copy and learn from them.
   - `ELGPL`: general-purpose library, created on every system.
   - Players create their own with `CRTLIB`.
 - **Source member** (type `ELCLP`): the program source, up to 5,000 lines of
   80 columns. Each line carries a sequence number (6.2 format, e.g. 0012.00)
-  and a change date, as midrange editors do.
+  and a change date, as midrange editors do. *(Added: type `PF`, a physical
+  file's definition - `CRTMBR SRCTYPE(PF)`; COMMANDS.md 11.)*
 - **Program** (`*PGM`): compiled from a member; records the source member
   and compile date. If the source changed after compile, Work with Members
   shows the member flagged as "changed since compile".
+- **Physical file** (`*FILE`, attribute `PF`) *(added)*: a record format
+  compiled from a `PF` member (`CRTPF`; up to 50 fields of types A, S, P, L
+  and T, a key of up to 4 fields, optionally unique) and one data member of
+  records (up to `maxRecordsPerFile`, 10,000). If the definition changed after
+  the file was made, Work with Members flags the member as for a program;
+  `CHGPF` makes the file again, keeping its records field by field. ELSYS also
+  holds the read-only system files `INVITEMS`, `DEVICES`, `CRFHIST` and `JOBS`,
+  made from the network's own data as they're read. COMMANDS.md 11.
 - **Library list:** each user profile has a library list (default
   `ELGPL ELSYS`). `*LIBL` in a qualified name searches it in order.
 
@@ -27,7 +36,10 @@ network's saved data.
 
 Source members consume network storage (proposal: 1 storage unit per 64
 characters, rounded up). Programs, job logs and spooled files do not.
-If storage is full, saving a member fails with `ELC0207`.
+If storage is full, saving a member fails with `ELC0207`. *(Added: a file's
+records cost the same, each its record length in characters - rounded up per
+file; writing records past the drives' room is `ELC0207` too. ELSYS's system
+files cost nothing.)*
 
 ## 4. Folder sync
 
@@ -35,6 +47,7 @@ Per-system folder in the world save:
 
 ```
 <world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.elclp
+<world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.pf       (added: a PF member)
 ```
 
 - **Out:** saving a member in-game writes the file.
@@ -53,6 +66,10 @@ an in-game save over a file changed outside wins and keeps the file's version
 as `.bak`. Libraries made from new folders are owned by the system with
 `*CHANGE` authority. ELSYS isn't written out either. Off by default on
 dedicated servers: config `elcl.allowFolderSync` = AUTO / TRUE / FALSE.)*
+*(Added: `PF` members sync the same way, as `<MEMBER>.pf`. A file's records
+don't sync: `CPYTOIMPF` / `CPYFRMIMPF` copy them as CSV to and from
+`<world>/encodedlogistics/libraries/<SYSNAME>/<name>.csv`, only where folder
+sync is on.)*
 
 - **Diskettes:** `SAVLIB` writes a library to an 8" Diskette item (stored in
   item data; size limit proposal 64 KB of source per diskette); `RSTLIB`

@@ -55,7 +55,7 @@ final class Lowerer {
         Lowerer lowerer = new Lowerer(compiled.statements());
         lowerer.program();
         return new VmProgram(compiled.params(), compiled.variables(), List.copyOf(lowerer.code), List.copyOf(lowerer.monitors),
-                List.copyOf(lowerer.programMonitors));
+                List.copyOf(lowerer.programMonitors), compiled.files());
     }
 
     private @Nullable Stmt peek() {
@@ -77,7 +77,7 @@ final class Lowerer {
         if (at("PGM")) {
             index++;
         }
-        while (at("DCL")) {
+        while (at("DCL") || at("DCLF")) {
             index++;
         }
         Insn skip = null;
@@ -160,7 +160,7 @@ final class Lowerer {
             case "DOWHILE", "DOUNTIL", "DOFOR", "FOREACH" -> loop(s, s.label());
             case "SELECT" -> select(s);
             // Out of place (the compiler reports them): nothing to run.
-            case "ELSE", "WHEN", "OTHERWISE", "ENDDO", "ENDFOR", "ENDSELECT", "ENDSUBR", "MONMSG", "DCL", "PGM" -> {}
+            case "ELSE", "WHEN", "OTHERWISE", "ENDDO", "ENDFOR", "ENDSELECT", "ENDSUBR", "MONMSG", "DCL", "DCLF", "PGM" -> {}
             default -> simple(s);
         }
         int end = code.size();

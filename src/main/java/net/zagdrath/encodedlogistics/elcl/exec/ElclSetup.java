@@ -14,6 +14,7 @@ import net.zagdrath.encodedlogistics.elcl.device.Displays;
 import net.zagdrath.encodedlogistics.elcl.job.Triggers;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
+import net.zagdrath.encodedlogistics.elcl.store.StoredFileService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.elcl.sync.FolderSync;
 import net.zagdrath.encodedlogistics.midrange.Midranges;
@@ -35,6 +36,8 @@ public final class ElclSetup {
         ModCommands.bind();
         DisplayCommands.bind();
         MachineCommands.bind();
+        DbCommands.bind();
+        StoredFileService.setLive(new LiveFiles());
         Midranges.register();
         Displays.register(system -> {
             ElclDevices.list(system.server(), system.network());

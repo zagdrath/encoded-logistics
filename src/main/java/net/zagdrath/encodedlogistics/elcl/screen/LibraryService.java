@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.elcl.screen;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -21,7 +22,8 @@ public interface LibraryService {
     // type: *PROD, *TEST or *SYS; authority: the public's, *USE or *CHANGE.
     record Library(String name, String type, String text, String owner, String authority, int members, long size, String created) {}
 
-    // changed: the source changed after its program was compiled (or there's no program yet: false).
+    // type: ELCLP or PF. changed: the source changed after its program (a PF member: its file) was made; program: there
+    // is one (or a file made from it).
     record Member(String library, String name, String type, String text, boolean changed, boolean program, int lines, String updated) {}
 
     record CompileOutcome(boolean created, List<String> listing, List<Diagnostic> diagnostics, int spooledFile) {}
@@ -45,7 +47,12 @@ public interface LibraryService {
 
     void save(ElclSystem system, String user, String library, String member, List<SourceLine> lines) throws ElclException;
 
-    void createMember(ElclSystem system, String user, String library, String member, String text) throws ElclException;
+    // type: ELCLP or PF (ELC0103 otherwise).
+    void createMember(ElclSystem system, String user, String library, String member, String text, String type) throws ElclException;
+
+    default void createMember(ElclSystem system, String user, String library, String member, String text) throws ElclException {
+        createMember(system, user, library, member, text, "ELCLP");
+    }
 
     void copyMember(ElclSystem system, String user, String fromLibrary, String fromMember, String toLibrary, String toMember) throws ElclException;
 
@@ -77,6 +84,12 @@ public interface LibraryService {
 
     // A program's source as it was compiled (what a job runs): ELC0201 / ELC0203 when there's none.
     List<SourceLine> programSource(ElclSystem system, String library, String program) throws ElclException;
+
+    // The record formats of the files a program declares, as it was compiled with them (by "LIB/FILE" as written, each
+    // RecordFormat.save()'s text): what a job compiles it again with.
+    default Map<String, String> programFiles(ElclSystem system, String library, String program) throws ElclException {
+        return Map.of();
+    }
 
     void deleteProgram(ElclSystem system, String user, String library, String program) throws ElclException;
 }

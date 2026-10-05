@@ -140,6 +140,60 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC1403 | 30 | Missing ingredients for &1. |
 | ELC1404 | 30 | Craft job &1 not found. |
 
+## ELC22xx — Database files *(added)*
+
+Reading and writing files (`ELC2201` is how `RCVF` says the file has no more records; monitor it, or the range with
+`ELC2200`):
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC2201 | 30 | End of file &1 reached. |
+| ELC2202 | 30 | Record with key &1 not found in file &2. |
+| ELC2203 | 30 | Duplicate key &1 in file &2. |
+| ELC2204 | 30 | No record read from file &1 to change or delete. |
+| ELC2205 | 30 | File &1 not found in library &2. |
+| ELC2206 | 30 | File with open identifier &1 not declared. |
+| ELC2207 | 30 | Level check on file &1: &2 changed since the program was compiled. |
+| ELC2208 | 30 | File &1 is full: limit of &2 records. |
+| ELC2209 | 30 | Value '&1' not valid for field &2. |
+
+A file's definition (a `PF` member: the editor's check and CRTPF's listing, with the line):
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC2220 | 30 | Definition statement not valid at '&1'. |
+| ELC2221 | 30 | Field &1 defined more than once. |
+| ELC2222 | 30 | Length &1 not valid for field &2 (type &3). |
+| ELC2223 | 30 | Key field &1 is not a field of the record. |
+| ELC2224 | 30 | Too many &1 (max &2). |
+| ELC2225 | 30 | No record format (R) defined before the fields. |
+| ELC2226 | 30 | Keyword &1 not valid here. |
+| ELC2227 | 30 | Type &1 not valid for field &2. |
+| ELC2228 | 30 | Name &1 not valid. |
+
+The commands on files:
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC2230 | 00 | File &1 created in library &2. |
+| ELC2231 | 00 | File &1 changed in library &2: &3 records kept. |
+| ELC2232 | 10 | Field &1 dropped from file &2: its values are lost. |
+| ELC2233 | 00 | File &1 deleted from library &2. |
+| ELC2234 | 00 | File &1 cleared: &2 records removed. |
+| ELC2235 | 00 | &1 records copied to file &2. |
+| ELC2236 | 00 | &1 records copied to &2. |
+| ELC2237 | 00 | &1 records copied from &2. |
+| ELC2238 | 00 | Query selected &1 of &2 records. |
+| ELC2239 | 30 | File &1 was not created: definition errors. |
+| ELC2240 | 30 | Stream file &1 not found. |
+| ELC2241 | 30 | Folder sync is off: &1 needs the system's folder. |
+| ELC2242 | 30 | Field &1 not found in file &2. |
+| ELC2243 | 30 | Row &1: value '&2' not valid for field &3. |
+| ELC2244 | 30 | Files &1 and &2 have no fields in common. |
+| ELC2245 | 30 | Stream file name &1 not valid. |
+| ELC2246 | 30 | File &1 was not changed: definition errors. |
+| ELC2247 | 30 | Member &1 is not a &2 source member. |
+
 ## USRxxxx — User messages
 
 Raised with `SNDPGMMSG MSGTYPE(*ESCAPE)`; default `USR0001`.

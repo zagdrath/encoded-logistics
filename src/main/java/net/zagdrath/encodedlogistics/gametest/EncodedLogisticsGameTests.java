@@ -200,6 +200,15 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("share_not_transitive", SharingGameTests::shareNotTransitive);
         TESTS.put("share_stops_with_switch", SharingGameTests::shareStopsWithSwitch);
         TESTS.put("share_old_routes_move", SharingGameTests::oldRoutesMove);
+        TESTS.put("db_files", DatabaseGameTests::files);
+        TESTS.put("db_programs", DatabaseGameTests::programs);
+        TESTS.put("db_query", DatabaseGameTests::query);
+        TESTS.put("db_system_files", DatabaseGameTests::systemFiles);
+        TESTS.put("db_copies", DatabaseGameTests::copies);
+        TESTS.put("db_persistence", DatabaseGameTests::persistence);
+        TESTS.put("db_limits", DatabaseGameTests::limits);
+        TESTS.put("db_authority", DatabaseGameTests::authority);
+        TESTS.put("db_example", DatabaseGameTests::example);
         ARCFORGE_TESTS.put("arcforge_attach_adopt_break", ArcforgeGameTests::attachAdoptAndBreak);
         ARCFORGE_TESTS.put("arcforge_take_off", ArcforgeGameTests::takeOff);
         ARCFORGE_TESTS.put("arcforge_survives_reload", ArcforgeGameTests::survivesReload);

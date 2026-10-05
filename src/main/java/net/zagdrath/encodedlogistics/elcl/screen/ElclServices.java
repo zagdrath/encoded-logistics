@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.elcl.screen;
 
 
 import net.zagdrath.encodedlogistics.elcl.job.StoredJobService;
+import net.zagdrath.encodedlogistics.elcl.store.StoredFileService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredLibraryService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredSpoolService;
@@ -14,9 +15,10 @@ import net.zagdrath.encodedlogistics.elcl.store.StoredSysvalService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredUserService;
 
 // The services behind the Terminal OS screens, each keeping what it has in the system's saved data (elcl.store): libraries,
-// messages, spooled files, system values, users, and jobs (elcl.job). Replaceable (set*) for tests.
+// physical files, messages, spooled files, system values, users, and jobs (elcl.job). Replaceable (set*) for tests.
 public final class ElclServices {
     private static LibraryService libraries = new StoredLibraryService();
+    private static FileService files = new StoredFileService();
     private static JobService jobs = new StoredJobService();
     private static MessageService messages = new StoredMessageService();
     private static SpoolService spool = new StoredSpoolService();
@@ -27,6 +29,10 @@ public final class ElclServices {
 
     public static LibraryService libraries() {
         return libraries;
+    }
+
+    public static FileService files() {
+        return files;
     }
 
     public static JobService jobs() {
@@ -55,6 +61,10 @@ public final class ElclServices {
 
     public static void setLibraries(LibraryService service) {
         libraries = service;
+    }
+
+    public static void setFiles(FileService service) {
+        files = service;
     }
 
     public static void setJobs(JobService service) {

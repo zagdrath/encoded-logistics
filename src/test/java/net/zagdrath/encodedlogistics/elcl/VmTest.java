@@ -23,6 +23,8 @@ import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
 import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
 import net.zagdrath.encodedlogistics.elcl.vm.Vm;
 import net.zagdrath.encodedlogistics.elcl.vm.VmHost;
+import net.zagdrath.encodedlogistics.elcl.db.FileAccess;
+import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,10 +37,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 // ended), and a job saved part-way (in a DLYJOB wait) and loaded again carrying on to the same end. Programs report
 // with SNDPGMMSG (its text without trailing blanks), which the fake host collects.
 class VmTest {
-    private static final class Host implements VmHost {
+    // The fake host (DbVmTest's too): programs by name, compiled with the file formats in `formats` (by LIB/FILE), the
+    // files in `files` when a test gives some.
+    static final class Host implements VmHost {
         final Map<String, List<String>> programs = new HashMap<>();
+        final Map<String, String> formats = new HashMap<>();
         final List<String> said = new ArrayList<>(), escaped = new ArrayList<>();
         @Nullable ElclMessage failed;
+        @Nullable FileAccess files;
         long time = 1_000;
         int maxList = 4_096;
 
@@ -53,7 +59,12 @@ class VmTest {
             if (source == null) {
                 throw new ElclException("ELC0203", name, library);
             }
-            return new Loaded("TEST/" + name, source);
+            return new Loaded("TEST/" + name, source, formats);
+        }
+
+        @Override
+        public @Nullable FileAccess files() {
+            return files;
         }
 
         @Override
@@ -127,12 +138,12 @@ class VmTest {
         }
     }
 
-    private static Vm start(Host host, String name, Object... args) throws ElclException {
+    static Vm start(Host host, String name, Object... args) throws ElclException {
         return Vm.start(host, host.program("*LIBL", name), List.of(args));
     }
 
     // Runs MAIN to its end; what it said.
-    private static List<String> run(Host host) throws ElclException {
+    static List<String> run(Host host) throws ElclException {
         Vm vm = start(host, "MAIN");
         for (int i = 0; i < 1_000 && vm.state() != Vm.State.ENDED; i++) {
             vm.run(10_000);
@@ -354,13 +365,14 @@ class VmTest {
         assertEquals(List.of("2"), said);
     }
 
-    // Every shipped example lowers (and starts) without trouble.
+    // Every shipped example lowers (and starts) without trouble, with the files they declare.
     @Test
     void examplesStart() throws IOException, ElclException {
         try (var files = Files.list(Path.of("docs/elcl/examples"))) {
-            for (Path file : files.toList()) {
+            for (Path file : files.filter(path -> path.toString().endsWith(".elclp")).toList()) {
                 Host host = new Host().program("EX", SourceLine.split(Files.readString(file)).toArray(String[]::new));
-                var compiled = net.zagdrath.encodedlogistics.elcl.compile.Compiler.compileTexts(host.programs.get("EX"));
+                host.formats.putAll(SystemData.saved(CompilerTest.shippedFormats()));
+                var compiled = net.zagdrath.encodedlogistics.elcl.compile.Compiler.compileTexts(host.programs.get("EX"), CompilerTest.shippedFiles());
                 assertTrue(compiled.ok(), file + " doesn't compile");
                 int params = compiled.program().params().size();
                 Object[] args = new Object[params];

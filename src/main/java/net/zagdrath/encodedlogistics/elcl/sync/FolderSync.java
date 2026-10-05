@@ -32,24 +32,31 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 
 // Folder sync (elcl.sync, OS.md 4): each system's libraries as files in the world save -
-//   <world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.elclp
+//   <world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.elclp   (a program's source)
+//   <world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.pf      (a physical file's definition)
 // Out: saving a member (or making, copying, renaming, restoring one) writes its file. In: every two seconds the folder
 // is read; a new or changed file becomes the member (unchanged lines keep their sequence numbers: Resequence), a new
 // folder a library. What was last synced is remembered per member (SystemData.syncHashes), so a file and a member that
 // both changed since are a conflict: the last write wins - an in-game save is always the later one - and the losing
-// version is kept as <MEMBER>.elclp.bak. Deleting a file never deletes its member; deleting a member moves its file to
-// <LIB>/.deleted/. ELSYS is never synced in (nor written out: it's rebuilt from the mod's own copy).
+// version is kept as <MEMBER>.elclp.bak (.pf.bak). Deleting a file never deletes its member; deleting a member moves its
+// file to <LIB>/.deleted/. ELSYS is never synced in (nor written out: it's rebuilt from the mod's own copy). A file's
+// records don't sync (CPYTOIMPF / CPYFRMIMPF copy them as CSV through the system's folder).
 // On only where allowFolderSync says (AUTO: single-player yes, dedicated servers no).
 public final class FolderSync implements StoredLibraryService.MemberListener {
     private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
     private static final int POLL_TICKS = 40;
-    private static final String EXTENSION = ".elclp";
+    private static final String EXTENSION = ".elclp", PF_EXTENSION = ".pf";
     private static @Nullable Boolean override;
     private static int ticks;
 
     // The game tests turn it on (their server counts as dedicated); null: the config's.
     public static void setEnabled(@Nullable Boolean enabled) {
         override = enabled;
+    }
+
+    // What setEnabled set (a test puts it back as it was).
+    public static @Nullable Boolean override() {
+        return override;
     }
 
     public static boolean enabled(MinecraftServer server) {
@@ -65,7 +72,22 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
     }
 
     public static Path file(ElclSystem system, String library, String member) {
-        return folder(system).resolve(library).resolve(member + EXTENSION);
+        return file(system, library, member, SystemData.ELCLP);
+    }
+
+    public static Path file(ElclSystem system, String library, String member, String type) {
+        return folder(system).resolve(library).resolve(member + extension(type));
+    }
+
+    private static String extension(String type) {
+        return type.equals(SystemData.PF) ? PF_EXTENSION : EXTENSION;
+    }
+
+    // A member's type now (ELCLP when it's gone).
+    private static String type(ElclSystem system, String library, String member) {
+        SystemData.Library lib = ElclStore.of(system).libraries.get(library);
+        SystemData.Member found = lib != null ? lib.members.get(member) : null;
+        return found != null ? found.type : SystemData.ELCLP;
     }
 
     private static boolean synced(String library) {
@@ -94,7 +116,8 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
             return;
         }
         SystemData data = ElclStore.of(system);
-        Path file = file(system, library, member);
+        String extension = extension(type(system, library, member));
+        Path file = folder(system).resolve(library).resolve(member + extension);
         try {
             Files.createDirectories(file.getParent());
             String known = data.syncHashes.get(key(library, member));
@@ -102,7 +125,7 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
                 String onDisk = Files.readString(file, StandardCharsets.UTF_8);
                 // Changed on disk since it was last synced: this save is the later write; the file's version is kept.
                 if (known == null ? !hash(onDisk).equals(hash(text(lines))) : !hash(onDisk).equals(known)) {
-                    Files.copy(file, file.resolveSibling(member + EXTENSION + ".bak"), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(file, file.resolveSibling(member + extension + ".bak"), StandardCopyOption.REPLACE_EXISTING);
                 }
             }
             write(file, text(lines));
@@ -118,15 +141,18 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
         if (!enabled(system.server()) || !synced(library)) {
             return;
         }
-        Path file = file(system, library, member);
-        try {
-            if (Files.exists(file)) {
-                Path deleted = file.getParent().resolve(".deleted");
-                Files.createDirectories(deleted);
-                Files.move(file, deleted.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+        // The member's gone already: whichever of its files is there.
+        for (String extension : new String[] { EXTENSION, PF_EXTENSION }) {
+            Path file = folder(system).resolve(library).resolve(member + extension);
+            try {
+                if (Files.exists(file)) {
+                    Path deleted = file.getParent().resolve(".deleted");
+                    Files.createDirectories(deleted);
+                    Files.move(file, deleted.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                LOGGER.warn("Folder sync couldn't move {} to .deleted: {}", file, e.toString());
             }
-        } catch (IOException e) {
-            LOGGER.warn("Folder sync couldn't move {} to .deleted: {}", file, e.toString());
         }
         SystemData data = ElclStore.of(system);
         if (data.syncHashes.remove(key(library, member)) != null) {
@@ -195,12 +221,13 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
                 if (!data.libraries.containsKey(library)) {
                     libraries.makeLibrary(system, library);
                 }
-                try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, "*" + EXTENSION)) {
+                try (DirectoryStream<Path> files = Files.newDirectoryStream(dir, "*{" + EXTENSION + "," + PF_EXTENSION + "}")) {
                     for (Path file : files) {
                         String name = file.getFileName().toString();
-                        String member = name.substring(0, name.length() - EXTENSION.length()).toUpperCase(Locale.ROOT);
+                        String type = name.endsWith(PF_EXTENSION) ? SystemData.PF : SystemData.ELCLP;
+                        String member = name.substring(0, name.length() - extension(type).length()).toUpperCase(Locale.ROOT);
                         if (member.matches("[A-Z][A-Z0-9_@#$]{0,9}")) {
-                            read(system, data, libraries, library, member, file);
+                            read(system, data, libraries, library, member, type, file);
                         }
                     }
                 }
@@ -210,7 +237,8 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
         }
     }
 
-    private static void read(ElclSystem system, SystemData data, StoredLibraryService libraries, String library, String member, Path file) throws IOException {
+    private static void read(ElclSystem system, SystemData data, StoredLibraryService libraries, String library, String member, String type, Path file)
+            throws IOException {
         String text = Files.readString(file, StandardCharsets.UTF_8);
         String hash = hash(text), known = data.syncHashes.get(key(library, member));
         if (hash.equals(known)) {
@@ -218,6 +246,10 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
         }
         SystemData.Library lib = data.libraries.get(library);
         SystemData.Member current = lib != null ? lib.members.get(member) : null;
+        if (current != null && !current.type.equals(type)) {
+            // A .pf beside an ELCLP member of the same name (or the other way round): the member keeps its own.
+            return;
+        }
         if (current != null && hash(text(current.lines)).equals(hash)) {
             data.syncHashes.put(key(library, member), hash);
             data.changed();
@@ -226,7 +258,7 @@ public final class FolderSync implements StoredLibraryService.MemberListener {
         List<SourceLine> old = current != null ? current.lines : List.of();
         List<SourceLine> lines = Resequence.merge(old, SourceLine.split(text.replace("\r\n", "\n")), system.day());
         try {
-            libraries.put(system, library, member, lines);
+            libraries.put(system, library, member, type, lines);
             data.syncHashes.put(key(library, member), hash);
             data.changed();
         } catch (ElclException e) {

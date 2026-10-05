@@ -18,7 +18,9 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.compile.CompiledProgram;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
+import net.zagdrath.encodedlogistics.elcl.compile.FileResolver;
 import net.zagdrath.encodedlogistics.elcl.compile.Listing;
+import net.zagdrath.encodedlogistics.elcl.db.DbFile;
 import net.zagdrath.encodedlogistics.elcl.device.LibraryImage;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
@@ -31,6 +33,8 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // read-only; ELGPL is open to everyone; a library's owner may change what's in it and others only when its authority
 // is *CHANGE; one editor per member at a time. Source members take network storage (a byte of drive space per
 // charsPerStorageByte characters): a save, create or copy that needs more than the drives have free is ELC0207.
+// Members are ELCLP (programs' source, CRTELPGM) or PF (physical files' definitions, CRTPF: StoredFileService, which
+// shares these rules); a program keeps the formats of the files it declares as it was compiled.
 public final class StoredLibraryService implements LibraryService {
     // Where the drives' bytes used and in all come from (the game tests can swap it).
     public interface StorageMeter {
@@ -68,7 +72,7 @@ public final class StoredLibraryService implements LibraryService {
         return name.trim().toUpperCase(Locale.ROOT);
     }
 
-    private static void checkName(String name, String keyword) throws ElclException {
+    static void checkName(String name, String keyword) throws ElclException {
         if (!name.matches("[A-Z][A-Z0-9_@#$]{0,9}")) {
             throw new ElclException("ELC0103", name, keyword);
         }
@@ -78,7 +82,7 @@ public final class StoredLibraryService implements LibraryService {
         return ElclStore.of(system).libraries;
     }
 
-    private static SystemData.Library find(ElclSystem system, String name) throws ElclException {
+    static SystemData.Library find(ElclSystem system, String name) throws ElclException {
         SystemData.Library library = stored(system).get(upper(name));
         if (library == null) {
             throw new ElclException("ELC0201", upper(name));
@@ -86,7 +90,7 @@ public final class StoredLibraryService implements LibraryService {
         return library;
     }
 
-    private static SystemData.Member findMember(SystemData.Library library, String name) throws ElclException {
+    static SystemData.Member findMember(SystemData.Library library, String name) throws ElclException {
         SystemData.Member member = library.members.get(upper(name));
         if (member == null) {
             throw new ElclException("ELC0202", upper(name), library.name);
@@ -95,7 +99,7 @@ public final class StoredLibraryService implements LibraryService {
     }
 
     // Changing what's in a library: never ELSYS; its owner, *SECOFR, or anyone when its authority is *CHANGE.
-    private static void writable(ElclSystem system, SystemData.Library library, String user) throws ElclException {
+    static void writable(ElclSystem system, SystemData.Library library, String user) throws ElclException {
         if (library.system()) {
             throw new ElclException("ELC0205", library.name);
         }
@@ -111,7 +115,7 @@ public final class StoredLibraryService implements LibraryService {
     }
 
     // ELC0207 when the drives can't take `more` bytes on top of what's stored and the members already take.
-    private void room(ElclSystem system, String member, long more) throws ElclException {
+    void room(ElclSystem system, String member, long more) throws ElclException {
         if (more <= 0) {
             return;
         }
@@ -209,7 +213,14 @@ public final class StoredLibraryService implements LibraryService {
         ElclStore.of(system).changed();
     }
 
+    // A member as the screens show it: changed since its program (a PF member: its file) was made from it.
     private static LibraryService.Member view(SystemData.Library library, SystemData.Member member) {
+        if (member.type.equals(SystemData.PF)) {
+            DbFile file = StoredFileService.madeFrom(library, member);
+            boolean changed = file != null && file.sourceVersion != member.version;
+            return new LibraryService.Member(library.name, member.name, member.type, member.text, changed, file != null, member.lines.size(),
+                    member.updated);
+        }
         SystemData.Program program = null;
         for (SystemData.Program candidate : library.programs.values()) {
             if (candidate.sourceLibrary.equals(library.name) && candidate.sourceMember.equals(member.name)) {
@@ -217,7 +228,8 @@ public final class StoredLibraryService implements LibraryService {
             }
         }
         boolean changed = program != null && program.sourceVersion != member.version;
-        return new LibraryService.Member(library.name, member.name, "ELCLP", member.text, changed, program != null, member.lines.size(), member.updated);
+        return new LibraryService.Member(library.name, member.name, member.type, member.text, changed, program != null, member.lines.size(),
+                member.updated);
     }
 
     @Override
@@ -274,8 +286,9 @@ public final class StoredLibraryService implements LibraryService {
         return lib;
     }
 
-    // A member from outside (folder sync): made if new, replaced if changed. No authority or lock checks; storage is.
-    public synchronized void put(ElclSystem system, String library, String member, List<SourceLine> lines) throws ElclException {
+    // A member from outside (folder sync): made if new (of the type given), replaced if changed. No authority or lock
+    // checks; storage is.
+    public synchronized void put(ElclSystem system, String library, String member, String type, List<SourceLine> lines) throws ElclException {
         SystemData.Library lib = makeLibrary(system, library);
         if (lib.system()) {
             throw new ElclException("ELC0205", library);
@@ -284,8 +297,9 @@ public final class StoredLibraryService implements LibraryService {
         SystemData.Member target = lib.members.get(member);
         if (target == null) {
             room(system, member, cost(lines));
-            lib.members.put(member, new SystemData.Member(member, SystemData.description(SourceLine.texts(lines)), List.copyOf(lines), 1,
-                    system.nowShort()));
+            List<String> texts = SourceLine.texts(lines);
+            String text = type.equals(SystemData.PF) ? SystemData.ddsDescription(texts) : SystemData.description(texts);
+            lib.members.put(member, new SystemData.Member(member, type, text, List.copyOf(lines), 1, system.nowShort()));
         } else if (!target.lines.equals(lines)) {
             room(system, member, cost(lines) - cost(target.lines));
             target.lines = List.copyOf(lines);
@@ -296,15 +310,19 @@ public final class StoredLibraryService implements LibraryService {
     }
 
     @Override
-    public synchronized void createMember(ElclSystem system, String user, String library, String member, String text) throws ElclException {
+    public synchronized void createMember(ElclSystem system, String user, String library, String member, String text, String type)
+            throws ElclException {
         SystemData.Library lib = find(system, library);
         writable(system, lib, user);
-        String name = upper(member);
+        String name = upper(member), sourceType = upper(type);
         checkName(name, "MBR");
+        if (!sourceType.equals(SystemData.ELCLP) && !sourceType.equals(SystemData.PF)) {
+            throw new ElclException("ELC0103", sourceType, "SRCTYPE");
+        }
         if (lib.members.containsKey(name)) {
             throw new ElclException("ELC0204", name, lib.name);
         }
-        lib.members.put(name, new SystemData.Member(name, text, List.of(), 0, system.nowShort()));
+        lib.members.put(name, new SystemData.Member(name, sourceType, text, List.of(), 0, system.nowShort()));
         ElclStore.of(system).changed();
         listener.saved(system, lib.name, name, List.of());
     }
@@ -322,7 +340,7 @@ public final class StoredLibraryService implements LibraryService {
         }
         lineLimit(from.lines);
         room(system, name, cost(from.lines));
-        to.members.put(name, new SystemData.Member(name, from.text, List.copyOf(from.lines), 0, system.nowShort()));
+        to.members.put(name, new SystemData.Member(name, from.type, from.text, List.copyOf(from.lines), 0, system.nowShort()));
         ElclStore.of(system).changed();
         listener.saved(system, to.name, name, from.lines);
     }
@@ -338,7 +356,7 @@ public final class StoredLibraryService implements LibraryService {
             throw new ElclException("ELC0204", name, lib.name);
         }
         lib.members.remove(old.name);
-        lib.members.put(name, new SystemData.Member(name, old.text, old.lines, old.version, old.updated));
+        lib.members.put(name, new SystemData.Member(name, old.type, old.text, old.lines, old.version, old.updated));
         ElclStore.of(system).changed();
         listener.deleted(system, lib.name, old.name);
         listener.saved(system, lib.name, name, old.lines);
@@ -397,21 +415,37 @@ public final class StoredLibraryService implements LibraryService {
             target = find(system, library);
             writable(system, target, user);
             source = findMember(find(system, sourceLibrary), sourceMember);
+            if (!source.type.equals(SystemData.ELCLP)) {
+                throw new ElclException("ELC2247", upper(sourceLibrary) + "/" + source.name, SystemData.ELCLP);
+            }
             lines = List.copyOf(source.lines);
             version = source.version;
         }
         String name = upper(program);
-        Compiler.Result result = Compiler.compile(lines);
+        Compiler.Result result = Compiler.compile(lines, files(system, user));
         List<String> listing = Listing.build(target.name, name, system.nowShort().replace("  ", " "), system.name(), lines, result);
         JobService.Job job = interactiveJob(system, user);
         int file = ElclServices.spool().create(system, name, job.number(), job.name(), upper(user), listing);
         if (result.ok()) {
             synchronized (this) {
-                target.programs.put(name, new SystemData.Program(name, upper(sourceLibrary), source.name, version, system.nowShort(), lines));
+                target.programs.put(name, new SystemData.Program(name, upper(sourceLibrary), source.name, version, system.nowShort(), lines,
+                        SystemData.saved(result.formats())));
                 ElclStore.of(system).changed();
             }
         }
         return new CompileOutcome(result.ok(), listing, result.diagnostics(), file);
+    }
+
+    // The system's files as DCLF finds them at compile time: *LIBL on the user's library list.
+    static FileResolver files(ElclSystem system, String user) {
+        return (library, file) -> {
+            try {
+                String[] found = ElclServices.files().resolve(system, user, library, file);
+                return ElclServices.files().format(system, found[0], found[1]);
+            } catch (ElclException e) {
+                return null;
+            }
+        };
     }
 
     // The user's interactive job (whose spooled files a compile's listing goes with).
@@ -509,6 +543,16 @@ public final class StoredLibraryService implements LibraryService {
             throw new ElclException("ELC0203", upper(program), lib.name);
         }
         return found.source;
+    }
+
+    @Override
+    public synchronized Map<String, String> programFiles(ElclSystem system, String library, String program) throws ElclException {
+        SystemData.Library lib = find(system, library);
+        SystemData.Program found = lib.programs.get(upper(program));
+        if (found == null) {
+            throw new ElclException("ELC0203", upper(program), lib.name);
+        }
+        return found.files;
     }
 
     @Override

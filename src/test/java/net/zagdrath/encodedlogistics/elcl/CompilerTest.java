@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -17,7 +19,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
+import net.zagdrath.encodedlogistics.elcl.compile.FileResolver;
 import net.zagdrath.encodedlogistics.elcl.compile.Listing;
+import net.zagdrath.encodedlogistics.elcl.db.Dds;
+import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
+import net.zagdrath.encodedlogistics.elcl.db.SystemFiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -37,17 +43,32 @@ class CompilerTest {
         return SourceLine.split(Files.readString(path));
     }
 
+    // The files the examples declare: ELSYS's system files, and ITEMHIST (from its example definition) in ELGPL, where
+    // ITEMSETUP makes it.
+    static Map<String, RecordFormat> shippedFormats() throws IOException {
+        Map<String, RecordFormat> formats = new HashMap<>();
+        SystemFiles.formats().forEach((name, format) -> formats.put("ELSYS/" + name, format));
+        Dds.Result itemhist = Dds.compile(read(EXAMPLES.resolve("ITEMHIST.pf")));
+        assertTrue(itemhist.ok(), "ITEMHIST.pf: " + itemhist.diagnostics());
+        formats.put("ELGPL/ITEMHIST", itemhist.format());
+        return formats;
+    }
+
+    static FileResolver shippedFiles() throws IOException {
+        return FileResolver.of(shippedFormats());
+    }
+
     @ParameterizedTest
     @MethodSource("examples")
     void examplesCompileClean(Path example) throws IOException {
-        Compiler.Result result = Compiler.compileTexts(read(example));
+        Compiler.Result result = Compiler.compileTexts(read(example), shippedFiles());
         assertTrue(result.diagnostics().isEmpty(), example.getFileName() + ": " + result.diagnostics());
         assertNotNull(result.program());
     }
 
     @Test
     void examplesExist() throws IOException {
-        assertEquals(5, examples().count());
+        assertEquals(7, examples().count());
     }
 
     // A program around some body lines: PGM on line 0, the body from line 1, ENDPGM last.

@@ -30,7 +30,13 @@ import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
 import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
 import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
+import net.zagdrath.encodedlogistics.elcl.compile.DeclaredFile;
+import net.zagdrath.encodedlogistics.elcl.compile.FileResolver;
 import net.zagdrath.encodedlogistics.elcl.compile.VarDecl;
+import net.zagdrath.encodedlogistics.elcl.db.DbRecord;
+import net.zagdrath.encodedlogistics.elcl.db.FieldDef;
+import net.zagdrath.encodedlogistics.elcl.db.FileAccess;
+import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
 import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 import net.zagdrath.encodedlogistics.elcl.vm.VmProgram.Insn;
@@ -44,18 +50,30 @@ import net.zagdrath.encodedlogistics.elcl.vm.VmProgram.Monitor;
 // program level) take it, else the program ends: the message goes to the job log, and its caller gets ELC0013 at its
 // CALL, which it may monitor. CALL passes variables by reference (copied in, and back when the called program
 // returns), literals and expressions by value. Async commands (DLYJOB, recalls, STRCRAFT WAIT(*YES)) put the job in a
-// wait, which costs no budget; the command runs again once the wait is done.
+// wait, which costs no budget; the command runs again once the wait is done. The files a program declares (DCLF) keep
+// their place in its frame - where its reads have got to, the record last read - so a saved job reads on from there.
 public final class Vm {
     public enum State {
         RUNNING, WAITING, ENDED
     }
 
-    private static final Map<List<String>, VmProgram> PROGRAMS = new LinkedHashMap<>(16, 0.75F, true) {
+    // A compiled program by its source and the file formats it was compiled with.
+    private record ProgramKey(List<String> source, Map<String, String> files) {}
+
+    private static final Map<ProgramKey, VmProgram> PROGRAMS = new LinkedHashMap<>(16, 0.75F, true) {
         @Override
-        protected boolean removeEldestEntry(Map.Entry<List<String>, VmProgram> eldest) {
+        protected boolean removeEldestEntry(Map.Entry<ProgramKey, VmProgram> eldest) {
             return size() > 64;
         }
     };
+
+    // A declared file's state in a frame: where its reads have got to (null: the start), whether they're at the end
+    // (end of file, or POSDBF *END), and the record last read (UPDRCD and DLTRCD change it; -1 for none).
+    private static final class OpenFile {
+        DbRecord.@Nullable Position position;
+        boolean end;
+        long current = -1;
+    }
 
     private static final class Frame {
         final String key;
@@ -69,6 +87,8 @@ public final class Vm {
         // The caller's variable each parameter came from (null: a value).
         final List<@Nullable String> bindings = new ArrayList<>();
         @Nullable ElclMessage lastEscape, lastMessage;
+        // Its declared files' states, by open ID (one is made the first time a file is used; CLOF forgets it).
+        final Map<String, OpenFile> files = new HashMap<>();
 
         Frame(String key, VmProgram program) {
             this.key = key;
@@ -79,6 +99,8 @@ public final class Vm {
     private final VmHost host;
     private final Deque<Frame> frames = new ArrayDeque<>();
     private final Map<String, List<String>> sources = new HashMap<>();
+    // Each program's file formats as it was compiled with them (VmHost.Loaded.files).
+    private final Map<String, Map<String, String>> fileFormats = new HashMap<>();
     private @Nullable Wait wait, resumed;
     private @Nullable ElclMessage failure;
     private long executed;
@@ -105,29 +127,38 @@ public final class Vm {
         return vm;
     }
 
-    // The program a source compiles to (ELC0203 if it no longer does).
-    static VmProgram compile(String key, List<String> source) throws ElclException {
+    // The program a source compiles to, with the file formats it was compiled against (ELC0203 if it no longer does).
+    static VmProgram compile(String key, List<String> source, Map<String, String> files) throws ElclException {
+        ProgramKey cached = new ProgramKey(List.copyOf(source), Map.copyOf(files));
         synchronized (PROGRAMS) {
-            VmProgram program = PROGRAMS.get(source);
+            VmProgram program = PROGRAMS.get(cached);
             if (program != null) {
                 return program;
             }
         }
-        var result = Compiler.compileTexts(source);
+        Map<String, RecordFormat> formats = new HashMap<>();
+        files.forEach((file, saved) -> {
+            RecordFormat format = RecordFormat.load(saved);
+            if (format != null) {
+                formats.put(file, format);
+            }
+        });
+        var result = Compiler.compileTexts(source, FileResolver.of(formats));
         if (result.program() == null) {
             int slash = key.indexOf('/');
             throw new ElclException("ELC0203", key.substring(slash + 1), slash > 0 ? key.substring(0, slash) : "*LIBL");
         }
         VmProgram program = Lowerer.lower(result.program());
         synchronized (PROGRAMS) {
-            PROGRAMS.put(List.copyOf(source), program);
+            PROGRAMS.put(cached, program);
         }
         return program;
     }
 
     private Frame frame(VmHost.Loaded loaded) throws ElclException {
-        VmProgram program = compile(loaded.key(), loaded.source());
+        VmProgram program = compile(loaded.key(), loaded.source(), loaded.files());
         sources.put(loaded.key(), List.copyOf(loaded.source()));
+        fileFormats.put(loaded.key(), Map.copyOf(loaded.files()));
         Frame frame = new Frame(loaded.key(), program);
         for (VarDecl decl : program.variables().values()) {
             frame.vars.put(decl.name(), Values.initial(decl));
@@ -471,11 +502,124 @@ public final class Vm {
                 f.lastMessage = message;
                 host.message(message);
             }
+            case "RCVF", "POSDBF", "CLOF", "CHNRCD", "WRTRCD", "UPDRCD", "DLTRCD" -> fileOperation(f, s);
             default -> registered(f, s);
         }
         if (wait == null) {
             f.pc++;
         }
+    }
+
+    // --- Files (DCLF) ---
+
+    // A file operation on a declared file (by OPNID): RCVF reads the next record into its variables (ELC2201 at the
+    // end, and again until POSDBF or CLOF), POSDBF goes back to the start or on to the end, CLOF forgets where it was,
+    // CHNRCD reads by key (ELC2202), WRTRCD writes a new record from the variables, UPDRCD and DLTRCD change or delete
+    // the last record read (ELC2204 without one). The file is opened again each time, checked against the format the
+    // program was compiled with: a field it declares gone or of another type is ELC2207.
+    private void fileOperation(Frame f, Stmt s) throws ElclException {
+        String opnid = Compiler.opnid(s);
+        DeclaredFile declared = f.program.files().get(opnid);
+        if (declared == null || declared.format() == null) {
+            throw new ElclException("ELC2206", opnid.isEmpty() ? "*NONE" : opnid);
+        }
+        if (s.is("CLOF")) {
+            f.files.remove(opnid);
+            return;
+        }
+        OpenFile file = f.files.computeIfAbsent(opnid, k -> new OpenFile());
+        if (s.is("POSDBF")) {
+            Expr position = s.value("POSITION");
+            file.position = null;
+            file.end = position != null && position.toString().equals("*END");
+            file.current = -1;
+            return;
+        }
+        FileAccess access = host.files();
+        if (access == null) {
+            throw new ElclException("ELC0107", s.name());
+        }
+        FileAccess.Opened opened = access.open(declared.library(), declared.file());
+        RecordFormat format = opened.format();
+        for (FieldDef field : declared.format().fields()) {
+            FieldDef now = format.field(field.name());
+            if (now == null || !now.sameType(field)) {
+                throw new ElclException("ELC2207", opened.qualified(), field.name());
+            }
+        }
+        switch (s.name()) {
+            case "RCVF" -> {
+                DbRecord record = file.end ? null : access.next(opened, file.position);
+                if (record == null) {
+                    file.end = true;
+                    file.current = -1;
+                    throw new ElclException("ELC2201", opened.qualified());
+                }
+                file.position = record.position(format);
+                file.current = record.rrn();
+                receive(f, declared, format, record);
+            }
+            case "CHNRCD" -> {
+                Stmt.Param keys = s.param("KEY");
+                List<Expr> given = keys != null ? keys.values() : List.of();
+                int[] indexes = format.keyIndexes();
+                if (given.isEmpty() || given.size() > indexes.length) {
+                    throw new ElclException("ELC0103", given.isEmpty() ? "*NONE" : given.getLast().toString(), "KEY");
+                }
+                Object[] key = new Object[given.size()];
+                List<String> shown = new ArrayList<>();
+                for (int i = 0; i < key.length; i++) {
+                    key[i] = format.fields().get(indexes[i]).convert(eval(f, given.get(i)));
+                    shown.add(format.fields().get(indexes[i]).text(key[i]));
+                }
+                DbRecord record = access.chain(opened, key);
+                if (record == null) {
+                    throw new ElclException("ELC2202", String.join(" ", shown), opened.qualified());
+                }
+                file.position = record.position(format);
+                file.current = record.rrn();
+                file.end = false;
+                receive(f, declared, format, record);
+            }
+            case "WRTRCD" -> receive(f, declared, format, access.write(opened, values(f, declared, format)));
+            case "UPDRCD" -> {
+                if (file.current < 0) {
+                    throw new ElclException("ELC2204", opened.qualified());
+                }
+                receive(f, declared, format, access.update(opened, file.current, values(f, declared, format)));
+            }
+            default -> {
+                if (file.current < 0) {
+                    throw new ElclException("ELC2204", opened.qualified());
+                }
+                access.delete(opened, file.current);
+                file.current = -1;
+            }
+        }
+    }
+
+    // A record into the file's variables (each field the program declares).
+    private void receive(Frame f, DeclaredFile declared, RecordFormat format, DbRecord record) throws ElclException {
+        for (FieldDef field : declared.format().fields()) {
+            int index = format.index(field.name());
+            if (index >= 0) {
+                assign(f, declared.variable(field), record.value(index));
+            }
+        }
+    }
+
+    // The variables as a record of the file as it is now: fields the program doesn't declare blank (ELC2209 for a
+    // value that doesn't fit its field).
+    private static Object[] values(Frame f, DeclaredFile declared, RecordFormat format) throws ElclException {
+        Object[] values = format.blank();
+        for (int i = 0; i < values.length; i++) {
+            FieldDef field = format.fields().get(i);
+            Object value = declared.format().field(field.name()) != null ? f.vars.get(declared.prefix() + field.name()) : null;
+            if (value != null) {
+                values[i] = field.convert(value);
+            }
+        }
+        return values;
     }
 
     private void setIfGiven(Frame f, Stmt s, String keyword, Object value) throws ElclException {
@@ -673,6 +817,15 @@ public final class Vm {
             programs.put(key, lines);
         });
         tag.put("programs", programs);
+        CompoundTag formats = new CompoundTag();
+        fileFormats.forEach((key, files) -> {
+            if (!files.isEmpty()) {
+                CompoundTag program = new CompoundTag();
+                files.forEach(program::putString);
+                formats.put(key, program);
+            }
+        });
+        tag.put("file_formats", formats);
         ListTag list = new ListTag();
         // Oldest (the job's own program) first.
         Iterator<Frame> oldestFirst = frames.descendingIterator();
@@ -730,6 +883,21 @@ public final class Vm {
         if (f.lastMessage != null) {
             tag.put("last_message", saveMessage(f.lastMessage));
         }
+        ListTag files = new ListTag();
+        f.files.forEach((opnid, file) -> {
+            CompoundTag state = new CompoundTag();
+            state.putString("opnid", opnid);
+            state.putBoolean("end", file.end);
+            state.putLong("current", file.current);
+            if (file.position != null) {
+                ListTag key = new ListTag();
+                file.position.key().forEach(value -> key.add(StringTag.valueOf(value)));
+                state.put("key", key);
+                state.putLong("rrn", file.position.rrn());
+            }
+            files.add(state);
+        });
+        tag.put("files", files);
         return tag;
     }
 
@@ -782,12 +950,21 @@ public final class Vm {
             }
             vm.sources.put(key, List.copyOf(source));
         }
+        CompoundTag formats = tag.getCompoundOrEmpty("file_formats");
+        for (String key : formats.keySet()) {
+            CompoundTag program = formats.getCompoundOrEmpty(key);
+            Map<String, String> files = new HashMap<>();
+            for (String file : program.keySet()) {
+                files.put(file, program.getStringOr(file, ""));
+            }
+            vm.fileFormats.put(key, Map.copyOf(files));
+        }
         ListTag list = tag.getListOrEmpty("frames");
         for (int i = 0; i < list.size(); i++) {
             CompoundTag saved = list.getCompoundOrEmpty(i);
             String key = saved.getStringOr("key", "");
             List<String> source = vm.sources.getOrDefault(key, List.of());
-            Frame f = new Frame(key, compile(key, source));
+            Frame f = new Frame(key, compile(key, source, vm.fileFormats.getOrDefault(key, Map.of())));
             f.pc = saved.getIntOr("pc", 0);
             f.resume = saved.getIntOr("resume", 0);
             CompoundTag vars = saved.getCompoundOrEmpty("vars");
@@ -826,6 +1003,22 @@ public final class Vm {
             }
             saved.getCompound("last_escape").ifPresent(m -> f.lastEscape = loadMessage(m));
             saved.getCompound("last_message").ifPresent(m -> f.lastMessage = loadMessage(m));
+            ListTag files = saved.getListOrEmpty("files");
+            for (int j = 0; j < files.size(); j++) {
+                CompoundTag state = files.getCompoundOrEmpty(j);
+                OpenFile file = new OpenFile();
+                file.end = state.getBooleanOr("end", false);
+                file.current = state.getLongOr("current", -1);
+                if (state.contains("key")) {
+                    ListTag keyValues = state.getListOrEmpty("key");
+                    List<String> values = new ArrayList<>();
+                    for (int k = 0; k < keyValues.size(); k++) {
+                        values.add(keyValues.getStringOr(k, ""));
+                    }
+                    file.position = new DbRecord.Position(values, state.getLongOr("rrn", 0));
+                }
+                f.files.put(state.getStringOr("opnid", ""), file);
+            }
             vm.frames.push(f);
         }
         tag.getCompound("wait").ifPresent(w -> vm.wait = loadWait(w));

@@ -6,10 +6,15 @@
 package net.zagdrath.encodedlogistics.elcl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
 import net.minecraft.nbt.CompoundTag;
+import net.zagdrath.encodedlogistics.elcl.db.DbFile;
+import net.zagdrath.encodedlogistics.elcl.db.DbRecord;
+import net.zagdrath.encodedlogistics.elcl.db.Dds;
+import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
 import net.zagdrath.encodedlogistics.elcl.screen.MessageService;
 import net.zagdrath.encodedlogistics.elcl.screen.SpoolService;
 import net.zagdrath.encodedlogistics.elcl.store.SystemData;
@@ -17,6 +22,7 @@ import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // A system's saved data round-trips through NBT: libraries, members (sequence numbers, change dates), programs (their
@@ -60,9 +66,58 @@ class SystemDataTest {
         assertEquals(List.of("one", "two"), loaded.spooled.getFirst().lines());
         assertEquals(4, loaded.nextSpooled);
         assertEquals("10", loaded.sysvals.get("SECLVL"));
-        assertEquals(5, loaded.libraries.get("ELSYS").members.size());
+        assertEquals(8, loaded.libraries.get("ELSYS").members.size());
         assertTrue(loaded.libraries.get("ELSYS").system());
         assertNotNull(loaded.libraries.get("ELGPL"));
+    }
+
+    // Physical files round-trip with their records (numbers kept), PF members keep their type, a program the formats it
+    // was compiled with (so it compiles again); records cost storage as source does; ELSYS has its system files and
+    // the samples that compile there as programs.
+    @Test
+    void filesRoundTripAndCostStorage() throws ElclException {
+        SystemData data = new SystemData();
+        SystemData.Library library = new SystemData.Library("ZAGLIB", "*PROD", "", "ZAGDRATH", "*USE", "Day 3  07:00");
+        List<String> dds = List.of("A UNIQUE", "A R STOCKREC", "A ITEM 54A", "A QTY 10S 0", "A K ITEM");
+        RecordFormat format = Dds.compile(dds).format();
+        DbFile file = new DbFile("STOCK", "Stock levels", format, "ZAGLIB", "STOCKSRC", 2, "Day 3  07:05", false);
+        file.add(new Object[] { "IRON_INGOT", 40L });
+        DbRecord coal = file.add(new Object[] { "COAL", 900L });
+        file.delete(1);
+        library.files.put("STOCK", file);
+        library.members.put("STOCKSRC", new SystemData.Member("STOCKSRC", SystemData.PF, "Stock", SourceLine.number(dds, 3), 2, "Day 3  07:00"));
+        List<SourceLine> program = SourceLine.number(List.of("PGM", "DCLF FILE(STOCK)", "RCVF", "ENDPGM"), 3);
+        library.programs.put("READ", new SystemData.Program("READ", "ZAGLIB", "READ", 1, "Day 3  07:10", program, Map.of("*LIBL/STOCK", format.save())));
+        data.libraries.put("ZAGLIB", library);
+        // 64 characters a record, a byte per 64: one record, one byte.
+        assertEquals(cost(dds, 64) + 1, data.storageBytes(64));
+
+        SystemData loaded = SystemData.load(data.save());
+        SystemData.Library lib = loaded.libraries.get("ZAGLIB");
+        DbFile back = lib.files.get("STOCK");
+        assertNotNull(back);
+        assertEquals(format, back.format);
+        assertEquals("Stock levels", back.text);
+        assertEquals("STOCKSRC", back.sourceMember);
+        assertEquals(1, back.size());
+        assertEquals(900L, back.get(coal.rrn()).value(1));
+        assertEquals(3, back.nextRrn());
+        assertEquals(SystemData.PF, lib.members.get("STOCKSRC").type);
+        assertNotNull(lib.programs.get("READ").compiled(), "A program declaring a file doesn't compile again");
+        assertEquals(data.storageBytes(64), loaded.storageBytes(64));
+
+        SystemData.Library elsys = loaded.libraries.get("ELSYS");
+        assertTrue(elsys.files.keySet().containsAll(List.of("INVITEMS", "DEVICES", "CRFHIST", "JOBS")));
+        assertTrue(elsys.files.get("INVITEMS").system);
+        assertEquals(SystemData.PF, elsys.members.get("ITEMHIST").type);
+        assertNotNull(elsys.programs.get("ITEMSETUP"));
+        assertNull(elsys.programs.get("LOGITEMS"), "LOGITEMS needs ELGPL/ITEMHIST: a member to compile, not a program");
+        assertEquals("Item counts logged by LOGITEMS", elsys.members.get("ITEMHIST").text);
+        assertFalse(loaded.save().toString().contains("INVITEMS"), "ELSYS's files saved");
+    }
+
+    private static long cost(List<String> lines, int perByte) {
+        return SystemData.cost(lines.stream().mapToInt(String::length).sum(), perByte);
     }
 
     @Test

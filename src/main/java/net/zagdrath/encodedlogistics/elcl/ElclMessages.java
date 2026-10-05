@@ -130,6 +130,45 @@ public final class ElclMessages {
         define("ELC1320", SEVERE, "Machine &1 does not support &2.");
         define("ELC1321", SEVERE, "Machine &1 rejected &2(&3).");
         define("ELC1322", INFO, "Machine &1 changed.");
+        // Database files: reading and writing them.
+        define("ELC2201", SEVERE, "End of file &1 reached.");
+        define("ELC2202", SEVERE, "Record with key &1 not found in file &2.");
+        define("ELC2203", SEVERE, "Duplicate key &1 in file &2.");
+        define("ELC2204", SEVERE, "No record read from file &1 to change or delete.");
+        define("ELC2205", SEVERE, "File &1 not found in library &2.");
+        define("ELC2206", SEVERE, "File with open identifier &1 not declared.");
+        define("ELC2207", SEVERE, "Level check on file &1: &2 changed since the program was compiled.");
+        define("ELC2208", SEVERE, "File &1 is full: limit of &2 records.");
+        define("ELC2209", SEVERE, "Value '&1' not valid for field &2.");
+        // Database files: their definitions (PF source members).
+        define("ELC2220", SEVERE, "Definition statement not valid at '&1'.");
+        define("ELC2221", SEVERE, "Field &1 defined more than once.");
+        define("ELC2222", SEVERE, "Length &1 not valid for field &2 (type &3).");
+        define("ELC2223", SEVERE, "Key field &1 is not a field of the record.");
+        define("ELC2224", SEVERE, "Too many &1 (max &2).");
+        define("ELC2225", SEVERE, "No record format (R) defined before the fields.");
+        define("ELC2226", SEVERE, "Keyword &1 not valid here.");
+        define("ELC2227", SEVERE, "Type &1 not valid for field &2.");
+        define("ELC2228", SEVERE, "Name &1 not valid.");
+        // Database files: the OS commands.
+        define("ELC2230", INFO, "File &1 created in library &2.");
+        define("ELC2231", INFO, "File &1 changed in library &2: &3 records kept.");
+        define("ELC2232", WARNING, "Field &1 dropped from file &2: its values are lost.");
+        define("ELC2233", INFO, "File &1 deleted from library &2.");
+        define("ELC2234", INFO, "File &1 cleared: &2 records removed.");
+        define("ELC2235", INFO, "&1 records copied to file &2.");
+        define("ELC2236", INFO, "&1 records copied to &2.");
+        define("ELC2237", INFO, "&1 records copied from &2.");
+        define("ELC2238", INFO, "Query selected &1 of &2 records.");
+        define("ELC2239", SEVERE, "File &1 was not created: definition errors.");
+        define("ELC2240", SEVERE, "Stream file &1 not found.");
+        define("ELC2241", SEVERE, "Folder sync is off: &1 needs the system's folder.");
+        define("ELC2242", SEVERE, "Field &1 not found in file &2.");
+        define("ELC2243", SEVERE, "Row &1: value '&2' not valid for field &3.");
+        define("ELC2244", SEVERE, "Files &1 and &2 have no fields in common.");
+        define("ELC2245", SEVERE, "Stream file name &1 not valid.");
+        define("ELC2246", SEVERE, "File &1 was not changed: definition errors.");
+        define("ELC2247", SEVERE, "Member &1 is not a &2 source member.");
         // Crafting.
         define("ELC1401", SEVERE, "No Scheduler available.");
         define("ELC1402", SEVERE, "No recipe known for &1.");

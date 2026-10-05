@@ -77,7 +77,7 @@ final class FolderSyncGameTests {
         write(FolderSync.folder(system).resolve("ELSYS").resolve("SNEAKY.elclp"), "PGM\nENDPGM\n");
         FolderSync.poll(system);
         helper.assertTrue(libraries.member(system, "NEWLIB", "NOTE").lines() == 3, "New folder's member not taken in");
-        helper.assertTrue(libraries.members(system, "ELSYS").size() == 5, "ELSYS synced in");
+        helper.assertTrue(libraries.members(system, "ELSYS").size() == 8, "ELSYS synced in");
 
         // Changed outside, then saved in game before it was taken in: the game's save wins, the file's version kept.
         write(hello, "SOMETHING ELSE\n");

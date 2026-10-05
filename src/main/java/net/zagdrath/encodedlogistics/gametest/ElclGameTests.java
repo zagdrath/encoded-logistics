@@ -85,7 +85,7 @@ final class ElclGameTests {
                         helper.fail("Job log: " + e);
                     }
                     TerminalOutput members = TerminalService.handle(context, TerminalService.SCREEN, "members ELSYS");
-                    helper.assertTrue(members.lines().size() == 5, "ELSYS members " + members.lines().size());
+                    helper.assertTrue(members.lines().size() == 8, "ELSYS members " + members.lines().size());
                     TerminalOutput source = TerminalService.handle(context, TerminalService.SCREEN, "source ELSYS RESTOCK");
                     helper.assertTrue(source.lines().getFirst().cells().getFirst().text().getString().equals("20"), "RESTOCK lines");
                     helper.assertTrue(source.lines().getFirst().cells().get(2).text().getString().equals("1"), "ELSYS not read-only");

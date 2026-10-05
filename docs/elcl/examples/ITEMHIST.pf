@@ -1,0 +1,12 @@
+     A* ITEMHIST - Item counts logged by LOGITEMS
+     A* Each run of LOGITEMS writes a record an item, all with the
+     A* same LOGGED time; the key keeps one record an item a run.
+     A                                      UNIQUE
+     A          R ITEMREC                   TEXT('Item count history')
+     A            LOGGED          14T       COLHDG('Logged')
+     A                                      TEXT('When the count was taken')
+     A            ITEM           64A        COLHDG('Item')
+     A            COUNT          18S 0      COLHDG('Count')
+     A                                      TEXT('Hot and cold together')
+     A          K LOGGED
+     A          K ITEM

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,6 +24,8 @@ import org.jspecify.annotations.Nullable;
 import net.zagdrath.encodedlogistics.elcl.Diagnostic;
 import net.zagdrath.encodedlogistics.elcl.ElclMessages;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
+import net.zagdrath.encodedlogistics.elcl.db.FieldDef;
+import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.Kind;
@@ -37,12 +40,17 @@ import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 // matched (DO/ENDDO, FOREACH/ENDFOR, SELECT/ENDSELECT, SUBR/ENDSUBR; ELSE after its IF, WHEN in a SELECT, LEAVE and
 // ITERATE in a loop) and every GOTO's label there and not inside a loop or DO group it's outside of. Any message of
 // severity 20 or more means no program. Also gathers the cross reference for the listing.
+//
+// DCLF (with the DCLs) declares a variable for each field of a file's record format, which a FileResolver supplies;
+// the file operations (RCVF, CHNRCD, WRTRCD...) must name a declared file's open ID (ELC2206). The formats used come
+// back with the result (formats, by "LIB/FILE" as written) so the program can keep them.
 public final class Compiler {
     // A variable's (or label's) uses for the cross reference: the line, and whether it's set there.
     public record Ref(int line, boolean modified) {}
 
     public record Result(@Nullable CompiledProgram program, List<Diagnostic> diagnostics, Map<String, VarDecl> variables,
-            Map<String, List<Ref>> variableRefs, Map<String, List<Ref>> labelRefs, Map<String, List<Ref>> subroutineRefs) {
+            Map<String, List<Ref>> variableRefs, Map<String, List<Ref>> labelRefs, Map<String, List<Ref>> subroutineRefs,
+            Map<String, RecordFormat> formats) {
         public boolean ok() {
             return program != null;
         }
@@ -61,7 +69,7 @@ public final class Compiler {
     private static final Set<String> LOOPS = Set.of("DOWHILE", "DOUNTIL", "DOFOR", "FOREACH");
     private static final Set<String> DO_KINDS = Set.of("DO", "DOWHILE", "DOUNTIL", "DOFOR");
     // Never inside THEN() / EXEC() / CMD().
-    private static final Set<String> NOT_NESTED = Set.of("PGM", "ENDPGM", "DCL", "ENDDO", "ENDFOR", "SELECT", "ENDSELECT", "SUBR", "ENDSUBR", "ELSE",
+    private static final Set<String> NOT_NESTED = Set.of("PGM", "ENDPGM", "DCL", "DCLF", "ENDDO", "ENDFOR", "SELECT", "ENDSELECT", "SUBR", "ENDSUBR", "ELSE",
             "WHEN", "OTHERWISE", "MONMSG");
 
     // Built-ins: argument counts and what they give (null: the type of their numeric arguments).
@@ -77,30 +85,57 @@ public final class Compiler {
             Map.entry("%SIZE", new Builtin(1, 1, VarType.INT)), Map.entry("%ELEM", new Builtin(2, 2, VarType.CHAR)),
             Map.entry("%NAME", new Builtin(1, 1, VarType.CHAR)));
 
+    // The file operations: each names a declared file by OPNID.
+    private static final Set<String> FILE_OPS = Set.of("RCVF", "POSDBF", "CLOF", "CHNRCD", "WRTRCD", "UPDRCD", "DLTRCD");
+    // Files a program may declare (DCLF).
+    public static final int MAX_FILES = 5;
+
     private Compiler() {}
 
     public static Result compile(List<SourceLine> source) {
-        return compileTexts(SourceLine.texts(source));
+        return compileTexts(SourceLine.texts(source), FileResolver.NONE);
+    }
+
+    public static Result compile(List<SourceLine> source, FileResolver files) {
+        return compileTexts(SourceLine.texts(source), files);
     }
 
     public static Result compileTexts(List<String> texts) {
+        return compileTexts(texts, FileResolver.NONE);
+    }
+
+    public static Result compileTexts(List<String> texts, FileResolver files) {
         Parser.Result parsed = Parser.parse(texts);
-        Checker checker = new Checker(false);
+        Checker checker = new Checker(false, files);
         checker.diagnostics.addAll(parsed.diagnostics());
         CompiledProgram program = checker.program(parsed.statements(), Math.max(0, texts.size() - 1));
         List<Diagnostic> diagnostics = new ArrayList<>(checker.diagnostics);
         diagnostics.sort(Comparator.comparingInt(Diagnostic::line));
         boolean failed = diagnostics.stream().anyMatch(Diagnostic::isError);
         return new Result(failed ? null : program, List.copyOf(diagnostics), checker.variables, checker.variableRefs, checker.labelRefs,
-                checker.subroutineRefs);
+                checker.subroutineRefs, Map.copyOf(checker.formats));
     }
 
     // One command typed on a command line (no variables there): its problems, empty when it can run. RTN*
     // parameters aren't required on the command line - their values are shown instead.
     public static List<Diagnostic> checkCommand(Stmt statement) {
-        Checker checker = new Checker(true);
+        Checker checker = new Checker(true, FileResolver.NONE);
         checker.statement(statement, null);
         return checker.diagnostics;
+    }
+
+    // DCLF FILE(LIB/NAME) as {library, file}: unqualified is *LIBL.
+    public static String[] qualified(@Nullable Expr file) {
+        String text = (file == null ? "" : file instanceof Expr.Str str ? str.value() : file.toString()).strip().toUpperCase(Locale.ROOT);
+        int slash = text.indexOf('/');
+        return slash >= 0 ? new String[] { text.substring(0, slash), text.substring(slash + 1) } : new String[] { "*LIBL", text };
+    }
+
+    // A file operation's or DCLF's open ID: "" for none (OPNID(*NONE) or not given).
+    public static String opnid(Stmt statement) {
+        Expr value = statement.value("OPNID");
+        String text = value == null ? "" : value.toString().toUpperCase(Locale.ROOT);
+        return text.equals("*NONE") ? "" : text;
     }
 
     // --- The checks ---
@@ -161,9 +196,16 @@ public final class Compiler {
         // The SELECTs (by frame id) whose OTHERWISE has come.
         final Set<Integer> otherwiseSeen = new HashSet<>();
         @Nullable Stmt lastCommand;
+        // DCLF: where formats come from, the files declared (by open ID), the formats used (by LIB/FILE as written), and
+        // whether a file the resolver didn't know leaves variables unchecked (the editor's lenient check).
+        final FileResolver files;
+        final Map<String, DeclaredFile> declaredFiles = new LinkedHashMap<>();
+        final Map<String, RecordFormat> formats = new LinkedHashMap<>();
+        boolean unknownVariables;
 
-        Checker(boolean interactive) {
+        Checker(boolean interactive, FileResolver files) {
             this.interactive = interactive;
+            this.files = files;
         }
 
         void report(int line, String id, Object... data) {
@@ -209,9 +251,12 @@ public final class Compiler {
                 }
                 switch (s.name()) {
                     case "PGM" -> report(s.firstLine(), "ELC0001", s.name());
-                    case "DCL" -> {
+                    case "DCL", "DCLF" -> {
                         if (phase != Phase.DCL) {
                             report(s.firstLine(), "ELC0016");
+                        }
+                        if (s.is("DCLF")) {
+                            statement(s, null);
                         }
                     }
                     case "MONMSG" -> {
@@ -264,7 +309,7 @@ public final class Compiler {
                 }
             }
             return new CompiledProgram(List.copyOf(params), Map.copyOf(variables), List.copyOf(statements), Map.copyOf(labelIndex), Map.copyOf(subroutines),
-                    List.copyOf(monitors));
+                    List.copyOf(monitors), Map.copyOf(declaredFiles));
         }
 
         private static String closer(String opener) {
@@ -454,6 +499,10 @@ public final class Compiler {
 
         private void declarations(List<Stmt> statements) {
             for (Stmt s : statements) {
+                if (s.is("DCLF") && s.definition() != null) {
+                    declareFile(s);
+                    continue;
+                }
                 if (!s.is("DCL") || s.definition() == null) {
                     continue;
                 }
@@ -516,6 +565,79 @@ public final class Compiler {
             }
         }
 
+        // DCLF FILE() OPNID(): the file's format from the resolver, a variable for each field (&FIELD, &OPNID_FIELD). A
+        // second file with the same open ID, more than MAX_FILES, or a variable already declared is ELC0103 / ELC2224;
+        // a file there's no format for ELC2205 (or, lenient, its variables go unchecked).
+        private void declareFile(Stmt s) {
+            String[] file = qualified(s.value("FILE"));
+            String opnid = opnid(s);
+            if (file[1].isEmpty()) {
+                return;
+            }
+            if (declaredFiles.containsKey(opnid)) {
+                report(s.firstLine(), "ELC0103", opnid.isEmpty() ? "*NONE" : opnid, "OPNID");
+                return;
+            }
+            if (declaredFiles.size() >= MAX_FILES) {
+                report(s.firstLine(), "ELC2224", "DCLF", MAX_FILES);
+                return;
+            }
+            RecordFormat format = files.format(file[0], file[1]);
+            if (format == null) {
+                if (files.lenient()) {
+                    unknownVariables = true;
+                    declaredFiles.put(opnid, new DeclaredFile(opnid, file[0], file[1], null));
+                } else {
+                    report(s.firstLine(), "ELC2205", file[1], file[0]);
+                }
+                return;
+            }
+            DeclaredFile declared = new DeclaredFile(opnid, file[0], file[1], format);
+            declaredFiles.put(opnid, declared);
+            formats.put(FileResolver.key(file[0], file[1]), format);
+            for (FieldDef field : format.fields()) {
+                String name = declared.variable(field);
+                if (variables.containsKey(name)) {
+                    report(s.firstLine(), "ELC0103", name, "DCLF");
+                    continue;
+                }
+                variables.put(name, new VarDecl(name, field.varType(), field.varLength(), field.type() == FieldDef.Type.DEC ? field.decimals() : 0, null,
+                        s.firstLine()));
+                variableRefs.computeIfAbsent(name, k -> new ArrayList<>()).add(new Ref(s.firstLine(), false));
+            }
+        }
+
+        // A file operation's OPNID names a declared file (ELC2206); CHNRCD's KEY has no more values than the key has
+        // fields, on a keyed file. The file's variables are in the cross reference: set by a read, used by a write.
+        private void fileOperation(Stmt s) {
+            String opnid = opnid(s);
+            DeclaredFile file = declaredFiles.get(opnid);
+            if (file == null) {
+                report(s.firstLine(), "ELC2206", opnid.isEmpty() ? "*NONE" : opnid);
+                return;
+            }
+            RecordFormat format = file.format();
+            if (format == null) {
+                return;
+            }
+            if (s.is("CHNRCD")) {
+                Stmt.Param key = s.param("KEY");
+                int given = key != null ? key.values().size() : 0;
+                if (!format.keyed() || given > format.key().size()) {
+                    report(s.firstLine(), "ELC0103", key != null && !key.values().isEmpty() ? key.values().getLast() : "*NONE", "KEY");
+                }
+            }
+            boolean sets = s.is("RCVF") || s.is("CHNRCD");
+            if (sets || s.is("WRTRCD") || s.is("UPDRCD")) {
+                for (FieldDef field : format.fields()) {
+                    List<Ref> refs = variableRefs.get(file.variable(field));
+                    if (refs != null) {
+                        refs.add(new Ref(s.firstLine(), sets));
+                    }
+                }
+            }
+        }
+
         private static @Nullable Long integer(Expr value) {
             if (value instanceof Expr.Num num) {
                 try {
@@ -555,6 +677,9 @@ public final class Compiler {
                     report(s.firstLine(), "ELC0102", def.keyword());
                 }
             }
+            if (FILE_OPS.contains(s.name()) && !interactive) {
+                fileOperation(s);
+            }
             // Parameters required only together with another's value.
             switch (s.name()) {
                 case "CHGDEVFTR" -> {
@@ -572,6 +697,12 @@ public final class Compiler {
                     Expr frequency = s.value("FRQ");
                     if (frequency != null && frequency.toString().equals("*INTERVAL") && s.param("INTERVAL") == null) {
                         report(s.firstLine(), "ELC0102", "INTERVAL");
+                    }
+                }
+                case "RUNQRY" -> {
+                    Expr output = s.value("OUTPUT");
+                    if (output != null && output.toString().equals("*OUTFILE") && s.param("OUTFILE") == null) {
+                        report(s.firstLine(), "ELC0102", "OUTFILE");
                     }
                 }
                 case "CHGVAR" -> {
@@ -619,7 +750,9 @@ public final class Compiler {
                     }
                     VarDecl decl = variables.get(var.name());
                     if (decl == null) {
-                        report(line, "ELC0002", var.name());
+                        if (!unknownVariables) {
+                            report(line, "ELC0002", var.name());
+                        }
                         return;
                     }
                     boolean modified = def.isReturn() || s.is("CHGVAR") && keyword.equals("VAR");
@@ -882,7 +1015,9 @@ public final class Compiler {
                 case Expr.Var var -> {
                     VarDecl decl = variables.get(var.name());
                     if (decl == null) {
-                        report(var.line(), "ELC0002", var.name());
+                        if (!unknownVariables) {
+                            report(var.line(), "ELC0002", var.name());
+                        }
                         yield Type.ANY;
                     }
                     variableRefs.get(var.name()).add(new Ref(var.line(), false));

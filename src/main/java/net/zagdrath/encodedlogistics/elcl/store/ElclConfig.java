@@ -77,6 +77,10 @@ public final class ElclConfig {
         return value(Config.ELCL_DISKETTE_BYTES);
     }
 
+    public static int maxRecordsPerFile() {
+        return value(Config.ELCL_MAX_RECORDS_PER_FILE);
+    }
+
     // allowFolderSync: AUTO is on unless the server is dedicated.
     public static boolean folderSync(boolean dedicated) {
         Config.FolderSync setting;

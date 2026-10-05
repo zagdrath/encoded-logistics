@@ -116,7 +116,7 @@ public final class OsCommands {
         CommandRegistry.bind("CRTMBR", call -> {
             ElclSystem system = system(call);
             String[] mbr = qualified(system, user(call), call.text("MBR"));
-            libraries.createMember(system, user(call), mbr[0], mbr[1], call.text("TEXT").equals("*BLANK") ? "" : call.text("TEXT"));
+            libraries.createMember(system, user(call), mbr[0], mbr[1], call.text("TEXT").equals("*BLANK") ? "" : call.text("TEXT"), call.text("SRCTYPE"));
             call.send(ElclMessage.of("ELC0214", mbr[1], mbr[0]));
         });
         CommandRegistry.bind("CPYMBR", call -> {

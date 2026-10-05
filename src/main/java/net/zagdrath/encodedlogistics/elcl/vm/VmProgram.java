@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import net.zagdrath.encodedlogistics.elcl.compile.DeclaredFile;
 import net.zagdrath.encodedlogistics.elcl.compile.VarDecl;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
 import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
@@ -18,8 +19,10 @@ import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 // subroutine calls and returns - and its monitors. A monitor covers a range of instructions (a command and anything
 // nested in it) and, when one of its message IDs escapes from there, sends execution to its handler (the code its
 // EXEC lowered to, ending in RESUME) or, without one, on to the next statement. Program-level monitors cover every
-// instruction. Every instruction knows where "the next statement" is (resume), for a monitor to carry on there.
-public record VmProgram(List<String> params, Map<String, VarDecl> variables, List<Insn> code, List<Monitor> monitors, List<Monitor> programMonitors) {
+// instruction. Every instruction knows where "the next statement" is (resume), for a monitor to carry on there. files:
+// the files it declares (DCLF), by open ID.
+public record VmProgram(List<String> params, Map<String, VarDecl> variables, List<Insn> code, List<Monitor> monitors, List<Monitor> programMonitors,
+        Map<String, DeclaredFile> files) {
     public enum Op {
         COMMAND,    // run stmt (CHGVAR, CALL, ... or a registered command)
         JUMP,       // to target

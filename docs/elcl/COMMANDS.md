@@ -136,8 +136,8 @@ refused. `PWRNET(*YES)`: power from the network (`machinePowerRate`, `machinePow
 |---------|-----------|---------|
 | `WRKLIB` / `CRTLIB LIB() TEXT()` / `DLTLIB LIB()` | | I / IB / IB |
 | `WRKMBR LIB()` / `EDTMBR MBR(LIB/NAME)` | | I |
-| `CPYMBR FROM() TO()` / `RNMMBR MBR() NEWNAME()` / `DLTMBR MBR()` | | IB |
-| `CRTELPGM PGM(LIB/NAME) SRCMBR(*PGM\|LIB/NAME)` / `DLTPGM PGM()` | | IB |
+| `CRTMBR MBR() TEXT() SRCTYPE(ELCLP\|PF)` / `CPYMBR FROM() TO()` / `RNMMBR MBR() NEWNAME()` / `DLTMBR MBR()` | `SRCTYPE(PF)`: a physical file's definition (11) | IB |
+| `CRTELPGM PGM(LIB/NAME) SRCMBR(*PGM\|LIB/NAME)` / `DLTPGM PGM()` | From an `ELCLP` member (ELC2247 otherwise) | IB |
 | `SBMJOB CMD(command) JOB(name) HOST(*ANY\|device)` | Batch job; ELC0301 if no host | IB |
 | `WRKACTJOB` / `WRKJOB JOB()` / `DSPJOBLOG JOB(*\|id)` | | I |
 | `HLDJOB JOB()` / `RLSJOB JOB()` / `ENDJOB JOB() OPTION(*CNTRLD\|*IMMED)` | | IB |
@@ -186,3 +186,100 @@ entry missed while its network was unloaded runs once when it's loaded again.)*
 The Terminal Desk's original words (`help`, `show`, `withdraw`, `craft`, `cancel job`, `clear`) are gone: every command
 line is ELCL. Use F1 / `GO HELP`, `WRKINV`, `WRKDEV`, `DSPNETSTS`, `WRKCRFJOB`, `MOVITM ITEM() QTY() TODEV(*DESK)`,
 `STRCRAFT`, `ENDCRAFT` and `CLEAR` instead.
+
+## 11. Database files
+
+Physical files (`*FILE`, attribute `PF`) live in libraries beside members and programs: a record format (its fields)
+compiled from a `PF` source member, an optional key, and one data member of records. A file named without a library
+(`FILE(ITEMHIST)`) is looked for down the user's library list; one being made goes in their current library. Reading a
+file needs its library (`*USE`, which every library gives); writing it `*CHANGE` on the library (its owner, `*SECOFR`, or
+a `*CHANGE` library: ELC0401; never ELSYS: ELC0205). Records take network storage as source does (each its record
+length in characters; ELC0207 when the drives are full) and a file holds at most `maxRecordsPerFile` (config, 10,000:
+ELC2208). Files and their records save with the system.
+
+ELSYS holds four read-only **system files**, made from the network as they're read (a read from the top sees it as it
+is; reading on, the same picture for the rest of the tick). They need the Firewall's view permission (ELC0401).
+
+| File | Fields (key first) |
+|------|--------------------|
+| `ELSYS/INVITEMS` | `ITEM` 64A (the ID as scripts write it), `NAME` 48A, `HOT` 18S, `COLD` 18S, `MOD` 32A |
+| `ELSYS/DEVICES` | `NAME` 10A, `TYPE` 10A, `LOCATION` 40A (`x,y,z dimension`), `LANES` 9S, `STATUS` 10A |
+| `ELSYS/CRFHIST` | `NUMBER` 9S, `JOBID` 8A (`C0042`), `ITEM` 64A, `REQUESTED` 18S, `PRODUCED` 18S, `STATUS` 10A, `USER` 10A, `STARTED` T, `ENDED` T |
+| `ELSYS/JOBS` | `NUMBER` 6A, `JOB` 10A, `USER` 10A, `TYPE` 3A, `HOST` 10A, `STATUS` 7A, `PRIORITY` 1S, `BUDGET` 3S |
+
+**Definitions.** `CRTMBR MBR(LIB/NAME) SRCTYPE(PF)` makes a definition member (`SRCTYPE(ELCLP)`, the default, a
+program's). Each line starts with `A` (a line without one is read the same), in the editor's columns or anywhere;
+`A*` or `*` starts a comment; a line with only keywords goes with the line before it:
+
+```
+     A                                      UNIQUE
+     A          R ITEMREC                   TEXT('Item counts')
+     A            ITEM          64A         COLHDG('Item')
+     A            QTY           11S 0
+     A            PRICE          9P 2       TEXT('Unit price')
+     A            ACTIVE         1L
+     A            UPDATED         T
+     A          K ITEM
+```
+
+`R` names the record format (one a file); `K` a key field (up to 4, in order; none: arrival order); anything else a
+field (up to 50): its name (up to 10 characters), length and type, keywords.
+
+| Type | Meaning | Length | In a program |
+|------|---------|--------|--------------|
+| `A` | Character | 1-1,024 | `*CHAR` of its length |
+| `S` | Integer | 1-18 digits, 0 decimals | `*INT` |
+| `P` | Decimal | 1-31 digits and its decimals (`9P 2`, `9P2`) | `*DEC` of its length and decimals |
+| `L` | Logical | 1 | `*LGL` |
+| `T` | Game timestamp: `00012 06:30:15` (the day, then the time on the game clock; it sorts as text) | ignored | `*CHAR 14` |
+
+Keywords: `UNIQUE` (before the `R`: the key is unique), `TEXT('...')` on the `R` (the file's text, when its member has
+none) or a field, `COLHDG('...' ['...' ['...']])` on a field (its column heading, up to three lines). A timestamp typed,
+imported or assigned may be `Day 12 06:30`, `12 06:30:15` or `00012 06:30:15`; blank or `*NOW` is the moment it's
+written. The editor checks a definition as it does a program; CRTPF's listing (Work with Output) shows the source with
+sequence numbers, the record format, and each message with its sequence number (ELC2220-ELC2228).
+
+### In programs
+
+| Command | Parameters | Notes |
+|---------|-----------|-------|
+| `DCLF` | `FILE`(P1, Req, qualified) `OPNID`(P2, `*NONE`\|name) | With the `DCL`s (ELC0016 after other commands): a variable for each field, `&FIELD`, or `&OPNID_FIELD` with an open ID, of its type above. Up to 5 a program, each open ID once (ELC0103). The file must be there when the program is compiled (ELC2205); the program keeps the formats it was compiled with, so a field it declares that is gone or of another type when it runs is a level check, ELC2207 (fields added don't matter) |
+| `RCVF` | `OPNID`(P1) | The next record (key order; arrival order without a key) into the variables; at the end ELC2201, and again until `POSDBF` or `CLOF` |
+| `POSDBF` | `OPNID`(P1) `POSITION`(P2, Req: `*START\|*END`) | Back to the start, or on to the end |
+| `CLOF` | `OPNID`(P1) | Closes it: the next `RCVF` reads from the top |
+| `CHNRCD` **[EXT]** | `OPNID`(P1) `KEY`(P2, Req, 1-4 values) | The first record whose leading key fields are the values (all of the key or the first of its fields); ELC2202 when there's none. `RCVF` reads on after it |
+| `WRTRCD` **[EXT]** | `OPNID`(P1) | A new record from the variables (fields the program doesn't declare blank). ELC2203 for a duplicate unique key, ELC2208 when the file is full, ELC0207 when storage is, ELC2209 for a value that doesn't fit its field. A timestamp written blank takes the time, and its variable gets it |
+| `UPDRCD` **[EXT]** | `OPNID`(P1) | The record last read (`RCVF` or `CHNRCD`) from the variables; ELC2204 with none |
+| `DLTRCD` **[EXT]** | `OPNID`(P1) | Deletes the record last read; ELC2204 with none |
+
+The variables are the program's own: `RCVF` overwrites them, `WRTRCD` and `UPDRCD` write what they hold. ELC2201 is
+monitored like any escape message:
+
+```
+DCLF FILE(ELSYS/INVITEMS)
+...
+READ: RCVF
+MONMSG MSGID(ELC2201) EXEC(GOTO CMDLBL(DONE))
+```
+
+### The files
+
+| Command | Parameters | Context | Notes |
+|---------|-----------|---------|-------|
+| `CRTPF` | `FILE`(P1, Req) `SRCMBR`(P2, `*FILE`\|LIB/NAME) `TEXT(*SRCMBRTXT\|*BLANK\|text)` | IB | From a `PF` member (`*FILE`: the member of the file's name in its library). ELC2230; ELC2239 with definition errors (the listing in Work with Output), ELC2247 not a `PF` member, ELC0204 already there |
+| `CHGPF` | `FILE`(P1, Req) `SRCMBR`(P2, `*FILE`: the member it was made from) `TEXT(*SAME\|*BLANK\|text)` | IB | Made again from its definition; each record keeps its values where a field of the same name and type is still there, the other fields' values are dropped (ELC2232 for each). ELC2231; ELC2246 with definition errors; a new unique key over duplicates is ELC2203 and nothing changes |
+| `DLTF` | `FILE`(P1, Req) | IB | ELC2233 |
+| `CLRPFM` | `FILE`(P1, Req) | IB | Every record gone: ELC2234 |
+| `CPYF` | `FROMFILE`(P1, Req) `TOFILE`(P2, Req) `MBROPT(*ADD\|*REPLACE)` `CRTFILE(*NO\|*YES)` | IB | Each field of the file copied to from the field of the same name (ELC2244 when there's none; ELC2243 for a value that doesn't fit); `CRTFILE(*YES)` makes a file there isn't with the copied file's format. All or nothing. ELC2235 |
+| `CPYTOIMPF` | `FILE`(P1, Req) `TOSTMF`(P2, Req: `'name.csv'`) | IB | The records as CSV (a heading row of field names; values as text) in the system's folder-sync folder, `<world>/encodedlogistics/libraries/<SYSNAME>/name.csv`. Only where folder sync is on (`allowFolderSync`): ELC2241. A plain name ending `.csv`: ELC2245. ELC2236 |
+| `CPYFRMIMPF` | `FROMSTMF`(P1, Req) `FILE`(P2, Req) `MBROPT(*ADD\|*REPLACE)` | IB | From that folder: a heading row naming the fields maps columns by name (any order; fields left out blank), else columns are the fields in order. ELC2240 no such file, ELC2243 a value that doesn't fit its field (and its row). All or nothing. ELC2237 |
+| `RUNQRY` | `FILE`(P1, Req) `QRYSLT(*ALL\|expression)` `SORT(*NONE\|field [*DESCEND] ...)` `OUTPUT(*DISPLAY\|*PRINT\|*OUTFILE)` `OUTFILE(LIB/NAME)` | IB | Below. ELC2238 |
+| `WRKF LIB(*CURLIB\|lib)` / `DSPPFM FILE()` / `DSPFD FILE()` / `UPDDTA FILE()` | screens (OS.md 8) | I |
+
+**RUNQRY.** `QRYSLT` is an ELCL expression over the file's field names - `'QTY *LT 100 *AND ACTIVE'`,
+`'%SST(ITEM 1 4) *EQ "IRON"'` - a field written bare or as `&FIELD`, a literal in double quotes (or doubled single ones,
+as in any quoted value); a name that isn't a field is ELC2242. `SORT` names up to 4 fields, each followed by `*DESCEND`
+to go highest first (records it can't tell apart keep the file's order). `*DISPLAY` shows the result on the terminal
+(the Display Physical File Member layout); in a program or a batch job, where there's no screen, it's printed.
+`*PRINT` writes the report (headings, the records, the count) to the spooled file `QPQUPRFIL`. `*OUTFILE` makes - or
+replaces - `OUTFILE` with the records selected, in the query's order (a file without a key).

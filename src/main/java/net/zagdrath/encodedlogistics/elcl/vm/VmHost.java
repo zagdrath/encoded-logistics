@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.elcl.vm;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -13,12 +14,18 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
 import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
+import net.zagdrath.encodedlogistics.elcl.db.FileAccess;
 
 // What the VM needs from the job running it: programs to CALL, its waits, the game (item names, its context for
 // commands, the clock), the job's authority, and where its messages go (job log, the user's message queue).
 public interface VmHost {
-    // A program to run: its key (LIB/NAME) and source (compiled again from it, so a saved job runs what it ran).
-    record Loaded(String key, List<String> source) {}
+    // A program to run: its key (LIB/NAME) and source (compiled again from it, so a saved job runs what it ran), and the
+    // record formats of the files it declares, as it was compiled with them (by "LIB/FILE" as written; RecordFormat.save).
+    record Loaded(String key, List<String> source, Map<String, String> files) {
+        public Loaded(String key, List<String> source) {
+            this(key, source, Map.of());
+        }
+    }
 
     // CALL PGM(lib/name) (library *LIBL: the user's library list): ELC0203 / ELC0201 when there's none.
     Loaded program(String library, String name) throws ElclException;
@@ -61,5 +68,10 @@ public interface VmHost {
 
     default int maxCallDepth() {
         return 16;
+    }
+
+    // The job's files (RCVF, WRTRCD...), or null where there are none to be had (ELC0107).
+    default @Nullable FileAccess files() {
+        return null;
     }
 }

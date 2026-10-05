@@ -17,7 +17,7 @@ import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.Kind;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.ValueList;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.VarType;
 
-// The built-in commands' schemas (COMMANDS.md 1-9, plus the few the OS screens run: CHGLIB, CRTMBR, CHGJOB, the hold
+// The built-in commands' schemas (COMMANDS.md 1-9 and 11, plus the few the OS screens run: CHGLIB, CRTMBR, CHGJOB, the hold
 // and release of schedule entries and triggers, WRKCRFJOB, GO and CLEAR). Executors are bound by the game side.
 final class BuiltinCommands {
     private static final String[] SIDES = { "*NORTH", "*SOUTH", "*EAST", "*WEST", "*UP", "*DOWN" };
@@ -38,6 +38,15 @@ final class BuiltinCommands {
 
     private static ParamDef.Builder yesNo(String keyword, String label, String dft) {
         return p(keyword, label, Kind.SPECIAL).sv("*NO", "*YES").dft(dft);
+    }
+
+    private static ParamDef.Builder file(String keyword, String label) {
+        return p(keyword, label, Kind.QUALIFIED).values(ValueList.FILES);
+    }
+
+    // A file operation's open ID: a DCLF's OPNID, *NONE for the one declared without.
+    private static ParamDef.Builder opnid() {
+        return p("OPNID", "Open file identifier", Kind.NAME).sv("*NONE").dft("*NONE");
     }
 
     private static String[] sides(String extra) {
@@ -347,7 +356,8 @@ final class BuiltinCommands {
                 .p(p("MBR", "Member", Kind.QUALIFIED).req().values(ValueList.MEMBERS)));
         add(CommandDefinition.of("CRTMBR", "Create Member").positional(2)
                 .p(p("MBR", "Member", Kind.QUALIFIED).req().values(ValueList.MEMBERS))
-                .p(p("TEXT", "Text 'description'", Kind.CHAR).sv("*BLANK").dft("*BLANK").len(48)));
+                .p(p("TEXT", "Text 'description'", Kind.CHAR).sv("*BLANK").dft("*BLANK").len(48))
+                .p(p("SRCTYPE", "Source type", Kind.NAME).sv("ELCLP", "PF").dft("ELCLP")));
         add(CommandDefinition.of("CPYMBR", "Copy Member").positional(2)
                 .p(p("FROM", "From member", Kind.QUALIFIED).req().values(ValueList.MEMBERS))
                 .p(p("TO", "To member", Kind.QUALIFIED).req()));
@@ -435,5 +445,67 @@ final class BuiltinCommands {
         add(CommandDefinition.of("GO", "Go to Menu").context(INTERACTIVE).positional(1)
                 .p(p("MENU", "Menu", Kind.NAME).sv("MAIN", "HELP").dft("MAIN")));
         add(CommandDefinition.of("CLEAR", "Clear Command Entry").context(INTERACTIVE));
+
+        // --- 11. Database files ---
+        // In programs: a file's fields as variables, read in key (or arrival) order, positioned, closed; [EXT] read by
+        // key, written, changed, deleted.
+        add(CommandDefinition.of("DCLF", "Declare File").context(PROGRAM).positional(2)
+                .p(file("FILE", "File").req())
+                .p(opnid()));
+        add(CommandDefinition.of("RCVF", "Receive File").context(PROGRAM).positional(1)
+                .p(opnid()));
+        add(CommandDefinition.of("POSDBF", "Position Database File").context(PROGRAM).positional(2)
+                .p(opnid())
+                .p(p("POSITION", "Position", Kind.SPECIAL).req().sv("*START", "*END")));
+        add(CommandDefinition.of("CLOF", "Close File").context(PROGRAM).positional(1)
+                .p(opnid()));
+        add(CommandDefinition.of("CHNRCD", "Chain to Record").context(PROGRAM).positional(2)
+                .p(opnid())
+                .p(p("KEY", "Key values", Kind.VALUE).req().list(4)));
+        add(CommandDefinition.of("WRTRCD", "Write Record").context(PROGRAM).positional(1)
+                .p(opnid()));
+        add(CommandDefinition.of("UPDRCD", "Update Record").context(PROGRAM).positional(1)
+                .p(opnid()));
+        add(CommandDefinition.of("DLTRCD", "Delete Record").context(PROGRAM).positional(1)
+                .p(opnid()));
+        // The files themselves.
+        add(CommandDefinition.of("CRTPF", "Create Physical File").positional(2)
+                .p(file("FILE", "File").req())
+                .p(p("SRCMBR", "Source member", Kind.QUALIFIED).sv("*FILE").dft("*FILE").values(ValueList.MEMBERS))
+                .p(p("TEXT", "Text 'description'", Kind.CHAR).sv("*SRCMBRTXT", "*BLANK").dft("*SRCMBRTXT").len(50)));
+        add(CommandDefinition.of("CHGPF", "Change Physical File").positional(2)
+                .p(file("FILE", "File").req())
+                .p(p("SRCMBR", "Source member", Kind.QUALIFIED).sv("*FILE").dft("*FILE").values(ValueList.MEMBERS))
+                .p(p("TEXT", "Text 'description'", Kind.CHAR).sv("*SAME", "*BLANK").dft("*SAME").len(50)));
+        add(CommandDefinition.of("DLTF", "Delete File").positional(1)
+                .p(file("FILE", "File").req()));
+        add(CommandDefinition.of("CLRPFM", "Clear Physical File Member").positional(1)
+                .p(file("FILE", "File").req()));
+        add(CommandDefinition.of("CPYF", "Copy File").positional(2)
+                .p(file("FROMFILE", "From file").req())
+                .p(file("TOFILE", "To file").req())
+                .p(p("MBROPT", "Replace or add records", Kind.SPECIAL).sv("*ADD", "*REPLACE").dft("*ADD"))
+                .p(yesNo("CRTFILE", "Create file", "*NO")));
+        add(CommandDefinition.of("CPYTOIMPF", "Copy To Import File").positional(2)
+                .p(file("FILE", "From file").req())
+                .p(p("TOSTMF", "To stream file", Kind.CHAR).req().len(40)));
+        add(CommandDefinition.of("CPYFRMIMPF", "Copy From Import File").positional(2)
+                .p(p("FROMSTMF", "From stream file", Kind.CHAR).req().len(40))
+                .p(file("FILE", "To file").req())
+                .p(p("MBROPT", "Replace or add records", Kind.SPECIAL).sv("*ADD", "*REPLACE").dft("*ADD")));
+        add(CommandDefinition.of("RUNQRY", "Run Query").positional(1)
+                .p(file("FILE", "File").req())
+                .p(p("QRYSLT", "Record selection expression", Kind.CHAR).sv("*ALL").dft("*ALL").len(64))
+                .p(p("SORT", "Sort fields", Kind.NAME).sv("*NONE", "*ASCEND", "*DESCEND").dft("*NONE").list(8))
+                .p(p("OUTPUT", "Output", Kind.SPECIAL).sv("*DISPLAY", "*PRINT", "*OUTFILE").dft("*DISPLAY"))
+                .p(file("OUTFILE", "Output file")));
+        add(CommandDefinition.of("WRKF", "Work with Files").context(INTERACTIVE).positional(1)
+                .p(p("LIB", "Library", Kind.NAME).sv("*CURLIB").dft("*CURLIB").values(ValueList.LIBRARIES)));
+        add(CommandDefinition.of("DSPPFM", "Display Physical File Member").context(INTERACTIVE).positional(1)
+                .p(file("FILE", "File").req()));
+        add(CommandDefinition.of("DSPFD", "Display File Description").context(INTERACTIVE).positional(1)
+                .p(file("FILE", "File").req()));
+        add(CommandDefinition.of("UPDDTA", "Update Data").context(INTERACTIVE).positional(1)
+                .p(file("FILE", "File").req()));
     }
 }

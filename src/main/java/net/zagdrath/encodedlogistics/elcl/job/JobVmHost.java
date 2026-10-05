@@ -14,10 +14,12 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
 import net.zagdrath.encodedlogistics.elcl.cmd.Wait;
+import net.zagdrath.encodedlogistics.elcl.db.FileAccess;
 import net.zagdrath.encodedlogistics.elcl.exec.CommandRunner;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.elcl.exec.OsCommands;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
+import net.zagdrath.encodedlogistics.elcl.screen.FileService;
 import net.zagdrath.encodedlogistics.elcl.store.ElclConfig;
 import net.zagdrath.encodedlogistics.elcl.vm.VmHost;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -43,7 +45,7 @@ public final class JobVmHost implements VmHost {
             ElclException first = null;
             for (String candidate : OsCommands.libraryList(run.system, run.user)) {
                 try {
-                    return new Loaded(candidate + "/" + pgm, SourceLine.texts(ElclServices.libraries().programSource(run.system, candidate, pgm)));
+                    return loaded(candidate, pgm);
                 } catch (ElclException e) {
                     if (first == null) {
                         first = e;
@@ -52,7 +54,19 @@ public final class JobVmHost implements VmHost {
             }
             throw new ElclException("ELC0203", pgm, "*LIBL");
         }
-        return new Loaded(lib + "/" + pgm, SourceLine.texts(ElclServices.libraries().programSource(run.system, lib, pgm)));
+        return loaded(lib, pgm);
+    }
+
+    // A program's source and the file formats it was compiled with.
+    private Loaded loaded(String library, String program) throws ElclException {
+        return new Loaded(library + "/" + program, SourceLine.texts(ElclServices.libraries().programSource(run.system, library, program)),
+                ElclServices.libraries().programFiles(run.system, library, program));
+    }
+
+    // The system's files, as the job's user (ELSYS's system files with the Firewall's view permission).
+    @Override
+    public FileAccess files() {
+        return ElclServices.files().access(run.system, new FileService.Who(run.user, run.context.allowed(RackPermission.VIEW)));
     }
 
     @Override
