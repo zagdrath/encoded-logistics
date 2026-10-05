@@ -31,6 +31,7 @@ import net.zagdrath.encodedlogistics.blockentity.SwivelChairBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
+import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
@@ -89,6 +90,9 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<WirelessBridgeBlockEntity>> WIRELESS_BRIDGE = BLOCK_ENTITY_TYPES.register(
             "wireless_bridge", () -> new BlockEntityType<>(WirelessBridgeBlockEntity::new, ModBlocks.WIRELESS_BRIDGE.get()));
+
+    public static final Supplier<BlockEntityType<DisplayPanelBlockEntity>> DISPLAY_PANEL = BLOCK_ENTITY_TYPES.register(
+            "display_panel", () -> new BlockEntityType<>(DisplayPanelBlockEntity::new, ModBlocks.DISPLAY_PANEL.get()));
 
     public static final Supplier<BlockEntityType<WirelessPortBlockEntity>> WIRELESS_PORT = BLOCK_ENTITY_TYPES.register(
             "wireless_port", () -> new BlockEntityType<>(WirelessPortBlockEntity::new, ModBlocks.WIRELESS_INGRESS_PORT.get(),

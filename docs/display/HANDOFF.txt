@@ -1,0 +1,157 @@
+ENCODED LOGISTICS - HANDOFF: DISPLAY PANEL (+ Small Wireless Bridge model)
+==========================================================================
+Reviewed against repo HEAD 4b74166: docs/TEXTURE_STYLE.md, the in-game GUIs (PartScreens / RackScreen colours, rack/switch
+tabs, common/* and terminal/* sprites, L3SwitchPanel layout), docs/terminal-os-elcl.html + docs/elcl/, SNDDSPTXT
+(elcl/cmd, implemented against elcl.device.DisplayDevice - no display exists yet), the Monitoring Server
+(rack/device/MonitoringServerDevice.java: series(stat, range) for item flow, energy FE/t, lanes, crafting/min; 10 min @1 s,
+1 h @10 s, 1 day @2 min) and the terminal font sheet (textures/font/terminal.png, 6 x 10 cells, ASCII + box glyphs).
+Paths relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. DISPLAY PANEL - display_panel (1 lane per merged screen)
+=====================================================================================================
+Model (facing north = screen toward -z, 8 px thick, flush to the wall at z 16): glass face, body edges, a slim mounting
+plate on the back (keyhole slots, bolts, a cable socket in the middle; a second socket on the bottom edge). Bezel = four
+1 px strips 0.5 px proud of the glass (models/block/display_panel/bezel_{top,bottom,left,right}.json; left/right as seen
+from the front), each drawn only when that edge is NOT joined to a neighbour - so a merged screen has one bezel round the
+whole rectangle and none between panels. Status LED on the bezel's bottom-right corner, only on the bottom-right block.
+BlockState: facing (4), top / bottom / left / right (bool: joined on that edge), led (bool), state (off | boot | online |
+  nosignal). Multipart: base, bezel_<edge> when <edge>=false, led_<state> when led=true. LED: boot light-blue blink
+  (2 x 4), online light blue, nosignal yellow blink (2 x 10). Collision: shapes/collision_shapes.json (8 px slab).
+Connection: by cable on its back or bottom (any network cable), or through the block behind it (a device block or a
+  cable behind counts as the connection).
+Merge rules: panels with the same facing, in one plane, side by side or stacked, merge into the largest rectangle up to
+  displayMaxWidth x displayMaxHeight [config 8 x 6]. Re-merge when one is placed or broken: flood the connected same-facing
+  panels, then split them greedily into the largest valid rectangles (largest area first, ties: top-left first). Each
+  rectangle is one device with a master (its bottom-left block, as seen from the front) holding the content and config.
+  The edge booleans and the LED flag are set from the rectangle. Content is kept on the master and restored when the same
+  rectangle re-forms; a changed size keeps the config and clamps regions.
+Textures (textures/block/display_panel/): bezel (dark steel 2-7, stepped), glass_off (steps 0-2, a stepped diagonal
+  reflection band and a top-left glint - the only near-black field, it is a screen), side, back, bottom, led_* (+ .mcmeta).
+  All docs/TEXTURE_STYLE.md: steel ramp, structural + stepped shading, no specks.
+Item: textures/item/display_panel.png.
+
+=====================================================================================================
+2. RENDERING
+=====================================================================================================
+A block entity renderer on the master draws the merged screen's CANVAS: 32 x 32 canvas px per panel block (a 3 x 2 screen
+is 96 x 64, 8 x 6 is 256 x 192) as a dynamic texture (NativeImage, updated only when the content changes or once a second
+for live widgets) on the glass plane of every block, full-bright, 0.004 in front of the glass, nearest filtering.
+  Text: the terminal font sheet, drawn glyph by glyph (6 x 10 cells; 1x and 2x scale) - never the MC font advance.
+  A 1x1 panel fits 5 x 3 characters at 1x.
+  Widget visuals: tools/dsp_canvas.py is the reference implementation (gauge, graph, list_rows, item_icon, image,
+  test_pattern, no_signal) - textures/display/widgets.png shows the pieces at 1:1, textures/display/palette.json the 16
+  colours (dither palette, colour choices), text F0F0F0, muted B4B4B4, accent 00D992, warning E8C24A, fault E5483C,
+  background steel step 1.
+    gauge: track step 1, step-0 shadow line, step-3 lip; fill in the status-light colours by level (TEXTURE_STYLE 2.4,
+      < 50% green, 50-75 yellow, 75-99 orange, full red) or a fixed dye ramp; lit top row, shaded bottom row.
+    graph: steel chrome (lit 5 / shaded 3), dotted grid every 8 px, axes step 6; line in the light-blue dye ramp with lit
+      sample points; bars two-tone; label top-left, current value top-right; plot below the label.
+    list rows: alternating step 1 / 2, a 3 x 3 status dot (mint / step 5 / warning / fault), text, right value.
+  States: off = no canvas (glass_off shows); boot = textures/display/test_pattern.png colour bars for 40 ticks; online =
+  content; nosignal (no network / controller offline) = "NO SIGNAL" in warning colour, centred, 2x where it fits.
+  Mockups: previews/canvas_*.png (1x1 text + gauge, clock + item; 3x2 dashboard, line graph, bar graph, text, booting,
+  no signal; 8x6 split regions with graph, text, gauges, dithered image, device list, item counter, clock) and
+  previews/world_3x2.png (in-world, with a single panel showing no signal and the Small Wireless Bridge).
+
+=====================================================================================================
+3. CONTENT MODES, REGIONS, WIDGETS, DATA
+=====================================================================================================
+Modes: Text (lines with colour, alignment left/centre/right, 1x / 2x), Dashboard (regions + widgets, no scripting),
+  Script-controlled (only ELCL commands draw; the panel keeps what they drew).
+Regions: rectangles in canvas px (named A, B, C ...; default one region = the whole screen); never overlapping; each has
+  a widget or text and a colour.
+Widgets: storage gauge (hot / cold), energy gauge, lanes used, active crafting jobs list, item counter (an item + count),
+  clock (game time / day), device status list (by type or names), UPS status, text, graph (line / bar), image.
+Data sources: network stats from the network (storage, energy, lanes, jobs, devices, UPS); graphs of item flow, energy,
+  lanes, crafting throughput from a Monitoring Server on the network (MonitoringServerDevice.series), else the panel's own
+  history while loaded (1 sample / s, 10 min [config displayHistorySeconds 600]); any item's count is always the panel's
+  own history.
+Images: PNGs in <world>/encodedlogistics/images/<SYSNAME>/; scaled to the region (the largest screen is 256 x 192 canvas
+  px, so bigger sources only cost decode time); server config allowImages (default: true in single-player, false on
+  dedicated servers), displayMaxImageSize [config 4096 x 4096 source px], displayMaxImageBytes [config 4 MB] and
+  displayImageColors [config 256: 16 | 64 | 256 | FULL - the most a player may choose].
+  Colour modes (per image): 16 = the fixed panel palette (textures/display/palette.json); 64 / 256 = an adaptive palette
+  picked for that image (median cut); FULL = 24-bit colour. The palettes use an ordered 4 x 4 Bayer dither (stable between
+  frames, no flicker; strength 48 / 24 / 12 for 16 / 64 / 256); FULL and SCALE(*NEAREST) are undithered. Default 256.
+  Decoded off-thread straight to the region's size, cached per file + region size + mode; the server sends clients the
+  rendered region (<= 256 x 192), never the source file. previews/canvas_image_colour_modes.png compares the four modes,
+  previews/canvas_8x6_image_256.png shows a full 8 x 6 screen at 256.
+
+=====================================================================================================
+4. CONFIGURATION GUI - matches the game's screens
+=====================================================================================================
+Right-click with an empty hand (Firewall CONFIGURE permission; otherwise "You don't have permission" as other devices do).
+gui/display_panel.png = the L3 Switch panel (title band, tab row, list inset, bottom row - textures/gui/rack/l3_switch.png);
+tabs rack/switch/tab_active | tab_inactive at (8,17) step 53: Mode, Layout, Widgets. Colours PartScreens / RackScreen.
+  Mode: three common/button_wide buttons (Text / Dashboard / Script-controlled; the selected one pressed with a
+    hud/dot_online and accent text), Device name field (terminal/search_field), Background swatches.
+  Layout: the screen preview (canvas at 1.5x) with its regions; drag a region edge to split / resize; footer region count.
+  Widgets: one row per region (letter, widget, data source, colour swatch; common/row_highlight on the selected row);
+    "Change widget" (common/button_wide) opens the widget / source / colour picker.
+  Mockups: previews/gui_display_mode.png, gui_display_layout.png, gui_display_widgets.png.
+
+=====================================================================================================
+5. TOUCH
+=====================================================================================================
+Using the screen (right-click while looking at it, not sneaking, any hand) fires the ELCL trigger event *DSPTOUCH with
+&DATA = "<panel name> <region> <x> <y>" (canvas px, origin top-left). Opening the config GUI needs an empty hand AND
+sneaking once a panel has touch triggers (otherwise empty-hand use = configure). Rate limit 4 per second per player.
+
+=====================================================================================================
+6. TERMINAL OS AND ELCL
+=====================================================================================================
+Device: implements elcl.device.DisplayDevice (lines = canvas height / 10 at 1x), type code DSP, default names DSP01, DSP02
+...; a merged screen is one device; WRKDEV shows it with its size ("DSP01  3 x 2  96 x 64").
+SNDDSPTXT works as specified (it now finds a display). New commands (COMMANDS.md style):
+| Command | Parameters | Context | Notes |
+| `CLRDSP` | `DEV`(P1, Req) `RGN(*ALL\|name)` | IB | Clears a region or the whole screen. ELC1301, ELC1303, ELC1314. |
+| `CHGDSPRGN` | `DEV`(P1, Req) `RGN`(P2, Req, name) `X`(n) `Y`(n) `W`(n) `H`(n) `BG(*DFT\|colour)` | IB | Defines or changes a region in canvas px. ELC1301, ELC1303, ELC1314 (outside the screen or overlapping). |
+| `SNDDSPWDG` | `DEV`(P1, Req) `RGN`(P2, Req) `WDG`(P3, Req: `*STORAGE *COLD *ENERGY *LANES *JOBS *ITEM *CLOCK *DEVICES *UPS`) `ITEM(id)` `DEVTYPE(*ALL\|type)` `COLOR(*DFT\|colour)` | IB | Places a dashboard widget. ELC1301, ELC1303, ELC1314, ELC1316 (bad data source). |
+| `SNDDSPGPH` | `DEV`(P1, Req) `RGN`(P2, Req) `STAT`(P3, Req: `*ITEMFLOW *ENERGY *LANES *STORAGE *CRAFTING *ITEM`) `ITEM(id)` `RANGE(*1M\|*10M\|*1H\|*1D)` `TYPE(*LINE\|*BAR)` `COLOR(*DFT\|colour)` | IB | Draws a graph (Monitoring Server when present). ELC1301, ELC1303, ELC1314, ELC1316. |
+| `SNDDSPIMG` | `DEV`(P1, Req) `RGN`(P2, Req) `FILE`(P3, Req, name.png) `SCALE(*DITHER\|*NEAREST)` `COLORS(*DFT\|16\|64\|256\|*FULL)` | IB | Shows an image from the system's images folder. ELC1301, ELC1303, ELC1312, ELC1313, ELC1314, ELC1315. |
+| `RTVDSPSIZ` | `DEV`(P1, Req) `RTNW`(*INT) `RTNH`(*INT) `RTNPXW`(*INT) `RTNPXH`(*INT) | IB | Size in panels and canvas px. ELC1301, ELC1303. |
+New messages (MESSAGES.md, device range):
+| ELC1312 | 30 | Image &1 not found in the images folder. |
+| ELC1313 | 30 | Image &1 is larger than the allowed size (&2). |
+| ELC1317 | 10 | Colour mode &1 is above the server's limit; &2 used. |   (diagnostic: the image still shows)
+| ELC1314 | 30 | Region &1 is outside the screen or overlaps another region. |
+| ELC1315 | 30 | Images are disabled on this server. |
+| ELC1316 | 30 | Data source &1 is not available for this widget. |
+Trigger event *DSPTOUCH (ADDTRGEVT EVENT(*DSPTOUCH) DEV(DSPnn)): &DATA as in section 5.
+
+=====================================================================================================
+7. SMALL WIRELESS BRIDGE - model + assets only (behaviour defined separately)
+=====================================================================================================
+small_wireless_bridge: a 6 x 6 x 3 module flush on a machine face (facing = toward the machine, 6 ways), stubby antenna,
+LED window; same family as the Access Point / Wireless Bridge (steel, framed face, recessed slot). BlockState facing +
+state (unlinked | linked | fault): LED unlinked yellow blink (2 x 10), linked light blue, fault amber (orange ramp).
+Files: blockstates/small_wireless_bridge.json, models/block/small_wireless_bridge/*.json, textures/block/
+small_wireless_bridge/*.png (+ .mcmeta), textures/item/small_wireless_bridge.png; shape in shapes/collision_shapes.json.
+
+=====================================================================================================
+8. RECIPES (adjust freely)
+=====================================================================================================
+  display_panel (x4)      shaped "GSG" / "LDI" / "G G": glass pane x4, circuit substrate, logic die, glowstone dust, iron
+  small_wireless_bridge   shapeless: radio module + logic die + copper foil + iron nugget x4
+
+=====================================================================================================
+9. FILES
+=====================================================================================================
+assets/encodedlogistics/ blockstates/{display_panel,small_wireless_bridge}.json; models/block/display_panel/{base,
+  bezel_top,bezel_bottom,bezel_left,bezel_right,led_boot,led_online,led_nosignal}.json; models/block/small_wireless_bridge/*;
+  textures/block/display_panel/*, textures/block/small_wireless_bridge/*; textures/display/{widgets.png,test_pattern.png,
+  palette.json}; textures/gui/display_panel.png; textures/item/*; models/item/*; items/*; lang/en_us.display.json -> MERGE
+data/encodedlogistics/recipe/*.json, loot_table/blocks/*.json; shapes/collision_shapes.json
+blockbench/ display_panel_single (all four bezel edges), display_panel_top_edge_only (a merged-edge example),
+  small_wireless_bridge; previews/; tools/ (dsp_tex.py, dsp_export.py, dsp_canvas.py - the canvas reference -, dsp_mock.py,
+  dsp_world.py + shared)
+
+=====================================================================================================
+10. DECISIONS (were open questions - agreed)
+=====================================================================================================
+  1. Screen size: a maximum of 8 x 6 panels (config), 32 x 32 canvas px per block.
+  2. Images: up to 4096 x 4096 px / 4 MB per source file; colour modes 16 / 64 / 256 (adaptive) / FULL, default 256,
+     capped by the server's displayImageColors.
+  3. Graph history without a Monitoring Server: 10 minutes at 1 sample per second, kept while loaded.
+  4. Touch: no permission check for firing *DSPTOUCH (scripts decide what a touch may do); configuring needs CONFIGURE.

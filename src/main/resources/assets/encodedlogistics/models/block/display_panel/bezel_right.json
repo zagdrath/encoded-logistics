@@ -1,0 +1,79 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "bezel": "encodedlogistics:block/display_panel/bezel",
+  "particle": "encodedlogistics:block/display_panel/bezel"
+ },
+ "elements": [
+  {
+   "name": "bezel_right",
+   "from": [
+    0,
+    0,
+    7.5
+   ],
+   "to": [
+    1,
+    16,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#bezel",
+     "uv": [
+      1,
+      6,
+      15,
+      9
+     ]
+    },
+    "south": {
+     "texture": "#bezel",
+     "uv": [
+      1,
+      6,
+      15,
+      9
+     ]
+    },
+    "east": {
+     "texture": "#bezel",
+     "uv": [
+      1,
+      6,
+      15,
+      9
+     ]
+    },
+    "west": {
+     "texture": "#bezel",
+     "uv": [
+      1,
+      6,
+      15,
+      9
+     ]
+    },
+    "up": {
+     "texture": "#bezel",
+     "uv": [
+      1,
+      6,
+      15,
+      9
+     ]
+    },
+    "down": {
+     "texture": "#bezel",
+     "uv": [
+      1,
+      6,
+      15,
+      9
+     ]
+    }
+   }
+  }
+ ]
+}

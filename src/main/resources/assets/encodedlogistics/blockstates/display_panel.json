@@ -1,0 +1,324 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/base"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "top": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_top"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "bottom": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_bottom"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_left"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_right"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "led": "true",
+    "state": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_boot"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "led": "true",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_online"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "led": "true",
+    "state": "nosignal"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_nosignal"
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/base",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "top": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_top",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "bottom": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_bottom",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_left",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_right",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "led": "true",
+    "state": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_boot",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "led": "true",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_online",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "led": "true",
+    "state": "nosignal"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_nosignal",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/base",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "top": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_top",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "bottom": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_bottom",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_left",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_right",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "led": "true",
+    "state": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_boot",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "led": "true",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_online",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "led": "true",
+    "state": "nosignal"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_nosignal",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/base",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "top": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_top",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "bottom": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_bottom",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_left",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/bezel_right",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "led": "true",
+    "state": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_boot",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "led": "true",
+    "state": "online"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_online",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "led": "true",
+    "state": "nosignal"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/led_nosignal",
+    "y": 270
+   }
+  }
+ ]
+}

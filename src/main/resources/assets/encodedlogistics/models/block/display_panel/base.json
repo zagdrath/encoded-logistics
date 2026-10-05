@@ -1,0 +1,158 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "glass": "encodedlogistics:block/display_panel/glass_off",
+  "side": "encodedlogistics:block/display_panel/side",
+  "back": "encodedlogistics:block/display_panel/back",
+  "bottom": "encodedlogistics:block/display_panel/bottom",
+  "bezel": "encodedlogistics:block/display_panel/bezel",
+  "particle": "encodedlogistics:block/display_panel/glass_off"
+ },
+ "elements": [
+  {
+   "name": "glass",
+   "from": [
+    0,
+    0,
+    8
+   ],
+   "to": [
+    16,
+    16,
+    8.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "body",
+   "from": [
+    0,
+    0,
+    8.5
+   ],
+   "to": [
+    16,
+    16,
+    15
+   ],
+   "faces": {
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      6.5,
+      16
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      6.5,
+      16
+     ]
+    },
+    "up": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      6.5
+     ]
+    },
+    "down": {
+     "texture": "#bottom",
+     "uv": [
+      0,
+      0,
+      16,
+      6.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "plate",
+   "from": [
+    1,
+    1,
+    15
+   ],
+   "to": [
+    15,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "south": {
+     "texture": "#back",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "up": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    },
+    "down": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   }
+  }
+ ]
+}

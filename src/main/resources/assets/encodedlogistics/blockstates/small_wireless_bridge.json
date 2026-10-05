@@ -1,0 +1,234 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/small_wireless_bridge"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "unlinked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_unlinked"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "linked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_linked"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_fault"
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/small_wireless_bridge",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "unlinked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_unlinked",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "linked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_linked",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_fault",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/small_wireless_bridge",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "unlinked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_unlinked",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "linked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_linked",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_fault",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/small_wireless_bridge",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "unlinked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_unlinked",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "linked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_linked",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_fault",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "up"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/small_wireless_bridge",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "unlinked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_unlinked",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "linked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_linked",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_fault",
+    "x": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "down"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/small_wireless_bridge",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "unlinked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_unlinked",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "linked"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_linked",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/small_wireless_bridge/led_fault",
+    "x": 90
+   }
+  }
+ ]
+}

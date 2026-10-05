@@ -56,6 +56,7 @@ import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
+import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
@@ -1259,6 +1260,11 @@ public class ControllerStructures extends SavedData {
             }
             String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal" : "Device";
             Component name = item.getName(item.getDefaultInstance());
+            // A Display Panel screen with its size: "Display Panel 3 x 2 (96 x 64)".
+            if (blockEntity(server, pos) instanceof DisplayPanelBlockEntity display) {
+                name = Component.translatable("gui.encodedlogistics.display.device", name, display.width(), display.height(), display.canvasWidth(),
+                        display.canvasHeight());
+            }
             // A Control Interface goes by the name scripts use for it.
             if (blockEntity(server, pos) instanceof ControlInterfaceBlockEntity ci && !ci.name().isEmpty()) {
                 type = ControlInterfaceBlockEntity.TYPE;

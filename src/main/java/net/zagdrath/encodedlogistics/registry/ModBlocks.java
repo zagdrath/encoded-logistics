@@ -43,6 +43,8 @@ import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
+import net.zagdrath.encodedlogistics.display.DisplayPanelBlock;
+import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlock;
 import net.zagdrath.encodedlogistics.midrange.ExpansionCabinetBlock;
 import net.zagdrath.encodedlogistics.midrange.IntegratedMidrangeBlock;
@@ -142,6 +144,13 @@ public final class ModBlocks {
     public static final DeferredBlock<WirelessPortBlock> WIRELESS_EGRESS_PORT = BLOCKS.registerBlock("wireless_egress_port",
             p -> new WirelessPortBlock(false, p), p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .noOcclusion().lightLevel(WirelessPortBlock::lightLevel));
+
+    // Display Panels (merging into screens: DisplayScreens) and the Small Wireless Bridge (its model only, for now).
+    public static final DeferredBlock<DisplayPanelBlock> DISPLAY_PANEL = BLOCKS.registerBlock("display_panel", DisplayPanelBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<SmallWirelessBridgeBlock> SMALL_WIRELESS_BRIDGE = BLOCKS.registerBlock("small_wireless_bridge",
+            SmallWirelessBridgeBlock::new, p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
+                    .noOcclusion());
 
     // The Server Rack (a 1x3x2 multiblock: ServerRackBlock) and the devices that mount in it.
     public static final DeferredBlock<ServerRackBlock> SERVER_RACK = BLOCKS.registerBlock("server_rack", ServerRackBlock::new,

@@ -1,0 +1,27 @@
+{
+ "$comment": "Display Panel canvas palette (16): image dither palette and the colour choices in the config GUI",
+ "colours": [
+  "#1F2228",
+  "#373C44",
+  "#555B65",
+  "#79808A",
+  "#A3A9B1",
+  "#D3D7DB",
+  "#2678A0",
+  "#50C2EC",
+  "#89F9FF",
+  "#C65217",
+  "#FF9B44",
+  "#ECC138",
+  "#3CE05A",
+  "#22A03C",
+  "#BA3B37",
+  "#6A4A2A"
+ ],
+ "text": "#F0F0F0",
+ "muted": "#B4B4B4",
+ "accent": "#00D992",
+ "warning": "#E8C24A",
+ "fault": "#E5483C",
+ "background": "#2B2F36"
+}

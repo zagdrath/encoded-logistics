@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "led": "encodedlogistics:block/display_panel/led_online",
+  "particle": "encodedlogistics:block/display_panel/led_online"
+ },
+ "elements": [
+  {
+   "name": "led",
+   "from": [
+    0,
+    0,
+    7.49
+   ],
+   "to": [
+    16,
+    16,
+    7.49
+   ],
+   "faces": {
+    "north": {
+     "texture": "#led",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

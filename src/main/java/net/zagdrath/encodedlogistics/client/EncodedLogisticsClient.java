@@ -35,6 +35,7 @@ import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
 import net.zagdrath.encodedlogistics.client.crt.KeypunchScreen;
 import net.zagdrath.encodedlogistics.client.crt.LinePrinterScreen;
 import net.zagdrath.encodedlogistics.client.crt.MidrangePanelScreen;
+import net.zagdrath.encodedlogistics.client.display.DisplayRenderer;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
@@ -150,6 +151,7 @@ public class EncodedLogisticsClient {
         event.registerBlockEntityRenderer(ModBlockEntityTypes.SERVER_RACK.get(), RackRenderer::new);
         // The Swivel Chair's seat, turned (SwivelChairRenderer); what it's sat on isn't drawn.
         event.registerBlockEntityRenderer(ModBlockEntityTypes.SWIVEL_CHAIR.get(), SwivelChairRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntityTypes.DISPLAY_PANEL.get(), DisplayRenderer::new);
         event.registerEntityRenderer(ModEntityTypes.SEAT.get(), NoopRenderer::new);
     }
 

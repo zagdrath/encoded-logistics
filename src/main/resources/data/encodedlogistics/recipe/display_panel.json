@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "redstone",
+ "pattern": [
+  "GSG",
+  "LDI",
+  "G G"
+ ],
+ "key": {
+  "G": "minecraft:glass_pane",
+  "S": "encodedlogistics:circuit_substrate",
+  "L": "encodedlogistics:logic_die",
+  "D": "minecraft:glowstone_dust",
+  "I": "minecraft:iron_ingot"
+ },
+ "result": {
+  "id": "encodedlogistics:display_panel",
+  "count": 4
+ }
+}

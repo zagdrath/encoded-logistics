@@ -495,6 +495,18 @@ public class Config {
             .comment("Ticks an Integrated Midrange System takes for each craft it runs itself.")
             .defineInRange("integratedMidrangeStepTicks", 25, 1, 6_000);
 
+    public static final ModConfigSpec.IntValue DISPLAY_MAX_WIDTH = BUILDER
+            .comment("The widest a Display Panel screen merges, in panels.")
+            .defineInRange("displayMaxWidth", 8, 1, 16);
+
+    public static final ModConfigSpec.IntValue DISPLAY_MAX_HEIGHT = BUILDER
+            .comment("The tallest a Display Panel screen merges, in panels.")
+            .defineInRange("displayMaxHeight", 6, 1, 16);
+
+    public static final ModConfigSpec.DoubleValue DISPLAY_PANEL_DRAIN = BUILDER
+            .comment("FE/t each Display Panel of a screen draws from its network.")
+            .defineInRange("displayPanelDrain", 0.5, 0, 1_000);
+
     public static final ModConfigSpec.DoubleValue ACCESS_POINT_DRAIN = BUILDER
             .comment("FE per tick an Access Point drains while its network runs.")
             .defineInRange("accessPointDrain", 2.0, 0.0, 1_000.0);
