@@ -14,8 +14,10 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -90,12 +92,17 @@ public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNo
                 };
     }
 
-    // Its green screen.
+    // Its green screen; sneaking, what comes out of it (Midranges.use).
     @Override
     protected InteractionResult use(Level level, BlockPos master, BlockState state, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(master) instanceof PeripheralBlockEntity peripheral) {
-            player.openMenu(peripheral, peripheral::writeOpening);
-        }
-        return InteractionResult.SUCCESS;
+        return level.getBlockEntity(master) instanceof PeripheralBlockEntity peripheral ? Midranges.use(peripheral, player) : InteractionResult.PASS;
+    }
+
+    // Cards, paper: into it.
+    @Override
+    protected InteractionResult useItem(ItemStack stack, Level level, BlockPos master, BlockState state, Player player, InteractionHand hand,
+            BlockHitResult hit) {
+        return level.getBlockEntity(master) instanceof PeripheralBlockEntity peripheral ? Midranges.useItem(peripheral, stack)
+                : InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 }

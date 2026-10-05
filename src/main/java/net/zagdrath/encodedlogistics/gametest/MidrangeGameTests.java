@@ -33,6 +33,9 @@ import net.zagdrath.encodedlogistics.elcl.device.Printers;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.menu.KeypunchMenu;
+import net.zagdrath.encodedlogistics.menu.MidrangePanelMenu;
+import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlock;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
@@ -224,7 +227,7 @@ final class MidrangeGameTests {
                         helper.fail("No printer: " + e.getMessage());
                     }
                     print.printReport(LinePrinterBlockEntity.DEVICES, "");
-                    ItemStack book = print.getItem(LinePrinterBlockEntity.OUTPUT);
+                    ItemStack book = printed(helper, printer);
                     WrittenBookContent content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
                     helper.assertTrue(book.is(Items.WRITTEN_BOOK) && content != null && content.author().equals("PRT01"), "Printed " + book);
                     helper.assertTrue(print.getItem(LinePrinterBlockEntity.PAPER).getCount() == 3 - content.pages().size(), "Paper not one a page");
@@ -238,6 +241,67 @@ final class MidrangeGameTests {
                     helper.assertTrue(refused.equals(Component.translatable("crt.encodedlogistics.machine.no_host").getString()), "Read with no system: " + refused);
                 })
                 .thenSucceed();
+    }
+
+    // What a printer at a position printed: the item that came out of its front (empty for none).
+    static ItemStack printed(GameTestHelper helper, BlockPos printer) {
+        net.minecraft.world.phys.AABB around = new net.minecraft.world.phys.AABB(helper.absolutePos(printer)).inflate(1.5);
+        return helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, around).stream().map(item -> item.getItem())
+                .findFirst().orElse(ItemStack.EMPTY);
+    }
+
+    // The green screens without slots (HANDOFF 3): items go in on the blocks and out with a sneak-use; the control
+    // panel's 8=Make default library mounts that diskette first, 4=Eject gives it to the player; the Keypunch's typed
+    // item names fill its grid (an unknown one doesn't); the Card Reader's plan says which cards are new and which
+    // replace a recipe; the Line Printer takes paper.
+    @SuppressWarnings("removal")
+    static void screens(GameTestHelper helper) {
+        BlockPos system = new BlockPos(2, 1, 2), keypunch = new BlockPos(5, 1, 2), reader = new BlockPos(2, 1, 5), printer = new BlockPos(5, 1, 5);
+        place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
+        helper.setBlock(system.west(), ModBlocks.EXPANSION_CABINET.get().defaultBlockState().setValue(ExpansionCabinetBlock.FACING, Direction.NORTH));
+        place(helper, ModBlocks.KEYPUNCH.get(), keypunch);
+        place(helper, ModBlocks.LINE_PRINTER.get(), printer);
+        helper.setBlock(reader, ModBlocks.CARD_READER.get().defaultBlockState().setValue(CardReaderBlock.FACING, Direction.NORTH));
+        net.minecraft.server.level.ServerPlayer player = helper.makeMockServerPlayerInLevel();
+
+        MidrangeSystemBlockEntity midrange = helper.getBlockEntity(system, MidrangeSystemBlockEntity.class);
+        helper.assertTrue(midrange.insert(diskette("A")) && midrange.insert(diskette("B")), "Diskettes not taken");
+        MidrangePanelMenu panel = new MidrangePanelMenu(1, player.getInventory(), midrange, midrange, PeripheralMenu.Opening.SERVER);
+        panel.setText(PeripheralMenu.OPTION + 1, "8");
+        helper.assertTrue(midrange.defaultDrive() == 1 && midrange.mounted().getFirst().label().equals("B"), "Drive 2 not the default");
+        panel.setText(PeripheralMenu.OPTION + 0, "4");
+        helper.assertTrue(midrange.positions().getFirst().isEmpty() && player.getInventory().countItem(ModItems.DISKETTE_8IN.get()) == 1, "Not ejected to the player");
+        helper.assertTrue(midrange.ejectLast().is(ModItems.DISKETTE_8IN.get()) && midrange.diskettes().isEmpty(), "Sneak-use didn't eject");
+
+        KeypunchBlockEntity punch = helper.getBlockEntity(keypunch, KeypunchBlockEntity.class);
+        KeypunchMenu keys = new KeypunchMenu(2, player.getInventory(), punch, punch, PeripheralMenu.Opening.SERVER);
+        keys.setText(0, "oak_log");
+        keys.setText(1, "no_such_thing");
+        punch.updateResult();
+        helper.assertTrue(punch.grid().getItem(0).is(Items.OAK_LOG) && punch.grid().getItem(1).isEmpty(), "Grid from typed names");
+        helper.assertTrue(punch.result().getItem(0).is(Items.OAK_PLANKS), "Grid crafts " + punch.result().getItem(0));
+        helper.assertTrue(KeypunchBlockEntity.item("minecraft:iron_ingot") == Items.IRON_INGOT && KeypunchBlockEntity.item("logic_die") == ModItems.LOGIC_DIE.get(),
+                "Item names");
+        ItemStack blanks = new ItemStack(ModItems.PUNCH_CARD.get(), 5);
+        helper.assertTrue(punch.insert(blanks) && blanks.isEmpty() && punch.getItem(KeypunchBlockEntity.BLANK).getCount() == 5, "Blank cards not loaded");
+        helper.assertTrue(punch.eject().getFirst().getCount() == 5, "Cards not taken out");
+
+        CardReaderBlockEntity read = helper.getBlockEntity(reader, CardReaderBlockEntity.class);
+        ItemStack card = new ItemStack(ModItems.PUNCH_CARD.get());
+        card.set(ModDataComponents.PUNCHED_RECIPE.get(), LOG_TO_PLANKS);
+        ItemStack other = new ItemStack(ModItems.PUNCH_CARD.get());
+        other.set(ModDataComponents.PUNCHED_RECIPE.get(), Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_PLANKS, 2)),
+                List.of(new ItemStack(Items.STICK, 4))));
+        helper.assertTrue(read.insert(card) && read.insert(other) && read.insert(diskette("C")), "Reader didn't take cards and a diskette");
+        List<String> plan = CardReaderBlockEntity.plan(DisketteStack.data(read.getItem(CardReaderBlockEntity.DISKETTE)), read.hopper());
+        helper.assertTrue(plan.equals(List.of("replaces 1", "new")), "Plan " + plan);
+        helper.assertTrue(read.eject().getFirst().is(ModItems.DISKETTE_8IN.get()) && read.eject().size() == 2, "Reader eject order");
+
+        LinePrinterBlockEntity print = helper.getBlockEntity(printer, LinePrinterBlockEntity.class);
+        ItemStack paper = new ItemStack(Items.PAPER, 10);
+        helper.assertTrue(print.insert(paper) && print.paper() == 10 && !print.insert(new ItemStack(Items.STICK)), "Paper");
+        helper.assertTrue(print.status().equals("*OFFLINE"), "Status with no system: " + print.status());
+        helper.succeed();
     }
 
     // Pages: 14 rows of about 19 characters; a long line takes more rows.

@@ -6,8 +6,10 @@
 package net.zagdrath.encodedlogistics.crafting;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -31,6 +33,9 @@ public final class JobRunner {
     private static final int AWAIT_INTERVAL = 20;
 
     private final List<CraftingJob> jobs = new ArrayList<>();
+    // Jobs held one by one (a Midrange System's 3=Hold): a held job doesn't start, and a running one starts no more steps
+    // (those running finish). Its host saves them.
+    private final Set<UUID> heldJobs = new HashSet<>();
 
     public List<CraftingJob> jobs() {
         return jobs;
@@ -43,6 +48,21 @@ public final class JobRunner {
             }
         }
         return null;
+    }
+
+    public boolean isHeld(UUID id) {
+        return heldJobs.contains(id);
+    }
+
+    public boolean setHeld(UUID id, boolean held) {
+        if (job(id) == null) {
+            return false;
+        }
+        return held ? heldJobs.add(id) : heldJobs.remove(id);
+    }
+
+    public Set<UUID> heldJobs() {
+        return heldJobs;
     }
 
     public int threadsUsed() {
@@ -71,7 +91,7 @@ public final class JobRunner {
             if (free <= 0) {
                 break;
             }
-            if (!job.running) {
+            if (!job.running && !heldJobs.contains(job.id)) {
                 job.running = true;
                 free--;
                 changed = true;
@@ -90,9 +110,13 @@ public final class JobRunner {
             if (job.finished()) {
                 if (finish(job, storage.get())) {
                     iterator.remove();
+                    heldJobs.remove(job.id);
                     finished.accept(job);
                     changed = true;
                 }
+                continue;
+            }
+            if (heldJobs.contains(job.id)) {
                 continue;
             }
             if (found == null) {
@@ -219,5 +243,6 @@ public final class JobRunner {
     public void load(List<CraftingJob> saved) {
         jobs.clear();
         jobs.addAll(saved);
+        heldJobs.removeIf(id -> job(id) == null);
     }
 }

@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.menu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -20,31 +21,32 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
-import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.midrange.DisketteData;
+import net.zagdrath.encodedlogistics.midrange.DisketteStack;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
-import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 
-// A Midrange System's or Integrated Midrange System's control panel (HANDOFF 2, 4): its diskette slots (A, and B with
-// an Expansion Cabinet) or its magazine slot and the magazine's four diskettes (shown, not taken), then the player's
-// inventory. Data: threads, max job, batch jobs, expanded, integrated, held. Every second the server sends its status
-// and jobs as lines (MachinePayloads.Info), tab-separated:
-//   S code statusKey
-//   C job itemKey amount stepsDone steps percent awaitingItemKey   (a running job)
-//   Q job itemKey amount                                             (a queued one)
-// Buttons: IPL (F7), Hold the queue (F10), Release it (F11).
+// MRCTL / IMCTL (HANDOFF 3; layouts mrctl, imctl): a Midrange System's or Integrated Midrange System's control panel.
+// Data: threads, max job, batch jobs, expanded, integrated, held. Every second the server sends, tab-separated:
+//   S code wordKey                                             its status ("A6", RUNNING)
+//   D position label recipes status                            a drive position (label empty: none; *DFT / *READY / *EMPTY)
+//   J job itemKey amount status percent awaitingItemKey        a job (*ACTIVE / *QUEUED / *HELD)
+//   V label, R itemKey count                                   5=Display recipes: the diskette's recipes, while shown
+// Options: a drive's (row 0-3) 4=Eject (tier 2: Remove from magazine), 5=Display recipes, 8=Make default library; a
+// job's (row JOB_ROW + n) 3=Hold, 4=End, 6=Release. Buttons: IPL (F7), Hold the queue (F10), Release it (F11), back from
+// the recipes (F12).
 public class MidrangePanelMenu extends PeripheralMenu {
-    public static final int BUTTON_IPL = 0, BUTTON_HOLD = 1, BUTTON_RELEASE = 2;
-    public static final int SLOT_A_X = 18, SLOT_B_X = 48, SLOTS_Y = 60, MAGAZINE_X = 60, MAGAZINE_PITCH = 48;
-    // The magazine's diskettes shown, after the two real slots.
-    public static final int SHOWN = 2;
-    private static final int QUEUE_SHOWN = 6;
+    public static final int BUTTON_IPL = 0, BUTTON_HOLD = 1, BUTTON_RELEASE = 2, BUTTON_BACK = 3;
+    public static final int JOB_ROW = 10, JOBS_SHOWN = 6;
 
     private final @Nullable MidrangeSystemBlockEntity system;
-    private final SimpleContainer shown = new SimpleContainer(DisketteMagazineItem.CAPACITY);
     private final DataSlot threads = DataSlot.standalone(), memory = DataSlot.standalone(), batch = DataSlot.standalone(),
             expanded = DataSlot.standalone(), integrated = DataSlot.standalone(), held = DataSlot.standalone();
+    // The jobs as last listed (an option's row is one of them), and the drive whose recipes are shown (-1: none).
+    private final List<UUID> listed = new ArrayList<>();
+    private int showing = -1;
 
     // Client constructor.
     public MidrangePanelMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf buf) {
@@ -58,32 +60,6 @@ public class MidrangePanelMenu extends PeripheralMenu {
             addDataSlot(slot);
         }
         update();
-        addSlot(new MachineSlot(slots, MidrangeSystemBlockEntity.SLOT_A, SLOT_A_X, SLOTS_Y) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return integrated() ? stack.is(ModItems.DISKETTE_MAGAZINE.get()) : stack.is(ModItems.DISKETTE_8IN.get());
-            }
-        });
-        addSlot(new MachineSlot(slots, MidrangeSystemBlockEntity.SLOT_B, SLOT_B_X, SLOTS_Y) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return expanded() && stack.is(ModItems.DISKETTE_8IN.get());
-            }
-
-            @Override
-            public boolean isActive() {
-                return expanded();
-            }
-        });
-        for (int i = 0; i < DisketteMagazineItem.CAPACITY; i++) {
-            addSlot(new GhostSlot(shown, i, MAGAZINE_X + i * MAGAZINE_PITCH, SLOTS_Y) {
-                @Override
-                public boolean isActive() {
-                    return integrated();
-                }
-            });
-        }
-        addPlayerSlots(inventory);
     }
 
     public int threads() {
@@ -122,14 +98,6 @@ public class MidrangePanelMenu extends PeripheralMenu {
         expanded.set(system.expanded() ? 1 : 0);
         integrated.set(system.integrated() ? 1 : 0);
         held.set(system.held() ? 1 : 0);
-        ItemStack magazine = system.getItem(MidrangeSystemBlockEntity.SLOT_A);
-        List<ItemStack> inside = system.integrated() && magazine.is(ModItems.DISKETTE_MAGAZINE.get()) ? DisketteMagazineItem.diskettes(magazine) : List.of();
-        for (int i = 0; i < shown.getContainerSize(); i++) {
-            ItemStack want = i < inside.size() ? inside.get(i) : ItemStack.EMPTY;
-            if (!ItemStack.matches(shown.getItem(i), want)) {
-                shown.setItem(i, want.copy());
-            }
-        }
     }
 
     @Override
@@ -138,34 +106,67 @@ public class MidrangePanelMenu extends PeripheralMenu {
         super.broadcastChanges();
     }
 
-    // Its status and jobs, every second.
+    // Its status word's lang key for the status code.
+    private static String word(MidrangeSystemBlockEntity system) {
+        String code = system.statusCode();
+        String word = code.startsWith("E9") ? "offline" : code.startsWith("C") ? "ipl" : code.startsWith("E2") ? "attention"
+                : code.startsWith("E1") ? "no_library" : system.held() ? "held" : code.startsWith("A6b") ? "busy" : "running";
+        return "crt.encodedlogistics.mrctl.word." + word;
+    }
+
     @Override
     protected void refresh() {
         if (system == null) {
             return;
         }
         List<String> lines = new ArrayList<>();
-        lines.add(String.join("\t", "S", system.statusCode(), system.statusKey()));
-        int queued = 0;
+        lines.add(String.join("\t", "S", system.statusCode(), word(system)));
+        List<ItemStack> positions = system.positions();
+        int first = system.defaultDrive();
+        for (int i = 0; i < positions.size(); i++) {
+            ItemStack diskette = positions.get(i);
+            if (diskette.isEmpty()) {
+                lines.add(String.join("\t", "D", Integer.toString(i + 1), "", "", "*EMPTY"));
+            } else {
+                DisketteData data = DisketteStack.data(diskette);
+                lines.add(String.join("\t", "D", Integer.toString(i + 1), label(data), Integer.toString(data.recipes().size()), i == first ? "*DFT" : "*READY"));
+            }
+        }
+        listed.clear();
         for (CraftingJob job : system.jobs()) {
-            String id = shortId(job), item = itemKey(job.target), amount = Long.toString(job.amount);
+            if (listed.size() >= JOBS_SHOWN) {
+                break;
+            }
+            listed.add(job.id);
+            String status = system.jobHeld(job.id) || !job.running && system.held() ? "*HELD" : job.running ? "*ACTIVE" : "*QUEUED";
+            String percent = "", awaiting = "";
             if (job.running) {
-                int done = 0, total = 0, stepsDone = 0;
+                int done = 0, total = 0;
                 for (CraftingJob.Step step : job.steps) {
                     done += step.done;
                     total += step.total;
-                    stepsDone += step.finished() ? 1 : 0;
                 }
                 float own = system.stepProgress(job.id);
-                int percent = total == 0 ? 100 : Math.min(100, Math.round((done + own) * 100 / total));
-                String awaiting = job.awaiting.isEmpty() ? "" : itemKey(job.awaiting.keySet().iterator().next());
-                lines.add(String.join("\t", "C", id, item, amount, Integer.toString(Math.min(job.steps.size(), stepsDone + 1)),
-                        Integer.toString(job.steps.size()), Integer.toString(percent), awaiting));
-            } else if (queued++ < QUEUE_SHOWN) {
-                lines.add(String.join("\t", "Q", id, item, amount));
+                percent = Integer.toString(total == 0 ? 100 : Math.min(100, Math.round((done + own) * 100 / total)));
+                awaiting = job.awaiting.isEmpty() ? "" : itemKey(job.awaiting.keySet().iterator().next());
             }
+            lines.add(String.join("\t", "J", shortId(job), itemKey(job.target), Long.toString(job.amount), status, percent, awaiting));
+        }
+        if (showing >= 0 && showing < positions.size() && !positions.get(showing).isEmpty()) {
+            DisketteData data = DisketteStack.data(positions.get(showing));
+            lines.add(String.join("\t", "V", label(data)));
+            for (Schematic recipe : data.recipes()) {
+                ItemStack output = recipe.output();
+                lines.add(String.join("\t", "R", output.getItem().getDescriptionId(), Integer.toString(output.getCount())));
+            }
+        } else {
+            showing = -1;
         }
         send(Component.empty(), lines, List.of(lines.size()));
+    }
+
+    private static String label(DisketteData data) {
+        return data.label().isEmpty() ? DisketteStack.DEFAULT_LABEL : data.label();
     }
 
     // A job's number as the panel shows it: four hex digits of its id.
@@ -176,6 +177,61 @@ public class MidrangePanelMenu extends PeripheralMenu {
     // An item's name, as its lang key (the client translates it).
     private static String itemKey(ItemKey key) {
         return key.stack().getItem().getDescriptionId();
+    }
+
+    @Override
+    protected @Nullable Component option(int row, String option) {
+        if (system == null) {
+            return null;
+        }
+        if (row >= JOB_ROW) {
+            int index = row - JOB_ROW;
+            if (index >= listed.size() || system.job(listed.get(index)) == null) {
+                return Component.translatable("crt.encodedlogistics.mrctl.job_gone");
+            }
+            UUID id = listed.get(index);
+            String shown = id.toString().substring(0, 4).toUpperCase(Locale.ROOT);
+            return switch (option) {
+                case "3" -> {
+                    system.holdJob(id, true);
+                    yield Component.translatable("crt.encodedlogistics.mrctl.job_held", shown);
+                }
+                case "4" -> system.cancel(id) ? Component.translatable("crt.encodedlogistics.mrctl.job_ended", shown)
+                        : Component.translatable("crt.encodedlogistics.mrctl.job_gone");
+                case "6" -> {
+                    system.holdJob(id, false);
+                    yield Component.translatable("crt.encodedlogistics.mrctl.job_released", shown);
+                }
+                default -> null;
+            };
+        }
+        List<ItemStack> positions = system.positions();
+        if (row >= positions.size()) {
+            return null;
+        }
+        boolean empty = positions.get(row).isEmpty();
+        return switch (option) {
+            case "4" -> {
+                if (empty) {
+                    yield Component.translatable("crt.encodedlogistics.mrctl.drive_empty", row + 1);
+                }
+                ItemStack out = system.takeDiskette(row);
+                give(out);
+                yield Component.translatable(system.integrated() ? "crt.encodedlogistics.mrctl.removed" : "crt.encodedlogistics.mrctl.ejected",
+                        label(DisketteStack.data(out)), row + 1);
+            }
+            case "5" -> {
+                if (empty) {
+                    yield Component.translatable("crt.encodedlogistics.mrctl.drive_empty", row + 1);
+                }
+                showing = row;
+                yield Component.empty();
+            }
+            case "8" -> system.setDefaultDrive(row)
+                    ? Component.translatable("crt.encodedlogistics.mrctl.default", label(DisketteStack.data(positions.get(row))))
+                    : Component.translatable("crt.encodedlogistics.mrctl.drive_empty", row + 1);
+            default -> null;
+        };
     }
 
     @Override
@@ -202,6 +258,7 @@ public class MidrangePanelMenu extends PeripheralMenu {
                 system.setHeld(false);
                 send(Component.translatable("crt.encodedlogistics.mrctl.released"));
             }
+            case BUTTON_BACK -> showing = -1;
             default -> {
                 return false;
             }

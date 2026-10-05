@@ -24,10 +24,11 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 
-// The Card Reader (HANDOFF 5): punched cards in its 8-card hopper are read onto the 8" Diskette in its slot (Read, F6):
-// each card's recipe is added, or replaces the one on the diskette making the same thing, up to 8 recipes. The cards
-// stay in the hopper. It's a diskette drive to ELCL too (SAVLIB / RSTLIB DEV(CARDRDR01)). It works while a Midrange
-// System on its network is online.
+// The Card Reader (HANDOFF 3, 5): punched cards in its 8-card hopper are read onto the 8" Diskette in its slot (Read,
+// F6): each card's recipe is added, or replaces the one on the diskette making the same thing, up to 8 recipes. The
+// cards stay in the hopper. Cards and a diskette go in when used on it; a sneak-use with an empty hand takes the
+// diskette out (then the cards). It's a diskette drive to ELCL too (SAVLIB / RSTLIB DEV(CARDRDR01)). It works while a
+// Midrange System on its network is online.
 public class CardReaderBlockEntity extends PeripheralBlockEntity implements DisketteDevice {
     public static final String TYPE = "CARDRDR";
     public static final int HOPPER = 8, DISKETTE = 8;
@@ -72,6 +73,91 @@ public class CardReaderBlockEntity extends PeripheralBlockEntity implements Disk
             }
         }
         return data;
+    }
+
+    // What reading does with each card in the hopper, in order: "new", "replaces n" (the diskette's recipe n, 1 first),
+    // "full" (no room); "" with no diskette or no recipe on the card.
+    public static List<String> plan(@org.jspecify.annotations.Nullable DisketteData data, List<ItemStack> hopper) {
+        List<String> plan = new java.util.ArrayList<>();
+        for (ItemStack card : hopper) {
+            Schematic recipe = card.get(ModDataComponents.PUNCHED_RECIPE.get());
+            if (data == null || recipe == null) {
+                plan.add("");
+                continue;
+            }
+            int same = -1;
+            for (int i = 0; i < data.recipes().size(); i++) {
+                if (ItemStack.isSameItemSameComponents(data.recipes().get(i).output(), recipe.output())) {
+                    same = i;
+                }
+            }
+            if (same >= 0) {
+                plan.add("replaces " + (same + 1));
+            } else if (data.recipes().size() < DisketteData.MAX_RECIPES) {
+                plan.add("new");
+            } else {
+                plan.add("full");
+                continue;
+            }
+            data = data.withRecipe(recipe);
+        }
+        return plan;
+    }
+
+    // The cards in the hopper, in order.
+    public List<ItemStack> hopper() {
+        List<ItemStack> cards = new java.util.ArrayList<>();
+        for (int i = 0; i < HOPPER; i++) {
+            if (!getItem(i).isEmpty()) {
+                cards.add(getItem(i));
+            }
+        }
+        return cards;
+    }
+
+    // Used on it: punched cards fill the hopper's free places (one a place), a diskette goes in its slot.
+    @Override
+    public boolean insert(ItemStack stack) {
+        if (stack.is(ModItems.DISKETTE_8IN.get())) {
+            if (!getItem(DISKETTE).isEmpty()) {
+                return false;
+            }
+            setItem(DISKETTE, stack.split(1));
+            setChanged();
+            return true;
+        }
+        if (!punched(stack)) {
+            return false;
+        }
+        boolean any = false;
+        for (int i = 0; i < HOPPER && !stack.isEmpty(); i++) {
+            if (getItem(i).isEmpty()) {
+                setItem(i, stack.split(1));
+                any = true;
+            }
+        }
+        if (any) {
+            setChanged();
+        }
+        return any;
+    }
+
+    // A sneak-use with an empty hand: the diskette, else every card.
+    @Override
+    public List<ItemStack> eject() {
+        if (!getItem(DISKETTE).isEmpty()) {
+            ItemStack out = removeItemNoUpdate(DISKETTE);
+            setChanged();
+            return List.of(out);
+        }
+        List<ItemStack> cards = new java.util.ArrayList<>();
+        for (int i = 0; i < HOPPER; i++) {
+            if (!getItem(i).isEmpty()) {
+                cards.add(removeItemNoUpdate(i));
+            }
+        }
+        setChanged();
+        return cards;
     }
 
     // Reads the hopper onto the diskette; the message line says how it went.

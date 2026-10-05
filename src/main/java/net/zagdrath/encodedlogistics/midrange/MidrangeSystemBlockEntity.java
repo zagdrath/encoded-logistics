@@ -16,6 +16,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
@@ -84,6 +85,8 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     private final List<Integer> progress = new ArrayList<>();
     private boolean online, wasOnline, held;
     private int ipl;
+    // The default library's drive position (8=Make default library): its diskette is mounted first (SAVLIB / RSTLIB).
+    private int defaultDrive;
     private double energyCredit;
     private String deviceName = "";
     // Terminal OS sessions open at an Integrated system's console (not saved).
@@ -388,6 +391,94 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         return false;
     }
 
+    // The drive positions its control panel lists, empty ones too: slot A (and B with the cabinet), or the magazine's
+    // four.
+    public List<ItemStack> positions() {
+        List<ItemStack> positions = new ArrayList<>();
+        if (integrated()) {
+            ItemStack magazine = items.get(SLOT_A);
+            List<ItemStack> inside = magazine.is(ModItems.DISKETTE_MAGAZINE.get()) ? DisketteMagazineItem.diskettes(magazine) : List.of();
+            for (int i = 0; i < DisketteMagazineItem.CAPACITY; i++) {
+                positions.add(i < inside.size() ? inside.get(i) : ItemStack.EMPTY);
+            }
+        } else {
+            positions.add(items.get(SLOT_A));
+            if (expanded()) {
+                positions.add(items.get(SLOT_B));
+            }
+        }
+        return positions;
+    }
+
+    // The default position: the one chosen while it holds a diskette, else the first that does (-1: none).
+    public int defaultDrive() {
+        List<ItemStack> positions = positions();
+        if (defaultDrive < positions.size() && !positions.get(defaultDrive).isEmpty()) {
+            return defaultDrive;
+        }
+        for (int i = 0; i < positions.size(); i++) {
+            if (!positions.get(i).isEmpty()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public boolean setDefaultDrive(int position) {
+        List<ItemStack> positions = positions();
+        if (position < 0 || position >= positions.size() || positions.get(position).isEmpty()) {
+            return false;
+        }
+        defaultDrive = position;
+        setChanged();
+        return true;
+    }
+
+    // 4=Eject / 4=Remove from magazine: the diskette at a position comes out (empty when there's none).
+    public ItemStack takeDiskette(int position) {
+        List<ItemStack> positions = positions();
+        if (position < 0 || position >= positions.size() || positions.get(position).isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        if (integrated()) {
+            List<ItemStack> inside = new ArrayList<>(DisketteMagazineItem.diskettes(items.get(SLOT_A)));
+            ItemStack out = inside.remove(position);
+            DisketteMagazineItem.setDiskettes(items.get(SLOT_A), inside);
+            setChanged();
+            if (level != null) {
+                level.playSound(null, worldPosition, ModSounds.DISKETTE_LATCH.value(), SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return out;
+        }
+        return removeItemNoUpdate(position == 0 ? SLOT_A : SLOT_B).copy();
+    }
+
+    // A sneak-use with an empty hand: the last diskette in (B, then A), or the magazine.
+    public ItemStack ejectLast() {
+        for (int slot = SLOT_B; slot >= SLOT_A; slot--) {
+            if (!items.get(slot).isEmpty()) {
+                ItemStack out = items.get(slot).copy();
+                setItem(slot, ItemStack.EMPTY);
+                setChanged();
+                return out;
+            }
+        }
+        return ItemStack.EMPTY;
+    }
+
+    // 3=Hold / 6=Release a job: a held job doesn't start, a running one starts no more steps.
+    public boolean holdJob(UUID id, boolean hold) {
+        if (runner.setHeld(id, hold)) {
+            setChanged();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean jobHeld(UUID id) {
+        return runner.isHeld(id);
+    }
+
     // --- RecipeLibrarySource and DisketteDevice ---
 
     @Override
@@ -420,6 +511,15 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
                 if (!items.get(at).isEmpty()) {
                     mounted.add(new DisketteStack(() -> items.get(at), written -> setChanged()));
                 }
+            }
+        }
+        // The default library first.
+        int first = defaultDrive();
+        if (first > 0) {
+            List<ItemStack> positions = positions();
+            int index = (int) positions.subList(0, first).stream().filter(stack -> !stack.isEmpty()).count();
+            if (index > 0 && index < mounted.size()) {
+                mounted.addFirst(mounted.remove(index));
             }
         }
         return mounted;
@@ -666,9 +766,12 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         items = NonNullList.withSize(2, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
         held = input.getBooleanOr("held", false);
+        defaultDrive = input.getIntOr("default_drive", 0);
         ipl = input.getIntOr("ipl", 0);
         energyCredit = input.getDoubleOr("energy", 0);
         runner.load(input.read("jobs", CraftingJob.CODEC.listOf()).orElse(List.of()));
+        runner.heldJobs().clear();
+        runner.heldJobs().addAll(input.read("held_jobs", UUIDUtil.CODEC.listOf()).orElse(List.of()));
         tasks.clear();
         progress.clear();
         tasks.addAll(input.read("tasks", CraftTask.CODEC.listOf()).orElse(List.of()));
@@ -689,6 +792,10 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         }
         output.putBoolean("saved", true);
         output.putBoolean("held", held);
+        output.putInt("default_drive", defaultDrive);
+        if (!runner.heldJobs().isEmpty()) {
+            output.store("held_jobs", UUIDUtil.CODEC.listOf(), List.copyOf(runner.heldJobs()));
+        }
         output.putInt("ipl", ipl);
         output.putDouble("energy", energyCredit);
         if (!runner.jobs().isEmpty()) {

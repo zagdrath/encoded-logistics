@@ -10,21 +10,22 @@ import java.util.List;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.menu.MidrangePanelMenu;
-import net.zagdrath.encodedlogistics.midrange.DisketteData;
-import net.zagdrath.encodedlogistics.midrange.DisketteStack;
-import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 
-// MIDRANGE CONTROL PANEL / INTEGRATED SYSTEM CONTROL PANEL (HANDOFF 2, 4; previews/gui_midrange_panel,
-// gui_integrated_panel): the status code and what it means; threads, max job and batch jobs; the library diskettes
-// (slot A, B with an Expansion Cabinet) or the magazine and its four diskettes; the current job (jobs) with their
-// progress; the job queue; IPL (F7), Hold queue (F10), Release (F11).
+// MRCTL / IMCTL (HANDOFF 3; docs/midrange/layouts/mrctl.txt, imctl.txt): the system's name, status code and word,
+// threads, max job and batch jobs; its drives (tier 1: 1, or 2 with an Expansion Cabinet) or its magazine's four
+// positions - 4=Eject (Remove from magazine), 5=Display recipes, 8=Make default library; its jobs - 3=Hold, 4=End,
+// 6=Release; F7=IPL, F10=Hold queue, F11=Release. 5 shows the diskette's recipes instead of the lists (F12 back).
 public class MidrangePanelScreen extends CrtMachineScreen<MidrangePanelMenu> {
-    private static final int BAR = 10, QUEUE_ROW = 12, QUEUE_ROWS = 6;
+    private static final int DRIVES_ROW = 7;
 
     public MidrangePanelScreen(MidrangePanelMenu menu, Inventory inventory, Component title) {
         super(menu, title);
+    }
+
+    @Override
+    String panelId() {
+        return menu.integrated() ? "IMCTL" : "MRCTL";
     }
 
     @Override
@@ -38,131 +39,79 @@ public class MidrangePanelScreen extends CrtMachineScreen<MidrangePanelMenu> {
     }
 
     @Override
-    List<Action> actions() {
-        return List.of(new Action(tr("crt.encodedlogistics.mrctl.action.ipl"), 7), new Action(tr("crt.encodedlogistics.mrctl.action.hold"), 10),
-                new Action(tr("crt.encodedlogistics.mrctl.action.release"), 11));
+    boolean commandLine() {
+        return true;
     }
 
-    // The server's lines of a kind (S, C, Q), split at the tabs.
-    private List<String[]> lines(String kind) {
-        List<String[]> found = new ArrayList<>();
-        for (String line : menu.lines()) {
-            String[] fields = line.split("\t", -1);
-            if (fields[0].equals(kind)) {
-                found.add(fields);
-            }
-        }
-        return found;
-    }
-
-    private static String cut(String text, int width) {
-        return text.length() > width ? text.substring(0, width) : text;
+    private boolean recipesShown() {
+        return !lines("V").isEmpty();
     }
 
     @Override
     void body(CrtGrid grid) {
-        status(grid);
-        diskettes(grid);
-        current(grid);
-        queue(grid);
-        grid.put(11, 51, tr("crt.encodedlogistics.machine.inventory"), CrtGrid.BRIGHT);
-    }
-
-    private void status(CrtGrid grid) {
-        grid.put(3, 2, tr("crt.encodedlogistics.mrctl.status_label"), CrtGrid.NORMAL);
         List<String[]> status = lines("S");
-        if (!status.isEmpty()) {
-            String code = " " + status.getFirst()[1] + " ";
-            grid.put(3, 22, code, CrtGrid.NORMAL);
-            grid.reverse(3, 22, code.length());
-            grid.put(3, 23 + code.length(), tr(status.getFirst()[2]), CrtGrid.BRIGHT);
+        String code = status.isEmpty() ? "" : status.getFirst()[1] + " " + tr(status.getFirst()[2]);
+        grid.put(2, 2, tr("crt.encodedlogistics.mrctl.status_line", menu.opening().device(), code, menu.threads(), menu.memory(), menu.batchJobs()),
+                CrtGrid.NORMAL);
+        if (recipesShown()) {
+            recipes(grid);
+            options(List.of());
+            return;
         }
-        grid.put(4, 2, tr("crt.encodedlogistics.mrctl.threads_label"), CrtGrid.NORMAL);
-        grid.put(4, 22, Integer.toString(menu.threads()), CrtGrid.BRIGHT);
-        grid.put(4, 28, tr("crt.encodedlogistics.mrctl.max_job_label"), CrtGrid.NORMAL);
-        grid.put(4, 42, Integer.toString(menu.memory()), CrtGrid.BRIGHT);
-        grid.put(4, 50, tr("crt.encodedlogistics.mrctl.batch_label"), CrtGrid.NORMAL);
-        grid.put(4, 65, Integer.toString(menu.batchJobs()), CrtGrid.BRIGHT);
+        grid.put(3, 2, tr("crt.encodedlogistics.mrctl.type_options"), CrtGrid.NORMAL);
+        grid.put(4, 4, tr(menu.integrated() ? "crt.encodedlogistics.imctl.drive_options" : "crt.encodedlogistics.mrctl.drive_options"), CrtGrid.NORMAL);
+        List<int[]> at = new ArrayList<>();
+        grid.put(6, 0, tr(menu.integrated() ? "crt.encodedlogistics.imctl.drive_head" : "crt.encodedlogistics.mrctl.drive_head"), CrtGrid.BRIGHT);
+        List<String[]> drives = lines("D");
+        int row = DRIVES_ROW;
+        int labelCol = menu.integrated() ? 10 : 12;
+        for (int i = 0; i < drives.size(); i++, row++) {
+            String[] drive = drives.get(i);
+            boolean empty = drive[2].isEmpty();
+            grid.put(row, 5, drive[1], CrtGrid.NORMAL);
+            grid.put(row, labelCol, empty ? tr("crt.encodedlogistics.mrctl.empty") : drive[2], empty ? CrtGrid.DIM : CrtGrid.NORMAL);
+            if (!empty) {
+                grid.put(row, labelCol + 12, tr("crt.encodedlogistics.mrctl.recipes", drive[3]), CrtGrid.NORMAL);
+            }
+            grid.put(row, labelCol + 21, drive[4], empty ? CrtGrid.DIM : CrtGrid.NORMAL);
+            at.add(new int[] { row, 0, i });
+        }
+        grid.put(row, 5, tr(menu.integrated() ? "crt.encodedlogistics.hint.magazine" : "crt.encodedlogistics.hint.diskette"), CrtGrid.DIM);
+        row += 2;
+        grid.put(row++, 1, tr("crt.encodedlogistics.mrctl.job_head"), CrtGrid.BRIGHT);
+        List<String[]> jobs = lines("J");
+        if (jobs.isEmpty()) {
+            grid.put(row++, 6, tr("crt.encodedlogistics.mrctl.no_jobs"), CrtGrid.DIM);
+        }
+        for (int i = 0; i < jobs.size() && row < 19; i++, row++) {
+            String[] job = jobs.get(i);
+            grid.put(row, 6, job[1], CrtGrid.NORMAL);
+            grid.put(row, 12, cut(name(job[2]), 20), CrtGrid.NORMAL);
+            grid.put(row, 36 - job[3].length(), job[3], CrtGrid.NORMAL);
+            grid.put(row, 38, job[4], job[4].equals("*HELD") ? CrtGrid.DIM : CrtGrid.NORMAL);
+            String progress = !job[6].isEmpty() ? tr("crt.encodedlogistics.mrctl.missing", name(job[6])) : job[5].isEmpty() ? "" : job[5] + "%";
+            grid.put(row, 49, cut(progress, 30), job[6].isEmpty() ? CrtGrid.NORMAL : CrtGrid.BRIGHT);
+            at.add(new int[] { row, 0, MidrangePanelMenu.JOB_ROW + i });
+        }
+        if (row < 19) {
+            grid.put(row + 1, 4, tr("crt.encodedlogistics.mrctl.job_options"), CrtGrid.NORMAL);
+        }
+        options(at);
     }
 
-    private void diskettes(CrtGrid grid) {
-        if (menu.integrated()) {
-            int count = 0, recipes = 0;
-            for (int i = 0; i < 4; i++) {
-                ItemStack diskette = menu.getSlot(MidrangePanelMenu.SHOWN + i).getItem();
-                String label = tr("crt.encodedlogistics.mrctl.empty");
-                if (!diskette.isEmpty()) {
-                    DisketteData data = DisketteStack.data(diskette);
-                    count++;
-                    recipes += data.recipes().size();
-                    label = data.label().isEmpty() ? DisketteStack.DEFAULT_LABEL : data.label();
-                }
-                grid.put(8, 9 + i * 8, cut(label, 7), diskette.isEmpty() ? CrtGrid.DIM : CrtGrid.NORMAL);
-            }
-            grid.put(5, 2, tr("crt.encodedlogistics.mrctl.magazine_count", count, recipes), CrtGrid.BRIGHT);
-            return;
+    // 5=Display recipes: the diskette's recipes, two columns.
+    private void recipes(CrtGrid grid) {
+        grid.put(4, 2, tr("crt.encodedlogistics.mrctl.recipes_of", lines("V").getFirst()[1]), CrtGrid.BRIGHT);
+        List<String[]> recipes = lines("R");
+        if (recipes.isEmpty()) {
+            grid.put(6, 4, tr("crt.encodedlogistics.mrctl.no_recipes"), CrtGrid.DIM);
         }
-        grid.put(5, 2, tr("crt.encodedlogistics.mrctl.libraries"), CrtGrid.BRIGHT);
-        int slots = menu.expanded() ? 2 : 1;
-        for (int i = 0; i < slots; i++) {
-            ItemStack diskette = menu.getSlot(MidrangeSystemBlockEntity.SLOT_A + i).getItem();
-            if (diskette.isEmpty()) {
-                grid.put(6 + i, 14, tr("crt.encodedlogistics.mrctl.empty"), CrtGrid.DIM);
-            } else {
-                DisketteData data = DisketteStack.data(diskette);
-                grid.put(6 + i, 14, cut(data.label().isEmpty() ? DisketteStack.DEFAULT_LABEL : data.label(), 10), CrtGrid.NORMAL);
-                grid.put(6 + i, 26, tr("crt.encodedlogistics.reader.recipes", data.recipes().size()), CrtGrid.NORMAL);
-            }
+        for (int i = 0; i < recipes.size(); i++) {
+            String[] recipe = recipes.get(i);
+            grid.put(6 + i, 4, String.format("%2d", i + 1), CrtGrid.NORMAL);
+            grid.put(6 + i, 8, cut(name(recipe[1]), 40) + " x" + recipe[2], CrtGrid.NORMAL);
         }
-    }
-
-    // A running job: tier 1 shows one over two lines (the job, then its step and bar); tier 2 up to two, a line each.
-    private void current(CrtGrid grid) {
-        grid.put(5, 49, tr(menu.integrated() ? "crt.encodedlogistics.mrctl.current_jobs" : "crt.encodedlogistics.mrctl.current"), CrtGrid.BRIGHT);
-        List<String[]> running = lines("C");
-        if (running.isEmpty()) {
-            grid.put(6, 49, tr("crt.encodedlogistics.mrctl.none"), CrtGrid.DIM);
-            return;
-        }
-        if (!menu.integrated()) {
-            String[] job = running.getFirst();
-            grid.put(6, 49, cut(tr("crt.encodedlogistics.mrctl.job", job[1], tr(job[2]), job[3]), 30), CrtGrid.NORMAL);
-            if (!job[7].isEmpty()) {
-                grid.put(7, 49, cut(tr("crt.encodedlogistics.mrctl.waiting", tr(job[7])), 30), CrtGrid.DIM);
-            } else {
-                int percent = Integer.parseInt(job[6]), filled = percent * BAR / 100;
-                String bar = "[" + "#".repeat(filled) + ".".repeat(BAR - filled) + "]";
-                grid.put(7, 49, tr("crt.encodedlogistics.mrctl.step", job[4], job[5]) + " " + bar + " " + percent + "%", CrtGrid.NORMAL);
-            }
-            return;
-        }
-        for (int i = 0; i < Math.min(2, running.size()); i++) {
-            String[] job = running.get(i);
-            grid.put(6 + i, 49, cut(job[1] + " " + tr(job[2]) + " x" + job[3], 24), CrtGrid.NORMAL);
-            grid.right(6 + i, job[7].isEmpty() ? job[6] + "%" : tr("crt.encodedlogistics.mrctl.wait"), job[7].isEmpty() ? CrtGrid.NORMAL : CrtGrid.DIM);
-        }
-    }
-
-    private void queue(CrtGrid grid) {
-        grid.put(10, 2, tr("crt.encodedlogistics.mrctl.queue"), CrtGrid.BRIGHT);
-        grid.put(11, 2, tr("crt.encodedlogistics.mrctl.queue.job"), CrtGrid.BRIGHT);
-        grid.put(11, 8, tr("crt.encodedlogistics.mrctl.queue.item"), CrtGrid.BRIGHT);
-        grid.put(11, 31, tr("crt.encodedlogistics.mrctl.queue.qty"), CrtGrid.BRIGHT);
-        grid.put(11, 37, tr("crt.encodedlogistics.mrctl.queue.status"), CrtGrid.BRIGHT);
-        List<String[]> queued = lines("Q");
-        if (queued.isEmpty()) {
-            grid.put(QUEUE_ROW, 2, tr("crt.encodedlogistics.mrctl.queue.none"), CrtGrid.DIM);
-            return;
-        }
-        String status = tr(menu.held() ? "crt.encodedlogistics.mrctl.queue.held" : "crt.encodedlogistics.mrctl.queue.queued");
-        for (int i = 0; i < Math.min(QUEUE_ROWS, queued.size()); i++) {
-            String[] job = queued.get(i);
-            int row = QUEUE_ROW + i;
-            grid.put(row, 2, job[1], CrtGrid.NORMAL);
-            grid.put(row, 8, cut(tr(job[2]), 20), CrtGrid.NORMAL);
-            grid.put(row, 34 - job[3].length(), job[3], CrtGrid.NORMAL);
-            grid.put(row, 37, cut(status, 13), menu.held() ? CrtGrid.DIM : CrtGrid.NORMAL);
-        }
+        grid.put(18, 2, tr("crt.encodedlogistics.mrctl.recipes_back"), CrtGrid.DIM);
     }
 
     @Override
@@ -176,5 +125,15 @@ public class MidrangePanelScreen extends CrtMachineScreen<MidrangePanelMenu> {
             }
         }
         return true;
+    }
+
+    // F12 on the recipes: back to the lists.
+    @Override
+    boolean back() {
+        if (recipesShown()) {
+            button(MidrangePanelMenu.BUTTON_BACK);
+            return true;
+        }
+        return false;
     }
 }

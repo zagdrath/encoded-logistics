@@ -14,8 +14,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -111,12 +113,16 @@ public class CardReaderBlock extends BaseEntityBlock implements NetworkNodeBlock
         return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntityTypes.CARD_READER.get(), PeripheralBlockEntity::serverTick);
     }
 
-    // Its green screen.
+    // Its green screen; sneaking, what comes out of it (Midranges.use).
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof CardReaderBlockEntity reader) {
-            player.openMenu(reader, reader::writeOpening);
-        }
-        return InteractionResult.SUCCESS;
+        return level.getBlockEntity(pos) instanceof CardReaderBlockEntity reader ? Midranges.use(reader, player) : InteractionResult.PASS;
+    }
+
+    // Punched cards, a diskette: into it.
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+            BlockHitResult hit) {
+        return level.getBlockEntity(pos) instanceof CardReaderBlockEntity reader ? Midranges.useItem(reader, stack) : InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 }

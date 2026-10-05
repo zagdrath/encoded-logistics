@@ -5,26 +5,22 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemStack;
-import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.menu.CardReaderMenu;
-import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
-import net.zagdrath.encodedlogistics.midrange.DisketteData;
-import net.zagdrath.encodedlogistics.midrange.DisketteStack;
-import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
-// CARD READER (HANDOFF 5, previews/gui_card_reader): the 8-card hopper and what's punched on each card, the diskette
-// (its library, recipes used now and after reading), READ (F6).
+// CARDRDR (HANDOFF 3; docs/midrange/layouts/cardrdr.txt): the deck in the hopper - each card's recipe and whether it's
+// new on the diskette or replaces one -, the diskette's recipes before and after reading; F6=Read.
 public class CardReaderScreen extends CrtMachineScreen<CardReaderMenu> {
-    private static final int NAME = 18;
-
     public CardReaderScreen(CardReaderMenu menu, Inventory inventory, Component title) {
         super(menu, title);
+    }
+
+    @Override
+    String panelId() {
+        return "CARDRDR";
     }
 
     @Override
@@ -37,62 +33,39 @@ public class CardReaderScreen extends CrtMachineScreen<CardReaderMenu> {
         return tr("crt.encodedlogistics.reader.keys");
     }
 
-    @Override
-    List<Action> actions() {
-        return List.of(new Action(tr("crt.encodedlogistics.reader.action"), 6));
-    }
-
-    private List<ItemStack> hopper() {
-        List<ItemStack> cards = new ArrayList<>();
-        for (int i = 0; i < CardReaderBlockEntity.HOPPER; i++) {
-            cards.add(menu.getSlot(i).getItem());
+    private static String plan(String plan) {
+        if (plan.startsWith("replaces ")) {
+            return tr("crt.encodedlogistics.reader.replaces", plan.substring("replaces ".length()));
         }
-        return cards;
-    }
-
-    private int cards() {
-        return (int) hopper().stream().filter(CardReaderBlockEntity::punched).count();
-    }
-
-    @Override
-    String actionHint() {
-        boolean diskette = menu.getSlot(CardReaderBlockEntity.DISKETTE).hasItem();
-        return cards() == 0 || !diskette ? tr("crt.encodedlogistics.reader.hint_none") : tr("crt.encodedlogistics.reader.hint", cards());
+        return plan.isEmpty() ? "" : tr("crt.encodedlogistics.reader.plan." + plan);
     }
 
     @Override
     void body(CrtGrid grid) {
-        grid.put(3, 2, tr("crt.encodedlogistics.reader.instructions"), CrtGrid.NORMAL);
-        grid.put(5, 2, tr("crt.encodedlogistics.reader.hopper"), CrtGrid.BRIGHT);
-        grid.put(8, 2, tr("crt.encodedlogistics.reader.cards"), CrtGrid.BRIGHT);
-        List<ItemStack> hopper = hopper();
-        for (int i = 0; i < hopper.size(); i++) {
-            int row = 9 + i % 4, col = i < 4 ? 3 : 26;
-            Schematic recipe = hopper.get(i).get(ModDataComponents.PUNCHED_RECIPE.get());
-            String text;
-            if (recipe == null) {
-                text = tr("crt.encodedlogistics.reader.empty");
-            } else {
-                ItemStack output = recipe.output();
-                String name = output.getHoverName().getString();
-                text = (name.length() > NAME ? name.substring(0, NAME) : name) + " x" + output.getCount();
-            }
-            grid.put(row, col, Integer.toString(i + 1), CrtGrid.NORMAL);
-            grid.put(row, col + 3, text, recipe == null ? CrtGrid.DIM : CrtGrid.NORMAL);
+        grid.put(2, 2, tr("crt.encodedlogistics.reader.instructions"), CrtGrid.NORMAL);
+        grid.put(4, 2, tr("crt.encodedlogistics.reader.head"), CrtGrid.BRIGHT);
+        List<String[]> cards = lines("K");
+        if (cards.isEmpty()) {
+            grid.put(5, 3, tr("crt.encodedlogistics.reader.no_deck"), CrtGrid.DIM);
         }
-        grid.put(11, 51, tr("crt.encodedlogistics.machine.inventory"), CrtGrid.BRIGHT);
-        grid.put(14, 2, tr("crt.encodedlogistics.reader.diskette"), CrtGrid.BRIGHT);
-        ItemStack diskette = menu.getSlot(CardReaderBlockEntity.DISKETTE).getItem();
-        if (!diskette.isEmpty()) {
-            DisketteData data = DisketteStack.data(diskette);
-            DisketteData after = CardReaderBlockEntity.afterRead(data, hopper);
-            grid.put(15, 10, tr("crt.encodedlogistics.reader.library"), CrtGrid.NORMAL);
-            grid.put(15, 25, data.label().isEmpty() ? DisketteStack.DEFAULT_LABEL : data.label(), CrtGrid.BRIGHT);
-            grid.put(16, 10, tr("crt.encodedlogistics.reader.used"), CrtGrid.NORMAL);
-            grid.put(16, 25, tr("crt.encodedlogistics.reader.recipes", data.recipes().size()), CrtGrid.BRIGHT);
-            grid.put(17, 10, tr("crt.encodedlogistics.reader.after"), CrtGrid.NORMAL);
-            grid.put(17, 25, tr("crt.encodedlogistics.reader.recipes", after.recipes().size()), CrtGrid.BRIGHT);
+        for (int i = 0; i < cards.size(); i++) {
+            String[] card = cards.get(i);
+            int row = 5 + i;
+            grid.put(row, 2, String.format("%2s", card[1]), CrtGrid.NORMAL);
+            grid.put(row, 7, card[2].isEmpty() ? tr("crt.encodedlogistics.reader.blank_card") : cut(name(card[2]), 28) + " x" + card[3],
+                    card[2].isEmpty() ? CrtGrid.DIM : CrtGrid.NORMAL);
+            grid.put(row, 40, plan(card[4]), card[4].equals("full") ? CrtGrid.BRIGHT : CrtGrid.NORMAL);
         }
+        int row = 5 + Math.max(1, cards.size()) + 1;
+        grid.put(row, 2, tr("crt.encodedlogistics.reader.diskette"), CrtGrid.NORMAL);
+        List<String[]> diskette = lines("D");
+        if (diskette.isEmpty()) {
+            grid.put(row, 22, tr("crt.encodedlogistics.reader.no_diskette_in"), CrtGrid.DIM);
+        } else {
+            String[] d = diskette.getFirst();
+            grid.put(row, 22, tr("crt.encodedlogistics.reader.before_after", d[1], d[2], d[3]), CrtGrid.BRIGHT);
+        }
+        grid.put(row + 2, 2, tr("crt.encodedlogistics.hint.cards"), CrtGrid.DIM);
     }
 
     @Override

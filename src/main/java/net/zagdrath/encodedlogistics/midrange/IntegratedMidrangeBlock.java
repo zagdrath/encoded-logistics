@@ -122,6 +122,10 @@ public class IntegratedMidrangeBlock extends MidrangeHostBlock implements Networ
     @Override
     protected InteractionResult use(Level level, BlockPos master, BlockState state, Player player, BlockHitResult hit) {
         Zone zone = zone(master, state.getValue(FACING), hit.getLocation());
+        // Sneaking (an empty hand): the magazine comes out, wherever the click is.
+        if (player.isSecondaryUseActive()) {
+            return super.use(level, master, state, player, hit);
+        }
         if (zone == Zone.NONE) {
             return InteractionResult.PASS;
         }

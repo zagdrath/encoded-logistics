@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.midrange;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -42,9 +43,24 @@ public abstract class MidrangeHostBlock extends FootprintBlock {
                 : createTickerHelper(type, ModBlockEntityTypes.MIDRANGE_SYSTEM.get(), MidrangeSystemBlockEntity::serverTick);
     }
 
+    // Its control panel; sneaking with an empty hand, the last diskette in (or the magazine) comes out.
     @Override
     protected InteractionResult use(Level level, BlockPos master, BlockState state, Player player, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(master) instanceof MidrangeSystemBlockEntity system) {
+        if (!(level.getBlockEntity(master) instanceof MidrangeSystemBlockEntity system)) {
+            return InteractionResult.PASS;
+        }
+        if (player.isSecondaryUseActive()) {
+            if (level.isClientSide()) {
+                return InteractionResult.SUCCESS;
+            }
+            ItemStack out = system.ejectLast();
+            if (out.isEmpty()) {
+                return InteractionResult.PASS;
+            }
+            player.getInventory().placeItemBackInInventory(out, Prediction.SERVER_ONLY);
+            return InteractionResult.SUCCESS;
+        }
+        if (!level.isClientSide()) {
             player.openMenu(system, system::writeOpening);
         }
         return InteractionResult.SUCCESS;

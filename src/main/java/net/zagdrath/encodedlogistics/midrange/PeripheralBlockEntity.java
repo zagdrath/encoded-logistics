@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.midrange;
 
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -88,6 +90,21 @@ public abstract class PeripheralBlockEntity extends BaseContainerBlockEntity imp
         if (peripheral.active > 0 && --peripheral.active == 0) {
             peripheral.showActive(false);
         }
+    }
+
+    // An item used on it (HANDOFF 3: cards, a diskette, paper): true when it took some.
+    public boolean insert(ItemStack stack) {
+        return false;
+    }
+
+    // A sneak-use with an empty hand: what comes out.
+    public List<ItemStack> eject() {
+        return List.of();
+    }
+
+    // Punching, reading or printing (ACTIVE shows).
+    public boolean active() {
+        return active > 0;
     }
 
     // Shows ACTIVE for a while, with its sound.

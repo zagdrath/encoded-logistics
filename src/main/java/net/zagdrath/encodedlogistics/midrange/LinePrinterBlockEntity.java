@@ -38,19 +38,19 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
-// The Line Printer (HANDOFF 5): prints reports and spooled files as Written Books, one paper a page, from the paper in
-// its paper slot into its output slot (onto the floor in front of it when that's full). Its own screen prints the
-// network inventory, the newest job's log, the device list or a spooled file; ELCL prints on it too (PRTRPT, Work with
-// Output's 6=Print: DEV(PRT01), or *DFT). It works while a Midrange System on its network is online.
+// The Line Printer (HANDOFF 3, 5): prints reports and spooled files as Written Books, one paper a page, from its paper
+// out of its front. Paper goes in when used on it; a sneak-use with an empty hand takes it back. Its own screen prints
+// the network inventory, the newest job's log, the device list or a spooled file; ELCL prints on it too (PRTRPT, Work
+// with Output's 6=Print: DEV(PRT01), or *DFT). It works while a Midrange System on its network is online.
 public class LinePrinterBlockEntity extends PeripheralBlockEntity implements PrinterDevice {
     public static final String TYPE = "PRT";
-    public static final int PAPER = 0, OUTPUT = 1;
+    public static final int PAPER = 0;
     public static final int INVENTORY = 1, JOB_LOG = 2, DEVICES = 3, SPOOLED = 4;
     // A book page: 14 lines of about 19 characters.
     private static final int PAGE_ROWS = 14, ROW_CHARS = 19, MAX_PAGES = 100, ACTIVE_TICKS = 60;
 
     public LinePrinterBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntityTypes.LINE_PRINTER.get(), pos, state, 2);
+        super(ModBlockEntityTypes.LINE_PRINTER.get(), pos, state, 1);
     }
 
     @Override
@@ -61,6 +61,51 @@ public class LinePrinterBlockEntity extends PeripheralBlockEntity implements Pri
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         return slot == PAPER && stack.is(Items.PAPER);
+    }
+
+    // Paper used on it: as much as fits.
+    @Override
+    public boolean insert(ItemStack stack) {
+        if (!stack.is(Items.PAPER)) {
+            return false;
+        }
+        ItemStack paper = getItem(PAPER);
+        int moved = Math.min(stack.getCount(), stack.getMaxStackSize() - paper.getCount());
+        if (moved <= 0) {
+            return false;
+        }
+        if (paper.isEmpty()) {
+            setItem(PAPER, stack.split(moved));
+        } else {
+            paper.grow(moved);
+            stack.shrink(moved);
+        }
+        setChanged();
+        return true;
+    }
+
+    // A sneak-use with an empty hand: the paper.
+    @Override
+    public List<ItemStack> eject() {
+        ItemStack out = removeItemNoUpdate(PAPER);
+        setChanged();
+        return out.isEmpty() ? List.of() : List.of(out);
+    }
+
+    public int paper() {
+        return getItem(PAPER).getCount();
+    }
+
+    // Its status on its screen: *OFFLINE, *PRINTING, *NOPAPER, *READY.
+    public String status() {
+        return !isOnline() ? "*OFFLINE" : active() ? "*PRINTING" : !hasPaper() ? "*NOPAPER" : "*READY";
+    }
+
+    // What it printed comes out of its front.
+    protected void output(ItemStack printed) {
+        if (level != null) {
+            Block.popResourceFromFace(level, worldPosition, getBlockState().getValue(FootprintBlock.FACING), printed);
+        }
     }
 
     // --- Reports ---
@@ -183,11 +228,7 @@ public class LinePrinterBlockEntity extends PeripheralBlockEntity implements Pri
         ItemStack book = new ItemStack(Items.WRITTEN_BOOK);
         book.set(DataComponents.WRITTEN_BOOK_CONTENT, new WrittenBookContent(Filterable.passThrough(bookTitle), name(), 0, printed, true));
         paper.shrink(count);
-        if (getItem(OUTPUT).isEmpty()) {
-            setItem(OUTPUT, book);
-        } else if (level != null) {
-            Block.popResource(level, worldPosition.relative(getBlockState().getValue(FootprintBlock.FACING)), book);
-        }
+        output(book);
         setChanged();
         activate(ACTIVE_TICKS, ModSounds.LINE_PRINTER_CHATTER);
     }

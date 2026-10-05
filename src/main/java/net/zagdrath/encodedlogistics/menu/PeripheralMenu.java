@@ -6,31 +6,40 @@
 package net.zagdrath.encodedlogistics.menu;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.zagdrath.encodedlogistics.midrange.MidrangeDevice;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.MachinePayloads;
+import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
+import net.zagdrath.encodedlogistics.terminal.TerminalContext;
+import net.zagdrath.encodedlogistics.terminal.TerminalOutput;
 
-// A Midrange machine's screen (the Keypunch's, Card Reader's, Line Printer's, the control panel): its slots, then the player's
-// inventory. It's a green screen (CrtMachineScreen), so a slot's x / y are where its frame is on the glass, in the
-// CRT's virtual pixels from the text's corner (a column is 6, a row 10): the player's inventory at the lower right
-// (column 51, rows 12-19). Whether the machine's online goes in a data slot; its messages, and the lines and numbers
-// its screen shows, in MachinePayloads.Info.
+// A Midrange machine's green screen (HANDOFF 3: the Keypunch's, Card Reader's, Line Printer's, the control panels, the
+// Disk and Tape Drives'): text only - no slots, items go in and out on the block itself. What the screen shows comes
+// from the server as lines and numbers (MachinePayloads.Info), every second while it's open and after each action;
+// whether the machine's online goes in a data slot. The screen sends its fields back (MachinePayloads.Text): a value
+// (a field's key), an option typed beside a row of a list (OPTION + the row) and the command line (COMMAND), run as
+// on a Terminal Desk's command line.
 public abstract class PeripheralMenu extends AbstractContainerMenu {
-    public static final int INVENTORY_X = 51 * 6, INVENTORY_Y = 120, SLOT_W = 18, SLOT_H = 16;
+    public static final int OPTION = 500, COMMAND = 999;
     private static final int REFRESH = 20;
 
     // The header: the system's and device's names and the phosphor (Midranges.writeOpening).
@@ -68,29 +77,12 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
         }
     }
 
-    // The player's inventory, after the machine's slots: three rows, then the hotbar a little apart.
-    protected void addPlayerSlots(Inventory inventory) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, 9 + row * 9 + col, INVENTORY_X + col * SLOT_W, INVENTORY_Y + row * 20));
-            }
-        }
-        for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, INVENTORY_X + col * SLOT_W, INVENTORY_Y + 64));
-        }
-    }
-
     public Opening opening() {
         return opening;
     }
 
     public boolean online() {
         return online.get() != 0;
-    }
-
-    // The first of the player's slots.
-    protected int playerStart() {
-        return slots.size() - 36;
     }
 
     // --- Server ---
@@ -105,21 +97,82 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
         super.broadcastChanges();
     }
 
-    // Every second while it's open (the printer's preview).
+    // What the screen shows: every second while it's open, after each action, and once when it opens.
     protected void refresh() {}
 
-    // A field typed on the screen.
-    public void setText(int key, String text) {}
+    @Override
+    public void sendAllDataToRemote() {
+        super.sendAllDataToRemote();
+        if (peripheral != null) {
+            refresh();
+        }
+    }
+
+    // A field typed on the screen: OPTION + a row's option, COMMAND the command line, else the menu's own fields.
+    public final void setText(int key, String text) {
+        if (peripheral == null) {
+            return;
+        }
+        if (key == COMMAND) {
+            if (!text.isBlank()) {
+                send(command(text.trim()));
+            }
+        } else if (key >= OPTION && key < COMMAND) {
+            String option = text.trim();
+            if (!option.isEmpty()) {
+                Component said = option(key - OPTION, option);
+                send(said != null ? said : Component.translatable("crt.encodedlogistics.machine.bad_option", option));
+            }
+        } else {
+            field(key, text);
+        }
+        refresh();
+    }
+
+    // A field's value (a grid cell, the report).
+    protected void field(int key, String text) {}
+
+    // An option typed beside row n of its list: what the message line says, or null when it isn't one of its options.
+    protected @Nullable Component option(int row, String option) {
+        return null;
+    }
+
+    // The command line: an ELCL or desk command, as at a Terminal Desk on the machine's network; its first line back
+    // goes on the message line.
+    protected Component command(String line) {
+        if (!(player instanceof ServerPlayer serverPlayer) || !(machine instanceof BlockEntity entity) || !(entity.getLevel() instanceof ServerLevel level)) {
+            return Component.empty();
+        }
+        NetworkRef network = ControllerStructures.networkOf(level, entity.getBlockPos());
+        if (network == null) {
+            return Component.translatable("crt.encodedlogistics.machine.no_network");
+        }
+        TerminalOutput output = TerminalCommands.execute(new TerminalContext(level.getServer(), network, null, serverPlayer), line);
+        if (output.message() != null) {
+            return output.message();
+        }
+        return output.lines().isEmpty() ? Component.translatable("crt.encodedlogistics.machine.command_done", line.split("\\s", 2)[0].toUpperCase(Locale.ROOT))
+                : Component.literal(output.lines().getFirst().text());
+    }
 
     // Tells the screen: the message line and its lines and numbers.
     protected void send(Component message, List<String> lines, List<Integer> numbers) {
-        if (player instanceof ServerPlayer serverPlayer) {
+        // (A game test's mock player has no channel for it.)
+        if (player instanceof ServerPlayer serverPlayer && serverPlayer.connection.hasChannel(MachinePayloads.Info.TYPE)) {
             PacketDistributor.sendToPlayer(serverPlayer, new MachinePayloads.Info(containerId, message, lines, numbers));
         }
     }
 
+    // The message line only.
     protected void send(Component message) {
         send(message, List.of(), List.of());
+    }
+
+    // Gives an item to the player (option 4: it comes out of the machine): into the inventory, or dropped at their feet.
+    protected void give(ItemStack stack) {
+        if (!stack.isEmpty()) {
+            player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
+        }
     }
 
     // --- Client ---
@@ -156,40 +209,11 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
         return received;
     }
 
-    // --- Slots ---
+    // --- No slots ---
 
-    // Shift-click: the machine's to the player's inventory; the player's into the first machine slot that takes it.
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        Slot slot = slots.get(index);
-        if (!slot.hasItem() || !slot.mayPickup(player)) {
-            return ItemStack.EMPTY;
-        }
-        ItemStack stack = slot.getItem();
-        ItemStack original = stack.copy();
-        int start = playerStart();
-        if (index < start) {
-            if (!moveItemStackTo(stack, start, slots.size(), true)) {
-                return ItemStack.EMPTY;
-            }
-        } else {
-            boolean moved = false;
-            for (int target = 0; target < start && !stack.isEmpty(); target++) {
-                Slot into = slots.get(target);
-                if (!(into instanceof GhostSlot) && into.mayPlace(stack)) {
-                    moved |= moveItemStackTo(stack, target, target + 1, false);
-                }
-            }
-            if (!moved) {
-                return ItemStack.EMPTY;
-            }
-        }
-        if (stack.isEmpty()) {
-            slot.setByPlayer(ItemStack.EMPTY);
-        } else {
-            slot.setChanged();
-        }
-        return original;
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -201,17 +225,5 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
     public void removed(Player player) {
         super.removed(player);
         machine.stopOpen(player);
-    }
-
-    // A machine slot that takes what its container allows (one at a time where the container says so).
-    protected static class MachineSlot extends Slot {
-        public MachineSlot(Container container, int slot, int x, int y) {
-            super(container, slot, x, y);
-        }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            return container.canPlaceItem(getContainerSlot(), stack);
-        }
     }
 }

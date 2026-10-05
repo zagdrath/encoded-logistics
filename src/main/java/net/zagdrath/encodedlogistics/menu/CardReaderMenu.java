@@ -5,54 +5,66 @@
 
 package net.zagdrath.encodedlogistics.menu;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.DisketteData;
+import net.zagdrath.encodedlogistics.midrange.DisketteStack;
 import net.zagdrath.encodedlogistics.midrange.PeripheralBlockEntity;
-import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
-// The Card Reader's screen: the 8-card hopper, the diskette slot, then the player's inventory. Button: Read (F6).
+// CARDRDR (HANDOFF 3; layout cardrdr): the deck in the hopper and what reading does with each card, the diskette before
+// and after. Lines, tab-separated: K seq itemKey count plan (a card: CardReaderBlockEntity.plan's "new", "replaces n",
+// "full"), D label before after (the diskette's recipes). Button: Read (F6).
 public class CardReaderMenu extends PeripheralMenu {
     public static final int BUTTON_READ = 0;
-    public static final int HOPPER_X = 18, HOPPER_Y = 60, HOPPER_PITCH = 24, DISKETTE_X = 18, DISKETTE_Y = 150;
 
     private final @Nullable CardReaderBlockEntity reader;
 
     // Client constructor.
     public CardReaderMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf buf) {
-        this(containerId, inventory, new SimpleContainer(CardReaderBlockEntity.HOPPER + 1) {
-            @Override
-            public int getMaxStackSize() {
-                return 1;
-            }
-        }, null, Opening.read(buf));
+        this(containerId, inventory, new SimpleContainer(CardReaderBlockEntity.HOPPER + 1), null, Opening.read(buf));
     }
 
     public CardReaderMenu(int containerId, Inventory inventory, Container slots, @Nullable PeripheralBlockEntity peripheral, Opening opening) {
         super(ModMenuTypes.CARD_READER.get(), containerId, inventory, slots, peripheral, opening);
         this.reader = peripheral instanceof CardReaderBlockEntity r ? r : null;
-        for (int i = 0; i < CardReaderBlockEntity.HOPPER; i++) {
-            addSlot(new MachineSlot(slots, i, HOPPER_X + i * HOPPER_PITCH, HOPPER_Y) {
-                @Override
-                public boolean mayPlace(ItemStack stack) {
-                    return CardReaderBlockEntity.punched(stack);
-                }
-            });
+    }
+
+    @Override
+    protected void refresh() {
+        if (reader == null) {
+            return;
         }
-        addSlot(new MachineSlot(slots, CardReaderBlockEntity.DISKETTE, DISKETTE_X, DISKETTE_Y) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return stack.is(ModItems.DISKETTE_8IN.get());
-            }
-        });
-        addPlayerSlots(inventory);
+        List<String> lines = new ArrayList<>();
+        List<ItemStack> hopper = reader.hopper();
+        ItemStack diskette = reader.getItem(CardReaderBlockEntity.DISKETTE);
+        DisketteData data = diskette.isEmpty() ? null : DisketteStack.data(diskette);
+        List<String> plan = CardReaderBlockEntity.plan(data, hopper);
+        for (int i = 0; i < hopper.size(); i++) {
+            Schematic recipe = hopper.get(i).get(ModDataComponents.PUNCHED_RECIPE.get());
+            ItemStack output = recipe != null ? recipe.output() : ItemStack.EMPTY;
+            lines.add(String.join("\t", "K", Integer.toString(i + 1), output.isEmpty() ? "" : output.getItem().getDescriptionId(),
+                    Integer.toString(output.getCount()), plan.get(i)));
+        }
+        if (data != null) {
+            DisketteData after = CardReaderBlockEntity.afterRead(data, hopper);
+            lines.add(String.join("\t", "D", data.label().isEmpty() ? DisketteStack.DEFAULT_LABEL : data.label(), Integer.toString(data.recipes().size()),
+                    Integer.toString(after.recipes().size())));
+        }
+        send(Component.empty(), lines, List.of(lines.size()));
     }
 
     @Override
@@ -61,6 +73,7 @@ public class CardReaderMenu extends PeripheralMenu {
             return false;
         }
         send(reader.read());
+        refresh();
         return true;
     }
 }
