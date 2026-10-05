@@ -211,7 +211,7 @@ final class ElclVmGameTests {
             expect(h, c, "SNDDSPTXT ELDESK01 'x'", "ELC1303");
             expect(h, c, "SNDDSPTXT NOWHERE01 'x'", "ELC1301");
             expect(h, c, "PRTRPT RPT(*INV)", "ELC1307");
-            h.assertTrue(rig.printer().printed.stream().anyMatch(line -> line.startsWith("COBBLESTONE")), "Inventory report " + rig.printer().printed);
+            h.assertTrue(rig.printer().printed.stream().anyMatch(line -> line.startsWith("cobblestone")), "Inventory report " + rig.printer().printed);
             rig.printer().paper = false;
             expect(h, c, "PRTRPT RPT(*DEV)", "ELC1306");
             expect(h, c, "PRTRPT RPT(*DEV) DEV(PRT09)", "ELC1301");

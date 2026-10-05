@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import net.zagdrath.encodedlogistics.storage.ColdTier;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -87,6 +89,23 @@ public final class TapeTier implements ColdTier {
             return -1;
         }
         return ahead * OP_TICKS / Math.max(1, drives) + first;
+    }
+
+    // The library or drive holding the most of an item, or null.
+    public @Nullable TapeSource holder(ItemKey key) {
+        TapeSource best = null;
+        long most = 0;
+        for (TapeSource library : libraries) {
+            long count = 0;
+            for (UUID tape : library.tapeIds()) {
+                count += data.count(tape, key);
+            }
+            if (count > most) {
+                best = library;
+                most = count;
+            }
+        }
+        return best;
     }
 
     @Override

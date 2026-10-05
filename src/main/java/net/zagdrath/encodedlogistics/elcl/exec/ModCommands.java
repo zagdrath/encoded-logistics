@@ -745,13 +745,22 @@ public final class ModCommands {
             ElclSystem system = new ElclSystem(context.server(), context.network());
             String report = call.text("RPT");
             List<String> lines;
-            String title = report.substring(1);
+            String title, kind;
             switch (report) {
-                case "*INV" -> lines = Reports.inventory(system, storage(context));
-                case "*DEV" -> lines = Reports.devices(system);
+                case "*INV" -> {
+                    kind = Reports.INVENTORY;
+                    title = Reports.title(kind, "");
+                    lines = Reports.inventory(system, storage(context));
+                }
+                case "*DEV" -> {
+                    kind = Reports.DEVICES;
+                    title = Reports.title(kind, "");
+                    lines = Reports.devices(system);
+                }
                 case "*JOBLOG" -> {
                     JobService.Job job = OsCommands.currentJob(call, system);
-                    title = job.name();
+                    kind = Reports.JOB_LOG;
+                    title = Reports.title(kind, job.name());
                     lines = Reports.jobLog(system, job);
                 }
                 default -> {
@@ -762,10 +771,11 @@ public final class ModCommands {
                         throw new ElclException("ELC0103", name, "SPLF");
                     }
                     title = found.name();
+                    kind = Reports.SPOOLED + found.name();
                     lines = Reports.spooled(system, found);
                 }
             }
-            call.send(Printers.print(system, call.text("DEV"), title, lines));
+            call.send(Printers.print(system, call.text("DEV"), title, kind, lines));
         });
     }
 }

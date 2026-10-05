@@ -20,4 +20,9 @@ public interface PrinterDevice {
 
     // Prints the lines under a title (the spooled file's or report's name). Only called while online with paper.
     void print(String title, List<String> lines);
+
+    // The same, saying which report it is (Reports: inventory, joblog, devices, splf:<name>).
+    default void print(String title, String report, List<String> lines) {
+        print(title, lines);
+    }
 }

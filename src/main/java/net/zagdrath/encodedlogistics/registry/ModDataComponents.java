@@ -24,6 +24,7 @@ import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.HandheldLinkState;
 import net.zagdrath.encodedlogistics.item.LinkAddress;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
+import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
@@ -58,6 +59,10 @@ public final class ModDataComponents {
     // What's written on an 8" Diskette (Card Reader, SAVLIB); a blank diskette has none.
     public static final Supplier<DataComponentType<DisketteData>> DISKETTE_RECIPES = DATA_COMPONENTS.registerComponentType("diskette_recipes",
             builder -> builder.persistent(DisketteData.CODEC).networkSynchronized(DisketteData.STREAM_CODEC));
+
+    // A Printout's pages and what they are (the Line Printer's output).
+    public static final Supplier<DataComponentType<Printout>> PRINTOUT = DATA_COMPONENTS.registerComponentType("printout",
+            builder -> builder.persistent(Printout.CODEC).networkSynchronized(Printout.STREAM_CODEC.cast()));
 
     // The diskettes in a Diskette Magazine (up to 4).
     public static final Supplier<DataComponentType<ItemContainerContents>> MAGAZINE_CONTENTS = DATA_COMPONENTS.registerComponentType("magazine_contents",

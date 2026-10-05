@@ -44,6 +44,10 @@ public final class Printers {
 
     // Prints, or says why it can't: ELC1301 (no such printer), ELC1302 (offline), ELC1306 (out of paper).
     public static ElclMessage print(ElclSystem system, String name, String title, List<String> lines) throws ElclException {
+        return print(system, name, title, "splf:" + title, lines);
+    }
+
+    public static ElclMessage print(ElclSystem system, String name, String title, String report, List<String> lines) throws ElclException {
         PrinterDevice printer = find(system, name);
         if (!printer.online()) {
             throw new ElclException("ELC1302", printer.name());
@@ -51,7 +55,7 @@ public final class Printers {
         if (!printer.hasPaper()) {
             throw new ElclException("ELC1306", printer.name());
         }
-        printer.print(title, lines);
+        printer.print(title, report, lines);
         return ElclMessage.of("ELC1307", title, printer.name());
     }
 }

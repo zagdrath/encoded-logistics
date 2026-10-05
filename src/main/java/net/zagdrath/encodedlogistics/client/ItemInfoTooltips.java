@@ -37,12 +37,14 @@ import net.zagdrath.encodedlogistics.item.LinkAddress;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
+import net.zagdrath.encodedlogistics.item.PrintoutItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.item.TapeReelItem;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
+import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
@@ -91,6 +93,12 @@ public final class ItemInfoTooltips {
                     StorageDevice.bytes(stats.bytesTotal())).withStyle(ChatFormatting.GRAY));
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
                     .withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof PrintoutItem && PrintoutItem.printout(stack) != null) {
+            Printout printout = PrintoutItem.printout(stack);
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.printout", printout.title(), printout.pages().size())
+                    .withStyle(ChatFormatting.GRAY));
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.printout.from", printout.printer(), printout.printed())
+                    .withStyle(ChatFormatting.DARK_GRAY));
         } else if (stack.getItem() instanceof TapeReelItem) {
             DriveStats stats = TapeReelItem.stats(stack);
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.tape_reel.contents", String.format(Locale.ROOT, "%,d", stats.bytesUsed() * 8),

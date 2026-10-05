@@ -99,6 +99,11 @@ public final class NetworkStorage {
 
     // --- The cold tier ---
 
+    // Its storage views, in fill order (the inventory report's locations).
+    public List<StorageView> views() {
+        return List.copyOf(fillOrder);
+    }
+
     public ColdTier cold() {
         return cold;
     }

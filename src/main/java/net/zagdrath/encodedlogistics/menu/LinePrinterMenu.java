@@ -72,7 +72,7 @@ public class LinePrinterMenu extends PeripheralMenu {
         List<String> lines = new ArrayList<>();
         int pages = 0;
         try {
-            pages = LinePrinterBlockEntity.pages(printer.report(report, file).lines()).size();
+            pages = LinePrinterBlockEntity.pages(printer.report(report, file).lines());
         } catch (ElclException e) {
             ElclMessage message = e.elclMessage();
             lines.add("X\t" + message.id() + "  " + message.text());

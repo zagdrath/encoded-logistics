@@ -98,7 +98,7 @@ public final class DisplayCanvases {
     }
 
     // Text in the terminal font from (x, y), 1x or 2x, cut at the canvas.
-    static void text(NativeImage image, int x, int y, String text, int color, int scale) {
+    public static void text(NativeImage image, int x, int y, String text, int color, int scale) {
         NativeImage sheet = font();
         if (sheet == null) {
             return;
@@ -194,7 +194,7 @@ public final class DisplayCanvases {
         return pattern;
     }
 
-    private static @Nullable NativeImage load(Identifier id) {
+    public static @Nullable NativeImage load(Identifier id) {
         try (InputStream in = Minecraft.getInstance().getResourceManager().open(id)) {
             return NativeImage.read(in);
         } catch (IOException e) {

@@ -1662,5 +1662,7 @@
   "crt.encodedlogistics.tapdrv.no_reel": "There is no reel on the drive.",
   "tooltip.encodedlogistics.info.disk_drive": "One Storage Drive as hot storage, like a Drive Bay slot. Uses a lane.",
   "tooltip.encodedlogistics.info.tape_drive": "One Tape Reel as cold storage, beside the Tape Libraries. Uses a lane.",
-  "tooltip.encodedlogistics.info.tape_reel": "Cold storage for a Tape Drive."
+  "tooltip.encodedlogistics.info.tape_reel": "Cold storage for a Tape Drive.",
+  "tooltip.encodedlogistics.info.printout": "Line printer output. Use it to read it; hold it to see its page.",
+  "gui.encodedlogistics.printout.empty": "(blank)"
 }

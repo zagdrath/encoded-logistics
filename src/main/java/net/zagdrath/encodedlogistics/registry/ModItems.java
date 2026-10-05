@@ -23,6 +23,7 @@ import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
+import net.zagdrath.encodedlogistics.item.PrintoutItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
@@ -121,6 +122,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> LINE_PRINTER = ITEMS.registerSimpleBlockItem(ModBlocks.LINE_PRINTER);
     public static final DeferredItem<BlockItem> DISK_DRIVE = ITEMS.registerSimpleBlockItem(ModBlocks.DISK_DRIVE);
     public static final DeferredItem<BlockItem> TAPE_DRIVE = ITEMS.registerSimpleBlockItem(ModBlocks.TAPE_DRIVE);
+    public static final DeferredItem<PrintoutItem> PRINTOUT = ITEMS.registerItem("printout", PrintoutItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<TapeReelItem> TAPE_REEL = ITEMS.registerItem("tape_reel", TapeReelItem::new, p -> p.stacksTo(1));
     public static final DeferredItem<Item> PUNCH_CARD = ITEMS.registerSimpleItem("punch_card");
     public static final DeferredItem<Item> DISKETTE_8IN = ITEMS.registerSimpleItem("diskette_8in", p -> p.stacksTo(16));

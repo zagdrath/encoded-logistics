@@ -9,14 +9,12 @@ import java.util.List;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,6 +30,7 @@ import net.zagdrath.encodedlogistics.elcl.device.DisketteDevice;
 import net.zagdrath.encodedlogistics.elcl.device.Diskettes;
 import net.zagdrath.encodedlogistics.elcl.device.Printers;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.Reports;
 import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.menu.KeypunchMenu;
@@ -50,6 +49,7 @@ import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangeStates;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
@@ -177,7 +177,7 @@ final class MidrangeGameTests {
     // A Midrange System (its network's controller, charged) with a Card Reader beside it, a Keypunch in front and a Line
     // Printer on its other side. They're online and named (MIDRANGE01, KEYPUNCH01, CARDRDR01, PRT01); the Keypunch
     // punches a log-to-planks card; the Card Reader reads it onto a diskette (twice: it replaces itself) and is ELCL's
-    // diskette drive; the Line Printer prints the device list as a book, one paper a page, and is *DFT. With the system
+    // diskette drive; the Line Printer prints the device list as a Printout, one paper a page, and is *DFT. With the system
     // gone, they're offline and refuse.
     static void peripherals(GameTestHelper helper) {
         BlockPos system = new BlockPos(3, 1, 4), reader = new BlockPos(2, 1, 4), keypunch = new BlockPos(3, 1, 5), printer = new BlockPos(4, 1, 4);
@@ -232,10 +232,26 @@ final class MidrangeGameTests {
                         helper.fail("No printer: " + e.getMessage());
                     }
                     print.printReport(LinePrinterBlockEntity.DEVICES, "");
-                    ItemStack book = printed(helper, printer);
-                    WrittenBookContent content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
-                    helper.assertTrue(book.is(Items.WRITTEN_BOOK) && content != null && content.author().equals("PRT01"), "Printed " + book);
+                    ItemStack paper = printed(helper, printer);
+                    Printout content = paper.get(ModDataComponents.PRINTOUT.get());
+                    helper.assertTrue(paper.is(ModItems.PRINTOUT.get()) && content != null && content.printer().equals("PRT01")
+                            && content.title().equals("DEVICE LIST") && content.report().equals(Reports.DEVICES), "Printed " + content);
+                    helper.assertTrue(content.pages().getFirst().lines().stream().anyMatch(line -> line.text().startsWith("KEYPUNCH01")), "Device rows");
                     helper.assertTrue(print.getItem(LinePrinterBlockEntity.PAPER).getCount() == 3 - content.pages().size(), "Paper not one a page");
+                    // Out of paper part-way: the pages so far come out, the rest waits for paper.
+                    print.getItem(LinePrinterBlockEntity.PAPER).setCount(1);
+                    List<String> lines = new java.util.ArrayList<>();
+                    for (int i = 0; i < 100; i++) {
+                        lines.add("line " + i);
+                    }
+                    print.print("LONG", Reports.SPOOLED + "LONG", lines);
+                    helper.assertTrue(print.waiting() != null && print.waiting().pages().size() == 2 && !print.hasPaper(), "Rest not waiting");
+                    print.insert(new ItemStack(Items.PAPER, 5));
+                })
+                .thenIdle(70)
+                .thenExecute(() -> {
+                    LinePrinterBlockEntity print = helper.getBlockEntity(printer, LinePrinterBlockEntity.class);
+                    helper.assertTrue(print.waiting() == null && print.paper() == 3, "Rest not printed: " + print.paper());
                     helper.setBlock(system, Blocks.AIR);
                 })
                 .thenIdle(5)
@@ -412,15 +428,27 @@ final class MidrangeGameTests {
                 .thenSucceed();
     }
 
-    // Pages: 14 rows of about 19 characters; a long line takes more rows.
+    // Printout pages (HANDOFF 9): 42 body rows a page; a line longer than 56 columns goes on the next row after a light
+    // ">"; an ink mark gives a line its ink; nothing printed is still a page. The header: system, title centred, date;
+    // the footer ends the report on the last page.
     static void printerPages(GameTestHelper helper) {
         List<String> lines = new java.util.ArrayList<>();
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 43; i++) {
             lines.add("line " + i);
         }
-        helper.assertTrue(LinePrinterBlockEntity.pages(lines).size() == 3, "30 short lines: " + LinePrinterBlockEntity.pages(lines).size() + " pages");
-        helper.assertTrue(LinePrinterBlockEntity.pages(List.of("x".repeat(19 * 14))).size() == 1, "A full page split");
-        helper.assertTrue(LinePrinterBlockEntity.pages(List.of()).size() == 1, "Nothing printed no page");
+        helper.assertTrue(Printout.paginate(lines.subList(0, 30)).size() == 1 && Printout.paginate(lines).size() == 2, "Pages of short lines");
+        List<Printout.Page> wrapped = Printout.paginate(List.of("x".repeat(120), Printout.MARK_RED + "alert", Printout.MARK_LIGHT + "cold"));
+        List<Printout.Line> rows = wrapped.getFirst().lines();
+        helper.assertTrue(rows.size() == 5 && rows.get(0).text().length() == 56 && rows.get(1).text().startsWith(">") && rows.get(1).ink() == Printout.LIGHT
+                && rows.get(2).text().equals(">" + "x".repeat(9)), "Wrapped " + rows);
+        helper.assertTrue(rows.get(3).ink() == Printout.RED && rows.get(3).text().equals("alert") && rows.get(4).ink() == Printout.LIGHT, "Inks " + rows);
+        helper.assertTrue(Printout.paginate(List.of()).size() == 1, "Nothing printed no page");
+        Printout printout = new Printout("JOB LOG - NAP", Reports.JOB_LOG, "ELNET01", "DAY 2  14:32:07", "PRT01", Printout.paginate(lines));
+        String header = printout.header(0);
+        helper.assertTrue(header.length() == 56 && header.startsWith("ELNET01") && header.endsWith("DAY 2  14:32:07") && header.contains("JOB LOG - NAP"),
+                "Header '" + header + "'");
+        helper.assertTrue(printout.subheader(1).endsWith("PAGE   2 OF 2  ") && printout.footer(0).contains("CONTINUED") && printout.footer(1).contains("END OF REPORT"),
+                "Page lines");
         helper.succeed();
     }
 
