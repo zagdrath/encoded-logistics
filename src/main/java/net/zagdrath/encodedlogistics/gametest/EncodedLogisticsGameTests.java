@@ -33,6 +33,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
+import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.multiblock.ControllerFrame;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
@@ -44,6 +45,8 @@ public final class EncodedLogisticsGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION,
             EncodedLogistics.MODID);
     private static final Map<String, Consumer<GameTestHelper>> TESTS = new LinkedHashMap<>();
+    // Run only while the Arcforge integration is on (Arcforge in the run: -Parcforge_jar=...), with longer to finish.
+    private static final Map<String, Consumer<GameTestHelper>> ARCFORGE_TESTS = new LinkedHashMap<>();
 
     static {
         TESTS.put("frame_forms", EncodedLogisticsGameTests::frameForms);
@@ -197,7 +200,11 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("share_not_transitive", SharingGameTests::shareNotTransitive);
         TESTS.put("share_stops_with_switch", SharingGameTests::shareStopsWithSwitch);
         TESTS.put("share_old_routes_move", SharingGameTests::oldRoutesMove);
+        ARCFORGE_TESTS.put("arcforge_attach_adopt_break", ArcforgeGameTests::attachAdoptAndBreak);
+        ARCFORGE_TESTS.put("arcforge_take_off", ArcforgeGameTests::takeOff);
+        ARCFORGE_TESTS.put("arcforge_survives_reload", ArcforgeGameTests::survivesReload);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
+        ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
     private EncodedLogisticsGameTests() {}
@@ -213,6 +220,12 @@ public final class EncodedLogisticsGameTests {
                 200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
         TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
                 ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), data)));
+        if (MachineBridges.enabled()) {
+            TestData<Holder<TestEnvironmentDefinition<?>>> longer = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
+                    1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
+            ARCFORGE_TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
+                    ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), longer)));
+        }
     }
 
     // --- Helpers ---

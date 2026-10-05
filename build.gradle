@@ -41,6 +41,11 @@ repositories {
         url = "https://api.modrinth.com/maven"
         content { includeGroup "maven.modrinth" }
     }
+    // Arcforge's machine control API: published to the local Maven repository from an Arcforge checkout
+    // (./gradlew publishApiPublicationToMavenLocal there; Arcforge's docs/API.md).
+    mavenLocal {
+        content { includeGroup "net.zagdrath.arcforge" }
+    }
 }
 
 base {
@@ -123,6 +128,13 @@ dependencies {
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     compileOnly "maven.modrinth:jade:${jade_version}"
     localRuntime "maven.modrinth:jade:${jade_version}"
+    // Arcforge (the Small Wireless Bridge's machines): its API at compile time only; players install Arcforge itself,
+    // which contains the API. To run Arcforge in the dev runs and game tests, point arcforge_jar at an Arcforge jar
+    // (2.5.0 or later), e.g. -Parcforge_jar=../arcforge/build/libs/arcforge-2.5.0+26.3.jar.
+    compileOnly "net.zagdrath.arcforge:arcforge-api:${arcforge_api_version}"
+    if (project.findProperty('arcforge_jar')) {
+        localRuntime files(project.property('arcforge_jar'))
+    }
 
     // Graph-level unit tests (the lane solver and the frame validator).
     testImplementation platform('org.junit:junit-bom:5.11.4')

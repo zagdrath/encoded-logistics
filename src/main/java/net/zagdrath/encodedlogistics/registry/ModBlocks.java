@@ -153,7 +153,8 @@ public final class ModBlocks {
             p -> new WirelessPortBlock(false, p), p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .noOcclusion().lightLevel(WirelessPortBlock::lightLevel));
 
-    // Display Panels (merging into screens: DisplayScreens) and the Small Wireless Bridge (its model only, for now).
+    // Display Panels (merging into screens: DisplayScreens) and the Small Wireless Bridge's model (it goes on machines as
+    // an attachment, MachineBridges; this block, with no item, only holds its model and LED states).
     public static final DeferredBlock<DisplayPanelBlock> DISPLAY_PANEL = BLOCKS.registerBlock("display_panel", DisplayPanelBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
     public static final DeferredBlock<SmallWirelessBridgeBlock> SMALL_WIRELESS_BRIDGE = BLOCKS.registerBlock("small_wireless_bridge",

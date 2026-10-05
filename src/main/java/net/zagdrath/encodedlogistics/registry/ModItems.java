@@ -25,6 +25,7 @@ import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.PrintoutItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
+import net.zagdrath.encodedlogistics.item.SmallWirelessBridgeItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
 import net.zagdrath.encodedlogistics.item.TapeReelItem;
@@ -133,7 +134,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> WIRELESS_INGRESS_PORT = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_INGRESS_PORT);
     public static final DeferredItem<BlockItem> WIRELESS_EGRESS_PORT = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_EGRESS_PORT);
     public static final DeferredItem<BlockItem> DISPLAY_PANEL = ITEMS.registerSimpleBlockItem(ModBlocks.DISPLAY_PANEL);
-    public static final DeferredItem<BlockItem> SMALL_WIRELESS_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.SMALL_WIRELESS_BRIDGE);
+    // Goes on an Arcforge machine (MachineBridges keeps it), not placed as a block: the block is only its model.
+    public static final DeferredItem<SmallWirelessBridgeItem> SMALL_WIRELESS_BRIDGE = ITEMS.registerItem("small_wireless_bridge", SmallWirelessBridgeItem::new);
 
     // The Server Rack and its devices (RackDeviceType).
     public static final DeferredItem<BlockItem> SERVER_RACK = ITEMS.registerSimpleBlockItem(ModBlocks.SERVER_RACK);

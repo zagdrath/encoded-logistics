@@ -22,11 +22,13 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.WirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
+import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.net.WirelessInfoPayloads;
 
-// The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports): the rack's popup
-// (RackHud.popup) with the block's icon, its name and device name (AP01), its status and lines - Clients and Uplink, or
-// Controller and Devices / Lanes, or Controller, Inventory and Moved - asked of the server as soon as the crosshair
+// The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports, and machines with a
+// Small Wireless Bridge on): the rack's popup (RackHud.popup) with the block's icon, its name and device name (AP01),
+// its status and lines - Clients and Uplink, or Controller and Devices / Lanes, or Controller, Inventory and Moved, or a
+// machine's Controller, Progress, Energy and Recipe - asked of the server as soon as the crosshair
 // lands on it, then every QUERY_INTERVAL ticks. Until its answer is in, nothing shows. Hidden with F1 and while a screen
 // is open.
 public final class WirelessHud {
@@ -43,7 +45,8 @@ public final class WirelessHud {
         BlockPos now = null;
         if (minecraft.level != null && minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
             var block = minecraft.level.getBlockState(hit.getBlockPos()).getBlock();
-            if (block instanceof AccessPointBlock || block instanceof WirelessBridgeBlock || block instanceof WirelessPortBlock) {
+            if (block instanceof AccessPointBlock || block instanceof WirelessBridgeBlock || block instanceof WirelessPortBlock
+                    || MachineBridgesPayload.has(hit.getBlockPos())) {
                 now = hit.getBlockPos().immutable();
             }
         }

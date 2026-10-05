@@ -46,10 +46,10 @@ import net.zagdrath.encodedlogistics.wireless.WirelessLink;
 // with wirelessCrossDimension). A Handheld Terminal used on its unit (front door open) or anywhere on its rack is linked
 // to it - and to its network - and from then on works anywhere, through this controller or, with
 // wirelessAnyController, any online one on the network. A Link Card used on its unit takes it (LinkAddress.wireless),
-// and then links Wireless Bridges and Wireless Ports to it: its clients. Clients work only while its network has
+// and then links Wireless Bridges, Wireless Ports and Small Wireless Bridges (on machines) to it: its clients. Clients work only while its network has
 // Access Points online, each giving wirelessApClients slots; past the slots the most recently linked wait (over
 // capacity) until slots free up. Each admitted client is a remote link from its rack (a bridge's wirelessBridgeLanes
-// lanes, a port's one), so the network's lanes reach it. With clients and no Access Point online it faults. It keeps
+// lanes, a port's or Small Wireless Bridge's one), so the network's lanes reach it. With clients and no Access Point online it faults. It keeps
 // who and what it has linked (its id and lists go with it when it's taken out); unlinking a client here cuts it off.
 public class WirelessControllerDevice extends RackDevice {
     public static final int ACTION_UNLINK = 0, ACTION_UNLINK_CLIENT = 1;
@@ -57,7 +57,7 @@ public class WirelessControllerDevice extends RackDevice {
 
     public record Linked(UUID player, String name, String dimension) {}
 
-    // A linked Wireless Bridge or Port, in the order they were linked.
+    // A linked Wireless Bridge, Port or Small Wireless Bridge, in the order they were linked.
     public record Client(GlobalPos pos, WirelessClient.Kind kind) {}
 
     private UUID id = UUID.randomUUID();
@@ -167,7 +167,7 @@ public class WirelessControllerDevice extends RackDevice {
         }
         Client client = clients.remove(index);
         if (rack() != null && rack().getLevel() instanceof ServerLevel level
-                && ControllerStructures.blockEntity(level.getServer(), NodePos.of(client.pos())) instanceof WirelessClient there
+                && Wireless.clientAt(level.getServer(), NodePos.of(client.pos())) instanceof WirelessClient there
                 && there.link() != null && id.equals(there.link().controller())) {
             there.setLink(null);
         }
@@ -227,7 +227,8 @@ public class WirelessControllerDevice extends RackDevice {
             if (there == null || !there.isLoaded(client.pos().pos())) {
                 continue;
             }
-            if (!(there.getBlockEntity(client.pos().pos()) instanceof WirelessClient found) || found.link() == null || !id.equals(found.link().controller())) {
+            if (!(Wireless.clientAt(there, client.pos().pos()) instanceof WirelessClient found) || found.link() == null
+                    || !id.equals(found.link().controller())) {
                 clients.remove(client);
                 changed = true;
             }
@@ -334,7 +335,7 @@ public class WirelessControllerDevice extends RackDevice {
         for (Client client : clients) {
             ValueOutput child = list.addChild();
             String name = ElclDevices.nameAt(named, NodePos.of(client.pos()), null);
-            if (name.isEmpty() && ControllerStructures.blockEntity(server, NodePos.of(client.pos())) instanceof net.zagdrath.encodedlogistics.wireless.WirelessDevice device) {
+            if (name.isEmpty() && Wireless.deviceAt(server, NodePos.of(client.pos())) instanceof net.zagdrath.encodedlogistics.wireless.WirelessDevice device) {
                 name = device.deviceName();
             }
             seen.add(name);

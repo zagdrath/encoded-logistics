@@ -467,6 +467,10 @@ public class Config {
             .comment("Wireless Bridges and Wireless Ports drain this many times their cabled equivalent's (Network Bridge, Ingress / Egress Port).")
             .defineInRange("wirelessEnergyMultiplier", 2.0, 0.0, 100.0);
 
+    public static final ModConfigSpec.DoubleValue SMALL_WIRELESS_BRIDGE_DRAIN = BUILDER
+            .comment("FE per tick a linked Small Wireless Bridge (on an Arcforge machine) drains from its network over the air.")
+            .defineInRange("smallWirelessBridgeDrain", 1.0, 0.0, 1_000.0);
+
     public static final ModConfigSpec.DoubleValue MIDRANGE_DRAIN = BUILDER
             .comment("FE per tick a Midrange System drains while its network runs.")
             .defineInRange("midrangeDrain", 4.0, 0.0, 1_000.0);

@@ -16,12 +16,18 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.wireless.Wireless;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
 // The wireless blocks' popup (WirelessHud), as the rack's: the client asks about the block its crosshair settles on
@@ -41,12 +47,19 @@ public final class WirelessInfoPayloads {
             return TYPE;
         }
 
+        // A machine with a Small Wireless Bridge on answers only players with view permission on its network.
         static void handle(Query query, IPayloadContext context) {
             if (!(context.player() instanceof ServerPlayer player) || player.distanceToSqr(Vec3.atCenterOf(query.pos())) > REACH_SQR
-                    || !player.level().isLoaded(query.pos()) || !(player.level().getBlockEntity(query.pos()) instanceof WirelessDevice device)) {
+                    || !player.level().isLoaded(query.pos())) {
                 return;
             }
-            PacketDistributor.sendToPlayer(player, new Info(query.pos(), device.deviceName(), device.describe(player.level().getServer())));
+            ServerLevel level = player.level();
+            WirelessDevice device = Wireless.deviceAt(level.getServer(), NodePos.of(level.dimension(), query.pos()));
+            if (device == null || device instanceof MachineBridge bridge && bridge.link() != null
+                    && !NetworkAccess.allowed(level.getServer(), bridge.link().network(), player, RackPermission.VIEW)) {
+                return;
+            }
+            PacketDistributor.sendToPlayer(player, new Info(query.pos(), device.deviceName(), device.describe(level.getServer())));
         }
     }
 

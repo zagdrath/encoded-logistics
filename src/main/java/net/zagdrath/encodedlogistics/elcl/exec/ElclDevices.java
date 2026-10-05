@@ -28,6 +28,8 @@ import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
 import net.zagdrath.encodedlogistics.elcl.store.SystemData;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NodePos;
@@ -40,7 +42,8 @@ import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 // RACKCON01, WLC01, TAPELIB01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
 // DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01 - and wireless: AP01 (Access Points), WBRIDGE01 (Wireless Bridges),
 // WINGRESS01 / WEGRESS01 (Wireless Ports: a port in every other way) - and the Midrange line: MIDRANGE01, KEYPUNCH01,
-// CARDRDR01, PRT01; and Display Panel screens: DSP01.
+// CARDRDR01, PRT01; Display Panel screens: DSP01; and machines with a Small Wireless Bridge on, by their type
+// (MachineBridge.typeCode: ARCCRU01 for an Arc Crusher, ELECTR01 for an Electrolyzer).
 //
 // A device's name is stored with the device (a rack device's goes with its item; a desk's or Control Interface's with
 // its block item) and given once, the first time it's on a network: its type plus the lowest number free there. It
@@ -54,9 +57,13 @@ public final class ElclDevices {
     public record Device(String name, String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, @Nullable CablePart part,
             boolean online) {}
 
-    // A device that can carry a name, before naming: where its name is kept.
-    private record Candidate(String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, @Nullable CablePart part, boolean online) {
+    // A device that can carry a name, before naming: where its name is kept (bridge: a machine's Small Wireless Bridge).
+    private record Candidate(String type, NodePos pos, @Nullable BlockEntity entity, @Nullable RackDevice rack, @Nullable CablePart part, boolean online,
+            @Nullable MachineBridge bridge) {
         String stored() {
+            if (bridge != null) {
+                return bridge.deviceName();
+            }
             if (rack != null) {
                 return rack.deviceName();
             }
@@ -76,7 +83,9 @@ public final class ElclDevices {
         }
 
         void store(String name) {
-            if (rack != null) {
+            if (bridge != null) {
+                bridge.setDeviceName(name);
+            } else if (rack != null) {
                 rack.setDeviceName(name);
             } else if (part != null) {
                 part.setDeviceName(name);
@@ -156,26 +165,29 @@ public final class ElclDevices {
         Set<NodePos> partHosts = new HashSet<>();
         for (ControllerStructures.DeviceRow row : rows) {
             if (row.rackDevice() != null) {
-                candidates.add(new Candidate(code(row.rackDevice()), row.pos(), null, row.rackDevice(), null, row.online()));
+                candidates.add(new Candidate(code(row.rackDevice()), row.pos(), null, row.rackDevice(), null, row.online(), null));
                 continue;
             }
             BlockEntity entity = ControllerStructures.blockEntity(server, row.pos());
-            if (entity instanceof AccessPointBlockEntity ap) {
-                candidates.add(new Candidate("AP", row.pos(), ap, null, null, ap.isOnline()));
+            MachineBridge machine = MachineBridges.at(server, row.pos());
+            if (machine != null && row.type().equals("Machine")) {
+                candidates.add(new Candidate(machine.typeCode(), row.pos(), null, null, null, row.online(), machine));
+            } else if (entity instanceof AccessPointBlockEntity ap) {
+                candidates.add(new Candidate("AP", row.pos(), ap, null, null, ap.isOnline(), null));
             } else if (entity instanceof WirelessBridgeBlockEntity bridge) {
-                candidates.add(new Candidate("WBRIDGE", row.pos(), bridge, null, null, row.online()));
+                candidates.add(new Candidate("WBRIDGE", row.pos(), bridge, null, null, row.online(), null));
             } else if (entity instanceof NamedDevice midrange) {
-                candidates.add(new Candidate(midrange.deviceType(), row.pos(), entity, null, null, midrange.isOnline()));
+                candidates.add(new Candidate(midrange.deviceType(), row.pos(), entity, null, null, midrange.isOnline(), null));
             } else if (entity instanceof ControlInterfaceBlockEntity ci) {
-                candidates.add(new Candidate(ControlInterfaceBlockEntity.TYPE, row.pos(), ci, null, null, ci.isOnline()));
+                candidates.add(new Candidate(ControlInterfaceBlockEntity.TYPE, row.pos(), ci, null, null, ci.isOnline(), null));
             } else if (entity instanceof TerminalDeskBlockEntity && row.type().equals("Terminal")) {
-                candidates.add(new Candidate("DESK", row.pos(), entity, null, null, row.online()));
+                candidates.add(new Candidate("DESK", row.pos(), entity, null, null, row.online(), null));
             } else if (entity instanceof CableBlockEntity cable && row.type().equals("Part") && partHosts.add(row.pos())) {
                 // Each part on it, in side order.
                 for (Direction side : Direction.values()) {
                     CablePart part = cable.part(side);
                     if (part != null) {
-                        candidates.add(new Candidate(code(part), row.pos(), cable, null, part, part.isOnline()));
+                        candidates.add(new Candidate(code(part), row.pos(), cable, null, part, part.isOnline(), null));
                     }
                 }
             }
@@ -301,6 +313,7 @@ public final class ElclDevices {
         system.deviceNames.values().remove(identity);
         system.deviceNames.put(wanted, identity);
         system.changed();
-        new Candidate(device.type(), device.pos(), device.entity(), device.rack(), device.part(), device.online()).store(wanted);
+        new Candidate(device.type(), device.pos(), device.entity(), device.rack(), device.part(), device.online(),
+                device.rack() == null && device.part() == null ? MachineBridges.at(server, device.pos()) : null).store(wanted);
     }
 }

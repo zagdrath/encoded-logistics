@@ -25,8 +25,10 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-// The Small Wireless Bridge (display handoff 7): a 6 x 6 x 3 module flush on a machine's face (FACING: toward the
-// machine), with its LED (STATE: unlinked, linked, fault). Its model and assets only; what it does comes separately.
+// The Small Wireless Bridge's model (display handoff 7): a 6 x 6 x 3 module flush on a machine's face (FACING: toward
+// the machine), with its LED (STATE: unlinked, linked, fault). Never placed: a bridge is an attachment on the machine's
+// block (machine.MachineBridges), drawn in the space in front of that face from this block's states
+// (client.MachineBridgeRenderer).
 public class SmallWirelessBridgeBlock extends Block {
     public enum State implements StringRepresentable {
         UNLINKED, LINKED, FAULT;

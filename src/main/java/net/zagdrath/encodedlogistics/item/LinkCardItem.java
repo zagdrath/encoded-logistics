@@ -37,7 +37,10 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
@@ -155,8 +158,8 @@ public class LinkCardItem extends Item {
         return level.getBlockEntity(pos) instanceof NetworkControllerBlockEntity || ControllerStructures.networkOf(serverLevel, pos) != null;
     }
 
-    // A Wireless Controller's unit in an open rack (take the controller), or a Wireless Bridge or Port (link it to the
-    // controller on the card). Null when the use is about neither.
+    // A Wireless Controller's unit in an open rack (take the controller), or a Wireless Bridge or Port, or a machine with
+    // a Small Wireless Bridge on (link it to the controller on the card). Null when the use is about neither.
     private static @Nullable InteractionResult wireless(ItemStack stack, UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
@@ -164,7 +167,10 @@ public class LinkCardItem extends Item {
         if (player == null) {
             return null;
         }
-        if (level.getBlockEntity(pos) instanceof WirelessClient client) {
+        if (!(level instanceof ServerLevel) && MachineBridgesPayload.has(pos)) {
+            return InteractionResult.SUCCESS;
+        }
+        if (Wireless.clientAt(level, pos) instanceof WirelessClient client) {
             if (!(level instanceof ServerLevel serverLevel)) {
                 return InteractionResult.SUCCESS;
             }
@@ -179,7 +185,8 @@ public class LinkCardItem extends Item {
                 return InteractionResult.SUCCESS;
             }
             if (!NetworkAccess.guard(serverLevel.getServer(), controller.network(), player, RackPermission.BUILD)
-                    || !NetworkAccess.guard(serverLevel, pos, player, RackPermission.BUILD)) {
+                    || !NetworkAccess.guard(serverLevel, pos, player, RackPermission.BUILD)
+                    || client instanceof MachineBridge bridge && !MachineBridges.mayLink(player, bridge)) {
                 return InteractionResult.SUCCESS;
             }
             if (!controller.link(client)) {

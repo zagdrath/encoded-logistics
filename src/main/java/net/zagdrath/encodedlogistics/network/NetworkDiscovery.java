@@ -23,6 +23,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockState;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
+import net.zagdrath.encodedlogistics.machine.MachineBridges;
 
 // Builds a controller structure's network graph from the world: its controller blocks, then everything reachable
 // from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other, and
@@ -210,6 +211,10 @@ public final class NetworkDiscovery {
         if (blockEntity instanceof NetworkControllerBlockEntity controller) {
             return new ControllerNode(pos.immutable(), controller.getStructureId(), lanesPerFace);
         }
-        return blockEntity instanceof NetworkNodeHost host ? host.getNetworkNode() : null;
+        if (blockEntity instanceof NetworkNodeHost host) {
+            return host.getNetworkNode();
+        }
+        // Another mod's machine with a linked Small Wireless Bridge on it.
+        return MachineBridges.node(level, pos);
     }
 }

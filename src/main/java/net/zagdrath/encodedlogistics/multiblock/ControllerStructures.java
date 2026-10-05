@@ -59,6 +59,8 @@ import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
@@ -278,6 +280,8 @@ public class ControllerStructures extends SavedData {
     private static void setDeviceOnline(MinecraftServer server, NodePos pos, boolean online) {
         if (blockEntity(server, pos) instanceof NetworkDevice device) {
             device.setNetworkOnline(online);
+        } else {
+            MachineBridges.setOnline(server, pos, online);
         }
     }
 
@@ -1297,6 +1301,12 @@ public class ControllerStructures extends SavedData {
             }
             for (NetworkPart part : node.parts()) {
                 others.add(new DeviceRow("Part", part.item().getName(part.item().getDefaultInstance()), pos, 0, online, missing, null, 0));
+            }
+            // A machine with a Small Wireless Bridge on: listed by the machine's own name.
+            MachineBridge bridge = MachineBridges.at(server, pos);
+            if (bridge != null) {
+                others.add(new DeviceRow("Machine", bridge.shown(), pos, node.laneCost(), online, missing, null, 0));
+                continue;
             }
             Item item = runtime.discovered.items().get(pos);
             // A cable (lanes through it, none of its own) or a part host (its parts are listed instead); a Wireless Bridge,

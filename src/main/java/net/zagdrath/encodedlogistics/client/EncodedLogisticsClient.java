@@ -20,6 +20,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
@@ -77,6 +78,7 @@ import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
 import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -195,8 +197,14 @@ public class EncodedLogisticsClient {
     }
 
     @SubscribeEvent
+    static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
+        MachineBridgesPayload.clear();
+    }
+
+    @SubscribeEvent
     static void onCustomGeometry(SubmitCustomGeometryEvent event) {
         CrtLocate.render(event);
+        MachineBridgeRenderer.render(event);
     }
 
     @SubscribeEvent

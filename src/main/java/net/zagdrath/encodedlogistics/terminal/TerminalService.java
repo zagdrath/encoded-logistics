@@ -47,6 +47,7 @@ import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.wireless.Wireless;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
 // Answers the Terminal Desk's screen: command lines (TerminalCommands), completions, and the screens' queries -
@@ -416,7 +417,7 @@ public final class TerminalService {
                 status = device.statusText();
                 attr = state == RackDeviceInfo.Status.OFFLINE ? TerminalLine.DIM
                         : state == RackDeviceInfo.Status.FAULT || !status.getString().equals(state.text().getString()) ? TerminalLine.BRIGHT : TerminalLine.NORMAL;
-            } else if (ControllerStructures.blockEntity(context.server(), row.pos()) instanceof WirelessDevice wireless) {
+            } else if (Wireless.deviceAt(context.server(), row.pos()) instanceof WirelessDevice wireless) {
                 // Its status and the controller it works through ("Online WLC01").
                 RackDeviceInfo info = wireless.describe(context.server());
                 String controller = wireless.controllerName(context.server());
@@ -465,7 +466,7 @@ public final class TerminalService {
         }
         out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.dev.location"), 28)
                 .text(pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "  " + row.pos().dimension().identifier()).build());
-        if (row.rackDevice() == null && ControllerStructures.blockEntity(context.server(), row.pos()) instanceof WirelessDevice wireless) {
+        if (row.rackDevice() == null && Wireless.deviceAt(context.server(), row.pos()) instanceof WirelessDevice wireless) {
             RackDeviceInfo info = wireless.describe(context.server());
             out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.dev.status"), 28).text(info.statusText()).build());
             for (RackDeviceInfo.InfoLine line : info.lines()) {

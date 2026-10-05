@@ -12,11 +12,12 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.util.StringRepresentable;
 
-// A Wireless Bridge or Wireless Port: linked (Link Card) to a Wireless Controller, it's on that controller's network over
-// the air while the controller admits it (Wireless.problem). Its end of the remote link points at the controller's rack.
+// A Wireless Bridge, Wireless Port or Small Wireless Bridge (on a machine: MachineBridge, not a block entity): linked
+// (Link Card) to a Wireless Controller, it's on that controller's network over the air while the controller admits it
+// (Wireless.problem). Its end of the remote link points at the controller's rack.
 public interface WirelessClient {
     enum Kind implements StringRepresentable {
-        BRIDGE, INGRESS, EGRESS;
+        BRIDGE, INGRESS, EGRESS, MACHINE;
 
         @Override
         public String getSerializedName() {

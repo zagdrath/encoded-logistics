@@ -79,6 +79,14 @@ Example mod description.
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+# Arcforge: the Small Wireless Bridge's machines. Any version loads; without its machine control API (Arcforge 2.5.0+),
+# or with an API of another major version, the integration is off and the log says why (ArcforgeCompat).
+[[dependencies.${mod_id}]]
+    modId="arcforge"
+    type="optional"
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
 
 # Features are specific properties of the game environment, that you may want to declare you require. This example declares
 # that your mod requires GL version 3.2 or higher. Other features will be added. They are side aware so declaring this won't
