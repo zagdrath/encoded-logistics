@@ -103,6 +103,8 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC1204 | 30 | Network storage is full. |
 | ELC1205 | 30 | Item name &1 is ambiguous; use a qualified ID. |
 | ELC1206 | 30 | No Tape Library on the network. |
+| ELC1207 | 30 | &1 is a &2 resource, not &3. | *(added: resource types - the ID names a fluid asked for as a gas, or the other way round)* |
+| ELC1208 | 30 | Resource type &1 is not valid for device &2. | *(added: resource types - the device's faced block has no tanks for that type)* |
 
 ## ELC13xx — Devices
 

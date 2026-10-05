@@ -36,6 +36,12 @@ final class BuiltinCommands {
         return p("TIER", "Storage tier", Kind.SPECIAL).sv("*ALL", "*HOT", "*COLD").dft("*ALL");
     }
 
+    // The resource type an inventory command works on: items (the default, as before types), fluids, pressurized gases,
+    // or all of them.
+    private static ParamDef.Builder type() {
+        return p("TYPE", "Resource type", Kind.SPECIAL).sv("*ITEM", "*FLUID", "*PRES", "*ALL").dft("*ITEM");
+    }
+
     private static ParamDef.Builder yesNo(String keyword, String label, String dft) {
         return p(keyword, label, Kind.SPECIAL).sv("*NO", "*YES").dft(dft);
     }
@@ -159,24 +165,28 @@ final class BuiltinCommands {
                 .p(p("ITEM", "Item", Kind.ITEM).req().len(64))
                 .p(tier())
                 .p(rtn("RTNCOUNT", "Return count", VarType.INT).req())
-                .p(p("NOTFND", "If not found", Kind.SPECIAL).sv("*ERROR", "*ZERO").dft("*ERROR")));
+                .p(p("NOTFND", "If not found", Kind.SPECIAL).sv("*ERROR", "*ZERO").dft("*ERROR"))
+                .p(type()));
         add(CommandDefinition.of("RTVITMLST", "Retrieve Item List").auth(VIEW).positional(1)
                 .p(p("FILTER", "Filter", Kind.CHAR).sv("*ALL").dft("*ALL").len(32))
                 .p(tier())
                 .p(p("MAX", "Maximum items", Kind.INT).sv("*NOMAX").dft("*NOMAX").range(1, 4_096))
                 .p(p("SORT", "Sort by", Kind.SPECIAL).sv("*NAME", "*QTY").dft("*NAME"))
-                .p(rtn("RTNLST", "Return list", VarType.LIST).req()));
+                .p(rtn("RTNLST", "Return list", VarType.LIST).req())
+                .p(type()));
         add(CommandDefinition.of("MOVITM", "Move Item").auth(EXTRACT).positional(3)
                 .p(p("ITEM", "Item", Kind.ITEM).req().len(64))
                 .p(p("QTY", "Quantity", Kind.INT).req().sv("*ALL").range(1, Long.MAX_VALUE))
                 .p(p("TODEV", "To device", Kind.DEVICE).req().sv("*DESK"))
                 .p(yesNo("PARTIAL", "Allow partial move", "*YES"))
-                .p(rtn("RTNMOVED", "Return quantity moved", VarType.INT)));
+                .p(rtn("RTNMOVED", "Return quantity moved", VarType.INT))
+                .p(type()));
         add(CommandDefinition.of("IMPITM", "Import Items").auth(INSERT).positional(1)
                 .p(p("FROMDEV", "From device", Kind.DEVICE).req())
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ALL").dft("*ALL").len(64))
                 .p(p("QTY", "Quantity", Kind.INT).sv("*ALL").dft("*ALL").range(1, Long.MAX_VALUE))
-                .p(rtn("RTNMOVED", "Return quantity moved", VarType.INT)));
+                .p(rtn("RTNMOVED", "Return quantity moved", VarType.INT))
+                .p(type()));
         add(CommandDefinition.of("CHGITMTIER", "Change Item Tier").auth(CONFIGURE).positional(2)
                 .p(p("ITEM", "Item", Kind.ITEM).req().len(64))
                 .p(p("TIER", "Storage tier", Kind.SPECIAL).req().sv("*HOT", "*COLD", "*PIN", "*AUTO")));
@@ -184,7 +194,8 @@ final class BuiltinCommands {
                 .p(tier())
                 .p(rtn("RTNUSED", "Return used", VarType.INT))
                 .p(rtn("RTNTOTAL", "Return total", VarType.INT))
-                .p(rtn("RTNPCT", "Return percent used", VarType.DEC)));
+                .p(rtn("RTNPCT", "Return percent used", VarType.DEC))
+                .p(type()));
 
         // --- 4. Crafting ---
         add(CommandDefinition.of("STRCRAFT", "Start Crafting").auth(CRAFT).positional(2)
@@ -193,7 +204,8 @@ final class BuiltinCommands {
                 .p(p("SCHEDULER", "Scheduler", Kind.NAME).sv("*ANY").dft("*ANY"))
                 .p(p("MISSING", "Missing ingredients", Kind.SPECIAL).sv("*FAIL", "*PARTIAL").dft("*FAIL"))
                 .p(yesNo("WAIT", "Wait for completion", "*NO"))
-                .p(rtn("RTNCRFJOB", "Return craft job ID", VarType.CHAR)));
+                .p(rtn("RTNCRFJOB", "Return craft job ID", VarType.CHAR))
+                .p(p("TYPE", "Resource type", Kind.SPECIAL).sv("*ITEM", "*FLUID", "*PRES").dft("*ITEM")));
         add(CommandDefinition.of("RTVCRFSTS", "Retrieve Craft Status").auth(VIEW).positional(1)
                 .p(p("CRFJOB", "Craft job", Kind.NAME).req())
                 .p(rtn("RTNSTS", "Return status", VarType.CHAR))
@@ -269,7 +281,10 @@ final class BuiltinCommands {
                 .p(rtn("RTNSRC", "Return power source", VarType.CHAR))
                 .p(rtn("RTNCHG", "Return UPS charge", VarType.DEC))
                 .p(rtn("RTNLOAD", "Return load (FE/t)", VarType.INT))
-                .p(rtn("RTNSTORED", "Return energy stored", VarType.INT)));
+                .p(rtn("RTNSTORED", "Return energy stored", VarType.INT))
+                .p(rtn("RTNCAP", "Return energy capacity", VarType.INT))
+                .p(rtn("RTNDRVSTO", "Return stored in drives", VarType.INT))
+                .p(rtn("RTNDRVCAP", "Return drive capacity", VarType.INT)));
 
         // --- 7. Redstone (Control Interface; a PLC's own faces are DEV(*SELF)) ---
         add(CommandDefinition.of("RTVRSIN", "Retrieve Redstone Input").auth(VIEW).positional(2)
@@ -438,7 +453,8 @@ final class BuiltinCommands {
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ANY").dft("*ANY").len(64))
                 .p(p("DEV", "Device", Kind.DEVICE).sv("*ANY").dft("*ANY"))
-                .p(p("VALUE", "Value", Kind.CHAR).sv("*NONE").dft("*NONE").len(16)));
+                .p(p("VALUE", "Value", Kind.CHAR).sv("*NONE").dft("*NONE").len(16))
+                .p(p("TYPE", "Resource type", Kind.SPECIAL).sv("*ITEM", "*FLUID", "*PRES").dft("*ITEM")));
         add(CommandDefinition.of("RMVTRGEVT", "Remove Trigger Event").positional(1)
                 .p(p("TRG", "Trigger", Kind.NAME).req()));
         add(CommandDefinition.of("HLDTRGEVT", "Hold Trigger Event").positional(1)

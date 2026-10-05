@@ -17,6 +17,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.material.Fluids;
+import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
@@ -30,8 +32,11 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.MessageService;
 import net.zagdrath.encodedlogistics.part.PartType;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
+import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.terminal.TerminalCommands;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
@@ -170,6 +175,36 @@ final class ElclVmGameTests {
     private static void expect(GameTestHelper helper, TerminalContext context, String line, String wanted) {
         String out = run(context, line);
         helper.assertTrue(out.contains(wanted), line + " -> " + out.replace('\n', '|') + ", wanted " + wanted);
+    }
+
+    // --- TYPE() on the inventory commands ---
+
+    // Fluids through ELCL: TYPE(*FLUID) counts, lists, sizes and moves them (into a bucket in the desk's drawer); without
+    // TYPE() the commands are about items as before; a fluid asked for as a gas is ELC1207, and one moved to a block with
+    // no tanks ELC1208.
+    static void typedCommands(GameTestHelper helper) {
+        rig(helper, (h, sequence, rig) -> sequence
+                .thenExecute(() -> h.getBlockEntity(ElclGameTests.BAY, DriveBayBlockEntity.class).setItem(1,
+                        new ItemStack(ModItems.storageDrive(ResourceType.FLUID, StorageTier.K8).get())))
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    TerminalContext c = rig.context();
+                    RackGameTests.storage(h, ElclGameTests.BAY).insert(StorageKey.fluid(Fluids.WATER), 5_000, false);
+                    expect(h, c, "RTVITMCNT 'minecraft:water' TYPE(*FLUID)", "RTNCOUNT = 5000");
+                    expect(h, c, "RTVITMCNT WATER TYPE(*ALL)", "RTNCOUNT = 5000");
+                    expect(h, c, "RTVITMCNT 'minecraft:water'", "ELC1201");
+                    expect(h, c, "RTVITMCNT 'minecraft:water' TYPE(*PRES)", "ELC1207");
+                    expect(h, c, "RTVITMCNT COBBLESTONE", "RTNCOUNT = 64");
+                    expect(h, c, "RTVITMLST TYPE(*FLUID)", "[minecraft:water]");
+                    expect(h, c, "RTVITMLST SORT(*QTY) MAX(1) TYPE(*ALL)", "[minecraft:water]");
+                    expect(h, c, "RTVITMLST SORT(*QTY) MAX(1)", "[COBBLESTONE]");
+                    expect(h, c, "RTVSTGSTS TYPE(*FLUID)", "RTNTOTAL = 8192");
+                    expect(h, c, "RTVPWRSTS", "RTNDRVCAP = 0");
+                    expect(h, c, "MOVITM 'minecraft:water' 1000 EGRESS01 TYPE(*FLUID)", "ELC1208");
+                    h.getBlockEntity(ElclGameTests.DESK, TerminalDeskBlockEntity.class).addToDrawer(new ItemStack(Items.BUCKET));
+                    expect(h, c, "MOVITM 'minecraft:water' 1000 *DESK TYPE(*FLUID)", "RTNMOVED = 1000");
+                    expect(h, c, "RTVITMCNT 'minecraft:water' TYPE(*FLUID)", "RTNCOUNT = 4000");
+                }));
     }
 
     // --- Mod commands on Command Entry ---

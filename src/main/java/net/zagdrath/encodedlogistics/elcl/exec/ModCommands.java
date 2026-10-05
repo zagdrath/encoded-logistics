@@ -8,7 +8,6 @@ package net.zagdrath.encodedlogistics.elcl.exec;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -22,7 +21,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftLog;
@@ -57,8 +58,11 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceContainers;
+import net.zagdrath.encodedlogistics.storage.ResourceIO;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalActions;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 
@@ -136,12 +140,13 @@ public final class ModCommands {
     // --- 3. Inventory ---
 
     private static void inventory() {
+        // TYPE(): items (as before), a fluid or gas by ID (in mB, or its mod's unit), or *ALL of them by that ID.
         CommandRegistry.bind("RTVITMCNT", call -> {
             NetworkStorage storage = storage(context(call));
             boolean zero = call.text("NOTFND").equals("*ZERO");
-            Item item;
+            List<StorageKey> keys;
             try {
-                item = ElclItems.resolve(call.text("ITEM"));
+                keys = ElclItems.keys(storage, call.text("ITEM"), call.text("TYPE"));
             } catch (ElclException e) {
                 if (zero && e.elclMessage().id().equals("ELC1201")) {
                     call.returns("RTNCOUNT", 0L);
@@ -149,29 +154,41 @@ public final class ModCommands {
                 }
                 throw e;
             }
-            if (!zero && ElclItems.count(storage, item, "*ALL") == 0) {
+            if (!zero && ElclItems.count(storage, keys, "*ALL") == 0) {
                 throw new ElclException("ELC1201", call.text("ITEM").toUpperCase(Locale.ROOT));
             }
-            call.returns("RTNCOUNT", ElclItems.count(storage, item, call.text("TIER")));
+            call.returns("RTNCOUNT", ElclItems.count(storage, keys, call.text("TIER")));
         });
+        // Items by ID (kinds added together) as before; with TYPE(*FLUID), (*PRES) or (*ALL) the fluids and gases too, by
+        // their full IDs.
         CommandRegistry.bind("RTVITMLST", call -> {
             NetworkStorage storage = storage(context(call));
-            String filter = call.text("FILTER");
-            List<Map.Entry<Item, Long>> items = new ArrayList<>();
-            for (Map.Entry<Item, Long> entry : ElclItems.totals(storage, call.text("TIER")).entrySet()) {
-                if (entry.getValue() > 0 && ElclItems.matches(StorageKey.of(new ItemStack(entry.getKey())), filter)) {
-                    items.add(entry);
+            String filter = call.text("FILTER"), tier = call.text("TIER");
+            Map<String, Long> totals = new java.util.LinkedHashMap<>();
+            for (ResourceType type : ElclItems.types(call.text("TYPE"))) {
+                if (type == ResourceType.ITEM) {
+                    for (Map.Entry<Item, Long> entry : ElclItems.totals(storage, tier).entrySet()) {
+                        if (entry.getValue() > 0 && ElclItems.matches(StorageKey.of(new ItemStack(entry.getKey())), filter)) {
+                            totals.merge(ElclItems.id(entry.getKey()), entry.getValue(), Long::sum);
+                        }
+                    }
+                } else if (!tier.equals("*COLD")) {
+                    storage.list(type).forEach((key, count) -> {
+                        if (count > 0 && ElclItems.matches(key, filter)) {
+                            totals.merge(ElclItems.scriptId(key), count, Long::sum);
+                        }
+                    });
                 }
             }
-            items.sort(call.text("SORT").equals("*QTY") ? Map.Entry.<Item, Long>comparingByValue().reversed()
-                    : Comparator.comparing(entry -> ElclItems.id(entry.getKey())));
+            List<Map.Entry<String, Long>> items = new ArrayList<>(totals.entrySet());
+            items.sort(call.text("SORT").equals("*QTY") ? Map.Entry.<String, Long>comparingByValue().reversed() : Map.Entry.comparingByKey());
             long max = call.text("MAX").equals("*NOMAX") ? Long.MAX_VALUE : call.integer("MAX");
             List<String> ids = new ArrayList<>();
-            for (Map.Entry<Item, Long> entry : items) {
+            for (Map.Entry<String, Long> entry : items) {
                 if (ids.size() >= max) {
                     break;
                 }
-                ids.add(ElclItems.id(entry.getKey()));
+                ids.add(entry.getKey());
             }
             call.returns("RTNLST", ids);
         });
@@ -182,13 +199,20 @@ public final class ModCommands {
             ElclContext context = context(call);
             NetworkStorage storage = storage(context);
             String tier = call.text("TIER");
+            List<ResourceType> types = ElclItems.types(call.text("TYPE"));
             long used = 0, total = 0;
             if (!tier.equals("*COLD")) {
-                long[] hot = storage.hotBytes();
-                used += hot[0] + StoredLibraryService.storageBytes(new ElclSystem(context.server(), context.network()));
-                total += hot[1];
+                for (ResourceType type : types) {
+                    long[] hot = storage.hotBytes(type);
+                    used += hot[0];
+                    total += hot[1];
+                }
+                if (types.contains(ResourceType.ITEM)) {
+                    used += StoredLibraryService.storageBytes(new ElclSystem(context.server(), context.network()));
+                }
             }
-            if (!tier.equals("*HOT")) {
+            // Only items go to tape.
+            if (!tier.equals("*HOT") && types.contains(ResourceType.ITEM)) {
                 for (RackDevice device : ControllerStructures.rackDevicesServing(context.server(), context.network())) {
                     if (device instanceof TapeLibraryDevice library && library.isOnline()) {
                         long[] cold = library.coldBytes();
@@ -204,15 +228,23 @@ public final class ModCommands {
     }
 
     // MOVITM: from the network to a device's faced inventory (or *DESK, the drawer of the Terminal Desk the job runs
-    // at). Cold items are recalled first; a program waits for them.
+    // at). Cold items are recalled first; a program waits for them. A fluid or gas (TYPE(*FLUID), (*PRES)) goes into the
+    // faced block's tanks (ELC1208 when it has none for that type), or at *DESK into containers in the drawer.
     private static void moveItems(Invocation call) throws ElclException {
         ElclContext context = context(call);
         NetworkStorage storage = storage(context);
-        Item item = ElclItems.resolve(call.text("ITEM"));
-        long hot = ElclItems.count(storage, item, "*HOT"), all = ElclItems.count(storage, item, "*ALL");
+        List<StorageKey> keys = ElclItems.keys(storage, call.text("ITEM"), call.text("TYPE"));
+        String named = call.text("ITEM").toUpperCase(Locale.ROOT);
+        long hot = ElclItems.count(storage, keys, "*HOT"), all = ElclItems.count(storage, keys, "*ALL");
         if (all <= 0) {
-            throw new ElclException("ELC1201", ElclItems.id(item));
+            throw new ElclException("ELC1201", named);
         }
+        if (keys.stream().noneMatch(StorageKey::isItem)) {
+            moveResources(call, context, storage, keys, all);
+            return;
+        }
+        keys = keys.stream().filter(StorageKey::isItem).toList();
+        Item item = keys.getFirst().stack().getItem();
         long want = call.text("QTY").equals("*ALL") ? all : call.integer("QTY");
         boolean partial = !call.text("PARTIAL").equals("*NO");
         if (!partial && all < want) {
@@ -245,7 +277,7 @@ public final class ModCommands {
             }
         }
         long moved = 0;
-        for (StorageKey key : ElclItems.keys(storage, item)) {
+        for (StorageKey key : keys) {
             long left = want - moved;
             if (left <= 0) {
                 break;
@@ -256,6 +288,67 @@ public final class ModCommands {
         if (!partial && moved < want) {
             throw new ElclException("ELC1202", moved, want);
         }
+    }
+
+    // MOVITM of a fluid or gas: into the device's faced tanks, or containers in the desk's drawer.
+    private static void moveResources(Invocation call, ElclContext context, NetworkStorage storage, List<StorageKey> keys, long all)
+            throws ElclException {
+        long want = call.text("QTY").equals("*ALL") ? all : call.integer("QTY");
+        boolean partial = !call.text("PARTIAL").equals("*NO");
+        if (!partial && all < want) {
+            throw new ElclException("ELC1202", all, want);
+        }
+        String to = call.text("TODEV").toUpperCase(Locale.ROOT);
+        long moved = 0;
+        if (to.equals("*DESK")) {
+            TerminalContext terminal = call.context(TerminalContext.class);
+            TerminalDeskBlockEntity desk = terminal != null ? terminal.desk() : null;
+            if (desk == null) {
+                throw new ElclException("ELC1301", "*DESK");
+            }
+            ResourceHandler<ItemResource> drawer = VanillaContainerWrapper.of(desk);
+            List<ItemAccess> containers = new ArrayList<>();
+            for (int slot = 0; slot < drawer.size(); slot++) {
+                containers.add(ItemAccess.forHandlerIndex(drawer, slot));
+            }
+            for (StorageKey key : keys) {
+                moved += ResourceContainers.fillFrom(storage, key, want - moved, containers);
+            }
+        } else {
+            ElclDevices.Device device = device(context, to);
+            for (StorageKey key : keys) {
+                ResourceIO target = facedResources(device, key.type());
+                long left = Math.min(want - moved, storage.count(key));
+                long room = left > 0 ? target.insert(key, left, true) : 0;
+                long taken = room > 0 ? storage.extract(key, room, false) : 0;
+                long inserted = taken > 0 ? target.insert(key, taken, false) : 0;
+                if (inserted < taken) {
+                    storage.insert(key, taken - inserted, false);
+                }
+                moved += inserted;
+            }
+        }
+        call.returns("RTNMOVED", moved);
+        if (!partial && moved < want) {
+            throw new ElclException("ELC1202", moved, want);
+        }
+    }
+
+    // A part's faced tanks for a fluid or gas type: ELC1303 / ELC1302 as faced(); ELC1208 when the block there has no
+    // tanks for that type.
+    private static ResourceIO facedResources(ElclDevices.Device device, ResourceType type) throws ElclException {
+        CablePart part = device.part();
+        if (part == null) {
+            throw new ElclException("ELC1303", device.name(), device.type());
+        }
+        if (!part.isOnline()) {
+            throw new ElclException("ELC1302", device.name());
+        }
+        ResourceIO io = part.host().getLevel() instanceof ServerLevel level ? ResourceIO.at(level, part.facing(), part.side().getOpposite(), type) : null;
+        if (io == null) {
+            throw new ElclException("ELC1208", type.special(), device.name());
+        }
+        return io;
     }
 
     private static long toDesk(NetworkStorage storage, TerminalDeskBlockEntity desk, StorageKey key, long amount) {
@@ -313,10 +406,16 @@ public final class ModCommands {
         return moved;
     }
 
-    // IMPITM: from a device's faced inventory into the network; ELC1204 when nothing would fit.
+    // IMPITM: from a device's faced inventory into the network; ELC1204 when nothing would fit. TYPE(*FLUID) / (*PRES)
+    // takes from its tanks instead, and (*ALL) from both.
     private static void importItems(Invocation call) throws ElclException {
         ElclContext context = context(call);
         NetworkStorage storage = storage(context);
+        List<ResourceType> types = ElclItems.types(call.text("TYPE"));
+        if (!types.contains(ResourceType.ITEM)) {
+            importResources(call, context, storage, types, 0, false);
+            return;
+        }
         ResourceHandler<ItemResource> source = faced(device(context, call.text("FROMDEV")));
         Item only = call.text("ITEM").equals("*ALL") ? null : ElclItems.resolve(call.text("ITEM"));
         long want = call.text("QTY").equals("*ALL") ? Long.MAX_VALUE : call.integer("QTY");
@@ -347,6 +446,54 @@ public final class ModCommands {
                 }
             }
             moved += stored;
+        }
+        if (types.size() > 1) {
+            importResources(call, context, storage, types, moved, blocked);
+            return;
+        }
+        call.returns("RTNMOVED", moved);
+        if (moved == 0 && blocked) {
+            throw new ElclException("ELC1204");
+        }
+    }
+
+    // IMPITM's fluids and gases: from the device's faced tanks (what passes ITEM, all of it with *ALL), on top of moved.
+    private static void importResources(Invocation call, ElclContext context, NetworkStorage storage, List<ResourceType> types, long moved,
+            boolean blocked) throws ElclException {
+        ElclDevices.Device device = device(context, call.text("FROMDEV"));
+        String only = call.text("ITEM");
+        long want = call.text("QTY").equals("*ALL") ? Long.MAX_VALUE : call.integer("QTY");
+        for (ResourceType type : types) {
+            if (type == ResourceType.ITEM) {
+                continue;
+            }
+            ResourceIO source;
+            try {
+                source = facedResources(device, type);
+            } catch (ElclException e) {
+                if (types.size() == 1 || !e.elclMessage().id().equals("ELC1208")) {
+                    throw e;
+                }
+                continue;
+            }
+            StorageKey wanted = only.equals("*ALL") ? null : ElclItems.resolveResource(only, type);
+            for (Map.Entry<StorageKey, Long> there : source.list().entrySet()) {
+                StorageKey key = there.getKey();
+                if (moved >= want || wanted != null && !wanted.equals(key)) {
+                    continue;
+                }
+                long fits = storage.insert(key, Math.min(want - moved, there.getValue()), true);
+                if (fits <= 0) {
+                    blocked = true;
+                    continue;
+                }
+                long taken = source.extract(key, fits, false);
+                long stored = storage.insert(key, taken, false);
+                if (stored < taken) {
+                    source.insert(key, taken - stored, false);
+                }
+                moved += stored;
+            }
         }
         call.returns("RTNMOVED", moved);
         if (moved == 0 && blocked) {
@@ -546,16 +693,25 @@ public final class ModCommands {
             return;
         }
         ElclContext context = context(call);
-        Item item = ElclItems.resolve(call.text("ITEM"));
+        ResourceType type = ResourceType.bySpecial(call.text("TYPE"));
         StorageKey key = null;
-        for (StorageKey craftable : CraftRequests.craftables(context.server(), context.network())) {
-            if (craftable.stack().is(item)) {
-                key = craftable;
-                break;
+        String named;
+        if (type == null || type == ResourceType.ITEM) {
+            Item item = ElclItems.resolve(call.text("ITEM"));
+            named = ElclItems.id(item);
+            for (StorageKey craftable : CraftRequests.craftables(context.server(), context.network())) {
+                if (craftable.isItem() && craftable.stack().is(item)) {
+                    key = craftable;
+                    break;
+                }
             }
+        } else {
+            StorageKey wanted = ElclItems.resolveResource(call.text("ITEM"), type);
+            named = ElclItems.scriptId(wanted);
+            key = CraftRequests.craftables(context.server(), context.network()).contains(wanted) ? wanted : null;
         }
         if (key == null) {
-            throw new ElclException("ELC1402", ElclItems.id(item));
+            throw new ElclException("ELC1402", named);
         }
         List<JobHost> schedulers = CraftRequests.schedulers(context.server(), context.network());
         if (schedulers.isEmpty()) {
@@ -567,15 +723,15 @@ public final class ModCommands {
             throw new ElclException("ELC1302", "*NETWORK");
         }
         if (plan.crafts().isEmpty()) {
-            throw new ElclException("ELC1402", ElclItems.id(item));
+            throw new ElclException("ELC1402", named);
         }
         if (!plan.complete()) {
             if (!call.text("MISSING").equals("*PARTIAL")) {
-                throw new ElclException("ELC1403", ElclItems.id(item));
+                throw new ElclException("ELC1403", named);
             }
             plan = mostMakeable(context, key, amount);
             if (plan == null) {
-                throw new ElclException("ELC1403", ElclItems.id(item));
+                throw new ElclException("ELC1403", named);
             }
         }
         String spec = call.text("SCHEDULER");
@@ -589,7 +745,7 @@ public final class ModCommands {
         CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host,
                 new CraftRequests.Requester(player, context.user(), context.user(), origin(context)));
         if (job == null) {
-            throw new ElclException("ELC1403", ElclItems.id(item));
+            throw new ElclException("ELC1403", named);
         }
         String id = String.format(Locale.ROOT, "C%04d", ControllerStructures.jobNumber(context.server(), context.network(), job.id));
         call.returns("RTNCRFJOB", id);
@@ -716,6 +872,9 @@ public final class ModCommands {
                     : BigDecimal.valueOf(upses.stream().mapToInt(UpsDevice::percent).sum()).divide(BigDecimal.valueOf(upses.size()), 5, RoundingMode.HALF_UP));
             call.returns("RTNLOAD", Math.round(snapshot.usage()));
             call.returns("RTNSTORED", snapshot.stored());
+            call.returns("RTNCAP", snapshot.capacity());
+            call.returns("RTNDRVSTO", snapshot.driveStored());
+            call.returns("RTNDRVCAP", snapshot.driveCapacity());
         });
     }
 

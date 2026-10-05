@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.storage;
 
+import java.util.List;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.resources.Identifier;
@@ -99,6 +101,36 @@ public final class ResourceContainers {
             }
             return extracted;
         }
+    }
+
+    // Fills containers, in order, from the network with up to amount of a fluid or gas (each as far as it takes); returns
+    // how much went in. A Terminal Desk's drawer or a player's inventory, for a withdrawal or MOVITM.
+    public static long fillFrom(NetworkStorage storage, StorageKey key, long amount, List<ItemAccess> containers) {
+        long moved = 0;
+        for (ItemAccess access : containers) {
+            long left = Math.min(amount - moved, storage.count(key));
+            if (left <= 0) {
+                break;
+            }
+            // Fill each container as many times as it takes some (a stack of empty buckets, one at a time).
+            while (left > 0) {
+                long room = fill(access, key, left, true);
+                long taken = room > 0 ? storage.extract(key, room, false) : 0;
+                if (taken <= 0) {
+                    break;
+                }
+                long filled = fill(access, key, taken, false);
+                if (filled < taken) {
+                    storage.insert(key, taken - filled, false);
+                }
+                moved += filled;
+                left -= filled;
+                if (filled <= 0) {
+                    break;
+                }
+            }
+        }
+        return moved;
     }
 
     private static long gas(ItemAccess access, StorageKey key, long amount, boolean simulate, boolean fill) {

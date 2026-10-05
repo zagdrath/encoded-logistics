@@ -17,6 +17,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
@@ -24,8 +28,9 @@ import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceContainers;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // What the Terminal Desk does for its screens and its command line alike: withdraw (to the desk's drawer or the
 // player's inventory; what's on tape is recalled and follows when it's back), craft (optionally sent to the drawer or
@@ -122,6 +127,9 @@ public final class TerminalActions {
         if (destination == Destination.NETWORK) {
             destination = Destination.DRAWER;
         }
+        if (!key.isItem()) {
+            return withdrawResource(context, storage, desk, key, amount, destination);
+        }
         long hot = storage.count(key), cold = storage.cold().count(key);
         if (hot + cold <= 0) {
             return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.none", key.stack().getHoverName()));
@@ -143,6 +151,32 @@ public final class TerminalActions {
             return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.drawer_full", TerminalItems.count(Math.min(amount, hot) - given)));
         }
         return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.withdrawn", TerminalItems.count(given), key.stack().getHoverName(),
+                destination.label()));
+    }
+
+    // A fluid or gas withdrawn: into the empty (or part-filled) containers in the drawer or the player's inventory, as far
+    // as they take it.
+    private static TerminalOutput withdrawResource(TerminalContext context, NetworkStorage storage, @Nullable TerminalDeskBlockEntity desk, StorageKey key,
+            long amount, Destination destination) {
+        if (storage.count(key) <= 0) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.none", key.displayName()));
+        }
+        List<ItemAccess> containers = new ArrayList<>();
+        if (destination == Destination.DRAWER && desk != null) {
+            ResourceHandler<ItemResource> drawer = VanillaContainerWrapper.of(desk);
+            for (int slot = 0; slot < drawer.size(); slot++) {
+                containers.add(ItemAccess.forHandlerIndex(drawer, slot));
+            }
+        } else {
+            for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
+                containers.add(ItemAccess.forPlayerSlot(context.player(), slot));
+            }
+        }
+        long given = ResourceContainers.fillFrom(storage, key, amount, containers);
+        if (given <= 0) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_container", key.displayName(), destination.label()));
+        }
+        return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.withdrawn", key.format(given), key.displayName(),
                 destination.label()));
     }
 

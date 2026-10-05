@@ -48,8 +48,9 @@ import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
@@ -653,10 +654,23 @@ public final class TerminalService {
                 + percent(hot[0], hot[1])));
         out.line(field("cold", gauge(fraction(coldUsed, coldTotal), 30) + "  " + StorageDevice.bytes(coldUsed) + " / " + StorageDevice.bytes(coldTotal)
                 + "   " + percent(coldUsed, coldTotal)));
+        // Fluid and pressurized drives, when there are any (a byte holds 1,000 mB).
+        for (ResourceType type : List.of(ResourceType.FLUID, ResourceType.PRESSURIZED)) {
+            long[] bytes = storage != null ? storage.hotBytes(type) : new long[2];
+            if (bytes[1] > 0) {
+                out.line(field(type.getSerializedName(), gauge(fraction(bytes[0], bytes[1]), 30) + "  "
+                        + ResourceType.buckets(bytes[0] * type.unitsPerByte()) + " / " + ResourceType.buckets(bytes[1] * type.unitsPerByte()) + "   "
+                        + percent(bytes[0], bytes[1])));
+            }
+        }
         out.line(TerminalLine.blank());
         out.line(head("energy"));
         out.line(field("stored", gauge(fraction(snapshot.stored(), snapshot.capacity()), 30) + "  " + TerminalItems.count(snapshot.stored()) + " / "
                 + TerminalItems.count(snapshot.capacity()) + " FE"));
+        if (snapshot.driveCapacity() > 0) {
+            out.line(field("drives", gauge(fraction(snapshot.driveStored(), snapshot.driveCapacity()), 30) + "  "
+                    + TerminalItems.count(snapshot.driveStored()) + " / " + TerminalItems.count(snapshot.driveCapacity()) + " FE"));
+        }
         out.line(field("in_out", String.format(Locale.ROOT, "%+,.1f / -%,.1f FE/t", snapshot.generation(), snapshot.usage())));
         out.line(TerminalLine.blank());
         out.line(head("lanes"));

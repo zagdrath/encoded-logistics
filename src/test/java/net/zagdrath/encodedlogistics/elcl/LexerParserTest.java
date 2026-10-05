@@ -84,10 +84,10 @@ class LexerParserTest {
         assertNotNull(strcraft);
         assertEquals("Start Crafting (STRCRAFT)", strcraft.title());
         assertEquals(2, strcraft.params().stream().filter(ParamDef::required).count());
-        assertEquals(4, strcraft.params().stream().filter(p -> !p.required()).count());
-        assertEquals(List.of("Name, F4 for list", "1-999999", "*ANY, name", "*FAIL, *PARTIAL", "*NO, *YES", "*CHAR variable"),
+        assertEquals(5, strcraft.params().stream().filter(p -> !p.required()).count());
+        assertEquals(List.of("Name, F4 for list", "1-999999", "*ANY, name", "*FAIL, *PARTIAL", "*NO, *YES", "*CHAR variable", "*ITEM, *FLUID, *PRES"),
                 strcraft.params().stream().map(ParamDef::hint).toList());
-        assertEquals(List.of(24, 10, 10, 8, 4, 10), strcraft.params().stream().map(p -> Math.min(24, p.length())).toList());
+        assertEquals(List.of(24, 10, 10, 8, 4, 10, 6), strcraft.params().stream().map(p -> Math.min(24, p.length())).toList());
     }
 
     @Test

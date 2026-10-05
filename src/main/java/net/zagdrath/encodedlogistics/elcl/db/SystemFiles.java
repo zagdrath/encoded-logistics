@@ -37,7 +37,8 @@ public final class SystemFiles {
                 a("NAME", 48, "Display name", "Name"),
                 s("HOT", 18, "Count in hot storage", "Hot"),
                 s("COLD", 18, "Count on tape", "Cold"),
-                a("MOD", 32, "Mod the item comes from", "Mod")), List.of("ITEM"), true));
+                a("MOD", 32, "Mod the item comes from", "Mod"),
+                a("TYPE", 5, "Resource type: ITEM, FLUID or PRES", "Type")), List.of("ITEM"), true));
         FORMATS.put(DEVICES, new RecordFormat("DEVICER", "Network devices (live)", List.of(
                 a("NAME", 10, "Device name", "Device"),
                 a("TYPE", 10, "Device type", "Type"),

@@ -80,6 +80,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("terminal_fluids", TypedDeviceGameTests::terminalFluids);
         TESTS.put("fluid_processing", TypedCraftingGameTests::fluidProcessing);
         TESTS.put("encoder_fluid_entries", Phase3GameTests::encoderFluidEntries);
+        TESTS.put("elcl_typed_commands", ElclVmGameTests::typedCommands);
         TESTS.put("ingress_port", Phase2GameTests::ingressPort);
         TESTS.put("egress_port", Phase2GameTests::egressPort);
         TESTS.put("inventory_tap", Phase2GameTests::inventoryTap);

@@ -71,6 +71,62 @@ public final class ElclItems {
         return key;
     }
 
+    // TYPE(*ITEM|*FLUID|*PRES|*ALL): the types a command works on (*ALL: every keyed type).
+    public static List<ResourceType> types(String special) {
+        ResourceType type = ResourceType.bySpecial(special);
+        return type != null ? List.of(type) : List.of(ResourceType.KEYED);
+    }
+
+    // The stored kinds a script's ITEM names under TYPE(): an item's kinds (with any components), or the fluid or gas with
+    // that ID; *ALL, whichever of them the ID names. ELC1201 (or ELC1205, ELC1207 for one type) when it names none.
+    public static List<StorageKey> keys(NetworkStorage storage, String spec, String type) throws ElclException {
+        List<ResourceType> types = types(type);
+        List<StorageKey> keys = new ArrayList<>();
+        ElclException first = null;
+        for (ResourceType each : types) {
+            try {
+                if (each == ResourceType.ITEM) {
+                    keys.addAll(keys(storage, resolve(spec)));
+                    if (keys.isEmpty()) {
+                        keys.add(StorageKey.of(new ItemStack(resolve(spec))));
+                    }
+                } else {
+                    keys.add(resolveResource(spec, each));
+                }
+            } catch (ElclException e) {
+                if (types.size() == 1) {
+                    throw e;
+                }
+                if (first == null || !e.elclMessage().id().equals("ELC1207")) {
+                    first = e;
+                }
+            }
+        }
+        if (keys.isEmpty()) {
+            throw first != null ? first : new ElclException("ELC1201", spec);
+        }
+        return keys;
+    }
+
+    // How much of the keys there is: hot, cold or both (*HOT, *COLD, *ALL); only items go to tape.
+    public static long count(NetworkStorage storage, List<StorageKey> keys, String tier) {
+        long count = 0;
+        for (StorageKey key : keys) {
+            if (!tier.equals("*COLD")) {
+                count += storage.count(key);
+            }
+            if (!tier.equals("*HOT") && key.isItem()) {
+                count += storage.cold().count(key);
+            }
+        }
+        return count;
+    }
+
+    // A resource's ID as a script gets it back: an item's (IRON_INGOT), or a fluid's or gas's full ID.
+    public static String scriptId(StorageKey key) {
+        return key.isItem() ? id(key.stack().getItem()) : key.id().toString();
+    }
+
     // A resource as text: an item's ID (IRON_INGOT), a fluid's or gas's type code and ID ("FLUID minecraft:water").
     public static String text(StorageKey key) {
         return key.isItem() ? id(key.stack().getItem()) : key.type().code() + " " + key.id();
@@ -183,9 +239,9 @@ public final class ElclItems {
             return TerminalService.matchesFilter(key, f.toLowerCase(Locale.ROOT));
         }
         Pattern pattern = Pattern.compile(("\\Q" + f.toLowerCase(Locale.ROOT) + "\\E").replace("*", "\\E.*\\Q"));
-        Identifier id = BuiltInRegistries.ITEM.getKey(key.stack().getItem());
+        Identifier id = key.id();
         return pattern.matcher(id.toString()).matches() || pattern.matcher(id.getPath()).matches()
-                || pattern.matcher(key.stack().getHoverName().getString().toLowerCase(Locale.ROOT)).matches();
+                || pattern.matcher(key.displayName().getString().toLowerCase(Locale.ROOT)).matches();
     }
 
     // Totals per item (kinds added together), hot, cold or both; items only.

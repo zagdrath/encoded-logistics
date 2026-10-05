@@ -34,6 +34,7 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Trigger events (COMMANDS.md 9): a trigger runs its program as a batch job, as the user who added it, with &EVENT and
 // &DATA, whenever its event happens on a loaded network - edge-triggered (once per crossing) and debounced (at least a
@@ -110,19 +111,24 @@ public final class Triggers {
     private static @Nullable Condition condition(ElclSystem system, JobService.Trigger trigger) {
         switch (trigger.event()) {
             case "*ITMBELOW", "*ITMABOVE" -> {
+                // An item, or a fluid or gas (TYPE(*FLUID) / (*PRES): kept as "FLUID minecraft:water", counted in mB).
                 NetworkStorage storage = ControllerStructures.sharedStorageOf(system.server(), system.network(), false);
-                Item item;
-                try {
-                    item = ElclItems.resolve(trigger.item());
-                } catch (ElclException e) {
-                    return null;
+                StorageKey resource = trigger.item().indexOf(' ') > 0 ? ElclItems.parse(trigger.item()) : null;
+                Item item = null;
+                if (resource == null) {
+                    try {
+                        item = ElclItems.resolve(trigger.item());
+                    } catch (ElclException e) {
+                        return null;
+                    }
                 }
                 if (storage == null) {
                     return null;
                 }
-                long count = ElclItems.count(storage, item, "*ALL"), value = number(trigger.value(), 0);
+                long count = resource != null ? ElclItems.count(storage, List.of(resource), "*ALL") : ElclItems.count(storage, item, "*ALL");
+                long value = number(trigger.value(), 0);
                 boolean holds = trigger.event().equals("*ITMBELOW") ? count < value : count > value;
-                return new Condition(holds, ElclItems.id(item) + " " + count);
+                return new Condition(holds, (resource != null ? ElclItems.scriptId(resource) : ElclItems.id(item)) + " " + count);
             }
             case "*STGFULL" -> {
                 NetworkStorage storage = ControllerStructures.sharedStorageOf(system.server(), system.network(), false);

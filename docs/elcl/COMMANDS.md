@@ -35,14 +35,27 @@ general errors ELC0101–ELC0106 and ELC0401.
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
-| `RTVITMCNT` | `ITEM`(P1, Req) `TIER(*ALL\|*HOT\|*COLD)` `RTNCOUNT`(*INT, Req) | view | ELC1201 (returns 0 instead if `NOTFND(*ZERO)` given), ELC1205 |
-| `RTVITMLST` | `FILTER`(P1, default `*ALL`; text with `*` wildcards or `#tag`) `TIER` `MAX(*NOMAX\|n)` `SORT(*NAME\|*QTY)` `RTNLST`(*LIST, Req) | view | — |
-| `MOVITM` | `ITEM`(P1, Req) `QTY`(P2, Req, n or `*ALL`) `TODEV`(P3, Req, device name or `*DESK`) `PARTIAL(*YES\|*NO)` `RTNMOVED`(*INT) | extract | ELC1201, ELC1202 (only if PARTIAL(*NO)), ELC1301, ELC1302, ELC1304 |
-| `IMPITM` | `FROMDEV`(P1, Req) `ITEM(*ALL\|id)` `QTY(*ALL\|n)` `RTNMOVED`(*INT) | insert | ELC1204, ELC1301, ELC1302, ELC1304 |
+| `RTVITMCNT` | `ITEM`(P1, Req) `TIER(*ALL\|*HOT\|*COLD)` `RTNCOUNT`(*INT, Req) `TYPE` | view | ELC1201 (returns 0 instead if `NOTFND(*ZERO)` given), ELC1205, ELC1207 |
+| `RTVITMLST` | `FILTER`(P1, default `*ALL`; text with `*` wildcards or `#tag`) `TIER` `MAX(*NOMAX\|n)` `SORT(*NAME\|*QTY)` `RTNLST`(*LIST, Req) `TYPE` | view | — |
+| `MOVITM` | `ITEM`(P1, Req) `QTY`(P2, Req, n or `*ALL`) `TODEV`(P3, Req, device name or `*DESK`) `PARTIAL(*YES\|*NO)` `RTNMOVED`(*INT) `TYPE` | extract | ELC1201, ELC1202 (only if PARTIAL(*NO)), ELC1207, ELC1208, ELC1301, ELC1302, ELC1304 |
+| `IMPITM` | `FROMDEV`(P1, Req) `ITEM(*ALL\|id)` `QTY(*ALL\|n)` `RTNMOVED`(*INT) `TYPE` | insert | ELC1204, ELC1207, ELC1208, ELC1301, ELC1302, ELC1304 |
 | `CHGITMTIER` | `ITEM`(P1, Req) `TIER`(P2, Req: `*HOT\|*COLD\|*PIN\|*AUTO`) | configure | ELC1201, ELC1206 (no Tape Library) |
-| `RTVSTGSTS` | `TIER(*ALL\|*HOT\|*COLD)` `RTNUSED` `RTNTOTAL` (*INT) `RTNPCT` (*DEC) | view | — |
+| `RTVSTGSTS` | `TIER(*ALL\|*HOT\|*COLD)` `RTNUSED` `RTNTOTAL` (*INT) `RTNPCT` (*DEC) `TYPE` | view | — |
 
 `*DESK` = the drawer of the Terminal Desk running the job (interactive only).
+
+**Resource types.** `TYPE(*ITEM|*FLUID|*PRES|*ALL)` (default `*ITEM`, so programs written before types behave
+the same) picks what the inventory commands work on: items, fluids (amounts in mB), pressurized gases and chemicals
+from another mod (Arcforge's gases; their own unit, mB for Arcforge), or all of them. A fluid or gas is named by its
+full ID, `'minecraft:water'` or `'arcforge:hydrogen'` (an unqualified ID is taken as minecraft's). `RTVITMLST` returns
+fluids and gases by those IDs. `MOVITM`/`IMPITM` move them through the device's faced block's tanks (ELC1208 when it
+has none for that type), and `MOVITM ... TODEV(*DESK)` into empty containers (buckets, tanks, gas cartridges) in the
+desk's drawer. `RTVSTGSTS TYPE(*FLUID)` sizes the Fluid Storage Drives (bytes; a byte holds 1,000 mB). Fluids and gases
+are never on tape. ELC1207 when the ID names a resource of another type (a gas asked for with `TYPE(*FLUID)`).
+
+Work with Inventory (`WRKINV`) lists items, fluids and gases with a Type column (`ITEM`, `FLUID`, `PRES`) and a Type
+filter (`*ALL` default); 1=Withdraw of a fluid or gas fills containers in the drawer or your inventory. Display Network
+Status shows fluid and pressurized drives, and the energy in Energy Storage Drives, on their own lines when there are any.
 Cold items requested by `MOVITM` trigger a recall; the job waits (async).
 *(Implemented: a device for `MOVITM`/`IMPITM` is a cable part facing an inventory - an
 Egress or Ingress Port, an Inventory Tap. The mod has no per-item tier, so
@@ -59,7 +72,7 @@ have aged out), and `RTVCRFLOG` returns their IDs, newest first, filtered by ite
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
-| `STRCRAFT` | `ITEM`(P1, Req) `QTY`(P2, Req) `SCHEDULER(*ANY\|name)` `MISSING(*FAIL\|*PARTIAL)` `WAIT(*NO\|*YES)` `RTNCRFJOB`(*CHAR) | craft | ELC1401, ELC1402, ELC1403 |
+| `STRCRAFT` | `ITEM`(P1, Req) `QTY`(P2, Req) `SCHEDULER(*ANY\|name)` `MISSING(*FAIL\|*PARTIAL)` `WAIT(*NO\|*YES)` `RTNCRFJOB`(*CHAR) `TYPE(*ITEM\|*FLUID\|*PRES)` | craft | ELC1207, ELC1401, ELC1402, ELC1403 |
 | `RTVCRFSTS` | `CRFJOB`(P1, Req) `RTNSTS`(*CHAR: `*QUEUED\|*ACTIVE\|*DONE\|*FAILED\|*CANCELLED`) `RTNPCT`(*DEC) | view | ELC1404 |
 | `RTVCRFLOG` | `ITEM(*ALL\|item)` `STATUS(*ALL\|*DONE\|*FAILED\|*CANCELLED)` `MAX(*NOMAX\|1-999)` `RTNLST`(*LIST, Req) | view | ELC1201 |
 | `ENDCRAFT` | `CRFJOB`(P1, Req) | craft | ELC1404 |
@@ -106,7 +119,10 @@ refused. `PWRNET(*YES)`: power from the network (`machinePowerRate`, `machinePow
 
 | Command | Parameters | Auth |
 |---------|-----------|------|
-| `RTVPWRSTS` | `RTNSRC`(*CHAR: `*NETWORK\|*UPS\|*NONE`) `RTNCHG`(*DEC, UPS %) `RTNLOAD`(*INT, FE/t) `RTNSTORED`(*INT, FE) | view |
+| `RTVPWRSTS` | `RTNSRC`(*CHAR: `*NETWORK\|*UPS\|*NONE`) `RTNCHG`(*DEC, UPS %) `RTNLOAD`(*INT, FE/t) `RTNSTORED`(*INT, FE) `RTNCAP`(*INT, FE) `RTNDRVSTO`(*INT, FE) `RTNDRVCAP`(*INT, FE) | view |
+
+`RTNSTORED` / `RTNCAP` are the whole energy pool (controllers, Capacitor Banks, Energy Storage Drives);
+`RTNDRVSTO` / `RTNDRVCAP` the part of it in Energy Storage Drives.
 
 ## 7. Redstone (Control Interface block, PLC)
 
@@ -173,7 +189,7 @@ Sensor modules, as `RTVSNSVAL` reads them (`RTNVAL`, `RTNAUX`):
 | `WRKACTJOB` / `WRKJOB JOB()` / `DSPJOBLOG JOB(*\|id)` | | I |
 | `HLDJOB JOB()` / `RLSJOB JOB()` / `ENDJOB JOB() OPTION(*CNTRLD\|*IMMED)` | | IB |
 | `ADDJOBSCDE JOB() CMD() FRQ(*ONCE\|*INTERVAL\|*DAILY) TIME(HHMM) INTERVAL(seconds)` / `RMVJOBSCDE JOB()` / `WRKJOBSCDE` | game-clock TIME, real-time INTERVAL (see HANDOFF open question 2) | IB / IB / I |
-| `ADDTRGEVT TRG() EVENT() PGM() ITEM() DEV() VALUE()` / `RMVTRGEVT TRG()` / `WRKTRGEVT` | events below | IB / IB / I |
+| `ADDTRGEVT TRG() EVENT() PGM() ITEM() DEV() VALUE() TYPE()` / `RMVTRGEVT TRG()` / `WRKTRGEVT` | events below | IB / IB / I |
 | `WRKSYSVAL` / `RTVSYSVAL SYSVAL() RTNVAR()` / `CHGSYSVAL SYSVAL() VALUE()` | OS.md §7 | I / IB / IB |
 | `SAVLIB LIB() DEV()` / `RSTLIB LIB() DEV()` | 8" Diskette in a Midrange System or Card Reader. *(Implemented against `DisketteDevice`, docs/elcl/INTERFACES.md: ELC1301 no device, ELC1310 no diskette, ELC1311 too big; RSTLIB makes the library or replaces its members and programs)* *(Added: and its files with their records, and its members' types; the records count against the diskette's capacity)* | IB |
 | `WRKDEV` / `WRKINV` / `DSPNETSTS` | existing screens | I |
@@ -189,7 +205,7 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 
 | Event | Uses | `&DATA` |
 |-------|------|---------|
-| `*ITMBELOW` / `*ITMABOVE` | `ITEM`, `VALUE` | item id and new count |
+| `*ITMBELOW` / `*ITMABOVE` | `ITEM`, `VALUE`, `TYPE(*ITEM\|*FLUID\|*PRES)` | item id (a fluid's or gas's full ID) and new count (mB for fluids) |
 | `*STGFULL` | `VALUE` (percent) | percent used |
 | `*DEVFAULT` / `*DEVONLINE` / `*DEVOFFLINE` | `DEV` (or `*ANY`) | device name |
 | `*PWRUPS` / `*PWRRESTORED` | — | UPS charge % |
@@ -233,7 +249,7 @@ is; reading on, the same picture for the rest of the tick). They need the Firewa
 
 | File | Fields (key first) |
 |------|--------------------|
-| `ELSYS/INVITEMS` | `ITEM` 64A (the ID as scripts write it), `NAME` 48A, `HOT` 18S, `COLD` 18S, `MOD` 32A |
+| `ELSYS/INVITEMS` | `ITEM` 64A (the ID as scripts write it; a fluid's or gas's full ID), `NAME` 48A, `HOT` 18S (mB for fluids and gases), `COLD` 18S, `MOD` 32A (a gas's source mod), `TYPE` 5A (`ITEM`, `FLUID`, `PRES`) |
 | `ELSYS/DEVICES` | `NAME` 10A, `TYPE` 10A, `LOCATION` 40A (`x,y,z dimension`), `LANES` 9S, `STATUS` 10A |
 | `ELSYS/CRFHIST` | `NUMBER` 9S, `JOBID` 8A (`C0042`), `ITEM` 64A, `REQUESTED` 18S, `PRODUCED` 18S, `STATUS` 10A, `USER` 10A, `STARTED` T, `ENDED` T |
 | `ELSYS/JOBS` | `NUMBER` 6A, `JOB` 10A, `USER` 10A, `TYPE` 3A, `HOST` 10A, `STATUS` 7A, `PRIORITY` 1S, `BUDGET` 3S |

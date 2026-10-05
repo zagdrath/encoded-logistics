@@ -335,8 +335,8 @@ class EditorTest {
         assertEquals("PROMPT", terminal.current().id());
         PrompterPanel prompter = (PrompterPanel) terminal.current();
         terminal.functionKey(10);
-        // RTNCRFJOB: the last field.
-        prompter.fields.getLast().set("&J");
+        // RTNCRFJOB: the field before TYPE, the last.
+        prompter.fields.get(prompter.fields.size() - 2).set("&J");
         terminal.submit();
         assertEquals("EDTMBR", terminal.current().id());
         List<String> texts = editor.model().texts();

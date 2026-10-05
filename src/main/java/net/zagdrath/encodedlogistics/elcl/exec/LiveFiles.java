@@ -26,6 +26,7 @@ import net.zagdrath.encodedlogistics.elcl.screen.JobService;
 import net.zagdrath.encodedlogistics.elcl.store.StoredFileService;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 
 // The rows of ELSYS's system files (SystemFiles), from the network as it is: INVITEMS its items (hot and cold, as
 // RTVITMCNT counts them), DEVICES its named devices (as Work with Devices and PRTRPT *DEV show them), CRFHIST its
@@ -74,9 +75,14 @@ final class LiveFiles implements StoredFileService.LiveSource {
         counts.forEach((item, count) -> {
             if (count[0] + count[1] > 0) {
                 add(rows, format, ElclItems.id(item), new ItemStack(item).getHoverName().getString(), count[0], count[1],
-                        BuiltInRegistries.ITEM.getKey(item).getNamespace());
+                        BuiltInRegistries.ITEM.getKey(item).getNamespace(), ResourceType.ITEM.code());
             }
         });
+        // Fluids and gases by their full IDs, in mB (or their mod's unit); never on tape.
+        for (ResourceType type : List.of(ResourceType.FLUID, ResourceType.PRESSURIZED)) {
+            storage.list(type).forEach((key, count) -> add(rows, format, ElclItems.scriptId(key), key.displayName().getString(), count, 0L,
+                    key.source() != null ? key.source() : key.namespace(), type.code()));
+        }
     }
 
     private static void devices(ElclSystem system, RecordFormat format, List<Object[]> rows) {

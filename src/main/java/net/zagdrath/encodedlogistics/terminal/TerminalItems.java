@@ -17,8 +17,10 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Items as the command line names them (HANDOFF 7.3): a registry id (minecraft:iron_ingot; the namespace may be left
 // off when only one matches) or a display name (quoted, or with underscores for spaces), among what the network holds
@@ -65,6 +67,12 @@ public final class TerminalItems {
 
     // The one item a spec means, or null (none, or several different items: the caller lists them).
     public static @Nullable StorageKey resolve(TerminalContext context, String spec) {
+        // A fluid or gas as Work with Inventory names it: "FLUID minecraft:water", "PRES arcforge:hydrogen".
+        int space = spec.indexOf(' ');
+        ResourceType type = space > 0 ? ResourceType.bySpecial(spec.substring(0, space)) : null;
+        if (type != null && type != ResourceType.ITEM) {
+            return ElclItems.parse(spec.strip());
+        }
         List<StorageKey> found = matches(context, spec);
         if (found.isEmpty()) {
             return null;

@@ -29,6 +29,7 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.elcl.screen.JobService;
 import net.zagdrath.encodedlogistics.elcl.screen.LibraryService;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 
 // The OS commands (COMMANDS.md 8-9) on the screens' services: libraries, members and programs; jobs, schedule entries
@@ -56,6 +57,16 @@ public final class OsCommands {
             throw new ElclException("ELC0107", call.command().name());
         }
         return context;
+    }
+
+    // A trigger's ITEM as kept: an item as given, or a fluid or gas (TYPE(*FLUID) / (*PRES)) as its type and ID,
+    // "FLUID minecraft:water" (ElclItems.text), checked now.
+    static String triggerItem(String item, String type) throws ElclException {
+        ResourceType resourceType = ResourceType.bySpecial(type);
+        if (resourceType == null || resourceType == ResourceType.ITEM || item.equalsIgnoreCase("*ANY")) {
+            return item;
+        }
+        return ElclItems.text(ElclItems.resolveResource(item, resourceType));
     }
 
     static String user(Invocation call) throws ElclException {
@@ -219,7 +230,7 @@ public final class OsCommands {
         CommandRegistry.bind("HLDJOBSCDE", call -> jobs.holdScheduleEntry(system(call), user(call), call.text("JOB"), true));
         CommandRegistry.bind("RLSJOBSCDE", call -> jobs.holdScheduleEntry(system(call), user(call), call.text("JOB"), false));
         CommandRegistry.bind("ADDTRGEVT", call -> call.send(jobs.addTrigger(system(call), user(call), player(call), new JobService.Trigger(call.text("TRG"),
-                call.text("EVENT"), call.text("ITEM"), call.text("DEV"), call.text("VALUE").equals("*NONE") ? "" : call.text("VALUE"),
+                call.text("EVENT"), triggerItem(call.text("ITEM"), call.text("TYPE")), call.text("DEV"), call.text("VALUE").equals("*NONE") ? "" : call.text("VALUE"),
                 call.text("PGM").toUpperCase(Locale.ROOT), "*ACTIVE", user(call)))));
         CommandRegistry.bind("RMVTRGEVT", call -> call.send(jobs.removeTrigger(system(call), user(call), call.text("TRG"))));
         CommandRegistry.bind("HLDTRGEVT", call -> jobs.holdTrigger(system(call), user(call), call.text("TRG"), true));
