@@ -96,6 +96,12 @@ final class MidrangeGameTests {
         helper.assertBlockNotPresent(ModBlocks.INTEGRATED_MIDRANGE.get(), integrated.east().above());
         helper.assertTrue(shaped(helper, system) && shaped(helper, printer) && shaped(helper, integrated.west().above()) && shaped(helper, integrated.east()),
                 "A footprint block has no shape");
+        // One outline over the whole model, from any of its blocks: the master's runs over its neighbours.
+        net.minecraft.world.phys.AABB outline = helper.getBlockState(integrated).getShape(helper.getLevel(), helper.absolutePos(integrated)).bounds();
+        helper.assertTrue(outline.minX < 0 && outline.maxX > 1 && outline.maxY > 1, "Integrated outline " + outline);
+        net.minecraft.world.phys.AABB collision = helper.getBlockState(integrated)
+                .getCollisionShape(helper.getLevel(), helper.absolutePos(integrated)).bounds();
+        helper.assertTrue(collision.minX >= 0 && collision.maxX <= 1 && collision.maxY <= 1, "Integrated collision " + collision);
         FootprintBlock block = (FootprintBlock) ModBlocks.INTEGRATED_MIDRANGE.get();
         helper.assertTrue(helper.absolutePos(integrated).equals(block.master(helper.getLevel(), helper.absolutePos(integrated.west().above()),
                 helper.getBlockState(integrated.west().above()))), "A dummy can't find its master");
@@ -328,12 +334,16 @@ final class MidrangeGameTests {
     // A Midrange System is its network's controller (HANDOFF 4): with power, a Drive Bay beside it is online on its
     // lanes (4 faces' worth); an Integrated system has 6 faces' worth and a 2U's buffer. Another controller cabled on
     // (a Network Controller block) is a conflict: no lanes, the system shows E8; gone, it runs again.
+    @SuppressWarnings("removal")
     static void controller(GameTestHelper helper) {
         BlockPos system = new BlockPos(2, 1, 2), bay = new BlockPos(3, 1, 2), integrated = new BlockPos(2, 1, 6), cable = new BlockPos(1, 1, 2),
-                block = new BlockPos(0, 1, 2);
+                block = new BlockPos(0, 1, 2), behind = integrated.south(), beside = integrated.east(2);
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
         place(helper, ModBlocks.INTEGRATED_MIDRANGE.get(), integrated);
         RackGameTests.driveBay(helper, bay);
+        // The Integrated system takes the network at its centre's back, not at its side blocks.
+        RackGameTests.driveBay(helper, behind);
+        RackGameTests.driveBay(helper, beside);
         helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).charge(50_000);
         helper.getBlockEntity(integrated, MidrangeSystemBlockEntity.class).charge(50_000);
         helper.startSequence()
@@ -354,6 +364,21 @@ final class MidrangeGameTests {
                             helper.absolutePos(integrated)));
                     helper.assertTrue(own != null && own.laneCapacity() == 6 * face && tier2.getCapacity() == 20 * Config.CONTROLLER_ENERGY_PER_BLOCK.getAsInt(),
                             "Integrated " + own + " " + tier2.getCapacity());
+                    helper.assertTrue(helper.getBlockEntity(behind, DriveBayBlockEntity.class).isOnline(), "Not on the network at its back");
+                    helper.assertFalse(helper.getBlockEntity(beside, DriveBayBlockEntity.class).isOnline(), "On the network at its side");
+                    // Work with Inventory's deposit: everything outside the hotbar goes in.
+                    net.minecraft.server.level.ServerPlayer player = helper.makeMockServerPlayerInLevel();
+                    player.getInventory().setItem(9, new ItemStack(Items.COBBLESTONE, 32));
+                    player.getInventory().setItem(0, new ItemStack(Items.DIRT, 5));
+                    net.zagdrath.encodedlogistics.terminal.TerminalContext context = new net.zagdrath.encodedlogistics.terminal.TerminalContext(server, network,
+                            null, player);
+                    net.zagdrath.encodedlogistics.terminal.TerminalService.handle(context, net.zagdrath.encodedlogistics.terminal.TerminalService.QUERY,
+                            "deposit *all");
+                    helper.assertTrue(player.getInventory().getItem(9).isEmpty() && player.getInventory().getItem(0).getCount() == 5, "Deposit took the wrong stacks");
+                    helper.assertTrue(RackGameTests.storage(helper, bay).count(ItemKey.of(new ItemStack(Items.COBBLESTONE))) == 32, "Not deposited");
+                    net.zagdrath.encodedlogistics.terminal.TerminalService.handle(context, net.zagdrath.encodedlogistics.terminal.TerminalService.QUERY,
+                            "deposit 0");
+                    helper.assertTrue(player.getInventory().getItem(0).isEmpty(), "Hotbar slot not deposited");
                     RackGameTests.cable(helper, cable);
                     RackGameTests.controller(helper, block, 20_000);
                 })

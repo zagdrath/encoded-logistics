@@ -81,6 +81,11 @@ public class CardReaderBlock extends BaseEntityBlock implements NetworkNodeBlock
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return MidrangeShapes.outline("card_reader", Vec3i.ZERO, state.getValue(FACING));
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return MidrangeShapes.shape("card_reader", Vec3i.ZERO, state.getValue(FACING));
     }
 

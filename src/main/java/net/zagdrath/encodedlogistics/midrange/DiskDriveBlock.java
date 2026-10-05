@@ -27,6 +27,12 @@ public class DiskDriveBlock extends MidrangePeripheralBlock {
         super("disk_drive", List.of(Vec3i.ZERO), DiskDriveBlockEntity::new, properties);
     }
 
+    // Not on its front.
+    @Override
+    public boolean connectsOn(BlockState state, Direction side) {
+        return side != state.getValue(FACING);
+    }
+
     @Override
     public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
         EnumSet<Direction> sides = EnumSet.allOf(Direction.class);

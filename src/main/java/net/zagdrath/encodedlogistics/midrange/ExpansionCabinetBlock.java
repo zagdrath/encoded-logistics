@@ -64,6 +64,11 @@ public class ExpansionCabinetBlock extends Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return MidrangeShapes.outline("expansion_cabinet[attached=" + state.getValue(ATTACHED).getSerializedName() + "]", Vec3i.ZERO, state.getValue(FACING));
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return MidrangeShapes.shape("expansion_cabinet[attached=" + state.getValue(ATTACHED).getSerializedName() + "]", Vec3i.ZERO, state.getValue(FACING));
     }
 

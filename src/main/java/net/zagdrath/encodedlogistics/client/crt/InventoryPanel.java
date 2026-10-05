@@ -20,7 +20,7 @@ import net.zagdrath.encodedlogistics.storage.ItemKey;
 // WRKINV: the network's items (what the desk's terminal sync brings: hot and cold) - Opt, Item, Quantity, Location
 // (Hot, Cold on tape, Hot+Cold) - eleven a page, those whose names start with "Position to" (blank or *ALL: all).
 // Options: 1=Withdraw (WITHDRAW prompt), 5=Display details, 7=Craft (CRAFT prompt). Several are done one after another.
-// F11 sorts by name, quantity or mod.
+// F11 sorts by name, quantity or mod; F6 deposits from your inventory (DepositPanel).
 final class InventoryPanel extends ListPanel<ItemKey> {
     private enum Sort {
         NAME, QUANTITY, MOD
@@ -111,6 +111,16 @@ final class InventoryPanel extends ListPanel<ItemKey> {
             case MOD -> Comparator.<ItemKey, String>comparing(key -> BuiltInRegistries.ITEM.getKey(key.stack().getItem()).getNamespace()).thenComparing(byName);
         });
         return keys;
+    }
+
+    // F6: put items from your inventory in.
+    @Override
+    boolean functionKey(int f) {
+        if (f != 6) {
+            return false;
+        }
+        screen.push(new DepositPanel(screen));
+        return true;
     }
 
     @Override

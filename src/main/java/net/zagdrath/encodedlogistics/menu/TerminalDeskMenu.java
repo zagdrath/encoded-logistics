@@ -65,7 +65,7 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return (desk() != null || console() != null && console().running()) && player.isWithinBlockInteractionRange(pos, 4.0);
+        return (desk() != null || console() != null && console().consoleReady()) && player.isWithinBlockInteractionRange(pos, 4.0);
     }
 
     // A request from the screen: a command line, a screen's query or a completion. The session's interactive job

@@ -43,7 +43,8 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 // clicked, its front toward the player) and dummies at the footprint's other offsets, model-local - +x across the width
 // (the facing turned clockwise), +y up. The master shows the model (they're all static models), the dummies nothing.
 // Placing needs the whole footprint free; breaking any block breaks the rest (the one broken drops the item). Shapes come
-// from MidrangeShapes per footprint block; a click on any block is the master's.
+// from MidrangeShapes: the whole model's outline from any block, collision per footprint block; a click on any block is
+// the master's.
 public abstract class FootprintBlock extends BaseEntityBlock {
     public enum Part implements StringRepresentable {
         MASTER, DUMMY, MIDDLE, TOP;
@@ -213,8 +214,15 @@ public abstract class FootprintBlock extends BaseEntityBlock {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
+    // Selected and outlined as one: the whole model, from whichever of its blocks.
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return MidrangeShapes.outline(shapeKey(masterState(level, pos, state)), offset(level, pos, state), state.getValue(FACING));
+    }
+
+    // Collided with block by block.
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return MidrangeShapes.shape(shapeKey(masterState(level, pos, state)), offset(level, pos, state), state.getValue(FACING));
     }
 

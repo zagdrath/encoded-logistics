@@ -79,13 +79,21 @@ public class IntegratedMidrangeBlock extends MidrangeHostBlock implements Networ
         return RenderShape.MODEL;
     }
 
-    // The master is its network's controller (a lane source, its drain); the dummies pass lanes to it.
+    // Cables join it at the bottom and back of its master only.
+    @Override
+    public boolean connectsOn(BlockState state, Direction side) {
+        return state.getValue(PART) == Part.MASTER && (side == Direction.DOWN || side == state.getValue(FACING).getOpposite());
+    }
+
+    // The master is its network's controller (a lane source, its drain), cabled only at its bottom and back (the
+    // footprint's bottom centre); the other blocks don't take the network.
     @Override
     public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
         if (state.getValue(PART) == Part.MASTER) {
-            return MidrangeSystemBlockEntity.node(level, pos, Config.INTEGRATED_MIDRANGE_DRAIN.getAsDouble());
+            return MidrangeSystemBlockEntity.node(level, pos, Config.INTEGRATED_MIDRANGE_DRAIN.getAsDouble(),
+                    EnumSet.of(Direction.DOWN, state.getValue(FACING).getOpposite()));
         }
-        return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), 0, 0, List.of(), true);
+        return new DeviceNode(pos.immutable(), EnumSet.noneOf(Direction.class), 0, 0, List.of(), false);
     }
 
     // The zone a point is in (world coordinates), against the model's boxes.

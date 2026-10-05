@@ -98,6 +98,7 @@ public final class TerminalService {
             case "jobs" -> jobs(context, true);
             case "jobhistory" -> jobHistory(context);
             case "withdraw" -> withdraw(context, words.subList(1, words.size()));
+            case "deposit" -> TerminalActions.deposit(context, words.subList(1, words.size()));
             case "craft" -> craft(context, words.subList(1, words.size()));
             case "canceljob" -> TerminalActions.cancel(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "jobrecord" -> jobRecord(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);

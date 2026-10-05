@@ -49,6 +49,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | 16 | Command Entry | EXTENDED | `CommandEntryPanel` (F4 prompts, Tab completes) |
 | - | Work with Jobs (crafting) | EXTENDED | `JobsPanel`: id and command WRKCRFJOB (amendment 1) |
 | - | WRKINV, WRKDEV, DSPNETSTS, Withdraw, Craft, More keys | EXISTS | `InventoryPanel`, `DevicesPanel`, `StatusPanel`, `WithdrawPanel`, `CraftPanel`, `MoreKeysPanel` (phosphor choice extended) |
+| - | Deposit Items | NEW | `DepositPanel` (WRKINV F6): the player's inventory; 1=Deposit a stack, F6 everything outside the hotbar (`TerminalActions.deposit`, the Firewall's insert permission) |
 | - | Work with Devices names | EXTENDED | `DevicesPanel` 2=Change (RNMDEV), the Device column starts with the device's stored name; `elcl/exec/ElclDevices` (names stored on the device, `SystemData.deviceNames`) |
 | - | Work with Devices topology | EXTENDED | `ControllerStructures.deviceRows`: each rack, its devices under it (top unit first, tree lines), then the rest of the network beside the racks; each device once |
 | - | Midrange control panels | NEW | `MidrangePanelScreen` (`menu/MidrangePanelMenu`; layouts `mrctl`, `imctl`): MRCTL / IMCTL; the status line (system, code and word, threads, max job, batch); the drives or the magazine's four positions - 4=Eject (4=Remove from magazine), 5=Display recipes (F12 back), 8=Make default library; the jobs - 3=Hold, 4=End, 6=Release; the command line; F7 IPL, F10 Hold queue, F11 Release |

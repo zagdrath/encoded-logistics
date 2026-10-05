@@ -146,11 +146,16 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
 
     // Its node: a lane source of its own structure (none yet: an ordinary pass-through block until it has one).
     public static NetworkNode node(Level level, BlockPos pos, double drain) {
+        return node(level, pos, drain, EnumSet.allOf(Direction.class));
+    }
+
+    // The same, cabled on those sides only.
+    public static NetworkNode node(Level level, BlockPos pos, double drain, EnumSet<Direction> sides) {
         long id = level.getBlockEntity(pos) instanceof MidrangeSystemBlockEntity system ? system.structure : 0;
         boolean integrated = level.getBlockState(pos).getBlock() instanceof IntegratedMidrangeBlock;
         int lanes = (integrated ? Config.INTEGRATED_MIDRANGE_LANE_FACES.getAsInt() : Config.MIDRANGE_LANE_FACES.getAsInt())
                 * Config.LANES_PER_CONTROLLER_FACE.getAsInt();
-        return new SourceNode(pos.immutable(), EnumSet.allOf(Direction.class), drain, id > 0 ? id : NetworkNode.NO_CONTROLLER, lanes);
+        return new SourceNode(pos.immutable(), sides, drain, id > 0 ? id : NetworkNode.NO_CONTROLLER, lanes);
     }
 
     public long controllerStructure() {
@@ -833,6 +838,15 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     // --- An Integrated system's console ---
+
+    // Whether its console takes a session: running (on the client, where that isn't known, its fascia shows it).
+    public boolean consoleReady() {
+        if (level == null || !level.isClientSide()) {
+            return running();
+        }
+        MidrangeStates.Run run = getBlockState().getValue(MidrangeStates.STATE);
+        return run == MidrangeStates.Run.RUN || run == MidrangeStates.Run.BUSY || run == MidrangeStates.Run.ATTN;
+    }
 
     public void consoleOpened() {
         sessions++;

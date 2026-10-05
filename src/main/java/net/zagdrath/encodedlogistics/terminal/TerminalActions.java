@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
@@ -58,6 +59,56 @@ public final class TerminalActions {
     }
 
     // --- Withdrawing ---
+
+    // DEPOSIT: stacks from the player's inventory into the network - the slots given, or *all (everything outside the
+    // hotbar). What doesn't fit stays with them.
+    public static TerminalOutput deposit(TerminalContext context, List<String> slots) {
+        if (!context.allowed(RackPermission.INSERT)) {
+            return TerminalOutput.message(notAuthorised(RackPermission.INSERT));
+        }
+        NetworkStorage storage = context.storage();
+        if (storage == null) {
+            return TerminalOutput.message(offline());
+        }
+        Inventory inventory = context.player().getInventory();
+        List<Integer> chosen = new ArrayList<>();
+        if (slots.size() == 1 && slots.getFirst().equalsIgnoreCase("*all")) {
+            for (int slot = Inventory.getSelectionSize(); slot < INVENTORY_SLOTS; slot++) {
+                chosen.add(slot);
+            }
+        } else {
+            for (String slot : slots) {
+                try {
+                    int at = Integer.parseInt(slot);
+                    if (at >= 0 && at < INVENTORY_SLOTS) {
+                        chosen.add(at);
+                    }
+                } catch (NumberFormatException e) {
+                    return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.invalid_value", slot));
+                }
+            }
+        }
+        long put = 0, kept = 0;
+        for (int slot : chosen) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            long in = storage.insert(ItemKey.of(stack), stack.getCount(), false);
+            put += in;
+            kept += stack.getCount() - in;
+            stack.shrink((int) in);
+        }
+        inventory.setChanged();
+        if (put == 0) {
+            return TerminalOutput.message(Component.translatable(kept > 0 ? "crt.encodedlogistics.msg.deposit_full" : "crt.encodedlogistics.msg.deposit_none"));
+        }
+        return TerminalOutput.message(kept > 0 ? Component.translatable("crt.encodedlogistics.msg.deposited_part", TerminalItems.count(put), TerminalItems.count(kept))
+                : Component.translatable("crt.encodedlogistics.msg.deposited", TerminalItems.count(put)));
+    }
+
+    // The player's inventory a deposit takes from: the hotbar and the main inventory (not armour or the offhand).
+    private static final int INVENTORY_SLOTS = 36;
 
     public static TerminalOutput withdraw(TerminalContext context, ItemKey key, long amount, Destination destination) {
         if (!context.allowed(RackPermission.EXTRACT)) {
