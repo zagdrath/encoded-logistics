@@ -238,6 +238,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#msgqueues">Message queues</a></li>
       <li><a href="#spooled">Spooled output</a></li>
       <li><a href="#printing">Printing</a></li>
+      <li><a href="#midrange">The Midrange line</a></li>
       <li><a href="#sysvals">System values</a></li>
     </ol>
   </li>
@@ -362,6 +363,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
       <li><a href="#msgqueues">Message queues</a></li>
       <li><a href="#spooled">Spooled output</a></li>
       <li><a href="#printing">Printing</a></li>
+      <li><a href="#midrange">The Midrange line</a></li>
       <li><a href="#sysvals">System values</a></li>
     </ol>
   </li>
@@ -396,7 +398,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
 
 <div class="callout">
   <p><strong>Read this first.</strong> Everything on this page works: the screens, the command line, libraries and members, the editor and compiler, <strong>running programs</strong> (interactively with <code>CALL</code>, or as batch jobs on Compute Servers), schedule entries and triggers, sign-on and Firewall authority, and every inventory, crafting, device, power and redstone command. What the OS keeps is <a href="#persistence">saved with the world</a>, per network.</p>
-  <p>A few commands talk to hardware that isn't in the mod yet (the Midrange line's Line Printer and 8" Diskettes, the Mainframe, the display blocks). They are built and tested against interfaces, and answer <code>ELC1301 Device &amp;1 not found.</code> until that hardware exists. See <a href="#status">section 10</a>.</p>
+  <p>The Midrange line is in: its Line Printer prints, its 8" Diskettes take <code>SAVLIB</code>, and its Midrange Systems run batch jobs and crafting (<a href="#midrange">the Midrange line</a>). A few commands still talk to hardware that isn't in the mod yet (the Mainframe, the display blocks). They are built and tested against interfaces, and answer <code>ELC1301 Device &amp;1 not found.</code> until that hardware exists. See <a href="#status">section 10</a>.</p>
 </div>
 
 <h3 id="systems">Systems and networks</h3>
@@ -678,9 +680,13 @@ Select one of the following:
     <tr><td><code>DSPSPLF</code></td><td>Display Spooled File</td><td>WRKSPLF 5</td><td>F3=Exit F12=Cancel F19=Left F20=Right F24=More keys</td></tr>
     <tr><td><code>WRKSYSVAL</code></td><td>Work with System Values</td><td><code>WRKSYSVAL</code></td><td>F1=Help F3=Exit F5=Refresh F9=Command Entry F12=Cancel</td></tr>
     <tr><td><code>MOREKEYS</code></td><td>More Keys and Settings</td><td>F24 on any screen</td><td>F3=Exit F4=Prompt F12=Cancel</td></tr>
+    <tr><td><em>device name</em></td><td>MIDRANGE CONTROL PANEL / INTEGRATED SYSTEM CONTROL PANEL</td><td>Right-clicking a Midrange System (on the Integrated system, anywhere but its console)</td><td>F3=Exit F5=Refresh F7=IPL F10=Hold F11=Release F12=Cancel</td></tr>
+    <tr><td><em>device name</em></td><td>KEYPUNCH - Card Punch</td><td>Right-clicking a Keypunch</td><td>F3=Exit F5=Refresh F6=Punch F12=Cancel F13=Clear grid</td></tr>
+    <tr><td><em>device name</em></td><td>CARD READER</td><td>Right-clicking a Card Reader</td><td>F3=Exit F5=Refresh F6=Read F12=Cancel</td></tr>
+    <tr><td><em>device name</em></td><td>LINE PRINTER</td><td>Right-clicking a Line Printer</td><td>F3=Exit F5=Refresh F6=Print F12=Cancel</td></tr>
   </tbody>
 </table></div>
-<p class="muted">The Withdraw Item, Craft Item, Display Item Details, Display Device and crafting job display screens open from options on the desk's own lists.</p>
+<p class="muted">The Withdraw Item, Craft Item, Display Item Details, Display Device and crafting job display screens open from options on the desk's own lists. The Midrange machines' screens (the last four) open from the machines; see <a href="#midrange">the Midrange line</a>.</p>
 
 <h3 id="main-menu">Main Menu</h3>
 <p>Type an option's number on the command line and press Enter, or click an option (double-click to go). Any command can be typed there too. Each option runs its screen's command, just as typing that command would. A number that isn't on the menu answers <em>"Option 9 is not on this menu."</em>; an option whose screen isn't available yet answers <em>"Option 6 not available."</em> on the message line (all nine are available today).</p>
@@ -1063,7 +1069,7 @@ FMT **  <span class="d">...+... 1 ...+... 2 ...+... 3 ...+... 4 ...+... 5 ...+..
   <li><code>RSTLIB</code> reads from the first diskette holding that library (<code>ELC0201</code> if none does). It creates the library, owned by you, or replaces an existing one's members and programs (that needs <code>*CHANGE</code> on it: <code>ELC0401</code>); it never writes to <code>ELSYS</code> (<code>ELC0205</code>), and the members must fit in the network's storage (<code>ELC0207</code>). Programs are compiled again from their saved source. <code>ELC0221 Library &amp;1 restored from &amp;2.</code></li>
   <li>No such device is <code>ELC1301</code>, an offline one <code>ELC1302</code>, a drive with no diskette <code>ELC1310 No diskette in device &amp;1.</code></li>
 </ul>
-<div class="callout warn"><p>The drives (the Midrange System, Integrated Midrange System and Card Reader) and the 8" Diskette item come with the Midrange line, which isn't in the mod yet. Until then <code>SAVLIB</code> and <code>RSTLIB</code> answer <code>ELC1301</code>. They are built and tested against the <code>DisketteDevice</code> interface; see <a href="#hardware">hardware still to come</a>.</p></div>
+<div class="callout"><p>The drives are the Midrange System (its diskette slot, and a second with an Expansion Cabinet), the Integrated Midrange System (every diskette in its magazine) and the Card Reader. Their names are <code>MIDRANGE01</code> and <code>CARDRDR01</code> unless renamed. The library is kept on the diskette item, so it goes wherever the diskette goes. See <a href="#midrange">the Midrange line</a>.</p></div>
 </section>
 
 <section id="language">
@@ -1580,7 +1586,7 @@ ENDPGM</pre>
 </table></div>
 
 <h3 id="cmd-crafting">Crafting</h3>
-<p>Crafting jobs have IDs like <code>C0042</code> (commands also take <code>42</code>) and are separate from script jobs. <code>STRCRAFT</code> plans the craft as the terminals' Craft does (<code>MISSING(*PARTIAL)</code>: as many as can be made), picks a Scheduler, starts the job and returns its ID; with <code>WAIT(*YES)</code> a program waits until the job has ended. Recipes from a <a href="#hardware">recipe library</a> count as the network's own.</p>
+<p>Crafting jobs have IDs like <code>C0042</code> (commands also take <code>42</code>) and are separate from script jobs. <code>STRCRAFT</code> plans the craft as the terminals' Craft does (<code>MISSING(*PARTIAL)</code>: as many as can be made), picks a Scheduler, starts the job and returns its ID; with <code>WAIT(*YES)</code> a program waits until the job has ended. Recipes on a Midrange System's diskettes (<a href="#midrange">the Midrange line</a>) count as the network's own.</p>
 <div class="table-wrap"><table class="cmd-table">
   <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Errors</th><th>Auth</th><th>Status</th></tr></thead>
   <tbody>
@@ -2005,7 +2011,33 @@ ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) PGM(ELSYS/UPSALERT)</pre>
   </tbody>
 </table></div>
 <p>Each report starts with a heading line (<code>*INV report</code>, the date and <code>SYSNAME</code>). <code>DEV(*DFT)</code> is the first online printer, or a printer's device name. Printed: <code>ELC1307 Spooled file &amp;1 printed on &amp;2.</code> No printer: <code>ELC1301</code> (naming <code>PRT01</code> for <code>*DFT</code>); offline: <code>ELC1302</code>; no paper: <code>ELC1306 Printer &amp;1 is out of paper.</code></p>
-<div class="callout warn"><p>The Line Printer isn't in the mod yet, so for now printing answers <code>ELC1301 Device PRT01 not found.</code> It is built against the <code>PrinterDevice</code> interface and tested with a fake printer; see <a href="#hardware">hardware still to come</a>.</p></div>
+<div class="callout"><p>The printer is the Line Printer (<code>PRT01</code>). It prints a Written Book, one paper a page (14 lines of about 19 characters), into its output slot, or in front of it when that's full. With too little paper it prints the pages it can and leaves out the rest. Its own screen prints the same reports; see <a href="#midrange">the Midrange line</a>.</p></div>
+
+<h3 id="midrange">The Midrange line</h3>
+<p>The Midrange line adds the OS's own computers and their peripherals. Every one of them is a device with a name on its network, shown on Work with Devices. Each green screen is drawn like the desk's (the same CRT, frame and keys), with its slots drawn as phosphor frames and your inventory at the lower right.</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Device</th><th>Name</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td>Midrange System</td><td><code>MIDRANGE01</code></td><td>Holds one 8" Diskette, and crafts its recipes itself: 1 thread, max job 64, 40 ticks a step. It's a choice on the Craft Plan screen ("Midrange MIDRANGE01"), a batch job host for 1 job, a diskette drive for <code>SAVLIB</code> / <code>RSTLIB</code>, and its diskette's recipes count as the network's own. 1 lane, 4 FE/t and 20 FE a craft.</td></tr>
+    <tr><td>Expansion Cabinet</td><td>&ndash;</td><td>Placed directly beside a Midrange System (left of it, or right of its second block, facing the same way), it adds a thread, a second diskette slot, max job 128 and a second batch job. Its lamp is lit while the system runs.</td></tr>
+    <tr><td>Integrated Midrange System</td><td><code>MIDRANGE01</code></td><td>Holds a Diskette Magazine of four diskettes (32 recipes): 4 threads, max job 512, 25 ticks a step, 4 batch jobs. Its console (the hood and keyboard tray) opens the Terminal OS, the same session and sign-on as a Terminal Desk. Anywhere else on it opens the control panel.</td></tr>
+    <tr><td>Keypunch</td><td><code>KEYPUNCH01</code></td><td>Punches a crafting recipe, set on its 3 x 3 grid with items in hand (nothing is used up), onto a blank Punch Card. F6 Punch, F13 clears the grid.</td></tr>
+    <tr><td>Card Reader</td><td><code>CARDRDR01</code></td><td>Reads the punched cards in its 8-card hopper onto an 8" Diskette (up to 8 recipes; a card for the same item replaces that recipe). The cards stay in the hopper. F6 Read. A diskette drive for <code>SAVLIB</code> / <code>RSTLIB</code> too.</td></tr>
+    <tr><td>Line Printer</td><td><code>PRT01</code></td><td>The printer for <code>PRTRPT</code> and Work with Output 6=Print (<a href="#printing">printing</a>). Its screen prints report 1 (network inventory), 2 (the newest job's log), 3 (device list) or 4 (a spooled file: <code>*LAST</code> or a name), shows the first lines and the pages needed. F6 Print.</td></tr>
+  </tbody>
+</table></div>
+<p>The Keypunch, Card Reader and Line Printer work while a Midrange System on their network is running, next to it or cabled to it, and use no lanes. Until then their screens say <em>No Midrange System online on this network.</em> The encoding chain: Keypunch (a recipe onto a Punch Card), then Card Reader (cards onto a diskette), then a diskette into a Midrange System, or into a Diskette Magazine for the Integrated system. Right-clicking the system with a diskette or magazine puts it in a free slot.</p>
+<p>A Midrange System does an <strong>IPL</strong> (initial program load) each time it comes online, after a world load, and on F7 from its control panel: 100 ticks (config <code>midrangeIplTicks</code>). During it, its crafting pauses and its batch jobs end with <code>ELC0310</code>. <strong>Hold</strong> (F10) stops its job queue and takes it off the Craft Plan choices until <strong>Release</strong> (F11). Its status display:</p>
+<div class="table-wrap"><table>
+  <thead><tr><th>Code</th><th>Means</th></tr></thead>
+  <tbody>
+    <tr><td><code>C1</code> &hellip; <code>CC</code></td><td>IPL in progress</td></tr>
+    <tr><td><code>A6</code>, <code>A6b<em>n</em></code></td><td>Running; crafting with <em>n</em> threads in use</td></tr>
+    <tr><td><code>E1</code></td><td>No library diskette</td></tr>
+    <tr><td><code>E2</code></td><td>A job waits for items (the block shows attention)</td></tr>
+    <tr><td><code>E9</code></td><td>Offline: no lane on a running network</td></tr>
+  </tbody>
+</table></div>
 
 <h3 id="sysvals">System values</h3>
 <p>Work with them on <code>WRKSYSVAL</code>, or with <code>RTVSYSVAL</code> / <code>CHGSYSVAL</code>. Changing one takes <code>*SECOFR</code> (the Firewall's owner or a server operator), or a network with no Firewall (<code>ELC0401</code> otherwise); a value outside its allowed ones is <code>ELC0103</code>. Values are folded to upper case and saved with the system (only those changed from their defaults).</p>
@@ -2049,20 +2081,15 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
 <p>The Terminal OS and ELCL are complete as specified in <code>docs/elcl/</code>: every screen, all 99 commands, every message, the VM, interactive and batch jobs, job hosts, schedule entries and triggers, persistence, stable device names, sign-on and security, folder sync, and <code>SAVLIB</code> / <code>RSTLIB</code>. <code>docs/elcl/IMPLEMENTATION_STATUS.md</code> has the details, part by part. What remains is hardware the mod doesn't have yet, and a few known limits.</p>
 
 <h3 id="hardware">Hardware still to come</h3>
-<p>Some devices ELCL talks to belong to the Midrange line or the Mainframe, which aren't in the mod. The OS is built against an interface for each (<code>docs/elcl/INTERFACES.md</code>), with fakes in the game tests, so those devices only have to implement it and register. Until they exist, the commands that need them answer <code>ELC1301 Device &amp;1 not found.</code></p>
+<p>Some devices ELCL talks to aren't in the mod yet: the Mainframe and the display blocks. The OS is built against an interface for each (<code>docs/elcl/INTERFACES.md</code>), with fakes in the game tests, so those devices only have to implement it and register. Until they exist, the commands that need them answer <code>ELC1301 Device &amp;1 not found.</code></p>
 <div class="table-wrap"><table>
   <thead><tr><th>Device</th><th>Interface</th><th>What waits on it</th></tr></thead>
   <tbody>
-    <tr><td>Midrange System (1 batch job, 2 with an Expansion Cabinet), Integrated Midrange System (4)</td><td><code>JobHost</code></td><td>More job hosts. Compute Servers already are job hosts, so batch jobs, schedule entries and triggers work today.</td></tr>
     <tr><td>Mainframe (32 jobs per CPC Drawer)</td><td><code>JobHost</code> that resumes</td><td>Batch jobs that carry on through restarts and power loss. Compute Server jobs end with <code>ELC0310</code>.</td></tr>
-    <tr><td>Line Printer</td><td><code>PrinterDevice</code></td><td><code>PRTRPT</code>, Work with Output 6=Print (<a href="#printing">printing</a>).</td></tr>
-    <tr><td>8" Diskette in a Midrange System or Card Reader</td><td><code>DisketteDevice</code>, <code>Diskette</code></td><td><code>SAVLIB</code>, <code>RSTLIB</code> (<a href="#savlib">saving to diskette</a>).</td></tr>
-    <tr><td>Midrange System as a recipe library</td><td><code>RecipeLibrarySource</code> (and <code>CraftingProvider.accepts</code>)</td><td>Recipes from a diskette counting as the network's own, for <code>STRCRAFT</code>, the terminals' Craft and the Schedulers.</td></tr>
     <tr><td>Status Display, NOC Video Wall, Rack Console screen</td><td><code>DisplayDevice</code></td><td><code>SNDDSPTXT</code> (so the <code>NOCWALL</code> sample ends at once).</td></tr>
     <tr><td>Label Maker</td><td>&ndash;</td><td>Naming devices by hand. Rename with <code>RNMDEV</code> or Work with Devices 2=Change instead.</td></tr>
   </tbody>
 </table></div>
-<p>The Keypunch has nothing to do in ELCL.</p>
 
 <h3 id="known-limits">Known limits</h3>
 <ul>
@@ -2219,6 +2246,7 @@ ElclServices.setUsers(UserService)          <span class="c">// StoredUserService
     <tr><td><code>security_authority</code>, <code>security_signon</code></td><td><code>SecurityGameTests</code></td><td>Authority at terminals and in batch jobs, <code>*SECOFR</code>, <code>*JOBCTL</code>, <code>SECLVL</code>; sign-on on the server and the refusal before it.</td></tr>
     <tr><td><code>diskette_save_restore</code>, <code>printer_print</code>, <code>recipe_library</code></td><td><code>InterfaceGameTests</code></td><td><code>SAVLIB</code> / <code>RSTLIB</code>, printing and recipe libraries against fakes of the Midrange line's devices.</td></tr>
     <tr><td><code>folder_sync</code></td><td><code>FolderSyncGameTests</code></td><td>Out and in, conflicts and <code>.bak</code>, <code>.deleted/</code>.</td></tr>
+    <tr><td><code>midrange_footprints</code>, <code>midrange_expansion_cabinet</code>, <code>midrange_peripherals</code>, <code>midrange_printer_pages</code>, <code>midrange_system_crafts</code>, <code>midrange_tiers</code></td><td><code>MidrangeGameTests</code></td><td>Footprints placed and broken whole; the Expansion Cabinet attaching; the Keypunch, Card Reader and Line Printer working for a Midrange System (names, punching, reading twice, printing a book, refusing with no system); the Line Printer's pages; a Midrange System's IPL, its diskette's recipe crafted as a job, Craft Plan choice, batch host and drive, Hold and IPL; the tiers' capacities and the magazine.</td></tr>
   </tbody>
 </table></div>
 <p>Not automated: rendering in each phosphor at GUI scales 1&ndash;4 and in small windows, and per-screen game tests (the screens are client-side; <code>LayoutTest</code> composes each instead).</p>

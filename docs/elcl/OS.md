@@ -68,7 +68,8 @@ dedicated servers: config `elcl.allowFolderSync` = AUTO / TRUE / FALSE.)*
 
 | Host | Concurrent batch jobs | On unload / restart / power loss |
 |------|------|------|
-| Midrange System | 1 | Job ended, `ELC0310` |
+| Midrange System | 1 (+1 with an attached Expansion Cabinet) | Job ended, `ELC0310` |
+| Integrated Midrange System | 4 | Job ended, `ELC0310` |
 | Compute Server (each) | 4 | Job ended, `ELC0310` |
 | Mainframe | 32 per CPC Drawer | Job state is journaled and **resumes** |
 

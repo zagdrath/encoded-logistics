@@ -5,6 +5,19 @@ Cabinet, Integrated Midrange System, Keypunch, Card Reader, Line Printer and 8" 
 to implement them and register. Every one is tested against a fake implementation in the game tests; copy those when
 you test the real devices.
 
+**Implemented by the Midrange line.** The Midrange line is in the mod now. Each device registers its sources in
+`midrange/Midranges.register()`, called from `ElclSetup.init()`:
+
+| Device | Class | Implements |
+|---|---|---|
+| Midrange System, Integrated Midrange System | `midrange/MidrangeSystemBlockEntity` | `JobHost` (`batchHost()`), `DisketteDevice`, `RecipeLibrarySource`, `CraftingProvider`, and a crafting `JobHost` (a Craft Plan choice) |
+| Card Reader | `midrange/CardReaderBlockEntity` | `DisketteDevice` |
+| Line Printer | `midrange/LinePrinterBlockEntity` | `PrinterDevice` |
+| 8" Diskette | `midrange/DisketteStack` (over the item's `DisketteData`) | `Diskette` |
+
+They're tested by `gametest/MidrangeGameTests` (`midrange_peripherals`, `midrange_system_crafts`, `midrange_tiers`).
+Only the Mainframe and the display blocks still have nothing but the fakes.
+
 Paths are under `src/main/java/net/zagdrath/encodedlogistics/`.
 
 ## How a device joins in
@@ -136,6 +149,10 @@ task. So the Midrange System can either:
 | Device | Implements |
 |---|---|
 | Midrange System | `RecipeLibrarySource` (recipes from the diskette in its drive); and, if it runs them, `CraftingProvider` with `accepts` |
+
+The Midrange System is a `CraftingProvider` itself. It accepts its diskettes' crafting recipes and crafts each step
+in 40 ticks (25 on the Integrated system), with 1, 2 or 4 steps at once and `midrangeCraftEnergy` FE a craft.
+Scheduler Cores offer it those steps too.
 
 Tested by `gametest/InterfaceGameTests.recipeLibrary`: its recipe becomes craftable and plans complete.
 

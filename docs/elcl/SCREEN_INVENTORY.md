@@ -51,6 +51,10 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | - | WRKINV, WRKDEV, DSPNETSTS, Withdraw, Craft, More keys | EXISTS | `InventoryPanel`, `DevicesPanel`, `StatusPanel`, `WithdrawPanel`, `CraftPanel`, `MoreKeysPanel` (phosphor choice extended) |
 | - | Work with Devices names | EXTENDED | `DevicesPanel` 2=Change (RNMDEV), the Device column starts with the device's stored name; `elcl/exec/ElclDevices` (names stored on the device, `SystemData.deviceNames`) |
 | - | Work with Devices topology | EXTENDED | `ControllerStructures.deviceRows`: each rack, its devices under it (top unit first, tree lines), then the rest of the network beside the racks; each device once |
+| - | Midrange control panels | NEW | `MidrangePanelScreen` (`menu/MidrangePanelMenu`): MIDRANGE CONTROL PANEL / INTEGRATED SYSTEM CONTROL PANEL; status code, threads, max job, batch jobs, diskettes or magazine, current jobs, job queue; F7 IPL, F10 Hold, F11 Release |
+| - | Keypunch, Card Reader, Line Printer | NEW | `KeypunchScreen`, `CardReaderScreen`, `LinePrinterScreen` (`menu/KeypunchMenu`, `CardReaderMenu`, `LinePrinterMenu`); F6 punches, reads or prints |
+| - | The Midrange machines' frame | NEW | `CrtMachineScreen`: the desk's CRT (`CrtDisplay`, shared with `CrtScreen`) and the same frame as every screen (the id is the device's name). Slots are phosphor frames on the glass, with the player's inventory at the lower right (columns 51-78, rows 12-19); reversed action labels on row 20 |
+| - | Integrated Midrange System console | EXTENDED | The Terminal Desk's session (`TerminalDeskMenu` opened at the system's master), while the system is running |
 
 ### Main Menu options
 
@@ -98,7 +102,8 @@ Every package in the ELCL handoff is in place (status per item: IMPLEMENTATION_S
   `JobVmHost`, `Waits`, `InteractiveCalls`, `Schedules`, `Triggers`, `RealTime`
 - `elcl.sync` - `FolderSync`, `Resequence`
 - `elcl.device` - `PrinterDevice` / `Printers`, `DisketteDevice` / `Diskette` / `Diskettes` / `LibraryImage`,
-  `DisplayDevice` / `Displays`, `DeviceSources`; `crafting.RecipeLibrarySource` / `RecipeLibraries` (INTERFACES.md)
+  `DisplayDevice` / `Displays`, `DeviceSources`; `crafting.RecipeLibrarySource` / `RecipeLibraries` (INTERFACES.md);
+  implemented by the Midrange line in `midrange/` (registered by `Midranges.register`)
 - `elcl.screen` - the screens' services (`ElclServices`, `LibraryService`, `JobService`, `MessageService`,
   `SpoolService`, `SysvalService`, `UserService`), `ScreenQueries`, `ElclSystem`
 
@@ -118,7 +123,9 @@ statements (PGM, DCL, IF, DO, MONMSG and the rest) are program-only: on a comman
   `device_names_moved`, `device_locate_box`; `elcl_mod_commands`, `elcl_interactive_call`, `elcl_examples`;
   `batch_compute_server`, `batch_queue_and_hosts`, `batch_restart`, `batch_budget`, `batch_logs`; `schedule_entries`,
   `trigger_items`, `trigger_events`, `trigger_power`, `trigger_storage`; `security_authority`, `security_signon`;
-  `diskette_save_restore`, `printer_print`, `recipe_library`; `folder_sync`.
+  `diskette_save_restore`, `printer_print`, `recipe_library`; `folder_sync`; `midrange_footprints`,
+  `midrange_expansion_cabinet`, `midrange_peripherals`, `midrange_printer_pages`, `midrange_system_crafts`,
+  `midrange_tiers`.
 - Not automated: rendering in each phosphor at GUI scales 1-4 and small windows, the blinking locate box and the
   facade preview (client rendering), and the screens themselves in a running client (`LayoutTest` composes each one).
 

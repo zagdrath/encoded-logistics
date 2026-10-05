@@ -5,8 +5,8 @@ COMMANDS.md, every message in MESSAGES.md and every screen in OS.md §8. The gap
 partial or missing. The task's Parts 1-8 closed those gaps; the table by part, at the end, says how.
 
 **Done**: works as specified, or as the notes in COMMANDS.md / OS.md say where the mod differs. **Blocked**: works
-against an interface (docs/elcl/INTERFACES.md), tested with a fake. The real device comes with the Midrange line or
-the Mainframe, which aren't in the mod yet.
+against an interface (docs/elcl/INTERFACES.md), tested with a fake. The real device comes with the Mainframe or the
+display blocks, which aren't in the mod yet. The Midrange line is in the mod (Part 9), so what waited on it is Done.
 
 Paths are under `src/main/java/net/zagdrath/encodedlogistics/` unless they start with `src/test` or `docs`; `client/`
 means `client/crt/`.
@@ -22,8 +22,8 @@ means `client/crt/`.
 | 5 | Mod commands; the Control Interface | Done | `elcl/exec/ModCommands`, `RedstoneCommands`, `ElclDevices`, `ElclItems`; `block/ControlInterfaceBlock` |
 | 6 | Batch jobs: SBMJOB, job hosts, tick budget, WRKACTJOB, job logs | Done | `elcl/job/StoredJobService`, `JobManager`, `JobHost`, `JobHosts`, `BatchContext` |
 | 7 | Job schedule entries and event triggers | Done | `elcl/job/Schedules`, `Triggers`, `RealTime`; `elcl/exec/ElclEvents` |
-| 8 | Message queues, spooled output, Line Printer printing | Done; printer Blocked | `elcl/store/StoredMessageService`, `StoredSpoolService`; printing through `elcl/device/PrinterDevice` |
-| 9 | Folder sync; SAVLIB/RSTLIB to 8" Diskette | Done; diskette Blocked | `elcl/sync/FolderSync`, `Resequence`; SAVLIB/RSTLIB through `elcl/device/DisketteDevice` |
+| 8 | Message queues, spooled output, Line Printer printing | Done | `elcl/store/StoredMessageService`, `StoredSpoolService`; printing through `elcl/device/PrinterDevice` on the Line Printer (`midrange/LinePrinterBlockEntity`) |
+| 9 | Folder sync; SAVLIB/RSTLIB to 8" Diskette | Done | `elcl/sync/FolderSync`, `Resequence`; SAVLIB/RSTLIB through `elcl/device/DisketteDevice` on the Midrange Systems and the Card Reader |
 | 10 | Sign-on, user profiles, Firewall authority everywhere | Done | `elcl/store/StoredUserService`, `elcl/exec/Authority`, `client/SignOnPanel`, `menu/TerminalDeskMenu` |
 
 ## 2. Commands (COMMANDS.md)
@@ -44,13 +44,13 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | §7 Redstone | RTVRSIN, CHGRSOUT | Done | `RedstoneCommands` |
 | §8 Messages, displays, output | SNDMSG, DSPMSG, PRTTXT | Done | SNDMSG's TOTRM is accepted but not used |
 | §8 | SNDDSPTXT | Blocked | `elcl/device/DisplayDevice`: the mod has no Status Display, NOC Video Wall or Rack Console screen yet |
-| §8 | PRTRPT | Blocked | `elcl/device/PrinterDevice` (the Line Printer) |
+| §8 | PRTRPT | Done | `ModCommands` with `elcl/exec/Reports` (shared with the Line Printer's own screen); `midrange/LinePrinterBlockEntity` |
 | §9 OS | WRKLIB, CRTLIB, CHGLIB, DLTLIB, WRKMBR, EDTMBR, CRTMBR, CPYMBR, RNMMBR, DLTMBR, CRTELPGM, DLTPGM | Done | `OsCommands`, `StoredLibraryService` |
 | §9 | SBMJOB, WRKACTJOB, WRKJOB, DSPJOBLOG, HLDJOB, RLSJOB, ENDJOB, CHGJOB | Done | `StoredJobService` |
 | §9 | ADDJOBSCDE, RMVJOBSCDE, WRKJOBSCDE, HLDJOBSCDE, RLSJOBSCDE | Done | `StoredJobService`, `Schedules` |
 | §9 | ADDTRGEVT, RMVTRGEVT, WRKTRGEVT, HLDTRGEVT, RLSTRGEVT; all ten events | Done | `StoredJobService`, `Triggers` |
 | §9 | WRKSYSVAL, RTVSYSVAL, CHGSYSVAL | Done | `StoredSysvalService` (SYSNAME, DATFMT, SECLVL, QMAXJOB, LOGRTN, PHOSPHOR all take effect; DATFMT in the dates the system writes, not the screens' header clock) |
-| §9 | SAVLIB, RSTLIB | Blocked | `elcl/device/DisketteDevice` (the Midrange System's drive, the Card Reader) |
+| §9 | SAVLIB, RSTLIB | Done | `midrange/MidrangeSystemBlockEntity` (slot A, B with an Expansion Cabinet; the Integrated system's magazine), `CardReaderBlockEntity`, `DisketteStack` |
 | §9 | WRKDEV, WRKINV, DSPNETSTS, WRKCRFJOB, SIGNOFF, GO, CLEAR | Done | Client screens (`client/ScreenCommands`) |
 | §10 | The old CLI's aliases | Done | `terminal/TerminalCommands` |
 
@@ -64,15 +64,15 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | ELC0101-0106 | Done | Command line and VM (0105: interactive-only commands in a batch job) |
 | ELC0107-0110 (added) | Done | ELC0107 only for a screen command inside a program; 0108-0110 are an interactive CALL's |
 | ELC0201-0208, 0210-0219, 0222 | Done | Library service, OS commands; ELC0207 when members don't fit the network's storage |
-| ELC0220, 0221 | Done (Blocked: diskette) | SAVLIB / RSTLIB |
+| ELC0220, 0221 | Done | SAVLIB / RSTLIB |
 | ELC0301-0315 | Done | Job service: no host (0301), not found (0302), ended by operator (0303), submitted (0304), host lost (0310), schedule entries and triggers |
 | ELC0401 | Done | Every Auth check (command line, VM, screens), library authority, CHGSYSVAL, others' jobs / entries / triggers |
 | ELC0402 | Done | Sign-on (`StoredUserService.signOn`, the desk refusing an unsigned session) |
 | ELC1201-1206 | Done | Inventory commands (ELC1203 when a recall starts) |
 | ELC1301-1305 | Done | Device commands |
-| ELC1306, 1307 (added) | Done (Blocked: printer) | Printing |
+| ELC1306, 1307 (added) | Done | Printing |
 | ELC1308, 1309 (added) | Done | RNMDEV |
-| ELC1310, 1311 (added) | Done (Blocked: diskette) | SAVLIB / RSTLIB |
+| ELC1310, 1311 (added) | Done | SAVLIB / RSTLIB |
 | ELC1401-1404 | Done | Crafting commands |
 | USRnnnn | Done | SNDPGMMSG |
 
@@ -103,16 +103,12 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 
 | Hardware | What waits on it | Interface |
 |---|---|---|
-| Midrange System (+ Expansion Cabinet), Integrated Midrange System | Batch jobs on them; the diskette drive; a recipe library for Schedulers | `JobHost`, `DisketteDevice`, `RecipeLibrarySource` |
 | Mainframe | Batch jobs that resume after a restart | `JobHost` (`resumes()` true) |
-| Card Reader | SAVLIB / RSTLIB | `DisketteDevice` |
-| 8" Diskette | Library images | `Diskette`, `LibraryImage` |
-| Line Printer | PRTRPT, Work with Output 6=Print | `PrinterDevice` |
 | Status Display, NOC Video Wall, Rack Console screen (not the Midrange line) | SNDDSPTXT | `DisplayDevice` |
 | Label Maker (not in the mod) | Renaming devices with it | none needed: `ElclDevices.rename` |
-| Keypunch | Nothing in ELCL | - |
 
-Compute Servers are batch job hosts already (4 jobs each), so batch jobs, schedule entries and triggers work today.
+Compute Servers (4 jobs each) and the Midrange Systems (1, 2 with an Expansion Cabinet, 4 on the Integrated system)
+are batch job hosts. The Midrange line's Card Reader, Line Printer and 8" Diskettes are in the mod too (Part 9).
 
 ## 6. Known limits and decisions
 
@@ -146,4 +142,5 @@ Compute Servers are batch job hosts already (4 jobs each), so batch jobs, schedu
 | 5. Scheduling and triggers | Done | `elcl/job/Schedules` (each tick: due entries on loaded networks submit their command as a batch job as their creator; *ONCE removed after, *DAILY at TIME() on the game clock, *INTERVAL every INTERVAL() real seconds; held entries wait), `elcl/job/Triggers` (every event in COMMANDS.md 9: item counts, storage use and UPS power polled every half second with edge state saved; device status changes, ended crafts (`JobEvents.ended`) and redstone (`ElclEvents`) as events; 1-second debounce; &EVENT and &DATA passed to the program; held triggers don't fire). Both persist in `JobData` with the creator's player id and run as them; a failure to submit (ELC0301) goes to the creator's message queue. WRKJOBSCDE (2=Change, 3=Hold/Release, 4=Remove, 10=Submit now) and WRKTRGEVT (2, 3, 4) run working commands. `ControllerStructures.loaded` says whether a network is loaded. Tests: game tests `schedule_entries`, `trigger_items`, `trigger_events`, `trigger_power`, `trigger_storage` (real seconds are ticks at 50 ms there: `RealTime`) |
 | 6. Security and sign-on | Done | `elcl/screen/UserService` + `elcl/store/StoredUserService`: profiles saved with the system (library list ELGPL ELSYS, current library first on it, made at first use or sign-on), *SECOFR = the Firewall's owner and server operators, `signOn` (ELC0402 for another player's name, ELC0201 for a library that isn't there). Sign-on through the server (`signon` screen query; `SignOnPanel` waits for its answer); `TerminalDeskMenu` refuses anything but info and the sign-on until then, at SECLVL 30 with a Firewall. `elcl/exec/Authority` is the one check for terminals and batch jobs: the Firewall's permissions (by player, or by the submitter's id), full authority with no Firewall or at SECLVL 10. ELC0401 on screens too, and when managing another user's jobs, schedule entries or triggers (`mayManage`). CHGSYSVAL: *SECOFR or no Firewall. *LIBL and *CURLIB use the profile. DATFMT changes the date shown. Tests: game tests `security_authority`, `security_signon` |
 | 7. Interfaces for the Midrange line | Done | `docs/elcl/INTERFACES.md` says what each Midrange device and the Mainframe implement. `elcl/job/JobHost` (Part 4); `elcl/device/DisketteDevice`, `Diskette`, `LibraryImage` (NBT), `Diskettes` - SAVLIB / RSTLIB (ELC0220 / ELC0221; ELC1301, ELC1302, ELC1310, ELC1311 added, ELC0201, ELC0205), with the size limit (disketteBytes, 64 KB); `elcl/device/PrinterDevice`, `Printers` - PRTRPT and WRKSPLF 6=Print (ELC1301, ELC1306, ELC1307); `crafting/RecipeLibrarySource`, `RecipeLibraries` - a library's recipes count as the network's (`CraftRequests.schematics`), steps run on a provider that `accepts` them (`CraftingProvider.accepts`, used by `JobRunner` and the Fabricator, Gateway and Fabrication Server); `elcl/device/DisplayDevice` too. Tests: game tests `diskette_save_restore`, `printer_print`, `recipe_library` (fakes) |
+| 9. The Midrange line | Done | `midrange/`: the Midrange System (1 thread, max job 64, 1 batch job; 2 / 128 / 2 with an Expansion Cabinet) and Integrated Midrange System (4 / 512 / 4, a Diskette Magazine) in `MidrangeSystemBlockEntity`. Each is a batch `JobHost`, a `DisketteDevice`, a `RecipeLibrarySource`, a `CraftingProvider` crafting its diskettes' recipes (40 / 25 ticks a step) and a crafting job host (a Craft Plan choice, `ControllerStructures.schedulersOf`, `crafting/JobHost.at`). Its states: an IPL on coming online (config `midrangeIplTicks`; its batch jobs end, ELC0310), run, busy, attention; Hold / Release its queue. The Card Reader (`CardReaderBlockEntity`, a `DisketteDevice`), Line Printer (`LinePrinterBlockEntity`, a `PrinterDevice`: Written Books, one paper a page) and Keypunch (`KeypunchBlockEntity`) work for a Midrange System on their network (`Midranges.host`), use no lanes and are listed on Work with Devices (`network/ListedDevice`). Names MIDRANGE01, KEYPUNCH01, CARDRDR01, PRT01 (`MidrangeDevice`, carried by the item). Green screens with the desk's CRT (`client/crt/CrtDisplay`, `CrtMachineScreen`): the three peripherals' and the control panels (`MidrangePanelScreen`). The Integrated system's console opens the Terminal Desk's session (`TerminalDeskMenu` at its master). Tests: game tests `midrange_footprints`, `midrange_expansion_cabinet`, `midrange_peripherals`, `midrange_printer_pages`, `midrange_system_crafts`, `midrange_tiers` |
 | 8. Folder sync | Done | `elcl/sync/FolderSync`: `<world>/encodedlogistics/libraries/<SYSNAME>/<LIB>/<MEMBER>.elclp`. Out: the library service's listener writes a member's file on every save, create, copy, rename and restore. In: polled every 2 s on loaded networks; changed files become members (`elcl/sync/Resequence`: unchanged lines keep their sequence numbers and dates), new folders libraries (owner QSYS, *CHANGE). Conflicts: last write wins, the loser kept as `.bak` (`SystemData.syncHashes` remembers what was last synced). Deleting a file keeps the member; deleting a member moves its file to `.deleted/`. ELSYS never synced. `allowFolderSync` AUTO (on in single-player, off on dedicated servers), TRUE, FALSE. Tests: `ResequenceTest`, game test `folder_sync` |
