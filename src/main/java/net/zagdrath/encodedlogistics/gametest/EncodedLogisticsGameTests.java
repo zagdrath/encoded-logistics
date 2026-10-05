@@ -203,6 +203,8 @@ public final class EncodedLogisticsGameTests {
         ARCFORGE_TESTS.put("arcforge_attach_adopt_break", ArcforgeGameTests::attachAdoptAndBreak);
         ARCFORGE_TESTS.put("arcforge_take_off", ArcforgeGameTests::takeOff);
         ARCFORGE_TESTS.put("arcforge_survives_reload", ArcforgeGameTests::survivesReload);
+        ARCFORGE_TESTS.put("arcforge_gateway_job", ArcforgeGameTests::gatewayJob);
+        ARCFORGE_TESTS.put("arcforge_power_from_network", ArcforgeGameTests::powerFromNetwork);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
@@ -223,8 +225,12 @@ public final class EncodedLogisticsGameTests {
         if (MachineBridges.enabled()) {
             TestData<Holder<TestEnvironmentDefinition<?>>> longer = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
                     1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
+            // The reload test replaces the level's bridges wholesale: in a batch of its own, so the others' aren't swapped under them.
+            Holder<TestEnvironmentDefinition<?>> alone = event.registerEnvironment(EncodedLogistics.id("arcforge_reload"));
+            TestData<Holder<TestEnvironmentDefinition<?>>> reload = new TestData<>(alone, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
+                    1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
             ARCFORGE_TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
-                    ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), longer)));
+                    ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), name.equals("arcforge_survives_reload") ? reload : longer)));
         }
     }
 

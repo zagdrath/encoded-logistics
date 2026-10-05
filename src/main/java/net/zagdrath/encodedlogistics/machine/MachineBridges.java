@@ -20,6 +20,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -38,14 +39,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
@@ -61,7 +68,9 @@ import net.zagdrath.encodedlogistics.wireless.Wireless;
 // loaded one is checked: the block it's on gone (the machine broken) drops it; a link its controller no longer lists is
 // cut (Wireless.check); what the machine is and the LED are brought up to date. A linked one is a network node of its
 // own (node: one lane, its drain, a remote link to its controller's rack, no cables), so the network finds it like a
-// Wireless Port. Sneak-use with an empty hand on its face takes it off (build permission while it's linked).
+// Wireless Port. Sneak-use with an empty hand on its face takes it off (build permission while it's linked). Each tick
+// a bridge with power from network on tops its machine's FE up from the network (power), and a Gateway named in its
+// settings feeds the machine and takes its outputs over the air (gatewayTargets).
 //
 // What a machine is comes through the machine mod's integration (access): with none (Arcforge missing or incompatible)
 // bridges are kept as they are but do nothing - no node, no checks - so taking Arcforge out and back loses nothing.
@@ -157,7 +166,7 @@ public final class MachineBridges extends SavedData {
 
     // A new, unlinked bridge on the face of the machine block at pos.
     public MachineBridge attach(ServerLevel level, BlockPos pos, Direction face, MachineInfo info) {
-        MachineBridge bridge = new MachineBridge(dimension, pos, face, blockId(level, pos), info.position(), info.type(), info.name(), null, "", false);
+        MachineBridge bridge = new MachineBridge(dimension, pos, face, blockId(level, pos), info.position(), info.type(), info.name(), null, "", false, null);
         bridge.owner = this;
         bridge.setLed(led(level.getServer(), bridge, info));
         bridges.put(bridge.pos(), bridge);
@@ -233,6 +242,13 @@ public final class MachineBridges extends SavedData {
         if (access == null) {
             return;
         }
+        for (MachineBridge bridge : bridges.values()) {
+            if (bridge.powerFromNetwork() && bridge.isOnline() && level.isLoaded(bridge.pos())) {
+                power(level, bridge);
+            } else {
+                bridge.setPowered(0);
+            }
+        }
         boolean check = ++timer >= CHECK_INTERVAL;
         if (check) {
             timer = 0;
@@ -259,6 +275,73 @@ public final class MachineBridges extends SavedData {
         if (shownChanged) {
             sync(level);
         }
+    }
+
+    // --- Power from network ---
+
+    // The machine's FE handler, if it takes FE: at its own position, else through the face the bridge is on.
+    public static @Nullable EnergyHandler energy(ServerLevel level, MachineBridge bridge) {
+        EnergyHandler energy = level.getCapability(Capabilities.Energy.BLOCK, bridge.machine(), null);
+        return energy != null ? energy : level.getCapability(Capabilities.Energy.BLOCK, bridge.pos(), bridge.face());
+    }
+
+    // Tops the machine up from its network: as much as it has room for, up to machinePowerRate FE/t, costing the network
+    // 1 / machinePowerEfficiency of what arrives, and never taking the network below machinePowerReserve. One real insert
+    // (a machine may count a simulated one against what it takes per tick); what it doesn't take goes back.
+    private static void power(ServerLevel level, MachineBridge bridge) {
+        EnergyHandler energy = energy(level, bridge);
+        long room = energy == null ? 0 : Math.min(Config.MACHINE_POWER_RATE.getAsInt(), energy.getCapacityAsLong() - energy.getAmountAsLong());
+        NetworkRef network = ControllerStructures.networkOf(level, bridge.pos());
+        if (room <= 0 || network == null) {
+            bridge.setPowered(0);
+            return;
+        }
+        double efficiency = Config.MACHINE_POWER_EFFICIENCY.getAsDouble();
+        int drawn = ControllerStructures.drawEnergyAbove(level.getServer(), network, (int) Math.ceil(room / efficiency),
+                Config.MACHINE_POWER_RESERVE.getAsDouble());
+        int given = 0;
+        if (drawn > 0) {
+            try (Transaction transaction = Transaction.openRoot()) {
+                given = energy.insert((int) Math.min(room, Math.floor(drawn * efficiency)), transaction);
+                transaction.commit();
+            }
+            int unused = drawn - (int) Math.ceil(given / efficiency);
+            if (unused > 0) {
+                try (Transaction transaction = Transaction.openRoot()) {
+                    ControllerStructures.fill(level.getServer(), network, unused, transaction);
+                    transaction.commit();
+                }
+            }
+        }
+        bridge.setPowered(given);
+    }
+
+    // --- Gateways ---
+
+    // The item handlers of the online bridged machines whose Gateway setting is the Gateway at pos and that are on its
+    // network: where it pushes inputs and pulls outputs over the air, as with a machine beside it.
+    public static List<ResourceHandler<ItemResource>> gatewayTargets(ServerLevel level, BlockPos gateway) {
+        if (access == null) {
+            return List.of();
+        }
+        NetworkRef network = ControllerStructures.networkOf(level, gateway);
+        if (network == null) {
+            return List.of();
+        }
+        GlobalPos at = GlobalPos.of(level.dimension(), gateway);
+        List<ResourceHandler<ItemResource>> targets = new ArrayList<>();
+        for (ServerLevel there : level.getServer().getAllLevels()) {
+            for (MachineBridge bridge : get(there).bridges.values()) {
+                if (at.equals(bridge.gateway()) && bridge.isOnline() && there.isLoaded(bridge.pos())
+                        && network.equals(ControllerStructures.networkOf(there, bridge.pos()))) {
+                    ResourceHandler<ItemResource> items = access.items(there, bridge.pos());
+                    if (items != null) {
+                        targets.add(items);
+                    }
+                }
+            }
+        }
+        return targets;
     }
 
     // The LED: amber for a fault (no Access Points or no slot for it, or the machine missing, unformed or faulted); light

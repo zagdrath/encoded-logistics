@@ -471,6 +471,18 @@ public class Config {
             .comment("FE per tick a linked Small Wireless Bridge (on an Arcforge machine) drains from its network over the air.")
             .defineInRange("smallWirelessBridgeDrain", 1.0, 0.0, 1_000.0);
 
+    public static final ModConfigSpec.DoubleValue MACHINE_POWER_EFFICIENCY = BUILDER
+            .comment("With power from network on, the share of the FE taken from the network that reaches the machine.")
+            .defineInRange("machinePowerEfficiency", 0.9, 0.01, 1.0);
+
+    public static final ModConfigSpec.IntValue MACHINE_POWER_RATE = BUILDER
+            .comment("With power from network on, the most FE per tick a machine is given.")
+            .defineInRange("machinePowerRate", 1_000, 0, 1_000_000);
+
+    public static final ModConfigSpec.DoubleValue MACHINE_POWER_RESERVE = BUILDER
+            .comment("Power from network never takes a network's stored energy below this share of its capacity, so the network keeps running.")
+            .defineInRange("machinePowerReserve", 0.25, 0.0, 1.0);
+
     public static final ModConfigSpec.DoubleValue MIDRANGE_DRAIN = BUILDER
             .comment("FE per tick a Midrange System drains while its network runs.")
             .defineInRange("midrangeDrain", 4.0, 0.0, 1_000.0);

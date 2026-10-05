@@ -44,7 +44,9 @@ import net.zagdrath.encodedlogistics.crafting.CraftTask;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.elcl.exec.NamedDevice;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
+import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.menu.GatewayMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
@@ -62,8 +64,11 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // machines pushing them in, or the Gateway pulling them out of its neighbours (every PULL_INTERVAL ticks, through any
 // face). Outputs go back to the job as they arrive; the run is
 // done once they all have. Every STOCK_INTERVAL ticks each buffer slot is topped up from (or trimmed back into) the
-// network to its stock amount.
-public class GatewayBlockEntity extends BlockEntity implements MenuProvider, NetworkDevice, CraftingProvider {
+// network to its stock amount. Machines with a Small Wireless Bridge whose Gateway setting names this one are fed and
+// emptied the same way, over the air, after the neighbours (MachineBridges.gatewayTargets): only through their machines'
+// own slot rules, so inputs and fuel go in and only outputs come out.
+public class GatewayBlockEntity extends BlockEntity implements MenuProvider, NetworkDevice, CraftingProvider, NamedDevice {
+    public static final String TYPE = "GATEWAY";
     public static final int SCHEMATIC_SLOTS = 9, STOCK_SLOTS = 9, BUFFER = 9, INTAKE = 9;
     private static final int MAX_RUNS = 64, PULL_INTERVAL = 10, STOCK_INTERVAL = 20, ACTIVE_TICKS = 20;
 
@@ -104,6 +109,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
     private final Handler handler = new Handler();
     private final List<Run> runs = new ArrayList<>();
     private boolean online;
+    private String deviceName = "";
     private long lastMoved = Long.MIN_VALUE / 2;
     private int timer;
 
@@ -114,6 +120,31 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
     @Override
     public void setNetworkOnline(boolean online) {
         this.online = online;
+    }
+
+    // --- Name (GATEWAY01: what a bridged machine's Gateway setting names) ---
+
+    @Override
+    public String deviceType() {
+        return TYPE;
+    }
+
+    @Override
+    public String deviceName() {
+        return deviceName;
+    }
+
+    @Override
+    public void setDeviceName(String name) {
+        if (!deviceName.equals(name)) {
+            deviceName = name;
+            setChanged();
+        }
+    }
+
+    @Override
+    public boolean isOnline() {
+        return online;
     }
 
     public NonNullList<ItemStack> schematicSlots() {
@@ -197,14 +228,18 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 continue;
             }
             boolean moved = false;
+            List<ResourceHandler<ItemResource>> targets = new ArrayList<>();
+            for (Direction side : Direction.values()) {
+                ResourceHandler<ItemResource> target = neighbour(level, side);
+                if (target != null) {
+                    targets.add(target);
+                }
+            }
+            targets.addAll(MachineBridges.gatewayTargets(level, worldPosition));
             for (ItemStack stack : run.toPush) {
-                for (Direction side : Direction.values()) {
+                for (ResourceHandler<ItemResource> target : targets) {
                     if (stack.isEmpty()) {
                         break;
-                    }
-                    ResourceHandler<ItemResource> target = neighbour(level, side);
-                    if (target == null) {
-                        continue;
                     }
                     try (Transaction transaction = Transaction.openRoot()) {
                         int inserted = target.insert(ItemResource.of(stack), stack.getCount(), transaction);
@@ -246,28 +281,37 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
     // other faces (a furnace gives up its result only from below).
     private boolean pull(ServerLevel level) {
         boolean moved = false;
-        for (Map.Entry<ItemKey, Long> want : expectedTotals().entrySet()) {
+        Map<ItemKey, Long> expected = expectedTotals();
+        if (expected.isEmpty()) {
+            return false;
+        }
+        List<ResourceHandler<ItemResource>> remote = MachineBridges.gatewayTargets(level, worldPosition);
+        for (Map.Entry<ItemKey, Long> want : expected.entrySet()) {
             long left = want.getValue();
             ItemResource resource = ItemResource.of(want.getKey().stack());
+            List<ResourceHandler<ItemResource>> sources = new ArrayList<>();
             for (Direction side : Direction.values()) {
                 for (Direction face : faces(side.getOpposite())) {
-                    if (left <= 0) {
-                        break;
-                    }
                     ResourceHandler<ItemResource> source = neighbour(level, side, face);
-                    if (source == null) {
-                        continue;
+                    if (source != null) {
+                        sources.add(source);
                     }
-                    int extracted;
-                    try (Transaction transaction = Transaction.openRoot()) {
-                        extracted = source.extract(resource, (int) Math.min(Integer.MAX_VALUE, left), transaction);
-                        transaction.commit();
-                    }
-                    if (extracted > 0) {
-                        receive(level, want.getKey(), extracted);
-                        left -= extracted;
-                        moved = true;
-                    }
+                }
+            }
+            sources.addAll(remote);
+            for (ResourceHandler<ItemResource> source : sources) {
+                if (left <= 0) {
+                    break;
+                }
+                int extracted;
+                try (Transaction transaction = Transaction.openRoot()) {
+                    extracted = source.extract(resource, (int) Math.min(Integer.MAX_VALUE, left), transaction);
+                    transaction.commit();
+                }
+                if (extracted > 0) {
+                    receive(level, want.getKey(), extracted);
+                    left -= extracted;
+                    moved = true;
                 }
             }
         }
@@ -551,6 +595,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         handler.deserialize(input.childOrEmpty("handler"));
         runs.clear();
         input.read("runs", Run.CODEC.listOf()).ifPresent(runs::addAll);
+        deviceName = input.getStringOr("device_name", "");
     }
 
     @Override
@@ -560,5 +605,8 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         ContainerHelper.saveAllItems(output.child("stock"), stock);
         handler.serialize(output.child("handler"));
         output.store("runs", Run.CODEC.listOf(), runs);
+        if (!deviceName.isEmpty()) {
+            output.putString("device_name", deviceName);
+        }
     }
 }

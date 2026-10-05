@@ -12,6 +12,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.NbtOps;
@@ -22,6 +23,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
@@ -29,32 +31,50 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
+import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
+import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RackScheduler;
+import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
+import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
+import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
+import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // The Small Wireless Bridge on an Arcforge Arc Crusher (registered only while the Arcforge integration is on: run with
-// -Parcforge_jar=...). On RackGameTests' networked rack with a Wireless Controller (unit 1), a Firewall denying everyone
-// (unit 3), an Access Point cabled at AP and the crusher at MACHINE, on no cable. Uses Arcforge only through Encoded
+// -Parcforge_jar=...). On RackGameTests' networked rack with a Wireless Controller (unit 10), a Firewall denying everyone
+// (unit 12), an Access Point cabled at AP and the crusher at MACHINE, on no cable. For crafting, a rack Scheduler
+// (Compute and Memory Servers, a NAS) and a Gateway at GATEWAY with a bone -> 5 bone meal schematic and nothing beside it;
+// the crusher runs on power from the network. Uses Arcforge only through Encoded
 // Logistics' own MachineAccess and the block's registry id, so this class loads without Arcforge.
 final class ArcforgeGameTests {
     static final Identifier ARC_CRUSHER = Identifier.fromNamespaceAndPath("arcforge", "arc_crusher");
-    static final BlockPos AP = new BlockPos(1, 2, 2), MACHINE = new BlockPos(6, 1, 4), CHEST = new BlockPos(6, 1, 6);
+    static final BlockPos AP = new BlockPos(1, 2, 2), MACHINE = new BlockPos(6, 1, 4), CHEST = new BlockPos(6, 1, 6), GATEWAY = new BlockPos(0, 1, 1);
+    static final int CONTROLLER_UNIT = 10;
+    static final ItemKey BONE = ItemKey.of(new ItemStack(Items.BONE)), BONE_MEAL = ItemKey.of(new ItemStack(Items.BONE_MEAL));
 
     private ArcforgeGameTests() {}
 
@@ -67,18 +87,18 @@ final class ArcforgeGameTests {
     // The rack and its devices, the Access Point and the crusher. Returns the rack's master.
     static BlockPos rig(GameTestHelper helper) {
         BlockPos master = RackGameTests.networkedRack(helper);
-        RackGameTests.install(helper, master, RackDeviceType.WIRELESS_CONTROLLER, 1, WirelessControllerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.WIRELESS_CONTROLLER, CONTROLLER_UNIT, WirelessControllerDevice.class);
         helper.setBlock(AP, ModBlocks.ACCESS_POINT.get().defaultBlockState().setValue(AccessPointBlock.FACING, Direction.UP));
         helper.setBlock(MACHINE, block(ARC_CRUSHER));
         return master;
     }
 
     static WirelessControllerDevice controller(GameTestHelper helper, BlockPos master) {
-        return (WirelessControllerDevice) helper.getBlockEntity(master, RackBlockEntity.class).deviceAt(1);
+        return (WirelessControllerDevice) helper.getBlockEntity(master, RackBlockEntity.class).deviceAt(CONTROLLER_UNIT);
     }
 
     static FirewallDevice firewall(GameTestHelper helper, BlockPos master) {
-        FirewallDevice firewall = RackGameTests.install(helper, master, RackDeviceType.FIREWALL, 3, FirewallDevice.class);
+        FirewallDevice firewall = RackGameTests.install(helper, master, RackDeviceType.FIREWALL, 12, FirewallDevice.class);
         firewall.setPolicy(FirewallDevice.Policy.DENY);
         return firewall;
     }
@@ -269,6 +289,119 @@ final class ArcforgeGameTests {
                             "Loaded as face " + bridge.face() + ", link " + bridge.link() + ", name " + bridge.deviceName());
                     helper.assertTrue(controller(helper, master).lists(bridge.self()), "Controller lost it");
                     helper.assertTrue(bridge.isOnline(), "Not online after loading");
+                })
+                .thenSucceed();
+    }
+
+    // Keeps the network's controller full (it takes 4,096 FE a tick), as a generator would.
+    static void powered(GameTestHelper helper) {
+        helper.onEachTick(() -> RackGameTests.insert(helper, RackGameTests.CONTROLLER, 4_096));
+    }
+
+    // The rig with a rack Scheduler and the Gateway (and its schematic). Returns the rack's master.
+    static BlockPos craftingRig(GameTestHelper helper) {
+        BlockPos master = rig(helper);
+        RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 3, MemoryServerDevice.class);
+        NasDevice nas = RackGameTests.install(helper, master, RackDeviceType.NAS, 6, NasDevice.class);
+        nas.items().set(0, new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
+        nas.itemsChanged();
+        helper.setBlock(GATEWAY, ModBlocks.GATEWAY.get());
+        ItemStack schematic = new ItemStack(ModItems.ENCODED_SCHEMATIC_PROCESSING.get());
+        schematic.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.PROCESSING, List.of(new ItemStack(Items.BONE)),
+                List.of(new ItemStack(Items.BONE_MEAL, 5))));
+        helper.getBlockEntity(GATEWAY, GatewayBlockEntity.class).schematicSlots().set(0, schematic);
+        return master;
+    }
+
+    // A bridge on the crusher's top, linked to the controller.
+    static MachineBridge attachAndLink(GameTestHelper helper, BlockPos master) {
+        use(helper, player(helper), new ItemStack(ModItems.SMALL_WIRELESS_BRIDGE.get()), MACHINE, Direction.UP);
+        MachineBridge bridge = requireBridge(helper, MACHINE);
+        helper.assertTrue(controller(helper, master).link(bridge), "Not linked");
+        return bridge;
+    }
+
+    // A Processing Schematic job through a Gateway whose only machine is the crusher, over the air (the bridge's Gateway
+    // setting): the Gateway puts the bone in through the crusher's input, the crusher runs, the Gateway takes the bone
+    // meal out of its output, and the job finishes with the bone meal in the network.
+    static void gatewayJob(GameTestHelper helper) {
+        BlockPos master = craftingRig(helper);
+        powered(helper);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    MachineBridge bridge = attachAndLink(helper, master);
+                    bridge.setGateway(GlobalPos.of(helper.getLevel().dimension(), helper.absolutePos(GATEWAY)));
+                    // The crusher runs on the network's FE (it takes 200 FE/t; an operation is 4,000).
+                    bridge.setPowerFromNetwork(true);
+                })
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    MachineBridge linked = requireBridge(helper, MACHINE);
+                    helper.assertTrue(linked.isOnline(), "Bridge not online: " + Wireless.problem(helper.getLevel().getServer(), linked) + ", network "
+                            + ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(MACHINE)) + ", rack " + network(helper, master)
+                            + ", admitted " + controller(helper, master).admittedCount() + ", APs " + controller(helper, master).accessPointsOnline());
+                    RackGameTests.storage(helper, master).insert(BONE, 1, false);
+                    BlockPos device = helper.absolutePos(master);
+                    CraftPlanner.Plan plan = CraftRequests.plan(helper.getLevel(), device, BONE_MEAL, 5);
+                    helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+                    RackScheduler scheduler = helper.getBlockEntity(master, RackBlockEntity.class).scheduler();
+                    helper.assertTrue(CraftRequests.start(helper.getLevel(), device, plan, scheduler, CraftRequests.Requester.NONE) != null,
+                            "Job didn't start");
+                })
+                .thenIdle(20)
+                .thenExecute(() -> {
+                    MachineInfo info = requireBridge(helper, MACHINE).info(helper.getLevel().getServer());
+                    helper.assertTrue(info != null && info.status() == MachineInfo.State.RUNNING, "Crusher " + (info == null ? "missing" : info.status()));
+                    helper.assertTrue(RackGameTests.storage(helper, master).count(BONE) == 0, "The bone is still in the network");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(helper.getBlockEntity(master, RackBlockEntity.class).scheduler().jobs().isEmpty(),
+                        "Job still running"))
+                .thenExecute(() -> {
+                    long meal = RackGameTests.storage(helper, master).count(BONE_MEAL);
+                    helper.assertTrue(meal == 5, "Network has " + meal + " bone meal");
+                    MachineInfo info = requireBridge(helper, MACHINE).info(helper.getLevel().getServer());
+                    helper.assertTrue(info != null && info.statistics().operations() == 1,
+                            "Operations " + (info == null ? "?" : info.statistics().operations()));
+                })
+                .thenSucceed();
+    }
+
+    // Power from network: the empty crusher fills from the network, the network never below its reserve; turned off, it
+    // stops.
+    static void powerFromNetwork(GameTestHelper helper) {
+        BlockPos master = rig(helper);
+        powered(helper);
+        long[] before = new long[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> attachAndLink(helper, master).setPowerFromNetwork(true))
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    MachineBridge bridge = requireBridge(helper, MACHINE);
+                    MachineInfo info = bridge.info(helper.getLevel().getServer());
+                    var handler = MachineBridges.energy(helper.getLevel(), bridge);
+                    NetworkSnapshot snapshot = ControllerStructures.snapshotOf(helper.getLevel().getServer(), network(helper, master));
+                    helper.assertTrue(info != null && info.energy().isPresent() && info.energy().get().stored() > 0, "Crusher has no FE: handler "
+                            + (handler == null ? "none" : handler.getAmountAsLong() + "/" + handler.getCapacityAsLong()) + ", powered " + bridge.powered()
+                            + ", online " + bridge.isOnline() + ", power " + bridge.powerFromNetwork() + ", network " + snapshot.stored() + "/" + snapshot.capacity()
+                            + " " + snapshot.status());
+                    NetworkSnapshot network = ControllerStructures.snapshotOf(helper.getLevel().getServer(), network(helper, master));
+                    double reserve = Math.floor(network.capacity() * Config.MACHINE_POWER_RESERVE.getAsDouble());
+                    helper.assertTrue(network.stored() >= reserve - 100, "Network down to " + network.stored() + " of " + network.capacity());
+                    bridge.setPowerFromNetwork(false);
+                })
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    MachineBridge bridge = requireBridge(helper, MACHINE);
+                    helper.assertTrue(bridge.powered() == 0, "Still powering");
+                    before[0] = bridge.info(helper.getLevel().getServer()).energy().get().stored();
+                })
+                .thenIdle(10)
+                .thenExecute(() -> {
+                    long after = requireBridge(helper, MACHINE).info(helper.getLevel().getServer()).energy().get().stored();
+                    helper.assertTrue(after == before[0], "Crusher went from " + before[0] + " to " + after + " FE with power off");
                 })
                 .thenSucceed();
     }

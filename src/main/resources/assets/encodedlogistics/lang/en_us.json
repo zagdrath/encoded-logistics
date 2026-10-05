@@ -878,7 +878,7 @@
   "hud.encodedlogistics.machine.heat_value": "%s / %s °C",
   "hud.encodedlogistics.machine.recipe": "Recipe",
   "hud.encodedlogistics.machine.power": "Power",
-  "hud.encodedlogistics.machine.power_network": "From the network",
+  "hud.encodedlogistics.machine.power_network": "From the network, %s FE/t",
   "hud.encodedlogistics.wireless.none": "none",
   "hud.encodedlogistics.wireless.use_card": "use a Link Card",
   "hud.encodedlogistics.wireless.no_uplink": "No uplink",

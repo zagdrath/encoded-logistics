@@ -52,13 +52,17 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
     private @Nullable WirelessLink link;
     private String deviceName;
     private boolean powerFromNetwork;
+    // The Gateway that feeds it and takes its outputs over the air, or null for none.
+    private @Nullable GlobalPos gateway;
     // Not saved: the level's bridges it's one of, whether the network has it online, and its LED.
     @Nullable MachineBridges owner;
     private boolean online;
     private SmallWirelessBridgeBlock.State led = SmallWirelessBridgeBlock.State.UNLINKED;
+    // FE it put into the machine last tick, from the network.
+    private int powered;
 
     MachineBridge(ResourceKey<Level> dimension, BlockPos pos, Direction face, Identifier block, BlockPos machine, String type, Component shown,
-            @Nullable WirelessLink link, String deviceName, boolean powerFromNetwork) {
+            @Nullable WirelessLink link, String deviceName, boolean powerFromNetwork, @Nullable GlobalPos gateway) {
         this.dimension = dimension;
         this.pos = pos.immutable();
         this.face = face;
@@ -69,6 +73,7 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
         this.link = link;
         this.deviceName = deviceName;
         this.powerFromNetwork = powerFromNetwork;
+        this.gateway = gateway;
     }
 
     static Codec<MachineBridge> codec(ResourceKey<Level> dimension) {
@@ -81,9 +86,10 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
                 ComponentSerialization.CODEC.optionalFieldOf("shown", Component.empty()).forGetter(MachineBridge::shown),
                 WirelessLink.CODEC.optionalFieldOf("link").forGetter(bridge -> Optional.ofNullable(bridge.link)),
                 Codec.STRING.optionalFieldOf("device_name", "").forGetter(MachineBridge::deviceName),
-                Codec.BOOL.optionalFieldOf("power_from_network", false).forGetter(MachineBridge::powerFromNetwork))
-                .apply(i, (pos, face, block, machine, type, shown, link, name, power) -> new MachineBridge(dimension, pos, face, block, machine, type,
-                        shown, link.orElse(null), name, power)));
+                Codec.BOOL.optionalFieldOf("power_from_network", false).forGetter(MachineBridge::powerFromNetwork),
+                GlobalPos.CODEC.optionalFieldOf("gateway").forGetter(bridge -> Optional.ofNullable(bridge.gateway)))
+                .apply(i, (pos, face, block, machine, type, shown, link, name, power, gateway) -> new MachineBridge(dimension, pos, face, block, machine,
+                        type, shown, link.orElse(null), name, power, gateway.orElse(null))));
     }
 
     public BlockPos pos() {
@@ -126,6 +132,19 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
         return online;
     }
 
+    public @Nullable GlobalPos gateway() {
+        return gateway;
+    }
+
+    // FE the network put into the machine last tick (power from network).
+    public int powered() {
+        return powered;
+    }
+
+    void setPowered(int powered) {
+        this.powered = powered;
+    }
+
     public SmallWirelessBridgeBlock.State led() {
         return led;
     }
@@ -151,6 +170,15 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
         boolean changed = this.led != led;
         this.led = led;
         return changed;
+    }
+
+    public void setGateway(@Nullable GlobalPos gateway) {
+        if (!java.util.Objects.equals(this.gateway, gateway)) {
+            this.gateway = gateway;
+            if (owner != null) {
+                owner.setDirty();
+            }
+        }
     }
 
     public void setPowerFromNetwork(boolean on) {
@@ -310,7 +338,7 @@ public final class MachineBridge implements WirelessClient, WirelessDevice {
                     recipe.isEmpty() ? Component.translatable("hud.encodedlogistics.wireless.none") : Component.literal(recipe)));
             if (powerFromNetwork && info.energy().isPresent()) {
                 lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.machine.power"),
-                        Component.translatable("hud.encodedlogistics.machine.power_network")));
+                        Component.translatable("hud.encodedlogistics.machine.power_network", powered)));
             }
         }
         Component name = shown.getString().isEmpty() ? ModItems.SMALL_WIRELESS_BRIDGE.get().getName(ModItems.SMALL_WIRELESS_BRIDGE.toStack()) : shown;

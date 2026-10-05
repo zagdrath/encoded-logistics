@@ -42,7 +42,7 @@ import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 // RACKCON01, WLC01, TAPELIB01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
 // DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01 - and wireless: AP01 (Access Points), WBRIDGE01 (Wireless Bridges),
 // WINGRESS01 / WEGRESS01 (Wireless Ports: a port in every other way) - and the Midrange line: MIDRANGE01, KEYPUNCH01,
-// CARDRDR01, PRT01; Display Panel screens: DSP01; and machines with a Small Wireless Bridge on, by their type
+// CARDRDR01, PRT01; Display Panel screens: DSP01; Gateways: GATEWAY01; and machines with a Small Wireless Bridge on, by their type
 // (MachineBridge.typeCode: ARCCRU01 for an Arc Crusher, ELECTR01 for an Electrolyzer).
 //
 // A device's name is stored with the device (a rack device's goes with its item; a desk's or Control Interface's with

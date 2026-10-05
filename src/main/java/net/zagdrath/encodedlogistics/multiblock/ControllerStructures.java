@@ -1473,6 +1473,28 @@ public class ControllerStructures extends SavedData {
         return drain(banks(server, owner.runtime), buffers(owner), amount);
     }
 
+    // The same, but never taking the network's stored energy below reserve (a share of its capacity): for energy given
+    // away (a machine's power from network), so the network keeps running.
+    public static int drawEnergyAbove(MinecraftServer server, @Nullable NetworkRef network, int amount, double reserve) {
+        Owner owner = owner(server, network);
+        if (owner == null || owner.runtime.status != NetworkStatus.ONLINE || amount <= 0) {
+            return 0;
+        }
+        List<CapacitorBankBlockEntity> banks = banks(server, owner.runtime);
+        List<ControllerBuffer> buffers = buffers(owner);
+        long stored = 0, capacity = 0;
+        for (ControllerBuffer buffer : buffers) {
+            stored += buffer.getEnergy();
+            capacity += buffer.getCapacity();
+        }
+        for (CapacitorBankBlockEntity bank : banks) {
+            stored += bank.getStored();
+            capacity += bank.getCapacity();
+        }
+        long spare = stored - (long) Math.ceil(capacity * reserve);
+        return spare <= 0 ? 0 : drain(banks, buffers, (int) Math.min(amount, spare));
+    }
+
     // --- Energy from outside ---
 
     // The network whose energy a Power Inlet or Capacitor Bank at pos is part of, or null when it isn't on a
