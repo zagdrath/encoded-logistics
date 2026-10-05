@@ -25,16 +25,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
@@ -43,15 +49,16 @@ import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The Collector Plane: breaks the block in front of it as an iron pickaxe would - hardness x collectorTicksPerHardness
 // ticks, only what an iron pickaxe harvests, never unbreakable blocks, network blocks or blocks holding items - and puts
 // the drops into the network, along with any dropped items in that space (every COLLECT_INTERVAL ticks). Its one module
 // slot (#encodedlogistics:plane_modules) takes a Filter Module (its filter applies, with the filter options) or a Fuzzy
 // Match Module (its filter applies, entries matching loosely); without one it takes everything. A block is broken only
-// when all its drops pass and fit in the network.
+// when all its drops pass and fit in the network. A fluid source block in front (water, lava, a mod's fluid or gas) is
+// picked up as 1,000 mB into the network, every COLLECT_INTERVAL ticks, when it passes the filter (a fluid entry) and fits.
 public class CollectorPlanePart extends PlanePart {
     public static final int COLLECT_INTERVAL = 10;
     private static final ItemStack TOOL = new ItemStack(Items.IRON_PICKAXE);
@@ -104,8 +111,31 @@ public class CollectorPlanePart extends PlanePart {
         if (++timer >= COLLECT_INTERVAL) {
             timer = 0;
             collectItems(level, storage);
+            collectFluid(level, storage);
         }
         breakBlock(level, storage);
+    }
+
+    // A fluid source block in front: a bucket's worth into the network, and the block gone.
+    private void collectFluid(ServerLevel level, NetworkStorage storage) {
+        BlockPos target = facing();
+        BlockState state = level.getBlockState(target);
+        FluidState fluid = state.getFluidState();
+        if (!(state.getBlock() instanceof LiquidBlock) || !fluid.isSource()) {
+            return;
+        }
+        StorageKey key = StorageKey.fluid(fluid.getType());
+        if (!passes(key.stack()) || storage.insert(key, FluidType.BUCKET_VOLUME, true) < FluidType.BUCKET_VOLUME) {
+            return;
+        }
+        FakePlayer player = fakePlayer(level);
+        if (CommonHooks.fireBlockBreak(level, GameType.SURVIVAL, player, target, state).isCanceled()) {
+            return;
+        }
+        level.setBlock(target, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+        storage.insert(key, FluidType.BUCKET_VOLUME, false);
+        FluidUtil.triggerSoundAndGameEvent(FluidResource.of(fluid.getType()), level, Vec3.atCenterOf(target), null, true);
+        flash();
     }
 
     // Dropped items in the space in front go into the network.

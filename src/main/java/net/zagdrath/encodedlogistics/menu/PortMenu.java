@@ -30,22 +30,24 @@ import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.part.PortPart;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // An Ingress or Egress Port's screen: the 3x3 ghost filter, four module slots (#encodedlogistics:port_modules; one
 // Filter Module, up to three Throughput Modules, one Fuzzy Match Module, one Redstone Control Module) and the player's
 // inventory. Buttons: 0 redstone mode (needs a Redstone Control Module), 1-3 the Filter Module's deny / tag / component
-// options. With a Fuzzy Match Module, a filter entry's fuzzy setting comes as a value (key: the entry, value: the code).
-// data: 0 redstone mode, 1 flags (1 filter module, 2 deny, 4 tags, 8 components, 16 ingress, 32 fuzzy module,
-// 64 redstone module, 128 wireless, 256 linked; bits 9-11 a Wireless Port's signal, 0-4), 2-10 the entries' fuzzy codes
-// (PartFilter.fuzzy). A Wireless Port's screen is the same, titled with its block and with its link shown.
+// options, 4 the resource type (item, fluid, pressurized, energy). With a Fuzzy Match Module, a filter entry's fuzzy
+// setting comes as a value (key: the entry, value: the code). data: 0 redstone mode, 1 flags (1 filter module, 2 deny,
+// 4 tags, 8 components, 16 ingress, 32 fuzzy module, 64 redstone module, 128 wireless, 256 linked; bits 9-11 a Wireless
+// Port's signal, 0-4; bits 12-13 the resource type), 2-10 the entries' fuzzy codes (PartFilter.fuzzy). A click on a
+// filter entry sets it for the port's type: the fluid or gas in a container in hand for a fluid or pressurized port. A Wireless Port's screen is the same, titled with its block and with its link shown.
 public class PortMenu extends AbstractContainerMenu implements ValueMenu {
     public static final TagKey<Item> PORT_MODULES = TagKey.create(Registries.ITEM, EncodedLogistics.id("port_modules"));
     public static final int FILTER_X = 62, FILTER_Y = 19, MODULE_X = 152, INVENTORY_Y = 94;
     public static final int[] MODULE_Y = { 19, 37, 55, 73 };
-    public static final int BUTTON_REDSTONE = 0, BUTTON_DENY = 1, BUTTON_TAGS = 2, BUTTON_COMPONENTS = 3;
+    public static final int BUTTON_REDSTONE = 0, BUTTON_DENY = 1, BUTTON_TAGS = 2, BUTTON_COMPONENTS = 3, BUTTON_TYPE = 4;
     public static final int FLAG_FILTER_MODULE = 1, FLAG_DENY = 2, FLAG_TAGS = 4, FLAG_COMPONENTS = 8, FLAG_INGRESS = 16, FLAG_FUZZY_MODULE = 32,
-            FLAG_REDSTONE_MODULE = 64, FLAG_WIRELESS = 128, FLAG_LINKED = 256, SIGNAL_SHIFT = 9;
+            FLAG_REDSTONE_MODULE = 64, FLAG_WIRELESS = 128, FLAG_LINKED = 256, SIGNAL_SHIFT = 9, TYPE_SHIFT = 12;
     private static final int DATA = 2 + PartFilter.SIZE;
     private static final int FILTER = 0, MODULES = PartFilter.SIZE, INVENTORY = MODULES + PortPart.MODULE_SLOTS;
 
@@ -90,7 +92,8 @@ public class PortMenu extends AbstractContainerMenu implements ValueMenu {
                     }
                     return (port.hasFilterModule() ? FLAG_FILTER_MODULE : 0) | (f.deny() ? FLAG_DENY : 0) | (f.tags() ? FLAG_TAGS : 0)
                             | (f.components() ? FLAG_COMPONENTS : 0) | (port.ingress() ? FLAG_INGRESS : 0)
-                            | (port.hasFuzzyModule() ? FLAG_FUZZY_MODULE : 0) | (port.hasRedstoneModule() ? FLAG_REDSTONE_MODULE : 0) | wireless(port);
+                            | (port.hasFuzzyModule() ? FLAG_FUZZY_MODULE : 0) | (port.hasRedstoneModule() ? FLAG_REDSTONE_MODULE : 0) | wireless(port)
+                            | port.resourceType().ordinal() << TYPE_SHIFT;
                 }
 
                 @Override
@@ -158,6 +161,10 @@ public class PortMenu extends AbstractContainerMenu implements ValueMenu {
         return (data.get(1) >> SIGNAL_SHIFT) & 7;
     }
 
+    public ResourceType resourceType() {
+        return ResourceType.values()[Math.min((data.get(1) >> TYPE_SHIFT) & 3, ResourceType.values().length - 1)];
+    }
+
     public int redstoneMode() {
         return data.get(0);
     }
@@ -183,7 +190,7 @@ public class PortMenu extends AbstractContainerMenu implements ValueMenu {
     public void clicked(int slotIndex, int buttonNum, ContainerInput input, Player player) {
         if (slotIndex >= FILTER && slotIndex < MODULES) {
             if (input == ContainerInput.PICKUP || input == ContainerInput.QUICK_MOVE) {
-                filter.setItem(slotIndex - FILTER, PartMenus.ghost(this));
+                filter.setItem(slotIndex - FILTER, PartMenus.ghost(getCarried(), resourceType()));
                 if (port != null) {
                     port.filter().clearFuzzy(slotIndex - FILTER);
                 }
@@ -208,6 +215,7 @@ public class PortMenu extends AbstractContainerMenu implements ValueMenu {
                 port.cycleRedstoneMode();
                 return true;
             }
+            case BUTTON_TYPE -> port.cycleResourceType();
             case BUTTON_DENY -> {
                 if (options) {
                     port.filter().toggleDeny();

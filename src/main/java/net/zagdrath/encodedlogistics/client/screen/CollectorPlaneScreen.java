@@ -14,16 +14,19 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
 import net.zagdrath.encodedlogistics.net.MenuValuePayload;
@@ -33,6 +36,8 @@ import net.zagdrath.encodedlogistics.part.PartFilter;
 // while a module is in) and the inventory. With a Filter Module, the allow / deny, tag and components buttons beside
 // the filter; with a Fuzzy Match Module, right-clicking an entry opens its fuzzy choices (FuzzyPopup).
 public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlaneMenu> {
+    private final GhostPicker picker = new GhostPicker();
+
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/collector_plane.png");
     private static final Identifier GHOST_MODULE = EncodedLogistics.id("port/ghost_module");
 
@@ -109,10 +114,14 @@ public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlane
             graphics.nextStratum();
             popup.extract(graphics, font, mouseX, mouseY);
         }
+        picker.extract(graphics, font, mouseX, mouseY);
     }
 
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (picker.isOpen()) {
+            return;
+        }
         if (popup != null) {
             return;
         }
@@ -151,6 +160,10 @@ public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlane
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        // Right-clicking an empty filter entry with an empty hand: pick a fluid or gas from a list.
+        if (picker.mouseClicked(menu, hoveredSlot, event, null, width, height)) {
+            return true;
+        }
         if (popup != null) {
             int code = popup.click(event.x(), event.y());
             if (code >= 0) {
@@ -179,6 +192,9 @@ public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlane
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (picker.mouseScrolled(scrollY)) {
+            return true;
+        }
         if (popup != null) {
             popup.scroll(scrollY);
             return true;
@@ -188,10 +204,25 @@ public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlane
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (picker.keyPressed(event)) {
+            return true;
+        }
         if (popup != null && event.isEscape()) {
             popup = null;
             return true;
         }
         return super.keyPressed(event);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return picker.charTyped(event) || super.charTyped(event);
+    }
+
+    @Override
+    protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
+        if (!ResourceRender.entrySlot(graphics, font, slot)) {
+            super.extractSlot(graphics, slot, mouseX, mouseY);
+        }
     }
 }

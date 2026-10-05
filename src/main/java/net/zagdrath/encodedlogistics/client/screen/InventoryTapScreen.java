@@ -12,14 +12,17 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
 import net.zagdrath.encodedlogistics.net.MenuValuePayload;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
@@ -27,6 +30,8 @@ import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 // The Inventory Tap's screen (screens/inventory_tap.json): priority (type it, Enter to set; or the steppers), access mode,
 // the 3x3 ghost filter and the inventory.
 public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu> {
+    private final GhostPicker picker = new GhostPicker();
+
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/inventory_tap.png");
     private static final Identifier FIELD = EncodedLogistics.id("inventory_tap/number_field"),
             FIELD_FOCUSED = EncodedLogistics.id("inventory_tap/number_field_focused");
@@ -111,6 +116,9 @@ public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu
 
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (picker.isOpen()) {
+            return;
+        }
         super.extractTooltip(graphics, mouseX, mouseY);
         if (PartScreens.over(mouseX, mouseY, leftPos + ACCESS_X, topPos + ACCESS_Y, 18, 18)) {
             graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.tap.access"), mouseX, mouseY);
@@ -119,6 +127,10 @@ public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        // Right-clicking an empty filter entry with an empty hand: pick a fluid or gas from a list.
+        if (picker.mouseClicked(menu, hoveredSlot, event, null, width, height)) {
+            return true;
+        }
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             if (PartScreens.over(event.x(), event.y(), leftPos + STEP_X, topPos + UP_Y, STEP_W, STEP_H)) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, InventoryTapMenu.BUTTON_UP);
@@ -144,6 +156,9 @@ public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu
     // Enter sets the priority; while typing, keys go to the field (so "e" doesn't close the screen).
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (picker.keyPressed(event)) {
+            return true;
+        }
         if (priority != null && priority.isFocused()) {
             if (event.isConfirmation()) {
                 submit();
@@ -155,5 +170,28 @@ public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu
             }
         }
         return super.keyPressed(event);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return picker.mouseScrolled(scrollY) || super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        picker.extract(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return picker.charTyped(event) || super.charTyped(event);
+    }
+
+    @Override
+    protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
+        if (!ResourceRender.entrySlot(graphics, font, slot)) {
+            super.extractSlot(graphics, slot, mouseX, mouseY);
+        }
     }
 }

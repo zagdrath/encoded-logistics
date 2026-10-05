@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.zagdrath.arcforge.api.machine.MachineCapabilities;
 import net.zagdrath.arcforge.api.machine.MachineControl;
@@ -206,6 +207,12 @@ final class ArcforgeMachines implements MachineAccess {
     public @Nullable ResourceHandler<ItemResource> items(ServerLevel level, BlockPos pos) {
         MachineControl machine = control(level, pos);
         return machine == null ? null : machine.items().map(items -> items.handler()).orElse(null);
+    }
+
+    @Override
+    public @Nullable ResourceHandler<FluidResource> fluids(ServerLevel level, BlockPos pos) {
+        MachineControl machine = control(level, pos);
+        return machine == null ? null : machine.fluids().map(fluids -> fluids.handler()).orElse(null);
     }
 
     // --- Events ---

@@ -12,20 +12,25 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
 import net.zagdrath.encodedlogistics.net.MenuValuePayload;
 
 // The Threshold Sensor's screen (screens/threshold_sensor.json): the ghost item, the threshold (type it, Enter to set),
 // the comparison and whether it's emitting.
 public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSensorMenu> {
+    private final GhostPicker picker = new GhostPicker();
+
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/threshold_sensor.png");
     private static final Identifier FIELD = EncodedLogistics.id("threshold_sensor/number_field"),
             FIELD_FOCUSED = EncodedLogistics.id("threshold_sensor/number_field_focused");
@@ -105,6 +110,9 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
 
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (picker.isOpen()) {
+            return;
+        }
         super.extractTooltip(graphics, mouseX, mouseY);
         if (PartScreens.over(mouseX, mouseY, leftPos + MODE_X, topPos + MODE_Y, 18, 18)) {
             graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.sensor." + MODE_KEYS[Math.min(menu.mode(), 2)]),
@@ -114,6 +122,10 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        // Right-clicking an empty filter entry with an empty hand: pick a fluid or gas from a list.
+        if (picker.mouseClicked(menu, hoveredSlot, event, null, width, height)) {
+            return true;
+        }
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && PartScreens.over(event.x(), event.y(), leftPos + MODE_X, topPos + MODE_Y, 18, 18)) {
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, ThresholdSensorMenu.BUTTON_MODE);
             return true;
@@ -128,6 +140,9 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
 
     @Override
     public boolean keyPressed(KeyEvent event) {
+        if (picker.keyPressed(event)) {
+            return true;
+        }
         if (threshold != null && threshold.isFocused()) {
             if (event.isConfirmation()) {
                 submit();
@@ -139,5 +154,28 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
             }
         }
         return super.keyPressed(event);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return picker.mouseScrolled(scrollY) || super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        picker.extract(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return picker.charTyped(event) || super.charTyped(event);
+    }
+
+    @Override
+    protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
+        if (!ResourceRender.entrySlot(graphics, font, slot)) {
+            super.extractSlot(graphics, slot, mouseX, mouseY);
+        }
     }
 }

@@ -18,13 +18,17 @@
     "items",
     "energy",
     "redstone",
-    "lanes"
+    "lanes",
+    "fluids",
+    "pressurized"
    ],
    "icons": [
     "p2p/type_items",
     "p2p/type_energy",
     "p2p/type_redstone",
-    "p2p/type_lanes"
+    "p2p/type_lanes",
+    "p2p/type_fluids",
+    "p2p/type_pressurized"
    ],
    "note": "locked once paired; re-pick after unpairing"
   },

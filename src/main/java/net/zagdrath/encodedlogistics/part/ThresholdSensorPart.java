@@ -89,7 +89,7 @@ public class ThresholdSensorPart extends CablePart {
         boolean now = false;
         NetworkStorage storage = isOnline() && !item.isEmpty() ? storage(level) : null;
         if (storage != null) {
-            long count = storage.count(StorageKey.of(item));
+            long count = storage.count(StorageKey.entry(item));
             now = switch (mode) {
                 case BELOW -> count < threshold;
                 case EQUAL -> count == threshold;

@@ -71,6 +71,12 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("typed_drives", TypedStorageGameTests::typedDrives);
         TESTS.put("storage_key_codecs", TypedStorageGameTests::keyCodecs);
         TESTS.put("energy_drives", TypedStorageGameTests::energyDrives);
+        TESTS.put("fluid_ingress", TypedDeviceGameTests::fluidIngress);
+        TESTS.put("fluid_egress", TypedDeviceGameTests::fluidEgress);
+        TESTS.put("tap_tank", TypedDeviceGameTests::tapTank);
+        TESTS.put("energy_ports", TypedDeviceGameTests::energyPorts);
+        TESTS.put("sensor_fluid", TypedDeviceGameTests::sensorFluid);
+        TESTS.put("planes_fluid", TypedDeviceGameTests::planesFluid);
         TESTS.put("ingress_port", Phase2GameTests::ingressPort);
         TESTS.put("egress_port", Phase2GameTests::egressPort);
         TESTS.put("inventory_tap", Phase2GameTests::inventoryTap);

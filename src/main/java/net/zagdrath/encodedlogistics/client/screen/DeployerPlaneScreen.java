@@ -11,17 +11,23 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
 
 // The Deployer Plane's screen (screens/deployer_plane.json): the place / drop mode button, the 3x3 ghost filter of what
 // it deploys, and the inventory.
 public class DeployerPlaneScreen extends AbstractContainerScreen<DeployerPlaneMenu> {
+    private final GhostPicker picker = new GhostPicker();
+
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/deployer_plane.png");
     private static final Identifier PLACE = EncodedLogistics.id("deployer/mode_place"), DROP = EncodedLogistics.id("deployer/mode_drop");
 
@@ -49,6 +55,9 @@ public class DeployerPlaneScreen extends AbstractContainerScreen<DeployerPlaneMe
 
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (picker.isOpen()) {
+            return;
+        }
         super.extractTooltip(graphics, mouseX, mouseY);
         if (PartScreens.over(mouseX, mouseY, leftPos + DeployerPlaneMenu.MODE_X, topPos + DeployerPlaneMenu.MODE_Y, 18, 18)) {
             graphics.setComponentTooltipForNextFrame(font, List.of(
@@ -64,10 +73,42 @@ public class DeployerPlaneScreen extends AbstractContainerScreen<DeployerPlaneMe
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        // Right-clicking an empty filter entry with an empty hand: pick a fluid or gas from a list.
+        if (picker.mouseClicked(menu, hoveredSlot, event, null, width, height)) {
+            return true;
+        }
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && PartScreens.over(event.x(), event.y(), leftPos + DeployerPlaneMenu.MODE_X, topPos + DeployerPlaneMenu.MODE_Y, 18, 18)) {
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, DeployerPlaneMenu.BUTTON_MODE);
             return true;
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        return picker.keyPressed(event) || super.keyPressed(event);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return picker.mouseScrolled(scrollY) || super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        picker.extract(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return picker.charTyped(event) || super.charTyped(event);
+    }
+
+    @Override
+    protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
+        if (!ResourceRender.entrySlot(graphics, font, slot)) {
+            super.extractSlot(graphics, slot, mouseX, mouseY);
+        }
     }
 }

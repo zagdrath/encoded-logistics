@@ -21,6 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.neoforged.fml.ModList;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
@@ -89,6 +90,10 @@ public class ResourceEntryItem extends Item {
             }
             tooltip.accept(Component.translatable("tooltip.encodedlogistics.resource." + entry.key().type().getSerializedName())
                     .withStyle(ChatFormatting.DARK_GRAY));
+            String namespace = entry.key().source() != null ? entry.key().source() : entry.key().namespace();
+            tooltip.accept(Component.translatable("tooltip.encodedlogistics.resource.from",
+                    ModList.get().getModContainerById(namespace).map(mod -> mod.getModInfo().getDisplayName()).orElse(namespace))
+                    .withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC));
         }
     }
 }

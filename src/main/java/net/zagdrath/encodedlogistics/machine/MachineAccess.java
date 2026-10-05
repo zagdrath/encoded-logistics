@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.machine;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -14,7 +15,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.zagdrath.encodedlogistics.storage.ResourceIO;
 
 // What Encoded Logistics asks of another mod's machines, through the block a Small Wireless Bridge is on: provided by
 // that mod's integration (compat.arcforge.ArcforgeMachines) and set on MachineBridges only while it's loaded and
@@ -56,6 +59,25 @@ public interface MachineAccess {
 
     // Its items, with its slot rules (insert into inputs, fuel and catalysts; extract from outputs), or null for none.
     @Nullable ResourceHandler<ItemResource> items(ServerLevel level, BlockPos pos);
+
+    // Its tanks, gas tanks included (Arcforge keeps gases as fluids), with its tank rules, or null for none.
+    default @Nullable ResourceHandler<FluidResource> fluids(ServerLevel level, BlockPos pos) {
+        return null;
+    }
+
+    // Its items, fluids and gases together, as ResourceIO moves them, or null for none.
+    default @Nullable ResourceIO resources(ServerLevel level, BlockPos pos) {
+        List<ResourceIO> parts = new ArrayList<>();
+        ResourceHandler<ItemResource> items = items(level, pos);
+        if (items != null) {
+            parts.add(ResourceIO.items(items));
+        }
+        ResourceHandler<FluidResource> fluids = fluids(level, pos);
+        if (fluids != null) {
+            parts.add(ResourceIO.fluids(fluids, null));
+        }
+        return parts.isEmpty() ? null : ResourceIO.combined(parts);
+    }
 
     // Keeps listener told of the machine's events, following it when it's reloaded or re-formed; call it each tick the
     // machine is bridged (cheap when nothing changed).

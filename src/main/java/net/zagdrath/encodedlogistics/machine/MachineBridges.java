@@ -61,6 +61,7 @@ import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.ResourceIO;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 
 // A level's Small Wireless Bridges (MachineBridge), by the block each is on: saved with the level, shown to its players
@@ -341,6 +342,31 @@ public final class MachineBridges extends SavedData {
                     ResourceHandler<ItemResource> items = access.items(there, bridge.pos());
                     if (items != null) {
                         targets.add(items);
+                    }
+                }
+            }
+        }
+        return targets;
+    }
+
+    // The same machines' items, fluids and gases (MachineAccess.resources): what the Gateway moves of every type.
+    public static List<ResourceIO> gatewayResourceTargets(ServerLevel level, BlockPos gateway) {
+        if (access == null) {
+            return List.of();
+        }
+        NetworkRef network = ControllerStructures.networkOf(level, gateway);
+        if (network == null) {
+            return List.of();
+        }
+        GlobalPos at = GlobalPos.of(level.dimension(), gateway);
+        List<ResourceIO> targets = new ArrayList<>();
+        for (ServerLevel there : level.getServer().getAllLevels()) {
+            for (MachineBridge bridge : get(there).bridges.values()) {
+                if (at.equals(bridge.gateway()) && bridge.isOnline() && there.isLoaded(bridge.pos())
+                        && network.equals(ControllerStructures.networkOf(there, bridge.pos()))) {
+                    ResourceIO resources = access.resources(there, bridge.pos());
+                    if (resources != null) {
+                        targets.add(resources);
                     }
                 }
             }

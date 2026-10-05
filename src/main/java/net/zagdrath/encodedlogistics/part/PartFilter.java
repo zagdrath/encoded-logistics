@@ -23,6 +23,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A port's, tap's or plane's filter: nine ghost entries (copies, no real items) and, with a Filter Module installed, three
 // options: deny (everything but the entries), tag matching (an item matches an entry it shares a c: tag with) and exact
@@ -65,7 +67,7 @@ public final class PartFilter {
     }
 
     public void set(int index, ItemStack stack) {
-        entries.set(index, stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1));
+        entries.set(index, stack.isEmpty() ? ItemStack.EMPTY : ResourceEntryItem.withAmount(stack, ResourceEntryItem.entry(stack) != null ? 0 : 1));
         clearFuzzy(index);
     }
 
@@ -156,9 +158,14 @@ public final class PartFilter {
         return options && deny ? !matched : matched;
     }
 
-    // Whether an item matches one entry.
+    // Whether an item matches one entry. A fluid or gas (a Resource Entry, as StorageKey.stack() gives one) matches only
+    // an entry for the same fluid or gas, whatever the options.
     public boolean matches(int index, ItemStack stack, boolean options, boolean fuzzyOn) {
         ItemStack entry = entries.get(index);
+        StorageKey entryKey = ResourceEntryItem.key(entry), stackKey = ResourceEntryItem.key(stack);
+        if (entryKey != null || stackKey != null) {
+            return entryKey != null && entryKey.equals(stackKey);
+        }
         if (fuzzyOn && fuzzy[index] != FUZZY_NONE) {
             if (fuzzy[index] == FUZZY_TAG) {
                 return fuzzyTags[index] != null && stack.is(fuzzyTags[index]);

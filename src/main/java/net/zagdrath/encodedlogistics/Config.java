@@ -270,6 +270,10 @@ public class Config {
             .comment("Items an items Point-to-Point Link moves per operation (one every 10 ticks).")
             .defineInRange("p2pItemsPerOperation", 64, 1, 4096);
 
+    public static final ModConfigSpec.IntValue P2P_FLUID_PER_OPERATION = BUILDER
+            .comment("mB a fluids or pressurized Point-to-Point Link moves per operation (one every 10 ticks).")
+            .defineInRange("p2pFluidPerOperation", 8_000, 1, 1_000_000);
+
     public static final ModConfigSpec.IntValue P2P_ENERGY_PER_TICK = BUILDER
             .comment("FE per tick an energy Point-to-Point Link moves from its input to its outputs at most.")
             .defineInRange("p2pEnergyPerTick", 8_192, 1, Integer.MAX_VALUE);

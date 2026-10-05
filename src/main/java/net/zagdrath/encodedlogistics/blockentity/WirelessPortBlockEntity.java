@@ -176,7 +176,7 @@ public class WirelessPortBlockEntity extends CableBlockEntity implements Wireles
                 faced == null || faced.isAir() ? Component.translatable("hud.encodedlogistics.wireless.none") : faced.getBlock().getName()));
         if (port() instanceof PortPart part && level != null) {
             lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.wireless.moved"),
-                    Component.translatable("hud.encodedlogistics.wireless.per_minute", part.movedPerMinute(level.getGameTime()))));
+                    Component.translatable("hud.encodedlogistics.wireless.per_minute", part.resourceType().format(part.movedPerMinute(level.getGameTime())))));
         }
         return new RackDeviceInfo(getBlockState().getBlock().getName(), status, text, lines);
     }

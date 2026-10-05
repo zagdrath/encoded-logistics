@@ -12,12 +12,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.StringRepresentable;
 
-// What a Point-to-Point Link carries: items, FE, a redstone signal, or lanes.
+// What a Point-to-Point Link carries: items, FE, a redstone signal, lanes, fluids, or pressurized gases.
 public enum LinkType implements StringRepresentable {
     ITEMS("items"),
     ENERGY("energy"),
     REDSTONE("redstone"),
-    LANES("lanes");
+    LANES("lanes"),
+    FLUIDS("fluids"),
+    PRESSURIZED("pressurized");
 
     public static final Codec<LinkType> CODEC = StringRepresentable.fromEnum(LinkType::values);
     public static final StreamCodec<ByteBuf, LinkType> STREAM_CODEC = ByteBufCodecs.idMapper(LinkType::byId, LinkType::ordinal);

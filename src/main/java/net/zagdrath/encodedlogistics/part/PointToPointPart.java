@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.part;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -33,13 +34,18 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
 import net.zagdrath.encodedlogistics.network.RemoteLink;
+import net.zagdrath.encodedlogistics.storage.ResourceIO;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A Point-to-Point Link endpoint: an input paired (Link Card) with one or more outputs, passing one thing straight
 // across, bypassing storage. Items: every ITEM_OPERATION ticks up to p2pItemsPerOperation items from the inventory the
 // input faces into the ones its outputs face, round-robin. Energy: up to p2pEnergyPerTick FE a tick, the same way.
 // Redstone: the outputs send out the signal the input reads from the block it faces. Lanes: the outputs' cables get
-// p2pLanes lanes (split evenly between them) from the input's network, as if a cable ran there (a remote link). Items,
-// energy and redstone only cross while both ends are on the same running network.
+// p2pLanes lanes (split evenly between them) from the input's network, as if a cable ran there (a remote link). Fluids
+// and pressurized gases: every ITEM_OPERATION ticks up to p2pFluidPerOperation mB from the tanks the input faces into the
+// outputs' (ResourceIO), round-robin. Items, fluids, gases, energy and redstone only cross while both ends are on the same
+// running network.
 //
 // What it carries and which way are set in its screen, and locked while it's paired. Lit (its ring glows) while
 // paired. Every CHECK_INTERVAL ticks it drops partners that no longer point back (broken or re-paired while this end was
@@ -243,6 +249,11 @@ public class PointToPointPart extends CablePart {
                     moveItems(level);
                 }
             }
+            case FLUIDS, PRESSURIZED -> {
+                if (timer % ITEM_OPERATION == 0) {
+                    moveFluids(level, linkType == LinkType.FLUIDS ? ResourceType.FLUID : ResourceType.PRESSURIZED);
+                }
+            }
             case ENERGY -> moveEnergy(level);
             case REDSTONE -> sendSignal(level);
             case LANES -> {}
@@ -323,6 +334,36 @@ public class PointToPointPart extends CablePart {
                 if (source.getResource(slot).isEmpty()) {
                     break;
                 }
+            }
+        }
+    }
+
+    private void moveFluids(ServerLevel level, ResourceType type) {
+        List<PointToPointPart> outputs = liveOutputs(level);
+        ResourceIO source = ResourceIO.at(level, facing(), side.getOpposite(), type);
+        if (outputs.isEmpty() || source == null) {
+            return;
+        }
+        long left = Config.P2P_FLUID_PER_OPERATION.getAsInt();
+        for (Map.Entry<StorageKey, Long> there : source.list().entrySet()) {
+            StorageKey key = there.getKey();
+            for (int tried = 0; tried < outputs.size() && left > 0; tried++) {
+                PointToPointPart out = outputs.get(Math.floorMod(roundRobin + tried, outputs.size()));
+                ResourceIO target = ResourceIO.at(level, out.facing(), out.side.getOpposite(), type);
+                long room = target != null ? target.insert(key, Math.min(left, there.getValue()), true) : 0;
+                long taken = room > 0 ? source.extract(key, room, false) : 0;
+                if (taken <= 0) {
+                    continue;
+                }
+                long put = target.insert(key, taken, false);
+                if (put < taken) {
+                    source.insert(key, taken - put, false);
+                }
+                left -= put;
+                roundRobin = Math.floorMod(roundRobin + tried + 1, outputs.size());
+            }
+            if (left <= 0) {
+                break;
             }
         }
     }

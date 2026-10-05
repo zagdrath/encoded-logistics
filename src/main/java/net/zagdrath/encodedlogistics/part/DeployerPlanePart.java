@@ -19,21 +19,26 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The Deployer Plane: every deployerInterval ticks, takes the first item its 3x3 ghost filter lists that the network
 // has (entries in order; an empty filter does nothing) and either places it as a block in the space in front, as a
 // player facing out of the plane would (place mode: block items only, and only into a replaceable space), or drops one
-// out of its face (drop mode).
+// out of its face (drop mode). In place mode a fluid or gas entry places a source block of it (1,000 mB from the network)
+// where there's no source already; only items drop.
 public class DeployerPlanePart extends PlanePart {
     private boolean drop;
     private int timer;
@@ -93,7 +98,11 @@ public class DeployerPlanePart extends PlanePart {
         if (!level.getBlockState(target).canBeReplaced()) {
             return false;
         }
-        StorageKey key = next(storage, candidate -> candidate.stack().getItem() instanceof BlockItem);
+        StorageKey key = next(storage, candidate -> candidate.isItem() ? candidate.stack().getItem() instanceof BlockItem
+                : candidate.fluid() != null && storage.count(candidate) >= FluidType.BUCKET_VOLUME);
+        if (key != null && !key.isItem()) {
+            return placeFluid(level, storage, key, target);
+        }
         if (key == null || !(key.stack().getItem() instanceof BlockItem blockItem)) {
             return false;
         }
@@ -110,8 +119,24 @@ public class DeployerPlanePart extends PlanePart {
         return placed;
     }
 
+    // A fluid (or gas) source block of a bucket from the network, where there's no source already.
+    private boolean placeFluid(ServerLevel level, NetworkStorage storage, StorageKey key, BlockPos target) {
+        FluidResource fluid = key.fluid();
+        FluidState there = level.getBlockState(target).getFluidState();
+        if (fluid == null || !there.isEmpty() && there.isSource()
+                || storage.extract(key, FluidType.BUCKET_VOLUME, true) < FluidType.BUCKET_VOLUME) {
+            return false;
+        }
+        if (!FluidUtil.tryPlaceFluid(fluid, fakePlayer(level), level, target, true)) {
+            return false;
+        }
+        storage.extract(key, FluidType.BUCKET_VOLUME, false);
+        return true;
+    }
+
     private boolean dropOne(ServerLevel level, NetworkStorage storage) {
-        StorageKey key = next(storage, candidate -> true);
+        // Only items drop.
+        StorageKey key = next(storage, StorageKey::isItem);
         if (key == null || storage.extract(key, 1, false) <= 0) {
             return false;
         }

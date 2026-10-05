@@ -22,11 +22,11 @@ import net.zagdrath.encodedlogistics.part.LinkType;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
-// A Point-to-Point Link's screen (screens/point_to_point_link.json): what it carries and which way (buttons 0-3 pick the
-// type, 4 flips in / out; both only while unpaired), button 5 unpairs, and the link's status with its first partner.
+// A Point-to-Point Link's screen (screens/point_to_point_link.json): what it carries and which way (buttons 0-5 pick the
+// type, 10 flips in / out; both only while unpaired), button 11 unpairs, and the link's status with its first partner.
 // No slots. data: 0 type, 1 output, 2 partners, 3 status (STATUS_*), 4-9 the first partner's x, y, z in 16-bit halves.
 public class PointToPointMenu extends AbstractContainerMenu {
-    public static final int BUTTON_TYPE = 0, BUTTON_DIRECTION = 4, BUTTON_UNPAIR = 5;
+    public static final int BUTTON_TYPE = 0, BUTTON_DIRECTION = 10, BUTTON_UNPAIR = 11;
     public static final int STATUS_UNLINKED = 0, STATUS_LINKED = 1, STATUS_OFFLINE = 2;
     private static final int DATA = 10;
 
