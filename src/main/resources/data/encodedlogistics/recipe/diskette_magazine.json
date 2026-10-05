@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "minecraft:iron_ingot",
+  "minecraft:iron_ingot",
+  "minecraft:paper"
+ ],
+ "result": {
+  "id": "encodedlogistics:diskette_magazine",
+  "count": 1
+ }
+}

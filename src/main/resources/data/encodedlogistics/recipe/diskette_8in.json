@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:ferrite",
+  "minecraft:paper",
+  "encodedlogistics:copper_foil"
+ ],
+ "result": {
+  "id": "encodedlogistics:diskette_8in",
+  "count": 1
+ }
+}

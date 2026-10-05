@@ -40,9 +40,12 @@ import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
+import net.zagdrath.encodedlogistics.midrange.DisketteData;
+import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
+import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
@@ -133,6 +136,48 @@ public final class ItemInfoTooltips {
             }
             if (!Minecraft.getInstance().hasShiftDown()) {
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.schematic.hold_shift").withStyle(ChatFormatting.DARK_GRAY));
+            }
+        } else if (stack.is(ModItems.PUNCH_CARD.get())) {
+            // A punched card: what its recipe makes, and (Shift) what it takes; a blank one says how to punch it.
+            Schematic recipe = stack.get(ModDataComponents.PUNCHED_RECIPE.get());
+            if (recipe == null) {
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.punch_card.blank").withStyle(ChatFormatting.GRAY));
+            } else {
+                ItemStack output = recipe.output();
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.punch_card.recipe", output.getHoverName(), output.getCount())
+                        .withStyle(ChatFormatting.GRAY));
+                if (Minecraft.getInstance().hasShiftDown()) {
+                    for (Map.Entry<ItemKey, Long> input : recipe.inputTotals().entrySet()) {
+                        tooltip.add(at++, Component.literal("  " + input.getValue() + " x ").append(input.getKey().stack().getHoverName())
+                                .withStyle(ChatFormatting.DARK_GRAY));
+                    }
+                } else {
+                    tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.punch_card.shift").withStyle(ChatFormatting.DARK_GRAY));
+                }
+            }
+        } else if (stack.is(ModItems.DISKETTE_8IN.get())) {
+            // A written diskette: its library and the recipes on it.
+            DisketteData data = stack.get(ModDataComponents.DISKETTE_RECIPES.get());
+            if (data == null) {
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.diskette.blank").withStyle(ChatFormatting.GRAY));
+            } else {
+                tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.diskette.library", data.label().isEmpty() ? "-" : data.label(),
+                        data.recipes().size()).withStyle(ChatFormatting.GRAY));
+                for (int i = 0; i < data.recipes().size(); i++) {
+                    ItemStack output = data.recipes().get(i).output();
+                    tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.diskette.entry", i + 1, output.getHoverName(), output.getCount())
+                            .withStyle(ChatFormatting.DARK_GRAY));
+                }
+            }
+        } else if (stack.getItem() instanceof DisketteMagazineItem) {
+            // How many diskettes it holds, and their libraries.
+            List<ItemStack> diskettes = DisketteMagazineItem.diskettes(stack);
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.magazine.contents", diskettes.size()).withStyle(ChatFormatting.GRAY));
+            for (ItemStack diskette : diskettes) {
+                DisketteData data = diskette.get(ModDataComponents.DISKETTE_RECIPES.get());
+                tooltip.add(at++, Component.literal("  ").append(data == null ? Component.translatable("tooltip.encodedlogistics.diskette.blank")
+                        : Component.translatable("tooltip.encodedlogistics.diskette.library", data.label().isEmpty() ? "-" : data.label(), data.recipes().size()))
+                        .withStyle(ChatFormatting.DARK_GRAY));
             }
         } else if (stack.is(ModItems.LOGIC_PHOTOMASK.get()) || stack.is(ModItems.STORAGE_PHOTOMASK.get()) || stack.is(ModItems.MEMORY_PHOTOMASK.get())
                 || stack.is(ModItems.PROCESSOR_PHOTOMASK.get())) {

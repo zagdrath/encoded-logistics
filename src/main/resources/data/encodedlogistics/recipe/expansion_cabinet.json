@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:iron_ingot",
+  "encodedlogistics:ferrite"
+ ],
+ "result": {
+  "id": "encodedlogistics:expansion_cabinet",
+  "count": 1
+ }
+}

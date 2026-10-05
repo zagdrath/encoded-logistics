@@ -1,0 +1,48 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "screen": "encodedlogistics:block/terminal_desk/crt_screen_on",
+  "particle": "encodedlogistics:block/terminal_desk/crt_screen_on"
+ },
+ "elements": [
+  {
+   "name": "screen",
+   "from": [
+    9.8,
+    14.5,
+    8.76
+   ],
+   "to": [
+    14.8,
+    18.5,
+    8.76
+   ],
+   "faces": {
+    "north": {
+     "texture": "#screen",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "x",
+    "origin": [
+     9,
+     13.5,
+     9
+    ]
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

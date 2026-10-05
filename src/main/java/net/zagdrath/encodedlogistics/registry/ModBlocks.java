@@ -10,6 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -42,6 +43,11 @@ import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
+import net.zagdrath.encodedlogistics.midrange.CardReaderBlock;
+import net.zagdrath.encodedlogistics.midrange.ExpansionCabinetBlock;
+import net.zagdrath.encodedlogistics.midrange.IntegratedMidrangeBlock;
+import net.zagdrath.encodedlogistics.midrange.MidrangePeripheralBlock;
+import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlock;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(EncodedLogistics.MODID);
@@ -101,6 +107,24 @@ public final class ModBlocks {
     public static final DeferredBlock<NetworkBridgeBlock> NETWORK_BRIDGE = BLOCKS.registerBlock("network_bridge", NetworkBridgeBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
                     .lightLevel(NetworkBridgeBlock::lightLevel));
+
+    // The Midrange line (an early autocrafting computer, before the Scheduler) and its peripherals.
+    public static final DeferredBlock<MidrangeSystemBlock> MIDRANGE_SYSTEM = BLOCKS.registerBlock("midrange_system", MidrangeSystemBlock::new,
+            p -> p.mapColor(MapColor.SAND).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .lightLevel(MidrangeSystemBlock::lightLevel));
+    public static final DeferredBlock<ExpansionCabinetBlock> EXPANSION_CABINET = BLOCKS.registerBlock("expansion_cabinet", ExpansionCabinetBlock::new,
+            p -> p.mapColor(MapColor.SAND).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<IntegratedMidrangeBlock> INTEGRATED_MIDRANGE = BLOCKS.registerBlock("integrated_midrange", IntegratedMidrangeBlock::new,
+            p -> p.mapColor(MapColor.SAND).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
+                    .lightLevel(IntegratedMidrangeBlock::lightLevel));
+    public static final DeferredBlock<MidrangePeripheralBlock> KEYPUNCH = BLOCKS.registerBlock("keypunch",
+            p -> new MidrangePeripheralBlock("keypunch", List.of(Vec3i.ZERO, new Vec3i(0, 1, 0)), p),
+            p -> p.mapColor(MapColor.SAND).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<CardReaderBlock> CARD_READER = BLOCKS.registerBlock("card_reader", CardReaderBlock::new,
+            p -> p.mapColor(MapColor.SAND).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<MidrangePeripheralBlock> LINE_PRINTER = BLOCKS.registerBlock("line_printer",
+            p -> new MidrangePeripheralBlock("line_printer", List.of(Vec3i.ZERO, new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(1, 1, 0)), p),
+            p -> p.mapColor(MapColor.SAND).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 
     // Wireless: the Access Point (the radio), the Wireless Bridge and the Wireless Ingress / Egress Ports (its clients).
     public static final DeferredBlock<AccessPointBlock> ACCESS_POINT = BLOCKS.registerBlock("access_point", AccessPointBlock::new,

@@ -1,0 +1,214 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "cr": "encodedlogistics:block/card_reader/cabinet",
+  "particle": "encodedlogistics:block/card_reader/cabinet"
+ },
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    3,
+    0,
+    6
+   ],
+   "to": [
+    13,
+    12,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cr",
+     "uv": [
+      0.0,
+      0.0,
+      2.5,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#cr",
+     "uv": [
+      5.25,
+      0.0,
+      2.75,
+      3.0
+     ]
+    },
+    "east": {
+     "texture": "#cr",
+     "uv": [
+      2.75,
+      0.0,
+      5.25,
+      3.0
+     ]
+    },
+    "west": {
+     "texture": "#cr",
+     "uv": [
+      5.25,
+      0.0,
+      2.75,
+      3.0
+     ]
+    },
+    "up": {
+     "texture": "#cr",
+     "uv": [
+      5.5,
+      0.0,
+      8.0,
+      2.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "hopper",
+   "from": [
+    3,
+    12,
+    7
+   ],
+   "to": [
+    7,
+    16,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cr",
+     "uv": [
+      8.25,
+      0.0,
+      9.25,
+      1.0
+     ]
+    },
+    "south": {
+     "texture": "#cr",
+     "uv": [
+      9.25,
+      0.0,
+      8.25,
+      1.0
+     ]
+    },
+    "east": {
+     "texture": "#cr",
+     "uv": [
+      8.25,
+      0.0,
+      9.25,
+      1.0
+     ]
+    },
+    "west": {
+     "texture": "#cr",
+     "uv": [
+      9.25,
+      0.0,
+      8.25,
+      1.0
+     ]
+    },
+    "up": {
+     "texture": "#cr",
+     "uv": [
+      10.75,
+      0.0,
+      11.75,
+      2.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "stacker",
+   "from": [
+    9,
+    12,
+    7
+   ],
+   "to": [
+    13,
+    14,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cr",
+     "uv": [
+      8.25,
+      0.0,
+      9.25,
+      1.0
+     ]
+    },
+    "south": {
+     "texture": "#cr",
+     "uv": [
+      9.25,
+      0.0,
+      8.25,
+      1.0
+     ]
+    },
+    "east": {
+     "texture": "#cr",
+     "uv": [
+      8.25,
+      0.0,
+      9.25,
+      1.0
+     ]
+    },
+    "west": {
+     "texture": "#cr",
+     "uv": [
+      9.25,
+      0.0,
+      8.25,
+      1.0
+     ]
+    },
+    "up": {
+     "texture": "#cr",
+     "uv": [
+      10.75,
+      0.0,
+      11.75,
+      2.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "track",
+   "from": [
+    7,
+    12,
+    10
+   ],
+   "to": [
+    9,
+    12.3,
+    12
+   ],
+   "faces": {
+    "up": {
+     "texture": "#cr",
+     "uv": [
+      12.0,
+      0.0,
+      12.5,
+      2.0
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

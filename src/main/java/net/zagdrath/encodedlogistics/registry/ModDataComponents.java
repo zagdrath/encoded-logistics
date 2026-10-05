@@ -15,6 +15,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -22,6 +23,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.HandheldLinkState;
 import net.zagdrath.encodedlogistics.item.LinkAddress;
+import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
@@ -48,6 +50,18 @@ public final class ModDataComponents {
     // An Encoded Schematic's recipe (crafting) or inputs and outputs (processing), written by the Schematic Encoder.
     public static final Supplier<DataComponentType<Schematic>> SCHEMATIC = DATA_COMPONENTS.registerComponentType("schematic",
             builder -> builder.persistent(Schematic.CODEC).networkSynchronized(Schematic.STREAM_CODEC));
+
+    // A punched Punch Card's crafting recipe (Keypunch); a blank card has none.
+    public static final Supplier<DataComponentType<Schematic>> PUNCHED_RECIPE = DATA_COMPONENTS.registerComponentType("punched_recipe",
+            builder -> builder.persistent(Schematic.CODEC).networkSynchronized(Schematic.STREAM_CODEC));
+
+    // What's written on an 8" Diskette (Card Reader, SAVLIB); a blank diskette has none.
+    public static final Supplier<DataComponentType<DisketteData>> DISKETTE_RECIPES = DATA_COMPONENTS.registerComponentType("diskette_recipes",
+            builder -> builder.persistent(DisketteData.CODEC).networkSynchronized(DisketteData.STREAM_CODEC));
+
+    // The diskettes in a Diskette Magazine (up to 4).
+    public static final Supplier<DataComponentType<ItemContainerContents>> MAGAZINE_CONTENTS = DATA_COMPONENTS.registerComponentType("magazine_contents",
+            builder -> builder.persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC));
 
     // A written Link Card's address: the Network Bridge or Point-to-Point Link endpoint it was sneak-used on.
     public static final Supplier<DataComponentType<LinkAddress>> LINK_ADDRESS = DATA_COMPONENTS.registerComponentType("link_address",

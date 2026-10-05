@@ -1,0 +1,72 @@
+/*
+ * Copyright (c) 2026 Zagdrath
+ * SPDX-License-Identifier: MIT
+ */
+
+package net.zagdrath.encodedlogistics.midrange;
+
+import java.util.EnumSet;
+import java.util.List;
+
+import org.jspecify.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.zagdrath.encodedlogistics.network.DeviceNode;
+import net.zagdrath.encodedlogistics.network.NetworkNode;
+import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
+
+// A Midrange peripheral that takes more than a block (HANDOFF 5): the Keypunch (1 x 2: a desk with its raised card unit)
+// and the Line Printer (2 x 2). It works beside a Midrange System, Expansion Cabinet or Integrated Midrange System, or
+// cabled to the same network; it uses no lanes (I/O for the Midrange, not a network device) and doesn't carry the
+// network on through it. ACTIVE: while it punches or prints.
+public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNodeBlock {
+    private final String key;
+    private final List<Vec3i> footprint;
+
+    public MidrangePeripheralBlock(String key, List<Vec3i> footprint, BlockBehaviour.Properties properties) {
+        super(properties);
+        this.key = key;
+        this.footprint = List.copyOf(footprint);
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, Part.MASTER).setValue(MidrangeStates.ACTIVE, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(MidrangeStates.ACTIVE);
+    }
+
+    @Override
+    protected List<Vec3i> footprint() {
+        return footprint;
+    }
+
+    @Override
+    protected String shapeKey(BlockState state) {
+        return key;
+    }
+
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Override
+    public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
+        return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), 0, 0, List.of(), false);
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return null;
+    }
+}

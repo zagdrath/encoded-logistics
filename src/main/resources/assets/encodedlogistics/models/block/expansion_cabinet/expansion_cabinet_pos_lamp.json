@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "lamp": "encodedlogistics:block/expansion_cabinet/lamp_on",
+  "particle": "encodedlogistics:block/expansion_cabinet/lamp_on"
+ },
+ "elements": [
+  {
+   "name": "lamp",
+   "from": [
+    8,
+    9.5,
+    3.98
+   ],
+   "to": [
+    9,
+    10.5,
+    3.98
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lamp",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

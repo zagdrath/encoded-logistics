@@ -463,6 +463,34 @@ public class Config {
             .comment("Wireless Bridges and Wireless Ports drain this many times their cabled equivalent's (Network Bridge, Ingress / Egress Port).")
             .defineInRange("wirelessEnergyMultiplier", 2.0, 0.0, 100.0);
 
+    public static final ModConfigSpec.DoubleValue MIDRANGE_DRAIN = BUILDER
+            .comment("FE per tick a Midrange System drains while its network runs.")
+            .defineInRange("midrangeDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue EXPANSION_CABINET_DRAIN = BUILDER
+            .comment("FE per tick an attached Expansion Cabinet adds to its Midrange System's drain.")
+            .defineInRange("expansionCabinetDrain", 1.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue INTEGRATED_MIDRANGE_DRAIN = BUILDER
+            .comment("FE per tick an Integrated Midrange System drains while its network runs.")
+            .defineInRange("integratedMidrangeDrain", 8.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue MIDRANGE_CRAFT_ENERGY = BUILDER
+            .comment("FE a Midrange System (or Integrated Midrange System) spends per craft it runs itself.")
+            .defineInRange("midrangeCraftEnergy", 20, 0, 1_000_000);
+
+    public static final ModConfigSpec.IntValue MIDRANGE_IPL_TICKS = BUILDER
+            .comment("Ticks a Midrange System takes to IPL (boot) before it runs.")
+            .defineInRange("midrangeIplTicks", 100, 0, 6_000);
+
+    public static final ModConfigSpec.IntValue MIDRANGE_STEP_TICKS = BUILDER
+            .comment("Ticks a Midrange System takes for each craft it runs itself.")
+            .defineInRange("midrangeStepTicks", 40, 1, 6_000);
+
+    public static final ModConfigSpec.IntValue INTEGRATED_MIDRANGE_STEP_TICKS = BUILDER
+            .comment("Ticks an Integrated Midrange System takes for each craft it runs itself.")
+            .defineInRange("integratedMidrangeStepTicks", 25, 1, 6_000);
+
     public static final ModConfigSpec.DoubleValue ACCESS_POINT_DRAIN = BUILDER
             .comment("FE per tick an Access Point drains while its network runs.")
             .defineInRange("accessPointDrain", 2.0, 0.0, 1_000.0);

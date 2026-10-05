@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:hopper",
+  "minecraft:iron_ingot"
+ ],
+ "result": {
+  "id": "encodedlogistics:card_reader",
+  "count": 1
+ }
+}

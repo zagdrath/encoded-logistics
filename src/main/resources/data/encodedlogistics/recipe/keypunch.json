@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:logic_die",
+  "minecraft:crafting_table",
+  "minecraft:iron_ingot"
+ ],
+ "result": {
+  "id": "encodedlogistics:keypunch",
+  "count": 1
+ }
+}

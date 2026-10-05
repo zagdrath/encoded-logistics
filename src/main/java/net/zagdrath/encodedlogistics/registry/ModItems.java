@@ -26,6 +26,7 @@ import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
+import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -111,6 +112,16 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);
     public static final DeferredItem<BlockItem> NETWORK_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_BRIDGE);
     public static final DeferredItem<Item> RADIO_MODULE = ITEMS.registerSimpleItem("radio_module");
+    public static final DeferredItem<BlockItem> MIDRANGE_SYSTEM = ITEMS.registerSimpleBlockItem(ModBlocks.MIDRANGE_SYSTEM);
+    public static final DeferredItem<BlockItem> EXPANSION_CABINET = ITEMS.registerSimpleBlockItem(ModBlocks.EXPANSION_CABINET);
+    public static final DeferredItem<BlockItem> INTEGRATED_MIDRANGE = ITEMS.registerSimpleBlockItem(ModBlocks.INTEGRATED_MIDRANGE);
+    public static final DeferredItem<BlockItem> KEYPUNCH = ITEMS.registerSimpleBlockItem(ModBlocks.KEYPUNCH);
+    public static final DeferredItem<BlockItem> CARD_READER = ITEMS.registerSimpleBlockItem(ModBlocks.CARD_READER);
+    public static final DeferredItem<BlockItem> LINE_PRINTER = ITEMS.registerSimpleBlockItem(ModBlocks.LINE_PRINTER);
+    public static final DeferredItem<Item> PUNCH_CARD = ITEMS.registerSimpleItem("punch_card");
+    public static final DeferredItem<Item> DISKETTE_8IN = ITEMS.registerSimpleItem("diskette_8in", p -> p.stacksTo(16));
+    public static final DeferredItem<DisketteMagazineItem> DISKETTE_MAGAZINE = ITEMS.registerItem("diskette_magazine", DisketteMagazineItem::new,
+            p -> p.stacksTo(1));
     public static final DeferredItem<BlockItem> ACCESS_POINT = ITEMS.registerSimpleBlockItem(ModBlocks.ACCESS_POINT);
     public static final DeferredItem<BlockItem> WIRELESS_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_BRIDGE);
     public static final DeferredItem<BlockItem> WIRELESS_INGRESS_PORT = ITEMS.registerSimpleBlockItem(ModBlocks.WIRELESS_INGRESS_PORT);

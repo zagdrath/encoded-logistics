@@ -1,0 +1,399 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "cab": "encodedlogistics:block/integrated_midrange/cabinet",
+  "pan": "encodedlogistics:block/integrated_midrange/panels",
+  "kb": "encodedlogistics:block/terminal_desk/keyboard",
+  "particle": "encodedlogistics:block/integrated_midrange/cabinet"
+ },
+ "elements": [
+  {
+   "name": "body_l",
+   "from": [
+    2,
+    1,
+    4
+   ],
+   "to": [
+    16,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cab",
+     "uv": [
+      0.0,
+      0.0,
+      1.75,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#cab",
+     "uv": [
+      8.875,
+      0.0,
+      5.375,
+      3.0
+     ]
+    },
+    "west": {
+     "texture": "#cab",
+     "uv": [
+      5.25,
+      0.0,
+      3.75,
+      3.0
+     ]
+    },
+    "up": {
+     "texture": "#cab",
+     "uv": [
+      9.0,
+      0.0,
+      12.5,
+      3.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "body_r",
+   "from": [
+    16,
+    1,
+    4
+   ],
+   "to": [
+    30,
+    13,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cab",
+     "uv": [
+      1.875,
+      0.0,
+      3.625,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#cab",
+     "uv": [
+      8.875,
+      0.0,
+      5.375,
+      3.0
+     ]
+    },
+    "east": {
+     "texture": "#cab",
+     "uv": [
+      3.75,
+      0.0,
+      5.25,
+      3.0
+     ]
+    },
+    "up": {
+     "texture": "#cab",
+     "uv": [
+      9.0,
+      0.0,
+      12.5,
+      3.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "plinth",
+   "from": [
+    2.5,
+    0,
+    4.5
+   ],
+   "to": [
+    29.5,
+    1,
+    15.5
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cab",
+     "uv": [
+      7.25,
+      3.25,
+      10.75,
+      3.5
+     ]
+    },
+    "south": {
+     "texture": "#cab",
+     "uv": [
+      10.75,
+      3.25,
+      7.25,
+      3.5
+     ]
+    },
+    "east": {
+     "texture": "#cab",
+     "uv": [
+      10.875,
+      3.25,
+      12.375,
+      3.5
+     ]
+    },
+    "west": {
+     "texture": "#cab",
+     "uv": [
+      12.375,
+      3.25,
+      10.875,
+      3.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "magazine_unit",
+   "from": [
+    19,
+    13,
+    6
+   ],
+   "to": [
+    29,
+    16,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cab",
+     "uv": [
+      4.375,
+      3.25,
+      5.625,
+      4.0
+     ]
+    },
+    "south": {
+     "texture": "#cab",
+     "uv": [
+      5.625,
+      3.25,
+      4.375,
+      4.0
+     ]
+    },
+    "east": {
+     "texture": "#cab",
+     "uv": [
+      3.25,
+      3.25,
+      4.25,
+      4.0
+     ]
+    },
+    "west": {
+     "texture": "#cab",
+     "uv": [
+      4.25,
+      3.25,
+      3.25,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#cab",
+     "uv": [
+      1.875,
+      3.25,
+      3.125,
+      5.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "hood",
+   "from": [
+    2,
+    13,
+    10.6
+   ],
+   "to": [
+    16,
+    20,
+    16
+   ],
+   "faces": {
+    "south": {
+     "texture": "#cab",
+     "uv": [
+      1.75,
+      3.25,
+      0.0,
+      5.0
+     ]
+    },
+    "east": {
+     "texture": "#cab",
+     "uv": [
+      12.625,
+      0.0,
+      13.5,
+      1.75
+     ]
+    },
+    "west": {
+     "texture": "#cab",
+     "uv": [
+      13.5,
+      0.0,
+      12.625,
+      1.75
+     ]
+    },
+    "up": {
+     "texture": "#cab",
+     "uv": [
+      13.625,
+      0.0,
+      15.375,
+      1.75
+     ]
+    }
+   }
+  },
+  {
+   "name": "tray",
+   "from": [
+    3,
+    13,
+    4.5
+   ],
+   "to": [
+    15,
+    13.5,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#cab",
+     "uv": [
+      7.25,
+      3.25,
+      10.75,
+      3.5
+     ]
+    },
+    "up": {
+     "texture": "#cab",
+     "uv": [
+      5.75,
+      3.25,
+      7.125,
+      4.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "mag_plate",
+   "from": [
+    19,
+    13,
+    5.98
+   ],
+   "to": [
+    29,
+    15.5,
+    5.98
+   ],
+   "faces": {
+    "north": {
+     "texture": "#pan",
+     "uv": [
+      7.125,
+      0.0,
+      12.125,
+      2.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "fascia",
+   "from": [
+    2.2,
+    13.5,
+    8.8
+   ],
+   "to": [
+    15.8,
+    19.8,
+    9.2
+   ],
+   "faces": {
+    "north": {
+     "texture": "#pan",
+     "uv": [
+      0.0,
+      0.0,
+      7.0,
+      6.0
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "x",
+    "origin": [
+     9,
+     13.5,
+     9
+    ]
+   }
+  },
+  {
+   "name": "keyboard",
+   "from": [
+    4,
+    13.5,
+    5
+   ],
+   "to": [
+    14,
+    13.9,
+    8.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#kb",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "north": {
+     "texture": "#kb",
+     "uv": [
+      0,
+      14,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

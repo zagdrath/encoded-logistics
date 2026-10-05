@@ -1,0 +1,11 @@
+MIDRANGE SYSTEM + PERIPHERALS - SOUNDS (sounds/block/midrange/*.ogg; events in sounds.midrange.json - merge into sounds.json)
+  block.midrange.midrange_fan          2.0 s seamless loop: low cabinet fan rush with a 120 Hz motor tone. While the system is
+                                       on (ipl/run/busy/attn); volume 0.25, ~8 blocks.
+  block.midrange.diskette_latch        0.35 s: the latch lever closing on the 8" diskette - a solid low clunk with a metal tick.
+                                       On inserting/removing the library diskette.
+  block.midrange.drive_seek            1.3 s: irregular stepper-motor seek chatter of the diskette drive. Repeats while a job
+                                       runs (busy) and during IPL; random pitch 0.9-1.1.
+  block.midrange.keypunch_clatter      1.0 s: rhythmic two-tone punching clatter (punch + feed). While the Keypunch punches.
+  block.midrange.card_reader_whirr     1.0 s: rapid card-feed whirr with fast picker ticks. While the Card Reader reads.
+  block.midrange.line_printer_chatter  1.5 s: loud dense hammer chatter over a motor hum. Loops while printing; volume 0.6.
+All synthesised in tools/mid_sound.py (original, no samples).

@@ -1,0 +1,48 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "glow": "encodedlogistics:block/integrated_midrange/fascia_busy",
+  "particle": "encodedlogistics:block/integrated_midrange/fascia_busy"
+ },
+ "elements": [
+  {
+   "name": "fascia_glow",
+   "from": [
+    2.2,
+    13.5,
+    8.78
+   ],
+   "to": [
+    15.8,
+    19.8,
+    8.78
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glow",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "x",
+    "origin": [
+     9,
+     13.5,
+     9
+    ]
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

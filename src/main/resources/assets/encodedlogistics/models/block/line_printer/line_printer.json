@@ -1,0 +1,619 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "lp": "encodedlogistics:block/line_printer/cabinet",
+  "panel": "encodedlogistics:block/line_printer/panel",
+  "lid": "encodedlogistics:block/line_printer/lid",
+  "paper": "encodedlogistics:block/line_printer/paper",
+  "particle": "encodedlogistics:block/line_printer/cabinet"
+ },
+ "elements": [
+  {
+   "name": "cabinet",
+   "from": [
+    6,
+    0,
+    4
+   ],
+   "to": [
+    26,
+    12,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      0.0,
+      0.0,
+      5.0,
+      3.0
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      13.5,
+      0.0,
+      8.5,
+      3.0
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      5.25,
+      0.0,
+      8.25,
+      3.0
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      8.25,
+      0.0,
+      5.25,
+      3.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "unit",
+   "from": [
+    6,
+    12,
+    4
+   ],
+   "to": [
+    26,
+    15,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      0.0,
+      3.25,
+      5.0,
+      4.0
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      5.0,
+      3.25,
+      0.0,
+      4.0
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      5.25,
+      3.25,
+      8.25,
+      4.0
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      8.25,
+      3.25,
+      5.25,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#lp",
+     "uv": [
+      8.5,
+      3.25,
+      13.5,
+      6.25
+     ]
+    }
+   }
+  },
+  {
+   "name": "tractor_l",
+   "from": [
+    8,
+    15,
+    7
+   ],
+   "to": [
+    11,
+    17,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      14.5,
+      3.25,
+      13.75,
+      4.0
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      14.5,
+      3.25,
+      13.75,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    },
+    "down": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "tractor_r",
+   "from": [
+    21,
+    15,
+    7
+   ],
+   "to": [
+    24,
+    17,
+    11
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      14.5,
+      3.25,
+      13.75,
+      4.0
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      14.5,
+      3.25,
+      13.75,
+      4.0
+     ]
+    },
+    "up": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    },
+    "down": {
+     "texture": "#lp",
+     "uv": [
+      13.75,
+      3.25,
+      14.5,
+      4.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "panel",
+   "from": [
+    7,
+    12.5,
+    3.98
+   ],
+   "to": [
+    25,
+    14.5,
+    3.98
+   ],
+   "faces": {
+    "north": {
+     "texture": "#panel",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "lid",
+   "from": [
+    7,
+    15,
+    5
+   ],
+   "to": [
+    25,
+    15.4,
+    10
+   ],
+   "faces": {
+    "up": {
+     "texture": "#lid",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#lid",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "north": {
+     "texture": "#lid",
+     "uv": [
+      0,
+      0,
+      16,
+      1
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 45,
+    "axis": "x",
+    "origin": [
+     16,
+     15,
+     10
+    ]
+   }
+  },
+  {
+   "name": "paper",
+   "from": [
+    10.5,
+    15,
+    9
+   ],
+   "to": [
+    21.5,
+    21,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#paper",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#paper",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "paper_fold",
+   "from": [
+    10.5,
+    21,
+    9
+   ],
+   "to": [
+    21.5,
+    21,
+    14
+   ],
+   "faces": {
+    "up": {
+     "texture": "#paper",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#paper",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": -22.5,
+    "axis": "x",
+    "origin": [
+     16,
+     21,
+     9
+    ]
+   }
+  },
+  {
+   "name": "wire0",
+   "from": [
+    9,
+    15,
+    11
+   ],
+   "to": [
+    23,
+    17.5,
+    11.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      15.25,
+      3.25,
+      14.75,
+      3.75
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      15.25,
+      3.25,
+      14.75,
+      3.75
+     ]
+    },
+    "up": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "down": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    }
+   }
+  },
+  {
+   "name": "wire1",
+   "from": [
+    9,
+    15,
+    13
+   ],
+   "to": [
+    23,
+    19.0,
+    13.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      15.25,
+      3.25,
+      14.75,
+      3.75
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      15.25,
+      3.25,
+      14.75,
+      3.75
+     ]
+    },
+    "up": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "down": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    }
+   }
+  },
+  {
+   "name": "wire2",
+   "from": [
+    9,
+    15,
+    15
+   ],
+   "to": [
+    23,
+    20.5,
+    15.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "south": {
+     "texture": "#lp",
+     "uv": [
+      15.25,
+      3.25,
+      14.75,
+      3.75
+     ]
+    },
+    "east": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "west": {
+     "texture": "#lp",
+     "uv": [
+      15.25,
+      3.25,
+      14.75,
+      3.75
+     ]
+    },
+    "up": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    },
+    "down": {
+     "texture": "#lp",
+     "uv": [
+      14.75,
+      3.25,
+      15.25,
+      3.75
+     ]
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

@@ -1,0 +1,309 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "part": "master",
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "north",
+    "state": "ipl"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_ipl"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "north",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_run"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "north",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_busy"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "north",
+    "state": "attn"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_attn"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "north",
+    "console": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_boot"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "north",
+    "console": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_on"
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east",
+    "state": "ipl"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_ipl",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_run",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_busy",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east",
+    "state": "attn"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_attn",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east",
+    "console": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_boot",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "east",
+    "console": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_on",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south",
+    "state": "ipl"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_ipl",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_run",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_busy",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south",
+    "state": "attn"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_attn",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south",
+    "console": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_boot",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "south",
+    "console": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_on",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west",
+    "state": "ipl"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_ipl",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west",
+    "state": "run"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_run",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_busy",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west",
+    "state": "attn"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_attn",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west",
+    "console": "boot"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_boot",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "master",
+    "facing": "west",
+    "console": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/integrated_midrange_screen_on",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "dummy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/integrated_midrange/empty"
+   }
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+{
+ "model": {
+  "type": "minecraft:condition",
+  "property": "minecraft:has_component",
+  "component": "encodedlogistics:diskette_recipes",
+  "on_true": {
+   "type": "minecraft:model",
+   "model": "encodedlogistics:item/diskette_8in_written"
+  },
+  "on_false": {
+   "type": "minecraft:model",
+   "model": "encodedlogistics:item/diskette_8in"
+  }
+ }
+}

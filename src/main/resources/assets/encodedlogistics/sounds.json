@@ -136,5 +136,53 @@
     "attenuation_distance": 16
    }
   ]
+ },
+ "block.midrange.midrange_fan": {
+  "subtitle": "subtitles.encodedlogistics.midrange.midrange_fan",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/midrange/midrange_fan"
+   }
+  ]
+ },
+ "block.midrange.diskette_latch": {
+  "subtitle": "subtitles.encodedlogistics.midrange.diskette_latch",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/midrange/diskette_latch"
+   }
+  ]
+ },
+ "block.midrange.drive_seek": {
+  "subtitle": "subtitles.encodedlogistics.midrange.drive_seek",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/midrange/drive_seek"
+   }
+  ]
+ },
+ "block.midrange.keypunch_clatter": {
+  "subtitle": "subtitles.encodedlogistics.midrange.keypunch_clatter",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/midrange/keypunch_clatter"
+   }
+  ]
+ },
+ "block.midrange.card_reader_whirr": {
+  "subtitle": "subtitles.encodedlogistics.midrange.card_reader_whirr",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/midrange/card_reader_whirr"
+   }
+  ]
+ },
+ "block.midrange.line_printer_chatter": {
+  "subtitle": "subtitles.encodedlogistics.midrange.line_printer_chatter",
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/midrange/line_printer_chatter"
+   }
+  ]
  }
 }

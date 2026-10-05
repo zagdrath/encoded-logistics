@@ -24,6 +24,12 @@
   "encodedlogistics:access_point",
   "encodedlogistics:wireless_bridge",
   "encodedlogistics:wireless_ingress_port",
-  "encodedlogistics:wireless_egress_port"
+  "encodedlogistics:wireless_egress_port",
+  "encodedlogistics:midrange_system",
+  "encodedlogistics:expansion_cabinet",
+  "encodedlogistics:integrated_midrange",
+  "encodedlogistics:keypunch",
+  "encodedlogistics:card_reader",
+  "encodedlogistics:line_printer"
  ]
 }

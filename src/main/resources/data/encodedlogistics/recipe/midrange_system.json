@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "SLS",
+  "FIC",
+  " L "
+ ],
+ "key": {
+  "S": "encodedlogistics:circuit_substrate",
+  "L": "encodedlogistics:logic_die",
+  "F": "encodedlogistics:ferrite",
+  "I": "minecraft:iron_ingot",
+  "C": "encodedlogistics:copper_foil"
+ },
+ "result": {
+  "id": "encodedlogistics:midrange_system",
+  "count": 1
+ }
+}
