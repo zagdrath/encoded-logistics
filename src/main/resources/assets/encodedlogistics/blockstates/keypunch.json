@@ -3,53 +3,53 @@
   "facing=north,part=master,active=false": {
    "model": "encodedlogistics:block/keypunch/keypunch"
   },
+  "facing=north,part=dummy,active=false": {
+   "model": "encodedlogistics:block/keypunch/empty"
+  },
   "facing=north,part=master,active=true": {
    "model": "encodedlogistics:block/keypunch/keypunch_active"
+  },
+  "facing=north,part=dummy,active=true": {
+   "model": "encodedlogistics:block/keypunch/empty"
   },
   "facing=east,part=master,active=false": {
    "model": "encodedlogistics:block/keypunch/keypunch",
    "y": 90
   },
+  "facing=east,part=dummy,active=false": {
+   "model": "encodedlogistics:block/keypunch/empty"
+  },
   "facing=east,part=master,active=true": {
    "model": "encodedlogistics:block/keypunch/keypunch_active",
    "y": 90
+  },
+  "facing=east,part=dummy,active=true": {
+   "model": "encodedlogistics:block/keypunch/empty"
   },
   "facing=south,part=master,active=false": {
    "model": "encodedlogistics:block/keypunch/keypunch",
    "y": 180
   },
+  "facing=south,part=dummy,active=false": {
+   "model": "encodedlogistics:block/keypunch/empty"
+  },
   "facing=south,part=master,active=true": {
    "model": "encodedlogistics:block/keypunch/keypunch_active",
    "y": 180
+  },
+  "facing=south,part=dummy,active=true": {
+   "model": "encodedlogistics:block/keypunch/empty"
   },
   "facing=west,part=master,active=false": {
    "model": "encodedlogistics:block/keypunch/keypunch",
    "y": 270
   },
+  "facing=west,part=dummy,active=false": {
+   "model": "encodedlogistics:block/keypunch/empty"
+  },
   "facing=west,part=master,active=true": {
    "model": "encodedlogistics:block/keypunch/keypunch_active",
    "y": 270
-  },
-  "facing=north,part=dummy,active=false": {
-   "model": "encodedlogistics:block/keypunch/empty"
-  },
-  "facing=north,part=dummy,active=true": {
-   "model": "encodedlogistics:block/keypunch/empty"
-  },
-  "facing=east,part=dummy,active=false": {
-   "model": "encodedlogistics:block/keypunch/empty"
-  },
-  "facing=east,part=dummy,active=true": {
-   "model": "encodedlogistics:block/keypunch/empty"
-  },
-  "facing=south,part=dummy,active=false": {
-   "model": "encodedlogistics:block/keypunch/empty"
-  },
-  "facing=south,part=dummy,active=true": {
-   "model": "encodedlogistics:block/keypunch/empty"
-  },
-  "facing=west,part=dummy,active=false": {
-   "model": "encodedlogistics:block/keypunch/empty"
   },
   "facing=west,part=dummy,active=true": {
    "model": "encodedlogistics:block/keypunch/empty"

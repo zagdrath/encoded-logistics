@@ -1,185 +1,170 @@
-ENCODED LOGISTICS - HANDOFF: MIDRANGE SYSTEM LINE (2 tiers, Expansion Cabinet, Keypunch, Card Reader, Line Printer,
-Punch Card, 8" Diskette, Diskette Magazine)
-=====================================================================================================================
-An early-game autocrafting computer line before the Scheduler: Midrange System -> Integrated Midrange System -> Scheduler
--> Rack Scheduler -> Mainframe. Slow, craftable from Phase 1-2 materials. Matches the attached references (a 1980s
-system unit with its extension cabinet; a later all-in-one system with an integrated console) in era, proportions and
-details - unbranded and original (no logo, model number or wordmark). REPLACES the earlier Midrange System package
-(never implemented): models, footprints and textures here supersede it.
-Reviewed against repo HEAD 29bd97b. Paths are relative to the repo root; the zip mirrors them under src/.
+ENCODED LOGISTICS - HANDOFF: MIDRANGE LINE v4 (fixes + Disk Drive + Tape Drive)
+===============================================================================
+This package is complete: it supersedes the v3 package (use only this one). It contains every Midrange-line block with all
+fixes. Changes since v3:
+  - High-res cut down: every texture is 1 texel per model px except the segment-display inserts and the Integrated's console
+    screen (section 1). The old 4-texel panel sheets (panels*.png) are gone - delete them from the repo if v3 was applied.
+  - 1311 Disk Drive: the whole upper front is one slope (a solid box rotated 22.5 about X, no gaps or see-through), a 3D
+    glass compartment with the disk pack inside (translucent glass model).
+  - NEW Printout item (section 9): the Line Printer prints Printouts - continuous-form green-bar paper - instead of
+    Written Books.
+  - 729 Tape Drive: 18 x 40 x 14 px, centred, 2.5 blocks tall (1 x 3 footprint, master + middle + top parts), a real reel
+    window with 3D reels behind translucent glass.
+Updates the Midrange line already in the repo (commit 4b74166 added its blocks). Fixes the in-game issues found:
+texture clipping and see-through faces, models split between two blocks, GUIs with buttons and slot grids, the Integrated
+console not opening the Terminal OS. Adds a 1311-style Disk Drive and a 729-style Tape Drive (+ Tape Reel item).
+Paths relative to the repo root; the zip mirrors them under src/. REPLACE the Midrange line's models, blockstates and
+textures with these (keypunch, card_reader, line_printer, midrange_system, expansion_cabinet, integrated_midrange).
 
 =====================================================================================================
-1. SCALE RULE, FOOTPRINTS, SHAPES
+1. ART RULES (applied to every block here)
 =====================================================================================================
-Every model is at true real-world proportions on one scale: 1 model px = 6.25 cm, 16 px = 1 m = 1 block. Models are NOT
-rounded up to whole blocks; each block is a multiblock footprint (master + dummies) containing the model. Models sit
-flush to the BACK of the footprint (z = 16 with the front facing north / -z) and centred across its width.
-  Block                       Model W x H x D (px)    Real size              Footprint (W x H x D blocks)
-  midrange_system             18 x 16 x 12            1.13 x 1.00 x 0.75 m   2 x 1 x 1  (master x 0-16, dummy +x)
-  expansion_cabinet           10 x 16 x 12            0.63 x 1.00 x 0.75 m   1 x 1 x 1
-  integrated_midrange         28 x 20 x 12            1.75 x 1.25 x 0.75 m   2 x 2 x 1  (master lower; dummies +x, +y, +x+y)
-  keypunch                    16 x 18 x 12            1.00 x 1.12 x 0.75 m   1 x 2 x 1  (desk 0.75 m, card unit to 1.06 m)
-  card_reader                 10 x 16 x 10            0.63 x 1.00 x 0.63 m   1 x 1 x 1
-  line_printer                20 x 17 x 12 (+ paper to 21)  1.25 x 1.06 x 0.75 m   2 x 2 x 1
-  (Peripheral sizes are typical proportions for period equipment of each kind: a desk keypunch station with its raised
-   card-path unit, a free-standing box card reader, a heavy cabinet line printer.)
-Every model fits the block model limits (-16..32), so NO block entity renderer is needed; all are static models on the
-master (multipart / variants), the dummies use empty.json. Footprint blocks lie along the model's local +x / +y and
-rotate with facing (place the dummies at master + localX/localY rotated by the facing, as the Server Rack does).
-Collision AND selection shapes follow the model, per footprint block: shapes/collision_shapes.json lists, for every
-block of every footprint, the boxes (in that block's local px, facing north) clipped from the model's solid parts; rotate
-them by facing (VoxelShape per facing, cached). Rotated plates count as their unrotated boxes.
-Midrange System shapes (expansion = none / pos / neg):
-      block 0,0,0: [7, 1, 4, 16, 13, 16]; [7.5, 0, 4.5, 16, 1, 15.5]; [14, 13, 5, 16, 13.5, 16]; [7, 13, 7.4, 14, 16, 16]; [7, 13, 6, 14, 13.6, 7.4]
-      block 1,0,0: [0, 1, 4, 9, 13, 16]; [0, 0, 4.5, 8.5, 1, 15.5]; [0, 13, 6.4, 9, 16, 16]; [0, 13, 5, 9, 13.6, 6.4]
-  (other blocks: see the JSON.)
+  - Scale unchanged (1 model px = 6.25 cm). EVERYTHING is 1 texel per model px (Minecraft-size pixels): cabinets, panels,
+    lamps, buttons, slots, latches, louvres, the printer's control strip, windows. High-res (4 texels per px) is used ONLY
+    where 1:1 cannot carry the content: the segment displays (tiny emissive inserts covering just the display: Midrange 3 x
+    1.25 px, Integrated 3 x 1.25 px) and the Integrated's console screen (the Terminal Desk's crt_screen_* textures).
+    Detail that needs more than 1:1 is modelled in 3D instead (the 1311's disk pack, the 729's reels).
+  - docs/TEXTURE_STYLE.md method: material ramps (cream, IBM door blue, steel) - flat fields with stepped falloff from the
+    top-left in whole ramp steps, structural seams and louvres, no grain, no specks.
+  - No clipping: no overlay plates on top of faces. Every housing's front face carries its own panel texture; the only
+    overlays are emissive (lamps, displays, screens), 0.01 px in front of a face and never crossing another element.
+    No coplanar faces between elements (top housings sit ON the body, deck elements have no down faces).
+  - Centred on the block: every model is centred on its master block's centre (x = 8) and flush to the back (z = 16).
+    Overhang of up to 2 px past the block's sides is allowed and is NOT collided (collision/selection = the model's boxes
+    clipped to the footprint's blocks - shapes/collision_shapes.json). Wider models get dummy blocks on BOTH sides.
 
 =====================================================================================================
-2. MIDRANGE SYSTEM (tier 1) - midrange_system, 1 lane
+2. BLOCKS, FOOTPRINTS, STATES
 =====================================================================================================
-Model: broad waist-high cream cabinet (body 18 x 12 x 12 on a 1 px recessed plinth); on top, the diskette housing at
-the TOP LEFT (slanted face: smoked window, the 8" slot with its latch - two slots when an Expansion Cabinet is
-attached), a low deck, and the operator housing at the TOP RIGHT (slanted face: a dark strip with power / attention /
-activity / I/O lamps, a 2-character status display, function buttons, keyswitch). Front: top seam, a service-cover seam,
-louvred vents low; left side panel: front-top vents, a cover seam and the red emergency power-off switch; rear: I/O panel
-with terminal connectors and vents.
-BlockState: facing, part (master|dummy), state (off|ipl|run|busy|attn), expansion (none|pos|neg).
-  expansion moves the model flush to the side the cabinet is on (none: centred x 7-25; pos: 14-32; neg: 0-18) so the
-  pair reads as one machine 28 px (1.75 m) wide. Shapes follow (JSON).
-States (models/block/midrange_system/midrange_system_<exp>_<state>.json, emissive overlay on the operator plate):
-  off - no overlay; ipl - panel_ipl.png 8 frames x 5 ticks (codes C1 C3 C6 C9 CA CC -- A6, lamps flicker; IPL 100 ticks
-  [config], then run); run - steady A6 + power lamp; busy - activity lamp blinks, display counts (10 x 4 ticks);
-  attn - attention lamp + error code E2 blinking (2 x 8). Error codes: E1 no diskette, E2 missing ingredients (held
-  job), E3 output full, E4 no power, E9 network offline.
-Behaviour: holds ONE 8" Diskette (job library, up to 8 recipes); crafts crafting-table recipes from it itself: 1 thread,
-  max job 64 (open question 1), slow; a Scheduler choice on the Craft Plan screen ("Midrange <name>"); dispatches steps
-  to the network's Fabricators / Gateways when present; ELCL batch job host for 1 job; 1 lane; network power [config
-  4 FE/t + 20 FE per craft]. Default device name MIDRANGEnn.
-Control panel GUI (right-click the cabinet; green-screen, CRT grid): status code, threads / max job / batch jobs, the
-  diskette slot(s) with library names and recipe counts, current job + progress, job queue, IPL / Hold queue / Release
-  (F7 / F10 / F11). previews/gui_midrange_panel(.png, _expansion.png).
-Sounds: sounds/block/midrange/midrange_fan (loop while on), diskette_latch (insert/remove), drive_seek (ipl / busy).
+  midrange_system      18 x 16 x 12, ONE block (x -1..17, 1 px overhang each side). BlockState facing, state (off|ipl|
+                       run|busy|attn), expansion (bool: shows the second diskette slot). Top: diskette unit (top left,
+                       1 or 2 slots + latches), deck, operator panel (top right: lamps, 2-digit display, buttons,
+                       keyswitch) - both solid boxes with their panel on the front face; emissive overlay on the panel.
+  expansion_cabinet    10 x 16 x 12, one block; attached = the side its Midrange System is on (neg: model x 1..11, flush
+                       against the Midrange's overhang; pos: x 5..15; none: centred). The pair reads as one 28 px machine.
+                       Attaches when placed directly beside a Midrange System, same facing.
+  integrated_midrange  28 x 20 x 12, footprint 3 x 2 (master = bottom centre; dummies left, right, and above the console:
+                       (-1,0) (0,0) (1,0) (-1,1) (0,1) in local block offsets). Solid console hood with the fascia on its
+                       front face (screen, lamp matrix, selectors, 3-digit display), keyboard box on the deck, magazine
+                       unit (top left). state + console (off|boot|on: the Terminal Desk's crt_screen_* textures).
+  keypunch             16 x 18 x 12 (029 style: laminate desk on legs, pedestal cabinet, card unit with hopper and stacker
+                       on the back, keyboard console front right), 1 x 2.
+  card_reader          12 x 15 x 11 (2501 style: grey cabinet with a blue front door, deck, card chute and stacker), 1 x 1.
+  line_printer         20 x 22 x 12 (stand, printer body with a dark control strip - red lamps, display, blue buttons -, two
+                       tractor housings, fan-fold paper leaning back out of the paper slot, wire basket, platen knob),
+                       1 x 2, 2 px overhang each side.
+  disk_drive (NEW)     14 x 16 x 12 (1311 style): grey frame, blue door with a bright trim strip, grey belt; the upper unit's
+                       WHOLE front is one slope - a full-width panel rotated 22.5 about X (top leaning back): the left half
+                       solid (control strip, lamps), the right half translucent glass over the pack compartment. The solid
+                       half is ONE box rotated 22.5 about X (2.4 px deep): its front face is the slope, its side faces close
+                       the wedge under it, and its hidden corners end inside the body and belt; inset 0.01 px from the side
+                       planes so nothing z-fights. The glass half's side post is built the same way. Compartment: cream frame, glass top and side,
+                       the disk pack in 3D (five platters as stepped discs, white hub, spindle). Multipart: disk_drive
+                       (cutout) + disk_drive_glass (translucent) + disk_drive_lamp when active. Optional block entity
+                       renderer: spin the pack about the spindle (x 4.5, z 10.5) while active. 1 x 1.
+  tape_drive (NEW)     18 x 40 x 14 (729 style), centred on its block (x -1..17, 1 px overhang each side; z 1..15), 2.5 blocks
+                       tall: footprint 1 x 3, part = master | middle | top. Block models stop at 32 px, so the master model
+                       carries y 0..32 (blue centre door y 1..19; the reel window y 20..32 - a real opening with a recessed
+                       well, two 6 px reels as stepped discs and the head behind TRANSLUCENT glass, tape_drive_glass) and the
+                       top block's model (tape_drive_top) carries y 32..40 (control strip with lamps, unit plate, cap); middle
+                       = empty. Lamps overlay on the top part when active. Optional block entity renderer: turn the reel
+                       elements about their hubs while reading / writing.
+  Peripheral/storage blockstates: facing, active (+ part for 1 x 2). shapes/collision_shapes.json: shapes per footprint block,
+  footprints, and the Integrated click zones.
 
 =====================================================================================================
-3. EXPANSION CABINET - expansion_cabinet (upgrade for tier 1)
+3. INTERACTION AND GUIS (Terminal OS style - text only)
 =====================================================================================================
-Model: same styling, plain front with low vents, a cap matching the Midrange housings, a small green lamp (lit when
-attached and the system is on). BlockState: facing, attached (none|pos|neg = the side its Midrange System is on; the
-model sits flush toward it), lit.
-Attachment rule: it attaches when placed DIRECTLY beside a Midrange System's footprint along that system's width
-(the block left of the master or right of the dummy), with the SAME facing and the same y and depth row. One cabinet per
-system; anywhere else (or a second one) it does nothing (attached = none, model centred). Placing or breaking it updates
-the system's expansion state and both models.
-When attached: +1 thread (2), +1 diskette slot (the second slot shows on the system's diskette housing and in its GUI),
-max job 128, +1 ELCL batch job (2). No lane, no extra power beyond [config 1 FE/t].
+All Midrange-line GUIs are CRT text screens on the existing Terminal OS renderer (CrtScreen panels): option fields,
+F-keys, the command line, the message line - NO buttons, NO item slots, NO player inventory grid, and the vanilla hotbar /
+HUD is hidden while one is open (skip rendering the gui hotbar while a CrtScreen is the current screen).
+Items go in and out physically: use a Diskette on the Midrange's drive slot (or a Diskette Magazine on the Integrated's
+magazine unit), cards on the Keypunch / Card Reader hopper, paper on the Line Printer, a Storage Drive on the Disk Drive, a
+Tape Reel on the Tape Drive; sneak-use with an empty hand ejects (or option 4 on the screen, which drops it at the player).
+Screens (grids in layouts/*.txt, renders previews/crt_*.png):
+  MRCTL  Midrange Control Panel - status line; diskette drives list (4=Eject 5=Display recipes 8=Make default library); job
+         list (3=Hold 4=End 6=Release); F7=IPL F10=Hold queue F11=Release.
+  IMCTL  Integrated System Control Panel - the same with the magazine's 4 positions (4=Remove from magazine) and 4 threads.
+  KEYPUNCH - 3 x 3 item-name fields (F4 = item list prompter), result line, blank / punched card counts, card image; F6=Punch.
+  CARDRDR - the deck in the hopper (recipe per card, new / replaces), the diskette before -> after; F6=Read.
+  PRINTER - report field 1-4 (4 = ELCL spooled file + name / *LAST, F4 list), pages, paper loaded; F6=Print.
+  DSKDRV - Disk Drive: pack (storage drive) type, capacity, types; 4=Unload (spins down first) 5=Display contents.
+  TAPDRV - Tape Drive: reel volume, used, last access; 4=Unload (rewinds first) 5=Display contents 7=Rewind.
+Integrated click zones (by the hit position against the model boxes, not by footprint block):
+  console = console_hood + console_keyboard -> opens the Terminal OS (as a Terminal Desk: same session and sign-on);
+  control panel = body_left + magazine_unit -> IMCTL; body_right / plinth -> nothing (no GUI).
 
 =====================================================================================================
-4. INTEGRATED MIDRANGE SYSTEM (tier 2) - integrated_midrange, 1 lane
+4. NETWORK ROLE - both Midrange systems are NETWORK CONTROLLERS
 =====================================================================================================
-Model: a wide two-panel cabinet (vent bands across the top of both front panels), a diskette MAGAZINE drive unit on the
-top LEFT (smoked window showing the magazine's diskettes, latch), and the integrated console on the top RIGHT: a hood
-with a slanted dark fascia - recessed display, lamp matrix, two rotary selectors, buttons, a 3-digit status display - and
-a recessed keyboard tray in front. Visibly a newer generation (wider, two-panel, console built in).
-BlockState: facing, part (master|dummy x3), state (off|ipl|run|busy|attn), console (off|boot|on).
-  console boot / on show the Terminal Desk's own emissive screen textures (block/terminal_desk/crt_screen_boot / _on) in
-  the fascia's display; on = a session is signed on at it. State overlays: fascia_<state>.png (56 x 24 frames).
-Behaviour: holds a Diskette Magazine (4 diskettes = 32 recipes); 4 threads; max job 512; ELCL batch job host for 4 jobs;
-  1 lane; network power [config 8 FE/t + 20 FE per craft]; no Expansion Cabinet. Default name MIDRANGEnn too.
-Two click zones: the console (hood, fascia, keyboard tray - their boxes in the shapes) opens the Terminal OS directly
-  (exactly like a Terminal Desk: same session, sign-on, screens); anywhere else on the cabinet opens the control panel
-  (as tier 1 with the magazine view: the magazine slot + its 4 diskettes, current jobs list). previews/gui_integrated_panel.
+A Midrange System or Integrated Midrange System is the root of its network (like the 2U / 4U rack controllers): it is a
+lane source and holds the network's energy buffer. Proposal: Midrange System = a 1-block controller (lanes 4 x
+lanes.perControllerFace = 128, energy 4 x energyPerBlock = 100,000 FE); Integrated = the 2U rack controller (192 lanes,
+500,000 FE). Same rules as the rack controllers: one controller system per network - a Midrange with a block controller, a
+rack controller or another Midrange on one network -> "Controller conflict" on all of them; no redundant pairs. Everything
+else (job host, scheduler, diskettes) unchanged.
 
 =====================================================================================================
-5. PERIPHERALS (each 1 block of logic; footprints above)
+5. STORAGE: DISK DRIVE AND TAPE DRIVE
 =====================================================================================================
-Connection: works when ADJACENT to any block of a Midrange System, Expansion Cabinet or Integrated Midrange System, or
-cabled to the same network (open question 3: lanes when cabled). Uses the nearest / first Midrange on the network.
-  keypunch - desk with a pedestal (right) and kneehole (left), keyboard on the desk, raised card-path unit at the back,
-    card hopper (top right, tilted), punch station, stacker (top left). Encodes ONE crafting recipe onto a blank Punch
-    Card. GUI: 3x3 grid, output preview, blank-card slot, punched-card slot, PUNCH (F6). Active: card_feed.png (8 x 2
-    ticks) runs along the card bed; sound keypunch_clatter.
-  card_reader - box reader: input hopper (right), output stacker (left), feed track between, operator lamps. Reads up to
-    8 cards onto an 8" Diskette (8 recipes per diskette; duplicates replace). GUI: 8-card hopper, diskette slot, READ (F6).
-    Active: track.png (6 x 1 tick) + lamps; sound card_reader_whirr.
-  line_printer - stand cabinet, printer unit with the control strip, smoked lid raised, tractor ends, fan-fold paper
-    rising out of the top into the rear wire basket. Prints Written Books: network inventory listing, job log, device
-    list, or an ELCL spooled file (report 4, File *LAST or a name). Consumes paper (open question 5). Active:
-    paper_printing.png scrolls (8 x 2), panel_glow.png; sound line_printer_chatter.
-  Peripheral GUIs: previews/gui_keypunch, gui_card_reader, gui_line_printer (green-screen, slots as phosphor frames).
+  disk_drive - holds ONE Storage Drive item (any tier) and serves it as hot storage exactly like a Drive Bay slot
+    (same capacity, priority, fullness rules); 1 lane; spin-up 40 ticks after insertion before it's readable (window_spin);
+    4=Unload / sneak-use spins down (20 ticks) then ejects. Device type DISK, names DISK01...
+  tape_drive - holds ONE Tape Reel (NEW item, 65,536 items, 1,024 types [config]) as COLD storage in the same tier as the Tape
+    Libraries (archive / recall rules of the tape-library handoff; this is one drive with one reel, no picker): load 100 ticks,
+    read/write 3 s + 1 s per 4K items; reels turn while reading/writing. 1 lane. Device type TAPE, names TAPE01...
+  tape_reel - item; tooltip "n / 65,536 items"; contents kept in a data component (like LTO tapes).
 
 =====================================================================================================
-6. ITEMS
+6. RECIPES (new; others unchanged)
 =====================================================================================================
-  punch_card        blank / punched (component encodedlogistics:punched_recipe; items/punch_card.json switches the icon).
-                    Shift tooltip: the encoded recipe.
-  diskette_8in      blank / written (encodedlogistics:diskette_recipes: library name + up to 8 recipes). Tooltip lists them.
-  diskette_magazine holder for up to 4 diskettes (component encodedlogistics:magazine_contents; open it with use to put
-                    diskettes in, like a bundle); tooltip "n of 4 diskettes" + their libraries.
-ENCODING CHAIN: Keypunch (recipe -> Punch Card) -> Card Reader (cards -> 8" Diskette, max 8) -> Midrange System slot(s),
-or Diskette Magazine -> Integrated Midrange System.
+  disk_drive   circuit substrate + logic die + ferrite x2 + iron x3 + blue dye
+  tape_drive   circuit substrate + logic die + ferrite + iron x3 + glass pane + blue dye
+  tape_reel    ferrite + paper x2 + iron nugget x2 -> 2
 
 =====================================================================================================
-7. TERMINAL OS AND ELCL INTEGRATION (integrate - don't duplicate)
+7. FILES
 =====================================================================================================
-Review: elcl/ (cmd, compile, exec, lex, parse, screen) is in; the job layer is still stubbed - StubJobService.submit
-always returns ELC0301 ("no job host"), ScreenQueries.jobs shows hosts 0/0, StubSpoolService.print always ELC1301
-(no Line Printer). docs/elcl/SCREEN_INVENTORY.md lists them.
-  - Job hosts: add a small elcl.job.JobHost interface (name, capacity, running jobs, accepts(job), start, tick, end) and a
-    per-network registry; MIDRANGE systems register on load: tier 1 capacity 1 (+1 with an Expansion Cabinet), tier 2
-    capacity 4. SBMJOB places the job on a host with room or *JOBQ; no host = ELC0301 (as specified). Unload / power
-    loss: job ended, ELC0310. docs/elcl/OS.md's job host table is updated in this zip (copy it over the repo's).
-  - Work with Active Jobs: Midrange batch jobs appear with Host = the system's device name, Type BCH; row 2 "Hosts n/m"
-    counts Midrange hosts (and Compute Servers when they register).
-  - SAVLIB / RSTLIB DEV(): any Midrange System, Integrated Midrange System (a diskette in its magazine) or Card Reader
-    holding a diskette; the library is written to / read from that diskette (OS.md: libraries save to 8" diskettes).
-  - PRTRPT RPT(*INV|*DEV|*JOBLOG|*SPLF) and WRKSPLF 6=Print print on a Line Printer (DEV(*DFT) = the first on the
-    network); ELC1306 out of paper. Replace StubSpoolService.print.
-  - The Integrated system's console = a Terminal Desk session (same TerminalSession / CrtScreen), so MAIN, Command Entry
-    and every OS screen work from it.
+assets/encodedlogistics/ blockstates, models/block/<block>/*, textures/block/<block>/* (+ .mcmeta) for midrange_system,
+  expansion_cabinet, integrated_midrange, keypunch, card_reader, line_printer, disk_drive, tape_drive; textures/item/
+  {disk_drive,tape_drive,tape_reel}.png, models/item/*, items/*; lang/en_us.midrange_v3.json -> MERGE
+data/encodedlogistics/recipe/{disk_drive,tape_drive,tape_reel}.json, loot_table/blocks/{disk_drive,tape_drive}.json
+shapes/collision_shapes.json (shapes, footprints, click zones); blockbench/*.bbmodel; layouts/*.txt (the 7 screens);
+previews/ overview, midrange_pair, integrated, printer, disk_close, tape_close, crt_*; tools/ (mr3.py, mr3_export.py, mr3_screens.py)
 
 =====================================================================================================
-8. RECIPES (data/encodedlogistics/recipe/; adjust freely)
+8. OPEN QUESTIONS (proposals included)
 =====================================================================================================
-  midrange_system      shaped "SLS"/"FIC"/" L ": circuit substrate x2, logic die x2, ferrite, iron, copper foil
-  expansion_cabinet    shapeless: circuit substrate + logic die + iron + ferrite
-  integrated_midrange  shapeless: Midrange System + Expansion Cabinet + Terminal Desk + memory die x2 (consumes tier 1 - open q 2)
-  keypunch             shapeless: circuit substrate + logic die + crafting table + iron
-  card_reader          shapeless: circuit substrate + logic die + hopper + iron
-  line_printer         shapeless: circuit substrate + logic die + ink sac + iron + paper
-  punch_card           shapeless: paper x4 -> 8
-  diskette_8in         shapeless: ferrite + paper + copper foil
-  diskette_magazine    shapeless: iron x2 + paper (an empty holder; diskettes are added by the player)
+  1. Midrange controller capacity (128 lanes / 100k FE tier 1; 192 / 500k tier 2) - or match the block controller's
+     connected-faces rule?
+  2. Tape Reel capacity (65,536 items / 1,024 types) and whether Tape Libraries also accept reels.
+  3. Disk Drive: should it accept only lower tiers (8K-128K) to keep the Drive Bay / NAS the bulk option?
 
 =====================================================================================================
-9. FILES
+9. PRINTOUT (new item - the Line Printer's output, replaces Written Books)
 =====================================================================================================
-assets/encodedlogistics/
-  blockstates/{midrange_system,expansion_cabinet,integrated_midrange,keypunch,card_reader,line_printer}.json
-  models/block/midrange_system/midrange_system_{none,pos,neg}(_{ipl,run,busy,attn}).json, empty.json
-  models/block/expansion_cabinet/expansion_cabinet_{none,pos,neg}(_lamp).json
-  models/block/integrated_midrange/integrated_midrange(_{ipl,run,busy,attn}|_screen_{boot,on}).json, empty.json
-  models/block/{keypunch,card_reader,line_printer}/*.json; models/item/*; items/*
-  textures/block/midrange_system/{cabinet (atlas, 1 texel/px),panels (4 texels/px),panel_<state> (+ .mcmeta)}.png
-  textures/block/expansion_cabinet/{cabinet,lamp_on}.png
-  textures/block/integrated_midrange/{cabinet,panels,fascia_<state> (+ .mcmeta)}.png (screen reuses terminal_desk's)
-  textures/block/keypunch/{cabinet,card_feed (+ .mcmeta)}.png, card_reader/{cabinet,track (+ .mcmeta),lamps_on}.png,
-    line_printer/{cabinet,panel,panel_glow (+ .mcmeta),lid,paper,paper_printing (+ .mcmeta)}.png
-  textures/item/{midrange_system,expansion_cabinet,integrated_midrange,keypunch,card_reader,line_printer,punch_card,
-    punch_card_punched,diskette_8in,diskette_8in_written,diskette_magazine}.png
-  sounds/block/midrange/*.ogg; sounds.midrange.json -> MERGE into sounds.json; lang/en_us.midrange.json -> MERGE
-data/encodedlogistics/recipe/*.json, loot_table/blocks/*.json; minecraft mineable tag
-shapes/collision_shapes.json - per-block collision/selection boxes for every footprint
-docs/elcl/OS.md - the job host table updated (copy over the repo's)
-blockbench/*.bbmodel - every block (midrange_system and _with_expansion)
-SOUNDS.txt; previews/ overview (with 1.8 m reference columns and a Terminal Desk), midrange_pair, integrated,
-  peripherals, item_icons, gui_*; tools/ (mr2_tex, mr2_models, mr2_export, mr2_gui, mr2_preview + shared)
-
-=====================================================================================================
-10. OPEN QUESTIONS (proposals included)
-=====================================================================================================
-  1. Speed / max job: tier 1 40 ticks per step, max 64 (128 with the cabinet); tier 2 25 ticks per step, max 512.
-  2. Integrated recipe: consumes the tier 1 Midrange System and its Expansion Cabinet (an upgrade path) - keep, or
-     craft fresh from Phase 2 parts?
-  3. Peripherals cabled instead of adjacent: no lane cost (they are I/O for the Midrange, not network devices).
-  4. Punch Cards in the Schematic Encoder: yes - a punched card upgrades to an Encoded Schematic (Crafting).
-  5. Line Printer paper: 1 paper per page (inventory ~40 items, job log / device list ~14 lines per page).
+Item encodedlogistics:printout, stack size 1. Component encodedlogistics:printout {title, report (inventory | joblog | devices |
+splf:<name>), system, printed (game day + time), printer (device name), pages: list of pages, each up to 48 lines of up to 56
+characters + an ink per line (normal | light | red)}. Icon: textures/item/printout.png (1 page) or printout_stack.png (fan-fold
+stack, 2+ pages) via items/printout.json (range_dispatch on the page count). Tooltip: title, pages, "Printed on PRINTER01, Day 2
+14:32".
+Page format (tools/printout.py is the reference renderer - render it exactly so): a 384 x 512 canvas = textures/printout/paper.png
+(green bars 3 lines tall every 6 lines, 24 px tractor strips with sprocket holes every 16 px, perforations) + text in the
+terminal font sheet (textures/font/terminal.png, 6 x 10 cells, drawn glyph by glyph - NOT the MC font) at x 32 + col * 6,
+y 16 + row * 10: 56 columns x 48 rows. Row 0: system (left), title (centred), date (right); row 1: "ENCODED LOGISTICS" + "PAGE n
+OF m" (light ink); row 2: a rule (box glyph U+2500, light); body from row 4; row 47: "*** END OF REPORT ***" on the last page,
+else "*** CONTINUED ***" (light). Inks: normal 2C3036, light 5A606A, red 9E2A22 (alerts: low stock, held jobs).
+Rendering:
+  - Held: like a filled map - first person (one or both hands), the page fills the view (ItemInHandRenderer map path with a
+    dynamic texture of the current page, cached per item stack + page). Previews: previews/printout_in_hand.png.
+  - Item frame: the first page on the frame, like a map.
+  - Use (right-click): a reader screen in the game's GUI kit: dark panel, title (TEXT), the page at the largest integer scale
+    that fits, page arrows (terminal/button) and "Page n of m"; PageUp/PageDown and the scroll wheel turn pages; Esc closes.
+    previews/printout_reader.png.
+Line Printer: each report becomes ONE printout item with all its pages (1 paper per page, as before; out of paper mid-report
+-> the pages printed so far are output and the job waits with ELC1306). Reports format as in previews/printout_page_*.png:
+  inventory: ITEM (30) QUANTITY (8, grouped) TIER (5) LOCATION; light ink for cold-tier rows; totals; red LOW STOCK lines;
+  job log: TIME JOB EVENT, red for held / failed jobs; devices: NAME TYPE STATUS LANES LOCATION; spooled file: its lines as-is
+  (cut at 56 columns, continued on the next line with a light ">").
+Files: textures/printout/paper.png, textures/item/printout.png, printout_stack.png, models/item/printout*.json,
+items/printout.json, lang keys in en_us.midrange_v3.json; tools/printout.py.

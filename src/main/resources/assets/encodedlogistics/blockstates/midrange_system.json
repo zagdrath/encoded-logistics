@@ -2,703 +2,236 @@
  "multipart": [
   {
    "when": {
-    "part": "master",
     "facing": "north",
-    "expansion": "none"
+    "expansion": "false"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none"
+    "model": "encodedlogistics:block/midrange_system/midrange_system"
    }
   },
   {
    "when": {
-    "part": "master",
+    "facing": "east",
+    "expansion": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "expansion": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "expansion": "false"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system",
+    "y": 270
+   }
+  },
+  {
+   "when": {
     "facing": "north",
-    "expansion": "none",
+    "expansion": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_expansion"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "expansion": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_expansion",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "expansion": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_expansion",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "expansion": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_expansion",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
     "state": "ipl"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_ipl"
+    "model": "encodedlogistics:block/midrange_system/midrange_system_ipl"
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "none",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_run"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "none",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_busy"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "none",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_attn"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
     "facing": "east",
-    "expansion": "none"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "none",
     "state": "ipl"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_ipl",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_ipl",
     "y": 90
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "none",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_run",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "none",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_busy",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "none",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_attn",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
     "facing": "south",
-    "expansion": "none"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "none",
     "state": "ipl"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_ipl",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_ipl",
     "y": 180
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "none",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_run",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "none",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_busy",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "none",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_attn",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
     "facing": "west",
-    "expansion": "none"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "none",
     "state": "ipl"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_ipl",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_ipl",
     "y": 270
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "none",
+    "facing": "north",
     "state": "run"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_run",
-    "y": 270
+    "model": "encodedlogistics:block/midrange_system/midrange_system_run"
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "none",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_busy",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "none",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_none_attn",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "pos",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_ipl"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "pos",
+    "facing": "east",
     "state": "run"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_run"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "pos",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_busy"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "pos",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_attn"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_run",
     "y": 90
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "pos",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_ipl",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "pos",
+    "facing": "south",
     "state": "run"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_run",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "pos",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_busy",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "pos",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_attn",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_run",
     "y": 180
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "pos",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_ipl",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "pos",
+    "facing": "west",
     "state": "run"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_run",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "pos",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_busy",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "pos",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_attn",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_run",
     "y": 270
    }
   },
   {
    "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "pos",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_ipl",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "pos",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_run",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "pos",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_busy",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "pos",
-    "state": "attn"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_pos_attn",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
     "facing": "north",
-    "expansion": "neg"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "neg",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_ipl"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "neg",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_run"
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "north",
-    "expansion": "neg",
     "state": "busy"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_busy"
+    "model": "encodedlogistics:block/midrange_system/midrange_system_busy"
    }
   },
   {
    "when": {
-    "part": "master",
+    "facing": "east",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_busy",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_busy",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "busy"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/midrange_system/midrange_system_busy",
+    "y": 270
+   }
+  },
+  {
+   "when": {
     "facing": "north",
-    "expansion": "neg",
     "state": "attn"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_attn"
+    "model": "encodedlogistics:block/midrange_system/midrange_system_attn"
    }
   },
   {
    "when": {
-    "part": "master",
     "facing": "east",
-    "expansion": "neg"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "neg",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_ipl",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "neg",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_run",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "neg",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_busy",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "east",
-    "expansion": "neg",
     "state": "attn"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_attn",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_attn",
     "y": 90
    }
   },
   {
    "when": {
-    "part": "master",
     "facing": "south",
-    "expansion": "neg"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "neg",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_ipl",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "neg",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_run",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "neg",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_busy",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "south",
-    "expansion": "neg",
     "state": "attn"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_attn",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_attn",
     "y": 180
    }
   },
   {
    "when": {
-    "part": "master",
     "facing": "west",
-    "expansion": "neg"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "neg",
-    "state": "ipl"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_ipl",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "neg",
-    "state": "run"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_run",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "neg",
-    "state": "busy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_busy",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "master",
-    "facing": "west",
-    "expansion": "neg",
     "state": "attn"
    },
    "apply": {
-    "model": "encodedlogistics:block/midrange_system/midrange_system_neg_attn",
+    "model": "encodedlogistics:block/midrange_system/midrange_system_attn",
     "y": 270
-   }
-  },
-  {
-   "when": {
-    "part": "dummy"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/midrange_system/empty"
    }
   }
  ]

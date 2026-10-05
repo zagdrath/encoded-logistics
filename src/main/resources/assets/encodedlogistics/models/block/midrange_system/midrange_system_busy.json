@@ -1,0 +1,69 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "lamps": "encodedlogistics:block/midrange_system/lamps_busy",
+  "disp": "encodedlogistics:block/midrange_system/display_busy",
+  "particle": "encodedlogistics:block/midrange_system/lamps_busy"
+ },
+ "elements": [
+  {
+   "name": "oper_lamps",
+   "from": [
+    -1,
+    13,
+    5.99
+   ],
+   "to": [
+    6,
+    16,
+    5.99
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lamps",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  },
+  {
+   "name": "oper_display",
+   "from": [
+    -0.5,
+    14.25,
+    5.98
+   ],
+   "to": [
+    2.5,
+    15.5,
+    5.98
+   ],
+   "faces": {
+    "north": {
+     "texture": "#disp",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

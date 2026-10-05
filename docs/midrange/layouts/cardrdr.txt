@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  CARDRDR                          Card Reader                  System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Deck in the hopper is read onto the diskette in the reader slot.
+03 | 
+04 |  Seq  Card recipe                      Status
+05 |   1   Midrange System x1               new
+06 |   2   Circuit Substrate x2             new
+07 |   3   Copper Foil x2                   replaces 3
+08 |   4   Keypunch x1                      new
+09 |   5   Logic Die x1                     new
+10 | 
+11 |  Diskette . . . . :   TOOLLIB   3 of 8   ->  7 of 8 after reading
+12 | 
+13 |  Load cards on the hopper; insert a diskette in the slot.
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 | 
+21 | 
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F6=Read F12=Cancel

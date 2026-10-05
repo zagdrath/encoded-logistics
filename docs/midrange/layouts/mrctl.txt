@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  MRCTL                       Midrange Control Panel            System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  System:  MIDRANGE01   A6 RUNNING   Threads 2   Max job 128   Batch 2
+03 |  Type options, press Enter.
+04 |    4=Eject   5=Display recipes   8=Make default library
+05 | 
+06 | Opt  Drive  Library     Recipes  Status
+07 |      1      PRODLIB     5 of 8   *DFT
+08 |      2      TOOLLIB     3 of 8   *READY
+09 |      Insert a diskette by using it on the drive slot.
+10 | 
+11 |  Opt  Job   Item                 Qty  Status     Progress
+12 |      0007  Logic Die             16  *ACTIVE    41%
+13 |      0008  Copper Foil           32  *QUEUED
+14 |      0010  Heatsink               4  *HELD      missing Ferrite
+15 | 
+16 |    3=Hold   4=End   6=Release
+17 | 
+18 | 
+19 | 
+20 |  Selection or command
+21 |  ===>
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F7=IPL F10=Hold queue F11=Release F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (12,0,3) input; (13,0,3) input; (14,0,3) input

@@ -28,10 +28,10 @@ import net.zagdrath.encodedlogistics.midrange.FootprintBlock.Part;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
 // The Expansion Cabinet (HANDOFF 3): an upgrade for a Midrange System - one more thread, diskette slot and batch job, max
-// job 128. It attaches when it stands directly beside a system's footprint along its width (left of the master or right
-// of the dummy), facing the same way in the same row, one per system; ATTACHED is the side the system is on (its model
-// sits flush toward it) and the system's EXPANSION the side the cabinet is on. Anywhere else it does nothing. LIT: its
-// lamp, while attached to a system that's on.
+// job 128. It attaches when it stands directly beside a system along its width, facing the same way, one per system;
+// ATTACHED is the side the system is on (its model sits flush against the system's overhang, so the pair reads as one
+// 28 px machine) and the system shows EXPANSION. Anywhere else it does nothing. LIT: its lamp, while attached to a
+// system that's on.
 public class ExpansionCabinetBlock extends Block {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<MidrangeStates.Side> ATTACHED = MidrangeStates.ATTACHED;
@@ -80,37 +80,33 @@ public class ExpansionCabinetBlock extends Block {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
         Direction facing = state.getValue(FACING);
-        Direction right = facing.getClockWise();
-        BlockPos system = switch (state.getValue(ATTACHED)) {
-            case POS -> pos.relative(right);
-            case NEG -> pos.relative(right, -2);
-            case NONE -> null;
-        };
-        if (system != null && isMaster(level, system, facing)) {
-            level.setBlock(system, level.getBlockState(system).setValue(MidrangeStates.EXPANSION, MidrangeStates.Side.NONE), Block.UPDATE_ALL);
+        BlockPos system = system(level, pos, state);
+        if (system != null && isSystem(level, system, facing)) {
+            level.setBlock(system, level.getBlockState(system).setValue(MidrangeStates.EXPANSION, false), Block.UPDATE_ALL);
             refreshAround(level, system, facing);
         }
     }
 
     // --- Attaching ---
 
-    private static boolean isMaster(Level level, BlockPos pos, Direction facing) {
+    private static boolean isSystem(Level level, BlockPos pos, Direction facing) {
         BlockState state = level.getBlockState(pos);
         return state.is(ModBlocks.MIDRANGE_SYSTEM.get()) && state.getValue(FootprintBlock.PART) == Part.MASTER
                 && state.getValue(FootprintBlock.FACING) == facing;
     }
 
-    // The cabinets that could attach to a system (left of its master, right of its dummy) look again.
-    public static void refreshAround(ServerLevel level, BlockPos master, Direction facing) {
+    // The cabinets that could attach to a system (either side of it) look again.
+    public static void refreshAround(ServerLevel level, BlockPos system, Direction facing) {
         Direction right = facing.getClockWise();
-        for (BlockPos pos : new BlockPos[] { master.relative(right, -1), master.relative(right, 2) }) {
+        for (BlockPos pos : new BlockPos[] { system.relative(right, -1), system.relative(right) }) {
             if (level.getBlockState(pos).getBlock() instanceof ExpansionCabinetBlock) {
                 refresh(level, pos);
             }
         }
     }
 
-    // A cabinet attaches to the system beside it (if that system has no cabinet yet), or comes loose.
+    // A cabinet attaches to the system beside it (if that system has no cabinet yet: the system to its +x first), or
+    // comes loose.
     public static void refresh(ServerLevel level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         if (!(state.getBlock() instanceof ExpansionCabinetBlock)) {
@@ -120,30 +116,40 @@ public class ExpansionCabinetBlock extends Block {
         Direction right = facing.getClockWise();
         MidrangeStates.Side attached = MidrangeStates.Side.NONE;
         BlockPos system = null;
-        // The system's master to the cabinet's +x (the cabinet on its -x side), or its dummy to the cabinet's -x.
-        if (isMaster(level, pos.relative(right), facing) && free(level, pos.relative(right), MidrangeStates.Side.NEG)) {
+        if (isSystem(level, pos.relative(right), facing) && free(level, pos.relative(right), pos, facing)) {
             attached = MidrangeStates.Side.POS;
             system = pos.relative(right);
-        } else if (isMaster(level, pos.relative(right, -2), facing) && free(level, pos.relative(right, -2), MidrangeStates.Side.POS)) {
+        } else if (isSystem(level, pos.relative(right, -1), facing) && free(level, pos.relative(right, -1), pos, facing)) {
             attached = MidrangeStates.Side.NEG;
-            system = pos.relative(right, -2);
+            system = pos.relative(right, -1);
         }
         if (state.getValue(ATTACHED) != attached) {
             level.setBlock(pos, state.setValue(ATTACHED, attached), Block.UPDATE_ALL);
         }
         if (system != null) {
-            MidrangeStates.Side expansion = attached == MidrangeStates.Side.POS ? MidrangeStates.Side.NEG : MidrangeStates.Side.POS;
             BlockState systemState = level.getBlockState(system);
-            if (systemState.getValue(MidrangeStates.EXPANSION) != expansion) {
-                level.setBlock(system, systemState.setValue(MidrangeStates.EXPANSION, expansion), Block.UPDATE_ALL);
+            if (!systemState.getValue(MidrangeStates.EXPANSION)) {
+                level.setBlock(system, systemState.setValue(MidrangeStates.EXPANSION, true), Block.UPDATE_ALL);
             }
         }
     }
 
-    // Whether a system takes a cabinet on that side: none yet, or this one.
-    private static boolean free(Level level, BlockPos system, MidrangeStates.Side side) {
-        MidrangeStates.Side expansion = level.getBlockState(system).getValue(MidrangeStates.EXPANSION);
-        return expansion == MidrangeStates.Side.NONE || expansion == side;
+    // Whether a system takes this cabinet: it has none, or this one.
+    private static boolean free(Level level, BlockPos system, BlockPos cabinet, Direction facing) {
+        BlockPos other = cabinetOf(level, system, facing);
+        return other == null || other.equals(cabinet);
+    }
+
+    // The cabinet attached to a system (beside it, attached toward it), or null.
+    public static @Nullable BlockPos cabinetOf(BlockGetter level, BlockPos system, Direction facing) {
+        Direction right = facing.getClockWise();
+        for (BlockPos pos : new BlockPos[] { system.relative(right, -1), system.relative(right) }) {
+            BlockState state = level.getBlockState(pos);
+            if (state.getBlock() instanceof ExpansionCabinetBlock && state.getValue(FACING) == facing && system.equals(system(level, pos, state))) {
+                return pos;
+            }
+        }
+        return null;
     }
 
     // The system this cabinet is attached to, or null.
@@ -151,7 +157,7 @@ public class ExpansionCabinetBlock extends Block {
         Direction right = state.getValue(FACING).getClockWise();
         return switch (state.getValue(ATTACHED)) {
             case POS -> pos.relative(right);
-            case NEG -> pos.relative(right, -2);
+            case NEG -> pos.relative(right, -1);
             case NONE -> null;
         };
     }

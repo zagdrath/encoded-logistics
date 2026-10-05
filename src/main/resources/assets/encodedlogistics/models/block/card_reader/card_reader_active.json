@@ -1,128 +1,189 @@
 {
  "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
  "textures": {
-  "cr": "encodedlogistics:block/card_reader/cabinet",
+  "t": "encodedlogistics:block/card_reader/cabinet",
   "feed": "encodedlogistics:block/card_reader/track",
   "lamps": "encodedlogistics:block/card_reader/lamps_on",
   "particle": "encodedlogistics:block/card_reader/cabinet"
  },
  "elements": [
   {
-   "name": "body",
+   "name": "cabinet",
    "from": [
-    3,
+    2,
     0,
-    6
+    5
    ],
    "to": [
-    13,
-    12,
+    14,
+    9,
     16
    ],
    "faces": {
     "north": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
       0.0,
       0.0,
-      2.5,
-      3.0
+      3.0,
+      2.25
      ]
     },
     "south": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      5.25,
+      3.0,
       0.0,
-      2.75,
-      3.0
+      0.0,
+      2.25
      ]
     },
     "east": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      2.75,
+      3.25,
       0.0,
-      5.25,
-      3.0
+      6.0,
+      2.25
      ]
     },
     "west": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      5.25,
+      6.0,
       0.0,
-      2.75,
-      3.0
-     ]
-    },
-    "up": {
-     "texture": "#cr",
-     "uv": [
-      5.5,
-      0.0,
-      8.0,
-      2.5
+      3.25,
+      2.25
      ]
     }
    }
   },
   {
-   "name": "hopper",
+   "name": "deck",
    "from": [
-    3,
-    12,
+    1,
+    9,
+    4
+   ],
+   "to": [
+    15,
+    11,
+    16
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      6.25,
+      0.0,
+      9.75,
+      0.5
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      9.75,
+      0.0,
+      6.25,
+      0.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      10.0,
+      0.0,
+      13.0,
+      0.5
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      0.0,
+      10.0,
+      0.5
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      2.5,
+      3.5,
+      5.5
+     ]
+    }
+   }
+  },
+  {
+   "name": "chute",
+   "from": [
+    2,
+    11,
     7
    ],
    "to": [
     7,
-    16,
-    15
+    15,
+    14
    ],
    "faces": {
     "north": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      8.25,
-      0.0,
-      9.25,
-      1.0
+      5.75,
+      2.5,
+      7.0,
+      3.5
      ]
     },
     "south": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      9.25,
-      0.0,
-      8.25,
-      1.0
+      7.0,
+      2.5,
+      5.75,
+      3.5
      ]
     },
     "east": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      8.25,
-      0.0,
-      9.25,
-      1.0
+      5.75,
+      2.5,
+      7.0,
+      3.5
      ]
     },
     "west": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      9.25,
-      0.0,
-      8.25,
-      1.0
+      7.0,
+      2.5,
+      5.75,
+      3.5
      ]
     },
     "up": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      10.75,
-      0.0,
-      11.75,
-      2.0
+      7.25,
+      2.5,
+      8.5,
+      4.25
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      5.75,
+      2.5,
+      7.0,
+      3.5
      ]
     }
    }
@@ -131,82 +192,67 @@
    "name": "stacker",
    "from": [
     9,
-    12,
+    11,
     7
    ],
    "to": [
-    13,
     14,
-    15
+    12,
+    14
    ],
    "faces": {
     "north": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      8.25,
-      0.0,
-      9.25,
-      1.0
+      5.75,
+      2.5,
+      7.0,
+      3.5
      ]
     },
     "south": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      9.25,
-      0.0,
-      8.25,
-      1.0
+      7.0,
+      2.5,
+      5.75,
+      3.5
      ]
     },
     "east": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      8.25,
-      0.0,
-      9.25,
-      1.0
+      5.75,
+      2.5,
+      7.0,
+      3.5
      ]
     },
     "west": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      9.25,
-      0.0,
-      8.25,
-      1.0
+      7.0,
+      2.5,
+      5.75,
+      3.5
      ]
     },
     "up": {
-     "texture": "#cr",
+     "texture": "#t",
      "uv": [
-      10.75,
-      0.0,
-      11.75,
-      2.0
+      7.25,
+      2.5,
+      8.5,
+      4.25
      ]
-    }
-   }
-  },
-  {
-   "name": "track",
-   "from": [
-    7,
-    12,
-    10
-   ],
-   "to": [
-    9,
-    12.3,
-    12
-   ],
-   "faces": {
-    "up": {
-     "texture": "#cr",
+    },
+    "down": {
+     "texture": "#t",
      "uv": [
-      12.0,
-      0.0,
-      12.5,
-      2.0
+      5.75,
+      2.5,
+      7.0,
+      3.5
      ]
     }
    }
@@ -215,22 +261,22 @@
    "name": "feed",
    "from": [
     7,
-    12.32,
-    7
+    11.01,
+    9
    ],
    "to": [
     9,
-    12.32,
-    15
+    11.01,
+    12
    ],
    "faces": {
     "up": {
      "texture": "#feed",
      "uv": [
       7,
-      7,
+      6,
       9,
-      9
+      10
      ]
     }
    }
@@ -238,22 +284,22 @@
   {
    "name": "lamps",
    "from": [
-    3,
-    0,
-    5.98
+    9,
+    9,
+    3.99
    ],
    "to": [
-    13,
-    12,
-    5.98
+    14,
+    11,
+    3.99
    ],
    "faces": {
     "north": {
      "texture": "#lamps",
      "uv": [
-      3,
-      4,
-      13,
+      0,
+      0,
+      16,
       16
      ]
     }
@@ -264,6 +310,5 @@
    },
    "shade": false
   }
- ],
- "render_type": "minecraft:cutout"
+ ]
 }

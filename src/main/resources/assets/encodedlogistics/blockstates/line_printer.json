@@ -3,53 +3,53 @@
   "facing=north,part=master,active=false": {
    "model": "encodedlogistics:block/line_printer/line_printer"
   },
+  "facing=north,part=dummy,active=false": {
+   "model": "encodedlogistics:block/line_printer/empty"
+  },
   "facing=north,part=master,active=true": {
    "model": "encodedlogistics:block/line_printer/line_printer_active"
+  },
+  "facing=north,part=dummy,active=true": {
+   "model": "encodedlogistics:block/line_printer/empty"
   },
   "facing=east,part=master,active=false": {
    "model": "encodedlogistics:block/line_printer/line_printer",
    "y": 90
   },
+  "facing=east,part=dummy,active=false": {
+   "model": "encodedlogistics:block/line_printer/empty"
+  },
   "facing=east,part=master,active=true": {
    "model": "encodedlogistics:block/line_printer/line_printer_active",
    "y": 90
+  },
+  "facing=east,part=dummy,active=true": {
+   "model": "encodedlogistics:block/line_printer/empty"
   },
   "facing=south,part=master,active=false": {
    "model": "encodedlogistics:block/line_printer/line_printer",
    "y": 180
   },
+  "facing=south,part=dummy,active=false": {
+   "model": "encodedlogistics:block/line_printer/empty"
+  },
   "facing=south,part=master,active=true": {
    "model": "encodedlogistics:block/line_printer/line_printer_active",
    "y": 180
+  },
+  "facing=south,part=dummy,active=true": {
+   "model": "encodedlogistics:block/line_printer/empty"
   },
   "facing=west,part=master,active=false": {
    "model": "encodedlogistics:block/line_printer/line_printer",
    "y": 270
   },
+  "facing=west,part=dummy,active=false": {
+   "model": "encodedlogistics:block/line_printer/empty"
+  },
   "facing=west,part=master,active=true": {
    "model": "encodedlogistics:block/line_printer/line_printer_active",
    "y": 270
-  },
-  "facing=north,part=dummy,active=false": {
-   "model": "encodedlogistics:block/line_printer/empty"
-  },
-  "facing=north,part=dummy,active=true": {
-   "model": "encodedlogistics:block/line_printer/empty"
-  },
-  "facing=east,part=dummy,active=false": {
-   "model": "encodedlogistics:block/line_printer/empty"
-  },
-  "facing=east,part=dummy,active=true": {
-   "model": "encodedlogistics:block/line_printer/empty"
-  },
-  "facing=south,part=dummy,active=false": {
-   "model": "encodedlogistics:block/line_printer/empty"
-  },
-  "facing=south,part=dummy,active=true": {
-   "model": "encodedlogistics:block/line_printer/empty"
-  },
-  "facing=west,part=dummy,active=false": {
-   "model": "encodedlogistics:block/line_printer/empty"
   },
   "facing=west,part=dummy,active=true": {
    "model": "encodedlogistics:block/line_printer/empty"

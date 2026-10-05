@@ -24,8 +24,8 @@ public final class MidrangeStates {
         }
     }
 
-    // A side across the width: none, the +x side, the -x side (model-local). A Midrange System's Expansion Cabinet is on
-    // one; an Expansion Cabinet's Midrange System is on one.
+    // A side across the width: none, the +x side, the -x side (model-local). An Expansion Cabinet's Midrange System is on
+    // one.
     public enum Side implements StringRepresentable {
         NONE, POS, NEG;
 
@@ -46,7 +46,8 @@ public final class MidrangeStates {
     }
 
     public static final EnumProperty<Run> STATE = EnumProperty.create("state", Run.class);
-    public static final EnumProperty<Side> EXPANSION = EnumProperty.create("expansion", Side.class);
+    // A Midrange System with an Expansion Cabinet attached (its second diskette slot shows).
+    public static final BooleanProperty EXPANSION = BooleanProperty.create("expansion");
     public static final EnumProperty<Side> ATTACHED = EnumProperty.create("attached", Side.class);
     public static final EnumProperty<Console> CONSOLE = EnumProperty.create("console", Console.class);
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");

@@ -122,6 +122,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("wireless_survives_reload", WirelessGameTests::survivesReload);
         TESTS.put("midrange_footprints", MidrangeGameTests::footprints);
         TESTS.put("midrange_expansion_cabinet", MidrangeGameTests::expansionCabinet);
+        TESTS.put("midrange_integrated_zones", MidrangeGameTests::integratedZones);
         TESTS.put("midrange_peripherals", MidrangeGameTests::peripherals);
         TESTS.put("midrange_printer_pages", MidrangeGameTests::printerPages);
         TESTS.put("midrange_system_crafts", MidrangeGameTests::systemCrafts);

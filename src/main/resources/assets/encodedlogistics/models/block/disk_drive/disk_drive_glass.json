@@ -1,0 +1,118 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:translucent",
+ "textures": {
+  "glass": "encodedlogistics:block/disk_drive/glass",
+  "particle": "encodedlogistics:block/disk_drive/glass"
+ },
+ "elements": [
+  {
+   "name": "glass_slope",
+   "from": [
+    1.6,
+    11,
+    4.1
+   ],
+   "to": [
+    8,
+    16.2,
+    4.1
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "south": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "x",
+    "origin": [
+     4.5,
+     11,
+     4
+    ]
+   }
+  },
+  {
+   "name": "glass_top",
+   "from": [
+    1.6,
+    15.99,
+    6.7
+   ],
+   "to": [
+    8,
+    15.99,
+    15
+   ],
+   "faces": {
+    "up": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "down": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  },
+  {
+   "name": "glass_side",
+   "from": [
+    1.02,
+    11.2,
+    6.1
+   ],
+   "to": [
+    1.02,
+    15.5,
+    15
+   ],
+   "faces": {
+    "west": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    },
+    "east": {
+     "texture": "#glass",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   }
+  }
+ ]
+}

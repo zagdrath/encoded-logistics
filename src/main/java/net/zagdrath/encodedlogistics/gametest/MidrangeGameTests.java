@@ -40,6 +40,7 @@ import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.midrange.DisketteStack;
 import net.zagdrath.encodedlogistics.midrange.ExpansionCabinetBlock;
 import net.zagdrath.encodedlogistics.midrange.FootprintBlock;
+import net.zagdrath.encodedlogistics.midrange.IntegratedMidrangeBlock;
 import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangeStates;
@@ -70,52 +71,97 @@ final class MidrangeGameTests {
         return !helper.getBlockState(pos).getShape(helper.getLevel(), helper.absolutePos(pos), CollisionContext.empty()).isEmpty();
     }
 
-    // A Midrange System facing north: its dummy to the east; a Line Printer's three; shapes on every block; breaking a
-    // dummy breaks the whole footprint.
+    // A Midrange System facing north is one block; a Line Printer's dummy is above it; an Integrated Midrange System's
+    // five (left, right, and above the console) are round its master; shapes on every block; breaking a dummy breaks the
+    // whole footprint.
     static void footprints(GameTestHelper helper) {
-        BlockPos system = new BlockPos(1, 1, 1), printer = new BlockPos(1, 1, 4);
+        BlockPos system = new BlockPos(1, 1, 1), printer = new BlockPos(1, 1, 4), integrated = new BlockPos(4, 1, 4);
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
         place(helper, ModBlocks.LINE_PRINTER.get(), printer);
-        helper.assertBlockProperty(system.east(), FootprintBlock.PART, FootprintBlock.Part.DUMMY);
-        for (BlockPos pos : new BlockPos[] { printer.east(), printer.above(), printer.east().above() }) {
+        place(helper, ModBlocks.INTEGRATED_MIDRANGE.get(), integrated);
+        helper.assertBlockNotPresent(ModBlocks.MIDRANGE_SYSTEM.get(), system.east());
+        helper.assertBlockProperty(printer.above(), FootprintBlock.PART, FootprintBlock.Part.DUMMY);
+        for (BlockPos pos : new BlockPos[] { integrated.west(), integrated.east(), integrated.west().above(), integrated.above() }) {
             helper.assertBlockProperty(pos, FootprintBlock.PART, FootprintBlock.Part.DUMMY);
         }
-        helper.assertTrue(shaped(helper, system) && shaped(helper, system.east()) && shaped(helper, printer.above()), "A footprint block has no shape");
-        FootprintBlock block = (FootprintBlock) ModBlocks.LINE_PRINTER.get();
-        helper.assertTrue(helper.absolutePos(printer).equals(block.master(helper.getLevel(), helper.absolutePos(printer.east().above()),
-                helper.getBlockState(printer.east().above()))), "A dummy can't find its master");
-        helper.getLevel().destroyBlock(helper.absolutePos(printer.east().above()), false);
+        helper.assertBlockNotPresent(ModBlocks.INTEGRATED_MIDRANGE.get(), integrated.east().above());
+        helper.assertTrue(shaped(helper, system) && shaped(helper, printer) && shaped(helper, integrated.west().above()) && shaped(helper, integrated.east()),
+                "A footprint block has no shape");
+        FootprintBlock block = (FootprintBlock) ModBlocks.INTEGRATED_MIDRANGE.get();
+        helper.assertTrue(helper.absolutePos(integrated).equals(block.master(helper.getLevel(), helper.absolutePos(integrated.west().above()),
+                helper.getBlockState(integrated.west().above()))), "A dummy can't find its master");
+        helper.getLevel().destroyBlock(helper.absolutePos(printer.above()), false);
         helper.assertBlockNotPresent(ModBlocks.LINE_PRINTER.get(), printer);
-        helper.assertBlockNotPresent(ModBlocks.LINE_PRINTER.get(), printer.east());
-        helper.getLevel().destroyBlock(helper.absolutePos(system.east()), false);
-        helper.assertBlockNotPresent(ModBlocks.MIDRANGE_SYSTEM.get(), system);
+        helper.getLevel().destroyBlock(helper.absolutePos(integrated.west().above()), false);
+        helper.assertBlockNotPresent(ModBlocks.INTEGRATED_MIDRANGE.get(), integrated);
+        helper.assertBlockNotPresent(ModBlocks.INTEGRATED_MIDRANGE.get(), integrated.east());
         helper.succeed();
     }
 
-    // A cabinet left of the master: attached pos, the system's expansion neg; broken, the system's back to none. One right
-    // of the dummy: neg / pos; a second on the other side then stays unattached, as does one facing another way.
+    // The Integrated system's click zones, by where a click lands on the model, for each facing: the console hood and
+    // keyboard; the left body and magazine unit (the control panel); the right body (nothing).
+    static void integratedZones(GameTestHelper helper) {
+        BlockPos master = helper.absolutePos(new BlockPos(2, 1, 2));
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            // Model px (facing north) to the world, as the blockstate turns the model.
+            java.util.function.BiFunction<double[], Direction, net.minecraft.world.phys.Vec3> at = (p, f) -> {
+                double x = p[0], z = p[2];
+                double wx = switch (f) {
+                    case EAST -> 16 - z;
+                    case SOUTH -> 16 - x;
+                    case WEST -> z;
+                    default -> x;
+                };
+                double wz = switch (f) {
+                    case EAST -> x;
+                    case SOUTH -> 16 - z;
+                    case WEST -> 16 - x;
+                    default -> z;
+                };
+                return new net.minecraft.world.phys.Vec3(master.getX() + wx / 16, master.getY() + p[1] / 16, master.getZ() + wz / 16);
+            };
+            helper.assertTrue(IntegratedMidrangeBlock.zone(master, facing, at.apply(new double[] { 2, 18, 9 }, facing)) == IntegratedMidrangeBlock.Zone.CONSOLE,
+                    "The console hood, facing " + facing);
+            helper.assertTrue(IntegratedMidrangeBlock.zone(master, facing, at.apply(new double[] { 0, 14, 4.5 }, facing)) == IntegratedMidrangeBlock.Zone.CONSOLE,
+                    "The keyboard, facing " + facing);
+            helper.assertTrue(IntegratedMidrangeBlock.zone(master, facing, at.apply(new double[] { 15, 6, 4 }, facing)) == IntegratedMidrangeBlock.Zone.CONTROL_PANEL,
+                    "The left body, facing " + facing);
+            helper.assertTrue(IntegratedMidrangeBlock.zone(master, facing, at.apply(new double[] { 15, 16, 10 }, facing)) == IntegratedMidrangeBlock.Zone.CONTROL_PANEL,
+                    "The magazine unit, facing " + facing);
+            helper.assertTrue(IntegratedMidrangeBlock.zone(master, facing, at.apply(new double[] { -3, 6, 4 }, facing)) == IntegratedMidrangeBlock.Zone.NONE,
+                    "The right body, facing " + facing);
+        }
+        helper.succeed();
+    }
+
+    // A cabinet west of the system: attached pos (the system on its +x side), the system expanded; broken, it isn't. One
+    // to the east: neg; a second on the other side then stays unattached, as does one facing another way.
     static void expansionCabinet(GameTestHelper helper) {
-        BlockPos system = new BlockPos(2, 1, 2), left = system.west(), right = system.east(2), other = new BlockPos(2, 1, 4);
+        BlockPos system = new BlockPos(2, 1, 2), left = system.west(), right = system.east(), other = new BlockPos(2, 1, 4);
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
         BlockState cabinet = ModBlocks.EXPANSION_CABINET.get().defaultBlockState().setValue(ExpansionCabinetBlock.FACING, Direction.NORTH);
         helper.setBlock(left, cabinet);
         helper.assertBlockProperty(left, ExpansionCabinetBlock.ATTACHED, MidrangeStates.Side.POS);
-        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, MidrangeStates.Side.NEG);
+        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, true);
         helper.setBlock(left, Blocks.AIR);
-        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, MidrangeStates.Side.NONE);
+        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, false);
 
         helper.setBlock(right, cabinet);
         helper.assertBlockProperty(right, ExpansionCabinetBlock.ATTACHED, MidrangeStates.Side.NEG);
-        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, MidrangeStates.Side.POS);
+        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, true);
         helper.setBlock(left, cabinet);
         helper.assertBlockProperty(left, ExpansionCabinetBlock.ATTACHED, MidrangeStates.Side.NONE);
-        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, MidrangeStates.Side.POS);
+        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, true);
+        // The attached one gone: the other takes its place.
+        helper.setBlock(right, Blocks.AIR);
+        helper.assertBlockProperty(left, ExpansionCabinetBlock.ATTACHED, MidrangeStates.Side.POS);
+        helper.assertBlockProperty(system, MidrangeStates.EXPANSION, true);
 
         // Facing another way beside another system: nothing.
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), other);
         helper.setBlock(other.west(), cabinet.setValue(ExpansionCabinetBlock.FACING, Direction.SOUTH));
         helper.assertBlockProperty(other.west(), ExpansionCabinetBlock.ATTACHED, MidrangeStates.Side.NONE);
-        helper.assertBlockProperty(other, MidrangeStates.EXPANSION, MidrangeStates.Side.NONE);
+        helper.assertBlockProperty(other, MidrangeStates.EXPANSION, false);
         helper.succeed();
     }
 
@@ -126,7 +172,7 @@ final class MidrangeGameTests {
     // gone, they're offline and refuse.
     static void peripherals(GameTestHelper helper) {
         BlockPos rack = RackGameTests.networkedRack(helper);
-        BlockPos system = new BlockPos(3, 1, 4), reader = new BlockPos(2, 1, 4), keypunch = new BlockPos(3, 1, 5), printer = new BlockPos(5, 1, 4);
+        BlockPos system = new BlockPos(3, 1, 4), reader = new BlockPos(2, 1, 4), keypunch = new BlockPos(3, 1, 5), printer = new BlockPos(4, 1, 4);
         RackGameTests.cable(helper, new BlockPos(3, 1, 3));
         place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
         place(helper, ModBlocks.KEYPUNCH.get(), keypunch);

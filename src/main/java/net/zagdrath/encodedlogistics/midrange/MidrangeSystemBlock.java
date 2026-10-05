@@ -25,16 +25,16 @@ import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 
-// The Midrange System (tier 1, HANDOFF 2): a waist-high cabinet 2 blocks wide (master and a dummy to its +x), one lane on
-// the network from either block. STATE: its operator panel (off, IPL, run, busy, attention). EXPANSION: the side its
-// Expansion Cabinet is on (none, pos, neg) - the model moves flush toward it, so the pair reads as one machine.
+// The Midrange System (tier 1, HANDOFF 2): a waist-high cabinet on one block (18 px wide, overhanging a px each side),
+// one lane on the network. STATE: its operator panel (off, IPL, run, busy, attention). EXPANSION: an Expansion Cabinet
+// is attached beside it (the second diskette slot shows); the cabinet's model sits flush against it.
 public class MidrangeSystemBlock extends MidrangeHostBlock implements NetworkNodeBlock {
-    private static final List<Vec3i> FOOTPRINT = List.of(Vec3i.ZERO, new Vec3i(1, 0, 0));
+    private static final List<Vec3i> FOOTPRINT = List.of(Vec3i.ZERO);
 
     public MidrangeSystemBlock(BlockBehaviour.Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, Part.MASTER)
-                .setValue(MidrangeStates.STATE, MidrangeStates.Run.OFF).setValue(MidrangeStates.EXPANSION, MidrangeStates.Side.NONE));
+                .setValue(MidrangeStates.STATE, MidrangeStates.Run.OFF).setValue(MidrangeStates.EXPANSION, false));
     }
 
     public static int lightLevel(BlockState state) {
@@ -54,7 +54,7 @@ public class MidrangeSystemBlock extends MidrangeHostBlock implements NetworkNod
 
     @Override
     protected String shapeKey(BlockState state) {
-        return "midrange_system[expansion=" + state.getValue(MidrangeStates.EXPANSION).getSerializedName() + "]";
+        return "midrange_system";
     }
 
     @Override
@@ -82,12 +82,10 @@ public class MidrangeSystemBlock extends MidrangeHostBlock implements NetworkNod
 
     // --- Network ---
 
-    // The master is the device (a lane, its drain); the dummy passes lanes to it.
+    // A lane and its drain (the cabinet's too).
     @Override
     public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
-        boolean master = state.getValue(PART) == Part.MASTER;
-        double drain = Config.MIDRANGE_DRAIN.getAsDouble() + (state.getValue(MidrangeStates.EXPANSION) != MidrangeStates.Side.NONE
-                ? Config.EXPANSION_CABINET_DRAIN.getAsDouble() : 0);
-        return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), master ? 1 : 0, master ? drain : 0, List.of(), true);
+        double drain = Config.MIDRANGE_DRAIN.getAsDouble() + (state.getValue(MidrangeStates.EXPANSION) ? Config.EXPANSION_CABINET_DRAIN.getAsDouble() : 0);
+        return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), 1, drain, List.of(), true);
     }
 }

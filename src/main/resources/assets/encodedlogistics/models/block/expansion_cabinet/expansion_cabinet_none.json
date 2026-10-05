@@ -1,7 +1,8 @@
 {
  "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
  "textures": {
-  "cab": "encodedlogistics:block/expansion_cabinet/cabinet",
+  "t": "encodedlogistics:block/expansion_cabinet/cabinet",
   "particle": "encodedlogistics:block/expansion_cabinet/cabinet"
  },
  "elements": [
@@ -19,7 +20,7 @@
    ],
    "faces": {
     "north": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       0.0,
       0.0,
@@ -28,7 +29,7 @@
      ]
     },
     "south": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       8.5,
       0.0,
@@ -37,7 +38,7 @@
      ]
     },
     "east": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       2.75,
       0.0,
@@ -46,7 +47,7 @@
      ]
     },
     "west": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       5.75,
       0.0,
@@ -55,7 +56,7 @@
      ]
     },
     "up": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       8.75,
       0.0,
@@ -79,38 +80,38 @@
    ],
    "faces": {
     "north": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
-      3.25,
+      3.0,
       6.5,
-      5.75,
+      5.5,
       7.0
      ]
     },
     "south": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
-      5.75,
+      5.5,
       6.5,
-      3.25,
+      3.0,
       7.0
      ]
     },
     "east": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
-      6.0,
+      5.75,
       6.5,
-      9.0,
+      8.75,
       7.0
      ]
     },
     "west": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
-      9.0,
+      8.75,
       6.5,
-      6.0,
+      5.75,
       7.0
      ]
     }
@@ -125,48 +126,48 @@
    ],
    "to": [
     13,
-    16,
+    15,
     16
    ],
    "faces": {
     "north": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       11.5,
       0.0,
       14.0,
-      1.5
+      1.0
      ]
     },
     "south": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       14.0,
       0.0,
       11.5,
-      1.5
+      1.0
      ]
     },
     "east": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       0.0,
       6.5,
-      3.0,
-      8.0
+      2.75,
+      7.5
      ]
     },
     "west": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
-      3.0,
+      2.75,
       6.5,
       0.0,
-      8.0
+      7.5
      ]
     },
     "up": {
-     "texture": "#cab",
+     "texture": "#t",
      "uv": [
       8.75,
       0.0,

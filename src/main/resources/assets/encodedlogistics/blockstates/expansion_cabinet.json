@@ -85,88 +85,6 @@
   {
    "when": {
     "facing": "north",
-    "attached": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos"
-   }
-  },
-  {
-   "when": {
-    "facing": "north",
-    "attached": "pos",
-    "lit": "true"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp"
-   }
-  },
-  {
-   "when": {
-    "facing": "east",
-    "attached": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "facing": "east",
-    "attached": "pos",
-    "lit": "true"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp",
-    "y": 90
-   }
-  },
-  {
-   "when": {
-    "facing": "south",
-    "attached": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "facing": "south",
-    "attached": "pos",
-    "lit": "true"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp",
-    "y": 180
-   }
-  },
-  {
-   "when": {
-    "facing": "west",
-    "attached": "pos"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "facing": "west",
-    "attached": "pos",
-    "lit": "true"
-   },
-   "apply": {
-    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp",
-    "y": 270
-   }
-  },
-  {
-   "when": {
-    "facing": "north",
     "attached": "neg"
    },
    "apply": {
@@ -243,6 +161,88 @@
    },
    "apply": {
     "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_neg_lamp",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "attached": "pos"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "attached": "pos",
+    "lit": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "attached": "pos"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "attached": "pos",
+    "lit": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "attached": "pos"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "attached": "pos",
+    "lit": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "attached": "pos"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "attached": "pos",
+    "lit": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/expansion_cabinet/expansion_cabinet_pos_lamp",
     "y": 270
    }
   }

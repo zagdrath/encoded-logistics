@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  TAPDRV                            Tape Drive                  System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Device . . . . :   TAPE01      Status . . :   *READY  (load point)
+03 | 
+04 |  Reel . . . . . :   VOL004   7-track reel
+05 |  Used . . . . . :   18,420 / 65,536 items  (28%)  - cold storage
+06 |  Last access  . :   Day 2  06:12:44
+07 | 
+08 |  Opt     4=Unload (rewinds first)   5=Display contents   7=Rewind
+09 | 
+10 |  Mount a reel by using it on the drive.
+11 | 
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Selection or command
+21 |  ===>
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (8,6,1) input

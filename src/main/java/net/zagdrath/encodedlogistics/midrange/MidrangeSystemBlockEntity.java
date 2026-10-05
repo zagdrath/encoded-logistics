@@ -14,7 +14,6 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentGetter;
@@ -102,7 +101,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
 
     public boolean expanded() {
         BlockState state = getBlockState();
-        return !integrated() && state.hasProperty(MidrangeStates.EXPANSION) && state.getValue(MidrangeStates.EXPANSION) != MidrangeStates.Side.NONE;
+        return !integrated() && state.hasProperty(MidrangeStates.EXPANSION) && state.getValue(MidrangeStates.EXPANSION);
     }
 
     @Override
@@ -292,14 +291,9 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         }
     }
 
-    // Where its Expansion Cabinet is (left of the master, or right of the dummy), or null without one.
+    // Where its Expansion Cabinet is, or null without one.
     private @Nullable BlockPos cabinet() {
-        if (!expanded()) {
-            return null;
-        }
-        Direction right = getBlockState().getValue(FootprintBlock.FACING).getClockWise();
-        return getBlockState().getValue(MidrangeStates.EXPANSION) == MidrangeStates.Side.NEG ? worldPosition.relative(right, -1)
-                : worldPosition.relative(right, 2);
+        return expanded() && level != null ? ExpansionCabinetBlock.cabinetOf(level, worldPosition, getBlockState().getValue(FootprintBlock.FACING)) : null;
     }
 
     // A diskette in slot B with the cabinet gone comes out.

@@ -127,8 +127,7 @@ public final class ModBlocks {
     public static final DeferredBlock<CardReaderBlock> CARD_READER = BLOCKS.registerBlock("card_reader", CardReaderBlock::new,
             p -> p.mapColor(MapColor.SAND).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
     public static final DeferredBlock<MidrangePeripheralBlock> LINE_PRINTER = BLOCKS.registerBlock("line_printer",
-            p -> new MidrangePeripheralBlock("line_printer", List.of(Vec3i.ZERO, new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(1, 1, 0)),
-                    LinePrinterBlockEntity::new, p),
+            p -> new MidrangePeripheralBlock("line_printer", List.of(Vec3i.ZERO, new Vec3i(0, 1, 0)), LinePrinterBlockEntity::new, p),
             p -> p.mapColor(MapColor.SAND).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 
     // Wireless: the Access Point (the radio), the Wireless Bridge and the Wireless Ingress / Egress Ports (its clients).

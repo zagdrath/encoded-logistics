@@ -1,7 +1,0 @@
-{
- "parent": "minecraft:block/block",
- "textures": {
-  "particle": "encodedlogistics:block/midrange_system/cabinet"
- },
- "elements": []
-}

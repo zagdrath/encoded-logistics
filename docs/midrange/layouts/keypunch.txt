@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  KEYPUNCH                   Keypunch - Punch a Card            System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Type an item in each position (F4 for a list), press F6 to punch.
+03 | 
+04 | 
+05 |     circuit_substrate       logic_die               circuit_substrate
+06 | 
+07 |     copper_foil             ferrite                 copper_foil
+08 | 
+09 |                             iron_ingot
+10 | 
+11 | 
+12 |  Result . . . . . :   Midrange System x1
+13 | 
+14 |  Blank cards  . . :   12   (use cards on the hopper to load)
+15 |  Punched cards  . :   3    (take them from the stacker)
+16 | 
+17 |  Card image (col 1-40):
+18 |   ........................
+19 | 
+20 | 
+21 | 
+22 | 
+23 |  F1=Help F3=Exit F4=Prompt F6=Punch F12=Cancel F13=Clear
+   fields (row, col, length): (5,4,22) grid cell (row, col); (5,28,22) input; (5,52,22) input; (7,4,22) input; (7,28,22) input; (7,52,22) input; (9,4,22) input; (9,28,22) input; (9,52,22) input

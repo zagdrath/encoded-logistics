@@ -1,5 +1,6 @@
 {
  "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
  "textures": {
   "lamp": "encodedlogistics:block/expansion_cabinet/lamp_on",
   "particle": "encodedlogistics:block/expansion_cabinet/lamp_on"
@@ -8,14 +9,14 @@
   {
    "name": "lamp",
    "from": [
-    5,
-    9.5,
-    3.98
+    10,
+    9,
+    3.99
    ],
    "to": [
-    6,
-    10.5,
-    3.98
+    12,
+    10,
+    3.99
    ],
    "faces": {
     "north": {
@@ -34,6 +35,5 @@
    },
    "shade": false
   }
- ],
- "render_type": "minecraft:cutout"
+ ]
 }

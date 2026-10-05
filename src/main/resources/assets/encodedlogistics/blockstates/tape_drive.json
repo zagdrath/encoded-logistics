@@ -1,0 +1,172 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_glass"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "top"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_top"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "part": "top",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_lamps"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_glass",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "top"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_top",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "part": "top",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_lamps",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_glass",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "top"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_top",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "part": "top",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_lamps",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "master"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_glass",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "top"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_top",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "part": "top",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/tape_drive_lamps",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "part": "middle"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/tape_drive/empty"
+   }
+  }
+ ]
+}

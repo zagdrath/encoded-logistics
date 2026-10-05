@@ -24,20 +24,29 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 
-// The Integrated Midrange System (tier 2, HANDOFF 4): a two-panel cabinet with a diskette magazine drive and a built-in
-// console, 2 x 2 blocks (the master lower left, dummies to its +x and above), one lane from any of them. STATE: its
-// fascia (off, IPL, run, busy, attention). CONSOLE: its screen (off, booting, on: a session open at it). Its console
-// opens the Terminal OS; the rest of it, the control panel.
+// The Integrated Midrange System (tier 2, HANDOFF 2, 4): a two-panel cabinet with a diskette magazine unit and a
+// built-in console, 28 x 20 px on a 3 x 2 footprint (the master bottom centre; dummies left, right, and above the
+// console), one lane from any of them. STATE: its fascia (off, IPL, run, busy, attention). CONSOLE: its screen (off,
+// booting, on: a session open at it). Where a click lands on the model (HANDOFF 3): the console hood or keyboard opens
+// the Terminal OS; the left body or the magazine unit, the control panel; the right body and plinth, nothing.
 public class IntegratedMidrangeBlock extends MidrangeHostBlock implements NetworkNodeBlock {
-    // Above this (in the master's block) is the console.
-    private static final double CONSOLE_Y = 12.5 / 16;
-    private static final List<Vec3i> FOOTPRINT = List.of(Vec3i.ZERO, new Vec3i(1, 0, 0), new Vec3i(0, 1, 0), new Vec3i(1, 1, 0));
+    private static final List<Vec3i> FOOTPRINT = List.of(new Vec3i(-1, 0, 0), Vec3i.ZERO, new Vec3i(1, 0, 0), new Vec3i(-1, 1, 0), new Vec3i(0, 1, 0));
+    // The model's boxes a click zone is made of (px, from the master's corner, facing north), a little grown: a hit is on
+    // a face.
+    private static final double[][] CONSOLE = { { -5, 13, 9, 8, 20, 16 }, { -4, 13, 4.5, 7, 14, 8.5 } };
+    private static final double[][] CONTROL_PANEL = { { 8, 1, 4, 22, 13, 16 }, { 10, 13, 6, 20, 16, 14 } };
+    private static final double EDGE = 0.05;
+
+    public enum Zone {
+        CONSOLE, CONTROL_PANEL, NONE
+    }
 
     public IntegratedMidrangeBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -78,15 +87,45 @@ public class IntegratedMidrangeBlock extends MidrangeHostBlock implements Networ
                 List.of(), true);
     }
 
-    // The console (the hood and keyboard tray on the master's column: its top, and the block above) opens the Terminal
-    // OS there, as a Terminal Desk does; anywhere else, the control panel.
+    // The zone a point is in (world coordinates), against the model's boxes.
+    public static Zone zone(BlockPos master, Direction facing, Vec3 point) {
+        double x = (point.x - master.getX()) * 16, y = (point.y - master.getY()) * 16, z = (point.z - master.getZ()) * 16;
+        // Back to the model's own px (it's turned as MidrangeShapes turns its boxes).
+        double mx = switch (facing) {
+            case EAST -> z;
+            case SOUTH -> 16 - x;
+            case WEST -> 16 - z;
+            default -> x;
+        };
+        double mz = switch (facing) {
+            case EAST -> 16 - x;
+            case SOUTH -> 16 - z;
+            case WEST -> x;
+            default -> z;
+        };
+        if (inside(CONSOLE, mx, y, mz)) {
+            return Zone.CONSOLE;
+        }
+        return inside(CONTROL_PANEL, mx, y, mz) ? Zone.CONTROL_PANEL : Zone.NONE;
+    }
+
+    private static boolean inside(double[][] boxes, double x, double y, double z) {
+        for (double[] b : boxes) {
+            if (x >= b[0] - EDGE && x <= b[3] + EDGE && y >= b[1] - EDGE && y <= b[4] + EDGE && z >= b[2] - EDGE && z <= b[5] + EDGE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // The console opens the Terminal OS at it, as a Terminal Desk does; the control panel, its screen.
     @Override
     protected InteractionResult use(Level level, BlockPos master, BlockState state, Player player, BlockHitResult hit) {
-        BlockPos clicked = hit.getBlockPos();
-        Vec3i offset = offset(level, clicked, level.getBlockState(clicked));
-        double y = hit.getLocation().y - clicked.getY();
-        boolean console = offset.getX() == 0 && (offset.getY() == 1 || y >= CONSOLE_Y);
-        if (!console) {
+        Zone zone = zone(master, state.getValue(FACING), hit.getLocation());
+        if (zone == Zone.NONE) {
+            return InteractionResult.PASS;
+        }
+        if (zone == Zone.CONTROL_PANEL) {
             return super.use(level, master, state, player, hit);
         }
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(master) instanceof MidrangeSystemBlockEntity system) {

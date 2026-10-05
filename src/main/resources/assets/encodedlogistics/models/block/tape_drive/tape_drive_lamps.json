@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "glow": "encodedlogistics:block/tape_drive/lamps_on",
+  "particle": "encodedlogistics:block/tape_drive/lamps_on"
+ },
+ "elements": [
+  {
+   "name": "lamps",
+   "from": [
+    -1,
+    0,
+    0.99
+   ],
+   "to": [
+    17,
+    8,
+    0.99
+   ],
+   "faces": {
+    "north": {
+     "texture": "#glow",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

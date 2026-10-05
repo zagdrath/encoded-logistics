@@ -1,0 +1,70 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "t": "encodedlogistics:block/tape_drive/cabinet",
+  "particle": "encodedlogistics:block/tape_drive/cabinet"
+ },
+ "elements": [
+  {
+   "name": "upper",
+   "from": [
+    -1,
+    0,
+    1
+   ],
+   "to": [
+    17,
+    8,
+    15
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      5.0,
+      4.5,
+      6.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      13.0,
+      5.0,
+      8.5,
+      6.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4.75,
+      5.0,
+      8.25,
+      6.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      8.25,
+      5.0,
+      4.75,
+      6.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      6.125,
+      4.5,
+      7.875
+     ]
+    }
+   }
+  }
+ ]
+}

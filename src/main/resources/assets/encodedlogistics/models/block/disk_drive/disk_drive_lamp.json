@@ -1,0 +1,48 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "lamp": "encodedlogistics:block/disk_drive/lamp_on",
+  "particle": "encodedlogistics:block/disk_drive/lamp_on"
+ },
+ "elements": [
+  {
+   "name": "lamp",
+   "from": [
+    13,
+    12.6,
+    3.9
+   ],
+   "to": [
+    14.2,
+    13.4,
+    3.9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#lamp",
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ]
+    }
+   },
+   "rotation": {
+    "angle": 22.5,
+    "axis": "x",
+    "origin": [
+     11.5,
+     11,
+     4
+    ]
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
+}

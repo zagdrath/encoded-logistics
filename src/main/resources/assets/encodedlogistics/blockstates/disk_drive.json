@@ -1,0 +1,113 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive"
+   }
+  },
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_glass"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_lamp"
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_glass",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_lamp",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_glass",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_lamp",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_glass",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "active": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/disk_drive/disk_drive_lamp",
+    "y": 270
+   }
+  }
+ ]
+}

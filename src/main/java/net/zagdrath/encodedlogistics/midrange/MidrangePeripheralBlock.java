@@ -30,8 +30,8 @@ import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 
-// A Midrange peripheral that takes more than a block (HANDOFF 5): the Keypunch (1 x 2: a desk with its raised card unit)
-// and the Line Printer (2 x 2). It works beside a Midrange System, Expansion Cabinet or Integrated Midrange System, or
+// A Midrange peripheral that takes more than a block (HANDOFF 2): the Keypunch (1 x 2: a desk with its raised card unit)
+// and the Line Printer (1 x 2: the paper leans back above it). It works beside a Midrange System, Expansion Cabinet or Integrated Midrange System, or
 // cabled to the same network; it uses no lanes (I/O for the Midrange, not a network device) and doesn't carry the
 // network on through it. ACTIVE: while it punches or prints.
 public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNodeBlock {
