@@ -70,7 +70,8 @@ type + number: `INGRESS01`, `EGRESS02`, `NAS01`, `UPS01`, `CTLIF01`. A name is
 stored with the device, given once (type + the lowest number free on the
 system) and kept until renamed; it goes with the device's item. *(Implemented:
 Control Interfaces, Terminal Desks, rack devices, cable parts and wireless - `AP01`, `WBRIDGE01`, `WINGRESS01`,
-`WEGRESS01`, the Wireless Ports working exactly as cabled ports; the mod has no Label Maker.)*
+`WEGRESS01`, the Wireless Ports working exactly as cabled ports - Gateways (`GATEWAY01`) and Arcforge machines with a
+Small Wireless Bridge on, by a prefix from their type (`ARCCRU01`); the mod has no Label Maker.)*
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
@@ -80,6 +81,11 @@ Control Interfaces, Terminal Desks, rack devices, cable parts and wireless - `AP
 | `CHGDEVFTR` | `DEV`(P1, Req) `ACTION`(P2, Req: `*ADD\|*RMV\|*CLR`) `ITEM` (Req unless *CLR) | configure | ELC1301, ELC1303, ELC1305 (filter full) |
 | `RNMDEV` **[EXT]** | `DEV`(P1, Req) `NEWNAME`(P2, Req) | configure | ELC1301, ELC0103, ELC1308 (name in use); ELC1309 on success |
 | `RTVLANES` | `RTNUSED` `RTNTOTAL` (*INT) | view | — |
+| `RTVMCHSTS` **[EXT]** | `MCH`(P1, Req) `RTNSTS`(*CHAR: `*IDLE\|*RUNNING\|*NOPOWER\|*NOINPUT\|*BLOCKED\|*DISABLED\|*NOTFORMED\|*FAULT\|*UNKNOWN\|*OFFLINE`) `RTNRSN`(*CHAR) `RTNPCT`(*INT, -1 when not in an operation) `RTNFE` `RTNFECAP`(*INT) `RTNRCP`(*CHAR) | view | ELC1301, ELC1318 |
+| `RTVMCHSTAT` **[EXT]** | `MCH`(P1, Req) `RTNOPS` `RTNPRD` `RTNCNS` `RTNFLDPRD` `RTNFLDCNS` `RTNUPTIME`(*INT, seconds) `RTNOPM`(*DEC) | view | ELC1301, ELC1302, ELC1318 |
+| `RTVMCHLST` **[EXT]** | `TYPE(*ALL\|prefix\|type id)` `STATUS(*ALL\|status)` `RTNLST`(*LIST) | view | — |
+| `CHGMCHSTS` **[EXT]** | `MCH`(P1, Req) `STATUS`(P2, Req: `*ENABLE\|*DISABLE`) | configure | ELC1301, ELC1302, ELC1318, ELC1319, ELC1320 |
+| `CHGMCHCFG` **[EXT]** | `MCH`(P1, Req) `RSMODE(*SAME\|*IGNORE\|*HIGH\|*LOW\|*PULSE\|*THROTTLE)` `SIDE(*SAME\|*TOP\|*BOTTOM\|*LEFT\|*RIGHT\|*BACK\|*FRONT)` `SIDEMODE(*SAME\|mode)` `AUTOEJECT(*SAME\|*YES\|*NO)` `PWRNET(*SAME\|*YES\|*NO)` `GATEWAY(*SAME\|*NONE\|gateway)` | configure | ELC1301, ELC1302, ELC1303 (not a Gateway), ELC1318, ELC1319, ELC1320, ELC1321, ELC0102 (SIDE without SIDEMODE); ELC1322 on success |
 
 *(Implemented: device types for `TYPE()` and `RTNTYPE` are the name prefixes -
 CTLIF, DESK, the rack devices' (UPS, NAS, TAPELIB, ...) and the cable parts'
@@ -87,6 +93,13 @@ CTLIF, DESK, the rack devices' (UPS, NAS, TAPELIB, ...) and the cable parts'
 ENCODER). Only cable parts can be enabled / disabled (a disabled part works as
 if offline) and only ports, taps and planes have filters; anything else is
 ELC1303.)*
+
+*(Machine commands **[EXT]**: Arcforge machines with a linked Small Wireless Bridge on them, by their device names
+(`MCH`). A device that isn't one - or any, with the Arcforge integration off - is ELC1318; a machine gone, unloaded or
+off the network ELC1302. Settings go through the machine's own rules: one it doesn't have is ELC1320, a value it
+refuses ELC1321, an unformed multiblock ELC1319. `CHGMCHCFG` applies its settings in order and stops at the first
+refused. `PWRNET(*YES)`: power from the network (`machinePowerRate`, `machinePowerEfficiency`, `machinePowerReserve`);
+`GATEWAY`: the Gateway that feeds the machine and takes its outputs over the air for Processing Schematic jobs.)*
 
 ## 6. Power
 
@@ -111,7 +124,7 @@ ELC1303.)*
 | `CLRDSP` **[EXT]** | `DEV`(P1, Req) `RGN(*ALL\|name)` | IB | Clears a region's widget, or (*ALL) the whole screen: its regions, text and images. ELC1301, ELC1303, ELC1314. |
 | `CHGDSPRGN` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req, name) `X(*SAME\|n)` `Y(*SAME\|n)` `W(*SAME\|n)` `H(*SAME\|n)` `BG(*SAME\|*DFT\|colour)` | IB | Defines or changes a region in canvas px (a new one: from 0, 0 to the screen's edge by default). ELC1301, ELC1303, ELC1314 (outside the screen or overlapping). |
 | `SNDDSPWDG` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `WDG`(P3, Req: `*STORAGE *COLD *ENERGY *LANES *JOBS *ITEM *CLOCK *DEVICES *UPS *TEXT *NONE`) `ITEM(*NONE\|id)` `DEVTYPE(*ALL\|type)` `COLOR(*DFT\|colour)` | IB | Places a dashboard widget. ELC1301, ELC1303, ELC1314 (no such region), ELC1316 (bad data source). |
-| `SNDDSPGPH` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `STAT`(P3, Req: `*ITEMFLOW *ENERGY *LANES *STORAGE *CRAFTING *ITEM`) `ITEM(*NONE\|id)` `RANGE(*1M\|*10M\|*1H\|*1D)` `TYPE(*LINE\|*BAR)` `COLOR(*DFT\|colour)` | IB | Draws a graph (a Monitoring Server's series when there is one; else the screen's own history). ELC1301, ELC1303, ELC1314, ELC1316. |
+| `SNDDSPGPH` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `STAT`(P3, Req: `*ITEMFLOW *ENERGY *LANES *STORAGE *CRAFTING *ITEM *MCHOPS *MCHFE`) `ITEM(*NONE\|id\|machine)` `RANGE(*1M\|*10M\|*1H\|*1D)` `TYPE(*LINE\|*BAR)` `COLOR(*DFT\|colour)` | IB | Draws a graph (a Monitoring Server's series when there is one; else the screen's own history). `*MCHOPS` / `*MCHFE`: an Arcforge machine's operations a minute / FE stored, `ITEM` its device name. ELC1301, ELC1303, ELC1314, ELC1316, ELC1318. |
 | `SNDDSPIMG` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `FILE`(P3, Req, quoted: `FILE('logo.png')`) `SCALE(*DITHER\|*NEAREST)` `COLORS(*DFT\|16\|64\|256\|*FULL)` | IB | Shows a PNG from `<world>/encodedlogistics/images/<SYSNAME>/`. ELC1301, ELC1303, ELC1312, ELC1313, ELC1314, ELC1315; ELC1317 (a diagnostic) when the colours are above the server's limit. |
 | `RTVDSPSIZ` **[EXT]** | `DEV`(P1, Req) `RTNW`(*INT) `RTNH`(*INT) `RTNPXW`(*INT) `RTNPXH`(*INT) | IB | Size in panels and canvas px. ELC1301, ELC1303. |
 | `PRTTXT` | `TEXT`(P1, Req) `SPLF(*JOB\|name)` | IB | Writes a line to a spooled file |
@@ -133,6 +146,7 @@ ELC1303.)*
 | `WRKSYSVAL` / `RTVSYSVAL SYSVAL() RTNVAR()` / `CHGSYSVAL SYSVAL() VALUE()` | OS.md §7 | I / IB / IB |
 | `SAVLIB LIB() DEV()` / `RSTLIB LIB() DEV()` | 8" Diskette in a Midrange System or Card Reader. *(Implemented against `DisketteDevice`, docs/elcl/INTERFACES.md: ELC1301 no device, ELC1310 no diskette, ELC1311 too big; RSTLIB makes the library or replaces its members and programs)* | IB |
 | `WRKDEV` / `WRKINV` / `DSPNETSTS` | existing screens | I |
+| `WRKMCH` **[EXT]** | Work with Machines: 2=Change (`CHGMCHCFG`), 5=Display, 7=Enable/Disable (`CHGMCHSTS`) | I |
 | `SIGNOFF` | | I |
 
 **Display colours** (`COLOR`, `BG`): `*DFT`, a panel palette name (`*DARK *STEEL *GREY *SILVER *LIGHT *WHITE *NAVY
@@ -151,6 +165,8 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 | `*CRAFTEND` | `ITEM` (or `*ANY`) | craft job id and status |
 | `*RSCHANGE` | `DEV`, optional `VALUE` (side) | side and new level |
 | `*DSPTOUCH` **[EXT]** | `DEV` (or `*ANY`) | screen, region and canvas point, e.g. `DSP01 A 40 12` |
+| `*MCHIDLE` / `*MCHFAULT` / `*MCHNOPWR` **[EXT]** | `DEV` (or `*ANY`): an Arcforge machine goes idle, faults, runs short of power | machine name and the machine's words, e.g. `ARCCRU01 No power` |
+| `*MCHDONE` **[EXT]** | `DEV` (or `*ANY`), `ITEM` (or `*ANY`): an Arcforge machine finishes an operation | machine name, count and first thing made, e.g. `ARCCRU01 5 BONE_MEAL` |
 
 Triggers are edge-triggered (fire once per crossing) and debounced
 (minimum 1 second between firings of the same trigger).

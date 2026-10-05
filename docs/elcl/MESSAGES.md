@@ -125,6 +125,11 @@ Monitoring `ELCnn00` covers the whole `ELCnnxx` range; `ELC0000` covers all.
 | ELC1315 | 30 | Images are disabled on this server. | *(added: Display Panels)*
 | ELC1316 | 30 | Data source &1 is not available for this widget. | *(added: Display Panels)*
 | ELC1317 | 10 | Colour mode &1 is above the server's limit; &2 used. | *(added: Display Panels; a diagnostic, the image still shows)*
+| ELC1318 | 30 | Device &1 is not an Arcforge machine. | *(added: machine commands, `*MCHOPS` / `*MCHFE` graphs)*
+| ELC1319 | 30 | Machine &1 is not formed. | *(added: machine commands)*
+| ELC1320 | 30 | Machine &1 does not support &2. | *(added: machine commands; &2 the setting)*
+| ELC1321 | 30 | Machine &1 rejected &2(&3). | *(added: machine commands; the setting and the value refused)*
+| ELC1322 | 00 | Machine &1 changed. | *(added: `CHGMCHCFG` completed)*
 
 ## ELC14xx — Crafting
 

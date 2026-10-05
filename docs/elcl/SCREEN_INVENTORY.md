@@ -58,6 +58,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | - | Printout reader | NEW | `client/printout/PrintoutReaderScreen`: the game's GUI kit, not a green screen; a page at the largest scale that fits, arrows, Page Up / Page Down, the wheel |
 | - | The Midrange machines' frame | NEW | `CrtMachineScreen`: the desk's CRT (`CrtDisplay`, shared with `CrtScreen`) and the same frame as every screen (the panel's id: MRCTL, KEYPUNCH, ...). Text only (HANDOFF v4 3): no buttons, no slots, no inventory; the hotbar and HUD hidden while it's open. Fields: values, options beside a list's rows (sent on Enter, then cleared), the command line; F1 help, F4 a list, F12 back or close; Tab and Up / Down move between fields |
 | - | Integrated Midrange System console | EXTENDED | The Terminal Desk's session (`TerminalDeskMenu` opened at the system's master), while the system is running |
+| - | Work with Machines | NEW | `WrkMchPanel` (WRKMCH; `ScreenQueries` "machines"): Arcforge machines with a Small Wireless Bridge on - Machine, Type, Status, Prog, Energy, Rate; 2=Change (`CHGMCHCFG`), 5=Display (DSPMCH: `TextPanel`, `TerminalService` "machine"), 7=Enable/Disable (`CHGMCHSTS`) |
 | - | Display Panel configuration | NEW | `client/screen/DisplayPanelScreen` (`menu/DisplayPanelMenu`, `DisplayConfigPayload`): Mode, Layout (drag edges to move or split regions, right-click removes), Widgets (a picker for the widget, its source and colour). Not a green screen: the L3 Switch panel's frame |
 
 ### Main Menu options
@@ -81,7 +82,7 @@ on the message line; a number not on the menu shows "Option n is not on this men
 
 Every screen also opens from its command on any command line (`ScreenCommands`): WRKLIB, WRKMBR LIB(), EDTMBR MBR(),
 WRKACTJOB, WRKJOB JOB(), DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF JOB(), WRKSYSVAL, WRKINV, WRKDEV,
-DSPNETSTS, WRKCRFJOB; GO MAIN / GO HELP, SIGNOFF.
+WRKMCH, DSPNETSTS, WRKCRFJOB; GO MAIN / GO HELP, SIGNOFF.
 
 ## ELCL packages
 
