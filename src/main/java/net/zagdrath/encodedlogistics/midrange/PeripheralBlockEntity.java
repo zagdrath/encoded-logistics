@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -90,7 +91,13 @@ public abstract class PeripheralBlockEntity extends BaseContainerBlockEntity imp
         if (peripheral.active > 0 && --peripheral.active == 0) {
             peripheral.showActive(false);
         }
+        if (level instanceof ServerLevel serverLevel) {
+            peripheral.tick(serverLevel);
+        }
     }
+
+    // Its own work each tick (the Disk and Tape Drives').
+    protected void tick(ServerLevel level) {}
 
     // An item used on it (HANDOFF 3: cards, a diskette, paper): true when it took some.
     public boolean insert(ItemStack stack) {
@@ -100,6 +107,11 @@ public abstract class PeripheralBlockEntity extends BaseContainerBlockEntity imp
     // A sneak-use with an empty hand: what comes out.
     public List<ItemStack> eject() {
         return List.of();
+    }
+
+    // A sneak-use with an empty hand that starts something coming out later (a Disk Drive spinning down), for that player.
+    public boolean ejectLater(Player player) {
+        return false;
     }
 
     // Punching, reading or printing (ACTIVE shows).
@@ -116,7 +128,7 @@ public abstract class PeripheralBlockEntity extends BaseContainerBlockEntity imp
         }
     }
 
-    private void showActive(boolean on) {
+    protected void showActive(boolean on) {
         BlockState state = getBlockState();
         if (level != null && state.hasProperty(MidrangeStates.ACTIVE) && state.getValue(MidrangeStates.ACTIVE) != on) {
             level.setBlock(worldPosition, state.setValue(MidrangeStates.ACTIVE, on), Block.UPDATE_CLIENTS);

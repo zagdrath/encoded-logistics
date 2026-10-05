@@ -38,13 +38,14 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
+import net.zagdrath.encodedlogistics.storage.DriveHolder;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 
 // A Drive Bay's ten drive slots (two columns of five, slot i in column i / 5, row i % 5). A drive gets its id the first
 // time it goes in; its stats are refreshed from DriveStorage whenever the bay or the network changes it. The client gets
 // the drives and whether the bay is online, and the model draws each drive's sled and status light from SLEDS.
-public class DriveBayBlockEntity extends BaseContainerBlockEntity implements NetworkDevice {
+public class DriveBayBlockEntity extends BaseContainerBlockEntity implements NetworkDevice, DriveHolder {
     public static final int SLOTS = 10;
     // Per slot: -1 empty, else tier ordinal * 8 + light (0 green, 1 yellow, 2 orange, 3 red, 4 off).
     public static final ModelProperty<int[]> SLEDS = new ModelProperty<>();
@@ -155,7 +156,13 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
         sync();
     }
 
+    @Override
+    public int driveSlots() {
+        return SLOTS;
+    }
+
     // The network put items in or took them out of the drive in a slot.
+    @Override
     public void driveChanged(int slot) {
         if (level instanceof ServerLevel serverLevel) {
             refreshDrive(serverLevel, slot);
@@ -181,6 +188,7 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
     }
 
     // The drive in a slot as the network uses it, or null when the slot is empty.
+    @Override
     public @Nullable ItemStack drive(int slot) {
         ItemStack stack = items.get(slot);
         return stack.getItem() instanceof StorageDriveItem && StorageDriveItem.id(stack) != null ? stack : null;

@@ -81,6 +81,9 @@ public final class Midranges {
             if (!(peripheral.getLevel() instanceof ServerLevel level)) {
                 return InteractionResult.SUCCESS;
             }
+            if (peripheral.ejectLater(player)) {
+                return InteractionResult.SUCCESS;
+            }
             List<ItemStack> out = peripheral.eject();
             if (out.isEmpty()) {
                 return InteractionResult.PASS;

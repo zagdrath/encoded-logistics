@@ -39,6 +39,7 @@ import net.zagdrath.encodedlogistics.menu.MidrangePanelMenu;
 import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlock;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.DiskDriveBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.midrange.DisketteStack;
@@ -49,6 +50,7 @@ import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangeStates;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
@@ -56,6 +58,8 @@ import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
+import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // The Midrange line's blocks: footprints placed and broken whole, their shapes, and the Expansion Cabinet attaching to a
 // Midrange System on either side (one per system, the same facing) and coming loose again; the peripherals working for
@@ -347,6 +351,64 @@ final class MidrangeGameTests {
                 })
                 .thenIdle(10)
                 .thenExecute(() -> helper.assertTrue(helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).isOnline(), "Not back after the conflict"))
+                .thenSucceed();
+    }
+
+    // The Midrange line's storage, on a Midrange System's network: a Disk Drive serves its Storage Drive as hot storage
+    // once it has spun up (DISK01), and spins down before it comes out; a Tape Drive (TAPE01, 1 x 3) threads its reel,
+    // archives an item onto it from hot storage, and reads a recall of it back.
+    @SuppressWarnings("removal")
+    static void storageDrives(GameTestHelper helper) {
+        BlockPos system = new BlockPos(2, 1, 2), disk = new BlockPos(3, 1, 2), tape = new BlockPos(2, 1, 3);
+        ItemKey cobble = ItemKey.of(new ItemStack(Items.COBBLESTONE));
+        place(helper, ModBlocks.MIDRANGE_SYSTEM.get(), system);
+        helper.getBlockEntity(system, MidrangeSystemBlockEntity.class).charge(50_000);
+        helper.setBlock(disk, ModBlocks.DISK_DRIVE.get().defaultBlockState().setValue(FootprintBlock.FACING, Direction.NORTH));
+        BlockState tapeState = ModBlocks.TAPE_DRIVE.get().defaultBlockState().setValue(FootprintBlock.FACING, Direction.SOUTH);
+        helper.setBlock(tape, tapeState);
+        ModBlocks.TAPE_DRIVE.get().setPlacedBy(helper.getLevel(), helper.absolutePos(tape), tapeState, null, ItemStack.EMPTY);
+        helper.assertBlockProperty(tape.above(2), FootprintBlock.TAPE_PART, FootprintBlock.Part.TOP);
+        // Quicker than in play, to fit the test's time (only Tape Drives use these).
+        int load = Config.TAPE_LOAD_TICKS.getAsInt(), base = Config.TAPE_DRIVE_BASE_TICKS.getAsInt();
+        Config.TAPE_LOAD_TICKS.set(10);
+        Config.TAPE_DRIVE_BASE_TICKS.set(10);
+        DiskDriveBlockEntity diskDrive = helper.getBlockEntity(disk, DiskDriveBlockEntity.class);
+        TapeDriveBlockEntity tapeDrive = helper.getBlockEntity(tape, TapeDriveBlockEntity.class);
+        helper.assertTrue(diskDrive.insert(new ItemStack(ModItems.storageDrive(StorageTier.K8).get())), "Pack not taken");
+        helper.assertTrue(tapeDrive.insert(new ItemStack(ModItems.TAPE_REEL.get())), "Reel not taken");
+        helper.assertTrue(diskDrive.drive(0) == null, "Readable before spin-up");
+        helper.startSequence()
+                .thenIdle(Config.DISK_SPIN_UP_TICKS.getAsInt() + 10)
+                .thenExecute(() -> {
+                    MinecraftServer server = helper.getLevel().getServer();
+                    NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(disk));
+                    helper.assertTrue(diskDrive.isOnline() && diskDrive.state() == DiskDriveBlockEntity.State.SPINNING, "Disk " + diskDrive.state());
+                    List<String> names = ElclDevices.list(server, network).stream().map(ElclDevices.Device::name).toList();
+                    helper.assertTrue(names.containsAll(List.of("DISK01", "TAPE01")), "Names " + names);
+                    NetworkStorage storage = RackGameTests.storage(helper, disk);
+                    helper.assertTrue(storage.insert(cobble, 100, false) == 100 && storage.count(cobble) == 100, "Not stored on the pack");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(tapeDrive.state() == TapeDriveBlockEntity.State.READY, "Reel not threaded: " + tapeDrive.state()))
+                .thenExecute(tapeDrive::archiveForTest)
+                .thenWaitUntil(() -> helper.assertTrue(tapeDrive.used() == 100, "Not archived: " + tapeDrive.used() + " " + tapeDrive.state()))
+                .thenExecute(() -> {
+                    NetworkStorage storage = RackGameTests.storage(helper, disk);
+                    helper.assertTrue(storage.count(cobble) == 0 && storage.cold().count(cobble) == 100,
+                            "Cold count " + storage.count(cobble) + " " + storage.cold().count(cobble));
+                    // Taking some asks for a recall.
+                    storage.extract(cobble, 40, false);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(RackGameTests.storage(helper, disk).extractFromDrives(cobble, 100, true) >= 40, "Not recalled"))
+                .thenExecute(() -> {
+                    helper.assertTrue(diskDrive.ejectLater(helper.makeMockServerPlayerInLevel()), "No spin-down");
+                    helper.assertTrue(diskDrive.drive(0) == null && diskDrive.state() == DiskDriveBlockEntity.State.SPIN_DOWN, "Readable while spinning down");
+                })
+                .thenIdle(Config.DISK_SPIN_DOWN_TICKS.getAsInt() + 2)
+                .thenExecute(() -> {
+                    Config.TAPE_LOAD_TICKS.set(load);
+                    Config.TAPE_DRIVE_BASE_TICKS.set(base);
+                    helper.assertTrue(diskDrive.pack().isEmpty(), "Pack still in");
+                })
                 .thenSucceed();
     }
 

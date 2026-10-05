@@ -46,12 +46,14 @@ import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlock;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlock;
+import net.zagdrath.encodedlogistics.midrange.DiskDriveBlock;
 import net.zagdrath.encodedlogistics.midrange.ExpansionCabinetBlock;
 import net.zagdrath.encodedlogistics.midrange.IntegratedMidrangeBlock;
 import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangePeripheralBlock;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlock;
+import net.zagdrath.encodedlogistics.midrange.TapeDriveBlock;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(EncodedLogistics.MODID);
@@ -129,6 +131,13 @@ public final class ModBlocks {
     public static final DeferredBlock<MidrangePeripheralBlock> LINE_PRINTER = BLOCKS.registerBlock("line_printer",
             p -> new MidrangePeripheralBlock("line_printer", List.of(Vec3i.ZERO, new Vec3i(0, 1, 0)), LinePrinterBlockEntity::new, p),
             p -> p.mapColor(MapColor.SAND).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+
+    // The Midrange line's storage: the 1311-style Disk Drive (a Storage Drive as hot storage) and the 729-style Tape Drive
+    // (a Tape Reel as cold storage).
+    public static final DeferredBlock<DiskDriveBlock> DISK_DRIVE = BLOCKS.registerBlock("disk_drive", DiskDriveBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<TapeDriveBlock> TAPE_DRIVE = BLOCKS.registerBlock("tape_drive", TapeDriveBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 
     // Wireless: the Access Point (the radio), the Wireless Bridge and the Wireless Ingress / Egress Ports (its clients).
     public static final DeferredBlock<AccessPointBlock> ACCESS_POINT = BLOCKS.registerBlock("access_point", AccessPointBlock::new,

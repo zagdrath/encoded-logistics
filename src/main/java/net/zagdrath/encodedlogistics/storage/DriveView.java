@@ -8,10 +8,9 @@ package net.zagdrath.encodedlogistics.storage;
 import java.util.Map;
 import java.util.UUID;
 
-import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
-
-// A Storage Drive in a Drive Bay slot, as network storage (priority 0). Changes refresh the drive's stats in the bay.
-public record DriveView(DriveStorage data, DriveBayBlockEntity bay, int slot, UUID id, StorageTier tier) implements StorageView {
+// A Storage Drive in a Drive Bay slot (or a Disk Drive), as network storage (priority 0). Changes refresh the drive's
+// stats in its holder.
+public record DriveView(DriveStorage data, DriveHolder bay, int slot, UUID id, StorageTier tier) implements StorageView {
     @Override
     public int priority() {
         return 0;

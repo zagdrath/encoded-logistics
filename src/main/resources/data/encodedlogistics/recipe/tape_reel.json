@@ -1,0 +1,15 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "encodedlogistics:ferrite",
+  "minecraft:paper",
+  "minecraft:paper",
+  "minecraft:iron_nugget",
+  "minecraft:iron_nugget"
+ ],
+ "result": {
+  "id": "encodedlogistics:tape_reel",
+  "count": 2
+ }
+}

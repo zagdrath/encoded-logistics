@@ -46,16 +46,18 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 // from MidrangeShapes per footprint block; a click on any block is the master's.
 public abstract class FootprintBlock extends BaseEntityBlock {
     public enum Part implements StringRepresentable {
-        MASTER, DUMMY;
+        MASTER, DUMMY, MIDDLE, TOP;
 
         @Override
         public String getSerializedName() {
-            return this == MASTER ? "master" : "dummy";
+            return name().toLowerCase(java.util.Locale.ROOT);
         }
     }
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
-    public static final EnumProperty<Part> PART = EnumProperty.create("part", Part.class);
+    // Master or dummy; the Tape Drive's (TAPE_PART) master, middle or top.
+    public static final EnumProperty<Part> PART = EnumProperty.create("part", Part.class, Part.MASTER, Part.DUMMY);
+    public static final EnumProperty<Part> TAPE_PART = EnumProperty.create("part", Part.class, Part.MASTER, Part.MIDDLE, Part.TOP);
 
     protected FootprintBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -67,9 +69,18 @@ public abstract class FootprintBlock extends BaseEntityBlock {
     // Its key in MidrangeShapes ("line_printer", "midrange_system[expansion=pos]").
     protected abstract String shapeKey(BlockState state);
 
+    // Its part property (PART, or the Tape Drive's TAPE_PART).
+    public EnumProperty<Part> part() {
+        return PART;
+    }
+
+    public boolean isMaster(BlockState state) {
+        return state.getValue(part()) == Part.MASTER;
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, PART);
+        builder.add(FACING, part());
     }
 
     // Where a footprint offset is, from the master.
@@ -79,7 +90,7 @@ public abstract class FootprintBlock extends BaseEntityBlock {
 
     // The master of the footprint a block is in (itself for a master), or null when it's lost (a broken footprint).
     public @Nullable BlockPos master(BlockGetter level, BlockPos pos, BlockState state) {
-        if (state.getValue(PART) == Part.MASTER) {
+        if (isMaster(state)) {
             return pos;
         }
         Direction facing = state.getValue(FACING);
@@ -89,7 +100,7 @@ public abstract class FootprintBlock extends BaseEntityBlock {
             }
             BlockPos master = pos.relative(facing.getClockWise(), -offset.getX()).below(offset.getY());
             BlockState there = level.getBlockState(master);
-            if (there.is(this) && there.getValue(PART) == Part.MASTER && there.getValue(FACING) == facing) {
+            if (there.is(this) && isMaster(there) && there.getValue(FACING) == facing) {
                 return master;
             }
         }
@@ -130,7 +141,7 @@ public abstract class FootprintBlock extends BaseEntityBlock {
                 return null;
             }
         }
-        return placementState(defaultBlockState().setValue(FACING, facing).setValue(PART, Part.MASTER), context);
+        return placementState(defaultBlockState().setValue(FACING, facing).setValue(part(), Part.MASTER), context);
     }
 
     // The master's state as placed (a subclass sets its own properties).
@@ -146,14 +157,14 @@ public abstract class FootprintBlock extends BaseEntityBlock {
         }
         for (Vec3i offset : footprint()) {
             if (!offset.equals(Vec3i.ZERO)) {
-                level.setBlock(at(pos, state.getValue(FACING), offset), dummyState(state), Block.UPDATE_ALL);
+                level.setBlock(at(pos, state.getValue(FACING), offset), dummyState(state, offset), Block.UPDATE_ALL);
             }
         }
     }
 
-    // A dummy's state, from the master's.
-    protected BlockState dummyState(BlockState master) {
-        return master.setValue(PART, Part.DUMMY);
+    // A dummy's state, from the master's and its place in the footprint.
+    protected BlockState dummyState(BlockState master, Vec3i offset) {
+        return master.setValue(part(), Part.DUMMY);
     }
 
     // Breaking one block breaks the rest, without drops: the one broken drops the item.
@@ -161,13 +172,13 @@ public abstract class FootprintBlock extends BaseEntityBlock {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
         Direction facing = state.getValue(FACING);
-        BlockPos master = state.getValue(PART) == Part.MASTER ? pos : null;
+        BlockPos master = isMaster(state) ? pos : null;
         if (master == null) {
             // The master is found from the blocks still standing.
             for (Vec3i offset : footprint()) {
                 BlockPos candidate = pos.relative(facing.getClockWise(), -offset.getX()).below(offset.getY());
                 BlockState there = level.getBlockState(candidate);
-                if (there.is(this) && there.getValue(PART) == Part.MASTER && there.getValue(FACING) == facing) {
+                if (there.is(this) && isMaster(there) && there.getValue(FACING) == facing) {
                     master = candidate;
                 }
             }

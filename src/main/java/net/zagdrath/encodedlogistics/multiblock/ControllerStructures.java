@@ -60,6 +60,7 @@ import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
@@ -81,12 +82,14 @@ import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.TapeRecalls;
+import net.zagdrath.encodedlogistics.rack.TapeSource;
 import net.zagdrath.encodedlogistics.rack.TapeTier;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.DriveHolder;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.DriveView;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
@@ -793,7 +796,7 @@ public class ControllerStructures extends SavedData {
                 BlockEntity blockEntity = blockEntity(level.getServer(), pos);
                 if (blockEntity instanceof CapacitorBankBlockEntity) {
                     banks.add(pos);
-                } else if (blockEntity instanceof DriveBayBlockEntity) {
+                } else if (blockEntity instanceof DriveHolder || blockEntity instanceof TapeDriveBlockEntity) {
                     driveBays.add(pos);
                 } else if (blockEntity instanceof CraftingProvider) {
                     providers.add(pos);
@@ -942,7 +945,7 @@ public class ControllerStructures extends SavedData {
         // A copied drive (creative pick-block) shares its id, and so its contents, with the original: each id counts once.
         // So does a drive reached both here and through a share.
         Set<UUID> seen = new HashSet<>();
-        List<TapeLibraryDevice> libraries = new ArrayList<>();
+        List<TapeSource> libraries = new ArrayList<>();
         views(server, owner, seen, views, libraries);
         if (crafting != null) {
             // Only the source's own storage, not what's shared into it: shares don't chain.
@@ -988,13 +991,16 @@ public class ControllerStructures extends SavedData {
         return links;
     }
 
-    // A network's own storage: its online Drive Bays' drives, its online Inventory Taps' inventories, its rack storage
-    // devices; and its Tape Libraries.
-    private static void views(MinecraftServer server, Owner owner, Set<UUID> seen, List<StorageView> views, List<TapeLibraryDevice> libraries) {
+    // A network's own storage: its online Drive Bays' and Disk Drives' drives, its online Inventory Taps' inventories, its
+    // rack storage devices; and its Tape Libraries and Tape Drives.
+    private static void views(MinecraftServer server, Owner owner, Set<UUID> seen, List<StorageView> views, List<TapeSource> libraries) {
         DriveStorage drives = DriveStorage.get(server);
         for (NodePos pos : owner.runtime.driveBays) {
-            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveBayBlockEntity bay) {
-                for (int slot = 0; slot < DriveBayBlockEntity.SLOTS; slot++) {
+            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof TapeDriveBlockEntity tape) {
+                libraries.add(tape);
+            }
+            if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveHolder bay) {
+                for (int slot = 0; slot < bay.driveSlots(); slot++) {
                     ItemStack stack = bay.drive(slot);
                     if (stack != null && stack.getItem() instanceof StorageDriveItem drive && seen.add(StorageDriveItem.id(stack))) {
                         views.add(new DriveView(drives, bay, slot, StorageDriveItem.id(stack), drive.getTier()));
@@ -1300,6 +1306,7 @@ public class ControllerStructures extends SavedData {
                 continue;
             }
             String type = item == ModItems.DRIVE_BAY.get() ? "Drive Bay" : item == ModItems.TERMINAL_DESK.get() ? "Terminal"
+                    : item == ModItems.DISK_DRIVE.get() ? "Disk" : item == ModItems.TAPE_DRIVE.get() ? "Tape"
                     : blockEntity(server, pos) instanceof MidrangeSystemBlockEntity ? "Controller" : "Device";
             Component name = item.getName(item.getDefaultInstance());
             // A Display Panel screen with its size: "Display Panel 3 x 2 (96 x 64)".

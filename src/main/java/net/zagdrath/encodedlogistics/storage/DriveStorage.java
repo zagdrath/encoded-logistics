@@ -129,7 +129,7 @@ public class DriveStorage extends SavedData {
         int types = items == null ? 0 : items.size();
         long total = items == null ? 0 : items.values().stream().mapToLong(Long::longValue).sum();
         if (items == null || !items.containsKey(key)) {
-            if (types >= Config.DRIVE_TYPE_LIMIT.getAsInt()) {
+            if (types >= capacity.typeLimit()) {
                 return 0;
             }
             types++;

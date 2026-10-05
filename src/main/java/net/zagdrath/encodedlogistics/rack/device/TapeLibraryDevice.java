@@ -39,6 +39,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.TapePicker;
 import net.zagdrath.encodedlogistics.rack.TapeRecalls;
+import net.zagdrath.encodedlogistics.rack.TapeSource;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
@@ -62,7 +63,7 @@ import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 //
 // Either way the picker loads the tape into the drive (TapePicker), the drive works (tapeBaseTicks + tapeTicksPer4k a
 // 4,096 items, 15% faster each generation past LTO-6), the items move, and the picker puts the tape back.
-public class TapeLibraryDevice extends RackDevice {
+public class TapeLibraryDevice extends RackDevice implements TapeSource {
     public static final int KEEP = PartFilter.SIZE, PINNED = 9;
     public static final int UNIT_MINUTES = 0, UNIT_HOURS = 1, UNIT_DAYS = 2;
     private static final long[] UNIT_TICKS = { 1_200, 72_000, 1_728_000 };
@@ -190,6 +191,7 @@ public class TapeLibraryDevice extends RackDevice {
         return items().get(tapes + bay).is(ModItems.LTO_TAPE_DRIVE.get());
     }
 
+    @Override
     public int driveCount() {
         int count = 0;
         for (int bay = 0; bay < bays; bay++) {
@@ -316,6 +318,22 @@ public class TapeLibraryDevice extends RackDevice {
     public static int workTicks(TapeGeneration generation, long amount) {
         double ticks = Config.TAPE_BASE_TICKS.getAsInt() + Config.TAPE_TICKS_PER_4K.getAsInt() * (amount / 4096.0);
         return Math.max(1, (int) Math.round(ticks * generation.speed()));
+    }
+
+    @Override
+    public List<UUID> tapeIds() {
+        return tapes().stream().map(Tape::id).toList();
+    }
+
+    // The first tape holding the item: the picker's trip to it and the read.
+    @Override
+    public int recallTicks(DriveStorage data, ItemKey key, long amount) {
+        for (Tape tape : tapes()) {
+            if (data.count(tape.id(), key) > 0) {
+                return loadTicks(tape.slot()) + workTicks(tape.generation(), amount);
+            }
+        }
+        return -1;
     }
 
     public int loadTicks(int slot) {

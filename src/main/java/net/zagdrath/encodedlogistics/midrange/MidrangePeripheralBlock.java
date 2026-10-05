@@ -47,7 +47,7 @@ public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNo
         this.key = key;
         this.footprint = List.copyOf(footprint);
         this.entity = entity;
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PART, Part.MASTER).setValue(MidrangeStates.ACTIVE, false));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(part(), Part.MASTER).setValue(MidrangeStates.ACTIVE, false));
     }
 
     @Override
@@ -79,12 +79,12 @@ public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNo
     // On the master only.
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return state.getValue(PART) == Part.MASTER ? entity.apply(pos, state) : null;
+        return isMaster(state) ? entity.apply(pos, state) : null;
     }
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() || state.getValue(PART) != Part.MASTER ? null
+        return level.isClientSide() || !isMaster(state) ? null
                 : (tickLevel, pos, tickState, blockEntity) -> {
                     if (blockEntity instanceof PeripheralBlockEntity peripheral) {
                         PeripheralBlockEntity.serverTick(tickLevel, pos, tickState, peripheral);

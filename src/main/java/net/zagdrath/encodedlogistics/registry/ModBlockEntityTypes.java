@@ -33,9 +33,11 @@ import net.zagdrath.encodedlogistics.blockentity.WirelessBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.display.DisplayPanelBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.CardReaderBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.DiskDriveBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.KeypunchBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -110,6 +112,12 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<LinePrinterBlockEntity>> LINE_PRINTER = BLOCK_ENTITY_TYPES.register(
             "line_printer", () -> new BlockEntityType<>(LinePrinterBlockEntity::new, ModBlocks.LINE_PRINTER.get()));
+
+    public static final Supplier<BlockEntityType<DiskDriveBlockEntity>> DISK_DRIVE = BLOCK_ENTITY_TYPES.register(
+            "disk_drive", () -> new BlockEntityType<>(DiskDriveBlockEntity::new, ModBlocks.DISK_DRIVE.get()));
+
+    public static final Supplier<BlockEntityType<TapeDriveBlockEntity>> TAPE_DRIVE = BLOCK_ENTITY_TYPES.register(
+            "tape_drive", () -> new BlockEntityType<>(TapeDriveBlockEntity::new, ModBlocks.TAPE_DRIVE.get()));
 
     // On the rack's master block only.
     public static final Supplier<BlockEntityType<RackBlockEntity>> SERVER_RACK = BLOCK_ENTITY_TYPES.register(

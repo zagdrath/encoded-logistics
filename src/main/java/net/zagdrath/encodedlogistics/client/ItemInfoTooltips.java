@@ -40,6 +40,7 @@ import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.item.StorageTierItem;
+import net.zagdrath.encodedlogistics.item.TapeReelItem;
 import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
@@ -90,6 +91,13 @@ public final class ItemInfoTooltips {
                     StorageDevice.bytes(stats.bytesTotal())).withStyle(ChatFormatting.GRAY));
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.drive.types", stats.typesUsed(), Config.DRIVE_TYPE_LIMIT.getAsInt())
                     .withStyle(ChatFormatting.GRAY));
+        } else if (stack.getItem() instanceof TapeReelItem) {
+            DriveStats stats = TapeReelItem.stats(stack);
+            tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.tape_reel.contents", String.format(Locale.ROOT, "%,d", stats.bytesUsed() * 8),
+                    String.format(Locale.ROOT, "%,d", Config.TAPE_REEL_ITEMS.getAsInt())).withStyle(ChatFormatting.GRAY));
+            if (TapeReelItem.id(stack) != null) {
+                tooltip.add(at++, Component.literal(TapeReelItem.volume(stack)).withStyle(ChatFormatting.DARK_GRAY));
+            }
         } else if (stack.getItem() instanceof StorageTierItem die) {
             tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.die.tier",
                     Component.literal(die.getTier().label()).withColor(die.getTier().light())).withStyle(ChatFormatting.GRAY));

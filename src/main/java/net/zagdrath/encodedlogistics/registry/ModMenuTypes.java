@@ -18,6 +18,7 @@ import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.CardReaderMenu;
 import net.zagdrath.encodedlogistics.menu.CollectorPlaneMenu;
 import net.zagdrath.encodedlogistics.menu.DeployerPlaneMenu;
+import net.zagdrath.encodedlogistics.menu.DiskDriveMenu;
 import net.zagdrath.encodedlogistics.menu.DisplayPanelMenu;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
@@ -39,6 +40,7 @@ import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
 import net.zagdrath.encodedlogistics.menu.SchedulerCoreMenu;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
+import net.zagdrath.encodedlogistics.menu.TapeDriveMenu;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
 
@@ -122,6 +124,12 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<LinePrinterMenu>> LINE_PRINTER = MENU_TYPES.register("line_printer",
             () -> IMenuTypeExtension.create(LinePrinterMenu::new));
+
+    public static final Supplier<MenuType<DiskDriveMenu>> DISK_DRIVE = MENU_TYPES.register("disk_drive",
+            () -> IMenuTypeExtension.create(DiskDriveMenu::new));
+
+    public static final Supplier<MenuType<TapeDriveMenu>> TAPE_DRIVE = MENU_TYPES.register("tape_drive",
+            () -> IMenuTypeExtension.create(TapeDriveMenu::new));
 
     public static final Supplier<MenuType<MidrangePanelMenu>> MIDRANGE_PANEL = MENU_TYPES.register("midrange_panel",
             () -> IMenuTypeExtension.create(MidrangePanelMenu::new));

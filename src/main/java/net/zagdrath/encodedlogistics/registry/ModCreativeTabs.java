@@ -38,6 +38,7 @@ public final class ModCreativeTabs {
                         ModItems.WIRELESS_BRIDGE, ModItems.WIRELESS_INGRESS_PORT, ModItems.WIRELESS_EGRESS_PORT, ModItems.SMALL_WIRELESS_BRIDGE,
                         ModItems.DISPLAY_PANEL, ModItems.MIDRANGE_SYSTEM,
                         ModItems.EXPANSION_CABINET, ModItems.INTEGRATED_MIDRANGE, ModItems.KEYPUNCH, ModItems.CARD_READER, ModItems.LINE_PRINTER,
+                        ModItems.DISK_DRIVE, ModItems.TAPE_DRIVE,
                         ModItems.SERVER_RACK,
                         ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR, ModItems.CONTROL_INTERFACE)) {
                     output.accept(block.get());
@@ -65,7 +66,8 @@ public final class ModCreativeTabs {
                     output.accept(ModItems.part(part).get());
                 }
                 for (var item : List.of(ModItems.FILTER_MODULE, ModItems.THROUGHPUT_MODULE, ModItems.FUZZY_MATCH_MODULE,
-                        ModItems.REDSTONE_CONTROL_MODULE, ModItems.PUNCH_CARD, ModItems.DISKETTE_8IN, ModItems.DISKETTE_MAGAZINE)) {
+                        ModItems.REDSTONE_CONTROL_MODULE, ModItems.PUNCH_CARD, ModItems.DISKETTE_8IN, ModItems.DISKETTE_MAGAZINE,
+                        ModItems.TAPE_REEL)) {
                     output.accept(item.get());
                 }
                 for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS, ModItems.L2_SWITCH_24, ModItems.L2_SWITCH_48,

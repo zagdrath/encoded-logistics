@@ -10,36 +10,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.storage.ColdTier;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.ItemKey;
 
-// A network's cold tier: the tapes in its online Tape Libraries (each tape once, as with copied drives), and its recall
-// queue. A recall's time is guessed from where it is in the queue, the drives there are to work it, and how long one
-// tape takes to load and read.
+// A network's cold tier: the tapes in its online Tape Libraries and the reels on its Tape Drives (TapeSource; each tape
+// once, as with copied drives), and its recall queue. A recall's time is guessed from where it is in the queue, the
+// drives there are to work it, and how long one tape takes to load and read.
 public final class TapeTier implements ColdTier {
     // A typical load + read + unload, for the queue ahead.
     private static final int OP_TICKS = 160;
 
-    private final List<TapeLibraryDevice> libraries;
+    private final List<TapeSource> libraries;
     private final DriveStorage data;
     private final TapeRecalls recalls;
 
-    public TapeTier(List<TapeLibraryDevice> libraries, DriveStorage data, TapeRecalls recalls) {
+    public TapeTier(List<TapeSource> libraries, DriveStorage data, TapeRecalls recalls) {
         this.libraries = libraries;
         this.data = data;
         this.recalls = recalls;
     }
 
-    private void forEachTape(BiConsumer<TapeLibraryDevice, TapeLibraryDevice.Tape> action) {
+    private void forEachTape(Consumer<UUID> action) {
         Set<UUID> seen = new HashSet<>();
-        for (TapeLibraryDevice library : libraries) {
-            for (TapeLibraryDevice.Tape tape : library.tapes()) {
-                if (seen.add(tape.id())) {
-                    action.accept(library, tape);
+        for (TapeSource library : libraries) {
+            for (UUID tape : library.tapeIds()) {
+                if (seen.add(tape)) {
+                    action.accept(tape);
                 }
             }
         }
@@ -47,13 +46,13 @@ public final class TapeTier implements ColdTier {
 
     @Override
     public void listInto(Map<ItemKey, Long> all) {
-        forEachTape((library, tape) -> data.contents(tape.id()).forEach((key, count) -> all.merge(key, count, Long::sum)));
+        forEachTape(tape -> data.contents(tape).forEach((key, count) -> all.merge(key, count, Long::sum)));
     }
 
     @Override
     public long count(ItemKey key) {
         long[] count = { 0 };
-        forEachTape((library, tape) -> count[0] += data.count(tape.id(), key));
+        forEachTape(tape -> count[0] += data.count(tape, key));
         return count[0];
     }
 
@@ -68,29 +67,26 @@ public final class TapeTier implements ColdTier {
         if (running != null) {
             return running.ticksLeft();
         }
-        int drives = 0;
-        TapeLibraryDevice.Tape holding = null;
-        TapeLibraryDevice holder = null;
-        for (TapeLibraryDevice library : libraries) {
-            for (TapeLibraryDevice.Tape tape : library.tapes()) {
-                if (data.count(tape.id(), key) > 0 && library.driveCount() > 0) {
-                    drives += library.driveCount();
-                    if (holding == null) {
-                        holding = tape;
-                        holder = library;
-                    }
-                    break;
-                }
-            }
-        }
-        if (holding == null) {
-            return -1;
-        }
         int position = recalls.position(key);
         int ahead = (position < 0 ? recalls.waiting().size() : position) + recalls.runningCount();
         long amount = Math.max(recalls.waitingAmount(key), Math.min(count(key), key.maxStackSize()));
-        return ahead * OP_TICKS / Math.max(1, drives) + holder.loadTicks(holding.slot())
-                + TapeLibraryDevice.workTicks(holding.generation(), amount);
+        int drives = 0, first = -1;
+        for (TapeSource library : libraries) {
+            if (library.driveCount() <= 0) {
+                continue;
+            }
+            int ticks = library.recallTicks(data, key, amount);
+            if (ticks >= 0) {
+                drives += library.driveCount();
+                if (first < 0) {
+                    first = ticks;
+                }
+            }
+        }
+        if (first < 0) {
+            return -1;
+        }
+        return ahead * OP_TICKS / Math.max(1, drives) + first;
     }
 
     @Override

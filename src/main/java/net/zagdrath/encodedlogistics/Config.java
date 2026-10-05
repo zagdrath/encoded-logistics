@@ -511,6 +511,46 @@ public class Config {
             .comment("Ticks an Integrated Midrange System takes for each craft it runs itself.")
             .defineInRange("integratedMidrangeStepTicks", 25, 1, 6_000);
 
+    public static final ModConfigSpec.DoubleValue DISK_DRIVE_DRAIN = BUILDER
+            .comment("FE per tick a Disk Drive drains while its network runs.")
+            .defineInRange("diskDriveDrain", 1.5, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue DISK_SPIN_UP_TICKS = BUILDER
+            .comment("Ticks a Disk Drive spins up after a Storage Drive goes in, before the network can read it.")
+            .defineInRange("diskSpinUpTicks", 40, 0, 6_000);
+
+    public static final ModConfigSpec.IntValue DISK_SPIN_DOWN_TICKS = BUILDER
+            .comment("Ticks a Disk Drive spins down before its Storage Drive comes out.")
+            .defineInRange("diskSpinDownTicks", 20, 0, 6_000);
+
+    public static final ModConfigSpec.DoubleValue TAPE_DRIVE_DRAIN = BUILDER
+            .comment("FE per tick a Tape Drive drains while its network runs (twice that while reading or writing).")
+            .defineInRange("tapeDriveDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue TAPE_REEL_ITEMS = BUILDER
+            .comment("Items a Tape Reel holds.")
+            .defineInRange("tapeReelItems", 65_536, 8, 1 << 30);
+
+    public static final ModConfigSpec.IntValue TAPE_REEL_TYPES = BUILDER
+            .comment("Item types a Tape Reel holds.")
+            .defineInRange("tapeReelTypes", 1_024, 1, 65_536);
+
+    public static final ModConfigSpec.IntValue TAPE_LOAD_TICKS = BUILDER
+            .comment("Ticks a Tape Drive takes to thread a reel mounted on it.")
+            .defineInRange("tapeLoadTicks", 100, 0, 6_000);
+
+    public static final ModConfigSpec.IntValue TAPE_REWIND_TICKS = BUILDER
+            .comment("Ticks a Tape Drive takes to rewind its reel (before unloading it, or on 7=Rewind).")
+            .defineInRange("tapeRewindTicks", 40, 0, 6_000);
+
+    public static final ModConfigSpec.IntValue TAPE_DRIVE_BASE_TICKS = BUILDER
+            .comment("Ticks a Tape Drive takes for each read or write, plus tapeDriveTicksPer4k for each 4,096 items.")
+            .defineInRange("tapeDriveBaseTicks", 60, 1, 72_000);
+
+    public static final ModConfigSpec.IntValue TAPE_DRIVE_TICKS_PER_4K = BUILDER
+            .comment("Ticks a Tape Drive adds to a read or write for each 4,096 items.")
+            .defineInRange("tapeDriveTicksPer4k", 20, 0, 72_000);
+
     public static final ModConfigSpec.IntValue DISPLAY_MAX_WIDTH = BUILDER
             .comment("The widest a Display Panel screen merges, in panels.")
             .defineInRange("displayMaxWidth", 8, 1, 16);

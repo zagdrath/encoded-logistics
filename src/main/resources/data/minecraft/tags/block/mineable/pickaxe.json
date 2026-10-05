@@ -32,6 +32,8 @@
     "encodedlogistics:card_reader",
     "encodedlogistics:line_printer",
     "encodedlogistics:display_panel",
-    "encodedlogistics:small_wireless_bridge"
+    "encodedlogistics:small_wireless_bridge",
+    "encodedlogistics:disk_drive",
+    "encodedlogistics:tape_drive"
   ]
 }

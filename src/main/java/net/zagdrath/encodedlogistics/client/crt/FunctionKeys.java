@@ -60,7 +60,11 @@ final class FunctionKeys {
         if (minecraft.level == null) {
             return "";
         }
-        long time = minecraft.level.getOverworldClockTime();
+        return clock(minecraft.level.getOverworldClockTime());
+    }
+
+    // A clock time as the screens show it.
+    static String clock(long time) {
         long day = time / 24_000 + 1, tick = time % 24_000;
         long seconds = (tick * 86_400 / 24_000 + 6 * 3_600) % 86_400;
         return String.format(Locale.ROOT, "Day %d  %02d:%02d:%02d", day, seconds / 3_600, seconds / 60 % 60, seconds % 60);
