@@ -58,6 +58,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
+import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.LaneResult;
 import net.zagdrath.encodedlogistics.network.LaneSolver;
@@ -1097,7 +1098,7 @@ public class ControllerStructures extends SavedData {
         return schedulersOf(level.getServer(), owner.ref);
     }
 
-    // The online, formed Schedulers of a network, then the Rack Schedulers serving it.
+    // The online, formed Schedulers of a network, then the Rack Schedulers serving it, then its running Midrange Systems.
     public static List<JobHost> schedulersOf(MinecraftServer server, @Nullable NetworkRef network) {
         Owner owner = owner(server, network);
         List<JobHost> schedulers = new ArrayList<>();
@@ -1112,6 +1113,11 @@ public class ControllerStructures extends SavedData {
         for (RackBlockEntity rack : allRacks(server)) {
             if (rack.scheduler().active() && owner.ref.equals(rack.scheduler().network())) {
                 schedulers.add(rack.scheduler());
+            }
+        }
+        for (MidrangeSystemBlockEntity midrange : onNetwork(server, network, MidrangeSystemBlockEntity.class, true)) {
+            if (midrange.takesJobs()) {
+                schedulers.add(midrange);
             }
         }
         return schedulers;

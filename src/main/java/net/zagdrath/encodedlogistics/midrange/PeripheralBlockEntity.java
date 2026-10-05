@@ -121,25 +121,8 @@ public abstract class PeripheralBlockEntity extends BaseContainerBlockEntity imp
         }
     }
 
-    // The screen's header: the system's name, the device's (named now if it has none yet) and the system's PHOSPHOR.
     public void writeOpening(RegistryFriendlyByteBuf buf) {
-        NetworkRef network = network();
-        String system = "", phosphor = "*GREEN";
-        if (network != null && level instanceof ServerLevel serverLevel) {
-            ElclSystem elcl = new ElclSystem(serverLevel.getServer(), network);
-            system = elcl.name();
-            if (deviceName.isEmpty()) {
-                ElclDevices.list(serverLevel.getServer(), network);
-            }
-            try {
-                phosphor = ElclServices.sysvals().get(elcl, "PHOSPHOR");
-            } catch (RuntimeException e) {
-                // The default.
-            }
-        }
-        buf.writeUtf(system);
-        buf.writeUtf(deviceName.isEmpty() ? deviceType() : deviceName);
-        buf.writeUtf(phosphor);
+        Midranges.writeOpening(this, this, buf);
     }
 
     // --- Saving ---

@@ -34,8 +34,8 @@ public class LinePrinterScreen extends CrtMachineScreen<LinePrinterMenu> {
     }
 
     @Override
-    String action() {
-        return tr("crt.encodedlogistics.printer.action");
+    List<Action> actions() {
+        return List.of(new Action(tr("crt.encodedlogistics.printer.action"), 6));
     }
 
     private String pages() {

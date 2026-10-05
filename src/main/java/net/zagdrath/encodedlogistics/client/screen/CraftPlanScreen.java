@@ -26,6 +26,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
+import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.net.CraftPlanPayload;
 import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalItems;
@@ -219,6 +220,11 @@ public class CraftPlanScreen extends Screen {
         }
         BlockPos pos = plan.schedulers().get(scheduler);
         String at = pos.getX() + ", " + pos.getY() + ", " + pos.getZ();
+        // A Midrange System by its name.
+        if (minecraft.level != null && minecraft.level.getBlockEntity(pos) instanceof MidrangeSystemBlockEntity midrange) {
+            String name = midrange.deviceName().isEmpty() ? MidrangeSystemBlockEntity.TYPE : midrange.deviceName();
+            return Component.translatable("gui.encodedlogistics.craft.scheduler", Component.translatable("gui.encodedlogistics.craft.scheduler.midrange", name));
+        }
         // A rack's Scheduler is known by its rack.
         if (minecraft.level != null && minecraft.level.getBlockEntity(pos) instanceof RackBlockEntity) {
             return Component.translatable("gui.encodedlogistics.craft.scheduler", Component.translatable("gui.encodedlogistics.craft.scheduler.rack", at));

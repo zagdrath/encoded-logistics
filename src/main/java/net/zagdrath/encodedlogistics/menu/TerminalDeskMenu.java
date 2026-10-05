@@ -23,6 +23,7 @@ import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
+import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
@@ -31,7 +32,8 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // The Terminal Desk's green screen (client: CrtScreen): the Access Terminal's item sync (the network's items, hot and
 // cold) for Work with Inventory, and requests - commands, screen queries, completions - answered by TerminalService.
-// Open while the desk is there and the player near it.
+// Open while the desk is there and the player near it. An Integrated Midrange System's console opens the same session
+// (its pos the system's master), while the system is running.
 public class TerminalDeskMenu extends AccessTerminalMenu {
     // The session signed on (needed at SECLVL 30 on a network with a Firewall).
     private boolean signedOn;
@@ -42,6 +44,14 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
 
     public TerminalDeskMenu(int containerId, Inventory inventory, BlockPos desk) {
         super(ModMenuTypes.TERMINAL_DESK.get(), containerId, inventory, desk, Direction.NORTH, DEFAULT_ROWS, 0);
+        if (console() instanceof MidrangeSystemBlockEntity system && !inventory.player.level().isClientSide()) {
+            system.consoleOpened();
+        }
+    }
+
+    // An Integrated Midrange System's console, when that's where the session is (not a desk).
+    private @Nullable MidrangeSystemBlockEntity console() {
+        return player.level().getBlockEntity(pos) instanceof MidrangeSystemBlockEntity system && system.integrated() ? system : null;
     }
 
     public static void open(ServerPlayer player, BlockPos desk) {
@@ -55,7 +65,7 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return desk() != null && player.isWithinBlockInteractionRange(pos, 4.0);
+        return (desk() != null || console() != null && console().running()) && player.isWithinBlockInteractionRange(pos, 4.0);
     }
 
     // A request from the screen: a command line, a screen's query or a completion. The session's interactive job
@@ -116,6 +126,9 @@ public class TerminalDeskMenu extends AccessTerminalMenu {
     @Override
     public void removed(Player player) {
         super.removed(player);
+        if (console() != null && !player.level().isClientSide()) {
+            console().consoleClosed();
+        }
         if (player instanceof ServerPlayer serverPlayer && network() != null) {
             ElclSystem system = new ElclSystem(serverPlayer.level().getServer(), network());
             ElclServices.jobs().endInteractive(system, session(player));

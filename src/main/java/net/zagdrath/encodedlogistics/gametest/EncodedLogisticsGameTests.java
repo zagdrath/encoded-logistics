@@ -117,6 +117,8 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("midrange_expansion_cabinet", MidrangeGameTests::expansionCabinet);
         TESTS.put("midrange_peripherals", MidrangeGameTests::peripherals);
         TESTS.put("midrange_printer_pages", MidrangeGameTests::printerPages);
+        TESTS.put("midrange_system_crafts", MidrangeGameTests::systemCrafts);
+        TESTS.put("midrange_tiers", MidrangeGameTests::tiers);
         TESTS.put("rack_console", Rack3GameTests::rackConsole);
         TESTS.put("rack_six_units_and_upgrades", Rack3GameTests::sixUnitsAndUpgrades);
         TESTS.put("desk_screen", DeskGameTests::deskScreen);

@@ -27,6 +27,7 @@ import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
 import net.zagdrath.encodedlogistics.menu.KeypunchMenu;
 import net.zagdrath.encodedlogistics.menu.LinePrinterMenu;
 import net.zagdrath.encodedlogistics.menu.LithographyPressMenu;
+import net.zagdrath.encodedlogistics.menu.MidrangePanelMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkBridgeMenu;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.menu.PointToPointMenu;
@@ -120,6 +121,9 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<LinePrinterMenu>> LINE_PRINTER = MENU_TYPES.register("line_printer",
             () -> IMenuTypeExtension.create(LinePrinterMenu::new));
+
+    public static final Supplier<MenuType<MidrangePanelMenu>> MIDRANGE_PANEL = MENU_TYPES.register("midrange_panel",
+            () -> IMenuTypeExtension.create(MidrangePanelMenu::new));
 
     private ModMenuTypes() {}
 }

@@ -156,7 +156,7 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
     }
 
     // The recipe's result and remainders, or the inputs back when the grid no longer matches a recipe.
-    private List<ItemStack> craft(ServerLevel level, CraftTask task) {
+    public static List<ItemStack> craft(ServerLevel level, CraftTask task) {
         CraftingInput input = task.schematic().craftingInput();
         Optional<RecipeHolder<CraftingRecipe>> recipe = level.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level);
         if (recipe.isEmpty()) {

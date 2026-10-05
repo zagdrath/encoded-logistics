@@ -34,6 +34,7 @@ import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
 import net.zagdrath.encodedlogistics.client.crt.CrtScreen;
 import net.zagdrath.encodedlogistics.client.crt.KeypunchScreen;
 import net.zagdrath.encodedlogistics.client.crt.LinePrinterScreen;
+import net.zagdrath.encodedlogistics.client.crt.MidrangePanelScreen;
 import net.zagdrath.encodedlogistics.client.model.CableParts;
 import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
@@ -118,6 +119,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.KEYPUNCH.get(), KeypunchScreen::new);
         event.register(ModMenuTypes.CARD_READER.get(), CardReaderScreen::new);
         event.register(ModMenuTypes.LINE_PRINTER.get(), LinePrinterScreen::new);
+        event.register(ModMenuTypes.MIDRANGE_PANEL.get(), MidrangePanelScreen::new);
     }
 
     // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).

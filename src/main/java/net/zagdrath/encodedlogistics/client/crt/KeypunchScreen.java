@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.client.crt;
 
+import java.util.List;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -29,8 +31,8 @@ public class KeypunchScreen extends CrtMachineScreen<KeypunchMenu> {
     }
 
     @Override
-    String action() {
-        return tr("crt.encodedlogistics.keypunch.action");
+    List<Action> actions() {
+        return List.of(new Action(tr("crt.encodedlogistics.keypunch.action"), 6));
     }
 
     @Override

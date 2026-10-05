@@ -14,9 +14,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 
-// Something that takes crafting jobs and runs them: a Scheduler (its Core) or a Server Rack with Compute and Memory
-// Servers (RackScheduler). Known by its position: the Core's, or the rack's master. What providers make comes back to
+// Something that takes crafting jobs and runs them: a Scheduler (its Core), a Server Rack with Compute and Memory
+// Servers (RackScheduler) or a Midrange System. Known by its position: the Core's, or the rack's master. What providers make comes back to
 // the job through here (SchedulerCoreBlockEntity.deliver).
 public interface JobHost {
     BlockPos hostPos();
@@ -54,6 +55,9 @@ public interface JobHost {
         var blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof SchedulerCoreBlockEntity core) {
             return core;
+        }
+        if (blockEntity instanceof MidrangeSystemBlockEntity midrange) {
+            return midrange;
         }
         return blockEntity instanceof RackBlockEntity rack ? rack.scheduler() : null;
     }

@@ -68,10 +68,15 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
     // Its function keys' line ("F3=Exit  F5=Refresh  F6=Punch  F12=Cancel").
     abstract String keys();
 
-    // Its action's label on row 20 ("PUNCH"; F6), and what it'll do (dim, after it).
-    abstract String action();
+    // An action's reversed label on row 20 ("PUNCH") and the function key it presses (6).
+    record Action(String label, int key) {}
 
-    abstract String actionHint();
+    // Its actions, left to right; and what the last will do (dim, after them).
+    abstract List<Action> actions();
+
+    String actionHint() {
+        return "";
+    }
 
     // Rows 3-19 (and 21): text, labels for the slots.
     abstract void body(CrtGrid grid);
@@ -143,10 +148,14 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
         grid.right(0, tr("crt.encodedlogistics.system", system.isEmpty() ? "*OFFLINE" : system), CrtGrid.NORMAL);
         grid.right(1, FunctionKeys.clock(minecraft), CrtGrid.NORMAL);
         body(grid);
-        String action = " " + action() + " ";
-        grid.put(ACTION_ROW, ACTION_COL, action, CrtGrid.NORMAL);
-        grid.reverse(ACTION_ROW, ACTION_COL, action.length());
-        grid.put(ACTION_ROW, ACTION_COL + action.length() + 2, actionHint(), CrtGrid.DIM);
+        int col = ACTION_COL;
+        for (Action action : actions()) {
+            String label = " " + action.label() + " ";
+            grid.put(ACTION_ROW, col, label, CrtGrid.NORMAL);
+            grid.reverse(ACTION_ROW, col, label.length());
+            col += label.length() + 2;
+        }
+        grid.put(ACTION_ROW, col, actionHint(), CrtGrid.DIM);
         String message = menu.message().getString();
         if (message.isEmpty() && !menu.online()) {
             message = tr("crt.encodedlogistics.machine.no_host");
@@ -184,6 +193,9 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
         return graphics -> {
             int frame = display.palette().normal(), lit = (0x50 << 24) | (display.palette().normal() & 0xFFFFFF);
             for (Slot slot : menu.slots) {
+                if (!slot.isActive()) {
+                    continue;
+                }
                 int x = CrtDisplay.MARGIN_X + slot.x, y = CrtDisplay.MARGIN_Y + slot.y;
                 int w = PeripheralMenu.SLOT_W, h = PeripheralMenu.SLOT_H;
                 graphics.fill(x, y, x + w, y + 1, frame);
@@ -211,7 +223,7 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
         double[] v = display.virtual(minecraft, mouseX, mouseY);
         double x = v[0] - CrtDisplay.MARGIN_X, y = v[1] - CrtDisplay.MARGIN_Y;
         for (Slot slot : menu.slots) {
-            if (x >= slot.x && x < slot.x + PeripheralMenu.SLOT_W && y >= slot.y && y < slot.y + PeripheralMenu.SLOT_H) {
+            if (slot.isActive() && x >= slot.x && x < slot.x + PeripheralMenu.SLOT_W && y >= slot.y && y < slot.y + PeripheralMenu.SLOT_H) {
                 return slot;
             }
         }
@@ -251,9 +263,16 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
             }
             return true;
         }
-        if (row == ACTION_ROW && col >= ACTION_COL && col < ACTION_COL + action().length() + 2) {
-            functionKey(6);
-            return true;
+        if (row == ACTION_ROW) {
+            int at = ACTION_COL;
+            for (Action action : actions()) {
+                int width = action.label().length() + 2;
+                if (col >= at && col < at + width) {
+                    functionKey(action.key());
+                    return true;
+                }
+                at += width + 2;
+            }
         }
         for (Field field : fields) {
             if (row == field.row && col >= field.col && col < field.col + field.length) {

@@ -17,7 +17,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -29,7 +28,7 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 // The Midrange System (tier 1, HANDOFF 2): a waist-high cabinet 2 blocks wide (master and a dummy to its +x), one lane on
 // the network from either block. STATE: its operator panel (off, IPL, run, busy, attention). EXPANSION: the side its
 // Expansion Cabinet is on (none, pos, neg) - the model moves flush toward it, so the pair reads as one machine.
-public class MidrangeSystemBlock extends FootprintBlock implements NetworkNodeBlock {
+public class MidrangeSystemBlock extends MidrangeHostBlock implements NetworkNodeBlock {
     private static final List<Vec3i> FOOTPRINT = List.of(Vec3i.ZERO, new Vec3i(1, 0, 0));
 
     public MidrangeSystemBlock(BlockBehaviour.Properties properties) {
@@ -90,10 +89,5 @@ public class MidrangeSystemBlock extends FootprintBlock implements NetworkNodeBl
         double drain = Config.MIDRANGE_DRAIN.getAsDouble() + (state.getValue(MidrangeStates.EXPANSION) != MidrangeStates.Side.NONE
                 ? Config.EXPANSION_CABINET_DRAIN.getAsDouble() : 0);
         return new DeviceNode(pos.immutable(), EnumSet.allOf(Direction.class), master ? 1 : 0, master ? drain : 0, List.of(), true);
-    }
-
-    @Override
-    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return state.getValue(PART) == Part.MASTER ? new MidrangeSystemBlockEntity(pos, state) : null;
     }
 }

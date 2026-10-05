@@ -38,8 +38,8 @@ public class CardReaderScreen extends CrtMachineScreen<CardReaderMenu> {
     }
 
     @Override
-    String action() {
-        return tr("crt.encodedlogistics.reader.action");
+    List<Action> actions() {
+        return List.of(new Action(tr("crt.encodedlogistics.reader.action"), 6));
     }
 
     private List<ItemStack> hopper() {

@@ -21,10 +21,10 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
-import net.zagdrath.encodedlogistics.midrange.PeripheralBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.MidrangeDevice;
 import net.zagdrath.encodedlogistics.net.MachinePayloads;
 
-// A Midrange peripheral's screen (the Keypunch's, Card Reader's, Line Printer's): the machine's slots, then the player's
+// A Midrange machine's screen (the Keypunch's, Card Reader's, Line Printer's, the control panel): its slots, then the player's
 // inventory. It's a green screen (CrtMachineScreen), so a slot's x / y are where its frame is on the glass, in the
 // CRT's virtual pixels from the text's corner (a column is 6, a row 10): the player's inventory at the lower right
 // (column 51, rows 12-19). Whether the machine's online goes in a data slot; its messages, and the lines and numbers
@@ -33,7 +33,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
     public static final int INVENTORY_X = 51 * 6, INVENTORY_Y = 120, SLOT_W = 18, SLOT_H = 16;
     private static final int REFRESH = 20;
 
-    // The header: the system's and device's names and the phosphor (PeripheralBlockEntity.writeOpening).
+    // The header: the system's and device's names and the phosphor (Midranges.writeOpening).
     public record Opening(String system, String device, String phosphor) {
         public static final Opening SERVER = new Opening("", "", "*GREEN");
 
@@ -44,7 +44,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
 
     protected final Container machine;
     protected final Player player;
-    protected final @Nullable PeripheralBlockEntity peripheral;
+    protected final @Nullable MidrangeDevice peripheral;
     private final Opening opening;
     private final DataSlot online = DataSlot.standalone();
     private int timer;
@@ -54,7 +54,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
     private List<Integer> numbers = List.of();
     private int received;
 
-    protected PeripheralMenu(@Nullable MenuType<?> type, int containerId, Inventory inventory, Container machine, @Nullable PeripheralBlockEntity peripheral,
+    protected PeripheralMenu(@Nullable MenuType<?> type, int containerId, Inventory inventory, Container machine, @Nullable MidrangeDevice peripheral,
             Opening opening) {
         super(type, containerId);
         this.machine = machine;
