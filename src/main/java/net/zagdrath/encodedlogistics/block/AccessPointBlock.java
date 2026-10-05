@@ -42,9 +42,10 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.wireless.WirelessShapes;
 import net.zagdrath.encodedlogistics.wireless.WirelessState;
 
-// The Access Point: the radio for its network's Wireless Controller. Cabled to the network like any device (one lane,
-// accessPointDrain FE/t) on every face but its puck's (FACING, toward the player who placed it); each one online gives
-// the controller wirelessApClients slots for Wireless Bridges and Ports. STATE: off (no uplink), linking (no
+// The Access Point: the radio for its network's Wireless Controller - a disc mounted on a cable (or any block): placed
+// against the face clicked, it faces away from it (FACING) and connects on that one side, a device on the network (one
+// lane, accessPointDrain FE/t). Each one online gives the controller wirelessApClients slots for Wireless Bridges and
+// Ports. STATE: off (no uplink), linking (no
 // controller on its network: the ring blinks yellow), online (light blue).
 public class AccessPointBlock extends BaseEntityBlock implements NetworkNodeBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
@@ -66,7 +67,7 @@ public class AccessPointBlock extends BaseEntityBlock implements NetworkNodeBloc
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        return defaultBlockState().setValue(FACING, context.getClickedFace());
     }
 
     @Override
@@ -91,16 +92,16 @@ public class AccessPointBlock extends BaseEntityBlock implements NetworkNodeBloc
 
     // --- Network ---
 
+    // Only on the side it's mounted on.
     @Override
     public boolean connectsOn(BlockState state, Direction side) {
-        return side != state.getValue(FACING);
+        return side == state.getValue(FACING).getOpposite();
     }
 
     @Override
     public @Nullable NetworkNode getNetworkNode(Level level, BlockPos pos, BlockState state) {
-        Set<Direction> sides = EnumSet.allOf(Direction.class);
-        sides.remove(state.getValue(FACING));
-        return new DeviceNode(pos.immutable(), sides, 1, Config.ACCESS_POINT_DRAIN.getAsDouble(), List.of(), true);
+        Set<Direction> sides = EnumSet.of(state.getValue(FACING).getOpposite());
+        return new DeviceNode(pos.immutable(), sides, 1, Config.ACCESS_POINT_DRAIN.getAsDouble(), List.of(), false);
     }
 
     @Override

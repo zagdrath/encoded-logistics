@@ -867,7 +867,7 @@
   "message.encodedlogistics.link_card.wireless_stored": "Wireless Controller stored: use the card on a Wireless Bridge or Port to link it",
   "message.encodedlogistics.link_card.wireless_linked": "Linked to %s",
   "message.encodedlogistics.link_card.wireless_hint": "Use this card on a Wireless Controller's unit first, then on this block",
-  "tooltip.encodedlogistics.info.access_point": "The radio for its network's Wireless Controller. Cable it to the network; each one online lets the controller serve %s Wireless Bridges and Ports.",
+  "tooltip.encodedlogistics.info.access_point": "The radio for its network's Wireless Controller. Mount it on a cable (or any network block); each one online lets the controller serve %s Wireless Bridges and Ports.",
   "tooltip.encodedlogistics.info.wireless_bridge": "Brings what's cabled to it onto its Wireless Controller's network, anywhere, with up to %s lanes. Link it with a Link Card from the controller.",
   "tooltip.encodedlogistics.info.wireless_ingress_port": "An Ingress Port with no cable: mount it on an inventory and link it to a Wireless Controller with a Link Card.",
   "tooltip.encodedlogistics.info.wireless_egress_port": "An Egress Port with no cable: mount it on an inventory and link it to a Wireless Controller with a Link Card.",

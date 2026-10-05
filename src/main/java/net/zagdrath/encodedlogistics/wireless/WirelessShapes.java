@@ -14,13 +14,15 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 // The wireless blocks' outlines (shapes/collision_shapes.json in the handoff), turned as their blockstates turn their
-// models: the Access Point is modelled facing up (x 90 / 180 for the sides and down), the Wireless Ports facing north.
+// models: the Access Point (a disc mounted on what's below it) is modelled facing up (x 90 / 180 for the sides and down), the Wireless Ports facing north.
 public final class WirelessShapes {
     public static final Map<Direction, VoxelShape> ACCESS_POINT = new EnumMap<>(Direction.class), PORT = new EnumMap<>(Direction.class);
     public static final VoxelShape BRIDGE = Shapes.or(Block.box(0, 0, 0, 16, 10, 16), Block.box(7, 10, 7, 9, 15, 9), Block.box(6.5, 15, 6.5, 9.5, 16, 9.5));
 
-    private static final double[][] AP_UP = { { 0, 0, 0, 16, 13, 16 }, { 3, 13, 5, 13, 15.5, 11 }, { 5, 13, 3, 11, 15.5, 13 }, { 4, 13, 4, 12, 15.5, 12 } };
-    private static final double[][] PORT_NORTH = { { 2, 2, 0, 14, 14, 4 } };
+    // The disc (12 across, 2 thick) on its plate against the block it's mounted on.
+    private static final double[][] AP_UP = { { 5, 0, 5, 11, 1, 11 }, { 2, 1, 5, 14, 3, 11 }, { 3, 1, 4, 13, 3, 12 }, { 4, 1, 3, 12, 3, 13 },
+            { 5, 1, 2, 11, 3, 14 } };
+    private static final double[][] PORT_NORTH = { { 3, 3, 0, 13, 13, 4 } };
 
     static {
         for (Direction facing : Direction.values()) {

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -122,19 +121,13 @@ public class AccessPointBlockEntity extends BlockEntity implements NetworkDevice
         return controller != null ? Wireless.name(controller) : "";
     }
 
-    // What it's cabled to: the first network block beside it (not on its puck's face).
+    // What it's mounted on (its uplink): the network block behind it, or none.
     private Component uplink() {
         if (level == null) {
             return Component.literal("-");
         }
-        Direction puck = getBlockState().getValue(AccessPointBlock.FACING);
-        for (Direction side : Direction.values()) {
-            BlockState next = level.getBlockState(worldPosition.relative(side));
-            if (side != puck && next.getBlock() instanceof NetworkNodeBlock) {
-                return next.getBlock().getName();
-            }
-        }
-        return Component.translatable("hud.encodedlogistics.wireless.none");
+        BlockState behind = level.getBlockState(worldPosition.relative(getBlockState().getValue(AccessPointBlock.FACING).getOpposite()));
+        return behind.getBlock() instanceof NetworkNodeBlock ? behind.getBlock().getName() : Component.translatable("hud.encodedlogistics.wireless.none");
     }
 
     @Override

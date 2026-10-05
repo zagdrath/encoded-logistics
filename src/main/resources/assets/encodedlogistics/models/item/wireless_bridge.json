@@ -1,6 +1,3 @@
 {
- "parent": "minecraft:item/generated",
- "textures": {
-  "layer0": "encodedlogistics:item/wireless_bridge"
- }
+ "parent": "encodedlogistics:block/wireless/wireless_bridge"
 }

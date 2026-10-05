@@ -21,12 +21,13 @@ import net.zagdrath.encodedlogistics.storage.TapeGeneration;
 
 // Four tabs, one after another: the network's blocks and machines, cables (every tier and colour, with anchors and
 // facades), parts and tools (cable parts, modules, drives, cards, the Handheld Terminal), and materials (ores, raw
-// metals, dusts, ingots and the components made from them).
+// metals, dusts, ingots and the components made from them). NeoForge orders mods' tabs by their ids where nothing else
+// decides (paths first), so ours are numbered 0_ to 3_: they sort before other mods' and stay together, in order.
 public final class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB,
             EncodedLogistics.MODID);
 
-    public static final Supplier<CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
+    public static final Supplier<CreativeModeTab> MAIN = CREATIVE_MODE_TABS.register("0_main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.encodedlogistics"))
             .withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
             .icon(() -> ModItems.NETWORK_CONTROLLER.get().getDefaultInstance())
@@ -41,9 +42,9 @@ public final class ModCreativeTabs {
             })
             .build());
 
-    public static final Supplier<CreativeModeTab> CABLES = CREATIVE_MODE_TABS.register("cables", () -> CreativeModeTab.builder()
+    public static final Supplier<CreativeModeTab> CABLES = CREATIVE_MODE_TABS.register("1_cables", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.encodedlogistics.cables"))
-            .withTabsBefore(key("main"))
+            .withTabsBefore(key("0_main"))
             .icon(() -> ModItems.allCables().getFirst().get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 ModItems.allCables().forEach(cable -> output.accept(cable.get()));
@@ -52,9 +53,9 @@ public final class ModCreativeTabs {
             })
             .build());
 
-    public static final Supplier<CreativeModeTab> PARTS = CREATIVE_MODE_TABS.register("parts", () -> CreativeModeTab.builder()
+    public static final Supplier<CreativeModeTab> PARTS = CREATIVE_MODE_TABS.register("2_parts", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.encodedlogistics.parts"))
-            .withTabsBefore(key("cables"))
+            .withTabsBefore(key("1_cables"))
             .icon(() -> ModItems.ACCESS_TERMINAL.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 for (PartType part : PartType.values()) {
@@ -83,9 +84,9 @@ public final class ModCreativeTabs {
             })
             .build());
 
-    public static final Supplier<CreativeModeTab> MATERIALS = CREATIVE_MODE_TABS.register("materials", () -> CreativeModeTab.builder()
+    public static final Supplier<CreativeModeTab> MATERIALS = CREATIVE_MODE_TABS.register("3_materials", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.encodedlogistics.materials"))
-            .withTabsBefore(key("parts"))
+            .withTabsBefore(key("2_parts"))
             .icon(() -> ModItems.SILICON_WAFER.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
                 // Ores, then each metal's raw, dust and ingot.

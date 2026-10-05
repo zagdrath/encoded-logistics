@@ -1,287 +1,354 @@
 {
  "parent": "minecraft:block/block",
- "render_type": "minecraft:cutout",
  "textures": {
   "casing": "encodedlogistics:block/wireless/casing",
-  "top": "encodedlogistics:block/wireless/ap_top",
   "puck": "encodedlogistics:block/wireless/puck_top",
   "puckside": "encodedlogistics:block/wireless/puck_side",
-  "particle": "encodedlogistics:block/wireless/casing"
+  "particle": "encodedlogistics:block/wireless/puck_top"
  },
  "elements": [
   {
-   "name": "body",
+   "name": "plate",
    "from": [
+    5,
     0,
-    0,
-    0
-   ],
-   "to": [
-    16,
-    13,
-    16
-   ],
-   "faces": {
-    "north": {
-     "texture": "#casing",
-     "uv": [
-      0,
-      3,
-      16,
-      16
-     ]
-    },
-    "south": {
-     "texture": "#casing",
-     "uv": [
-      0,
-      3,
-      16,
-      16
-     ]
-    },
-    "east": {
-     "texture": "#casing",
-     "uv": [
-      0,
-      3,
-      16,
-      16
-     ]
-    },
-    "west": {
-     "texture": "#casing",
-     "uv": [
-      0,
-      3,
-      16,
-      16
-     ]
-    },
-    "up": {
-     "texture": "#top",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ]
-    },
-    "down": {
-     "texture": "#casing",
-     "uv": [
-      0,
-      0,
-      16,
-      16
-     ]
-    }
-   }
-  },
-  {
-   "name": "puck_a",
-   "from": [
-    3,
-    13,
     5
    ],
    "to": [
-    13,
-    15.5,
+    11,
+    1,
     11
    ],
    "faces": {
     "north": {
-     "texture": "#puckside",
      "uv": [
+      5,
       0,
-      0,
-      16,
-      2.5
-     ]
+      11,
+      1
+     ],
+     "texture": "#casing"
     },
     "south": {
-     "texture": "#puckside",
      "uv": [
+      5,
       0,
-      0,
-      16,
-      2.5
-     ]
+      11,
+      1
+     ],
+     "texture": "#casing"
     },
     "east": {
-     "texture": "#puckside",
      "uv": [
+      5,
       0,
-      0,
-      16,
-      2.5
-     ]
+      11,
+      1
+     ],
+     "texture": "#casing"
     },
     "west": {
-     "texture": "#puckside",
      "uv": [
+      5,
       0,
-      0,
-      16,
-      2.5
-     ]
+      11,
+      1
+     ],
+     "texture": "#casing"
     },
     "up": {
-     "texture": "#puck",
      "uv": [
-      3,
       5,
-      13,
+      5,
+      11,
       11
-     ]
+     ],
+     "texture": "#casing"
     },
     "down": {
-     "texture": "#puckside",
      "uv": [
-      0,
-      0,
-      16,
-      2.5
-     ]
+      5,
+      5,
+      11,
+      11
+     ],
+     "texture": "#casing"
     }
    }
   },
   {
-   "name": "puck_b",
+   "name": "disc_a",
    "from": [
-    5,
-    13,
-    3
+    2,
+    1,
+    5
    ],
    "to": [
-    11,
-    15.5,
-    13
+    14,
+    3,
+    11
    ],
    "faces": {
     "north": {
-     "texture": "#puckside",
      "uv": [
+      2,
       0,
-      0,
-      16,
-      2.5
-     ]
+      14,
+      2
+     ],
+     "texture": "#puckside"
     },
     "south": {
-     "texture": "#puckside",
      "uv": [
+      2,
       0,
-      0,
-      16,
-      2.5
-     ]
+      14,
+      2
+     ],
+     "texture": "#puckside"
     },
     "east": {
-     "texture": "#puckside",
-     "uv": [
-      0,
-      0,
-      16,
-      2.5
-     ]
-    },
-    "west": {
-     "texture": "#puckside",
-     "uv": [
-      0,
-      0,
-      16,
-      2.5
-     ]
-    },
-    "up": {
-     "texture": "#puck",
      "uv": [
       5,
-      3,
+      0,
       11,
-      13
-     ]
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      2,
+      5,
+      14,
+      11
+     ],
+     "texture": "#puck"
     },
     "down": {
-     "texture": "#puckside",
      "uv": [
-      0,
-      0,
-      16,
-      2.5
-     ]
+      2,
+      5,
+      14,
+      11
+     ],
+     "texture": "#casing"
     }
    }
   },
   {
-   "name": "puck_c",
+   "name": "disc_b",
    "from": [
-    4,
-    13,
+    3,
+    1,
     4
    ],
    "to": [
-    12,
-    15.5,
+    13,
+    3,
     12
    ],
    "faces": {
     "north": {
-     "texture": "#puckside",
      "uv": [
+      3,
       0,
-      0,
-      16,
-      2.5
-     ]
+      13,
+      2
+     ],
+     "texture": "#puckside"
     },
     "south": {
-     "texture": "#puckside",
      "uv": [
+      3,
       0,
-      0,
-      16,
-      2.5
-     ]
+      13,
+      2
+     ],
+     "texture": "#puckside"
     },
     "east": {
-     "texture": "#puckside",
      "uv": [
+      4,
       0,
-      0,
-      16,
-      2.5
-     ]
+      12,
+      2
+     ],
+     "texture": "#puckside"
     },
     "west": {
-     "texture": "#puckside",
      "uv": [
+      4,
       0,
-      0,
-      16,
-      2.5
-     ]
+      12,
+      2
+     ],
+     "texture": "#puckside"
     },
     "up": {
-     "texture": "#puck",
      "uv": [
+      3,
       4,
-      4,
-      12,
+      13,
       12
-     ]
+     ],
+     "texture": "#puck"
     },
     "down": {
-     "texture": "#puckside",
      "uv": [
+      3,
+      4,
+      13,
+      12
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "disc_c",
+   "from": [
+    4,
+    1,
+    3
+   ],
+   "to": [
+    12,
+    3,
+    13
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
       0,
+      12,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "south": {
+     "uv": [
+      4,
       0,
-      16,
-      2.5
-     ]
+      12,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "east": {
+     "uv": [
+      3,
+      0,
+      13,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      3,
+      0,
+      13,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      4,
+      3,
+      12,
+      13
+     ],
+     "texture": "#puck"
+    },
+    "down": {
+     "uv": [
+      4,
+      3,
+      12,
+      13
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "disc_d",
+   "from": [
+    5,
+    1,
+    2
+   ],
+   "to": [
+    11,
+    3,
+    14
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "south": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "east": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      5,
+      2,
+      11,
+      14
+     ],
+     "texture": "#puck"
+    },
+    "down": {
+     "uv": [
+      5,
+      2,
+      11,
+      14
+     ],
+     "texture": "#casing"
     }
    }
   }

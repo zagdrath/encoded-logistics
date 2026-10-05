@@ -1,6 +1,386 @@
 {
- "parent": "minecraft:item/generated",
+ "parent": "minecraft:block/block",
  "textures": {
-  "layer0": "encodedlogistics:item/access_point"
- }
+  "casing": "encodedlogistics:block/wireless/casing",
+  "puck": "encodedlogistics:block/wireless/puck_top",
+  "puckside": "encodedlogistics:block/wireless/puck_side",
+  "particle": "encodedlogistics:block/wireless/puck_top",
+  "ring": "encodedlogistics:block/wireless/ap_ring_online"
+ },
+ "elements": [
+  {
+   "name": "plate",
+   "from": [
+    5,
+    6.5,
+    5
+   ],
+   "to": [
+    11,
+    7.5,
+    11
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      5,
+      0,
+      11,
+      1
+     ],
+     "texture": "#casing"
+    },
+    "south": {
+     "uv": [
+      5,
+      0,
+      11,
+      1
+     ],
+     "texture": "#casing"
+    },
+    "east": {
+     "uv": [
+      5,
+      0,
+      11,
+      1
+     ],
+     "texture": "#casing"
+    },
+    "west": {
+     "uv": [
+      5,
+      0,
+      11,
+      1
+     ],
+     "texture": "#casing"
+    },
+    "up": {
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ],
+     "texture": "#casing"
+    },
+    "down": {
+     "uv": [
+      5,
+      5,
+      11,
+      11
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "disc_a",
+   "from": [
+    2,
+    7.5,
+    5
+   ],
+   "to": [
+    14,
+    9.5,
+    11
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "south": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "east": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      2,
+      5,
+      14,
+      11
+     ],
+     "texture": "#puck"
+    },
+    "down": {
+     "uv": [
+      2,
+      5,
+      14,
+      11
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "disc_b",
+   "from": [
+    3,
+    7.5,
+    4
+   ],
+   "to": [
+    13,
+    9.5,
+    12
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      3,
+      0,
+      13,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "south": {
+     "uv": [
+      3,
+      0,
+      13,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "east": {
+     "uv": [
+      4,
+      0,
+      12,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      4,
+      0,
+      12,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      3,
+      4,
+      13,
+      12
+     ],
+     "texture": "#puck"
+    },
+    "down": {
+     "uv": [
+      3,
+      4,
+      13,
+      12
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "disc_c",
+   "from": [
+    4,
+    7.5,
+    3
+   ],
+   "to": [
+    12,
+    9.5,
+    13
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      4,
+      0,
+      12,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "south": {
+     "uv": [
+      4,
+      0,
+      12,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "east": {
+     "uv": [
+      3,
+      0,
+      13,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      3,
+      0,
+      13,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      4,
+      3,
+      12,
+      13
+     ],
+     "texture": "#puck"
+    },
+    "down": {
+     "uv": [
+      4,
+      3,
+      12,
+      13
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "disc_d",
+   "from": [
+    5,
+    7.5,
+    2
+   ],
+   "to": [
+    11,
+    9.5,
+    14
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "south": {
+     "uv": [
+      5,
+      0,
+      11,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "east": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "west": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#puckside"
+    },
+    "up": {
+     "uv": [
+      5,
+      2,
+      11,
+      14
+     ],
+     "texture": "#puck"
+    },
+    "down": {
+     "uv": [
+      5,
+      2,
+      11,
+      14
+     ],
+     "texture": "#casing"
+    }
+   }
+  },
+  {
+   "name": "ring",
+   "from": [
+    4,
+    9.51,
+    4
+   ],
+   "to": [
+    12,
+    9.51,
+    12
+   ],
+   "faces": {
+    "up": {
+     "texture": "#ring",
+     "uv": [
+      4,
+      4,
+      12,
+      12
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ]
 }

@@ -1,6 +1,152 @@
 {
- "parent": "minecraft:item/generated",
+ "parent": "minecraft:block/block",
  "textures": {
-  "layer0": "encodedlogistics:item/wireless_ingress_port"
- }
+  "front": "encodedlogistics:block/wireless/port_front",
+  "back": "encodedlogistics:block/wireless/port_ingress_back",
+  "side": "encodedlogistics:block/wireless/port_ingress_side",
+  "mast": "encodedlogistics:block/wireless/mast",
+  "particle": "encodedlogistics:block/wireless/port_front"
+ },
+ "elements": [
+  {
+   "name": "panel",
+   "from": [
+    3,
+    3,
+    6
+   ],
+   "to": [
+    13,
+    13,
+    10
+   ],
+   "faces": {
+    "north": {
+     "texture": "#back",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    },
+    "south": {
+     "texture": "#front",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ],
+     "rotation": 90
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ],
+     "rotation": 90
+    },
+    "up": {
+     "texture": "#side",
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#side",
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "nub",
+   "from": [
+    10.5,
+    13,
+    8
+   ],
+   "to": [
+    11.5,
+    15,
+    9
+   ],
+   "faces": {
+    "north": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      1,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      1,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      1,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      1,
+      2
+     ]
+    },
+    "up": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      1,
+      2
+     ]
+    },
+    "down": {
+     "texture": "#mast",
+     "uv": [
+      0,
+      0,
+      1,
+      2
+     ]
+    }
+   }
+  }
+ ]
 }
