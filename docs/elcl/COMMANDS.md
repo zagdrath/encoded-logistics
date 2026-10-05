@@ -115,7 +115,7 @@ ELC1303.)*
 | `SNDDSPIMG` **[EXT]** | `DEV`(P1, Req) `RGN`(P2, Req) `FILE`(P3, Req, quoted: `FILE('logo.png')`) `SCALE(*DITHER\|*NEAREST)` `COLORS(*DFT\|16\|64\|256\|*FULL)` | IB | Shows a PNG from `<world>/encodedlogistics/images/<SYSNAME>/`. ELC1301, ELC1303, ELC1312, ELC1313, ELC1314, ELC1315; ELC1317 (a diagnostic) when the colours are above the server's limit. |
 | `RTVDSPSIZ` **[EXT]** | `DEV`(P1, Req) `RTNW`(*INT) `RTNH`(*INT) `RTNPXW`(*INT) `RTNPXH`(*INT) | IB | Size in panels and canvas px. ELC1301, ELC1303. |
 | `PRTTXT` | `TEXT`(P1, Req) `SPLF(*JOB\|name)` | IB | Writes a line to a spooled file |
-| `PRTRPT` | `RPT`(P1, Req: `*INV\|*DEV\|*JOBLOG\|*SPLF`) `SPLF(name)` `DEV(*DFT\|printer)` | IB | Line Printer. ELC1301, ELC1306 (out of paper) |
+| `PRTRPT` | `RPT`(P1, Req: `*INV\|*DEV\|*JOBLOG\|*SPLF`) `SPLF(name)` `DEV(*DFT\|printer)` | IB | Line Printer: a Printout (`elcl/exec/Reports`: 56 columns; *INV item, quantity, tier, location; *DEV name, type, status, lanes, location; *JOBLOG time, job, event). ELC1301, ELC1306 (out of paper) |
 
 ## 9. OS commands
 

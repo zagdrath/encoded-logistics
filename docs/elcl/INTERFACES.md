@@ -101,6 +101,7 @@ replaces its members and programs. It needs `*CHANGE` on an existing library (EL
 | Card Reader | `DisketteDevice` |
 | 8" Diskette (item) | `Diskette`, over its item data |
 | Keypunch | nothing in ELCL |
+| Disk Drive, Tape Drive | nothing in ELCL (named DISK01, TAPE01; storage, not devices ELCL drives) |
 
 Tested by `gametest/InterfaceGameTests.saveRestore` with `FakeDrive` / `FakeDiskette`.
 
@@ -114,6 +115,7 @@ Tested by `gametest/InterfaceGameTests.saveRestore` with `FakeDrive` / `FakeDisk
 | `boolean online()` | Offline: ELC1302. |
 | `boolean hasPaper()` | No paper: ELC1306. |
 | `void print(String title, List<String> lines)` | Prints a spooled file or report. Only called while it's online with paper. |
+| `void print(String title, String report, List<String> lines)` | The same, saying which report (`inventory`, `joblog`, `devices`, `splf:<name>`); by default the two-argument one. A report's line may start with an ink mark (`Printout.MARK_LIGHT`, `MARK_RED`). |
 
 Users:
 - `PRTRPT RPT(*INV|*DEV|*JOBLOG|*SPLF) DEV()` (`elcl/exec/ModCommands`).
@@ -123,7 +125,7 @@ Both answer ELC1301 with no printer and ELC1307 when it's printed.
 
 | Device | Implements |
 |---|---|
-| Line Printer | `PrinterDevice` (paper from its own inventory) |
+| Line Printer | `PrinterDevice` (paper from its own inventory; a Printout item, one paper a page; out of paper part-way, the rest waits) |
 
 Tested by `gametest/InterfaceGameTests.printing` and `ElclVmGameTests` (`modCommands`, `examples`) with `FakePrinter`.
 
