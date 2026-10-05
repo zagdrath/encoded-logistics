@@ -166,10 +166,10 @@ final class DeskGameTests {
                     helper.assertTrue(Math.abs(helper.getBlockEntity(pos, SwivelChairBlockEntity.class).yaw() - 90) < 1, "Chair didn't turn");
                     helper.getLevel().destroyBlock(helper.absolutePos(pos), false);
                 })
-                .thenIdle(2)
+                // The seat goes on its own next tick, whenever entities in this test's area tick.
+                .thenWaitUntil(() -> helper.assertTrue(helper.getLevel().getEntitiesOfClass(SeatEntity.class, new AABB(helper.absolutePos(pos)).inflate(1))
+                        .isEmpty(), "Seat left behind"))
                 .thenExecute(() -> {
-                    helper.assertTrue(helper.getLevel().getEntitiesOfClass(SeatEntity.class, new AABB(helper.absolutePos(pos)).inflate(1)).isEmpty(),
-                            "Seat left behind");
                     helper.assertTrue(!player.isPassenger(), "Still seated");
                     CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(ModItems.SWIVEL_CHAIR.get()), new ItemStack(Items.DYE.pick(DyeColor.RED))));
                     ItemStack dyed = helper.getLevel().getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())

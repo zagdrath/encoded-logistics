@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 
 // One kind of thing as network storage counts it, without an amount: an item (with its components), a fluid, or a
@@ -73,6 +74,10 @@ public final class StorageKey {
             key -> key.isItem() ? Either.right(key) : Either.left(key));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, StorageKey> STREAM_CODEC = StreamCodec.of(StorageKey::write, StorageKey::read);
+
+    // The network's energy as terminals list it (an entry beside the items, as in AE2): display only - never stored,
+    // saved or sent, and nothing to click.
+    public static final StorageKey ENERGY = new StorageKey(ResourceType.ENERGY, null, null, EncodedLogistics.MODID, EncodedLogistics.id("energy"));
 
     private final ResourceType type;
     // ITEM: the item, count 1. Others: a Resource Entry for the key, made when first asked for.
@@ -192,6 +197,9 @@ public final class StorageKey {
     }
 
     public Component displayName() {
+        if (type == ResourceType.ENERGY) {
+            return Component.translatable("gui.encodedlogistics.terminal.energy");
+        }
         return switch (type) {
             case ITEM -> stack().getHoverName();
             case FLUID -> Objects.requireNonNull(fluid).getHoverName();

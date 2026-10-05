@@ -115,8 +115,9 @@ public abstract class CrtMachineScreen<M extends PeripheralMenu> extends Screen 
     }
 
     // An item's name from a lang key the server sent ("" stays "").
+    // A lang key's text, or text sent as is ("=" and the text).
     static String name(String key) {
-        return key.isEmpty() ? "" : tr(key);
+        return key.isEmpty() ? "" : key.startsWith("=") ? key.substring(1) : tr(key);
     }
 
     // The server's lines of a kind (their first field), split at the tabs.

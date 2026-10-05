@@ -1,24 +1,23 @@
 {
  "parent": "minecraft:block/block",
  "textures": {
-  "casing": "encodedlogistics:block/wireless/casing",
-  "puck": "encodedlogistics:block/wireless/puck_top",
-  "puckside": "encodedlogistics:block/wireless/puck_side",
-  "particle": "encodedlogistics:block/wireless/puck_top",
-  "ring": "encodedlogistics:block/wireless/ap_ring_online"
+  "access_point_casing": "encodedlogistics:block/wireless/casing",
+  "access_point_puck": "encodedlogistics:block/wireless/puck_top",
+  "access_point_puckside": "encodedlogistics:block/wireless/puck_side",
+  "particle": "encodedlogistics:block/wireless/puck_top"
  },
  "elements": [
   {
    "name": "plate",
    "from": [
-    5,
+    5.0,
     6.5,
-    5
+    5.0
    ],
    "to": [
-    11,
+    11.0,
     7.5,
-    11
+    11.0
    ],
    "faces": {
     "north": {
@@ -28,7 +27,7 @@
       11,
       1
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     },
     "south": {
      "uv": [
@@ -37,7 +36,7 @@
       11,
       1
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     },
     "east": {
      "uv": [
@@ -46,7 +45,7 @@
       11,
       1
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     },
     "west": {
      "uv": [
@@ -55,7 +54,7 @@
       11,
       1
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     },
     "up": {
      "uv": [
@@ -64,7 +63,7 @@
       11,
       11
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     },
     "down": {
      "uv": [
@@ -73,21 +72,21 @@
       11,
       11
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     }
    }
   },
   {
    "name": "disc_a",
    "from": [
-    2,
+    2.0,
     7.5,
-    5
+    5.0
    ],
    "to": [
-    14,
+    14.0,
     9.5,
-    11
+    11.0
    ],
    "faces": {
     "north": {
@@ -97,7 +96,7 @@
       14,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "south": {
      "uv": [
@@ -106,7 +105,7 @@
       14,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "east": {
      "uv": [
@@ -115,7 +114,7 @@
       11,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "west": {
      "uv": [
@@ -124,7 +123,7 @@
       11,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "up": {
      "uv": [
@@ -133,7 +132,7 @@
       14,
       11
      ],
-     "texture": "#puck"
+     "texture": "#access_point_puck"
     },
     "down": {
      "uv": [
@@ -142,21 +141,21 @@
       14,
       11
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     }
    }
   },
   {
    "name": "disc_b",
    "from": [
-    3,
+    3.0,
     7.5,
-    4
+    4.0
    ],
    "to": [
-    13,
+    13.0,
     9.5,
-    12
+    12.0
    ],
    "faces": {
     "north": {
@@ -166,7 +165,7 @@
       13,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "south": {
      "uv": [
@@ -175,7 +174,7 @@
       13,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "east": {
      "uv": [
@@ -184,7 +183,7 @@
       12,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "west": {
      "uv": [
@@ -193,7 +192,7 @@
       12,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "up": {
      "uv": [
@@ -202,7 +201,7 @@
       13,
       12
      ],
-     "texture": "#puck"
+     "texture": "#access_point_puck"
     },
     "down": {
      "uv": [
@@ -211,21 +210,21 @@
       13,
       12
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     }
    }
   },
   {
    "name": "disc_c",
    "from": [
-    4,
+    4.0,
     7.5,
-    3
+    3.0
    ],
    "to": [
-    12,
+    12.0,
     9.5,
-    13
+    13.0
    ],
    "faces": {
     "north": {
@@ -235,7 +234,7 @@
       12,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "south": {
      "uv": [
@@ -244,7 +243,7 @@
       12,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "east": {
      "uv": [
@@ -253,7 +252,7 @@
       13,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "west": {
      "uv": [
@@ -262,7 +261,7 @@
       13,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "up": {
      "uv": [
@@ -271,7 +270,7 @@
       12,
       13
      ],
-     "texture": "#puck"
+     "texture": "#access_point_puck"
     },
     "down": {
      "uv": [
@@ -280,21 +279,21 @@
       12,
       13
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     }
    }
   },
   {
    "name": "disc_d",
    "from": [
-    5,
+    5.0,
     7.5,
-    2
+    2.0
    ],
    "to": [
-    11,
+    11.0,
     9.5,
-    14
+    14.0
    ],
    "faces": {
     "north": {
@@ -304,7 +303,7 @@
       11,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "south": {
      "uv": [
@@ -313,7 +312,7 @@
       11,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "east": {
      "uv": [
@@ -322,7 +321,7 @@
       14,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "west": {
      "uv": [
@@ -331,7 +330,7 @@
       14,
       2
      ],
-     "texture": "#puckside"
+     "texture": "#access_point_puckside"
     },
     "up": {
      "uv": [
@@ -340,7 +339,7 @@
       11,
       14
      ],
-     "texture": "#puck"
+     "texture": "#access_point_puck"
     },
     "down": {
      "uv": [
@@ -349,38 +348,130 @@
       11,
       14
      ],
-     "texture": "#casing"
+     "texture": "#access_point_casing"
     }
    }
-  },
-  {
-   "name": "ring",
-   "from": [
-    4,
-    9.51,
-    4
-   ],
-   "to": [
-    12,
-    9.51,
-    12
-   ],
-   "faces": {
-    "up": {
-     "texture": "#ring",
-     "uv": [
-      4,
-      4,
-      12,
-      12
-     ]
-    }
-   },
-   "neoforge_data": {
-    "block_light": 15,
-    "sky_light": 15
-   },
-   "shade": false
   }
- ]
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.833,
+    0.833,
+    0.833
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.3332,
+    0.3332,
+    0.3332
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.6664,
+    0.6664,
+    0.6664
+   ]
+  },
+  "head": {
+   "rotation": [
+    0,
+    180,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.3328,
+    1.3328,
+    1.3328
+   ]
+  },
+  "thirdperson_righthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    2.5,
+    0
+   ],
+   "scale": [
+    0.49979999999999997,
+    0.49979999999999997,
+    0.49979999999999997
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.53312,
+    0.53312,
+    0.53312
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.53312,
+    0.53312,
+    0.53312
+   ]
+  }
+ }
 }

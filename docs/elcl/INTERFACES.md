@@ -1,7 +1,7 @@
 # Interfaces for the Midrange line and the Mainframe
 
 The Terminal OS and ELCL are built against these interfaces, so the Midrange line (the Midrange System, Expansion
-Cabinet, Integrated Midrange System, Keypunch, Card Reader, Line Printer and 8" Diskettes) and the Mainframe only have
+Cabinet, Integrated Midrange System, Card Punch, Card Reader, Line Printer and 8" Diskettes) and the Mainframe only have
 to implement them and register. Every one is tested against a fake implementation in the game tests; copy those when
 you test the real devices.
 
@@ -102,7 +102,7 @@ replaces its members, programs and files. It needs `*CHANGE` on an existing libr
 | Integrated Midrange System | `DisketteDevice`, if it has a drive |
 | Card Reader | `DisketteDevice` |
 | 8" Diskette (item) | `Diskette`, over its item data |
-| Keypunch | nothing in ELCL |
+| Card Punch | nothing in ELCL |
 | Disk Drive, Tape Drive | nothing in ELCL (named DISK01, TAPE01; storage, not devices ELCL drives) |
 
 Tested by `gametest/InterfaceGameTests.saveRestore` with `FakeDrive` / `FakeDiskette`.

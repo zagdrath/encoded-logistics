@@ -42,6 +42,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.client.rack.RackClientDevices;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
+import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.net.RackActionPayload;
 import net.zagdrath.encodedlogistics.net.RackPanelPayload;
@@ -51,6 +52,9 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
+import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.device.SanDevice;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 
 // The Server Rack's screen (screens/rack/elevation.json): the rack elevation, U42 at the top and U1 at the bottom,
 // sixteen units in view at a time, each device drawn with its real front; the player's inventory below. Pick a device
@@ -478,7 +482,43 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         if (lit != null) {
             litFront(graphics, device, lit, x, y, shown, height, sheet);
         }
+        if (device instanceof StorageDevice storage) {
+            bays(graphics, storage, x, y, shown, height, sheet);
+        }
     }
+
+    // A NAS's or SAN's drives in their bays, as the rack in the world shows them (RackClientDevices.DriveBays): each
+    // drive's sled for its tier and type (typed drives from <nas|san>_sleds_<type>.png) and its light (fill, or an energy
+    // drive's charge), at the front texture's place, scaled as the front is.
+    private static void bays(GuiGraphicsExtractor graphics, StorageDevice storage, int x, int y, int shown, int height, int sheet) {
+        boolean san = storage instanceof SanDevice;
+        int w = san ? 6 : 12, h = 14, sledRow = san ? 80 : 64;
+        String kind = san ? "san" : "nas";
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(x, y);
+        graphics.pose().scale((float) SLOT_W / 128, (float) shown / height);
+        for (int i = 0; i < storage.drives(); i++) {
+            int code = storage.shownBay(i);
+            if (code < 0) {
+                continue;
+            }
+            ResourceType type = StorageDriveItem.sledType(code);
+            int tier = StorageDriveItem.sledTier(code), lit = StorageDriveItem.sledLight(code);
+            int bx = san ? 14 + 6 * (i % 12) : 15 + 12 * i, by = san ? 1 + 15 * (i / 12) : 1;
+            Identifier sheetId = type == ResourceType.ITEM ? storage.type().texture("")
+                    : EncodedLogistics.id("textures/block/rack_device/" + kind + "_sleds_" + type.getSerializedName() + ".png");
+            int row = type == ResourceType.ITEM ? sledRow : 0, sheetH = type == ResourceType.ITEM ? sheet : 16;
+            graphics.blit(RenderPipelines.GUI_TEXTURED, sheetId, bx, by, tier * (w + 1), row, w, h, w, h, 128, sheetH);
+            if (lit == StorageDriveItem.LIGHT_CHARGING) {
+                graphics.blit(RenderPipelines.GUI_TEXTURED, CHARGING, bx + w - 3, by + h - 4, 0, 0, 2, 2, 2, 2, 16, 64);
+            } else {
+                graphics.blit(RenderPipelines.GUI_TEXTURED, sheetId, bx + w - 3, by + h - 4, 70 + 3 * Math.min(4, lit), row, 2, 2, 2, 2, 128, sheetH);
+            }
+        }
+        graphics.pose().popMatrix();
+    }
+
+    private static final Identifier CHARGING = EncodedLogistics.id("textures/block/drive_bay/leds_energy_charging.png");
 
     // A device's lit overlay as the block atlas has it this moment: the atlas animates these textures (frame time,
     // interpolation and all) just as it does for the rack in the world, so the screen shows the same frame. (Loaded as a

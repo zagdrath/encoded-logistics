@@ -19,7 +19,12 @@ final class MainMenu {
         AVAILABLE, NOT_AVAILABLE
     }
 
-    record Option(int number, String command, Availability availability, int row) {
+    // row and col: where it's drawn, its number ending at col (the left column's at 8, the right's at RIGHT).
+    record Option(int number, String command, Availability availability, int row, int col) {
+        Option(int number, String command, Availability availability, int row) {
+            this(number, command, availability, row, LEFT);
+        }
+
         String label() {
             return CrtPanel.tr("crt.encodedlogistics.menu." + number);
         }
@@ -33,7 +38,9 @@ final class MainMenu {
         }
     }
 
-    // Rows on the screen: 1-8 from row 6, Sign Off apart at row 15.
+    static final int LEFT = 8, RIGHT = 47;
+
+    // Rows on the screen: 1-8 from row 6 on the left, 9-13 from row 6 on the right, Sign Off apart at row 15.
     static final List<Option> OPTIONS = List.of(
             new Option(1, "WRKINV", Availability.AVAILABLE, 6),
             new Option(2, "WRKCRFJOB", Availability.AVAILABLE, 7),
@@ -43,6 +50,11 @@ final class MainMenu {
             new Option(6, "WRKACTJOB", Availability.AVAILABLE, 11),
             new Option(7, "DSPMSG", Availability.AVAILABLE, 12),
             new Option(8, "WRKSPLF", Availability.AVAILABLE, 13),
+            new Option(9, "WRKMCH", Availability.AVAILABLE, 6, RIGHT),
+            new Option(10, "WRKF", Availability.AVAILABLE, 7, RIGHT),
+            new Option(11, "WRKJOBSCDE", Availability.AVAILABLE, 8, RIGHT),
+            new Option(12, "WRKTRGEVT", Availability.AVAILABLE, 9, RIGHT),
+            new Option(13, "WRKSYSVAL", Availability.AVAILABLE, 10, RIGHT),
             new Option(90, "SIGNOFF", Availability.AVAILABLE, 15));
 
     private MainMenu() {}
@@ -56,29 +68,30 @@ final class MainMenu {
         return null;
     }
 
-    static @Nullable Option atRow(int row) {
+    // The option drawn at a cell: its row, and the column's half of the screen.
+    static @Nullable Option at(int row, int col) {
+        boolean right = col >= RIGHT - 4;
         for (Option option : OPTIONS) {
-            if (option.row() == row) {
+            if (option.row() == row && (option.col() == RIGHT) == right) {
                 return option;
             }
         }
         return null;
     }
 
-    // The help panel: every option in two columns first (so they all show on its first page), how to use the menu,
-    // then a line on each option.
+    // The help panel: every option (Sign Off last) in two columns first (so they all show on its first page), how to use
+    // the menu, then a line on each option.
     static String help() {
         StringBuilder text = new StringBuilder();
-        List<Option> numbered = OPTIONS.stream().filter(option -> option.number() < 90).toList();
+        List<Option> numbered = OPTIONS;
         int half = (numbered.size() + 1) / 2;
         for (int i = 0; i < half; i++) {
             text.append(cell(numbered.get(i)));
             if (i + half < numbered.size()) {
-                text.append("  ").append(cell(numbered.get(i + half)));
+                text.append(' ').append(cell(numbered.get(i + half)).stripTrailing());
             }
             text.append('\n');
         }
-        OPTIONS.stream().filter(option -> option.number() >= 90).forEach(option -> text.append(cell(option)).append('\n'));
         text.append('\n').append(CrtPanel.tr("crt.encodedlogistics.help.main")).append('\n');
         for (Option option : OPTIONS) {
             text.append('\n').append(String.format(Locale.ROOT, "%2d  ", option.number())).append(option.label()).append(": ")

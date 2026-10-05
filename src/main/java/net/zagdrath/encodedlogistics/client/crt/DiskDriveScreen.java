@@ -63,7 +63,9 @@ public class DiskDriveScreen extends CrtMachineScreen<DiskDriveMenu> {
             String[] p = pack.getFirst();
             grid.put(4, 21, name(p[1]), CrtGrid.BRIGHT);
             grid.put(5, 2, tr("crt.encodedlogistics.dskdrv.capacity"), CrtGrid.NORMAL);
-            grid.put(5, 21, tr("crt.encodedlogistics.drive.items", number(p[2]), number(p[3]), p[4]), CrtGrid.BRIGHT);
+            // Items, B / mB of a fluid or gas, or an Energy Storage Drive's FE: the server sends the amounts formatted.
+            String unit = p.length > 7 && !p[7].equals("item") ? "crt.encodedlogistics.drive.amount" : "crt.encodedlogistics.drive.items";
+            grid.put(5, 21, tr(unit, p[2], p[3], p[4]), CrtGrid.BRIGHT);
             grid.put(6, 2, tr("crt.encodedlogistics.dskdrv.types"), CrtGrid.NORMAL);
             grid.put(6, 21, number(p[5]) + " / " + number(p[6]), CrtGrid.BRIGHT);
         }

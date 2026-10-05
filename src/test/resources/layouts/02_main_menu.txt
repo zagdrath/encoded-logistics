@@ -6,11 +6,11 @@
 03 | Select one of the following:
 04 | 
 05 | 
-06 |       1. Work with Inventory
-07 |       2. Work with Jobs
-08 |       3. Work with Devices
-09 |       4. Display Network Status
-10 |       5. Work with Libraries
+06 |       1. Work with Inventory                 9. Work with Machines
+07 |       2. Work with Jobs                     10. Work with Files
+08 |       3. Work with Devices                  11. Work with Schedules
+09 |       4. Display Network Status             12. Work with Triggers
+10 |       5. Work with Libraries                13. Work with System Values
 11 |       6. Work with Active Jobs
 12 |       7. Display Messages
 13 |       8. Work with Output

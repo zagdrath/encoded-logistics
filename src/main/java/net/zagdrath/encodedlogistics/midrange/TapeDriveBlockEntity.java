@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.midrange;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +37,7 @@ import net.zagdrath.encodedlogistics.menu.TapeDriveMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.TapeRecalls;
 import net.zagdrath.encodedlogistics.rack.TapeSource;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -42,8 +45,8 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // The Tape Drive (HANDOFF 5): one Tape Reel as cold storage in the same tier as the Tape Libraries (TapeSource) - one
 // drive, one reel, no picker. A reel used on it is threaded (tapeLoadTicks) before it works. Then, as a library does:
@@ -52,7 +55,7 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // read or write takes tapeDriveBaseTicks + tapeDriveTicksPer4k a 4,096 items, the reels turning (ACTIVE). 7=Rewind
 // rewinds it (tapeRewindTicks) to the load point; 4=Unload or a sneak-use with an empty hand rewinds, then the reel
 // comes out - to the player who asked, else out of its front. Device type TAPE (TAPE01).
-public class TapeDriveBlockEntity extends PeripheralBlockEntity implements NetworkDevice, TapeSource {
+public class TapeDriveBlockEntity extends PeripheralBlockEntity implements NetworkDevice, TapeSource, MidrangeHud {
     public static final String TYPE = "TAPE";
     private static final int ASSIGN_INTERVAL = 10;
 
@@ -98,6 +101,26 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
     @Override
     public boolean listedOnline() {
         return online;
+    }
+
+    // Its popup: what it's doing, its reel and how full that is, when it was last read or written.
+    @Override
+    public RackDeviceInfo hudInfo() {
+        State state = state();
+        List<RackDeviceInfo.InfoLine> lines = new ArrayList<>();
+        if (!reel().isEmpty()) {
+            long used = used(), capacity = Config.TAPE_REEL_ITEMS.getAsInt();
+            float fraction = capacity <= 0 ? 0 : (float) used / capacity;
+            lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.tape.reel"), Component.literal(TapeReelItem.volume(reel()))));
+            lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.tape.used"),
+                    Component.literal(String.format(Locale.ROOT, "%,d / %,d", used, capacity)),
+                    new RackDeviceInfo.Bar(fraction, fraction > 0.95F ? RackDeviceInfo.BarStyle.LOW : fraction >= 0.75F ? RackDeviceInfo.BarStyle.WARN
+                            : RackDeviceInfo.BarStyle.NORMAL)));
+        }
+        RackDeviceInfo.Status status = state == State.OFFLINE ? RackDeviceInfo.Status.OFFLINE
+                : state == State.NO_REEL ? RackDeviceInfo.Status.WARNING : RackDeviceInfo.Status.ONLINE;
+        return new RackDeviceInfo(getBlockState().getBlock().getName(), status,
+                Component.translatable("hud.encodedlogistics.tape.state." + state.name().toLowerCase(Locale.ROOT)), lines);
     }
 
     public State state() {

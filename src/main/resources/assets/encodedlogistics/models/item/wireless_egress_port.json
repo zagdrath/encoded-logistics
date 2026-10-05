@@ -1,28 +1,28 @@
 {
  "parent": "minecraft:block/block",
  "textures": {
-  "front": "encodedlogistics:block/wireless/port_front",
-  "back": "encodedlogistics:block/wireless/port_egress_back",
-  "side": "encodedlogistics:block/wireless/port_egress_side",
-  "mast": "encodedlogistics:block/wireless/mast",
+  "wireless_egress_port_front": "encodedlogistics:block/wireless/port_front",
+  "wireless_egress_port_back": "encodedlogistics:block/wireless/port_egress_back",
+  "wireless_egress_port_side": "encodedlogistics:block/wireless/port_egress_side",
+  "wireless_egress_port_mast": "encodedlogistics:block/wireless/mast",
   "particle": "encodedlogistics:block/wireless/port_front"
  },
  "elements": [
   {
    "name": "panel",
    "from": [
-    3,
-    3,
-    6
+    3.0,
+    2.0,
+    6.0
    ],
    "to": [
-    13,
-    13,
-    10
+    13.0,
+    12.0,
+    10.0
    ],
    "faces": {
     "north": {
-     "texture": "#back",
+     "texture": "#wireless_egress_port_front",
      "uv": [
       3,
       3,
@@ -31,7 +31,7 @@
      ]
     },
     "south": {
-     "texture": "#front",
+     "texture": "#wireless_egress_port_back",
      "uv": [
       3,
       3,
@@ -40,7 +40,7 @@
      ]
     },
     "east": {
-     "texture": "#side",
+     "texture": "#wireless_egress_port_side",
      "uv": [
       3,
       0,
@@ -50,7 +50,7 @@
      "rotation": 90
     },
     "west": {
-     "texture": "#side",
+     "texture": "#wireless_egress_port_side",
      "uv": [
       3,
       0,
@@ -60,7 +60,7 @@
      "rotation": 90
     },
     "up": {
-     "texture": "#side",
+     "texture": "#wireless_egress_port_side",
      "uv": [
       3,
       0,
@@ -69,7 +69,7 @@
      ]
     },
     "down": {
-     "texture": "#side",
+     "texture": "#wireless_egress_port_side",
      "uv": [
       3,
       0,
@@ -83,17 +83,17 @@
    "name": "nub",
    "from": [
     10.5,
-    13,
-    8
+    12.0,
+    8.0
    ],
    "to": [
     11.5,
-    15,
-    9
+    14.0,
+    9.0
    ],
    "faces": {
     "north": {
-     "texture": "#mast",
+     "texture": "#wireless_egress_port_mast",
      "uv": [
       0,
       0,
@@ -102,7 +102,7 @@
      ]
     },
     "south": {
-     "texture": "#mast",
+     "texture": "#wireless_egress_port_mast",
      "uv": [
       0,
       0,
@@ -111,7 +111,7 @@
      ]
     },
     "east": {
-     "texture": "#mast",
+     "texture": "#wireless_egress_port_mast",
      "uv": [
       0,
       0,
@@ -120,7 +120,7 @@
      ]
     },
     "west": {
-     "texture": "#mast",
+     "texture": "#wireless_egress_port_mast",
      "uv": [
       0,
       0,
@@ -129,7 +129,7 @@
      ]
     },
     "up": {
-     "texture": "#mast",
+     "texture": "#wireless_egress_port_mast",
      "uv": [
       0,
       0,
@@ -138,7 +138,7 @@
      ]
     },
     "down": {
-     "texture": "#mast",
+     "texture": "#wireless_egress_port_mast",
      "uv": [
       0,
       0,
@@ -148,5 +148,127 @@
     }
    }
   }
- ]
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.833,
+    0.833,
+    0.833
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.3332,
+    0.3332,
+    0.3332
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.6664,
+    0.6664,
+    0.6664
+   ]
+  },
+  "head": {
+   "rotation": [
+    0,
+    180,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.3328,
+    1.3328,
+    1.3328
+   ]
+  },
+  "thirdperson_righthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    2.5,
+    0
+   ],
+   "scale": [
+    0.49979999999999997,
+    0.49979999999999997,
+    0.49979999999999997
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.53312,
+    0.53312,
+    0.53312
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.53312,
+    0.53312,
+    0.53312
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
 }

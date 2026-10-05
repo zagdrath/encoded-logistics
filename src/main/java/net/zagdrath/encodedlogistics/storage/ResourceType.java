@@ -66,11 +66,11 @@ public enum ResourceType implements StringRepresentable {
         return this == FLUID || this == PRESSURIZED;
     }
 
-    // An amount as players read it: 1,234 (items), 1.5 B / 250 mB (fluids, gases), 1,234 FE.
+    // An amount as players read it: 1,234 (items), 41,000 mB (fluids, gases), 1,234 FE.
     public String format(long amount) {
         return switch (this) {
             case ITEM -> String.format(Locale.ROOT, "%,d", amount);
-            case FLUID, PRESSURIZED -> buckets(amount);
+            case FLUID, PRESSURIZED -> String.format(Locale.ROOT, "%,d mB", amount);
             case ENERGY -> String.format(Locale.ROOT, "%,d FE", amount);
         };
     }

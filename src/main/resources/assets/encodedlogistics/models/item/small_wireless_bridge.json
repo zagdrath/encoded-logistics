@@ -1,6 +1,291 @@
 {
- "parent": "minecraft:item/generated",
+ "parent": "minecraft:block/block",
  "textures": {
-  "layer0": "encodedlogistics:item/small_wireless_bridge"
- }
+  "small_wireless_bridge_face": "encodedlogistics:block/small_wireless_bridge/face",
+  "small_wireless_bridge_side": "encodedlogistics:block/small_wireless_bridge/side",
+  "particle": "encodedlogistics:block/small_wireless_bridge/side",
+  "led_linked_led": "encodedlogistics:block/small_wireless_bridge/led_linked"
+ },
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    3.0,
+    1.5,
+    5.995
+   ],
+   "to": [
+    13.0,
+    11.5,
+    9.995
+   ],
+   "faces": {
+    "south": {
+     "texture": "#small_wireless_bridge_face",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    },
+    "north": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    },
+    "east": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      0,
+      3,
+      4,
+      13
+     ]
+    },
+    "west": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      0,
+      3,
+      4,
+      13
+     ]
+    },
+    "up": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ]
+    },
+    "down": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      3,
+      0,
+      13,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "antenna",
+   "from": [
+    10.0,
+    11.5,
+    6.995
+   ],
+   "to": [
+    11.0,
+    14.5,
+    7.995
+   ],
+   "faces": {
+    "north": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      14,
+      0,
+      15,
+      3
+     ]
+    },
+    "south": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      14,
+      0,
+      15,
+      3
+     ]
+    },
+    "east": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      14,
+      0,
+      15,
+      3
+     ]
+    },
+    "west": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      14,
+      0,
+      15,
+      3
+     ]
+    },
+    "up": {
+     "texture": "#small_wireless_bridge_side",
+     "uv": [
+      14,
+      0,
+      15,
+      1
+     ]
+    }
+   }
+  },
+  {
+   "name": "led",
+   "from": [
+    3.0,
+    1.5,
+    10.005
+   ],
+   "to": [
+    13.0,
+    11.5,
+    10.005
+   ],
+   "faces": {
+    "south": {
+     "texture": "#led_linked_led",
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade": false
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.769,
+    0.769,
+    0.769
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.30760000000000004,
+    0.30760000000000004,
+    0.30760000000000004
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.6152000000000001,
+    0.6152000000000001,
+    0.6152000000000001
+   ]
+  },
+  "head": {
+   "rotation": [
+    0,
+    180,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    1.2304000000000002,
+    1.2304000000000002,
+    1.2304000000000002
+   ]
+  },
+  "thirdperson_righthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    2.5,
+    0
+   ],
+   "scale": [
+    0.4614,
+    0.4614,
+    0.4614
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.49216000000000004,
+    0.49216000000000004,
+    0.49216000000000004
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    0,
+    0
+   ],
+   "scale": [
+    0.49216000000000004,
+    0.49216000000000004,
+    0.49216000000000004
+   ]
+  }
+ },
+ "render_type": "minecraft:cutout"
 }

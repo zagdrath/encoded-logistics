@@ -111,6 +111,16 @@
      "terminal/icon_search_standard",
      "terminal/icon_search_jei"
     ]
+   },
+   {
+    "id": "type_filter",
+    "icons": [
+     "terminal/icon_type_all",
+     "terminal/icon_type_items",
+     "terminal/icon_type_fluids",
+     "terminal/icon_type_pressurized",
+     "terminal/icon_type_energy"
+    ]
    }
   ]
  },

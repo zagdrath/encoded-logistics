@@ -12,6 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
@@ -19,9 +20,11 @@ import net.minecraft.world.level.material.Fluids;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.storage.PressurizedSource;
 import net.zagdrath.encodedlogistics.storage.PressurizedSources;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Drawing a StorageKey in a GUI square: an item as itself; a fluid (and an Arcforge gas, which is a fluid) as its still
@@ -29,12 +32,17 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 // schematics) draw the resource it stands for, with its amount when it has one.
 public final class ResourceRender {
     private static final int TEXT = 0xFFF0F0F0;
+    private static final Identifier ENERGY = EncodedLogistics.id("terminal/energy");
 
     private ResourceRender() {}
 
     public static void icon(GuiGraphicsExtractor graphics, StorageKey key, int x, int y) {
         if (key.isItem()) {
             graphics.item(key.stack(), x, y);
+            return;
+        }
+        if (key.is(ResourceType.ENERGY)) {
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ENERGY, x, y, 16, 16);
             return;
         }
         FluidResource fluid = key.fluid();

@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -28,21 +29,23 @@ import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.WirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
+import net.zagdrath.encodedlogistics.midrange.DiskDriveBlock;
+import net.zagdrath.encodedlogistics.midrange.TapeDriveBlock;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.net.WirelessInfoPayloads;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
-// The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports, and machines with a
-// Small Wireless Bridge on): the rack's popup (RackHud.popup) with the block's icon, its name and device name (AP01),
-// its status and lines - Clients and Uplink, or Controller and Devices / Lanes, or Controller, Inventory and Moved, or a
-// machine's Controller, Progress, Energy and Recipe - asked of the server as soon as the crosshair
+// The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports, and Small Wireless
+// Bridges - not the machines they're on - and the Midrange Disk and Tape Drives): the rack's popup (RackHud.popup) with the block's icon, its name and device name
+// (AP01), its status and lines - Clients and Uplink, or Controller and Devices / Lanes, or Controller, Inventory and
+// Moved, or a bridge's Controller, Machine, Lanes and Power - asked of the server as soon as the crosshair
 // lands on it, then every QUERY_INTERVAL ticks. Until its answer is in, nothing shows. Hidden with F1 and while a screen
 // is open.
 //
-// A Small Wireless Bridge isn't a block, so the crosshair can't land on it: its model's box is tested against the look
-// ray here, and when it's nearer than the block the crosshair is on, the popup is the bridge's own (Controller, Machine,
-// Lanes, Drain, Gateway, Power, as an Access Point's) and its box is outlined (bridgeBox).
+// A Small Wireless Bridge is a block in front of its machine's face; one still drawn without its block (its space was
+// taken) has its model's box tested against the look ray here, and when it's nearer than the block the crosshair is on,
+// the popup is the bridge's (Controller, Machine, Lanes, Drain, Gateway, Power) and its box is outlined (bridgeBox).
 public final class WirelessHud {
     public static final Identifier LAYER = EncodedLogistics.id("wireless_popup");
     private static final int QUERY_INTERVAL = 10, OFFSET_X = 12, OFFSET_Y = -8;
@@ -64,11 +67,17 @@ public final class WirelessHud {
         AABB box = null;
         double blockDistance = Double.MAX_VALUE;
         if (minecraft.level != null && minecraft.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
-            var block = minecraft.level.getBlockState(hit.getBlockPos()).getBlock();
+            BlockState state = minecraft.level.getBlockState(hit.getBlockPos());
+            var block = state.getBlock();
             if (block instanceof AccessPointBlock || block instanceof WirelessBridgeBlock || block instanceof WirelessPortBlock
-                    || MachineBridgesPayload.has(hit.getBlockPos())) {
+                    || block instanceof DiskDriveBlock || block instanceof TapeDriveBlock) {
                 now = hit.getBlockPos().immutable();
                 answer = now;
+            } else if (block instanceof SmallWirelessBridgeBlock && MachineBridgesPayload.has(hit.getBlockPos().relative(state.getValue(SmallWirelessBridgeBlock.FACING)))) {
+                // A Small Wireless Bridge's block: the bridge's popup (the machine behind it has none of its own).
+                now = hit.getBlockPos().relative(state.getValue(SmallWirelessBridgeBlock.FACING));
+                answer = hit.getBlockPos().immutable();
+                onBridge = true;
             }
             LocalPlayer player = minecraft.player;
             blockDistance = player != null ? hit.getLocation().distanceTo(player.getEyePosition()) : Double.MAX_VALUE;
@@ -80,7 +89,8 @@ public final class WirelessHud {
             double nearest = blockDistance + 1.0E-4;
             for (MachineBridgesPayload.Entry entry : MachineBridgesPayload.shown().values()) {
                 BlockPos at = entry.pos().relative(entry.face());
-                if (at.distToCenterSqr(eye) > (REACH + 2) * (REACH + 2)) {
+                // Only bridges drawn without their block (MachineBridgeRenderer); a placed one is targeted as a block.
+                if (at.distToCenterSqr(eye) > (REACH + 2) * (REACH + 2) || minecraft.level.getBlockState(at).is(ModBlocks.SMALL_WIRELESS_BRIDGE.get())) {
                     continue;
                 }
                 AABB shape = ModBlocks.SMALL_WIRELESS_BRIDGE.get().defaultBlockState()

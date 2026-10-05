@@ -17,6 +17,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.zagdrath.encodedlogistics.machine.MachineAccess;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
@@ -24,9 +25,10 @@ import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 
 // The Small Wireless Bridge: used on a face of an Arcforge machine it goes on there (MachineBridges keeps it, by the
-// block and face; one per machine - for a multiblock, one on the whole structure), before the machine's own screen
-// would open. Only on a block that exposes Arcforge's machine control, and only one its player may use (the owner
-// Arcforge tracks, if any). Then a Link Card from a Wireless Controller links it, like a Wireless Bridge.
+// block and face; one per machine - for a multiblock, one on the whole structure) as a block in front of that face (it
+// needs the space free), before the machine's own screen would open. Only on a block that exposes Arcforge's machine
+// control, and only one its player may use (the owner Arcforge tracks, if any). Then a Link Card from a Wireless
+// Controller links it, like a Wireless Bridge.
 public class SmallWirelessBridgeItem extends Item {
     public SmallWirelessBridgeItem(Item.Properties properties) {
         super(properties);
@@ -69,6 +71,12 @@ public class SmallWirelessBridgeItem extends Item {
         }
         if (existing != null) {
             player.sendOverlayMessage(Component.translatable("message.encodedlogistics.small_bridge.already", info.name()));
+            return InteractionResult.SUCCESS;
+        }
+        // Its block goes in front of the face: the space has to be free.
+        BlockState front = level.getBlockState(pos.relative(face));
+        if (!front.canBeReplaced() || !front.getFluidState().isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.small_bridge.blocked"));
             return InteractionResult.SUCCESS;
         }
         bridges.attach(serverLevel, pos, face, info);

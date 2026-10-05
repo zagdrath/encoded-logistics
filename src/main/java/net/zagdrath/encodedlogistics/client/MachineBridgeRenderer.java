@@ -28,8 +28,9 @@ import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
-// The Small Wireless Bridges on machines (MachineBridgesPayload): each drawn as the Small Wireless Bridge block's model
-// for its LED, in the space in front of the face it's on, facing the machine, lit as that space is. Bridges further than
+// The Small Wireless Bridges on machines (MachineBridgesPayload) whose block isn't in place (an older bridge whose space
+// was taken): each drawn as the Small Wireless Bridge block's model for its LED, in the space in front of the face it's
+// on, facing the machine, lit as that space is. A bridge's block (SmallWirelessBridgeBlock) draws itself. Bridges further than
 // RANGE blocks from the camera aren't drawn. The one under the crosshair gets a block outline.
 public final class MachineBridgeRenderer {
     private static final double RANGE = 96;
@@ -58,7 +59,9 @@ public final class MachineBridgeRenderer {
         }
         for (MachineBridgesPayload.Entry entry : MachineBridgesPayload.shown().values()) {
             BlockPos at = entry.pos().relative(entry.face());
-            if (camera.distanceToSqr(Vec3.atCenterOf(at)) > RANGE * RANGE || !minecraft.level.isLoaded(at)) {
+            // A bridge whose block is in place draws as that block; this is for one the server couldn't put there yet.
+            if (camera.distanceToSqr(Vec3.atCenterOf(at)) > RANGE * RANGE || !minecraft.level.isLoaded(at)
+                    || minecraft.level.getBlockState(at).is(ModBlocks.SMALL_WIRELESS_BRIDGE.get())) {
                 continue;
             }
             BlockState state = ModBlocks.SMALL_WIRELESS_BRIDGE.get().defaultBlockState().setValue(SmallWirelessBridgeBlock.FACING, entry.face().getOpposite())

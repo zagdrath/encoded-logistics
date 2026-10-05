@@ -18,11 +18,14 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.midrange.DiskDriveBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.PeripheralBlockEntity;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // DSKDRV (HANDOFF 3; layout dskdrv): the Disk Drive's state and pack. Lines, tab-separated: S state (its State), P itemKey
@@ -44,6 +47,16 @@ public class DiskDriveMenu extends PeripheralMenu {
         this.drive = peripheral instanceof DiskDriveBlockEntity d ? d : null;
     }
 
+    // A resource's name as the screen translates it: an item's or fluid's lang key, or "=" and the text itself (a gas whose
+    // mod isn't there).
+    static String nameKey(StorageKey key) {
+        if (key.isItem()) {
+            return key.stack().getItem().getDescriptionId();
+        }
+        FluidResource fluid = key.fluid();
+        return fluid != null ? fluid.getFluidType().getDescriptionId() : "=" + key.id();
+    }
+
     @Override
     protected void refresh() {
         if (drive == null) {
@@ -53,16 +66,20 @@ public class DiskDriveMenu extends PeripheralMenu {
         lines.add("S\t" + drive.state().name());
         ItemStack pack = drive.pack();
         if (pack.getItem() instanceof StorageDriveItem item) {
-            DriveStats stats = StorageDriveItem.stats(pack);
+            // P: the pack, what's on it and what it holds in its type's unit (items, B / mB, FE), its fill, its types (none
+            // for an Energy Storage Drive) and its type.
+            DiskDriveBlockEntity.Usage usage = drive.usage();
+            ResourceType type = item.getType();
             List<Map.Entry<StorageKey, Long>> contents = drive.contents();
-            long items = contents.stream().mapToLong(Map.Entry::getValue).sum();
-            long percent = stats.bytesTotal() <= 0 ? 0 : stats.bytesUsed() * 100 / stats.bytesTotal();
-            lines.add(String.join("\t", "P", pack.getItem().getDescriptionId(), Long.toString(items), Long.toString(item.getTier().bytes() * 8),
-                    Long.toString(percent), Integer.toString(stats.typesUsed()), Integer.toString(item.getTier().typeLimit())));
+            boolean energy = usage == null || usage.types() < 0;
+            lines.add(String.join("\t", "P", pack.getItem().getDescriptionId(), type.format(usage != null ? usage.used() : 0),
+                    type.format(usage != null ? usage.total() : 0), Integer.toString(usage != null ? usage.percent() : 0),
+                    energy ? "-" : Integer.toString(usage.types()), energy ? "-" : Integer.toString(usage.typeLimit()), type.getSerializedName()));
             if (showing) {
                 lines.add("V");
                 for (int i = 0; i < Math.min(CONTENTS_SHOWN, contents.size()); i++) {
-                    lines.add(String.join("\t", "C", contents.get(i).getKey().stack().getItem().getDescriptionId(), Long.toString(contents.get(i).getValue())));
+                    StorageKey key = contents.get(i).getKey();
+                    lines.add(String.join("\t", "C", nameKey(key), key.format(contents.get(i).getValue())));
                 }
             }
         } else {

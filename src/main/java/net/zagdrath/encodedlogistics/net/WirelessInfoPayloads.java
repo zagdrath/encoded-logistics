@@ -18,11 +18,14 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.midrange.FootprintBlock;
+import net.zagdrath.encodedlogistics.midrange.MidrangeHud;
 import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
@@ -30,7 +33,7 @@ import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
-// The wireless blocks' popup (WirelessHud), as the rack's: the client asks about the block its crosshair settles on
+// The wireless blocks' (and the Midrange Disk and Tape Drives') popup (WirelessHud), as the rack's: the client asks about the block its crosshair settles on
 // (Query, then every few ticks while it stays); the server answers with its description and device name (Info).
 public final class WirelessInfoPayloads {
     private static final double REACH_SQR = 16 * 16;
@@ -57,6 +60,13 @@ public final class WirelessInfoPayloads {
                 return;
             }
             ServerLevel level = player.level();
+            // A Midrange Disk or Tape Drive (any of its blocks): its own popup.
+            BlockState state = level.getBlockState(query.pos());
+            BlockPos master = state.getBlock() instanceof FootprintBlock footprint ? footprint.master(level, query.pos(), state) : null;
+            if (master != null && level.getBlockEntity(master) instanceof MidrangeHud hud) {
+                PacketDistributor.sendToPlayer(player, new Info(query.pos(), hud.deviceName(), hud.hudInfo()));
+                return;
+            }
             WirelessDevice device = Wireless.deviceAt(level.getServer(), NodePos.of(level.dimension(), query.pos()));
             if (device == null || device instanceof MachineBridge bridge && bridge.link() != null
                     && !NetworkAccess.allowed(level.getServer(), bridge.link().network(), player, RackPermission.VIEW)) {

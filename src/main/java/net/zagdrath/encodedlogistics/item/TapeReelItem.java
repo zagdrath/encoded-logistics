@@ -17,7 +17,7 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.storage.DriveCapacity;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
-// A 7-track Tape Reel (HANDOFF 5): cold storage on a Tape Drive, tapeReelItems items of up to tapeReelTypes types. As an
+// A 9-track Tape Reel (HANDOFF 5): cold storage on a Tape Drive, tapeReelItems items of up to tapeReelTypes types. As an
 // LTO tape does, it keeps its contents in DriveStorage under its drive_id (given when it's first mounted) and carries
 // that id and a cache of its fill (drive_stats). Its tooltip (ItemInfoTooltips): "18,420 / 65,536 items".
 public class TapeReelItem extends Item {

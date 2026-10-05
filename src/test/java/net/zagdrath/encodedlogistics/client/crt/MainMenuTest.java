@@ -82,8 +82,8 @@ class MainMenuTest {
 
     @Test
     void aNumberNotOnTheMenuSaysSo() {
-        CrtTerminal terminal = choose("9");
+        CrtTerminal terminal = choose("14");
         assertEquals("MAIN", terminal.current().id());
-        assertEquals("Option 9 is not on this menu.", messageLine(terminal));
+        assertEquals("Option 14 is not on this menu.", messageLine(terminal));
     }
 }

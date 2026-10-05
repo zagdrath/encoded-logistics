@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.midrange;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -33,10 +35,13 @@ import net.zagdrath.encodedlogistics.menu.DiskDriveMenu;
 import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
+import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
@@ -44,7 +49,7 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 // capacity, priority, fullness rules), while it has its lane. A drive used on it goes in and spins up (diskSpinUpTicks)
 // before the network can read it; 4=Unload on its screen or a sneak-use with an empty hand spins it down
 // (diskSpinDownTicks), then it comes out - to the player who asked, else out of its front. Device type DISK (DISK01).
-public class DiskDriveBlockEntity extends PeripheralBlockEntity implements DriveHolder, NetworkDevice {
+public class DiskDriveBlockEntity extends PeripheralBlockEntity implements DriveHolder, NetworkDevice, MidrangeHud {
     public static final String TYPE = "DISK";
     // What its screen says it's doing.
     public enum State {
@@ -192,6 +197,50 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
         if (state.hasProperty(DiskDriveBlock.DRIVE_TYPE) && state.getValue(DiskDriveBlock.DRIVE_TYPE) != type) {
             level.setBlock(worldPosition, state.setValue(DiskDriveBlock.DRIVE_TYPE, type), Block.UPDATE_CLIENTS);
         }
+    }
+
+    // How full its pack is, in its type's unit: what's on it and what it holds (an Energy Storage Drive's FE), its fill
+    // (0-100) and its types (-1 for an energy drive). Null with no pack.
+    public record Usage(ResourceType type, long used, long total, int percent, int types, int typeLimit) {}
+
+    public @Nullable Usage usage() {
+        ItemStack pack = getItem(0);
+        if (!(pack.getItem() instanceof StorageDriveItem item)) {
+            return null;
+        }
+        ResourceType type = item.getType();
+        DriveStats stats = StorageDriveItem.stats(pack);
+        if (type == ResourceType.ENERGY) {
+            long stored = EnergyDrives.stored(pack), capacity = EnergyDrives.capacity(pack);
+            return new Usage(type, stored, capacity, capacity <= 0 ? 0 : (int) (stored * 100 / capacity), -1, -1);
+        }
+        long used = contents().stream().mapToLong(Map.Entry::getValue).sum();
+        int percent = stats.bytesTotal() <= 0 ? 0 : (int) (stats.bytesUsed() * 100 / stats.bytesTotal());
+        return new Usage(type, used, item.getTier().bytes() * type.unitsPerByte(), percent, stats.typesUsed(), item.getTier().typeLimit());
+    }
+
+    // Its popup: what it's doing, its pack, how full that is and its types.
+    @Override
+    public RackDeviceInfo hudInfo() {
+        State state = state();
+        List<RackDeviceInfo.InfoLine> lines = new ArrayList<>();
+        Usage usage = usage();
+        if (usage != null) {
+            lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.disk.pack"), getItem(0).getHoverName()));
+            float fraction = usage.percent() / 100.0F;
+            lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.storage.capacity"),
+                    Component.literal(usage.type().format(usage.used()) + " / " + usage.type().format(usage.total())),
+                    new RackDeviceInfo.Bar(fraction, fraction > 0.95F ? RackDeviceInfo.BarStyle.LOW : fraction >= 0.75F ? RackDeviceInfo.BarStyle.WARN
+                            : RackDeviceInfo.BarStyle.NORMAL)));
+            if (usage.types() >= 0) {
+                lines.add(new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.disk.types"),
+                        Component.literal(usage.types() + " / " + usage.typeLimit())));
+            }
+        }
+        RackDeviceInfo.Status status = state == State.OFFLINE ? RackDeviceInfo.Status.OFFLINE
+                : state == State.NO_PACK ? RackDeviceInfo.Status.WARNING : RackDeviceInfo.Status.ONLINE;
+        return new RackDeviceInfo(getBlockState().getBlock().getName(), status,
+                Component.translatable("hud.encodedlogistics.disk.state." + state.name().toLowerCase(Locale.ROOT)), lines);
     }
 
     // What's on its pack, most first (5=Display contents).

@@ -5,10 +5,7 @@
 
 package net.zagdrath.encodedlogistics.compat.jade;
 
-import snownee.jade.api.IWailaClientRegistration;
-import snownee.jade.api.IWailaCommonRegistration;
-import snownee.jade.api.IWailaPlugin;
-import snownee.jade.api.WailaPlugin;
+import net.minecraft.core.BlockPos;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
 import net.zagdrath.encodedlogistics.block.LithographyPressBlock;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
@@ -19,7 +16,13 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
+import net.zagdrath.encodedlogistics.midrange.FootprintBlock;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
+import snownee.jade.api.BlockAccessor;
+import snownee.jade.api.IWailaClientRegistration;
+import snownee.jade.api.IWailaCommonRegistration;
+import snownee.jade.api.IWailaPlugin;
+import snownee.jade.api.WailaPlugin;
 
 // Jade support (only loaded when Jade is installed). Jade's own energy bar reads the controller's FE capability, which
 // reports the whole structure's buffer; this adds the network's status, lanes and structure. The Power Inlet shows what
@@ -39,6 +42,11 @@ public class EncodedLogisticsJadePlugin implements IWailaPlugin {
         registration.blockOperations().pick(ModBlocks.PART_HOST.getKey());
         // The Server Rack has its own popup per unit (RackHud); Jade's would only get in its way.
         registration.blockOperations().hide(ModBlocks.SERVER_RACK.getKey());
+        // A Small Wireless Bridge has its own popup (WirelessHud), as the wireless blocks do.
+        registration.blockOperations().hide(ModBlocks.SMALL_WIRELESS_BRIDGE.getKey());
+        // So do the Midrange Disk and Tape Drives.
+        registration.blockOperations().hide(ModBlocks.DISK_DRIVE.getKey());
+        registration.blockOperations().hide(ModBlocks.TAPE_DRIVE.getKey());
     }
 
     @Override
@@ -49,5 +57,17 @@ public class EncodedLogisticsJadePlugin implements IWailaPlugin {
         registration.registerBlockComponent(InfrastructureProviders.LithographyPress.Client.INSTANCE, LithographyPressBlock.class);
         registration.registerBlockComponent(InfrastructureProviders.DriveBay.INSTANCE, DriveBayBlock.class);
         registration.registerBlockComponent(InfrastructureProviders.Cable.Client.INSTANCE, NetworkCableBlock.class);
+        // A Midrange machine taller or wider than a block (the Tape Drive, the Integrated System) keeps its contents on its
+        // master block: looking at any of its blocks shows the master's (the reel in a Tape Drive, from its top too).
+        registration.addRayTraceCallback((hit, accessor, original) -> {
+            if (accessor instanceof BlockAccessor block && block.getBlock() instanceof FootprintBlock footprint) {
+                BlockPos master = footprint.master(block.getLevel(), block.getPosition(), block.getBlockState());
+                if (master != null && !master.equals(block.getPosition())) {
+                    return registration.blockAccessor().from(block).hit(block.getHitResult().withPosition(master))
+                            .blockState(block.getLevel().getBlockState(master)).blockEntity(block.getLevel().getBlockEntity(master)).build();
+                }
+            }
+            return accessor;
+        });
     }
 }

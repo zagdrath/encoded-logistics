@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -164,6 +165,11 @@ public class LinkCardItem extends Item {
         Level level = context.getLevel();
         Player player = context.getPlayer();
         BlockPos pos = context.getClickedPos();
+        // A Small Wireless Bridge's block: the bridge, kept by the machine behind it.
+        BlockState clicked = level.getBlockState(pos);
+        if (clicked.getBlock() instanceof SmallWirelessBridgeBlock) {
+            pos = pos.relative(clicked.getValue(SmallWirelessBridgeBlock.FACING));
+        }
         if (player == null) {
             return null;
         }

@@ -37,6 +37,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -60,6 +61,7 @@ import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.network.RemoteLink;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.ResourceIO;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
@@ -171,16 +173,44 @@ public final class MachineBridges extends SavedData {
         bridge.owner = this;
         bridge.setLed(led(level.getServer(), bridge, info));
         bridges.put(bridge.pos(), bridge);
+        showBlock(level, bridge);
         setDirty();
         shownChanged = true;
         sync(level);
         return bridge;
     }
 
-    // Takes a bridge off: its controller forgets it and the network loses it; dropped in front of its face if drop.
+    // Its block in front of the machine's face (SmallWirelessBridgeBlock), facing the machine, its LED as the bridge's; put
+    // there if the space is free (a bridge from before it was a block).
+    static void showBlock(ServerLevel level, MachineBridge bridge) {
+        BlockPos at = bridge.pos().relative(bridge.face());
+        if (!level.isLoaded(at)) {
+            return;
+        }
+        BlockState now = level.getBlockState(at);
+        BlockState wanted = ModBlocks.SMALL_WIRELESS_BRIDGE.get().defaultBlockState().setValue(SmallWirelessBridgeBlock.FACING, bridge.face().getOpposite())
+                .setValue(SmallWirelessBridgeBlock.STATE, bridge.led());
+        if (now.is(ModBlocks.SMALL_WIRELESS_BRIDGE.get()) ? !now.equals(wanted) : now.canBeReplaced() && now.getFluidState().isEmpty()) {
+            level.setBlock(at, wanted, Block.UPDATE_ALL);
+        }
+    }
+
+    // Takes a bridge off: its controller forgets it and the network loses it, and its block goes; dropped (its block
+    // broken, or the item in front of the face) if drop.
     public void remove(ServerLevel level, MachineBridge bridge, boolean drop) {
         if (bridges.remove(bridge.pos()) == null) {
             return;
+        }
+        // Gone from the map first, so the block's own removal finds nothing to take off.
+        BlockPos at = bridge.pos().relative(bridge.face());
+        boolean placed = level.isLoaded(at) && level.getBlockState(at).is(ModBlocks.SMALL_WIRELESS_BRIDGE.get());
+        if (placed) {
+            if (drop) {
+                level.destroyBlock(at, true);
+            } else {
+                level.removeBlock(at, false);
+            }
+            drop = false;
         }
         if (access != null) {
             access.unwatch(level, bridge.pos());
@@ -275,6 +305,7 @@ public final class MachineBridges extends SavedData {
                 if (bridge.setLed(led(server, bridge, info))) {
                     shownChanged = true;
                 }
+                showBlock(level, bridge);
             }
         }
         if (shownChanged) {

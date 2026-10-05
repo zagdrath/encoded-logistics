@@ -146,7 +146,9 @@ New screens, all in the existing green-screen style:
 1. **Sign On** — system name, user, (no password needed by default), program/menu, current library.
 2. **Main Menu** — 1. Work with Inventory (WRKINV), 2. Work with Jobs (WRKCRFJOB), 3. Work with Devices (WRKDEV),
    4. Display Network Status (DSPNETSTS), 5. Work with Libraries (WRKLIB), 6. Work with Active Jobs (WRKACTJOB),
-   7. Display Messages (DSPMSG), 8. Work with Output (WRKSPLF), 90. Sign Off (SIGNOFF). The menu and its F1 help are
+   7. Display Messages (DSPMSG), 8. Work with Output (WRKSPLF), and in a right-hand column 9. Work with Machines (WRKMCH),
+   10. Work with Files (WRKF), 11. Work with Schedules (WRKJOBSCDE), 12. Work with Triggers (WRKTRGEVT), 13. Work with
+   System Values (WRKSYSVAL); 90. Sign Off (SIGNOFF). The menu and its F1 help are
    drawn from one definition (`client/crt/MainMenu.java`); an option whose screen isn't available says "Option n not
    available." on the message line, and a number not on the menu says so.
 3. **Work with Libraries** — options 2=Change 4=Delete 5=Display 12=Work with members.

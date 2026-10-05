@@ -23,21 +23,23 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 // The green screen as drawn (docs/crt HANDOFF: the green-screen GUI frame): an 80 x 24 text grid in a GUI-kit panel like
 // the mod's other machine GUIs - the panel (502 x 270 GUI px, a 9-slice), its title in the GUI font, a recessed well and
 // the grid in it (480 x 240, at (11, 19)), 1 screen px a GUI px, drawn character by character from the terminal font
-// sheet (6 x 10 cells). Passes: the panel, the title, the well, the phosphor's background, the glow (pre-blurred glyphs at
-// 35%), the text, the cursor, light scanlines (every 2nd row, 10% black), anything the screen adds in grid px. No CRT
-// bezel, vignette, curvature or tall pixels. The panel goes at the largest whole GUI scale that fits the window, centred.
+// sheet (6 x 10 cells). Passes: the panel, the title, the well, the phosphor's background, the text, the cursor, anything
+// the screen adds in grid px. No glow, scanlines, CRT bezel, vignette, curvature or tall pixels. The panel goes at the
+// largest whole scale that keeps it within MAX_WIDTH / MAX_HEIGHT of the window (at least 1), centred, so it sits in the
+// window like the mod's other GUIs rather than filling it.
 // Every text screen draws with it - the Terminal Desk's and the Integrated console's (CrtScreen), the machines'
 // (CrtMachineScreen) and a PLC's editor - so they look the same.
 public final class CrtDisplay {
-    private static final Identifier FONT = EncodedLogistics.id("textures/font/terminal.png"), GLOW = EncodedLogistics.id("textures/font/terminal_glow.png"),
-            PANEL = EncodedLogistics.id("textures/gui/crt/machine_panel.png"), WELL = EncodedLogistics.id("textures/gui/crt/screen_well.png");
+    private static final Identifier FONT = EncodedLogistics.id("textures/font/terminal.png"), PANEL = EncodedLogistics.id("textures/gui/crt/machine_panel.png"), WELL = EncodedLogistics.id("textures/gui/crt/screen_well.png");
     public static final int CW = 6, CH = 10, GRID_W = CrtGrid.COLS * CW, GRID_H = CrtGrid.ROWS * CH;
     // The frame, in GUI px: the panel, the title, the well (a 3 px lip) and the grid inside it.
     public static final int PANEL_W = 502, PANEL_H = 270, TITLE_X = 8, TITLE_Y = 5, WELL_X = 8, WELL_Y = 16, WELL_B = 3, GRID_X = WELL_X + WELL_B,
             GRID_Y = WELL_Y + WELL_B;
-    private static final int TITLE_COLOR = 0xFFF0F0F0, GLOW_ALPHA = 0x59, SCANLINE = 0x1A000000;
-    // The font sheets: 16 x 7 cells of 6 x 10 (the glow sheet's of 10 x 14).
-    private static final int FONT_W = 96, FONT_H = 70, GLOW_W = 160, GLOW_H = 98;
+    private static final int TITLE_COLOR = 0xFFF0F0F0;
+    // The font sheet: 16 x 7 cells of 6 x 10.
+    private static final int FONT_W = 96, FONT_H = 70;
+    // The most of the window the panel takes, across and down.
+    private static final double MAX_WIDTH = 0.6, MAX_HEIGHT = 0.7;
 
     // A phosphor's colours (screens/crt/phosphor.json).
     public record Palette(int normal, int bright, int dim, int bg, int glow) {
@@ -90,17 +92,6 @@ public final class CrtDisplay {
         graphics.pose().pushMatrix();
         graphics.pose().translate(GRID_X, GRID_Y);
         graphics.fill(0, 0, GRID_W, GRID_H, palette.bg());
-        int glowColor = (GLOW_ALPHA << 24) | (palette.glow() & 0xFFFFFF);
-        for (int row = 0; row < CrtGrid.ROWS; row++) {
-            for (int col = 0; col < CrtGrid.COLS; col++) {
-                char c = grid.chars[row][col];
-                if (c != ' ' && !grid.reverse[row][col]) {
-                    int i = CrtGrid.glyph(c);
-                    graphics.blit(RenderPipelines.GUI_TEXTURED, GLOW, col * CW - 2, row * CH - 2, (i % 16) * 10, (i / 16) * 14, 10, 14, 10, 14, GLOW_W, GLOW_H,
-                            glowColor);
-                }
-            }
-        }
         for (int row = 0; row < CrtGrid.ROWS; row++) {
             for (int col = 0; col < CrtGrid.COLS; col++) {
                 int x = col * CW, y = row * CH;
@@ -124,9 +115,6 @@ public final class CrtDisplay {
             int x = cursor[1] * CW, y = cursor[0] * CH;
             graphics.fill(x, y + 1, x + 5, y + 8, palette.bright());
         }
-        for (int y = 1; y < GRID_H; y += 2) {
-            graphics.fill(0, y, GRID_W, y + 1, SCANLINE);
-        }
         if (overlay != null) {
             overlay.accept(graphics);
         }
@@ -134,9 +122,9 @@ public final class CrtDisplay {
         graphics.pose().popMatrix();
     }
 
-    // The largest whole scale the panel fits the window at (at least 1), centred.
+    // The largest whole scale that keeps the panel within MAX_WIDTH x MAX_HEIGHT of the window (at least 1), centred.
     private void layout(int width, int height) {
-        scale = Math.max(1, Math.min(width / PANEL_W, height / PANEL_H));
+        scale = Math.max(1, Math.min((int) (width * MAX_WIDTH / PANEL_W), (int) (height * MAX_HEIGHT / PANEL_H)));
         panelX = (width - PANEL_W * scale) / 2;
         panelY = (height - PANEL_H * scale) / 2;
     }

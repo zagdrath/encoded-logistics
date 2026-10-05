@@ -2,8 +2,8 @@
  "parent": "minecraft:block/block",
  "render_type": "minecraft:cutout",
  "textures": {
-  "screen": "encodedlogistics:block/terminal_desk/crt_screen_on",
-  "particle": "encodedlogistics:block/terminal_desk/crt_screen_on"
+  "screen": "encodedlogistics:block/integrated_midrange/screen_on",
+  "particle": "encodedlogistics:block/integrated_midrange/screen_on"
  },
  "elements": [
   {
@@ -24,8 +24,8 @@
      "uv": [
       0,
       0,
-      16,
-      16
+      5,
+      4.5
      ]
     }
    },
