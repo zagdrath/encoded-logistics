@@ -35,6 +35,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.part.SchematicEncoderPart;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
@@ -50,6 +51,8 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 public class SchematicEncoderMenu extends AccessTerminalMenu implements ValueMenu {
     public static final int SECTION = 76, GRID_X = 31, GRID_Y = 9, OUTPUT_X = 117, RESULT_X = 119, RESULT_Y = 26, CARD_X = 161, BLANK_Y = 9,
             ENCODED_Y = 47, MAX_AMOUNT = 64;
+    // A fluid or gas entry's amount (mB, or its mod's unit) in a Processing Schematic: up to this, a bucket to start with.
+    public static final int MAX_RESOURCE_AMOUNT = 1_000_000, DEFAULT_RESOURCE_AMOUNT = 1_000;
     public static final int[] OUTPUT_Y = { 9, 27, 45 };
     public static final int BUTTON_MODE = 0, BUTTON_CLEAR = 1, BUTTON_ENCODE = 2;
     public static final int GRID = INVENTORY_SLOTS, OUTPUTS = GRID + 9, RESULT = OUTPUTS + 3, BLANK = RESULT + 1, ENCODED = BLANK + 1;
@@ -173,7 +176,9 @@ public class SchematicEncoderMenu extends AccessTerminalMenu implements ValueMen
     // --- Ghost slots ---
 
     // Grid and output slots: an item in hand sets it (left: the stack's count in processing mode, else one), an empty
-    // hand clears it (left click; the screen turns a right click on a set slot into an amount change).
+    // hand clears it (left click; the screen turns a right click on a set slot into an amount change). In processing
+    // mode a filled bucket, tank or gas container (or a picked or JEI-dragged fluid or gas) sets a fluid or gas entry of a
+    // bucket's worth instead; crafting takes items only.
     @Override
     public void clicked(int slotIndex, int buttonNum, ContainerInput input, Player player) {
         if (slotIndex >= GRID && slotIndex < BLANK) {
@@ -182,13 +187,28 @@ public class SchematicEncoderMenu extends AccessTerminalMenu implements ValueMen
                 if (slot.isActive()) {
                     ItemStack carried = getCarried();
                     if (!carried.isEmpty() || buttonNum == 0) {
-                        slot.container.setItem(slot.getContainerSlot(), GatewayMenu.ghost(carried, buttonNum == 1 || !processing()));
+                        slot.container.setItem(slot.getContainerSlot(), ghost(carried, buttonNum == 1));
                     }
                 }
             }
             return;
         }
         super.clicked(slotIndex, buttonNum, input, player);
+    }
+
+    private ItemStack ghost(ItemStack carried, boolean one) {
+        if (processing()) {
+            ItemStack entry = PartMenus.ghost(carried, null);
+            ResourceEntryItem.Entry resource = ResourceEntryItem.entry(entry);
+            if (resource != null) {
+                ResourceEntryItem.Entry given = ResourceEntryItem.entry(carried);
+                long amount = given != null && given.amount() > 0 ? given.amount() : DEFAULT_RESOURCE_AMOUNT;
+                return ResourceEntryItem.of(resource.key(), Math.min(amount, MAX_RESOURCE_AMOUNT));
+            }
+        } else if (ResourceEntryItem.entry(carried) != null) {
+            return ItemStack.EMPTY;
+        }
+        return GatewayMenu.ghost(carried, one || !processing());
     }
 
     // An amount changed on the screen: key is the slot (0-8 grid, 9-11 outputs).
@@ -200,7 +220,9 @@ public class SchematicEncoderMenu extends AccessTerminalMenu implements ValueMen
         Container container = key < 9 ? grid : outputs;
         int index = key < 9 ? key : key - 9;
         ItemStack stack = container.getItem(index);
-        if (!stack.isEmpty()) {
+        if (ResourceEntryItem.entry(stack) != null) {
+            container.setItem(index, ResourceEntryItem.withAmount(stack, Math.clamp(value, 1, MAX_RESOURCE_AMOUNT)));
+        } else if (!stack.isEmpty()) {
             container.setItem(index, stack.copyWithCount(Math.clamp(value, 1, MAX_AMOUNT)));
         }
     }
@@ -243,9 +265,11 @@ public class SchematicEncoderMenu extends AccessTerminalMenu implements ValueMen
             case BUTTON_MODE -> {
                 part.setMode(processing() ? SchematicEncoderPart.CRAFTING : SchematicEncoderPart.PROCESSING);
                 if (!processing()) {
-                    // Crafting takes one of each.
+                    // Crafting takes one of each, and items only.
                     for (int i = 0; i < 9; i++) {
-                        if (grid.getItem(i).getCount() > 1) {
+                        if (ResourceEntryItem.entry(grid.getItem(i)) != null) {
+                            grid.setItem(i, ItemStack.EMPTY);
+                        } else if (grid.getItem(i).getCount() > 1) {
                             grid.setItem(i, grid.getItem(i).copyWithCount(1));
                         }
                     }
@@ -341,11 +365,13 @@ public class SchematicEncoderMenu extends AccessTerminalMenu implements ValueMen
         part.setMode(crafting ? SchematicEncoderPart.CRAFTING : SchematicEncoderPart.PROCESSING);
         for (int i = 0; i < 9; i++) {
             ItemStack stack = i < inputs.size() ? inputs.get(i) : ItemStack.EMPTY;
-            grid.setItem(i, stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(crafting ? 1 : Math.clamp(stack.getCount(), 1, MAX_AMOUNT)));
+            grid.setItem(i, stack.isEmpty() || crafting && ResourceEntryItem.entry(stack) != null ? ItemStack.EMPTY
+                    : ResourceEntryItem.entry(stack) != null ? stack.copy() : stack.copyWithCount(crafting ? 1 : Math.clamp(stack.getCount(), 1, MAX_AMOUNT)));
         }
         for (int i = 0; i < 3; i++) {
             ItemStack stack = !crafting && i < results.size() ? results.get(i) : ItemStack.EMPTY;
-            outputs.setItem(i, stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(Math.clamp(stack.getCount(), 1, MAX_AMOUNT)));
+            outputs.setItem(i, stack.isEmpty() ? ItemStack.EMPTY
+                    : ResourceEntryItem.entry(stack) != null ? stack.copy() : stack.copyWithCount(Math.clamp(stack.getCount(), 1, MAX_AMOUNT)));
         }
         updateResult();
     }

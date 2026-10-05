@@ -24,6 +24,7 @@ import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
@@ -160,7 +161,7 @@ public class CraftPlanScreen extends Screen {
             if (hasChildren(index)) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, collapsed.contains(index) ? EXPAND : COLLAPSE, x, y + 5, 7, 7);
             }
-            graphics.item(line.key().stack(), x + 8, y + 1);
+            ResourceRender.icon(graphics, line.key(), x + 8, y + 1);
             int nameX = x + 26, room = left + HAVE_X - 4 - nameX;
             if (room > 8) {
                 graphics.text(font, font.plainSubstrByWidth(line.key().stack().getHoverName().getString(), room), nameX, y + 5, PartScreens.TEXT, false);

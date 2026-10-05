@@ -20,8 +20,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Runs a job host's jobs (JobHost). Each job holds the items it took from storage from the moment it's accepted (and
 // takes any it awaits from tape as they come back, once a second), waits in the queue for a thread, and then runs: every tick each of its steps with the inputs for another run is offered to
@@ -216,7 +217,10 @@ public final class JobRunner {
     public List<CraftingJob> dropAll(ServerLevel level, BlockPos pos) {
         for (CraftingJob job : jobs) {
             for (ItemStack stack : job.heldStacks()) {
-                Block.popResource(level, pos, stack);
+                // Fluids and gases can't drop: they're lost with the host.
+                if (ResourceEntryItem.entry(stack) == null) {
+                    Block.popResource(level, pos, stack);
+                }
             }
         }
         List<CraftingJob> dropped = List.copyOf(jobs);
@@ -225,9 +229,17 @@ public final class JobRunner {
     }
 
     // Items into storage (not claimed by waiting jobs: they're coming back, not arriving); what doesn't fit drops at pos.
+    // Fluids and gases (Resource Entries) go in as far as they fit; the rest can't drop and is lost.
     public static void putBack(ServerLevel level, BlockPos pos, List<ItemStack> items, @Nullable NetworkStorage storage) {
         for (ItemStack stack : items) {
             if (stack.isEmpty()) {
+                continue;
+            }
+            StorageKey entry = ResourceEntryItem.key(stack);
+            if (entry != null) {
+                if (storage != null) {
+                    storage.store(entry, ResourceEntryItem.amount(stack), false);
+                }
                 continue;
             }
             ItemStack left = stack.copy();

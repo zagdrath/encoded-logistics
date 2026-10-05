@@ -343,6 +343,10 @@ public final class TerminalService {
     // A history item (ElclItems' id: COAL_BLOCK, or mod:item) as the registry names it, and its name; the id itself
     // when the item's gone.
     private static String registryId(String item) {
+        if (item.indexOf(' ') > 0) {
+            // A fluid or gas: "FLUID minecraft:water".
+            return item.substring(item.indexOf(' ') + 1);
+        }
         try {
             return BuiltInRegistries.ITEM.getKey(ElclItems.resolve(item)).toString();
         } catch (ElclException e) {
@@ -351,6 +355,9 @@ public final class TerminalService {
     }
 
     private static Component itemName(String item) {
+        if (item.indexOf(' ') > 0) {
+            return Component.literal(ElclItems.displayName(item));
+        }
         try {
             return new ItemStack(ElclItems.resolve(item)).getHoverName();
         } catch (ElclException e) {

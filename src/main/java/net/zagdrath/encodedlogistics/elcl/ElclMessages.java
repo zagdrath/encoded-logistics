@@ -102,6 +102,8 @@ public final class ElclMessages {
         define("ELC1204", SEVERE, "Network storage is full.");
         define("ELC1205", SEVERE, "Item name &1 is ambiguous; use a qualified ID.");
         define("ELC1206", SEVERE, "No Tape Library on the network.");
+        define("ELC1207", SEVERE, "&1 is a &2 resource, not &3.");
+        define("ELC1208", SEVERE, "Resource type &1 is not valid for device &2.");
         // Devices.
         define("ELC1301", SEVERE, "Device &1 not found.");
         define("ELC1302", SEVERE, "Device &1 is offline.");

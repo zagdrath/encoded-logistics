@@ -21,6 +21,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // What an Encoded Schematic holds (the encodedlogistics:schematic component), written by the Schematic Encoder.
@@ -76,18 +77,19 @@ public record Schematic(Kind kind, List<Input> inputs, List<ItemStackTemplate> o
         outputs = List.copyOf(outputs);
     }
 
-    // From the encoder's slots: nine inputs (empty where there's none) and the outputs (empties left out).
+    // From the encoder's slots: nine inputs (empty where there's none) and the outputs (empties left out). A Processing
+    // Schematic's entries can be fluids and gases (Resource Entries, carrying their amounts); a crafting one's are items.
     public static Schematic of(Kind kind, List<ItemStack> grid, List<ItemStack> outputs) {
         List<Input> inputs = new ArrayList<>();
         for (int slot = 0; slot < Math.min(INPUTS, grid.size()); slot++) {
             ItemStack stack = grid.get(slot);
-            if (!stack.isEmpty()) {
+            if (!stack.isEmpty() && (kind == Kind.PROCESSING || ResourceEntryItem.entry(stack) == null)) {
                 inputs.add(new Input(slot, ItemStackTemplate.fromNonEmptyStack(kind == Kind.CRAFTING ? stack.copyWithCount(1) : stack)));
             }
         }
         List<ItemStackTemplate> results = new ArrayList<>();
         for (ItemStack stack : outputs) {
-            if (!stack.isEmpty() && results.size() < PROCESSING_OUTPUTS) {
+            if (!stack.isEmpty() && results.size() < PROCESSING_OUTPUTS && (kind == Kind.PROCESSING || ResourceEntryItem.entry(stack) == null)) {
                 results.add(ItemStackTemplate.fromNonEmptyStack(stack));
             }
         }
@@ -116,22 +118,23 @@ public record Schematic(Kind kind, List<Input> inputs, List<ItemStackTemplate> o
         return CraftingInput.of(3, 3, grid());
     }
 
-    // What one craft (or one processing run) takes, added up by item.
+    // What one craft (or one processing run) takes, added up by resource: items by count, fluids and gases (Resource
+    // Entries) by their amounts.
     public Map<StorageKey, Long> inputTotals() {
         Map<StorageKey, Long> totals = new LinkedHashMap<>();
         for (Input input : inputs) {
             ItemStack stack = input.item().create();
-            totals.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
+            totals.merge(StorageKey.entry(stack), ResourceEntryItem.amount(stack), Long::sum);
         }
         return totals;
     }
 
-    // What one craft gives, added up by item.
+    // What one craft gives, added up by resource.
     public Map<StorageKey, Long> outputTotals() {
         Map<StorageKey, Long> totals = new LinkedHashMap<>();
         for (ItemStackTemplate output : outputs) {
             ItemStack stack = output.create();
-            totals.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
+            totals.merge(StorageKey.entry(stack), ResourceEntryItem.amount(stack), Long::sum);
         }
         return totals;
     }

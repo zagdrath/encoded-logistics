@@ -10,6 +10,8 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -19,6 +21,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.net.MenuValuePayload;
@@ -28,6 +32,8 @@ import net.zagdrath.encodedlogistics.net.MenuValuePayload;
 // something to encode and a card for it). In processing mode ghost amounts show at half size; scroll or right-click a
 // ghost slot to change its amount (Shift: 10 at a time).
 public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEncoderMenu> {
+    private final GhostPicker picker = new GhostPicker();
+
     public static final String LAYOUT = "schematic_encoder";
     private static final Identifier[] MODES = { EncodedLogistics.id("encoder/mode_crafting"), EncodedLogistics.id("encoder/mode_processing") };
     private static final int MODE_X = 8, MODE_Y = 8, CLEAR_X = 84, CLEAR_Y = 8, CLEAR_SIZE = 9, ENCODE_X = 150, ENCODE_Y = 29, ENCODE_W = 38,
@@ -86,7 +92,9 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
     @Override
     protected void extractSlot(GuiGraphicsExtractor graphics, Slot slot, int mouseX, int mouseY) {
         if (isAmountSlot(slot) && slot.hasItem()) {
-            PartScreens.itemWithAmount(graphics, font, slot.getItem(), slot.x, slot.y);
+            if (!ResourceRender.entrySlot(graphics, font, slot)) {
+                PartScreens.itemWithAmount(graphics, font, slot.getItem(), slot.x, slot.y);
+            }
             return;
         }
         super.extractSlot(graphics, slot, mouseX, mouseY);
@@ -104,8 +112,12 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
         }
     }
 
+    // An amount up or down: items by 1 (10 with Shift), fluids and gases by 100 mB (1,000 with Shift).
     private void step(Slot slot, boolean up, boolean shift) {
-        int amount = PartScreens.stepAmount(slot.getItem().getCount(), up, shift, SchematicEncoderMenu.MAX_AMOUNT);
+        ResourceEntryItem.Entry entry = ResourceEntryItem.entry(slot.getItem());
+        int amount = entry != null
+                ? (int) Math.clamp(entry.amount() + (up ? 1 : -1) * (shift ? 1_000L : 100L), 1, SchematicEncoderMenu.MAX_RESOURCE_AMOUNT)
+                : PartScreens.stepAmount(slot.getItem().getCount(), up, shift, SchematicEncoderMenu.MAX_AMOUNT);
         ClientPacketDistributor.sendToServer(new MenuValuePayload(menu.containerId, slot.index - SchematicEncoderMenu.GRID, amount));
     }
 
@@ -122,6 +134,11 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
                 return true;
             }
         }
+        // Processing: right-clicking an empty grid or output slot with an empty hand picks a fluid or gas from a list.
+        if (menu.processing() && picker.mouseClicked(menu, hoveredSlot != null && isAmountSlot(hoveredSlot) ? hoveredSlot : null, event, null, width,
+                height)) {
+            return true;
+        }
         Slot slot = hoveredSlot;
         if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT && slot != null && isAmountSlot(slot) && slot.hasItem() && menu.getCarried().isEmpty()) {
             if (menu.processing()) {
@@ -134,11 +151,30 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (picker.mouseScrolled(scrollY)) {
+            return true;
+        }
         Slot slot = hoveredSlot;
         if (slot != null && isAmountSlot(slot) && slot.hasItem() && menu.processing() && scrollY != 0) {
             step(slot, scrollY > 0, minecraft.hasShiftDown());
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        picker.extract(graphics, font, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        return picker.keyPressed(event) || super.keyPressed(event);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return picker.charTyped(event) || super.charTyped(event);
     }
 }

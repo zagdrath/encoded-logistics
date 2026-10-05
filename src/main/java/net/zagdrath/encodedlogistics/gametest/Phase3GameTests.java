@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -39,6 +40,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -48,8 +50,8 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
 // Phase 3: the Scheduler multiblock, the Schematic Encoder, and autocrafting through a Fabricator and a Gateway. The rig:
@@ -200,6 +202,41 @@ final class Phase3GameTests {
                     helper.assertFalse(GhostSlotPayload.apply(player, 1, SchematicEncoderMenu.BLANK, new ItemStack(Items.DIAMOND)), "Real slot drag accepted");
                     helper.assertTrue(menu.getSlot(SchematicEncoderMenu.BLANK).getItem().isEmpty(), "Real slot filled");
                     helper.assertFalse(GhostSlotPayload.apply(player, 2, SchematicEncoderMenu.GRID + 1, new ItemStack(Items.DIAMOND)), "Wrong menu accepted");
+                })
+                .thenSucceed();
+    }
+
+    // Processing mode takes fluids: a water bucket dragged onto the grid sets a bucket's worth of water, a fluid entry
+    // keeps the amount it comes with; crafting mode clears fluid entries out.
+    static void encoderFluidEntries(GameTestHelper helper) {
+        rig(helper);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        StorageKey water = StorageKey.fluid(Fluids.WATER);
+        helper.startSequence()
+                .thenExecute(() -> {
+                    ItemStack stack = new ItemStack(PartType.SCHEMATIC_ENCODER.item());
+                    player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                    BlockPos absolute = helper.absolutePos(CABLE);
+                    BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(absolute).add(0, 0, 0.3), Direction.SOUTH, absolute, false);
+                    helper.getBlockState(CABLE).useItemOn(stack, helper.getLevel(), player, InteractionHand.MAIN_HAND, hit);
+                })
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setPos(Vec3.atCenterOf(helper.absolutePos(CABLE)).add(0, 0, 1));
+                    SchematicEncoderMenu menu = new SchematicEncoderMenu(1, player.getInventory(), helper.absolutePos(CABLE), Direction.SOUTH);
+                    player.containerMenu = menu;
+                    // Crafting mode: a fluid entry sets nothing.
+                    GhostSlotPayload.apply(player, 1, SchematicEncoderMenu.GRID, ResourceEntryItem.of(water, 0));
+                    helper.assertTrue(menu.getSlot(SchematicEncoderMenu.GRID).getItem().isEmpty(), "Crafting took a fluid");
+                    menu.clickMenuButton(player, SchematicEncoderMenu.BUTTON_MODE);
+                    helper.assertTrue(menu.processing(), "Not in processing mode");
+                    GhostSlotPayload.apply(player, 1, SchematicEncoderMenu.GRID, new ItemStack(Items.WATER_BUCKET));
+                    ItemStack grid = menu.getSlot(SchematicEncoderMenu.GRID).getItem();
+                    helper.assertTrue(water.equals(ResourceEntryItem.key(grid)) && ResourceEntryItem.amount(grid) == 1_000, "Grid " + grid);
+                    GhostSlotPayload.apply(player, 1, SchematicEncoderMenu.GRID + 1, ResourceEntryItem.of(water, 250));
+                    helper.assertTrue(ResourceEntryItem.amount(menu.getSlot(SchematicEncoderMenu.GRID + 1).getItem()) == 250, "Amount not kept");
+                    menu.clickMenuButton(player, SchematicEncoderMenu.BUTTON_MODE);
+                    helper.assertTrue(menu.getSlot(SchematicEncoderMenu.GRID).getItem().isEmpty(), "Crafting kept a fluid entry");
                 })
                 .thenSucceed();
     }

@@ -17,6 +17,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
 // The Gateway's screen (screens/gateway.json): its Processing Schematic row, the stock row (ghost items, each with the
@@ -94,8 +95,9 @@ public class GatewayMenu extends AbstractContainerMenu implements ValueMenu {
         super.clicked(slotIndex, buttonNum, input, player);
     }
 
+    // An item to stock (or encode); the stock row keeps items only, so a fluid or gas entry sets nothing.
     static ItemStack ghost(ItemStack carried, boolean one) {
-        return carried.isEmpty() ? ItemStack.EMPTY : carried.copyWithCount(one ? 1 : Math.min(carried.getCount(), carried.getMaxStackSize()));
+        return carried.isEmpty() || ResourceEntryItem.entry(carried) != null ? ItemStack.EMPTY : carried.copyWithCount(one ? 1 : Math.min(carried.getCount(), carried.getMaxStackSize()));
     }
 
     // A stock amount typed, scrolled or right-clicked on the screen: key is the stock slot.

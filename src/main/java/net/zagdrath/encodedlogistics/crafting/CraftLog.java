@@ -19,7 +19,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
-import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
@@ -62,7 +61,8 @@ public final class CraftLog {
     // ended (and why it failed: a gui.encodedlogistics.job.reason key); who asked - the player's Terminal OS user, and
     // the ELCL job (its schedule entry or trigger) when a script did; the scheduler that ran it (Scheduler or Rack
     // Scheduler, where); the overworld clock when it started (-1 unknown) and ended, how long it ran (game ticks);
-    // and what it used up from storage (item id to count).
+    // and what it used up from storage (item id to count). A fluid or gas (made or used) is kept as its type and ID,
+    // "FLUID minecraft:water" (ElclItems.text), its amounts in mB or its own unit.
     public record Entry(int number, UUID id, String item, long requested, long produced, Status status, String reason, String user, String origin,
             String scheduler, BlockPos schedulerPos, long started, long ended, long duration, Map<String, Long> consumed) {
         public String jobId() {
@@ -142,13 +142,10 @@ public final class CraftLog {
 
     private CraftLog() {}
 
-    // A record's item, to show (empty when the item's gone).
+    // A record's item (a Resource Entry for a fluid or gas), to show (empty when it's gone).
     public static ItemStack stack(Entry entry) {
-        try {
-            return new ItemStack(ElclItems.resolve(entry.item()));
-        } catch (ElclException e) {
-            return ItemStack.EMPTY;
-        }
+        StorageKey key = ElclItems.parse(entry.item());
+        return key != null ? key.stack() : ItemStack.EMPTY;
     }
 
     // A run's length (game ticks) as the screens show it: "45s", "3m 05s", "1h 02m".
@@ -183,12 +180,12 @@ public final class CraftLog {
         job.taken.forEach((key, count) -> {
             long used = count - atEnd.getOrDefault(key, 0L);
             if (used > 0) {
-                consumed.merge(ElclItems.id(key.stack().getItem()), used, Long::sum);
+                consumed.merge(ElclItems.text(key), used, Long::sum);
             }
         });
         long produced = outcome == JobEvents.Outcome.COMPLETED && job.returned == null ? job.amount : atEnd.getOrDefault(job.target, 0L);
         long now = server.overworld().getGameTime();
-        Entry entry = new Entry(ControllerStructures.jobNumber(server, network, job.id), job.id, ElclItems.id(job.target.stack().getItem()), job.amount,
+        Entry entry = new Entry(ControllerStructures.jobNumber(server, network, job.id), job.id, ElclItems.text(job.target), job.amount,
                 produced, Status.of(outcome), reason, job.user, job.origin, host != null ? scheduler(host) : "", host != null ? host.hostPos() : BlockPos.ZERO,
                 job.startedClock, server.overworld().getOverworldClockTime(), job.started >= 0 ? Math.max(0, now - job.started) : 0, consumed);
         ElclSystem system = new ElclSystem(server, network);

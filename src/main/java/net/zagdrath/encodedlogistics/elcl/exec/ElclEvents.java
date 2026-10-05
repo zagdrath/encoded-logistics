@@ -74,7 +74,7 @@ public final class ElclEvents {
             case CANCELLED -> "*CANCELLED";
         };
         String id = String.format(Locale.ROOT, "C%04d", ControllerStructures.jobNumber(server, network, job.id));
-        fire(server, new Event(network, "*CRAFTEND", "", ElclItems.id(job.target.stack().getItem()), id + " " + status));
+        fire(server, new Event(network, "*CRAFTEND", "", ElclItems.text(job.target), id + " " + status));
     }
 
     // *MCHIDLE, *MCHFAULT, *MCHNOPWR: a machine with a Small Wireless Bridge on went idle, faulted or ran short of power.

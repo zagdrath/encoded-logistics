@@ -45,6 +45,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.elcl.exec.NamedDevice;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.menu.GatewayMenu;
@@ -52,8 +53,10 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
-import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
+import net.zagdrath.encodedlogistics.storage.ResourceIO;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A Gateway's nine Processing Schematics, its stock settings (nine ghost items, each with the amount to keep) and its
 // item handler (every face): nine buffer slots holding the stocked items, which neighbours can take but not fill, and
@@ -67,6 +70,10 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // network to its stock amount. Machines with a Small Wireless Bridge whose Gateway setting names this one are fed and
 // emptied the same way, over the air, after the neighbours (MachineBridges.gatewayTargets): only through their machines'
 // own slot rules, so inputs and fuel go in and only outputs come out.
+//
+// A Processing Schematic's fluid and gas inputs and outputs (Resource Entries) go the same way through the neighbours' and
+// bridged machines' tanks (ResourceIO): pushed into whichever take them, pulled out of whichever hold them; only items
+// use the intake slots and the stock row. The one-run-pushing-at-a-time rule holds for every type.
 public class GatewayBlockEntity extends BlockEntity implements MenuProvider, NetworkDevice, CraftingProvider, NamedDevice {
     public static final String TYPE = "GATEWAY";
     public static final int SCHEMATIC_SLOTS = 9, STOCK_SLOTS = 9, BUFFER = 9, INTAKE = 9;
@@ -236,7 +243,22 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 }
             }
             targets.addAll(MachineBridges.gatewayTargets(level, worldPosition));
-            for (ItemStack stack : run.toPush) {
+            for (int index = 0; index < run.toPush.size(); index++) {
+                ItemStack stack = run.toPush.get(index);
+                StorageKey entry = ResourceEntryItem.key(stack);
+                if (entry != null) {
+                    long left = ResourceEntryItem.amount(stack);
+                    for (ResourceIO target : resourceTargets(level, entry)) {
+                        if (left <= 0) {
+                            break;
+                        }
+                        long inserted = target.insert(entry, left, false);
+                        left -= inserted;
+                        moved |= inserted > 0;
+                    }
+                    run.toPush.set(index, left > 0 ? ResourceEntryItem.of(entry, left) : ItemStack.EMPTY);
+                    continue;
+                }
                 for (ResourceHandler<ItemResource> target : targets) {
                     if (stack.isEmpty()) {
                         break;
@@ -268,7 +290,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 continue;
             }
             handler.set(slot, ItemResource.EMPTY, 0);
-            int left = receive(level, StorageKey.of(resource.toStack(1)), amount);
+            int left = (int) receive(level, StorageKey.of(resource.toStack(1)), amount);
             if (left > 0) {
                 SchedulerCoreBlockEntity.returnToNetwork(level, worldPosition, List.of(resource.toStack(left)));
             }
@@ -288,6 +310,20 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         List<ResourceHandler<ItemResource>> remote = MachineBridges.gatewayTargets(level, worldPosition);
         for (Map.Entry<StorageKey, Long> want : expected.entrySet()) {
             long left = want.getValue();
+            if (!want.getKey().isItem()) {
+                for (ResourceIO source : resourceSources(level, want.getKey())) {
+                    if (left <= 0) {
+                        break;
+                    }
+                    long extracted = source.extract(want.getKey(), left, false);
+                    if (extracted > 0) {
+                        receive(level, want.getKey(), extracted);
+                        left -= extracted;
+                        moved = true;
+                    }
+                }
+                continue;
+            }
             ItemResource resource = ItemResource.of(want.getKey().stack());
             List<ResourceHandler<ItemResource>> sources = new ArrayList<>();
             for (Direction side : Direction.values()) {
@@ -318,6 +354,44 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         return moved;
     }
 
+    // Where a fluid or gas input goes: each neighbour's tanks through the face touching the Gateway, then bridged
+    // machines'.
+    private List<ResourceIO> resourceTargets(ServerLevel level, StorageKey key) {
+        List<ResourceIO> targets = new ArrayList<>();
+        for (Direction side : Direction.values()) {
+            ResourceIO target = neighbourIO(level, side, side.getOpposite(), key.type());
+            if (target != null) {
+                targets.add(target);
+            }
+        }
+        targets.addAll(MachineBridges.gatewayResourceTargets(level, worldPosition));
+        return targets;
+    }
+
+    // Where a fluid or gas output comes from: each neighbour's tanks through any face (the touching one first), then
+    // bridged machines'.
+    private List<ResourceIO> resourceSources(ServerLevel level, StorageKey key) {
+        List<ResourceIO> sources = new ArrayList<>();
+        for (Direction side : Direction.values()) {
+            for (Direction face : faces(side.getOpposite())) {
+                ResourceIO source = neighbourIO(level, side, face, key.type());
+                if (source != null) {
+                    sources.add(source);
+                }
+            }
+        }
+        sources.addAll(MachineBridges.gatewayResourceTargets(level, worldPosition));
+        return sources;
+    }
+
+    private @Nullable ResourceIO neighbourIO(ServerLevel level, Direction side, Direction face, ResourceType type) {
+        BlockPos pos = worldPosition.relative(side);
+        if (!level.isLoaded(pos) || level.getBlockEntity(pos) instanceof GatewayBlockEntity) {
+            return null;
+        }
+        return ResourceIO.at(level, pos, face, type);
+    }
+
     // The touching face first, then the rest.
     private static List<Direction> faces(Direction touching) {
         List<Direction> faces = new ArrayList<>(List.of(Direction.values()));
@@ -326,18 +400,19 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         return faces;
     }
 
-    // Hands arriving outputs to the oldest runs expecting them; returns how many nobody wanted.
-    private int receive(ServerLevel level, StorageKey key, int amount) {
-        int left = amount;
+    // Hands arriving outputs to the oldest runs expecting them; returns how many (how much) nobody wanted.
+    private long receive(ServerLevel level, StorageKey key, long amount) {
+        long left = amount;
         for (Run run : List.copyOf(runs)) {
             long expected = run.expected.getOrDefault(key, 0L);
             if (expected <= 0 || left <= 0) {
                 continue;
             }
-            int give = (int) Math.min(left, expected);
+            long give = Math.min(left, expected);
             run.expected.put(key, expected - give);
             left -= give;
-            SchedulerCoreBlockEntity.deliver(level, run.task, List.of(key.toStack(give)), false, worldPosition);
+            ItemStack given = key.isItem() ? key.toStack((int) give) : ResourceEntryItem.of(key, give);
+            SchedulerCoreBlockEntity.deliver(level, run.task, List.of(given), false, worldPosition);
             finishIfDone(level, run);
         }
         return left;
@@ -374,8 +449,8 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         if (simulate || expected <= 0) {
             return Math.min(amount, expected);
         }
-        int offered = (int) Math.min(Math.min(amount, expected), Integer.MAX_VALUE);
-        int left = receive(serverLevel, key, offered);
+        long offered = Math.min(amount, expected);
+        long left = receive(serverLevel, key, offered);
         if (offered - left > 0) {
             lastMoved = serverLevel.getGameTime();
             setChanged();
@@ -412,7 +487,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 moved |= stored > 0;
                 continue;
             }
-            if (want.isEmpty()) {
+            if (want.isEmpty() || ResourceEntryItem.entry(want) != null) {
                 continue;
             }
             int target = Math.min(want.getCount(), want.getMaxStackSize());

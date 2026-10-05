@@ -42,7 +42,7 @@ public record JobInfo(UUID id, StorageKey item, long amount, int done, int total
         List<StepInfo> list = new ArrayList<>();
         if (steps) {
             for (CraftingJob.Step step : job.steps) {
-                list.add(new StepInfo(StorageKey.of(step.schematic.output()), Math.min(step.done, step.total), step.total));
+                list.add(new StepInfo(StorageKey.entry(step.schematic.output()), Math.min(step.done, step.total), step.total));
             }
         }
         return new JobInfo(job.id, job.target, job.amount, job.done(), job.total(), job.running, list,

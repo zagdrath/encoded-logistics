@@ -19,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
@@ -90,7 +91,7 @@ public class CraftAmountScreen extends Screen {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
         graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, left, top, 0.0F, 0.0F, WIDTH, HEIGHT, 256, 256);
-        graphics.item(key.stack(), left + ITEM_X, top + ITEM_Y);
+        ResourceRender.icon(graphics, key, left + ITEM_X, top + ITEM_Y);
         for (int[] step : STEPS) {
             PartScreens.wideButton(graphics, font, left + step[1], top + step[2], STEP_W, STEP_H, Component.literal((step[0] > 0 ? "+" : "") + step[0]),
                     true, mouseX, mouseY);

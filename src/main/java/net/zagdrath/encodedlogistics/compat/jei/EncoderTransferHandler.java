@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 import mezz.jei.api.gui.ingredient.IRecipeSlotView;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IUniversalRecipeTransferHandler;
@@ -22,9 +23,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.net.EncoderRecipePayload;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // JEI's "+" on any recipe in a Schematic Encoder: a crafting recipe fills the ghost grid in crafting mode (slot by slot);
 // anything else becomes a processing schematic - its inputs (up to nine) and outputs (up to three), with their amounts.
@@ -60,6 +65,12 @@ public class EncoderTransferHandler implements IUniversalRecipeTransferHandler<S
                 break;
             }
             ItemStack stack = view.getDisplayedItemStack().or(() -> view.getItemStacks().findFirst()).map(ItemStack::copy).orElse(ItemStack.EMPTY);
+            // A fluid (or a gas, which JEI shows as a fluid): a fluid or gas entry with the recipe's amount (Processing only).
+            Optional<FluidStack> fluid = view.getDisplayedIngredient(NeoForgeTypes.FLUID_STACK)
+                    .or(() -> view.getIngredients(NeoForgeTypes.FLUID_STACK).findFirst());
+            if (stack.isEmpty() && fluid.isPresent() && !fluid.get().isEmpty() && !keepEmpty) {
+                stack = ResourceEntryItem.of(StorageKey.fluid(FluidResource.of(fluid.get())), Math.max(1, fluid.get().getAmount()));
+            }
             if (!stack.isEmpty() || keepEmpty) {
                 stacks.add(stack);
             }

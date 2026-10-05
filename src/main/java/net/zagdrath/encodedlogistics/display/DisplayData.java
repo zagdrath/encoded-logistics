@@ -227,7 +227,7 @@ final class DisplayData {
                     total += step.total;
                 }
                 String id = String.format(Locale.ROOT, "C%04d", ControllerStructures.jobNumber(server, network, job.id));
-                String item = ElclItems.id(job.target.stack().getItem());
+                String item = ElclItems.text(job.target);
                 rows.add((job.running ? (job.awaiting.isEmpty() ? "on" : "warn") : "off") + "|" + id + " " + item + "|"
                         + (total == 0 ? 100 : done * 100 / total) + "%");
             }

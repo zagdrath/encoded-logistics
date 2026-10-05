@@ -24,6 +24,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.client.ResourceRender;
 import net.zagdrath.encodedlogistics.crafting.JobInfo;
 import net.zagdrath.encodedlogistics.net.JobCancelPayload;
 import net.zagdrath.encodedlogistics.net.JobStatusPayload;
@@ -90,8 +91,9 @@ public class JobStatusScreen extends Screen {
         graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, left, top, 0.0F, 0.0F, WIDTH, HEIGHT, 256, 256);
         graphics.text(font, title, left + 8, top + 5, PartScreens.TEXT, false);
         if (job != null) {
-            graphics.item(job.item().stack(), left + ITEM_X, top + ITEM_Y);
-            Component name = Component.literal(job.amount() + " x ").append(job.item().stack().getHoverName());
+            ResourceRender.icon(graphics, job.item(), left + ITEM_X, top + ITEM_Y);
+            String amount = job.item().isItem() ? Long.toString(job.amount()) : job.item().format(job.amount());
+            Component name = Component.literal(amount + " x ").append(job.item().displayName());
             graphics.text(font, font.plainSubstrByWidth(name.getString(), WIDTH - NAME_X - 70), left + NAME_X, top + NAME_Y, PartScreens.TEXT, false);
             // Waiting on tape: how many items are still to come back, else the runs done.
             Component progress = job.awaiting() > 0 ? Component.translatable("gui.encodedlogistics.craft.awaiting", String.format(Locale.ROOT, "%,d", job.awaiting()))
@@ -107,7 +109,7 @@ public class JobStatusScreen extends Screen {
                 }
                 JobInfo.StepInfo step = steps.get(index);
                 int x = left + LIST_X + (cell % COLUMNS) * CELL_W, y = top + LIST_Y + (cell / COLUMNS) * CELL_H;
-                graphics.item(step.output().stack(), x + 2, y + 3);
+                ResourceRender.icon(graphics, step.output(), x + 2, y + 3);
                 graphics.text(font, step.done() + " / " + step.total(), x + 21, y + 4, step.done() >= step.total() ? PartScreens.ACCENT : PartScreens.TEXT,
                         false);
                 PartScreens.bar(graphics, GOLD, x + 21, y + 14, CELL_BAR_W, step.total() <= 0 ? 0 : (float) step.done() / step.total());

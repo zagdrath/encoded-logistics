@@ -19,6 +19,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.item.ItemStack;
+import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // A crafting job on a Scheduler: the item and amount asked for, the job memory it takes, its steps (each a schematic
@@ -138,7 +139,9 @@ public final class CraftingJob {
     // Whether what it makes in the end comes from a Processing Schematic (a machine) rather than crafting.
     public boolean processing() {
         for (Step step : steps) {
-            if (step.schematic.output().is(target.stack().getItem())) {
+            ItemStack output = step.schematic.output();
+            StorageKey made = StorageKey.entry(output);
+            if (target.isItem() ? made.isItem() && output.is(target.stack().getItem()) : made.equals(target)) {
                 return step.schematic.kind() == Schematic.Kind.PROCESSING;
             }
         }
@@ -165,9 +168,10 @@ public final class CraftingJob {
         return steps.stream().allMatch(Step::finished);
     }
 
+    // An item stack, or a fluid or gas (a Resource Entry, by its amount), into what the job holds.
     public void add(ItemStack stack) {
         if (!stack.isEmpty()) {
-            held.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
+            held.merge(StorageKey.entry(stack), ResourceEntryItem.amount(stack), Long::sum);
         }
     }
 
@@ -186,8 +190,8 @@ public final class CraftingJob {
         List<ItemStack> taken = new ArrayList<>();
         for (Schematic.Input input : schematic.inputs()) {
             ItemStack stack = input.item().create();
-            StorageKey key = StorageKey.of(stack);
-            long left = held.getOrDefault(key, 0L) - stack.getCount();
+            StorageKey key = StorageKey.entry(stack);
+            long left = held.getOrDefault(key, 0L) - ResourceEntryItem.amount(stack);
             if (left > 0) {
                 held.put(key, left);
             } else {
@@ -198,10 +202,14 @@ public final class CraftingJob {
         return taken;
     }
 
-    // Everything it holds, as stacks.
+    // Everything it holds, as stacks (a fluid or gas as one Resource Entry with its amount).
     public List<ItemStack> heldStacks() {
         List<ItemStack> stacks = new ArrayList<>();
         held.forEach((key, count) -> {
+            if (!key.isItem()) {
+                stacks.add(ResourceEntryItem.of(key, count));
+                return;
+            }
             long left = count;
             while (left > 0) {
                 int size = (int) Math.min(left, key.maxStackSize());
