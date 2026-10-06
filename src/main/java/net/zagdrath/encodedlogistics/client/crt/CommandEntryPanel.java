@@ -15,9 +15,12 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // CMDENT: the commands typed at this desk and what they said (newest at the bottom, the last 500 lines; PageUp rolls
 // back), and the command line - ELCL commands (each message "ID  text", RTN* values shown). F4 prompts the command
 // line's command (the result comes back to the command line), Tab completes its last word (an ELCL command, then
-// items), F9 brings back earlier commands, F13 (Shift+F1) clears the history.
+// items), F9 brings back earlier commands, F13 (Shift+F1) clears the history. Its command line takes three rows (19-21)
+// for long commands, wrapping from one to the next.
 final class CommandEntryPanel extends CrtPanel {
-    private static final int FIRST = 3, ROWS = 17;
+    static final int COMMAND_ROWS = 3;
+    // The history: rows 3-17, above the prompt on 18.
+    private static final int FIRST = 3, ROWS = 22 - COMMAND_ROWS - 1 - FIRST;
     private int back, recall = -1;
 
     CommandEntryPanel(CrtTerminal screen) {
@@ -42,6 +45,11 @@ final class CommandEntryPanel extends CrtPanel {
     @Override
     String keys() {
         return tr("crt.encodedlogistics.fkeys.cmdent");
+    }
+
+    @Override
+    int commandRows() {
+        return COMMAND_ROWS;
     }
 
     @Override

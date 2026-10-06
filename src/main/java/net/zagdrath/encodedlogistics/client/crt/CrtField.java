@@ -10,9 +10,12 @@ package net.zagdrath.encodedlogistics.client.crt;
 // (or, in insert mode, pushes the rest along), Delete closes the gap, Field Exit (Ctrl+Enter, keypad Enter) clears from
 // the cursor on. Flags: protected (text only, never focused), numeric (digits, a sign, a decimal point), uppercase
 // (letters folded, for names), required (the prompter shows its label bright). A field can hold more than it shows
-// (its capacity, the prompter's): the text scrolls to keep the cursor in view.
+// (its capacity, the prompter's): the text scrolls to keep the cursor in view. One can also take several rows (the
+// command line on Command Entry): its text wraps from each row's end to the next row's start, length to a row.
 final class CrtField {
-    final int row, col, length, capacity;
+    final int col, length, capacity;
+    // Its first row, and how many it takes (only the command line changes these, as its screen wants).
+    int row, rows = 1;
     String value;
     int cursor;
     boolean isProtected, numeric, uppercase, required;
@@ -50,6 +53,21 @@ final class CrtField {
     CrtField required() {
         required = true;
         return this;
+    }
+
+    // The command line's place: its first row and how many rows it takes.
+    void shape(int row, int rows) {
+        this.row = row;
+        this.rows = Math.max(1, rows);
+    }
+
+    int lastRow() {
+        return row + rows - 1;
+    }
+
+    // Whether its text wraps over its rows rather than scrolling in one.
+    private boolean wraps() {
+        return rows > 1 && capacity <= length * rows;
     }
 
     void set(String text) {
@@ -107,8 +125,16 @@ final class CrtField {
         cursor = Math.min(Math.min(value.length(), capacity - 1), cursor + 1);
     }
 
+    // The screen row the cursor is on.
+    int cursorRow() {
+        return wraps() ? row + Math.min(cursor / length, rows - 1) : row;
+    }
+
     // The screen column the cursor is on (the text scrolled to keep it in view).
     int cursorColumn() {
+        if (wraps()) {
+            return col + cursor % length;
+        }
         if (cursor < scroll) {
             scroll = cursor;
         } else if (cursor >= scroll + length) {
@@ -117,9 +143,19 @@ final class CrtField {
         return col + Math.min(cursor - scroll, length - 1);
     }
 
-    // A click at a column: the cursor to the character there.
-    void clickAt(int column) {
-        cursor = Math.min(value.length(), Math.min(capacity - 1, scroll + column - col));
+    // A click at a row and column: the cursor to the character there.
+    void clickAt(int at, int column) {
+        int start = wraps() ? (Math.clamp(at, row, lastRow()) - row) * length : scroll;
+        cursor = Math.min(value.length(), Math.min(capacity - 1, start + column - col));
+    }
+
+    // Up or Down within its rows: false at its first or last row.
+    boolean moveRow(boolean up) {
+        if (!wraps() || (up ? cursorRow() == row : cursorRow() == lastRow())) {
+            return false;
+        }
+        cursor = Math.min(value.length(), Math.min(capacity - 1, cursor + (up ? -length : length)));
+        return true;
     }
 
     String trimmed() {
@@ -131,6 +167,16 @@ final class CrtField {
             grid.put(row, col, value, CrtGrid.NORMAL);
             return;
         }
+        if (wraps()) {
+            for (int r = 0; r < rows; r++) {
+                int from = r * length;
+                if (from < value.length()) {
+                    grid.put(row + r, col, value.substring(from, Math.min(value.length(), from + length)), CrtGrid.BRIGHT);
+                }
+                grid.underline(row + r, col, length);
+            }
+            return;
+        }
         // Scrolled as the cursor last left it (only the focused field's cursor moves it: CrtScreen asks for its column).
         String shown = value.length() > scroll ? value.substring(scroll) : "";
         grid.put(row, col, shown.length() > length ? shown.substring(0, length) : shown, CrtGrid.BRIGHT);
@@ -138,6 +184,6 @@ final class CrtField {
     }
 
     boolean contains(int row, int col) {
-        return row == this.row && col >= this.col && col < this.col + length;
+        return row >= this.row && row <= lastRow() && col >= this.col && col < this.col + length;
     }
 }

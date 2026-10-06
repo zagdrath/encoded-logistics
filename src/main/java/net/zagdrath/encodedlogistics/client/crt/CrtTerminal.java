@@ -55,7 +55,8 @@ final class CrtTerminal {
     // Pop-up windows over the current screen, the top one first.
     private final Deque<CrtWindow> windows = new ArrayDeque<>();
     private final CrtGrid grid = new CrtGrid();
-    final CrtField command = new CrtField(21, 5, 72, "");
+    // Room for three rows' worth (Command Entry shows them all; other screens' one row scrolls).
+    final CrtField command = new CrtField(21, 5, 72, 72 * CommandEntryPanel.COMMAND_ROWS, "");
     private @Nullable CrtField focused;
     private @Nullable Component message;
     final List<HistoryLine> history = new ArrayList<>();
@@ -395,9 +396,14 @@ final class CrtTerminal {
         panel.draw(grid);
         String prompt = panel.prompt();
         if (!prompt.isEmpty()) {
-            grid.put(20, 1, prompt, CrtGrid.NORMAL);
-            grid.put(21, 1, "===>", CrtGrid.NORMAL);
+            // The command line ends on row 21; a screen that wants more rows has it start higher.
+            int rows = panel.commandRows();
+            command.shape(22 - rows, rows);
+            grid.put(command.row - 1, 1, prompt, CrtGrid.NORMAL);
+            grid.put(command.row, 1, "===>", CrtGrid.NORMAL);
             command.draw(grid);
+        } else {
+            command.shape(21, 1);
         }
         if (message != null) {
             String text = message.getString();
@@ -478,26 +484,33 @@ final class CrtTerminal {
             nextField(up);
             return;
         }
-        int row = focused.row, column = focused.cursorColumn();
+        // Within a field of several rows first.
+        if (focused.moveRow(up)) {
+            return;
+        }
+        int row = focused.cursorRow(), column = focused.cursorColumn();
         Integer target = null;
         for (CrtField field : fields) {
-            boolean beyond = up ? field.row < row : field.row > row;
-            if (beyond && (target == null || (up ? field.row > target : field.row < target))) {
-                target = field.row;
+            // Coming up into a field of several rows: its last row.
+            int at = up ? field.lastRow() : field.row;
+            boolean beyond = up ? at < row : at > row;
+            if (beyond && (target == null || (up ? at > target : at < target))) {
+                target = at;
             }
         }
         if (target == null) {
             // Past the edge: round to the farthest row the other way.
             for (CrtField field : fields) {
-                if (target == null || (up ? field.row > target : field.row < target)) {
-                    target = field.row;
+                int at = up ? field.lastRow() : field.row;
+                if (target == null || (up ? at > target : at < target)) {
+                    target = at;
                 }
             }
         }
         CrtField best = null;
         int distance = Integer.MAX_VALUE;
         for (CrtField field : fields) {
-            if (field.row != target) {
+            if (target < field.row || target > field.lastRow()) {
                 continue;
             }
             int away = column < field.col ? field.col - column : column >= field.col + field.length ? column - (field.col + field.length - 1) : 0;
@@ -511,7 +524,7 @@ final class CrtTerminal {
             return;
         }
         focused = best;
-        best.clickAt(Math.clamp(column, best.col, best.col + best.length - 1));
+        best.clickAt(target, Math.clamp(column, best.col, best.col + best.length - 1));
     }
 
     void page(int direction) {
@@ -664,7 +677,7 @@ final class CrtTerminal {
         for (CrtField field : focusable()) {
             if (field.contains(row, col)) {
                 focused = field;
-                field.clickAt(col);
+                field.clickAt(row, col);
             }
         }
         if (window() != null) {

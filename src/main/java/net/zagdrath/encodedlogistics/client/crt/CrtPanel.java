@@ -37,6 +37,11 @@ abstract class CrtPanel {
         return tr("crt.encodedlogistics.params");
     }
 
+    // How many rows its command line takes (ending on row 21).
+    int commandRows() {
+        return 1;
+    }
+
     String keys() {
         return tr("crt.encodedlogistics.fkeys.default");
     }

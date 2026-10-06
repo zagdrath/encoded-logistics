@@ -18,10 +18,10 @@
 15 | 
 16 | 
 17 | 
-18 | 
-19 | 
-20 |  Type command, press Enter.
-21 |  ===>
+18 |  Type command, press Enter.
+19 |  ===>
+20 | 
+21 | 
 22 |                                                                             MW
 23 |  F1=Help F3=Exit F4=Prompt F9=Retrieve F12=Cancel F13=Clear F24=More keys
-   fields (row, col, length): (21,5,72) command line (CrtScreen.command)
+   fields (row, col, length): (19,5,72) x 3 rows command line (CrtScreen.command), wrapping row to row

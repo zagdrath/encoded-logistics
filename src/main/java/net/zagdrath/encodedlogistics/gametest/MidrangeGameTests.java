@@ -270,6 +270,39 @@ final class MidrangeGameTests {
                 .thenSucceed();
     }
 
+    // A Line Printer cabled to a plain controller's network (no Midrange System) is online, ELCL's printer and prints;
+    // with the controller gone it's offline and refuses.
+    static void printerWithoutMidrange(GameTestHelper helper) {
+        BlockPos controller = new BlockPos(0, 1, 0), printer = new BlockPos(2, 1, 0);
+        RackGameTests.controller(helper, controller, 20_000);
+        RackGameTests.cable(helper, new BlockPos(1, 1, 0));
+        place(helper, ModBlocks.LINE_PRINTER.get(), printer);
+        helper.startSequence()
+                .thenIdle(10)
+                .thenExecute(() -> {
+                    LinePrinterBlockEntity print = helper.getBlockEntity(printer, LinePrinterBlockEntity.class);
+                    helper.assertTrue(print.isOnline(), "Printer offline with no Midrange System: " + print.status());
+                    NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(printer));
+                    try {
+                        helper.assertTrue(Printers.find(new ElclSystem(helper.getLevel().getServer(), network), "*DFT") == print, "Not the default printer");
+                    } catch (ElclException e) {
+                        helper.fail("No printer: " + e.getMessage());
+                    }
+                    print.setItem(LinePrinterBlockEntity.PAPER, new ItemStack(Items.PAPER, 3));
+                    print.printReport(LinePrinterBlockEntity.DEVICES, "");
+                    helper.assertTrue(printed(helper, printer).is(ModItems.PRINTOUT.get()), "Nothing printed");
+                    helper.setBlock(controller, Blocks.AIR);
+                })
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    LinePrinterBlockEntity print = helper.getBlockEntity(printer, LinePrinterBlockEntity.class);
+                    helper.assertFalse(print.isOnline(), "Printer online with no network");
+                    String refused = print.printReport(LinePrinterBlockEntity.DEVICES, "").getString();
+                    helper.assertTrue(refused.equals(Component.translatable("crt.encodedlogistics.printer.offline").getString()), "Printed off the network: " + refused);
+                })
+                .thenSucceed();
+    }
+
     // What a printer at a position printed: the item that came out of its front (empty for none).
     static ItemStack printed(GameTestHelper helper, BlockPos printer) {
         net.minecraft.world.phys.AABB around = new net.minecraft.world.phys.AABB(helper.absolutePos(printer)).inflate(1.5);

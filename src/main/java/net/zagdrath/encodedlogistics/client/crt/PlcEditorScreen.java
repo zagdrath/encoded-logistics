@@ -110,7 +110,7 @@ public class PlcEditorScreen extends Screen implements CrtTerminal.Host {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         CrtField focused = terminal.focused();
-        int[] cursor = focused != null && terminal.ticks() / 10 % 2 == 0 ? new int[] { focused.row, focused.cursorColumn() } : null;
+        int[] cursor = focused != null && terminal.ticks() / 10 % 2 == 0 ? new int[] { focused.cursorRow(), focused.cursorColumn() } : null;
         display.draw(graphics, minecraft, terminal.compose(), cursor, null, getTitle());
     }
 

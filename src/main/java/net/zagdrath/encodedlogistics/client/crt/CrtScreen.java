@@ -114,7 +114,7 @@ public class CrtScreen extends Screen implements MenuAccess<TerminalDeskMenu>, C
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         // The cursor: a block in the focused field, blinking.
         CrtField focused = terminal.focused();
-        int[] cursor = focused != null && !terminal.connecting() && terminal.ticks() / 10 % 2 == 0 ? new int[] { focused.row, focused.cursorColumn() } : null;
+        int[] cursor = focused != null && !terminal.connecting() && terminal.ticks() / 10 % 2 == 0 ? new int[] { focused.cursorRow(), focused.cursorColumn() } : null;
         display.draw(graphics, minecraft, terminal.compose(), cursor, null, getTitle());
     }
 

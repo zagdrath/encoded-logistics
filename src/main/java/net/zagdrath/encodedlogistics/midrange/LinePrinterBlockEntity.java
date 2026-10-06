@@ -43,7 +43,8 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // The Line Printer (HANDOFF 3, 5, 9): prints reports and spooled files as Printouts, one paper a page, from its paper
 // out of its front. Paper goes in when used on it; a sneak-use with an empty hand takes it back. Its own screen prints
 // the network inventory, the newest job's log, the device list or a spooled file; ELCL prints on it too (PRTRPT, Work
-// with Output's 6=Print: DEV(PRT01), or *DFT). It works while a Midrange System on its network is online.
+// with Output's 6=Print: DEV(PRT01), or *DFT). It works on any running network - a Midrange System's, a Terminal
+// Desk's, a server rack's - beside a Midrange System or cabled to the network.
 public class LinePrinterBlockEntity extends PeripheralBlockEntity implements PrinterDevice {
     public static final String TYPE = "PRT";
     public static final int PAPER = 0;
@@ -97,6 +98,12 @@ public class LinePrinterBlockEntity extends PeripheralBlockEntity implements Pri
 
     public int paper() {
         return getItem(PAPER).getCount();
+    }
+
+    // Unlike the other peripherals it needs no Midrange System: ELCL's reports and spooled files are the network's.
+    @Override
+    public boolean isOnline() {
+        return level instanceof ServerLevel serverLevel && ControllerStructures.isOnline(serverLevel.getServer(), network());
     }
 
     // Its status on its screen: *OFFLINE, *PRINTING, *NOPAPER, *READY.
@@ -159,7 +166,7 @@ public class LinePrinterBlockEntity extends PeripheralBlockEntity implements Pri
     // Prints one of its screen's reports; the message line says how it went.
     public Component printReport(int which, String file) {
         if (!isOnline()) {
-            return Component.translatable("crt.encodedlogistics.machine.no_host");
+            return Component.translatable("crt.encodedlogistics.printer.offline");
         }
         Report report;
         try {

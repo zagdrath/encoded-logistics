@@ -41,6 +41,11 @@ public class LinePrinterScreen extends CrtMachineScreen<LinePrinterMenu> {
     }
 
     @Override
+    String offlineMessage() {
+        return tr("crt.encodedlogistics.printer.offline");
+    }
+
+    @Override
     @Nullable List<String> listFor(Field field) {
         if (field.key == LinePrinterMenu.FIELD_FILE) {
             List<String> files = new ArrayList<>(List.of("*LAST"));

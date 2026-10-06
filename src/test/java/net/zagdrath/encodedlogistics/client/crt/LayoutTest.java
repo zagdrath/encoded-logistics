@@ -248,7 +248,25 @@ class LayoutTest {
         terminal.unread = 1;
         CrtGrid grid = terminal.compose();
         // The history rows are the existing Command Entry's (kept).
-        compare("16_cmdent", grid, 0, 20, 21, 22, 23);
+        compare("16_cmdent", grid, 0, 18, 19, 20, 21, 22, 23);
+        // A long command wraps over the command line's three rows (19-21), the cursor following it; other screens keep
+        // the one row (21), scrolled.
+        String text = "SBMJOB CMD(CALL PGM(ZAGLIB/RESTOCK) PARM('minecraft:oak_planks' '64')) JOB(RESTOCK) JOBQ(QBATCH) HOLD(*NO)";
+        for (char c : text.toCharArray()) {
+            terminal.command.type(c);
+        }
+        grid = terminal.compose();
+        assertEquals(text.substring(0, 72), row(grid, 19).substring(5, 77));
+        assertEquals(text.substring(72), row(grid, 20).substring(5).stripTrailing());
+        assertEquals(20, terminal.command.cursorRow());
+        assertEquals(5 + text.length() - 72, terminal.command.cursorColumn());
+        terminal.moveVertical(true);
+        assertEquals(19, terminal.command.cursorRow());
+        terminal.functionKey(12);
+        assertEquals("MAIN", terminal.current().id());
+        grid = terminal.compose();
+        assertEquals(21, terminal.command.row);
+        assertEquals(1, terminal.command.rows);
     }
 
     @Test

@@ -142,6 +142,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("midrange_integrated_zones", MidrangeGameTests::integratedZones);
         TESTS.put("midrange_peripherals", MidrangeGameTests::peripherals);
         TESTS.put("midrange_printer_pages", MidrangeGameTests::printerPages);
+        TESTS.put("midrange_printer_no_system", MidrangeGameTests::printerWithoutMidrange);
         TESTS.put("midrange_system_crafts", MidrangeGameTests::systemCrafts);
         TESTS.put("midrange_tiers", MidrangeGameTests::tiers);
         TESTS.put("midrange_screens", MidrangeGameTests::screens);
