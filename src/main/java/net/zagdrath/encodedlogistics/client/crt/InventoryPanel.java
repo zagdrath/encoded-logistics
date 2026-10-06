@@ -9,9 +9,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclItems;
@@ -21,6 +23,8 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // WRKINV: the network's items, fluids and gases (what the desk's terminal sync brings: hot and cold) - Opt, Item, Type
 // (ITEM, FLUID, PRES), Quantity (fluids and gases in B / mB), Location (Hot, Cold on tape, Hot+Cold) - eleven a page,
+// and after what's stored, what the network can craft but has none of (Quantity 0, Location Craftable, dim: 7=Craft
+// makes it; 1=Withdraw says there's none),
 // those whose names start with "Position to" (blank or *ALL: all) and of the Type asked for (*ALL, *ITEM, *FLUID,
 // *PRES). 1=Withdraw takes a fluid or gas into containers in the drawer or your inventory.
 // Options: 1=Withdraw (WITHDRAW prompt), 5=Display details, 7=Craft (CRAFT prompt). Several are done one after another.
@@ -106,18 +110,23 @@ final class InventoryPanel extends ListPanel<StorageKey> {
         String start = position.equalsIgnoreCase("*all") ? "" : position.toLowerCase(Locale.ROOT);
         ResourceType only = ResourceType.bySpecial(type.trimmed());
         Map<StorageKey, Long> items = screen.getMenu().items();
+        // What's stored, and what can be crafted but isn't (AE2-style).
+        Set<StorageKey> all = new LinkedHashSet<>(items.keySet());
+        all.addAll(screen.getMenu().craftables());
         List<StorageKey> keys = new ArrayList<>();
-        for (StorageKey key : items.keySet()) {
+        for (StorageKey key : all) {
             if ((only == null || key.is(only)) && (start.isEmpty() || key.displayName().getString().toLowerCase(Locale.ROOT).startsWith(start))) {
                 keys.add(key);
             }
         }
         Comparator<StorageKey> byName = Comparator.comparing(key -> key.displayName().getString(), String.CASE_INSENSITIVE_ORDER);
-        keys.sort(switch (sort) {
+        Comparator<StorageKey> sorted = switch (sort) {
             case NAME -> byName;
             case QUANTITY -> Comparator.<StorageKey>comparingLong(key -> items.getOrDefault(key, 0L)).reversed().thenComparing(byName);
             case MOD -> Comparator.<StorageKey, String>comparing(StorageKey::namespace).thenComparing(byName);
-        });
+        };
+        // What's stored first, then what's only craftable, each sorted.
+        keys.sort(Comparator.<StorageKey, Boolean>comparing(this::craftOnly).thenComparing(sorted));
         return keys;
     }
 
@@ -158,11 +167,22 @@ final class InventoryPanel extends ListPanel<StorageKey> {
         long count = screen.getMenu().items().getOrDefault(key, 0L);
         TerminalItemsPayload.Entry cold = screen.getMenu().cold(key);
         long onTape = cold != null ? cold.cold() : 0;
-        grid.put(screenRow, 5, CrtGrid.pad(key.displayName().getString(), 33));
-        grid.put(screenRow, 39, key.type().code());
-        grid.put(screenRow, 45, CrtGrid.padLeft(key.isItem() ? String.format(Locale.ROOT, "%,d", count) : key.format(count), 11));
+        boolean craftOnly = craftOnly(key);
+        byte attr = craftOnly ? CrtGrid.DIM : CrtGrid.NORMAL;
+        grid.put(screenRow, 5, CrtGrid.pad(key.displayName().getString(), 33), attr);
+        grid.put(screenRow, 39, key.type().code(), attr);
+        grid.put(screenRow, 45, CrtGrid.padLeft(key.isItem() ? String.format(Locale.ROOT, "%,d", count) : key.format(count), 11), attr);
+        if (craftOnly) {
+            grid.put(screenRow, 59, tr("crt.encodedlogistics.loc.craftable"), attr);
+            return;
+        }
         String location = tr(onTape <= 0 ? "crt.encodedlogistics.loc.hot" : onTape >= count ? "crt.encodedlogistics.loc.cold" : "crt.encodedlogistics.loc.split");
         grid.put(screenRow, 59, location, onTape > 0 ? CrtGrid.BRIGHT : CrtGrid.NORMAL);
+    }
+
+    // None stored (hot or on tape), but a schematic or recipe makes it.
+    private boolean craftOnly(StorageKey key) {
+        return screen.getMenu().items().getOrDefault(key, 0L) <= 0 && screen.getMenu().craftables().contains(key);
     }
 
     @Override
@@ -171,7 +191,14 @@ final class InventoryPanel extends ListPanel<StorageKey> {
         for (Option<StorageKey> option : chosen) {
             StorageKey key = option.row();
             switch (option.option()) {
-                case "1" -> queued.add(() -> screen.push(new WithdrawPanel(screen, key)));
+                case "1" -> {
+                    if (craftOnly(key)) {
+                        screen.message(tr("crt.encodedlogistics.inv.none_stored", key.displayName().getString()));
+                        queued.clear();
+                        return true;
+                    }
+                    queued.add(() -> screen.push(new WithdrawPanel(screen, key)));
+                }
                 case "5" -> queued.add(() -> screen.push(new TextPanel(screen, "DSPITM", tr("crt.encodedlogistics.detail.title"),
                         "detail \"" + (key.isItem() ? BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString() : ElclItems.text(key)) + "\"")));
                 case "7" -> {
