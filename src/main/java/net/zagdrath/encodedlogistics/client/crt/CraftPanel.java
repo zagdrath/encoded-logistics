@@ -36,7 +36,7 @@ final class CraftPanel extends CrtPanel {
     // Filled in (Work with Jobs' 7=Craft again: the same item, by id, and quantity).
     CraftPanel(CrtTerminal screen, String itemId, long amount) {
         super(screen);
-        desk = screen.getMenu().desk() != null;
+        desk = screen.getMenu() == null || screen.getMenu().desk() != null;
         item = new CrtField(5, LABEL, 40, itemId);
         quantity = new CrtField(6, LABEL, 10, Long.toString(Math.max(1, amount)));
         scheduler = new CrtField(7, LABEL, 10, "*AUTO");

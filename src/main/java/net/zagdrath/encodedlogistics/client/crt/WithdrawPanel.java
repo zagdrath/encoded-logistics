@@ -29,7 +29,7 @@ final class WithdrawPanel extends CrtPanel {
     WithdrawPanel(CrtTerminal screen, StorageKey key) {
         super(screen);
         this.key = key;
-        drawer = screen.getMenu().desk() != null;
+        drawer = screen.getMenu() == null || screen.getMenu().desk() != null;
         long count = screen.getMenu().items().getOrDefault(key, 0L);
         item = new CrtField(5, LABEL, 40, key.isItem() ? BuiltInRegistries.ITEM.getKey(key.stack().getItem()).toString() : ElclItems.text(key));
         quantity = new CrtField(6, LABEL, 10, Long.toString(Math.max(1, Math.min(count, key.isItem() ? key.maxStackSize() : 1_000))));
