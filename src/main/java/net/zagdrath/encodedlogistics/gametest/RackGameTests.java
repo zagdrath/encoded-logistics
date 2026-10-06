@@ -45,6 +45,7 @@ import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
@@ -59,6 +60,8 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.EnergyDrives;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
@@ -405,6 +408,45 @@ final class RackGameTests {
                 .thenExecute(() -> {
                     helper.assertFalse(ups.onBattery(), "Still on battery off the network");
                     helper.assertTrue(ups.load() == 0, "Still loaded off the network");
+                })
+                .thenSucceed();
+    }
+
+    // An empty Energy Storage Drive joins the pool (the buffers aren't full any more): FE coming in through the network
+    // (a port's or inlet's fill) goes into the drive first, and counts as supply, so the UPS stays on mains.
+    static void upsWithEnergyDrive(GameTestHelper helper) {
+        BlockPos master = networkedRack(helper), bayPos = new BlockPos(0, 1, 1);
+        UpsDevice ups = install(helper, master, RackDeviceType.UPS, 1, UpsDevice.class);
+        long[] controllerBefore = new long[1];
+        // The supply, through the network as a port's: every tick from the buffers' filling on, so it never stops.
+        Runnable supply = () -> {
+            NetworkRef network = ControllerStructures.networkOf(helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 1)));
+            if (network != null) {
+                try (Transaction transaction = Transaction.openRoot()) {
+                    ControllerStructures.fill(helper.getLevel().getServer(), network, 200, transaction);
+                    transaction.commit();
+                }
+            }
+        };
+        helper.startSequence()
+                .thenExecuteFor(12, () -> {
+                    insert(helper, CONTROLLER, 4_096);
+                    supply.run();
+                })
+                .thenExecute(() -> {
+                    supply.run();
+                    helper.setBlock(bayPos, ModBlocks.DRIVE_BAY.get().defaultBlockState().setValue(DriveBayBlock.FACING, Direction.WEST));
+                    helper.getBlockEntity(bayPos, DriveBayBlockEntity.class).setItem(0, new ItemStack(ModItems.storageDrive(ResourceType.ENERGY, StorageTier.K8).get()));
+                    controllerBefore[0] = helper.getBlockEntity(CONTROLLER, NetworkControllerBlockEntity.class).getEnergy();
+                })
+                .thenExecuteFor(40, supply)
+                .thenExecute(() -> {
+                    long onDrive = EnergyDrives.stored(helper.getBlockEntity(bayPos, DriveBayBlockEntity.class).getItem(0));
+                    helper.assertTrue(onDrive > 0, "Nothing went into the drive");
+                    helper.assertTrue(helper.getBlockEntity(CONTROLLER, NetworkControllerBlockEntity.class).getEnergy() >= controllerBefore[0] - 2_000,
+                            "The controller paid the drain while the drive filled");
+                    helper.assertFalse(ups.onBattery(), "On battery with the supply going into a drive");
+                    helper.assertTrue(ups.log().stream().noneMatch(UpsDevice.Event::toBattery), "Switched to battery with mains present");
                 })
                 .thenSucceed();
     }

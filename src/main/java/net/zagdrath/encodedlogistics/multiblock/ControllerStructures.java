@@ -117,9 +117,9 @@ import net.zagdrath.encodedlogistics.storage.StorageView;
 // Relay Antennas (relays). Which network a node is on is kept across dimensions (NetworkIndex), so these work from any
 // level. Cables and part hosts with ticking parts tick from here, after the networks.
 //
-// A network's energy is its controllers' buffers plus the Capacitor Banks on it. FE coming in through Power Inlets
-// (fill) goes to the controllers first, then the banks; the network's drain comes out of the banks first, so the
-// controllers stay topped up.
+// A network's energy is its controllers' buffers plus the Capacitor Banks and Energy Storage Drives on it. FE coming in
+// through Power Inlets and ports (fill) goes to the drives first, then the controllers, then the banks; the network's
+// drain comes out of the banks and drives first, so the controllers stay topped up.
 public class ControllerStructures extends SavedData {
     // A connected group of controllers bigger than this is cut off where the flood fill stops (it's invalid anyway).
     private static final int MAX_GROUP = 4096;
@@ -482,6 +482,9 @@ public class ControllerStructures extends SavedData {
             driveCapacity += cell.getCapacity();
         }
         capacity += driveCapacity;
+        // What went into the drives since the last tick: received, like what went into the controllers and banks.
+        received += (int) Math.min(Integer.MAX_VALUE, runtime.driveReceived);
+        runtime.driveReceived = 0;
         List<EnergyCell> cells = new ArrayList<>(banks);
         cells.addAll(driveCells);
         runtime.received[runtime.receivedIndex] = received;
@@ -871,6 +874,9 @@ public class ControllerStructures extends SavedData {
             if (device instanceof StorageDevice storage) {
                 cells.addAll(storage.energyCells(seen));
             }
+        }
+        for (EnergyDrives.Cell cell : cells) {
+            cell.received(amount -> runtime.driveReceived += amount);
         }
         return cells;
     }
@@ -1578,21 +1584,27 @@ public class ControllerStructures extends SavedData {
         return networkOf(level, pos);
     }
 
-    // Puts up to amount FE into a network's energy: its controllers first, then its banks and Energy Storage Drives.
-    // Returns what went in.
+    // Puts up to amount FE into a network's energy: its Energy Storage Drives first (where the network keeps its FE),
+    // then its controllers, then its banks. Returns what went in.
     public static int fill(MinecraftServer server, NetworkRef network, int amount, TransactionContext transaction) {
         Owner owner = owner(server, network);
         if (owner == null || owner.runtime.status.isError()) {
             return 0;
         }
         int left = amount;
+        for (EnergyDrives.Cell drive : driveCells(server, owner.runtime, owner.ref)) {
+            if (left <= 0) {
+                break;
+            }
+            left -= drive.fill(left, transaction);
+        }
         for (ControllerBuffer controller : buffers(owner)) {
             if (left <= 0) {
                 break;
             }
             left -= controller.fill(left, transaction);
         }
-        for (EnergyCell bank : cells(server, owner)) {
+        for (EnergyCell bank : banks(server, owner.runtime)) {
             if (left <= 0) {
                 break;
             }
@@ -1749,6 +1761,8 @@ public class ControllerStructures extends SavedData {
         long stored, capacity;
         // The part of it in Energy Storage Drives; and each drive's charge as of the last tick, for its charging light.
         long driveStored, driveCapacity;
+        // FE committed into the drives since the last tick (EnergyDrives.Cell.received).
+        long driveReceived;
         Map<UUID, Long> driveCharge = new HashMap<>();
         double usage, generation;
         int comparator = -1;

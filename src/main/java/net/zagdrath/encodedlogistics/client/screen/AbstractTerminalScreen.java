@@ -223,11 +223,12 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         boolean byMod = query.startsWith("@"), byTag = query.startsWith("#");
         String needle = byMod || byTag ? query.substring(1) : query;
         List<Map.Entry<StorageKey, Long>> entries = new ArrayList<>();
-        // The network's energy, an entry like the rest (AE2's): on All and Energy, when it has any capacity.
+        // The FE stored on the network's Energy Storage Drives, an entry like the rest (AE2's): on All and Energy, when it
+        // has any. The controllers' and banks' buffers are the network's own running power, not storage.
         TerminalItemsPayload.Energy energy = menu.networkEnergy();
-        if ((tab == TerminalSettings.TypeTab.ALL || tab == TerminalSettings.TypeTab.ENERGY) && energy.capacity() > 0 && !byTag
+        if ((tab == TerminalSettings.TypeTab.ALL || tab == TerminalSettings.TypeTab.ENERGY) && energy.driveCapacity() > 0 && !byTag
                 && matches(StorageKey.ENERGY, needle, byMod, false)) {
-            entries.add(Map.entry(StorageKey.ENERGY, energy.stored()));
+            entries.add(Map.entry(StorageKey.ENERGY, energy.driveStored()));
         }
         for (Map.Entry<StorageKey, Long> entry : menu.items().entrySet()) {
             if (onTab(entry.getKey(), tab) && matches(entry.getKey(), needle, byMod, byTag)) {
@@ -417,12 +418,8 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
         lines.add(key.displayName());
         if (key.is(ResourceType.ENERGY)) {
             TerminalItemsPayload.Energy energy = menu.networkEnergy();
-            lines.add(Component.translatable("gui.encodedlogistics.terminal.energy.stored", String.format(Locale.ROOT, "%,d", energy.stored()),
-                    String.format(Locale.ROOT, "%,d", energy.capacity())).withColor(TEXT_MUTED));
-            if (energy.driveCapacity() > 0) {
-                lines.add(Component.translatable("gui.encodedlogistics.terminal.energy.drives", String.format(Locale.ROOT, "%,d", energy.driveStored()),
-                        String.format(Locale.ROOT, "%,d", energy.driveCapacity())).withColor(TEXT_MUTED));
-            }
+            lines.add(Component.translatable("gui.encodedlogistics.terminal.energy.stored", String.format(Locale.ROOT, "%,d", energy.driveStored()),
+                    String.format(Locale.ROOT, "%,d", energy.driveCapacity())).withColor(TEXT_MUTED));
             lines.add(Component.translatable("gui.encodedlogistics.terminal.energy.flow", String.format(Locale.ROOT, "%,.1f", energy.generation()),
                     String.format(Locale.ROOT, "%,.1f", energy.usage())).withColor(TEXT_MUTED));
             return lines;

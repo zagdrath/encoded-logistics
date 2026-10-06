@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.storage;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.LongConsumer;
 
 import org.jspecify.annotations.Nullable;
 
@@ -102,11 +103,18 @@ public final class EnergyDrives {
     public static final class Cell extends SnapshotJournal<Long> implements EnergyCell {
         private final ItemStack stack;
         private final Runnable changed;
+        private LongConsumer received = amount -> {};
 
         // stack: the drive itself, as the holder keeps it (changed in place).
         public Cell(ItemStack stack, Runnable changed) {
             this.stack = stack;
             this.changed = changed;
+        }
+
+        // Hears of FE committed into the drive, for its network's Received figure (as controllers and banks count theirs).
+        public Cell received(LongConsumer received) {
+            this.received = received;
+            return this;
         }
 
         public @Nullable UUID id() {
@@ -167,8 +175,12 @@ public final class EnergyDrives {
 
         @Override
         protected void onRootCommit(Long originalState) {
-            if (stored(stack) != originalState) {
+            long now = stored(stack);
+            if (now != originalState) {
                 changed.run();
+            }
+            if (now > originalState) {
+                received.accept(now - originalState);
             }
         }
     }

@@ -101,10 +101,11 @@ Screens (mockups in previews/crt_*.png; content generator tools/crt_screens.py):
     Hot+Cold when split); paged 11 rows; F11 cycles sort (name / quantity / mod).
     Opt 1 -> WITHDRAW prompt; Opt 5 -> a detail screen (item id, tags, hot / cold counts per storage, craftable?);
     Opt 7 -> CRAFT prompt. Several options can be typed at once; Enter processes them top to bottom.
-  WITHDRAW prompt (WITHDRAW): Item (prefilled), Quantity 1-999999, Destination *DRAWER (default) / *INV; shows On hand
+  WITHDRAW prompt (WITHDRAW): Item (prefilled), Quantity 1-999999, Destination *DRAWER (default) / *INV (only *INV
+    at an Integrated system's console - no drawer); shows On hand
     and cold recall ETA; Enter -> withdraw (cold items: recall first); message line confirms.
-  CRAFT prompt (CRAFT): Item, Quantity, Scheduler (*AUTO or a scheduler name), Destination *NETWORK / *DRAWER / *INV; the
-    plan summary (steps, missing, recall time); Enter -> submit; "Job 0042 submitted." (job ids are 4-digit per network).
+  CRAFT prompt (CRAFT): Item, Quantity, Scheduler (*AUTO or a scheduler name), Destination *NETWORK / *DRAWER / *INV (only
+    *NETWORK at an Integrated console); the plan summary (steps, missing, recall time); Enter -> submit; "Job 0042 submitted." (job ids are 4-digit per network).
   WORK WITH JOBS (WRKJOB): active + queued jobs: Opt / Job / Item / Qty / Status (Active, Waiting, Recall, Done, Failed)
     / Progress (ASCII bar + %) / Scheduler; 4=Cancel (asks to confirm with Enter), 5=Display (the Job Status contents as
     text).

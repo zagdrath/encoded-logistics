@@ -121,8 +121,11 @@ public final class TerminalActions {
         }
         NetworkStorage storage = context.storage();
         TerminalDeskBlockEntity desk = context.desk();
-        if (storage == null || destination == Destination.DRAWER && desk == null) {
+        if (storage == null) {
             return TerminalOutput.message(offline());
+        }
+        if (destination == Destination.DRAWER && desk == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_drawer"));
         }
         if (destination == Destination.NETWORK) {
             destination = Destination.DRAWER;
@@ -241,6 +244,10 @@ public final class TerminalActions {
     public static TerminalOutput craft(TerminalContext context, StorageKey key, long amount, String schedulerSpec, Destination destination) {
         if (!context.allowed(RackPermission.CRAFT)) {
             return TerminalOutput.message(notAuthorised(RackPermission.CRAFT));
+        }
+        // A delivery waits on the desk; an Integrated system's console has none, so the job's output stays in the network.
+        if (destination != Destination.NETWORK && context.desk() == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_desk_delivery"));
         }
         CraftPlanner.Plan plan = CraftRequests.plan(context.server(), context.network(), key, amount);
         if (plan == null) {

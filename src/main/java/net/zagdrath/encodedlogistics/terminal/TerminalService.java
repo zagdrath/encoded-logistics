@@ -229,7 +229,7 @@ public final class TerminalService {
 
     // --- The desk's screens' requests ---
 
-    // Withdraw Item's Enter: "withdraw <item> <amount> *drawer|*inv".
+    // Withdraw Item's Enter: "withdraw <item> <amount> *drawer|*inv" (*inv by default where there's no desk drawer).
     private static TerminalOutput withdraw(TerminalContext context, List<String> args) {
         if (!context.allowed(RackPermission.EXTRACT)) {
             return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.EXTRACT));
@@ -239,7 +239,8 @@ public final class TerminalService {
             return noItem(context, args.isEmpty() ? "" : args.get(0));
         }
         long amount = args.size() > 1 ? TerminalItems.amount(args.get(1)) : -1;
-        TerminalActions.Destination destination = args.size() > 2 ? TerminalActions.Destination.parse(args.get(2)) : TerminalActions.Destination.DRAWER;
+        TerminalActions.Destination destination = args.size() > 2 ? TerminalActions.Destination.parse(args.get(2))
+                : context.desk() != null ? TerminalActions.Destination.DRAWER : TerminalActions.Destination.INV;
         if (amount <= 0 || destination == null || destination == TerminalActions.Destination.NETWORK) {
             return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.invalid_value", String.join(" ", args)));
         }

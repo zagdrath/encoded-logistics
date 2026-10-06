@@ -14,13 +14,15 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalItems;
 import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
-// CRAFT: Item, Quantity, Scheduler (*AUTO, a number or a name), Destination (*NETWORK, *DRAWER, *INV), and the plan in a
-// line (steps, missing, recall time), asked for again as the quantity changes. Enter submits the job and goes back.
+// CRAFT: Item, Quantity, Scheduler (*AUTO, a number or a name), Destination (*NETWORK, *DRAWER, *INV; only *NETWORK
+// at an Integrated system's console, which has no desk to deliver to), and the plan in a line (steps, missing, recall
+// time), asked for again as the quantity changes. Enter submits the job and goes back.
 final class CraftPanel extends CrtPanel {
     private static final int LABEL = WithdrawPanel.LABEL;
     private final CrtField item, quantity, scheduler, destination;
     private String plan = "", planned = "";
     private int planTimer;
+    private final boolean desk;
     private boolean sent;
 
     CraftPanel(CrtTerminal screen, StorageKey key) {
@@ -34,6 +36,7 @@ final class CraftPanel extends CrtPanel {
     // Filled in (Work with Jobs' 7=Craft again: the same item, by id, and quantity).
     CraftPanel(CrtTerminal screen, String itemId, long amount) {
         super(screen);
+        desk = screen.getMenu().desk() != null;
         item = new CrtField(5, LABEL, 40, itemId);
         quantity = new CrtField(6, LABEL, 10, Long.toString(Math.max(1, amount)));
         scheduler = new CrtField(7, LABEL, 10, "*AUTO");
@@ -90,7 +93,7 @@ final class CraftPanel extends CrtPanel {
         grid.put(7, 0, CrtGrid.pad(tr("crt.encodedlogistics.field.scheduler"), LABEL));
         grid.put(7, LABEL + 12, "*AUTO, name");
         grid.put(8, 0, CrtGrid.pad(tr("crt.encodedlogistics.field.destination"), LABEL));
-        grid.put(8, LABEL + 12, "*NETWORK, *DRAWER, *INV");
+        grid.put(8, LABEL + 12, desk ? "*NETWORK, *DRAWER, *INV" : "*NETWORK");
         if (!plan.isEmpty()) {
             grid.put(10, 2, CrtGrid.pad(tr("crt.encodedlogistics.craft.plan"), 16) + ":   " + plan, CrtGrid.DIM);
         }
@@ -99,7 +102,7 @@ final class CraftPanel extends CrtPanel {
     @Override
     Component prompt(CrtField field) {
         if (field == destination) {
-            return Component.literal("*NETWORK  *DRAWER  *INV");
+            return Component.literal(desk ? "*NETWORK  *DRAWER  *INV" : "*NETWORK");
         }
         if (field == scheduler) {
             return Component.literal("*AUTO, a scheduler's number (1 the first) or the start of its name");
@@ -126,7 +129,7 @@ final class CraftPanel extends CrtPanel {
             screen.focus(quantity);
             return true;
         }
-        if (!to.equals("*NETWORK") && !to.equals("*DRAWER") && !to.equals("*INV")) {
+        if (!to.equals("*NETWORK") && !(desk && (to.equals("*DRAWER") || to.equals("*INV")))) {
             screen.message(tr("crt.encodedlogistics.msg.invalid_value", destination.trimmed()));
             screen.focus(destination);
             return true;
