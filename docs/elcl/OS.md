@@ -152,7 +152,7 @@ New screens, all in the existing green-screen style:
    drawn from one definition (`client/crt/MainMenu.java`); an option whose screen isn't available says "Option n not
    available." on the message line, and a number not on the menu says so.
 3. **Work with Libraries** — options 2=Change 4=Delete 5=Display 12=Work with members.
-4. **Work with Members** — options 2=Edit 3=Copy 4=Delete 5=Display 6=Print 7=Rename 14=Compile; columns: member, type, text, changed-since-compile flag.
+4. **Work with Members** — options 2=Edit 3=Copy 4=Delete 5=Display 6=Print 7=Rename 9=Submit (SBMJOB prompted with CMD(CALL PGM(LIB/MEMBER)) JOB(MEMBER)) 14=Compile 16=Call (CALL prompted with PGM(LIB/MEMBER)); 9 and 16 refuse a member with no program or one changed since compile, and offer to compile first; columns: member, type, text, changed-since-compile flag.
 5. **Source Editor** — sequence-number margin with line commands (I, In, D, Dn, DD…DD, C/CC, M/MM with A/B, R/Rn repeat, X exclude); command line supporting FIND, CHANGE, TOP, BOTTOM, SAVE, FILE, CANCEL; syntax check on Enter that highlights the bad line and shows the message on the message line; F4 on a command line opens the prompter.
 6. **Command Prompter (F4)** — one field per parameter from the command schema, with type hints, special values listed, F4 on a field for value lists (e.g. item search), F10 for additional parameters.
 7. **Compile Listing** — scrollable listing as described in ELCL_SPEC.md §10.

@@ -34,7 +34,7 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | 1 | Sign On | EXTENDED | `SignOnPanel`, signing on through the server (`ScreenQueries` signon, `UserService.signOn`; the desk's menu refuses everything else until then, `TerminalDeskMenu.refused`) |
 | 2 | Main Menu | EXTENDED | `MainMenuPanel`, from the option definition `MainMenu` (see below) |
 | 3 | Work with Libraries | NEW | `WrkLibPanel` (+ `InfoPanel` for 5=Display) |
-| 4 | Work with Members | NEW | `WrkMbrPanel` |
+| 4 | Work with Members | NEW | `WrkMbrPanel`; 9=Submit / 16=Call open `PrompterPanel` on SBMJOB / CALL filled in (`WrkMbrPanel.command`), refused without an up-to-date program (`notReady`) with a Compile First window; the legend's second row is `OsListPanel.legend2` |
 | 5 | Source Editor (+ full screen) | NEW | `EditorPanel`, `EditorModel` |
 | 6 | Command Prompter | NEW | `PrompterPanel`, `ValueListWindow` |
 | 7 | Compile Listing | NEW | `elcl/compile/Listing` (built on the server, spooled), shown in `DspSplfPanel` |

@@ -4,8 +4,8 @@
 01 |                                                                 Day 2  07:14:22
 02 |  Library . . . . :   ZAGLIB
 03 |  Type options, press Enter.
-04 |    2=Edit  3=Copy  4=Delete  5=Display  6=Print  7=Rename  14=Compile
-05 | 
+04 |    2=Edit  3=Copy  4=Delete  5=Display  6=Print  7=Rename
+05 |    9=Submit  14=Compile  16=Call
 06 | Opt  Member      Type    Chg  Text
 07 |      NOCWALL     ELCLP        Refresh the NOC status display
 08 | 14   STOCK       PF       *   Stock levels

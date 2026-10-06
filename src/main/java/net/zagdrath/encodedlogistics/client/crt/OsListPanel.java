@@ -17,7 +17,7 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 
 // A Terminal OS "Work with" screen (screens handoff C.3, screens 3, 4, 8, 10-14): its rows from a screen query (a
 // line of cells each, the first cell its key), " Type options, press Enter." on row 3, the option legend on row 4 at
-// column 3, the column headings bright on row 6, the list from row 7. The options chosen are done one after another:
+// column 3 (and row 5, when it needs two), the column headings bright on row 6, the list from row 7. The options chosen are done one after another:
 // one that opens a window or a screen waits for it to finish (next()), and every step waits for the answers to the
 // commands sent before it (however many a step ran); 4=Delete-style ones are confirmed together.
 // Commands it runs come back as their message, and the list refreshes.
@@ -35,6 +35,11 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
 
     // The legend (after its leading blanks: "2=Change   4=Delete ...") and the heading row.
     abstract String legend();
+
+    // The legend's second row, for a screen with more options than fit on one; "" for none.
+    String legend2() {
+        return "";
+    }
 
     abstract String heading();
 
@@ -81,6 +86,7 @@ abstract class OsListPanel extends ListPanel<TerminalLine> {
         drawTop(grid);
         grid.put(3, 1, tr("crt.encodedlogistics.type_options"));
         grid.put(4, 3, legend());
+        grid.put(5, 3, legend2());
         grid.put(6, 0, heading(), CrtGrid.BRIGHT);
     }
 

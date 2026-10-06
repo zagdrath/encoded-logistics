@@ -837,8 +837,8 @@ Select one of the following:
                                                                  Day 2  07:14:22
   Library . . . . :   <span class="b">ZAGLIB</span>
   Type options, press Enter.
-    2=Edit  3=Copy  4=Delete  5=Display  6=Print  7=Rename  14=Compile
-
+    2=Edit  3=Copy  4=Delete  5=Display  6=Print  7=Rename
+    9=Submit  14=Compile  16=Call
 <span class="b"> Opt  Member      Type    Chg  Text</span>
 <span class="u">   </span>  ARCHIVE     ELCLP        push every matching item to tape and report
 <span class="u">14 </span>  NOCWALL     ELCLP    <span class="b">*</span>   refresh a status display every 30 seconds
@@ -864,10 +864,13 @@ Select one of the following:
     <tr><td>5=Display</td><td>The editor, read-only (title <em>Display Member</em>; only FIND, TOP and BOTTOM on its command line).</td></tr>
     <tr><td>6=Print</td><td>The numbered source goes to a spooled file named after the member: <em>"Member LIB/NAME printed: see Work with Output."</em></td></tr>
     <tr><td>7=Rename</td><td>A window asking for the new name; runs <code>RNMMBR</code>.</td></tr>
+    <tr><td>9=Submit</td><td>Opens <code>SBMJOB</code>'s <a href="#prompter">prompter</a> filled in with <code>CMD(CALL PGM(LIB/MEMBER)) JOB(MEMBER)</code>, so you can add parameters to the <code>CALL</code> (F4 on the Command field prompts it) or choose a host before pressing Enter, which submits the batch job.</td></tr>
     <tr><td>14=Compile</td><td>Runs <code>CRTELPGM PGM(LIB/MEMBER)</code>: <code>ELC0218</code> or <code>ELC0206</code>; the listing goes to Work with Output.</td></tr>
+    <tr><td>16=Call</td><td>Opens <code>CALL</code>'s prompter filled in with <code>PGM(LIB/MEMBER)</code>; Enter runs the program in your interactive job.</td></tr>
   </tbody>
 </table></div>
-<p>In <code>ELSYS</code> only 3, 5, 6 and 14 work (14 needs a target library you can change); 2, 4 and 7 give <code>ELC0205 Library ELSYS is read-only.</code> F6 prompts <code>CRTMBR</code> with the library filled in. F11 sorts by name, by changed-since-compile, or by text.</p>
+<p>9 and 16 need the member's program, compiled since the source last changed. A member with no program says <em>"Program LIB/MEMBER is not compiled."</em> on the message line, and one marked Chg <code>*</code> says <em>"Member LIB/MEMBER changed since it was compiled."</em>; either way a <em>Compile First</em> window offers to compile it: Enter runs 14=Compile and, once <code>ELC0218</code> comes back, opens the prompter as if the program had been there (a compile that fails, <code>ELC0206</code>, stops there); F12 leaves it. On a <code>PF</code> member they answer <em>"Option 9 not valid for this item."</em> (there's nothing to run).</p>
+<p>In <code>ELSYS</code> only 3, 5, 6, 9, 14 and 16 work (14 needs a target library you can change); 2, 4 and 7 give <code>ELC0205 Library ELSYS is read-only.</code> F6 prompts <code>CRTMBR</code> with the library filled in. F11 sorts by name, by changed-since-compile, or by text.</p>
 
 <h3 id="scr-wrkactjob">Work with Active Jobs (<code>WRKACTJOB</code>)</h3>
 <figure>

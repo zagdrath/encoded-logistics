@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
+import net.minecraft.network.chat.Component;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.terminal.TerminalLine;
@@ -17,11 +20,14 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // WRKMBR (screen 4): a library's source members - Member, Type (ELCLP, or PF: a file's definition), Chg ("*" when the
 // source changed after its program, or file, was made), Text - and after them the library's files (Type *FILE).
 // Options: 2=Edit, 3=Copy (a window: to library and member, CPYMBR), 4=Delete (confirmed, DLTMBR), 5=Display (the
-// editor, read-only), 6=Print (the source to a spooled file), 7=Rename (a window: the new name, RNMMBR), 14=Compile
-// (an ELCLP member CRTELPGM: ELC0218 or ELC0206; a PF member CRTPF, or CHGPF when its file is there already; the
-// listing in Work with Output). On a file: 2=Change data, 4=Delete (DLTF), 5=Display data, 8=Display description (as
-// Work with Files). In ELSYS 2, 4 and 7 are refused (ELC0205). F6 prompts CRTMBR; F11 sorts the members by name,
-// changed, text.
+// editor, read-only), 6=Print (the source to a spooled file), 7=Rename (a window: the new name, RNMMBR), 9=Submit
+// (SBMJOB's prompter with CMD(CALL PGM(LIB/MEMBER)) JOB(MEMBER), for parameters or a host first), 14=Compile (an ELCLP
+// member CRTELPGM: ELC0218 or ELC0206; a PF member CRTPF, or CHGPF when its file is there already; the listing in Work
+// with Output), 16=Call (CALL's prompter with PGM(LIB/MEMBER), run in the interactive job). 9 and 16 need the member's
+// program, up to date: with none, or Chg *, they say so on the message line and offer to compile first (Enter: 14,
+// then on to the prompter once ELC0218 comes back). On a file: 2=Change data, 4=Delete (DLTF), 5=Display data,
+// 8=Display description (as Work with Files). In ELSYS 2, 4 and 7 are refused (ELC0205). F6 prompts CRTMBR; F11 sorts
+// the members by name, changed, text.
 final class WrkMbrPanel extends OsListPanel {
     private enum Sort {
         NAME, CHANGED, TEXT
@@ -31,6 +37,8 @@ final class WrkMbrPanel extends OsListPanel {
     private Sort sort = Sort.NAME;
     // The members (sorted) and the files, the files after the members.
     private List<TerminalLine> members = List.of(), files = List.of();
+    // The last command's message (a compile run before 9 / 16 goes on only on ELC0218).
+    private String lastMessage = "";
 
     WrkMbrPanel(CrtTerminal screen, String library) {
         super(screen);
@@ -63,6 +71,11 @@ final class WrkMbrPanel extends OsListPanel {
     }
 
     @Override
+    String legend2() {
+        return tr("crt.encodedlogistics.wrkmbr.opts2");
+    }
+
+    @Override
     String heading() {
         return tr("crt.encodedlogistics.wrkmbr.cols");
     }
@@ -89,6 +102,9 @@ final class WrkMbrPanel extends OsListPanel {
 
     @Override
     void receive(CrtResponsePayload response) {
+        if (response.kind() == TerminalService.COMMAND) {
+            lastMessage = response.message().map(Component::getString).orElse("");
+        }
         if (answers(response, topic())) {
             List<TerminalLine> lines = new ArrayList<>(response.lines());
             lines.sort(switch (sort) {
@@ -221,6 +237,13 @@ final class WrkMbrPanel extends OsListPanel {
                         values -> screen.runCommand("RNMMBR MBR(" + qualified + ") NEWNAME(" + values.get(0) + ")"))
                         .field(tr("crt.encodedlogistics.wrkmbr.new_name"), 10, member, ""));
             });
+            case "9", "16" -> {
+                if (cell(row, 1).equals("PF")) {
+                    // A file's definition: nothing to run.
+                    return false;
+                }
+                then(() -> run(code, row));
+            }
             case "14" -> then(() -> {
                 if (!cell(row, 1).equals("PF")) {
                     screen.runCommand("CRTELPGM PGM(" + qualified + ")");
@@ -236,6 +259,63 @@ final class WrkMbrPanel extends OsListPanel {
             }
         }
         return true;
+    }
+
+    // 9=Submit / 16=Call: the prompter, or - without an up-to-date program - why not, and the offer to compile first.
+    private void run(String code, TerminalLine target) {
+        String qualified = library + "/" + cell(target, 0);
+        String problem = notReady(target);
+        if (problem == null) {
+            prompt(code, target);
+            return;
+        }
+        screen.message(problem);
+        window(new CrtWindow(screen, 7, 10, 10, 60, tr("crt.encodedlogistics.wrkmbr.compile_first.title")) {
+            @Override
+            boolean enter() {
+                screen.closeWindow();
+                // Compiled, then on to the prompter (the step after the compile's answer).
+                pending.addFirst(() -> {
+                    if (lastMessage.startsWith("ELC0218")) {
+                        prompt(code, target);
+                    } else {
+                        next();
+                    }
+                });
+                screen.runCommand("CRTELPGM PGM(" + qualified + ")");
+                return true;
+            }
+        }.text(problem + "\n\n" + tr("crt.encodedlogistics.wrkmbr.compile_first", tr("crt.encodedlogistics.wrkmbr.option." + code)))
+                .keys(tr("crt.encodedlogistics.wrkmbr.compile_first.keys")));
+    }
+
+    // Why a member's program can't run now: none ("Program LIB/MEMBER is not compiled."), or one older than the source
+    // (Chg *); null when it's ready.
+    static @Nullable String notReady(String library, TerminalLine row) {
+        String qualified = library + "/" + cell(row, 0);
+        if (!cell(row, 6).equals("1")) {
+            return tr("crt.encodedlogistics.wrkmbr.not_compiled", qualified);
+        }
+        if (cell(row, 2).equals("*")) {
+            return tr("crt.encodedlogistics.wrkmbr.changed_since", qualified);
+        }
+        return null;
+    }
+
+    private @Nullable String notReady(TerminalLine row) {
+        return notReady(library, row);
+    }
+
+    // The command for 9=Submit or 16=Call on a member, as the prompter opens on it.
+    static String command(String code, String library, String member) {
+        String program = library + "/" + member;
+        return code.equals("9") ? "SBMJOB CMD(CALL PGM(" + program + ")) JOB(" + member + ")" : "CALL PGM(" + program + ")";
+    }
+
+    private void prompt(String code, TerminalLine row) {
+        if (!screen.prompter(command(code, library, cell(row, 0)), false, screen::runCommand)) {
+            next();
+        }
     }
 
     @Override
