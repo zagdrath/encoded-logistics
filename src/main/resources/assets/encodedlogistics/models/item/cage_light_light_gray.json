@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:item/generated",
+ "textures": {
+  "layer0": "encodedlogistics:item/cage_light_light_gray"
+ }
+}

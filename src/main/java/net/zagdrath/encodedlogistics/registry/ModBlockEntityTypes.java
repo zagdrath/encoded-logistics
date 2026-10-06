@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -39,6 +40,10 @@ import net.zagdrath.encodedlogistics.midrange.LinePrinterBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlockEntity;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlockEntity;
 import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
+import net.zagdrath.encodedlogistics.signal.CageLightBlockEntity;
+import net.zagdrath.encodedlogistics.signal.SirenBlock;
+import net.zagdrath.encodedlogistics.signal.SirenBlockEntity;
+import net.zagdrath.encodedlogistics.signal.SpeakerBlockEntity;
 
 public final class ModBlockEntityTypes {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,
@@ -121,6 +126,18 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<TapeDriveBlockEntity>> TAPE_DRIVE = BLOCK_ENTITY_TYPES.register(
             "tape_drive", () -> new BlockEntityType<>(TapeDriveBlockEntity::new, ModBlocks.TAPE_DRIVE.get()));
+
+    // Signals: every Cage Light colour shares one type, as do the Alarm Strobes.
+    public static final Supplier<BlockEntityType<CageLightBlockEntity>> CAGE_LIGHT = BLOCK_ENTITY_TYPES.register(
+            "cage_light", () -> new BlockEntityType<>(CageLightBlockEntity::new, Stream.of(DyeColor.values())
+                    .map(color -> (Block) ModBlocks.cageLight(color).get()).toArray(Block[]::new)));
+
+    public static final Supplier<BlockEntityType<SirenBlockEntity>> SIREN = BLOCK_ENTITY_TYPES.register(
+            "siren", () -> new BlockEntityType<>(SirenBlockEntity::new, Stream.of(SirenBlock.Colour.values())
+                    .map(colour -> (Block) ModBlocks.siren(colour).get()).toArray(Block[]::new)));
+
+    public static final Supplier<BlockEntityType<SpeakerBlockEntity>> SPEAKER = BLOCK_ENTITY_TYPES.register(
+            "speaker", () -> new BlockEntityType<>(SpeakerBlockEntity::new, ModBlocks.SPEAKER.get()));
 
     // On the rack's master block only.
     public static final Supplier<BlockEntityType<RackBlockEntity>> SERVER_RACK = BLOCK_ENTITY_TYPES.register(

@@ -264,6 +264,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
   <li><a href="#control-interface">10. The Control Interface and PLCs</a>
     <ol>
       <li><a href="#plc">Programmable Logic Controllers</a></li>
+      <li><a href="#signals">Cage Lights, Alarm Strobes and Speakers</a></li>
     </ol>
   </li>
   <li><a href="#status">11. Status, limits and server config</a>
@@ -412,6 +413,7 @@ footer { max-width: 1280px; margin: 0 auto; padding: 1rem; color: var(--muted); 
   <li><a href="#control-interface">10. The Control Interface and PLCs</a>
     <ol>
       <li><a href="#plc">Programmable Logic Controllers</a></li>
+      <li><a href="#signals">Cage Lights, Alarm Strobes and Speakers</a></li>
     </ol>
   </li>
   <li><a href="#status">11. Status, limits and server config</a>
@@ -1957,6 +1959,20 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
   </tbody>
 </table></div>
 
+<h3 id="cmd-signals">Cage Lights, Alarm Strobes and Speakers</h3>
+<p>Added with <a href="#signals">the signal devices</a>. <code>DEV</code> takes a list (<code>DEV(LGT01 LGT02)</code>) or <code>*ALL</code> for every online device of the type; each named device is checked before any is changed. An Alarm Strobe or Speaker whose trigger is Redstone takes no network commands: named, it&#39;s ELC2408; <code>*ALL</code> leaves it out.</p>
+<div class="table-wrap"><table class="cmd-table">
+  <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Errors</th><th>Auth</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>CHGLGT</td><td>Change Light</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li><li><code>STATUS</code>: <code>*SAME *ON *OFF *TOGGLE</code>, dft <code>*SAME</code></li><li><code>LVL</code>: 1&ndash;15 or <code>*SAME</code>, dft <code>*SAME</code></li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2401</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">The light&#39;s network state (it adds to the redstone&#39;s; Always on ignores it) and light level.</span></td></tr>
+    <tr><td>STRSRN</td><td>Start Siren</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li><li><code>SOUND</code>: <code>*SAME *WAIL *YELP *KLAXON *BELL *HORN *BEEP *NONE</code>, dft <code>*SAME</code></li><li><code>MODE</code>: <code>*SAME *SOLID *SLOW *MEDIUM *FAST</code>, dft <code>*SAME</code></li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">On, with its tone and light mode; strobes on a network with the same tone sound together.</span></td></tr>
+    <tr><td>ENDSRN</td><td>End Siren</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">Stops the sound and light.</span></td></tr>
+    <tr><td>PLYAUD</td><td>Play Audio</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li><li><code>SRC</code> P2: file name or URL, req</li><li><code>VOL</code>: 0&ndash;100 or <code>*SAME</code>, dft <code>*SAME</code></li><li><code>LOOP</code>: <code>*SAME *NO *YES</code>, dft <code>*SAME</code></li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2402&ndash;ELC2406, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">An OGG Vorbis or MP3 file from the system&#39;s audio folder, or a web URL; checked once before any speaker starts.</span></td></tr>
+    <tr><td>PLYNOTE</td><td>Play Note</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li><li><code>INST</code>: <code>*HARP *BASS *SNARE *HAT *BASSDRUM *BELL *FLUTE *CHIME *GUITAR *XYLOPHONE *IRONXYLO *COWBELL *DIDGERIDOO *BIT *BANJO *PLING</code>, dft <code>*HARP</code></li><li><code>NOTE</code> P3: 0&ndash;24, list (up to 32), req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2407, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">The first note now; the rest one per rising redstone edge.</span></td></tr>
+    <tr><td>STPAUD</td><td>Stop Audio</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">Stops what it&#39;s playing.</span></td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="cmd-messages">Messages, displays and output</h3>
 <div class="table-wrap"><table class="cmd-table">
   <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Where</th><th>Auth</th><th>Status</th></tr></thead>
@@ -2328,6 +2344,22 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
   </tbody>
 </table></div>
 
+<h3 id="msg-24">ELC24xx: lights, sirens and speakers</h3>
+<p>Added with <a href="#signals">the signal devices</a>. <code>MONMSG MSGID(ELC2400)</code> covers them all.</p>
+<div class="table-wrap"><table class="msg-table">
+  <thead><tr><th>ID</th><th>Sev</th><th>Text</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td>ELC2401</td><td>30</td><td>Light level &amp;1 is outside 1-15.</td><td><code>CHGLGT LVL</code>.</td></tr>
+    <tr><td>ELC2402</td><td>30</td><td>Audio file &amp;1 not found in the audio folder.</td><td><code>PLYAUD</code>, a Speaker&#39;s Play or rising edge.</td></tr>
+    <tr><td>ELC2403</td><td>30</td><td>Audio file &amp;1 is larger or longer than allowed (&amp;2).</td><td>Over <code>audioMaxBytes</code> or <code>audioMaxSeconds</code> (a URL&#39;s: as its listener&#39;s game finds it, on the Speaker&#39;s popup).</td></tr>
+    <tr><td>ELC2404</td><td>30</td><td>Web audio is disabled on this server.</td><td><code>allowWebAudio</code> off.</td></tr>
+    <tr><td>ELC2405</td><td>30</td><td>Host &amp;1 is not on the web audio allowlist.</td><td>Not on <code>webAudioHosts</code>.</td></tr>
+    <tr><td>ELC2406</td><td>30</td><td>Audio &amp;1 could not be decoded (OGG Vorbis or MP3 only).</td><td>Another format, or a broken file.</td></tr>
+    <tr><td>ELC2407</td><td>30</td><td>Note &amp;1 is outside 0-24.</td><td><code>PLYNOTE NOTE</code>, a Speaker&#39;s Notes row.</td></tr>
+    <tr><td>ELC2408</td><td>30</td><td>Device &amp;1 takes no network commands: its trigger is Redstone.</td><td>A named Alarm Strobe or Speaker set to Redstone (added).</td></tr>
+  </tbody>
+</table></div>
+
 <h3 id="msg-usr">USRxxxx: user messages</h3>
 <p>Raised with <code>SNDPGMMSG MSGTYPE(*ESCAPE)</code>, default ID <code>USR0001</code> (choose another with <code>MSGID(USRnnnn)</code>). The text is whatever <code>MSG()</code> says; a user escape message has severity 30. <code>MONMSG MSGID(USR0000)</code> catches all of them.</p>
 </section>
@@ -2580,6 +2612,23 @@ CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0) <span class="c">/* top face off          
   IF COND(&amp;IN *GT 0 *AND &amp;WAS *EQ 0) THEN(CHGVAR VAR(&amp;OPENS) VALUE(&amp;OPENS + 1))
   CHGVAR VAR(&amp;WAS) VALUE(&amp;IN)                 <span class="c">/* kept from scan to scan                     */</span>
   CHGRSOUT DEV(*SELF) SIDE(*EAST) LVL(&amp;IN)    <span class="c">/* the door on the east face                  */</span>
+ENDPGM</pre>
+
+<h3 id="signals">Cage Lights, Alarm Strobes and Speakers</h3>
+<p>Signal devices go on any face of a block - floor, ceiling or wall - pointing away from it. On their own they work from the redstone at their block; cabled to a network (or placed against a networked block) each is also a device there: one lane, <code>signalDeviceDrain</code> FE/t, named <code>LGT01</code>, <code>SRN01</code>, <code>SPK01</code> and listed in Work with Devices. Right-click one for its settings (on a network, the Firewall&#39;s build permission): click a row to step it, right-click to step back, shift for fine steps; text rows (a URL, notes, the device name) edit in the bottom field. Look at one for its popup: its state, mode and device name.</p>
+<ul>
+  <li><strong>Cage Lights</strong>, one per dye colour (four from iron bars, glass, glowstone dust, iron nuggets and the dye). Control: Redstone (on with a signal), Inverted, Always on or Network only; light level 1&ndash;15. <code>CHGLGT</code>&#39;s state adds to the redstone&#39;s.</li>
+  <li><strong>Alarm Strobes</strong>, green, amber and red (their lenses the lamps&#39; colours: lime, orange, red). Light mode solid, slow, medium or fast flash; sound wail, yelp, klaxon, bell, horn, beep or silent; volume and range (up to <code>sirenMaxRange</code>, 96); trigger Redstone, Network or Both. Strobes on one network with the same tone start together.</li>
+  <li><strong>Speakers</strong>: a flat panel with a green (playing) or amber (error) LED. Source: a file from <code>&lt;world&gt;/encodedlogistics/audio/&lt;SYSNAME&gt;/</code> (OGG Vorbis or MP3; a speaker on no network: the audio folder itself), a web URL, or a note. A rising redstone edge plays (or the next note of a <code>PLYNOTE</code> sequence); the signal going off stops a looping source. Files are checked on the server (<code>audioMaxBytes</code>, <code>audioMaxSeconds</code>) and sent to the players in range, who keep them by their hash.</li>
+  <li><strong>Web audio</strong> is off on dedicated servers unless <code>allowWebAudio</code> says otherwise, and only from hosts on <code>webAudioHosts</code>. Each listening player&#39;s game fetches the URL itself, which shows their IP address to the host; the client option <code>neverPlayWebAudio</code> turns it off for that player. A blocked or failed fetch puts the speaker in error, with the reason on its popup.</li>
+</ul>
+<pre class="code">PGM
+  STRSRN DEV(*ALL) SOUND(*WAIL) MODE(*FAST)       <span class="c">/* every strobe on the network                */</span>
+  CHGLGT DEV(LGT01 LGT02) STATUS(*ON) LVL(15)
+  PLYAUD DEV(SPK01) SRC('evacuate.ogg') LOOP(*YES)
+  DLYJOB DLY(30)
+  ENDSRN DEV(*ALL)
+  STPAUD DEV(SPK01)
 ENDPGM</pre>
 </section>
 

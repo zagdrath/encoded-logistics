@@ -78,6 +78,11 @@ runs {
         workingDirectory project.layout.projectDirectory.dir('run').dir(name)
 
         modSource project.sourceSets.main
+
+        // Libraries the mod carries inside its jar (jarJar below), on the dev runs' classpath too.
+        dependencies {
+            runtime "com.googlecode.soundlibs:jlayer:${jlayer_version}"
+        }
     }
 
     client {
@@ -134,6 +139,13 @@ dependencies {
     compileOnly "net.zagdrath.arcforge:arcforge-api:${arcforge_api_version}"
     if (project.findProperty('arcforge_jar')) {
         localRuntime files(project.property('arcforge_jar'))
+    }
+
+    // Speakers' MP3 decoding (JLayer, LGPL 2.1): carried as its own jar inside the mod's (jar-in-jar), not shaded.
+    implementation "com.googlecode.soundlibs:jlayer:${jlayer_version}"
+    jarJar("com.googlecode.soundlibs:jlayer:[${jlayer_version},)") {
+        version { prefer jlayer_version }
+        transitive = false
     }
 
     // Graph-level unit tests (the lane solver and the frame validator).
@@ -199,6 +211,14 @@ publishing {
             url "file://${project.projectDir}/repo"
         }
     }
+}
+
+// The jar players install is jarJar's, carrying JLayer inside; the plain jar is -slim.
+tasks.named('jar', Jar).configure {
+    archiveClassifier = 'slim'
+}
+tasks.named('jarJar').configure {
+    archiveClassifier = ''
 }
 
 tasks.named('test', Test).configure {

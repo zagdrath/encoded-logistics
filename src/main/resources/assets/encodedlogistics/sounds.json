@@ -184,5 +184,59 @@
     "name": "encodedlogistics:block/midrange/line_printer_chatter"
    }
   ]
+ },
+ "block.siren.wail": {
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/siren/wail",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.encodedlogistics.siren.wail"
+ },
+ "block.siren.yelp": {
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/siren/yelp",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.encodedlogistics.siren.yelp"
+ },
+ "block.siren.klaxon": {
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/siren/klaxon",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.encodedlogistics.siren.klaxon"
+ },
+ "block.siren.bell": {
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/siren/bell",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.encodedlogistics.siren.bell"
+ },
+ "block.siren.horn": {
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/siren/horn",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.encodedlogistics.siren.horn"
+ },
+ "block.siren.beep": {
+  "sounds": [
+   {
+    "name": "encodedlogistics:block/siren/beep",
+    "stream": false
+   }
+  ],
+  "subtitle": "subtitles.encodedlogistics.siren.beep"
  }
 }

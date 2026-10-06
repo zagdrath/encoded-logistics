@@ -77,9 +77,12 @@ import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.client.screen.RelayAntennaScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchedulerCoreScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
+import net.zagdrath.encodedlogistics.client.screen.SignalScreen;
 import net.zagdrath.encodedlogistics.client.screen.TerminalLayout;
 import net.zagdrath.encodedlogistics.client.screen.TerminalSettings;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
+import net.zagdrath.encodedlogistics.client.signal.SignalSounds;
+import net.zagdrath.encodedlogistics.client.signal.SignalTints;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
@@ -98,6 +101,8 @@ public class EncodedLogisticsClient {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
         // The terminals' toolbar settings (encodedlogistics-client.toml).
         container.registerConfig(ModConfig.Type.CLIENT, TerminalSettings.SPEC);
+        // The Alarm Strobes' and Speakers' sounds (SignalSounds).
+        SignalSounds.register();
         // A terminal's grid gets as many rows as fit the window when it opens.
         AccessTerminalMenu.clientRows = section -> TerminalLayout.load(AccessTerminalScreen.LAYOUT)
                 .rowsFor(Minecraft.getInstance().getWindow().getGuiScaledHeight() - section);
@@ -139,6 +144,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.LINE_PRINTER.get(), LinePrinterScreen::new);
         event.register(ModMenuTypes.MIDRANGE_PANEL.get(), MidrangePanelScreen::new);
         event.register(ModMenuTypes.DISPLAY_PANEL.get(), DisplayPanelScreen::new);
+        event.register(ModMenuTypes.SIGNAL_DEVICE.get(), SignalScreen::new);
     }
 
     // The Network Controller's and the Scheduler's connected textures (see ControllerModel, SchedulerModel).
@@ -204,6 +210,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         MachineBridgesPayload.clear();
+        SignalSounds.clear();
     }
 
     @SubscribeEvent
@@ -226,6 +233,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void registerBlockTints(RegisterColorHandlersEvent.BlockTintSources event) {
         FacadeTints.register(event);
+        SignalTints.register(event);
     }
 
     // The lithography recipes the server sent: the press's slots and JEI use them. Early, so they're in before JEI

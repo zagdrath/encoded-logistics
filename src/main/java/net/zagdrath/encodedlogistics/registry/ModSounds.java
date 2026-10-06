@@ -53,5 +53,13 @@ public final class ModSounds {
     public static final Holder<SoundEvent> LINE_PRINTER_CHATTER = SOUND_EVENTS.register("block.midrange.line_printer_chatter",
             SoundEvent::createVariableRangeEvent);
 
+    // The Alarm Strobes' tones (SirenSound).
+    public static final Holder<SoundEvent> SIREN_WAIL = SOUND_EVENTS.register("block.siren.wail", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> SIREN_YELP = SOUND_EVENTS.register("block.siren.yelp", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> SIREN_KLAXON = SOUND_EVENTS.register("block.siren.klaxon", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> SIREN_BELL = SOUND_EVENTS.register("block.siren.bell", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> SIREN_HORN = SOUND_EVENTS.register("block.siren.horn", SoundEvent::createVariableRangeEvent);
+    public static final Holder<SoundEvent> SIREN_BEEP = SOUND_EVENTS.register("block.siren.beep", SoundEvent::createVariableRangeEvent);
+
     private ModSounds() {}
 }

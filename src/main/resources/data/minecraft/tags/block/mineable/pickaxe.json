@@ -35,6 +35,26 @@
     "encodedlogistics:display_panel",
     "encodedlogistics:small_wireless_bridge",
     "encodedlogistics:disk_drive",
-    "encodedlogistics:tape_drive"
+    "encodedlogistics:tape_drive",
+    "encodedlogistics:cage_light_white",
+    "encodedlogistics:cage_light_orange",
+    "encodedlogistics:cage_light_magenta",
+    "encodedlogistics:cage_light_light_blue",
+    "encodedlogistics:cage_light_yellow",
+    "encodedlogistics:cage_light_lime",
+    "encodedlogistics:cage_light_pink",
+    "encodedlogistics:cage_light_gray",
+    "encodedlogistics:cage_light_light_gray",
+    "encodedlogistics:cage_light_cyan",
+    "encodedlogistics:cage_light_purple",
+    "encodedlogistics:cage_light_blue",
+    "encodedlogistics:cage_light_brown",
+    "encodedlogistics:cage_light_green",
+    "encodedlogistics:cage_light_red",
+    "encodedlogistics:cage_light_black",
+    "encodedlogistics:siren_green",
+    "encodedlogistics:siren_amber",
+    "encodedlogistics:siren_red",
+    "encodedlogistics:speaker"
   ]
 }

@@ -771,6 +771,42 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("signals");
+    }
+
+    // Cage Lights, Alarm Strobes and Speakers (docs/signals).
+    public static final ModConfigSpec.DoubleValue SIGNAL_DEVICE_DRAIN = BUILDER
+            .comment("FE per tick a Cage Light, Alarm Strobe or Speaker drains from its network while it's cabled to one.")
+            .defineInRange("signalDeviceDrain", 0.25, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue SIREN_MAX_RANGE = BUILDER
+            .comment("The farthest an Alarm Strobe's siren can be set to carry, in blocks.")
+            .defineInRange("sirenMaxRange", 96, 8, 256);
+
+    public static final ModConfigSpec.IntValue SPEAKER_MAX_RANGE = BUILDER
+            .comment("The farthest a Speaker can be set to carry, in blocks.")
+            .defineInRange("speakerMaxRange", 64, 8, 256);
+
+    public static final ModConfigSpec.IntValue AUDIO_MAX_BYTES = BUILDER
+            .comment("The largest audio file (or web audio) a Speaker plays, in MB.")
+            .defineInRange("audioMaxBytes", 4, 1, 64);
+
+    public static final ModConfigSpec.IntValue AUDIO_MAX_SECONDS = BUILDER
+            .comment("The longest audio file (or web audio) a Speaker plays, in seconds.")
+            .defineInRange("audioMaxSeconds", 180, 1, 3_600);
+
+    public enum WebAudioAllowed { AUTO, TRUE, FALSE }
+
+    public static final ModConfigSpec.EnumValue<WebAudioAllowed> ALLOW_WEB_AUDIO = BUILDER
+            .comment("Whether Speakers may play audio from web URLs (fetched by each listening player's own game): AUTO is on in single-player and off on dedicated servers.")
+            .defineEnum("allowWebAudio", WebAudioAllowed.AUTO);
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> WEB_AUDIO_HOSTS = BUILDER
+            .comment("The hosts Speakers may play web audio from (example.com also allows its subdomains); empty: none.")
+            .defineListAllowEmpty("webAudioHosts", List.of(), () -> "example.com", entry -> entry instanceof String host && !host.isBlank());
+
+    static {
+        BUILDER.pop();
     }
 
     public static final ModConfigSpec SPEC = BUILDER.build();

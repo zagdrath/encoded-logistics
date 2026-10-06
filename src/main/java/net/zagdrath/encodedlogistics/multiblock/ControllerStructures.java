@@ -92,6 +92,7 @@ import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.signal.SignalBlockEntity;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.DriveView;
@@ -1404,6 +1405,10 @@ public class ControllerStructures extends SavedData {
             if (blockEntity(server, pos) instanceof ControlInterfaceBlockEntity ci && !ci.name().isEmpty()) {
                 type = ControlInterfaceBlockEntity.TYPE;
                 name = Component.literal(ci.name());
+            }
+            // A Cage Light, Alarm Strobe or Speaker: its type code (LGT, SRN, SPK).
+            if (blockEntity(server, pos) instanceof SignalBlockEntity signal) {
+                type = signal.deviceType();
             }
             // A PLC is type PLC, by its program's name.
             if (blockEntity(server, pos) instanceof PlcBlockEntity plc) {

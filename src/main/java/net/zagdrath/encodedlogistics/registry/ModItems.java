@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -36,6 +37,7 @@ import net.zagdrath.encodedlogistics.plc.PlcModule;
 import net.zagdrath.encodedlogistics.plc.PlcModuleItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.signal.SirenBlock;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.storage.TapeGeneration;
@@ -145,6 +147,29 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> SERVER_RACK = ITEMS.registerSimpleBlockItem(ModBlocks.SERVER_RACK);
     public static final DeferredItem<BlockItem> TERMINAL_DESK = ITEMS.registerSimpleBlockItem(ModBlocks.TERMINAL_DESK);
     public static final DeferredItem<BlockItem> CONTROL_INTERFACE = ITEMS.registerSimpleBlockItem(ModBlocks.CONTROL_INTERFACE);
+    // Signals (docs/signals): the Cage Lights, Alarm Strobes and the Speaker (their device names go with the item).
+    private static final Map<DyeColor, DeferredItem<BlockItem>> CAGE_LIGHTS = new EnumMap<>(DyeColor.class);
+    private static final Map<SirenBlock.Colour, DeferredItem<BlockItem>> SIRENS = new EnumMap<>(SirenBlock.Colour.class);
+
+    static {
+        for (DyeColor color : DyeColor.values()) {
+            CAGE_LIGHTS.put(color, ITEMS.registerSimpleBlockItem(ModBlocks.cageLight(color)));
+        }
+        for (SirenBlock.Colour colour : SirenBlock.Colour.values()) {
+            SIRENS.put(colour, ITEMS.registerSimpleBlockItem(ModBlocks.siren(colour)));
+        }
+    }
+
+    public static final DeferredItem<BlockItem> SPEAKER = ITEMS.registerSimpleBlockItem(ModBlocks.SPEAKER);
+
+    public static DeferredItem<BlockItem> cageLight(DyeColor color) {
+        return CAGE_LIGHTS.get(color);
+    }
+
+    public static DeferredItem<BlockItem> siren(SirenBlock.Colour colour) {
+        return SIRENS.get(colour);
+    }
+
     // The PLC (docs/plc), its sensor modules and the EEPROM Cartridge its program goes on.
     public static final DeferredItem<BlockItem> PLC = ITEMS.registerSimpleBlockItem(ModBlocks.PLC);
     public static final DeferredItem<PlcModuleItem> PRESENCE_SENSOR = ITEMS.registerItem("presence_sensor",

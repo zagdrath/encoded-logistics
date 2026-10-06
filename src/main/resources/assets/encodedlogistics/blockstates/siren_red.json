@@ -1,0 +1,308 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "up"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "light": "solid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_solid"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "light": "slow"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_slow"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "light": "medium"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_medium"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "light": "fast"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_fast"
+   }
+  },
+  {
+   "when": {
+    "facing": "down"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "light": "solid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_solid",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "light": "slow"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_slow",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "light": "medium"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_medium",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "light": "fast"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_fast",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "light": "solid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_solid",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "light": "slow"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_slow",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "light": "medium"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_medium",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "light": "fast"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_fast",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "light": "solid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_solid",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "light": "slow"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_slow",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "light": "medium"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_medium",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "light": "fast"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_fast",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "light": "solid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_solid",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "light": "slow"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_slow",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "light": "medium"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_medium",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "light": "fast"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_fast",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "light": "solid"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_solid",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "light": "slow"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_slow",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "light": "medium"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_medium",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "light": "fast"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/siren/siren_red_fast",
+    "x": 90,
+    "y": 90
+   }
+  }
+ ]
+}

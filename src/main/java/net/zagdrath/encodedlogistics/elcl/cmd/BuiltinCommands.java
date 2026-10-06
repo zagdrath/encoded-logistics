@@ -20,6 +20,7 @@ import net.zagdrath.encodedlogistics.display.DisplayContent;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.Kind;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.ValueList;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.VarType;
+import net.zagdrath.encodedlogistics.signal.NoteInstruments;
 
 // The built-in commands' schemas (COMMANDS.md 1-9 and 11, plus the few the OS screens run: CHGLIB, CRTMBR, CHGJOB, the hold
 // and release of schedule entries and triggers, WRKCRFJOB, GO and CLEAR). Executors are bound by the game side.
@@ -324,6 +325,31 @@ final class BuiltinCommands {
                 .p(p("DEV", "PLC", Kind.DEVICE).req()));
         add(CommandDefinition.of("ENDPLC", "End PLC").auth(CONFIGURE).positional(1)
                 .p(p("DEV", "PLC", Kind.DEVICE).req()));
+
+        // --- 7b. Signals (docs/signals): Cage Lights, Alarm Strobes and Speakers; DEV takes a list, or *ALL of the type ---
+        add(CommandDefinition.of("CHGLGT", "Change Light").auth(CONFIGURE).positional(2)
+                .p(p("DEV", "Cage Light", Kind.DEVICE).req().sv("*ALL").list(32))
+                .p(p("STATUS", "Status", Kind.SPECIAL).sv("*SAME", "*ON", "*OFF", "*TOGGLE").dft("*SAME"))
+                // 1-15, checked by the command (ELC2401).
+                .p(p("LVL", "Light level", Kind.INT).sv("*SAME").dft("*SAME")));
+        add(CommandDefinition.of("STRSRN", "Start Siren").auth(CONFIGURE).positional(2)
+                .p(p("DEV", "Alarm Strobe", Kind.DEVICE).req().sv("*ALL").list(32))
+                .p(p("SOUND", "Sound", Kind.SPECIAL).sv("*SAME", "*WAIL", "*YELP", "*KLAXON", "*BELL", "*HORN", "*BEEP", "*NONE").dft("*SAME"))
+                .p(p("MODE", "Light mode", Kind.SPECIAL).sv("*SAME", "*SOLID", "*SLOW", "*MEDIUM", "*FAST").dft("*SAME")));
+        add(CommandDefinition.of("ENDSRN", "End Siren").auth(CONFIGURE).positional(1)
+                .p(p("DEV", "Alarm Strobe", Kind.DEVICE).req().sv("*ALL").list(32)));
+        add(CommandDefinition.of("PLYAUD", "Play Audio").auth(CONFIGURE).positional(2)
+                .p(p("DEV", "Speaker", Kind.DEVICE).req().sv("*ALL").list(32))
+                .p(p("SRC", "File name or URL", Kind.CHAR).req().len(256))
+                .p(p("VOL", "Volume (%)", Kind.INT).sv("*SAME").dft("*SAME").range(0, 100))
+                .p(p("LOOP", "Loop", Kind.SPECIAL).sv("*SAME", "*NO", "*YES").dft("*SAME")));
+        add(CommandDefinition.of("PLYNOTE", "Play Note").auth(CONFIGURE).positional(3)
+                .p(p("DEV", "Speaker", Kind.DEVICE).req().sv("*ALL").list(32))
+                .p(p("INST", "Instrument", Kind.SPECIAL).sv(NoteInstruments.NAMES).dft("*HARP"))
+                // 0-24 each, checked by the command (ELC2407); more than one: a sequence, a note each rising redstone edge.
+                .p(p("NOTE", "Note", Kind.INT).req().list(NoteInstruments.MAX_NOTES)));
+        add(CommandDefinition.of("STPAUD", "Stop Audio").auth(CONFIGURE).positional(1)
+                .p(p("DEV", "Speaker", Kind.DEVICE).req().sv("*ALL").list(32)));
 
         // --- 8. Messages, displays and output ---
         add(CommandDefinition.of("SNDMSG", "Send Message").positional(1)

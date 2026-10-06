@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "led": "encodedlogistics:block/speaker/led_error",
+  "particle": "encodedlogistics:block/speaker/led_error"
+ },
+ "elements": [
+  {
+   "name": "led",
+   "from": [
+    2,
+    2.01,
+    2
+   ],
+   "to": [
+    3,
+    2.01,
+    3
+   ],
+   "faces": {
+    "up": {
+     "texture": "#led",
+     "uv": [
+      0,
+      0,
+      1,
+      1
+     ]
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

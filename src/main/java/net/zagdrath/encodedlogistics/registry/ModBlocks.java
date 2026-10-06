@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -55,6 +56,9 @@ import net.zagdrath.encodedlogistics.midrange.MidrangePeripheralBlock;
 import net.zagdrath.encodedlogistics.midrange.MidrangeSystemBlock;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlock;
 import net.zagdrath.encodedlogistics.plc.PlcBlock;
+import net.zagdrath.encodedlogistics.signal.CageLightBlock;
+import net.zagdrath.encodedlogistics.signal.SirenBlock;
+import net.zagdrath.encodedlogistics.signal.SpeakerBlock;
 
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(EncodedLogistics.MODID);
@@ -176,6 +180,33 @@ public final class ModBlocks {
                     .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
     public static final DeferredBlock<SwivelChairBlock> SWIVEL_CHAIR = BLOCKS.registerBlock("swivel_chair", SwivelChairBlock::new,
             p -> p.mapColor(MapColor.COLOR_BROWN).strength(1.0F).sound(SoundType.WOOL).noOcclusion());
+
+    // Signals (docs/signals): an Industrial Cage Light in each dye colour, the green, amber and red Alarm Strobes, and the
+    // Speaker.
+    private static final Map<DyeColor, DeferredBlock<CageLightBlock>> CAGE_LIGHTS = new EnumMap<>(DyeColor.class);
+    private static final Map<SirenBlock.Colour, DeferredBlock<SirenBlock>> SIRENS = new EnumMap<>(SirenBlock.Colour.class);
+
+    static {
+        for (DyeColor color : DyeColor.values()) {
+            CAGE_LIGHTS.put(color, BLOCKS.registerBlock("cage_light_" + color.getSerializedName(), p -> new CageLightBlock(color, p),
+                    p -> p.mapColor(MapColor.METAL).strength(1.0F, 6.0F).sound(SoundType.LANTERN).noOcclusion().lightLevel(CageLightBlock::lightLevel)));
+        }
+        for (SirenBlock.Colour colour : SirenBlock.Colour.values()) {
+            SIRENS.put(colour, BLOCKS.registerBlock("siren_" + colour.id(), p -> new SirenBlock(colour, p),
+                    p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()));
+        }
+    }
+
+    public static final DeferredBlock<SpeakerBlock> SPEAKER = BLOCKS.registerBlock("speaker", SpeakerBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+
+    public static DeferredBlock<CageLightBlock> cageLight(DyeColor color) {
+        return CAGE_LIGHTS.get(color);
+    }
+
+    public static DeferredBlock<SirenBlock> siren(SirenBlock.Colour colour) {
+        return SIRENS.get(colour);
+    }
 
     private static BlockBehaviour.Properties scheduler(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);

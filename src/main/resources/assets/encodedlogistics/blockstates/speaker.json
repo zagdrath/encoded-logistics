@@ -1,0 +1,184 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "up"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "playing"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_playing"
+   }
+  },
+  {
+   "when": {
+    "facing": "up",
+    "state": "error"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_error"
+   }
+  },
+  {
+   "when": {
+    "facing": "down"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "playing"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_playing",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "down",
+    "state": "error"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_error",
+    "x": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "playing"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_playing",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "error"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_error",
+    "x": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "playing"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_playing",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "error"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_error",
+    "x": 90,
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "playing"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_playing",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "error"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_error",
+    "x": 90,
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "playing"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_playing",
+    "x": 90,
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "error"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/speaker/speaker_led_error",
+    "x": 90,
+    "y": 90
+   }
+  }
+ ]
+}

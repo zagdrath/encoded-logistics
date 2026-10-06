@@ -1,0 +1,152 @@
+ENCODED LOGISTICS - HANDOFF: INDUSTRIAL CAGE LIGHTS, SIRENS, SPEAKER
+(All models and textures in this package are the author's own designs.)
+=====================================================================
+Reviewed against the repo (pulled this session): docs/TEXTURE_STYLE.md, the GUI kit (Firewall panel layout, PartScreens /
+RackScreen colours), the device naming system (elcl/exec/ElclDevices type codes) and Work with Devices, the Firewall
+(build permission), the Control Interface's redstone handling (weak power, own output suppressed when reading - share it),
+the HUD popup API (RackDeviceInfo-style lines), the Display Panel's world-save image folder + config (the audio folder follows
+it exactly) and docs/elcl/. Paths relative to the repo root; the zip mirrors them under src/.
+
+=====================================================================================================
+1. COMMON RULES (all three families)
+=====================================================================================================
+  - Placement: on any face of a block - floor, ceiling, any wall; blockstate facing (up | down | north | south | east | west)
+    = the direction the device points away from the block it's on. Models are built floor-mounted and rotated (FACE6:
+    up {}, down x180, north x90, south x90 y180, west x90 y270, east x90 y90). Centred on the block; collision / selection =
+    the model's main boxes (shapes/collision_shapes.json, floor orientation - rotate with facing).
+  - Standalone: works from redstone at its block. Networked: cabled to a network (or placed against a networked block) it
+    becomes an addressable device (1 lane, small FE draw): type codes LGT, SRN, SPK; default names LGT01..., SRN01...,
+    SPK01... (stable naming); listed in Work with Devices.
+  - Right-click: a small settings GUI on the Firewall panel layout (gui/cage_light.png, gui/siren.png, gui/speaker.png = the
+    Firewall panel texture): field row = Status, list = settings rows (label TEXT_MUTED at x 12, value TEXT right-aligned at
+    164, rows 13 apart - click a row to cycle / edit), bottom field = the action (speaker: Play / Stop). Networked: needs the
+    Firewall build permission. previews/gui_*.png.
+  - HUD popup: state (dot + text), mode lines, and the device name when networked. previews/hud_mockups.png.
+  - Textures: MINECRAFT-SIZE PIXELS ONLY - every face samples exactly 1 texel per model px (no mixels, no higher-res; mixels
+    are reserved for the Server Rack and its rack devices). Checked with tools/fix_density.py (0 faces off 1:1); colour ramps,
+    structural shading, no specks.
+
+=====================================================================================================
+2. INDUSTRIAL CAGE LIGHT - cage_light_<dye> (16 blocks, one per vanilla dye colour)
+=====================================================================================================
+Models: the AUTHOR'S caged_light_off.json / caged_light_on.json (models/block/cage_light/) as supplied - the 6 x 6 cage built
+twice (an inside-out copy shows the bars' inner faces through the gaps), the 8 x 1 x 8 base, the bulb with "tintindex": 0 -
+with only these changes: the cage and the bulb are 2 PX TALLER (cage y 1-9, bulb y 1-8.5; their side uv crops extended by the
+same amount, so every face stays 1 texel per px); textures in this mod's namespace; the on model's bulb emissive.
+ONE model pair for all 16 colours: register a BlockColor / ItemColor handler returning the block's dye colour
+(DyeColor#getTextureDiffuseColor) for tint 0. Textures: caged_signal_light.png = the author's sheet in the mod's SILVER (its
+greys and browns mapped by brightness onto steel steps 5-9; the white window kept); bulb_off.png / bulb_on.png (32 x 32
+greyscale steel whites for tinting, laid out for the model's bulb uvs - the author's bulb textures were not supplied).
+Blockstate (per dye block): facing (6) + lit -> caged_light_off / caged_light_on. Light level 15 when on (GUI: 1-15).
+Control (GUI "Control"): Redstone (default: on with a signal) | Inverted | Always on | Network only.
+Items: textures/item/cage_light_<dye>.png (16).
+
+=====================================================================================================
+3. ALARM STROBE - siren_green, siren_amber, siren_red (three colours: green, amber, red)
+=====================================================================================================
+A beacon light (from the reference photo) on its siren sounder, 16 px tall, built of round-reading cylinders (two crossed boxes
+each): the ROUND SOUNDER BASE 9 across (x / z 3.5-12.5, y 0-3; sides textures/block/siren/sounder.png - dark steel with a
+ring of grille holes on a 2-px grid, a lit top edge; top sounder_top.png, sampled at the model's real x / z so both boxes
+share it: stepped falloff from the top-left (steel 6 -> 3), the outer rim one step brighter on the lit half and one darker on
+the far half, a shadow ring (step 2) round the mount), a SILVER threaded mount 4 across (y 3-4, silver.png), a black hex
+stem 3 across (y 4-5.5), a black cylindrical base 7 across (y 5.5-8.5, black.png), the RIBBED coloured lens 6 across
+(y 8.5-15) and a lens cap 4 across (y 15-16). The sounder is where the siren sound comes from.
+LENS COLOURS = THE LAMPS': the lens texels are the mod's steel-white greys multiplied by the dye colour - exactly what the lamps'
+tinted bulbs do - so strobes and lamps match: green = DyeColor LIME (#80C71F), amber = ORANGE (#F9801D), red = RED (#B02E26).
+lens_<colour>.png (off: greys 2-6 x colour), lens_<colour>_on.png (solid: greys 7-11 x colour) - ribs one step apart; on each
+6-texel lens facet a SHADED highlight stripe (3 texels: brightest centre, one step down at its edges, following the ribs) with
+a shade step either side of it, lens_<colour>_{slow,medium,fast}.png (flash: on frame + clear frame, .mcmeta 20 / 10 / 4 ticks).
+Blockstate facing + light (off | solid | slow | medium | fast); multipart: the beacon + siren_<colour>_<mode> (lens, emissive).
+Display names: Green / Amber / Red Alarm Strobe.
+Sound: wail | yelp | klaxon | bell | horn | beep | silent (light only); volume 0-100 %, range (blocks); trigger Redstone |
+Network | Both. GUI: colour (display only - set by the item), light mode, sound, volume, range, trigger.
+Items: textures/item/siren_{green,amber,red}.png (3).
+
+=====================================================================================================
+4. SPEAKER - speaker (ONE block for ceilings, walls and floors: any face)
+=====================================================================================================
+A flat 14 x 14 x 2 panel (2 px deep) on whichever face it is placed (facing = 6; models built floor-mounted and rotated as the
+other blocks). Front (textures/block/speaker/speaker_front.png, 16 x 16, 1 texel per px): SILVER STEEL like the rest of the mod
+(steel steps 6-8 with stepped falloff from the top-left, the mod's bevel - lit top / left rail 9, shaded bottom / right 5,
+glint 10) with the author's grille (the 10-px circle from smart_speaker_front.png; brown rim pixels moved onto the steel ramp)
+centred in a recessed ring (shadow line top-left, lit lip bottom-right). Sides speaker_side.png (steel, 2 px). The front face
+carries "rotation": 180 so it is upright on walls. LED: one pixel in the bottom-right corner (emissive overlay; green playing,
+amber error). Blockstate facing + state (idle | playing | error).
+Sources (GUI or ELCL): an audio FILE from <world>/encodedlogistics/audio/<SYSNAME>/ (as the Display Panel's images folder),
+a web URL (MP3 / OGG, behind the safety settings - section 6), or a NOTE (any vanilla note block instrument, pitch 0-24).
+GUI: source (file list / URL / note), volume, range, loop, Play / Stop, trigger (Redstone / Network / Both).
+Redstone: a rising edge plays (or the next note of a note sequence set by ELCL); signal off stops a looping source.
+
+=====================================================================================================
+5. ELCL (registry, F4 prompter, F1 help, COMMANDS.md; every DEV accepts a list - DEV(LGT01 LGT02) - or *ALL of that type)
+=====================================================================================================
+| Command | Parameters | Context | Notes |
+| `CHGLGT` | `DEV`(P1, Req, list) `STATUS(*ON\|*OFF\|*TOGGLE)` `LVL`(1-15, *SAME) | all | ELC1301, ELC1303, ELC2401. |
+| `STRSRN` | `DEV`(P1, Req, list) `SOUND(*WAIL\|*YELP\|*KLAXON\|*BELL\|*HORN\|*BEEP\|*NONE)` `MODE(*SOLID\|*SLOW\|*MEDIUM\|*FAST)` | all | ELC1301, ELC1303. |
+| `ENDSRN` | `DEV`(P1, Req, list) | all | Stops sound and light. |
+| `PLYAUD` | `DEV`(P1, Req, list) `SRC`(Req: 'file name' or 'URL') `VOL`(0-100) `LOOP(*NO\|*YES)` | all | ELC2402, ELC2403, ELC2404, ELC2405, ELC2406. |
+| `PLYNOTE` | `DEV`(P1, Req, list) `INST`(*HARP *BASS *SNARE *HAT *BASSDRUM *BELL *FLUTE *CHIME *GUITAR *XYLOPHONE *IRONXYLO *COWBELL *DIDGERIDOO *BIT *BANJO *PLING) `NOTE`(0-24) | all | ELC2407. |
+| `STPAUD` | `DEV`(P1, Req, list) | all | |
+Messages (MESSAGES.md, new range 24xx):
+| ELC2401 | 30 | Light level &1 is outside 1-15. |
+| ELC2402 | 30 | Audio file &1 not found in the audio folder. |
+| ELC2403 | 30 | Audio file &1 is larger or longer than allowed (&2). |
+| ELC2404 | 30 | Web audio is disabled on this server. |
+| ELC2405 | 30 | Host &1 is not on the web audio allowlist. |
+| ELC2406 | 30 | Audio &1 could not be decoded (OGG Vorbis or MP3 only). |
+| ELC2407 | 30 | Note &1 is outside 0-24. |
+DEV not a device of the right type: ELC1303 (existing). Firewall: networked control needs the device's build / use authority.
+
+=====================================================================================================
+6. AUDIO FILES AND WEB AUDIO
+=====================================================================================================
+  - Minecraft plays OGG Vorbis natively; MP3 needs a bundled decoder library (e.g. a pure-Java MP3 decoder, shaded).
+  - World-save files <world>/encodedlogistics/audio/<SYSNAME>/: the server reads and validates them (size, length,
+    format) and streams them to clients in range (chunked packets, cached per client by hash); config audioMaxBytes
+    [4 MB], audioMaxSeconds [180].
+  - Web audio, server config: allowWebAudio (default ON in single-player, OFF on dedicated servers), webAudioHosts (an allowlist
+    of permitted hosts; empty = none), the same size and length limits. Only players with Firewall build permission can set a
+    web source. The CLIENT fetches the URL, so a client-side option neverPlayWebAudio (default off) - fetching a URL exposes
+    the player's IP address to whoever hosts it; say so in the option's tooltip. A blocked or failed fetch sets the speaker to
+    error (amber LED) with the message on its HUD popup.
+
+=====================================================================================================
+7. SOUNDS (sounds/block/siren/*.ogg; sounds.sirens.json -> MERGE into sounds.json)
+=====================================================================================================
+All synthesised for this mod (original - released CC0 with the mod; source: tools/lsp_sounds in this package's history,
+generated in Python + encoded with ffmpeg / libvorbis; WAV masters in sound_src/). Mono 44.1 kHz, loopable.
+  wail    4.0 s  a slow rising and falling sweep 500 -> 1300 -> 500 Hz (harmonics 2, 3) - classic civil-defence wail
+  yelp    2.0 s  eight fast sweeps 700 -> 1500 Hz
+  klaxon  1.6 s  a buzzy "ah-oo-gah" - square wave gliding 260 -> 430 Hz with vibrato
+  bell    2.0 s  a fire-alarm bell: 12 struck tones per second (1180 / 2310 / 3430 Hz partials, fast decay)
+  horn    2.0 s  a two-tone air-horn chord (370 + 466 Hz sawtooth + octave) with soft attack and release
+  beep    1.2 s  three 1 kHz beeps (0.15 s on, 0.10 s off) then a gap
+Entries: encodedlogistics:block.siren.<tone> (subtitles in lang/en_us.signals.json). Siren volume / range from the GUI;
+looping is done by the block entity (re-trigger at the end of each sample) so ENDSRN stops cleanly.
+
+=====================================================================================================
+8. RECIPES (adjust freely)
+=====================================================================================================
+  cage_light_<dye> (x4)   shaped " B " / "GLG" / "NDN": iron bars, glass x2, glowstone dust, iron nugget x2, the dye
+  siren_<colour>          redstone + note block + iron + glass + the dye (green: lime dye, amber: orange dye, red: red dye)
+  speaker                 note block + copper foil + circuit substrate + iron nugget x4
+
+=====================================================================================================
+9. FILES
+=====================================================================================================
+assets/encodedlogistics/ blockstates/{cage_light_<dye> x16, siren_{green,amber,red}, speaker}.json (cage lights share models/block/cage_light/caged_light_off|on);
+  models/block/cage_light/*, models/block/siren/*, models/block/speaker/*; textures/block/cage_light/{caged_signal_light (the author's sheet in the mod's silver), bulb_off, bulb_on}.png; textures/block/siren/{sounder, sounder_top, silver, black, lens_<colour>(_on|_slow|_medium|_fast)}.png (+ .mcmeta);
+  textures/block/speaker/{speaker_front, speaker_side, led_playing, led_error}.png; textures/gui/{cage_light,
+  siren, speaker}.png; textures/item/* (20); models/item/*, items/*; sounds/block/siren/*.ogg; sounds.sirens.json -> MERGE;
+  lang/en_us.signals.json -> MERGE
+data/encodedlogistics/recipe/*.json; shapes/collision_shapes.json; blockbench/*.bbmodel; sound_src/*.wav;
+previews/ scene, cage_lights_close, speakers_close, gui_*, hud_mockups, item_icons; tools/ (lsp.py, lsp_export.py,
+  fix_density.py - re-run it after any model change: it enforces 1 texel per px)
+
+=====================================================================================================
+10. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+  1. Range: the speaker up to 64 blocks, sirens up to 96 [config]. Sync: yes - sirens on one network playing the same tone share
+     a start time (the network's tick), so a hall of sirens wails together.
+  2. Audio limits: 4 MB and 180 s per file [config]; web audio the same.
+  3. Light colour: vanilla white light (level 1-15) by default; coloured light only through a lighting-mod integration later.

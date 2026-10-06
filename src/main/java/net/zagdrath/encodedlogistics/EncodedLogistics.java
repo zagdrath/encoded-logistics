@@ -33,6 +33,7 @@ import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
+import net.zagdrath.encodedlogistics.net.AudioPayloads;
 import net.zagdrath.encodedlogistics.net.ModNetwork;
 import net.zagdrath.encodedlogistics.rack.FirewallEvents;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -115,6 +116,7 @@ public class EncodedLogistics {
             jobs.tick(event.getServer());
         }
         JobManager.of(event.getServer()).tick(event.getServer());
+        AudioPayloads.tick(event.getServer());
     }
 
     // Scheduler and controller structures revalidate (and controllers tick) once per level tick, then the level's Small

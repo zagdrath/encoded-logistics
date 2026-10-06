@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "minecraft:note_block",
+  "encodedlogistics:copper_foil",
+  "encodedlogistics:circuit_substrate",
+  "minecraft:iron_nugget",
+  "minecraft:iron_nugget",
+  "minecraft:iron_nugget",
+  "minecraft:iron_nugget"
+ ],
+ "result": {
+  "id": "encodedlogistics:speaker",
+  "count": 1
+ }
+}

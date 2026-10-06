@@ -1,0 +1,81 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "front": "encodedlogistics:block/speaker/speaker_front",
+  "side": "encodedlogistics:block/speaker/speaker_side",
+  "particle": "encodedlogistics:block/speaker/speaker_front"
+ },
+ "elements": [
+  {
+   "name": "panel",
+   "from": [
+    1,
+    0,
+    1
+   ],
+   "to": [
+    15,
+    2,
+    15
+   ],
+   "faces": {
+    "up": {
+     "texture": "#front",
+     "uv": [
+      1,
+      1,
+      15,
+      15
+     ],
+     "rotation": 180
+    },
+    "down": {
+     "texture": "#side",
+     "uv": [
+      1,
+      1,
+      15,
+      15
+     ]
+    },
+    "north": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      14,
+      2
+     ]
+    },
+    "south": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      14,
+      2
+     ]
+    },
+    "east": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      14,
+      2
+     ]
+    },
+    "west": {
+     "texture": "#side",
+     "uv": [
+      0,
+      0,
+      14,
+      2
+     ]
+    }
+   }
+  }
+ ]
+}

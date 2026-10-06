@@ -187,6 +187,16 @@ public final class ElclMessages {
         define("ELC1508", INFO, "PLC &1 stopped.");
         // Not in the PLC handoff: SNDPLCPGM's completion message.
         define("ELC1509", INFO, "Program &1 loaded into PLC &2.");
+        // Signals (docs/signals): Cage Lights, Alarm Strobes and Speakers.
+        define("ELC2401", SEVERE, "Light level &1 is outside 1-15.");
+        define("ELC2402", SEVERE, "Audio file &1 not found in the audio folder.");
+        define("ELC2403", SEVERE, "Audio file &1 is larger or longer than allowed (&2).");
+        define("ELC2404", SEVERE, "Web audio is disabled on this server.");
+        define("ELC2405", SEVERE, "Host &1 is not on the web audio allowlist.");
+        define("ELC2406", SEVERE, "Audio &1 could not be decoded (OGG Vorbis or MP3 only).");
+        define("ELC2407", SEVERE, "Note &1 is outside 0-24.");
+        // Not in the signals handoff: a network command to a device whose trigger is Redstone.
+        define("ELC2408", SEVERE, "Device &1 takes no network commands: its trigger is Redstone.");
     }
 
     public static Map<String, Definition> all() {

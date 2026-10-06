@@ -13,9 +13,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.DyeColor;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.signal.SirenBlock;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 import net.zagdrath.encodedlogistics.storage.TapeGeneration;
@@ -44,6 +46,14 @@ public final class ModCreativeTabs {
                         ModItems.TERMINAL_DESK, ModItems.SWIVEL_CHAIR, ModItems.CONTROL_INTERFACE, ModItems.PLC)) {
                     output.accept(block.get());
                 }
+                // Signals: the Cage Lights in dye order, the Alarm Strobes, the Speaker.
+                for (DyeColor color : DyeColor.values()) {
+                    output.accept(ModItems.cageLight(color).get());
+                }
+                for (SirenBlock.Colour colour : SirenBlock.Colour.values()) {
+                    output.accept(ModItems.siren(colour).get());
+                }
+                output.accept(ModItems.SPEAKER.get());
             })
             .build());
 

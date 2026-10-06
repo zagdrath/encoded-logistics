@@ -63,7 +63,16 @@ public final class TerminalSettings {
     private static final ModConfigSpec.BooleanValue TOAST_SOUND = BUILDER.comment("A quiet chime with each toast (a lower tone for failures).")
             .define("sound", true);
 
+    // Speakers (docs/signals): web audio is fetched by this game, from its host.
+    private static final ModConfigSpec.BooleanValue NEVER_PLAY_WEB_AUDIO = BUILDER.pop().push("audio")
+            .comment("Never play web audio from Speakers. Playing it means this game fetches the URL itself, which shows your IP address to whoever hosts it.")
+            .define("neverPlayWebAudio", false);
+
     public static final ModConfigSpec SPEC = BUILDER.pop().build();
+
+    public static boolean neverPlayWebAudio() {
+        return SPEC.isLoaded() ? NEVER_PLAY_WEB_AUDIO.get() : NEVER_PLAY_WEB_AUDIO.getDefault();
+    }
 
     private TerminalSettings() {}
 

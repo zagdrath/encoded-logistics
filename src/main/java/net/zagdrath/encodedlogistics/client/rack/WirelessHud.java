@@ -35,9 +35,10 @@ import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.net.WirelessInfoPayloads;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.signal.SignalBlock;
 
 // The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports, and Small Wireless
-// Bridges - not the machines they're on - and the Midrange Disk and Tape Drives): the rack's popup (RackHud.popup) with the block's icon, its name and device name
+// Bridges - not the machines they're on - the Midrange Disk and Tape Drives, and the Cage Lights, Alarm Strobes and Speakers): the rack's popup (RackHud.popup) with the block's icon, its name and device name
 // (AP01), its status and lines - Clients and Uplink, or Controller and Devices / Lanes, or Controller, Inventory and
 // Moved, or a bridge's Controller, Machine, Lanes and Power - asked of the server as soon as the crosshair
 // lands on it, then every QUERY_INTERVAL ticks. Until its answer is in, nothing shows. Hidden with F1 and while a screen
@@ -70,7 +71,7 @@ public final class WirelessHud {
             BlockState state = minecraft.level.getBlockState(hit.getBlockPos());
             var block = state.getBlock();
             if (block instanceof AccessPointBlock || block instanceof WirelessBridgeBlock || block instanceof WirelessPortBlock
-                    || block instanceof DiskDriveBlock || block instanceof TapeDriveBlock) {
+                    || block instanceof DiskDriveBlock || block instanceof TapeDriveBlock || block instanceof SignalBlock) {
                 now = hit.getBlockPos().immutable();
                 answer = now;
             } else if (block instanceof SmallWirelessBridgeBlock && MachineBridgesPayload.has(hit.getBlockPos().relative(state.getValue(SmallWirelessBridgeBlock.FACING)))) {

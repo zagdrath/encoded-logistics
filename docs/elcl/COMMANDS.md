@@ -85,7 +85,8 @@ stored with the device, given once (type + the lowest number free on the
 system) and kept until renamed; it goes with the device's item. *(Implemented:
 Control Interfaces, Terminal Desks, rack devices, cable parts and wireless - `AP01`, `WBRIDGE01`, `WINGRESS01`,
 `WEGRESS01`, the Wireless Ports working exactly as cabled ports - Gateways (`GATEWAY01`) and Arcforge machines with a
-Small Wireless Bridge on, by a prefix from their type (`ARCCRU01`), and PLCs (`PLC01`, type PLC); the mod has no Label Maker.)*
+Small Wireless Bridge on, by a prefix from their type (`ARCCRU01`), PLCs (`PLC01`, type PLC), and Cage Lights, Alarm Strobes
+and Speakers (`LGT01`, `SRN01`, `SPK01`; types LGT, SRN, SPK); the mod has no Label Maker.)*
 
 | Command | Parameters | Auth | Errors |
 |---------|-----------|------|--------|
@@ -160,6 +161,26 @@ Sensor modules, as `RTVSNSVAL` reads them (`RTNVAL`, `RTNAUX`):
 | Fluid Sensor | face (default: behind the PLC) | how full, percent | the amount, mB |
 | Light Sensor | — | the light level at the PLC, 0–15 | `*DAY` / `*NIGHT` |
 | Timer Module | — | game ticks | the day and time (`Day 2 14:32`) |
+
+## 7b. Signals: Cage Lights, Alarm Strobes, Speakers **[EXT]**
+
+Cage Lights (`LGT`), Alarm Strobes (`SRN`) and Speakers (`SPK`) (docs/signals) work from the redstone at their block
+on their own; cabled to a network they're devices there too. `DEV` takes a list (`DEV(LGT01 LGT02)`) or `*ALL` for
+every online device of the type; every named device is checked before any is changed. An Alarm Strobe or Speaker
+whose trigger is Redstone takes no network commands: named, it's ELC2408; `*ALL` leaves it out.
+
+| Command | Parameters | Context | Auth | Notes |
+|---------|-----------|---------|------|-------|
+| `CHGLGT` | `DEV`(P1, Req, list) `STATUS(*SAME\|*ON\|*OFF\|*TOGGLE)` `LVL(*SAME\|1–15)` | IB | configure | The light's network state (it adds to its redstone's: either turns it on; Always on ignores it) and light level. ELC1301, ELC1302, ELC1303, ELC2401 |
+| `STRSRN` | `DEV`(P1, Req, list) `SOUND(*SAME\|*WAIL\|*YELP\|*KLAXON\|*BELL\|*HORN\|*BEEP\|*NONE)` `MODE(*SAME\|*SOLID\|*SLOW\|*MEDIUM\|*FAST)` | IB | configure | Turns the strobe on, its tone and light mode set when given (`*NONE`: light only). Strobes on one network with the same tone share a start, so they sound together. ELC1301, ELC1302, ELC1303, ELC2408 |
+| `ENDSRN` | `DEV`(P1, Req, list) | IB | configure | Stops the sound and light (a redstone signal on a Both-trigger strobe keeps it on). ELC1301, ELC1302, ELC1303, ELC2408 |
+| `PLYAUD` | `DEV`(P1, Req, list) `SRC`(P2, Req: 'file name' or 'URL') `VOL(*SAME\|0–100)` `LOOP(*SAME\|*NO\|*YES)` | IB | configure | Plays an OGG Vorbis or MP3 file from `<world>/encodedlogistics/audio/<SYSNAME>/`, or a web URL (http/https, `allowWebAudio`, a host on `webAudioHosts`; each listening player's game fetches it). Checked once before any speaker starts. ELC1301, ELC1302, ELC1303, ELC2402–ELC2406, ELC2408 |
+| `PLYNOTE` | `DEV`(P1, Req, list) `INST(*HARP\|*BASS\|*SNARE\|*HAT\|*BASSDRUM\|*BELL\|*FLUTE\|*CHIME\|*GUITAR\|*XYLOPHONE\|*IRONXYLO\|*COWBELL\|*DIDGERIDOO\|*BIT\|*BANJO\|*PLING)` `NOTE`(P3, Req, 0–24, list of up to 32) | IB | configure | Plays the first note now; more than one note is a sequence, the next played on each rising redstone edge. ELC1301, ELC1302, ELC1303, ELC2407, ELC2408 |
+| `STPAUD` | `DEV`(P1, Req, list) | IB | configure | Stops what the speaker is playing (and clears an error). ELC1301, ELC1302, ELC1303, ELC2408 |
+
+Server config (`signals`): `audioMaxBytes` (MB, 4), `audioMaxSeconds` (180), `allowWebAudio` (AUTO: on in single-player,
+off on dedicated servers), `webAudioHosts` (a listed host allows its subdomains; empty: none), `sirenMaxRange` (96),
+`speakerMaxRange` (64), `signalDeviceDrain` (FE/t). Client config: `neverPlayWebAudio`.
 
 ## 8. Messages, displays and output
 

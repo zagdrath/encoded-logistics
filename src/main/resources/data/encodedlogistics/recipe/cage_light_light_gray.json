@@ -1,0 +1,20 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  " B ",
+  "GLG",
+  "NDN"
+ ],
+ "key": {
+  "B": "minecraft:iron_bars",
+  "G": "minecraft:glass",
+  "L": "minecraft:glowstone_dust",
+  "N": "minecraft:iron_nugget",
+  "D": "minecraft:light_gray_dye"
+ },
+ "result": {
+  "id": "encodedlogistics:cage_light_light_gray",
+  "count": 4
+ }
+}

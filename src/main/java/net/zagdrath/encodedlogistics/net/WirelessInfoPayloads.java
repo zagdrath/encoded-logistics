@@ -33,7 +33,7 @@ import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.wireless.Wireless;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
-// The wireless blocks' (and the Midrange Disk and Tape Drives') popup (WirelessHud), as the rack's: the client asks about the block its crosshair settles on
+// The wireless blocks' (and the Midrange Disk and Tape Drives' and the signal devices') popup (WirelessHud), as the rack's: the client asks about the block its crosshair settles on
 // (Query, then every few ticks while it stays); the server answers with its description and device name (Info).
 public final class WirelessInfoPayloads {
     private static final double REACH_SQR = 16 * 16;
@@ -60,9 +60,10 @@ public final class WirelessInfoPayloads {
                 return;
             }
             ServerLevel level = player.level();
-            // A Midrange Disk or Tape Drive (any of its blocks): its own popup.
+            // A Midrange Disk or Tape Drive (any of its blocks), or a signal device: its own popup.
             BlockState state = level.getBlockState(query.pos());
-            BlockPos master = state.getBlock() instanceof FootprintBlock footprint ? footprint.master(level, query.pos(), state) : null;
+            BlockPos master = state.getBlock() instanceof FootprintBlock footprint ? footprint.master(level, query.pos(), state)
+                    : query.pos();
             if (master != null && level.getBlockEntity(master) instanceof MidrangeHud hud) {
                 PacketDistributor.sendToPlayer(player, new Info(query.pos(), hud.deviceName(), hud.hudInfo()));
                 return;

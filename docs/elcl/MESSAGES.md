@@ -210,6 +210,19 @@ The commands on files:
 | ELC2246 | 30 | File &1 was not changed: definition errors. |
 | ELC2247 | 30 | Member &1 is not a &2 source member. |
 
+## ELC24xx — Signals: lights, sirens, speakers *(added)*
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC2401 | 30 | Light level &1 is outside 1-15. | *(`CHGLGT LVL`)*
+| ELC2402 | 30 | Audio file &1 not found in the audio folder. | *(`PLYAUD`, a Speaker's Play or rising edge)*
+| ELC2403 | 30 | Audio file &1 is larger or longer than allowed (&2). | *(`audioMaxBytes`, `audioMaxSeconds`; a URL's, as its listener's game finds it)*
+| ELC2404 | 30 | Web audio is disabled on this server. | *(`allowWebAudio`)*
+| ELC2405 | 30 | Host &1 is not on the web audio allowlist. | *(`webAudioHosts`)*
+| ELC2406 | 30 | Audio &1 could not be decoded (OGG Vorbis or MP3 only). |
+| ELC2407 | 30 | Note &1 is outside 0-24. | *(`PLYNOTE NOTE`, a Speaker's Notes row)*
+| ELC2408 | 30 | Device &1 takes no network commands: its trigger is Redstone. | *(added: a named Alarm Strobe or Speaker whose trigger is Redstone)*
+
 ## USRxxxx — User messages
 
 Raised with `SNDPGMMSG MSGTYPE(*ESCAPE)`; default `USR0001`.

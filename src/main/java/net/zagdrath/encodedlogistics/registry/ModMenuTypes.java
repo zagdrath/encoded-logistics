@@ -44,6 +44,7 @@ import net.zagdrath.encodedlogistics.menu.SchematicEncoderMenu;
 import net.zagdrath.encodedlogistics.menu.TapeDriveMenu;
 import net.zagdrath.encodedlogistics.menu.TerminalDeskMenu;
 import net.zagdrath.encodedlogistics.menu.ThresholdSensorMenu;
+import net.zagdrath.encodedlogistics.signal.SignalMenu;
 
 public final class ModMenuTypes {
     public static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, EncodedLogistics.MODID);
@@ -139,6 +140,9 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.create(DisplayPanelMenu::new));
 
     public static final Supplier<MenuType<PlcMenu>> PLC = MENU_TYPES.register("plc", () -> IMenuTypeExtension.create(PlcMenu::new));
+
+    public static final Supplier<MenuType<SignalMenu>> SIGNAL_DEVICE = MENU_TYPES.register("signal_device",
+            () -> IMenuTypeExtension.create(SignalMenu::new));
 
     private ModMenuTypes() {}
 }
