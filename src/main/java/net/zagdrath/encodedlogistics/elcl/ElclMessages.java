@@ -197,6 +197,11 @@ public final class ElclMessages {
         define("ELC2407", SEVERE, "Note &1 is outside 0-24.");
         // Not in the signals handoff: a network command to a device whose trigger is Redstone.
         define("ELC2408", SEVERE, "Device &1 takes no network commands: its trigger is Redstone.");
+        // MIDI files on Speakers (PLYMID).
+        define("ELC2409", SEVERE, "File &1 is not a Standard MIDI File.");
+        define("ELC2410", SEVERE, "MIDI file &1 is format &2: only formats 0 and 1 play.");
+        define("ELC2411", SEVERE, "Track &1 is not in MIDI file &2.");
+        define("ELC2412", SEVERE, "Channel &1 has no notes in MIDI file &2.");
     }
 
     public static Map<String, Definition> all() {

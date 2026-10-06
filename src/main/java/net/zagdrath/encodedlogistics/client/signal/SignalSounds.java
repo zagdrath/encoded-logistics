@@ -33,7 +33,8 @@ import net.zagdrath.encodedlogistics.signal.SpeakerBlockEntity;
 // The signal devices' sounds on the client (SignalClientHooks):
 // - an active Alarm Strobe plays its tone at the start of each sample, counted from its shared start tick (a sample
 //   missed by a few ticks is still played; later, it waits for the next), from its sounder;
-// - a Speaker's note (a block event) plays at once, at the instrument's pitch for it;
+// - a Speaker's note (a block event: PLYNOTE's, or a MIDI file's from the server) plays at once, at the instrument's
+//   pitch for it and its velocity times the speaker's volume;
 // - a Speaker playing a file asks the server for it (AudioCache) and, once it's here, starts it where the play should be
 //   by now; a URL is fetched by this game (unless neverPlayWebAudio) with the server's limits, and its length - or why
 //   it failed - reported back (AudioPayloads.Report). Each device's sound stops when it does, or its block goes.
@@ -133,9 +134,9 @@ public final class SignalSounds implements SignalClientHooks {
     // --- Speakers ---
 
     @Override
-    public void note(SpeakerBlockEntity speaker, int instrument, int note) {
+    public void note(SpeakerBlockEntity speaker, int instrument, int note, float velocity) {
         Holder<SoundEvent> event = SpeakerBlockEntity.INSTRUMENTS[Math.clamp(instrument, 0, SpeakerBlockEntity.INSTRUMENTS.length - 1)].getSoundEvent();
-        play(new DeviceSound(event.value(), SoundSource.RECORDS, origin(speaker, 0.15), speaker.volume() / 100.0F, speaker.range(),
+        play(new DeviceSound(event.value(), SoundSource.RECORDS, origin(speaker, 0.15), speaker.volume() / 100.0F * velocity, speaker.range(),
                 NoteBlock.getPitchFromNote(Math.clamp(note, 0, 24)), () -> !speaker.isRemoved()));
     }
 
@@ -147,7 +148,9 @@ public final class SignalSounds implements SignalClientHooks {
     private void speaker(SpeakerBlockEntity speaker) {
         Playing state = state(speaker);
         Level level = speaker.getLevel();
-        if (level == null || !speaker.playing() || speaker.playingSource() == SpeakerBlockEntity.Source.NOTE) {
+        // Notes (PLYNOTE's or a MIDI file's) come as block events: nothing to stream.
+        if (level == null || !speaker.playing() || speaker.playingSource() == SpeakerBlockEntity.Source.NOTE
+                || speaker.playingSource() == SpeakerBlockEntity.Source.MIDI) {
             stop(state);
             state.play = -1;
             return;

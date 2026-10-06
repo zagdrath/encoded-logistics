@@ -17,6 +17,7 @@ import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.signal.AudioFiles;
 import net.zagdrath.encodedlogistics.signal.CageLightBlockEntity;
+import net.zagdrath.encodedlogistics.signal.MidiParts;
 import net.zagdrath.encodedlogistics.signal.NoteInstruments;
 import net.zagdrath.encodedlogistics.signal.SignalBlockEntity;
 import net.zagdrath.encodedlogistics.signal.SirenBlock;
@@ -32,6 +33,8 @@ import net.zagdrath.encodedlogistics.signal.SpeakerBlockEntity;
 //   PLYAUD   a Speaker plays a file from the audio folder or a web URL (ELC2402-2406), its volume and loop; STPAUD stops.
 //   PLYNOTE  a Speaker plays a note (an instrument, 0-24); more than one note: a sequence, the rest one per rising
 //            redstone edge.
+//   PLYMID   a Speaker plays a MIDI file from the audio folder as note block notes, its parts (tracks or channels) on
+//            the speakers MAP names, all from its clock; STPAUD on any of them stops them all.
 public final class SignalCommands {
     private SignalCommands() {}
 
@@ -100,6 +103,16 @@ public final class SignalCommands {
             }
             for (SpeakerBlockEntity speaker : devices(call, SpeakerBlockEntity.class, SpeakerBlockEntity.TYPE, true)) {
                 speaker.playNotes(instrument, notes);
+            }
+        });
+        CommandRegistry.bind("PLYMID", call -> {
+            String file = call.text("FILE").trim();
+            int volume = call.given("VOL") && !call.text("VOL").equals("*SAME") ? (int) call.integer("VOL") : -1;
+            SpeakerBlockEntity.MapBy by = SpeakerBlockEntity.MapBy.valueOf(call.text("MAPBY").substring(1));
+            // Element groups come flattened: 1 SPK01 10 SPK04.
+            List<MidiParts.Part> map = MidiParts.parse(String.join(" ", call.list("MAP")), "MAP");
+            for (SpeakerBlockEntity speaker : devices(call, SpeakerBlockEntity.class, SpeakerBlockEntity.TYPE, true)) {
+                speaker.playMidi(file, by, map, volume, call.text("LOOP").equals("*YES"));
             }
         });
         CommandRegistry.bind("STPAUD", call -> {

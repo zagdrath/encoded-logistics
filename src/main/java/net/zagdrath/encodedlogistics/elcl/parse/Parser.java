@@ -240,7 +240,8 @@ public final class Parser {
         }
     }
 
-    // A parameter's values up to its ")".
+    // A parameter's values up to its ")". A list's values may come in element groups - MAP((1 SPK01) (10 SPK04)) - each
+    // group's values taken in turn, as if listed without the brackets; a bracket round one value is an expression.
     private List<Expr> values(ParamDef param) {
         List<Expr> values = new ArrayList<>();
         if (param.kind() == ParamDef.Kind.COMMAND) {
@@ -253,9 +254,33 @@ public final class Parser {
             if (peek().kind() == Kind.EOL || peek().kind() == Kind.EOF) {
                 throw error(peek());
             }
+            if (param.isList() && peek().kind() == Kind.LPAREN && group(values)) {
+                continue;
+            }
             values.add(expression());
         }
         return values;
+    }
+
+    // An element group at "(": its values added, true; or, with only one value in it, nothing read and false.
+    private boolean group(List<Expr> values) {
+        int from = pos;
+        next();
+        List<Expr> group = new ArrayList<>();
+        group.add(expression());
+        if (peek().kind() == Kind.RPAREN) {
+            pos = from;
+            return false;
+        }
+        while (peek().kind() != Kind.RPAREN) {
+            if (peek().kind() == Kind.EOL || peek().kind() == Kind.EOF) {
+                throw error(peek());
+            }
+            group.add(expression());
+        }
+        next();
+        values.addAll(group);
+        return true;
     }
 
     // A nested command inside THEN() / EXEC() / CMD().

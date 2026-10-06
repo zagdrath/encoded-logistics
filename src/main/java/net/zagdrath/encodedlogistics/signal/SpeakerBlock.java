@@ -22,7 +22,8 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
 // The Speaker (signals handoff 4): one block for ceilings, walls and floors - a flat 14 x 14 x 2 panel on whichever
 // face it's placed - with an LED in its corner (STATE: idle, playing green, error amber). What it plays is its block
-// entity's (SpeakerBlockEntity); a note it's told to play reaches clients as a block event (instrument, note).
+// entity's (SpeakerBlockEntity); a note it's told to play reaches clients as a block event (instrument, note and a MIDI
+// note's velocity, packed: NoteInstruments.eventA / eventB).
 public class SpeakerBlock extends SignalBlock {
     public enum State implements StringRepresentable {
         IDLE, PLAYING, ERROR;
@@ -46,11 +47,12 @@ public class SpeakerBlock extends SignalBlock {
         builder.add(STATE);
     }
 
-    // A note (SpeakerBlockEntity.playNote): played on the clients near it.
+    // A note (PLYNOTE, or a MIDI file's): played on the clients near it.
     @Override
-    protected boolean triggerEvent(BlockState state, Level level, BlockPos pos, int instrument, int note) {
+    protected boolean triggerEvent(BlockState state, Level level, BlockPos pos, int a, int b) {
         if (level.isClientSide() && level.getBlockEntity(pos) instanceof SpeakerBlockEntity speaker) {
-            SignalClientHooks.get().note(speaker, instrument, note);
+            SignalClientHooks.get().note(speaker, NoteInstruments.eventInstrument(a), NoteInstruments.eventNote(b),
+                    NoteInstruments.eventVelocity(a, b) / 127.0F);
         }
         return true;
     }

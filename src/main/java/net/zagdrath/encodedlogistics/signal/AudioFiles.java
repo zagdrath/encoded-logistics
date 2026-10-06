@@ -37,12 +37,18 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 // audio folder itself), OGG Vorbis or MP3, read and checked here - found (ELC2402), within audioMaxBytes and
 // audioMaxSeconds (ELC2403), decodable (ELC2406) - and kept by their content's hash, which is all clients are told:
 // they ask for the bytes (AudioPayloads) and keep them by hash. Web URLs: http(s) only, allowWebAudio on (ELC2404),
-// the host on webAudioHosts (ELC2405); the clients fetch those themselves, with the same limits.
+// the host on webAudioHosts (ELC2405); the clients fetch those themselves, with the same limits. MIDI files (.mid,
+// .midi) from the same folder are read here too (MidiFile) - found (ELC2402), within midiMaxKilobytes and
+// midiMaxSeconds (ELC2403), a format 0 or 1 Standard MIDI File (ELC2409, ELC2410) - and played on the server as note
+// block notes, so they never go to the clients.
 public final class AudioFiles {
     public enum Format { OGG, MP3 }
 
     // A checked file: its name, hash (hex SHA-256) and length.
     public record Audio(String name, String hash, Format format, double seconds) {}
+
+    // A checked MIDI file: its name, hash and notes.
+    public record Midi(String name, String hash, MidiFile.Song song) {}
 
     // The files checked lately, by hash: where they are (read again, and their hash checked, when a client asks).
     private static final int KEPT = 256;
@@ -104,22 +110,8 @@ public final class AudioFiles {
         if (!audioName(file)) {
             throw new ElclException(file.toLowerCase(Locale.ROOT).matches(".*\\.(ogg|mp3)") ? "ELC2402" : "ELC2406", file);
         }
-        Path folder = folder(server, system), path = folder.resolve(file);
-        if (!Files.isRegularFile(path)) {
-            path = findIgnoringCase(folder, file);
-            if (path == null) {
-                throw new ElclException("ELC2402", file);
-            }
-        }
-        byte[] bytes;
-        try {
-            if (Files.size(path) > maxBytes()) {
-                throw new ElclException("ELC2403", file, limits());
-            }
-            bytes = Files.readAllBytes(path);
-        } catch (IOException e) {
-            throw new ElclException("ELC2402", file);
-        }
+        Path path = find(server, system, file);
+        byte[] bytes = read(path, file, maxBytes(), limits());
         Format format = format(bytes);
         if (format == null) {
             throw new ElclException("ELC2406", file);
@@ -136,6 +128,81 @@ public final class AudioFiles {
             BY_HASH.put(audio.hash(), path);
         }
         return audio;
+    }
+
+    // A file in the system's folder (ELC2402 if it isn't there; its name's case needn't match).
+    private static Path find(MinecraftServer server, String system, String file) throws ElclException {
+        Path folder = folder(server, system), path = folder.resolve(file);
+        if (!Files.isRegularFile(path)) {
+            path = findIgnoringCase(folder, file);
+            if (path == null) {
+                throw new ElclException("ELC2402", file);
+            }
+        }
+        return path;
+    }
+
+    // Its bytes, if it's no larger than max (ELC2403 with the limits otherwise).
+    private static byte[] read(Path path, String file, long max, String limits) throws ElclException {
+        try {
+            if (Files.size(path) > max) {
+                throw new ElclException("ELC2403", file, limits);
+            }
+            return Files.readAllBytes(path);
+        } catch (IOException e) {
+            throw new ElclException("ELC2402", file);
+        }
+    }
+
+    // --- MIDI files ---
+
+    public static long midiMaxBytes() {
+        return Config.MIDI_MAX_KILOBYTES.getAsInt() * 1024L;
+    }
+
+    public static int midiMaxSeconds() {
+        return Config.MIDI_MAX_SECONDS.getAsInt();
+    }
+
+    // "256 KB, 600 s" (ELC2403's limit for a MIDI file).
+    public static String midiLimits() {
+        return Config.MIDI_MAX_KILOBYTES.getAsInt() + " KB, " + midiMaxSeconds() + " s";
+    }
+
+    // The .mid and .midi files in a folder, by name (for the settings screen's list).
+    public static List<String> listMidi(MinecraftServer server, String system) {
+        Path folder = folder(server, system);
+        List<String> names = new ArrayList<>();
+        if (!Files.isDirectory(folder)) {
+            return names;
+        }
+        try (Stream<Path> files = Files.list(folder)) {
+            files.filter(Files::isRegularFile).map(path -> path.getFileName().toString()).filter(AudioFiles::midiName).sorted(String.CASE_INSENSITIVE_ORDER)
+                    .limit(256).forEach(names::add);
+        } catch (IOException ignored) {
+            // Nothing listed.
+        }
+        return names;
+    }
+
+    public static boolean midiName(String name) {
+        String lower = name.toLowerCase(Locale.ROOT);
+        return name.matches("[A-Za-z0-9_. -]+") && !name.contains("..") && (lower.endsWith(".mid") || lower.endsWith(".midi"));
+    }
+
+    // A MIDI file in the system's folder, read and checked: another kind of file is ELC2409.
+    public static Midi midi(MinecraftServer server, String system, String name) throws ElclException {
+        String file = name.trim();
+        if (!midiName(file)) {
+            throw new ElclException(file.toLowerCase(Locale.ROOT).matches(".*\\.midi?") ? "ELC2402" : "ELC2409", file);
+        }
+        Path path = find(server, system, file);
+        byte[] bytes = read(path, file, midiMaxBytes(), midiLimits());
+        MidiFile.Song song = MidiFile.read(file, bytes);
+        if (song.seconds() > midiMaxSeconds()) {
+            throw new ElclException("ELC2403", file, midiLimits());
+        }
+        return new Midi(path.getFileName().toString(), hash(bytes), song);
     }
 
     // A file checked lately, by its hash (what a client asks for): its bytes, if it's still there unchanged.

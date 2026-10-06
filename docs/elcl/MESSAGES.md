@@ -215,13 +215,17 @@ The commands on files:
 | ID | Sev | Text |
 |----|-----|------|
 | ELC2401 | 30 | Light level &1 is outside 1-15. | *(`CHGLGT LVL`)*
-| ELC2402 | 30 | Audio file &1 not found in the audio folder. | *(`PLYAUD`, a Speaker's Play or rising edge)*
-| ELC2403 | 30 | Audio file &1 is larger or longer than allowed (&2). | *(`audioMaxBytes`, `audioMaxSeconds`; a URL's, as its listener's game finds it)*
+| ELC2402 | 30 | Audio file &1 not found in the audio folder. | *(`PLYAUD`, `PLYMID`, a Speaker's Play or rising edge)*
+| ELC2403 | 30 | Audio file &1 is larger or longer than allowed (&2). | *(`audioMaxBytes`, `audioMaxSeconds`; a URL's, as its listener's game finds it; a MIDI file's: `midiMaxKilobytes`, `midiMaxSeconds`)*
 | ELC2404 | 30 | Web audio is disabled on this server. | *(`allowWebAudio`)*
 | ELC2405 | 30 | Host &1 is not on the web audio allowlist. | *(`webAudioHosts`)*
 | ELC2406 | 30 | Audio &1 could not be decoded (OGG Vorbis or MP3 only). |
 | ELC2407 | 30 | Note &1 is outside 0-24. | *(`PLYNOTE NOTE`, a Speaker's Notes row)*
 | ELC2408 | 30 | Device &1 takes no network commands: its trigger is Redstone. | *(added: a named Alarm Strobe or Speaker whose trigger is Redstone)*
+| ELC2409 | 30 | File &1 is not a Standard MIDI File. | *(`PLYMID FILE`, a Speaker's MIDI source: not .mid / .midi, or not readable as one)*
+| ELC2410 | 30 | MIDI file &1 is format &2: only formats 0 and 1 play. | *(format 2)*
+| ELC2411 | 30 | Track &1 is not in MIDI file &2. | *(`PLYMID MAP` by track)*
+| ELC2412 | 30 | Channel &1 has no notes in MIDI file &2. | *(`PLYMID MAP` by channel)*
 
 ## USRxxxx — User messages
 

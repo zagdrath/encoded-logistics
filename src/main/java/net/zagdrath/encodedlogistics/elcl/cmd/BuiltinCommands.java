@@ -348,6 +348,15 @@ final class BuiltinCommands {
                 .p(p("INST", "Instrument", Kind.SPECIAL).sv(NoteInstruments.NAMES).dft("*HARP"))
                 // 0-24 each, checked by the command (ELC2407); more than one: a sequence, a note each rising redstone edge.
                 .p(p("NOTE", "Note", Kind.INT).req().list(NoteInstruments.MAX_NOTES)));
+        add(CommandDefinition.of("PLYMID", "Play MIDI").auth(CONFIGURE).positional(2)
+                .p(p("DEV", "Speaker", Kind.DEVICE).req())
+                .p(p("FILE", "MIDI file name", Kind.CHAR).req().len(64))
+                .p(p("LOOP", "Loop", Kind.SPECIAL).sv("*NO", "*YES").dft("*NO"))
+                .p(p("VOL", "Volume (%)", Kind.INT).sv("*SAME").dft("*SAME").range(0, 100))
+                // Pairs of a track or channel (or *ALL) and a speaker - MAP((1 SPK01) (10 SPK04)) - checked by the command;
+                // none: every part on DEV.
+                .p(p("MAP", "Parts (number, speaker)", Kind.CHAR).sv("*ALL").list(NoteInstruments.MAX_MIDI_PARTS * 2))
+                .p(p("MAPBY", "Map numbers", Kind.SPECIAL).sv("*AUTO", "*TRACK", "*CHANNEL").dft("*AUTO")));
         add(CommandDefinition.of("STPAUD", "Stop Audio").auth(CONFIGURE).positional(1)
                 .p(p("DEV", "Speaker", Kind.DEVICE).req().sv("*ALL").list(32)));
 

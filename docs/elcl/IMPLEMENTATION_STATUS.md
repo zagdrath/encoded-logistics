@@ -44,7 +44,7 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | §6 Power | RTVPWRSTS | Done | `ModCommands` |
 | §7 Redstone | RTVRSIN, CHGRSOUT | Done | `RedstoneCommands`, on any `blockentity/RedstoneDevice` (Control Interfaces and PLCs; `DEV(*SELF)` in a PLC's program) |
 | §7a PLCs (added) | RTVSNSVAL, SNDPLCPGM, STRPLC, ENDPLC; DLYTICK; DCL RETAIN; CRTELPGM TGT | Done | `elcl/exec/PlcCommands`; DLYTICK in `elcl/vm/Vm`; RETAIN and the PLC compile targets in `elcl/compile/Compiler` (`Target`); `plc/` |
-| §7b Signals (added) | CHGLGT, STRSRN, ENDSRN, PLYAUD, PLYNOTE, STPAUD | Done | `elcl/exec/SignalCommands` (DEV lists and *ALL, ELC2401-2408) on `signal/` |
+| §7b Signals (added) | CHGLGT, STRSRN, ENDSRN, PLYAUD, PLYNOTE, PLYMID, STPAUD | Done | `elcl/exec/SignalCommands` (DEV lists and *ALL, ELC2401-2412) on `signal/`; MIDI files `signal/MidiFile`, parts maps `signal/MidiParts` |
 | §8 Messages, displays, output | SNDMSG, DSPMSG, PRTTXT | Done | SNDMSG's TOTRM is accepted but not used |
 | §8 | SNDDSPTXT | Done | `elcl/device/DisplayDevice` on the Display Panel (`display/DisplayPanelBlockEntity`) |
 | §8 | CLRDSP, CHGDSPRGN, SNDDSPWDG, SNDDSPGPH, SNDDSPIMG, RTVDSPSIZ (added) | Done | `elcl/exec/DisplayCommands` |

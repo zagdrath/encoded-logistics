@@ -795,6 +795,18 @@ public class Config {
             .comment("The longest audio file (or web audio) a Speaker plays, in seconds.")
             .defineInRange("audioMaxSeconds", 180, 1, 3_600);
 
+    public static final ModConfigSpec.IntValue MIDI_MAX_KILOBYTES = BUILDER
+            .comment("The largest MIDI file a Speaker plays, in KB.")
+            .defineInRange("midiMaxKilobytes", 256, 1, 8_192);
+
+    public static final ModConfigSpec.IntValue MIDI_MAX_SECONDS = BUILDER
+            .comment("The longest MIDI file a Speaker plays, in seconds.")
+            .defineInRange("midiMaxSeconds", 600, 1, 3_600);
+
+    public static final ModConfigSpec.IntValue MIDI_MAX_NOTES = BUILDER
+            .comment("The most notes one Speaker starts at once (in one tick) from a MIDI file; the quietest beyond it are left out.")
+            .defineInRange("midiMaxNotes", 8, 1, 64);
+
     public enum WebAudioAllowed { AUTO, TRUE, FALSE }
 
     public static final ModConfigSpec.EnumValue<WebAudioAllowed> ALLOW_WEB_AUDIO = BUILDER

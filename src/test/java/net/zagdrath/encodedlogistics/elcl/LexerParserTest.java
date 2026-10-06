@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
 import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
+import net.zagdrath.encodedlogistics.elcl.compile.Compiler;
 import net.zagdrath.encodedlogistics.elcl.lex.Lexer;
 import net.zagdrath.encodedlogistics.elcl.lex.Token;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
@@ -69,6 +70,22 @@ class LexerParserTest {
     void positionalGoesToTheSchema() {
         Stmt s = Parser.parseCommand("STRCRAFT LOGIC_DIE 64 WAIT(*YES)").statements().getFirst();
         assertEquals("STRCRAFT ITEM(LOGIC_DIE) QTY(64) WAIT(*YES)", s.toSource());
+    }
+
+    @Test
+    void elementGroupsInLists() {
+        Stmt s = Parser.parseCommand("PLYMID SPK01 'song.mid' MAP((1 SPK01) (10 SPK04) (*ALL SPK02))").statements().getFirst();
+        assertEquals(List.of("1", "SPK01", "10", "SPK04", "*ALL", "SPK02"), s.param("MAP").values().stream().map(Expr::toString).toList());
+        // Read back without the brackets: the same values.
+        Stmt again = Parser.parseCommand(s.toSource()).statements().getFirst();
+        assertEquals(s.param("MAP").values().stream().map(Expr::toString).toList(), again.param("MAP").values().stream().map(Expr::toString).toList());
+        assertTrue(Compiler.checkCommand(s).stream().noneMatch(Diagnostic::isError), () -> Compiler.checkCommand(s).toString());
+        // A bracket round one value is still an expression.
+        Stmt notes = Parser.parseCommand("PLYNOTE SPK01 NOTE((&A + 1) 5)").statements().getFirst();
+        assertInstanceOf(Expr.Group.class, notes.param("NOTE").values().getFirst());
+        assertEquals(2, notes.param("NOTE").values().size());
+        // A group that isn't closed.
+        assertTrue(!Parser.parseCommand("PLYMID SPK01 'a.mid' MAP((1 SPK01)").diagnostics().isEmpty());
     }
 
     @Test

@@ -166,8 +166,9 @@ Sensor modules, as `RTVSNSVAL` reads them (`RTNVAL`, `RTNAUX`):
 
 Cage Lights (`LGT`), Alarm Strobes (`SRN`) and Speakers (`SPK`) (docs/signals) work from the redstone at their block
 on their own; cabled to a network they're devices there too. `DEV` takes a list (`DEV(LGT01 LGT02)`) or `*ALL` for
-every online device of the type; every named device is checked before any is changed. An Alarm Strobe or Speaker
-whose trigger is Redstone takes no network commands: named, it's ELC2408; `*ALL` leaves it out.
+every online device of the type (`PLYMID`'s `DEV` is one speaker, the play's clock); every named device is checked
+before any is changed. An Alarm Strobe or Speaker whose trigger is Redstone takes no network commands: named, it's
+ELC2408; `*ALL` leaves it out.
 
 | Command | Parameters | Context | Auth | Notes |
 |---------|-----------|---------|------|-------|
@@ -176,11 +177,13 @@ whose trigger is Redstone takes no network commands: named, it's ELC2408; `*ALL`
 | `ENDSRN` | `DEV`(P1, Req, list) | IB | configure | Stops the sound and light (a redstone signal on a Both-trigger strobe keeps it on). ELC1301, ELC1302, ELC1303, ELC2408 |
 | `PLYAUD` | `DEV`(P1, Req, list) `SRC`(P2, Req: 'file name' or 'URL') `VOL(*SAME\|0–100)` `LOOP(*SAME\|*NO\|*YES)` | IB | configure | Plays an OGG Vorbis or MP3 file from `<world>/encodedlogistics/audio/<SYSNAME>/`, or a web URL (http/https, `allowWebAudio`, a host on `webAudioHosts`; each listening player's game fetches it). Checked once before any speaker starts. ELC1301, ELC1302, ELC1303, ELC2402–ELC2406, ELC2408 |
 | `PLYNOTE` | `DEV`(P1, Req, list) `INST(*HARP\|*BASS\|*SNARE\|*HAT\|*BASSDRUM\|*BELL\|*FLUTE\|*CHIME\|*GUITAR\|*XYLOPHONE\|*IRONXYLO\|*COWBELL\|*DIDGERIDOO\|*BIT\|*BANJO\|*PLING)` `NOTE`(P3, Req, 0–24, list of up to 32) | IB | configure | Plays the first note now; more than one note is a sequence, the next played on each rising redstone edge. ELC1301, ELC1302, ELC1303, ELC2407, ELC2408 |
-| `STPAUD` | `DEV`(P1, Req, list) | IB | configure | Stops what the speaker is playing (and clears an error). ELC1301, ELC1302, ELC1303, ELC2408 |
+| `PLYMID` | `DEV`(P1, Req) `FILE`(P2, Req: 'file name') `LOOP(*NO\|*YES)` `VOL(*SAME\|0–100)` `MAP`(pairs of a number or `*ALL` and a speaker: `MAP((1 SPK01) (10 SPK04))`, up to 32) `MAPBY(*AUTO\|*TRACK\|*CHANNEL)` | IB | configure | Plays a Standard MIDI File (`.mid` / `.midi`, format 0 or 1) from `<world>/encodedlogistics/audio/<SYSNAME>/` as note block notes, timed on the server to the tick (tempo changes included), velocity as volume. Each General MIDI program plays as the closest note block instrument (piano harp, bass bass, guitar guitar, woodwinds and strings flute, bells bell or chime, mallets xylophone, brass and synth leads bit...), channel 10 as bass drum, snare and hi-hat (cowbell its own) by drum note; keys outside an instrument's two octaves move by octaves into them. No `MAP`: every part plays on `DEV`. With `MAP`, each track or channel (`MAPBY`; `*AUTO`: channels in a format 0 file, tracks in format 1) plays on the speakers named for it, all from `DEV`'s clock; a speaker given nothing (`DEV` too) stays silent. `VOL` sets every speaker in the play. The file, its parts and every speaker are checked before any starts. `midiMaxNotes` notes a tick at most per speaker (the loudest). ELC0103 (`MAP`), ELC1301, ELC1302, ELC1303, ELC2402, ELC2403, ELC2408–ELC2412 |
+| `STPAUD` | `DEV`(P1, Req, list) | IB | configure | Stops what the speaker is playing (and clears an error); a MIDI play stops on every speaker in it. ELC1301, ELC1302, ELC1303, ELC2408 |
 
-Server config (`signals`): `audioMaxBytes` (MB, 4), `audioMaxSeconds` (180), `allowWebAudio` (AUTO: on in single-player,
-off on dedicated servers), `webAudioHosts` (a listed host allows its subdomains; empty: none), `sirenMaxRange` (96),
-`speakerMaxRange` (64), `signalDeviceDrain` (FE/t). Client config: `neverPlayWebAudio`.
+Server config (`signals`): `audioMaxBytes` (MB, 4), `audioMaxSeconds` (180), `midiMaxKilobytes` (256),
+`midiMaxSeconds` (600), `midiMaxNotes` (notes one speaker starts in a tick, 8), `allowWebAudio` (AUTO: on in
+single-player, off on dedicated servers), `webAudioHosts` (a listed host allows its subdomains; empty: none),
+`sirenMaxRange` (96), `speakerMaxRange` (64), `signalDeviceDrain` (FE/t). Client config: `neverPlayWebAudio`.
 
 ## 8. Messages, displays and output
 

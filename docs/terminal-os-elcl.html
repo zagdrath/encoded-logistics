@@ -676,7 +676,7 @@ Select one of the following:
 <ul>
   <li>The title is the command's description and name. Each row has the label with dot leaders (bright when the parameter is required), the keyword (dim), the input field (the schema's length, at most 24 shown; longer values scroll) and a hint (dim) such as <em>1-999999</em>, <em>*FAIL, *PARTIAL</em>, <em>Name, F4 for list</em>, <em>*CHAR variable</em>.</li>
   <li>Required parameters come first. The others sit under <strong>Additional Parameters</strong>, shown with F10 or as soon as any of them has a value.</li>
-  <li>A list parameter (hint <em>+ for more values</em>) takes several values separated by blanks; typing just <code>+</code> and pressing Enter opens a window with four value fields.</li>
+  <li>A list parameter (hint <em>+ for more values</em>) takes several values separated by blanks; typing just <code>+</code> and pressing Enter opens a window with four value fields. Values that go together can be grouped in brackets, as <code>PLYMID MAP((1 SPK01) (10 SPK04))</code>: a group's values count as if listed one by one.</li>
   <li><strong>F4 on a field</strong> opens its value list, <em>Select Value - label</em>: special values first, then what the server lists for that kind of parameter (items in the network, filtered by what's typed in the field, up to 200; devices; libraries; members and programs in <code>ELGPL</code> and <code>ELSYS</code>; jobs; system values). Type <code>1</code> next to one and press Enter (or double-click it). On a command parameter (<code>SBMJOB CMD</code>, <code>ADDJOBSCDE CMD</code>, or <code>IF THEN</code> in the editor) F4 opens the prompter for the nested command instead.</li>
   <li><strong>Enter</strong> checks the values: a missing required value (<code>ELC0102</code>), a value not valid for a parameter (<code>ELC0103</code>) or out of range (<code>ELC0004</code>) is shown on the message line and the cursor goes to that field. When it's clean the prompter builds the command (keywords in schema order, values left at their defaults are left out, text quoted where needed).</li>
   <li>From Command Entry, the built command is put back on the command line for you to press Enter. From any other screen's command line it runs straight away. From the editor it replaces the statement in the source.</li>
@@ -1960,7 +1960,7 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
 </table></div>
 
 <h3 id="cmd-signals">Cage Lights, Alarm Strobes and Speakers</h3>
-<p>Added with <a href="#signals">the signal devices</a>. <code>DEV</code> takes a list (<code>DEV(LGT01 LGT02)</code>) or <code>*ALL</code> for every online device of the type; each named device is checked before any is changed. An Alarm Strobe or Speaker whose trigger is Redstone takes no network commands: named, it&#39;s ELC2408; <code>*ALL</code> leaves it out.</p>
+<p>Added with <a href="#signals">the signal devices</a>. <code>DEV</code> takes a list (<code>DEV(LGT01 LGT02)</code>) or <code>*ALL</code> for every online device of the type (<code>PLYMID</code>&#39;s is one speaker, the play&#39;s clock); each named device is checked before any is changed. An Alarm Strobe or Speaker whose trigger is Redstone takes no network commands: named, it&#39;s ELC2408; <code>*ALL</code> leaves it out.</p>
 <div class="table-wrap"><table class="cmd-table">
   <thead><tr><th>Command</th><th>Description</th><th>Parameters</th><th>Errors</th><th>Auth</th><th>Status</th></tr></thead>
   <tbody>
@@ -1969,7 +1969,8 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
     <tr><td>ENDSRN</td><td>End Siren</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">Stops the sound and light.</span></td></tr>
     <tr><td>PLYAUD</td><td>Play Audio</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li><li><code>SRC</code> P2: file name or URL, req</li><li><code>VOL</code>: 0&ndash;100 or <code>*SAME</code>, dft <code>*SAME</code></li><li><code>LOOP</code>: <code>*SAME *NO *YES</code>, dft <code>*SAME</code></li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2402&ndash;ELC2406, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">An OGG Vorbis or MP3 file from the system&#39;s audio folder, or a web URL; checked once before any speaker starts.</span></td></tr>
     <tr><td>PLYNOTE</td><td>Play Note</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li><li><code>INST</code>: <code>*HARP *BASS *SNARE *HAT *BASSDRUM *BELL *FLUTE *CHIME *GUITAR *XYLOPHONE *IRONXYLO *COWBELL *DIDGERIDOO *BIT *BANJO *PLING</code>, dft <code>*HARP</code></li><li><code>NOTE</code> P3: 0&ndash;24, list (up to 32), req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2407, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">The first note now; the rest one per rising redstone edge.</span></td></tr>
-    <tr><td>STPAUD</td><td>Stop Audio</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">Stops what it&#39;s playing.</span></td></tr>
+    <tr><td>PLYMID</td><td>Play MIDI</td><td class="params"><ul><li><code>DEV</code> P1: device, req</li><li><code>FILE</code> P2: MIDI file name, req</li><li><code>LOOP</code>: <code>*NO *YES</code>, dft <code>*NO</code></li><li><code>VOL</code>: 0&ndash;100 or <code>*SAME</code>, dft <code>*SAME</code></li><li><code>MAP</code>: pairs of a track or channel (or <code>*ALL</code>) and a speaker, up to 32: <code>MAP((1 SPK01) (10 SPK04))</code></li><li><code>MAPBY</code>: <code>*AUTO *TRACK *CHANNEL</code>, dft <code>*AUTO</code></li></ul></td><td>ELC0103, ELC1301, ELC1302, ELC1303, ELC2402, ELC2403, ELC2408&ndash;ELC2412</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">A Standard MIDI File (format 0 or 1) from the audio folder, played as note block notes from <code>DEV</code>&#39;s clock; with <code>MAP</code>, each part on the speakers named for it (<code>*AUTO</code>: channels in format 0, tracks in format 1), the rest silent. <code>VOL</code> sets every speaker in the play.</span></td></tr>
+    <tr><td>STPAUD</td><td>Stop Audio</td><td class="params"><ul><li><code>DEV</code> P1: device list (up to 32) or <code>*ALL</code>, req</li></ul></td><td>ELC1301, ELC1302, ELC1303, ELC2408</td><td>configure</td><td><span class="badge b-ok">Available</span><br><span class="muted">Stops what it&#39;s playing; a MIDI play stops on every speaker in it.</span></td></tr>
   </tbody>
 </table></div>
 
@@ -2350,13 +2351,17 @@ RTVMCHLST STATUS(*FAULT) RTNLST(&amp;BROKEN)</pre>
   <thead><tr><th>ID</th><th>Sev</th><th>Text</th><th>Meaning</th></tr></thead>
   <tbody>
     <tr><td>ELC2401</td><td>30</td><td>Light level &amp;1 is outside 1-15.</td><td><code>CHGLGT LVL</code>.</td></tr>
-    <tr><td>ELC2402</td><td>30</td><td>Audio file &amp;1 not found in the audio folder.</td><td><code>PLYAUD</code>, a Speaker&#39;s Play or rising edge.</td></tr>
-    <tr><td>ELC2403</td><td>30</td><td>Audio file &amp;1 is larger or longer than allowed (&amp;2).</td><td>Over <code>audioMaxBytes</code> or <code>audioMaxSeconds</code> (a URL&#39;s: as its listener&#39;s game finds it, on the Speaker&#39;s popup).</td></tr>
+    <tr><td>ELC2402</td><td>30</td><td>Audio file &amp;1 not found in the audio folder.</td><td><code>PLYAUD</code>, <code>PLYMID</code>, a Speaker&#39;s Play or rising edge.</td></tr>
+    <tr><td>ELC2403</td><td>30</td><td>Audio file &amp;1 is larger or longer than allowed (&amp;2).</td><td>Over <code>audioMaxBytes</code> or <code>audioMaxSeconds</code> (a URL&#39;s: as its listener&#39;s game finds it, on the Speaker&#39;s popup); a MIDI file over <code>midiMaxKilobytes</code> or <code>midiMaxSeconds</code>.</td></tr>
     <tr><td>ELC2404</td><td>30</td><td>Web audio is disabled on this server.</td><td><code>allowWebAudio</code> off.</td></tr>
     <tr><td>ELC2405</td><td>30</td><td>Host &amp;1 is not on the web audio allowlist.</td><td>Not on <code>webAudioHosts</code>.</td></tr>
     <tr><td>ELC2406</td><td>30</td><td>Audio &amp;1 could not be decoded (OGG Vorbis or MP3 only).</td><td>Another format, or a broken file.</td></tr>
     <tr><td>ELC2407</td><td>30</td><td>Note &amp;1 is outside 0-24.</td><td><code>PLYNOTE NOTE</code>, a Speaker&#39;s Notes row.</td></tr>
     <tr><td>ELC2408</td><td>30</td><td>Device &amp;1 takes no network commands: its trigger is Redstone.</td><td>A named Alarm Strobe or Speaker set to Redstone (added).</td></tr>
+    <tr><td>ELC2409</td><td>30</td><td>File &amp;1 is not a Standard MIDI File.</td><td><code>PLYMID FILE</code>, a Speaker&#39;s MIDI source: not <code>.mid</code> / <code>.midi</code>, or not readable as one.</td></tr>
+    <tr><td>ELC2410</td><td>30</td><td>MIDI file &amp;1 is format &amp;2: only formats 0 and 1 play.</td><td>A format 2 file.</td></tr>
+    <tr><td>ELC2411</td><td>30</td><td>Track &amp;1 is not in MIDI file &amp;2.</td><td><code>PLYMID MAP</code> by track.</td></tr>
+    <tr><td>ELC2412</td><td>30</td><td>Channel &amp;1 has no notes in MIDI file &amp;2.</td><td><code>PLYMID MAP</code> by channel.</td></tr>
   </tbody>
 </table></div>
 
@@ -2620,6 +2625,7 @@ ENDPGM</pre>
   <li><strong>Cage Lights</strong>, one per dye colour (four from iron bars, glass, glowstone dust, iron nuggets and the dye). Control: Redstone (on with a signal), Inverted, Always on or Network only; light level 1&ndash;15. <code>CHGLGT</code>&#39;s state adds to the redstone&#39;s.</li>
   <li><strong>Alarm Strobes</strong>, green, amber and red (their lenses the lamps&#39; colours: lime, orange, red). Light mode solid, slow, medium or fast flash; sound wail, yelp, klaxon, bell, horn, beep or silent; volume and range (up to <code>sirenMaxRange</code>, 96); trigger Redstone, Network or Both. Strobes on one network with the same tone start together.</li>
   <li><strong>Speakers</strong>: a flat panel with a green (playing) or amber (error) LED. Source: a file from <code>&lt;world&gt;/encodedlogistics/audio/&lt;SYSNAME&gt;/</code> (OGG Vorbis or MP3; a speaker on no network: the audio folder itself), a web URL, or a note. A rising redstone edge plays (or the next note of a <code>PLYNOTE</code> sequence); the signal going off stops a looping source. Files are checked on the server (<code>audioMaxBytes</code>, <code>audioMaxSeconds</code>) and sent to the players in range, who keep them by their hash.</li>
+  <li><strong>MIDI</strong>: a Speaker&#39;s source can also be a Standard MIDI File (<code>.mid</code> / <code>.midi</code>, format 0 or 1) from the same folder, within <code>midiMaxKilobytes</code> (256) and <code>midiMaxSeconds</code> (600). It plays on the server as note block notes, timed to the tick by the file&#39;s tempo changes, each note&#39;s velocity its volume: each General MIDI program as the closest note block instrument (piano harp, bass bass, guitar guitar, woodwinds and strings flute, bells bell or chime, mallets xylophone, brass and synth leads bit), channel 10&#39;s drums as bass drum, snare and hi-hat (and the cowbell), keys outside an instrument&#39;s two octaves moved by octaves into them. Its settings add <em>Map by</em> (Auto, Track, Channel) and <em>Parts</em> - <code>1 SPK01, 10 SPK04</code>, or blank for every part here - and its list scrolls with the wheel. The speaker that starts it keeps the clock for every speaker in the parts map, so they play together; one given no part stays silent, and stopping any of them (<code>STPAUD</code>, its Stop) stops them all. One speaker starts at most <code>midiMaxNotes</code> (8) notes a tick, the loudest.</li>
   <li><strong>Web audio</strong> is off on dedicated servers unless <code>allowWebAudio</code> says otherwise, and only from hosts on <code>webAudioHosts</code>. Each listening player&#39;s game fetches the URL itself, which shows their IP address to the host; the client option <code>neverPlayWebAudio</code> turns it off for that player. A blocked or failed fetch puts the speaker in error, with the reason on its popup.</li>
 </ul>
 <pre class="code">PGM
@@ -2629,6 +2635,8 @@ ENDPGM</pre>
   DLYJOB DLY(30)
   ENDSRN DEV(*ALL)
   STPAUD DEV(SPK01)
+  PLYMID DEV(SPK01) FILE('all-clear.mid') VOL(60) +
+         MAP((1 SPK01) (2 SPK02) (10 SPK04)) MAPBY(*CHANNEL) <span class="c">/* melody, bass, drums  */</span>
 ENDPGM</pre>
 </section>
 

@@ -156,6 +156,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("control_interface", ControlInterfaceGameTests::controlInterface);
         TESTS.put("signal_standalone", SignalGameTests::standalone);
         TESTS.put("signal_networked", SignalGameTests::networked);
+        TESTS.put("signal_midi", SignalGameTests::midi);
         TESTS.put("plc_standalone", PlcGameTests::standalone);
         TESTS.put("plc_networked", PlcGameTests::networked);
         TESTS.put("elcl_os_commands", ElclGameTests::osCommands);

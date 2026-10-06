@@ -29,8 +29,10 @@ import net.zagdrath.encodedlogistics.signal.SignalMenu;
 
 // A Cage Light's, Alarm Strobe's or Speaker's settings (signals handoff 1), on the Firewall panel's layout and texture:
 // the title with the device name; the field row: Status; the list: the device's rows (label muted at x 12, value
-// right-aligned at 164, 13 apart) - click one to cycle it (right-click back, shift by one step), or, a text row (a URL,
-// notes, the device name), to edit it in the bottom field (Enter sets it, Esc leaves it); and at the bottom right the
+// right-aligned at 164, 13 apart; more than eight - a Speaker's MIDI source - scroll with the wheel, as the Firewall's
+// list does, a thin bar at its right showing where) - click one to cycle it (right-click back, shift by one step), or,
+// a text row (a URL, notes, a MIDI parts map, the device name), to edit it in the bottom field (Enter sets it, Esc
+// leaves it); and at the bottom right the
 // action (a Speaker's Play / Stop). Everything shown is the device's synced state; changes go to the server
 // (SignalConfigPayload), which needs the Firewall's build permission.
 public class SignalScreen extends AbstractContainerScreen<SignalMenu> {
@@ -42,6 +44,8 @@ public class SignalScreen extends AbstractContainerScreen<SignalMenu> {
     private @Nullable EditBox field;
     // The row the bottom field is editing, or null.
     private @Nullable String editing;
+    // The first row shown.
+    private int scroll;
 
     public SignalScreen(SignalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, 176, 168);
@@ -75,14 +79,23 @@ public class SignalScreen extends AbstractContainerScreen<SignalMenu> {
             return;
         }
         List<SignalBlockEntity.Row> rows = device.rows();
-        for (int i = 0; i < ROWS && i < rows.size(); i++) {
-            SignalBlockEntity.Row row = rows.get(i);
+        scroll = Math.clamp(scroll, 0, maxScroll(rows));
+        for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
+            SignalBlockEntity.Row row = rows.get(scroll + i);
             int rowY = topPos + LIST_Y + i * ROW_H;
             boolean selected = row.key().equals(editing);
             if (selected || row.editable() && PartScreens.over(mouseX, mouseY, leftPos + LIST_X, rowY, LIST_W, ROW_H)) {
                 graphics.fill(leftPos + LIST_X, rowY, leftPos + LIST_X + LIST_W, rowY + ROW_H - 1, selected ? 0x3000D992 : 0x18FFFFFF);
             }
         }
+        if (maxScroll(rows) > 0) {
+            int height = ROWS * ROW_H, thumb = Math.max(6, height * ROWS / rows.size()), at = (height - thumb) * scroll / maxScroll(rows);
+            graphics.fill(leftPos + LIST_X + LIST_W - 1, topPos + LIST_Y + at, leftPos + LIST_X + LIST_W, topPos + LIST_Y + at + thumb, PartScreens.TEXT_MUTED);
+        }
+    }
+
+    private static int maxScroll(List<SignalBlockEntity.Row> rows) {
+        return Math.max(0, rows.size() - ROWS);
     }
 
     @Override
@@ -102,8 +115,8 @@ public class SignalScreen extends AbstractContainerScreen<SignalMenu> {
             case OFFLINE -> PartScreens.Status.IDLE;
         });
         List<SignalBlockEntity.Row> rows = device.rows();
-        for (int i = 0; i < ROWS && i < rows.size(); i++) {
-            SignalBlockEntity.Row row = rows.get(i);
+        for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
+            SignalBlockEntity.Row row = rows.get(scroll + i);
             int textY = LIST_Y + i * ROW_H + 3;
             graphics.text(font, row.label(), LABEL_X, textY, PartScreens.TEXT_MUTED, false);
             int room = VALUE_RIGHT - LABEL_X - font.width(row.label()) - 8;
@@ -144,8 +157,8 @@ public class SignalScreen extends AbstractContainerScreen<SignalMenu> {
             return true;
         }
         List<SignalBlockEntity.Row> rows = device.rows();
-        for (int i = 0; i < ROWS && i < rows.size(); i++) {
-            SignalBlockEntity.Row row = rows.get(i);
+        for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
+            SignalBlockEntity.Row row = rows.get(scroll + i);
             if (!in(x, y, LIST_X, LIST_Y + i * ROW_H, LIST_W, ROW_H)) {
                 continue;
             }
@@ -161,6 +174,16 @@ public class SignalScreen extends AbstractContainerScreen<SignalMenu> {
             return true;
         }
         return super.mouseClicked(event, doubleClick);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        SignalBlockEntity device = device();
+        if (device != null && in(mouseX - leftPos, mouseY - topPos, LIST_X, LIST_Y, LIST_W, ROWS * ROW_H)) {
+            scroll = Math.clamp(scroll - (int) Math.signum(scrollY), 0, maxScroll(device.rows()));
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private void edit(String key, String text) {
