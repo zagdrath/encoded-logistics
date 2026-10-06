@@ -184,6 +184,17 @@ class LayoutTest {
         compare("03_wrklib", grid, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 19, 20, 21, 23);
     }
 
+    // Every screen's function-key line fits on row 23 from column 1 (79 columns): one longer is cut off ("F12=Cance").
+    @Test
+    void keyLinesFit() throws IOException {
+        try (InputStream in = LayoutTest.class.getResourceAsStream("/assets/encodedlogistics/lang/en_us.json");
+                Reader reader = new java.io.InputStreamReader(in, StandardCharsets.UTF_8)) {
+            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+            json.entrySet().stream().filter(entry -> entry.getKey().startsWith("crt.encodedlogistics.fkeys."))
+                    .forEach(entry -> assertTrue(entry.getValue().getAsString().length() <= CrtGrid.COLS - 1, entry.getKey() + " is too long"));
+        }
+    }
+
     @Test
     void workWithMembers() throws IOException {
         CrtTerminal terminal = terminal();

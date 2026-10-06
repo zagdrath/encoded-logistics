@@ -143,7 +143,8 @@ final class InventoryPanel extends ListPanel<StorageKey> {
         grid.put(3, 0, tr("crt.encodedlogistics.inv.position"));
         grid.put(3, 59, tr("crt.encodedlogistics.inv.start"));
         grid.put(4, 0, tr("crt.encodedlogistics.inv.type"));
-        grid.put(4, 59, "*ALL *ITEM *FLUID *PRES");
+        // The values just after the Type field: at column 59, beside "Starting characters", they'd run off the screen.
+        grid.put(4, type.col + type.length + 2, "*ALL *ITEM *FLUID *PRES");
         grid.put(5, 0, tr("crt.encodedlogistics.type_options"));
         grid.put(6, 0, tr("crt.encodedlogistics.inv.opts"));
         grid.put(8, 0, tr("crt.encodedlogistics.inv.cols"), CrtGrid.BRIGHT);

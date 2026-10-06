@@ -1216,7 +1216,7 @@
   "crt.encodedlogistics.menu.not_available_yet": "(not available yet)",
   "crt.encodedlogistics.menu.no_option": "Option %s is not on this menu.",
   "crt.encodedlogistics.fkeys.default": "F1=Help  F3=Exit  F5=Refresh  F9=Command Entry  F12=Cancel",
-  "crt.encodedlogistics.fkeys.wrkinv": "F1=Help  F3=Exit  F5=Refresh  F6=Deposit  F9=Command Entry  F11=Sort  F12=Cancel",
+  "crt.encodedlogistics.fkeys.wrkinv": "F1=Help F3=Exit F5=Refresh F6=Deposit F9=Command Entry F11=Sort F12=Cancel",
   "crt.encodedlogistics.fkeys.text": "F1=Help  F3=Exit  F5=Refresh  F12=Cancel",
   "crt.encodedlogistics.fkeys.morekeys": "F1=Help  F3=Exit  F4=Prompt  F12=Cancel",
   "crt.encodedlogistics.fkeys.form": "F1=Help  F3=Exit  F4=Prompt  F5=Refresh  F12=Cancel",
