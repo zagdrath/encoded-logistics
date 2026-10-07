@@ -124,7 +124,7 @@ public final class WirelessHud {
     public static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         BlockPos at = target, answer = answerAt;
-        if (at == null || answer == null || minecraft.level == null || minecraft.gui.hud.isHidden() || minecraft.gui.screen() != null) {
+        if (at == null || answer == null || minecraft.level == null || minecraft.options.hideGui || minecraft.screen != null) {
             return;
         }
         WirelessInfoPayloads.Info info = WirelessInfoPayloads.Info.at(answer);

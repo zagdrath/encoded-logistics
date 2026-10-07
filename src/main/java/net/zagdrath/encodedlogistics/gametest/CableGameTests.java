@@ -10,7 +10,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -113,7 +112,7 @@ final class CableGameTests {
         helper.startSequence()
                 .thenIdle(1)
                 .thenExecute(() -> assertSide(helper, target, Direction.EAST, CableConnection.CABLE))
-                .thenExecute(() -> use(helper, player, target, new ItemStack(Items.DYE.pick(DyeColor.BLUE), 2)))
+                .thenExecute(() -> use(helper, player, target, new ItemStack(Items.BLUE_DYE, 2)))
                 .thenIdle(1)
                 .thenExecute(() -> {
                     BlockState state = helper.getBlockState(target);

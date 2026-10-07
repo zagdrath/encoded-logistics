@@ -163,7 +163,7 @@ public class SchedulerCoreScreen extends AbstractContainerScreen<SchedulerCoreMe
             if (event.x() >= cancelX() && event.x() < cancelX() + CANCEL_SIZE) {
                 ClientPacketDistributor.sendToServer(new JobCancelPayload(menu.pos(), job.id()));
             } else {
-                minecraft.gui.setScreen(new JobStatusScreen(this, menu.pos(), job.id()));
+                minecraft.setScreen(new JobStatusScreen(this, menu.pos(), job.id()));
             }
             return true;
         }

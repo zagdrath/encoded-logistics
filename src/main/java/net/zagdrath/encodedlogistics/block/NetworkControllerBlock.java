@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.ChatFormatting;
@@ -41,6 +42,13 @@ import net.zagdrath.encodedlogistics.network.NetworkStatus;
 // set server-side from it, and the connected model reads them. Right-clicking any block of a valid structure opens
 // the structure's Network screen.
 public class NetworkControllerBlock extends BaseEntityBlock {
+    private static final MapCodec<NetworkControllerBlock> CODEC = simpleCodec(NetworkControllerBlock::new);
+
+    @Override
+    protected MapCodec<NetworkControllerBlock> codec() {
+        return CODEC;
+    }
+
     public static final BooleanProperty FORMED = BooleanProperty.create("formed");
     public static final EnumProperty<ControllerState> STATE = EnumProperty.create("state", ControllerState.class);
 

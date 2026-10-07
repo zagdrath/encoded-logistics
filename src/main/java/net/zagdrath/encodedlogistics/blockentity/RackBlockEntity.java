@@ -31,7 +31,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Prediction;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.item.ItemStack;
@@ -218,8 +217,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (device == null) {
             return false;
         }
-        player.getInventory().placeItemBackInInventory(RackDeviceItem.toStack(device, serverLevel.registryAccess()), Prediction.SERVER_ONLY);
-        device.contents().forEach(stack -> player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY));
+        player.getInventory().placeItemBackInInventory(RackDeviceItem.toStack(device, serverLevel.registryAccess()));
+        device.contents().forEach(stack -> player.getInventory().placeItemBackInInventory(stack));
         device.clearContents();
         return true;
     }

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +46,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // Faces the player when placed; cables connect on every face but the front window. ACTIVE (work lights and the warm wash
 // over the cell) while it works. A device: one lane, fabricatorDrain FE/t.
 public class FabricatorBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<FabricatorBlock> CODEC = simpleCodec(FabricatorBlock::new);
+
+    @Override
+    protected MapCodec<FabricatorBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 

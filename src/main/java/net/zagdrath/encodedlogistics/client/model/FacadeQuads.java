@@ -192,7 +192,7 @@ final class FacadeQuads {
             }
         }
         if (fallback == null) {
-            fallback = BakedQuad.MaterialInfo.of(model.particleMaterial(level, pos, target), Transparency.NONE, -1, null, 0, true);
+            fallback = BakedQuad.MaterialInfo.of(model.particleMaterial(level, pos, target), Transparency.NONE, -1, true, 0, true);
         }
         for (Direction face : Direction.values()) {
             if (materials.get(face).isEmpty()) {
@@ -224,9 +224,8 @@ final class FacadeQuads {
         if (moved == tint) {
             return material;
         }
-        return new BakedQuad.MaterialInfo(material.sprite(), material.layer(), material.itemRenderType(), material.itemGlintRenderType(),
-                material.itemGlintSpecialRenderType(), moved, material.shadeDirectionOverride(), material.lightEmission(),
-                material.ambientOcclusion());
+        return new BakedQuad.MaterialInfo(material.sprite(), material.layer(), material.itemRenderType(), moved, material.shade(),
+                material.lightEmission(), material.ambientOcclusion());
     }
 
     // --- Quads ---

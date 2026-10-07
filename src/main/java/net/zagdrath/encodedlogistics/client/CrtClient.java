@@ -15,9 +15,9 @@ public final class CrtClient {
     private CrtClient() {}
 
     public static void receive(CrtResponsePayload payload) {
-        if (Minecraft.getInstance().gui.screen() instanceof CrtScreen screen && screen.containerId() == payload.containerId()) {
+        if (Minecraft.getInstance().screen instanceof CrtScreen screen && screen.containerId() == payload.containerId()) {
             screen.receive(payload);
-        } else if (Minecraft.getInstance().gui.screen() instanceof PlcEditorScreen editor && editor.containerId() == payload.containerId()) {
+        } else if (Minecraft.getInstance().screen instanceof PlcEditorScreen editor && editor.containerId() == payload.containerId()) {
             editor.receive(payload);
         }
     }

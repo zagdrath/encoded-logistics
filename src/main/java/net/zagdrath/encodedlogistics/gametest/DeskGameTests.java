@@ -14,7 +14,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -171,7 +170,7 @@ final class DeskGameTests {
                         .isEmpty(), "Seat left behind"))
                 .thenExecute(() -> {
                     helper.assertTrue(!player.isPassenger(), "Still seated");
-                    CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(ModItems.SWIVEL_CHAIR.get()), new ItemStack(Items.DYE.pick(DyeColor.RED))));
+                    CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(ModItems.SWIVEL_CHAIR.get()), new ItemStack(Items.RED_DYE)));
                     ItemStack dyed = helper.getLevel().getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel())
                             .map(recipe -> recipe.value().assemble(input)).orElse(ItemStack.EMPTY);
                     helper.assertTrue(dyed.is(ModItems.SWIVEL_CHAIR.get()) && dyed.has(DataComponents.DYED_COLOR), "Dyed: " + dyed);

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,13 @@ import net.zagdrath.encodedlogistics.wireless.WirelessState;
 // Ports. STATE: off (no uplink), linking (no
 // controller on its network: the ring blinks yellow), online (light blue).
 public class AccessPointBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<AccessPointBlock> CODEC = simpleCodec(AccessPointBlock::new);
+
+    @Override
+    protected MapCodec<AccessPointBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final EnumProperty<WirelessState> STATE = WirelessState.STATE;
 

@@ -142,7 +142,7 @@ public class CraftAmountScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.gui.setScreen(terminal);
+        minecraft.setScreen(terminal);
     }
 
     @Override

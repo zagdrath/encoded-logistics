@@ -57,12 +57,16 @@ public final class FacadePreview {
         BlockState target = CableFacadeItem.target(facade);
         int rgb = target != null ? target.getMapColor(event.getLevel(), pos).col : 0xFFFFFF;
         int fill = FILL_ALPHA << 24 | rgb & 0xFFFFFF;
-        event.addCustomRenderer((state, collector, poseStack, levelState) -> {
+        // Called in the opaque and the translucent pass; draws in the one the block's own outline uses.
+        event.addCustomRenderer((state, buffers, poseStack, translucentPass, levelState) -> {
+            if (state.isTranslucent() != translucentPass) {
+                return false;
+            }
             Vec3 camera = levelState.cameraRenderState.pos;
             poseStack.pushPose();
             poseStack.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
-            collector.submitCustomGeometry(poseStack, RenderTypes.debugQuads(), (pose, buffer) -> box(buffer, pose.pose(), box, fill));
-            collector.submitShapeOutline(poseStack, Shapes.create(box), RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
+            box(buffers.getBuffer(RenderTypes.debugQuads()), poseStack.last().pose(), box, fill);
+            ShapeOutlines.draw(poseStack, buffers.getBuffer(RenderTypes.linesTranslucent()), Shapes.create(box), OUTLINE_COLOR, OUTLINE_WIDTH);
             poseStack.popPose();
             // The cable's own outline still shows.
             return false;

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.display;
 
+import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -59,6 +60,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // LED), STATE the screen's state. It joins the network on its back and bottom (a cable, or the device or cable behind
 // it) and to the panels beside it; a screen is one device with one lane, on its master.
 public class DisplayPanelBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<DisplayPanelBlock> CODEC = simpleCodec(DisplayPanelBlock::new);
+
+    @Override
+    protected MapCodec<DisplayPanelBlock> codec() {
+        return CODEC;
+    }
+
     public enum Shown implements StringRepresentable {
         OFF("off"), BOOT("boot"), ONLINE("online"), NO_SIGNAL("nosignal");
 

@@ -66,7 +66,7 @@ public class PlcRenderer implements BlockEntityRenderer<PlcBlockEntity, PlcRende
         poseStack.pushPose();
         poseStack.translate(0.5F, 0, 0.5F);
         // 2D data value: south 0, west 1, north 2, east 3; the model's y rotation: north 0, east 90, south 180, west 270.
-        poseStack.rotate(Axis.YP.rotationDegrees(-90 * ((state.turns + 2) % 4)));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-90 * ((state.turns + 2) % 4)));
         poseStack.translate(-0.5F, 0, -0.5F);
         collector.submitCustomGeometry(poseStack, RenderTypes.text(LED), (pose, buffer) -> {
             for (int i = 0; i < TEXELS.length; i++) {

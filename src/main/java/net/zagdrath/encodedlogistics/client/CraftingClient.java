@@ -22,19 +22,19 @@ public final class CraftingClient {
     private CraftingClient() {}
 
     public static void openAmount(Screen terminal, AccessTerminalMenu menu, StorageKey key) {
-        Minecraft.getInstance().gui.setScreen(new CraftAmountScreen(terminal, menu, key));
+        Minecraft.getInstance().setScreen(new CraftAmountScreen(terminal, menu, key));
     }
 
     // A plan came: shown on the plan screen (opened from the amount screen), or the job it started is shown.
     public static void plan(CraftPlanPayload payload) {
         Minecraft minecraft = Minecraft.getInstance();
-        Screen screen = minecraft.gui.screen();
+        Screen screen = minecraft.screen;
         if (screen instanceof CraftAmountScreen amount && amount.containerId() == payload.containerId()) {
-            minecraft.gui.setScreen(new CraftPlanScreen(amount.terminal(), amount.menu(), payload));
+            minecraft.setScreen(new CraftPlanScreen(amount.terminal(), amount.menu(), payload));
         } else if (screen instanceof CraftPlanScreen plan && plan.containerId() == payload.containerId()) {
             if (payload.started().isPresent()) {
                 CraftPlanPayload.Started started = payload.started().get();
-                minecraft.gui.setScreen(new JobStatusScreen(plan.terminal(), started.core(), started.job()));
+                minecraft.setScreen(new JobStatusScreen(plan.terminal(), started.core(), started.job()));
             } else {
                 plan.update(payload);
             }
@@ -42,7 +42,7 @@ public final class CraftingClient {
     }
 
     public static void jobStatus(JobStatusPayload payload) {
-        if (Minecraft.getInstance().gui.screen() instanceof JobStatusScreen screen) {
+        if (Minecraft.getInstance().screen instanceof JobStatusScreen screen) {
             screen.update(payload);
         }
     }

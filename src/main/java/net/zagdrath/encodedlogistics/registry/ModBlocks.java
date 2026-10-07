@@ -172,12 +172,12 @@ public final class ModBlocks {
     // The Server Rack (a 1x3x2 multiblock: ServerRackBlock) and the devices that mount in it.
     public static final DeferredBlock<ServerRackBlock> SERVER_RACK = BLOCKS.registerBlock("server_rack", ServerRackBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(3.0F, 1200.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
-                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false));
 
     // The Terminal Desk (2 wide: TerminalDeskBlock) and the Swivel Chair.
     public static final DeferredBlock<TerminalDeskBlock> TERMINAL_DESK = BLOCKS.registerBlock("terminal_desk", TerminalDeskBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(2.5F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion()
-                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false));
     public static final DeferredBlock<SwivelChairBlock> SWIVEL_CHAIR = BLOCKS.registerBlock("swivel_chair", SwivelChairBlock::new,
             p -> p.mapColor(MapColor.COLOR_BROWN).strength(1.0F).sound(SoundType.WOOL).noOcclusion());
 
@@ -224,7 +224,7 @@ public final class ModBlocks {
     // Holds a part mounted on a block face (no item; the part is what drops).
     public static final DeferredBlock<PartHostBlock> PART_HOST = BLOCKS.registerBlock("part_host", PartHostBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(0.5F, 1.0F).sound(SoundType.METAL).noOcclusion().dynamicShape().noLootTable()
-                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false));
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false));
 
     // Network, Dense Network and Fiber Cables in every colour: network_cable, white_network_cable, ...,
     // dense_network_cable, ..., fiber_cable, white_fiber_cable, .... Their shape depends on their attachments (block
@@ -237,7 +237,7 @@ public final class ModBlocks {
             for (CableColor color : CableColor.values()) {
                 colours.put(color, BLOCKS.registerBlock(color.prefix() + tier.baseName(), p -> new NetworkCableBlock(p, tier, color),
                         p -> p.mapColor(MapColor.METAL).strength(0.5F, 1.0F).sound(SoundType.METAL).noOcclusion().dynamicShape()
-                                .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false)));
+                                .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos) -> false)));
             }
             CABLES.put(tier, colours);
         }

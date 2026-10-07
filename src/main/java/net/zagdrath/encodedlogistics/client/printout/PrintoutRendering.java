@@ -94,8 +94,8 @@ public final class PrintoutRendering {
         event.setCanceled(true);
         PoseStack pose = event.getPoseStack();
         pose.pushPose();
-        pose.rotateDegrees(Axis.ZP, state.rotation % 4 * 2 * 45.0F);
-        pose.rotateDegrees(Axis.ZP, 180.0F);
+        pose.mulPose(Axis.ZP.rotationDegrees(state.rotation % 4 * 2 * 45.0F));
+        pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
         pose.scale(0.0078125F, 0.0078125F, 0.0078125F);
         pose.translate(-64.0F, -64.0F, -1.0F);
         page(event.getSubmitNodeCollector(), pose, PrintoutPages.texture(printout, 0), state.isGlowFrame ? 15728850 : state.lightCoords,
@@ -123,8 +123,8 @@ public final class PrintoutRendering {
             oneHanded(pose, arm, height, attack);
         }
         // As vanilla's renderMap: the page facing the player, in map units.
-        pose.rotateDegrees(Axis.YP, 180.0F);
-        pose.rotateDegrees(Axis.ZP, 180.0F);
+        pose.mulPose(Axis.YP.rotationDegrees(180.0F));
+        pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
         pose.scale(0.38F, 0.38F, 0.38F);
         pose.translate(-0.5F, -0.5F, 0.0F);
         pose.scale(0.0078125F, 0.0078125F, 0.0078125F);
@@ -138,8 +138,8 @@ public final class PrintoutRendering {
         pose.translate(0.0F, 0.2F * Mth.sin(attack * (float) Math.PI) / 2.0F, -0.4F * Mth.sin(sqrtAttack * (float) Math.PI));
         float tilt = mapTilt(pitch);
         pose.translate(0.0F, 0.04F + height * -1.2F + tilt * -0.5F, -0.72F);
-        pose.rotateDegrees(Axis.XP, tilt * -85.0F);
-        pose.rotateDegrees(Axis.XP, Mth.sin(sqrtAttack * (float) Math.PI) * 20.0F);
+        pose.mulPose(Axis.XP.rotationDegrees(tilt * -85.0F));
+        pose.mulPose(Axis.XP.rotationDegrees(Mth.sin(sqrtAttack * (float) Math.PI) * 20.0F));
         pose.scale(2.0F, 2.0F, 2.0F);
     }
 
@@ -150,8 +150,8 @@ public final class PrintoutRendering {
         pose.translate(invert * 0.51F, -0.08F + height * -1.2F, -0.75F);
         float sqrtAttack = Mth.sqrt(attack), xSwing = Mth.sin(sqrtAttack * (float) Math.PI);
         pose.translate(invert * -0.5F * xSwing, 0.4F * Mth.sin(sqrtAttack * (float) (Math.PI * 2)) - 0.3F * xSwing, -0.3F * Mth.sin(attack * (float) Math.PI));
-        pose.rotateDegrees(Axis.XP, xSwing * -45.0F);
-        pose.rotateDegrees(Axis.YP, invert * xSwing * -30.0F);
+        pose.mulPose(Axis.XP.rotationDegrees(xSwing * -45.0F));
+        pose.mulPose(Axis.YP.rotationDegrees(invert * xSwing * -30.0F));
     }
 
     private static float mapTilt(float pitch) {

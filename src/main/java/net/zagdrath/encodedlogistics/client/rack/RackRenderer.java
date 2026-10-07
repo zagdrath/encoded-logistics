@@ -79,7 +79,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0, 0.5F);
-        poseStack.rotate(Axis.YP.rotationDegrees(-90 * state.turns));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-90 * state.turns));
         poseStack.translate(-0.5F, 0, -0.5F);
 
         door(poseStack, collector, state, RackModels.DOOR_FRONT, 14.5F, 0.5F, -OPEN_DEGREES * state.front);
@@ -111,7 +111,7 @@ public class RackRenderer implements BlockEntityRenderer<RackBlockEntity, RackRe
         }
         poseStack.pushPose();
         poseStack.translate(pivotX / 16, 0, pivotZ / 16);
-        poseStack.rotate(Axis.YP.rotationDegrees(degrees));
+        poseStack.mulPose(Axis.YP.rotationDegrees(degrees));
         poseStack.translate(-pivotX / 16, 0, -pivotZ / 16);
         collector.submitBlockModel(poseStack, Sheets.cutoutBlockItemSheet(), List.of(part), NO_TINTS, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
         poseStack.popPose();

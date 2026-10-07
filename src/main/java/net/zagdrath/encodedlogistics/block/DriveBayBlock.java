@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +42,13 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 // face but the front. A device: it uses one lane and drains driveBayDrain plus driveBayDrainPerDrive for each drive. Its
 // front shows each drive's sled and a status light (green, yellow, orange, red by fill; dark when offline).
 public class DriveBayBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<DriveBayBlock> CODEC = simpleCodec(DriveBayBlock::new);
+
+    @Override
+    protected MapCodec<DriveBayBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public DriveBayBlock(BlockBehaviour.Properties properties) {

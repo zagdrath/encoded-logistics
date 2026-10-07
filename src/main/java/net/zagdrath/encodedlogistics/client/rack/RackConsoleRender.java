@@ -59,7 +59,7 @@ final class RackConsoleRender implements RackClientDevices.RenderExtra {
         float forward = HINGE_FORWARD * Math.min(1, 1 - (float) Math.cos(Math.toRadians(degrees)));
         poseStack.translate(0, 0, -forward / 16);
         poseStack.translate(0, HINGE_Y / 16, HINGE_Z / 16);
-        poseStack.rotate(Axis.XP.rotationDegrees(degrees));
+        poseStack.mulPose(Axis.XP.rotationDegrees(degrees));
         poseStack.translate(0, -HINGE_Y / 16, -HINGE_Z / 16);
         Identifier lit = data.length > 2 && data[2] == 1 ? RackModels.CONSOLE_LID_FAB : RackModels.CONSOLE_LID_ON;
         part(poseStack, collector, degrees > SCREEN_AFTER && status == RackDeviceInfo.Status.ONLINE ? lit : RackModels.CONSOLE_LID, light);

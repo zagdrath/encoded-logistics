@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 
 import org.jspecify.annotations.Nullable;
@@ -41,6 +42,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // uses no lanes and drains nothing. FILL shows its gauge (0-4 segments); the comparator reads 0-15. Right-click for its
 // screen.
 public class CapacitorBankBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<CapacitorBankBlock> CODEC = simpleCodec(CapacitorBankBlock::new);
+
+    @Override
+    protected MapCodec<CapacitorBankBlock> codec() {
+        return CODEC;
+    }
+
     public static final IntegerProperty FILL = IntegerProperty.create("fill", 0, 4);
 
     public CapacitorBankBlock(BlockBehaviour.Properties properties) {

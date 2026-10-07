@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -57,6 +58,13 @@ import net.zagdrath.encodedlogistics.wireless.WirelessState;
 // filters, modules, redstone modes and screen). One lane over its link to the controller's rack, one of the controller's
 // clients, wirelessEnergyMultiplier times a cabled port's drain. STATE: off, linking, online, fault.
 public class WirelessPortBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    // 26.1 requires a block codec. Nothing decodes this block type, and its constructor arguments aren't
+    // data, so the codec stands for this instance.
+    @Override
+    protected MapCodec<WirelessPortBlock> codec() {
+        return MapCodec.unit(this);
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final EnumProperty<WirelessState> STATE = WirelessState.STATE;
 

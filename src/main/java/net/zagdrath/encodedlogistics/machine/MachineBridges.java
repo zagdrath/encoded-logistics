@@ -31,7 +31,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -483,7 +482,7 @@ public final class MachineBridges extends SavedData {
             return;
         }
         get(level).remove(level, bridge, false);
-        player.getInventory().placeItemBackInInventory(ModItems.SMALL_WIRELESS_BRIDGE.toStack(), Prediction.SERVER_ONLY);
+        player.getInventory().placeItemBackInInventory(ModItems.SMALL_WIRELESS_BRIDGE.toStack());
         player.sendOverlayMessage(Component.translatable("message.encodedlogistics.small_bridge.removed"));
         level.playSound(null, pos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 0.6F, 1.2F);
     }

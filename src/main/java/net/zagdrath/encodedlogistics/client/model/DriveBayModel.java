@@ -141,7 +141,7 @@ final class DriveBayModel implements DynamicBlockStateModel {
                 BlockModelRotation rotation, @Nullable ExtraFaceData data) {
             CuboidFace cuboidFace = new CuboidFace(null, CuboidFace.NO_TINT, "", uvs, Quadrant.R0, data,
                     new org.apache.commons.lang3.mutable.MutableObject<>());
-            return FaceBakery.bakeQuad(baker, from, to, cuboidFace, material, face, rotation, null, data != null ? Direction.UP : null,
+            return FaceBakery.bakeQuad(baker, from, to, cuboidFace, material, face, rotation, null, data == null,
                     data != null ? data.lightEmission() : 0);
         }
     }

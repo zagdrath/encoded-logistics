@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.midrange;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -27,6 +28,13 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 // one lane on the network. STATE: its operator panel (off, IPL, run, busy, attention). EXPANSION: an Expansion Cabinet
 // is attached beside it (the second diskette slot shows); the cabinet's model sits flush against it.
 public class MidrangeSystemBlock extends MidrangeHostBlock implements NetworkNodeBlock {
+    private static final MapCodec<MidrangeSystemBlock> CODEC = simpleCodec(MidrangeSystemBlock::new);
+
+    @Override
+    protected MapCodec<MidrangeSystemBlock> codec() {
+        return CODEC;
+    }
+
     private static final List<Vec3i> FOOTPRINT = List.of(Vec3i.ZERO);
 
     public MidrangeSystemBlock(BlockBehaviour.Properties properties) {

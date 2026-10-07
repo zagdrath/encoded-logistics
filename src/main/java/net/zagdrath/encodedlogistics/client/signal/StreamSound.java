@@ -43,10 +43,9 @@ final class StreamSound extends DeviceSound {
     }
 
     @Override
-    public @Nullable WeighedSoundEvents getOrResolve(SoundManager soundManager) {
+    public @Nullable WeighedSoundEvents resolve(SoundManager soundManager) {
         sound = new Sound(ID, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, true, false, 16);
-        soundEvent = new WeighedSoundEvents(ID, null);
-        return soundEvent;
+        return new WeighedSoundEvents(ID, null);
     }
 
     @Override

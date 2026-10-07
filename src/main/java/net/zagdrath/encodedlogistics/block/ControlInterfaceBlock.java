@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -45,6 +46,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // block next to it), and only while ONLINE; each face's LED shows the higher of what comes in and goes out there - off,
 // dim (1-7) or bright (8-15).
 public class ControlInterfaceBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<ControlInterfaceBlock> CODEC = simpleCodec(ControlInterfaceBlock::new);
+
+    @Override
+    protected MapCodec<ControlInterfaceBlock> codec() {
+        return CODEC;
+    }
+
     public enum Led implements StringRepresentable {
         OFF, DIM, BRIGHT;
 

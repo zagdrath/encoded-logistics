@@ -125,7 +125,7 @@ public class PlcScreen extends CrtMachineScreen<PlcMenu> {
             editorAt = menu.received();
             menu.editorOpenedAt = menu.received();
             String program = edit.getFirst()[1];
-            minecraft.execute(() -> minecraft.gui.setScreen(new PlcEditorScreen(menu, this, program)));
+            minecraft.execute(() -> minecraft.setScreen(new PlcEditorScreen(menu, this, program)));
         }
         switch (view()) {
             case "IO" -> io(grid);

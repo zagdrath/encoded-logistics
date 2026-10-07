@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +45,13 @@ import net.zagdrath.encodedlogistics.wireless.WirelessState;
 // times a Network Bridge's, and counts as one of the controller's clients. STATE: off, linking (not linked or no
 // controller), online, active (lanes crossing: the window pulses), fault (no access points, over capacity).
 public class WirelessBridgeBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<WirelessBridgeBlock> CODEC = simpleCodec(WirelessBridgeBlock::new);
+
+    @Override
+    protected MapCodec<WirelessBridgeBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<WirelessState> STATE = WirelessState.BRIDGE_STATE;
 
     public WirelessBridgeBlock(BlockBehaviour.Properties properties) {

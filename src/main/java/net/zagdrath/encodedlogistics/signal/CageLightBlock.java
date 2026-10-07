@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.signal;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
@@ -23,6 +24,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // whose bulb is tinted with the dye (SignalTints). LIT picks the model; LEVEL is the light it gives while lit (1-15, set
 // on its screen or by CHGLGT LVL).
 public class CageLightBlock extends SignalBlock {
+    // 26.1 requires a block codec. Nothing decodes this block type, and its constructor arguments aren't
+    // data, so the codec stands for this instance.
+    @Override
+    protected MapCodec<CageLightBlock> codec() {
+        return MapCodec.unit(this);
+    }
+
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final IntegerProperty LEVEL = IntegerProperty.create("level", 1, 15);
 

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,13 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 // on top (part of its outline, not its collision). Faces the player when placed; cables connect on every face but the
 // top. ONLINE (the mast tip blinks) while it works. A device: one lane, relayDrain FE/t.
 public class RelayAntennaBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<RelayAntennaBlock> CODEC = simpleCodec(RelayAntennaBlock::new);
+
+    @Override
+    protected MapCodec<RelayAntennaBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ONLINE = BooleanProperty.create("online");
 

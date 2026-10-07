@@ -75,7 +75,7 @@ public class PlcEditorScreen extends Screen implements CrtTerminal.Host {
     public void close() {
         if (!leaving) {
             leaving = true;
-            minecraft.gui.setScreen(back);
+            minecraft.setScreen(back);
         }
     }
 

@@ -490,7 +490,7 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
 
     // Redstone dust only joins cables that carry a sensor.
     @Override
-    protected boolean shouldRedstoneWireConnectTo(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
         return direction != null && PartHosting.hasSensor(level, pos);
     }
 

@@ -21,7 +21,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -230,7 +229,7 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
         ServerPlayer player = ejectTo != null ? level.getServer().getPlayerList().getPlayer(ejectTo) : null;
         ejectTo = null;
         if (player != null && player.level() == level && player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(worldPosition)) < 64) {
-            player.getInventory().placeItemBackInInventory(reel, Prediction.SERVER_ONLY);
+            player.getInventory().placeItemBackInInventory(reel);
         } else {
             Block.popResourceFromFace(level, worldPosition, getBlockState().getValue(FootprintBlock.FACING), reel);
         }

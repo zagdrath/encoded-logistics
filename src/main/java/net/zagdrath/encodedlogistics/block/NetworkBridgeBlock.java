@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -49,6 +50,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // port. STATUS: unlinked (amber light), linked_idle (dim lens, green light), linked_active (lanes crossing: the lens
 // pulses). It uses no lanes itself and drains bridgeDrain FE/t.
 public class NetworkBridgeBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<NetworkBridgeBlock> CODEC = simpleCodec(NetworkBridgeBlock::new);
+
+    @Override
+    protected MapCodec<NetworkBridgeBlock> codec() {
+        return CODEC;
+    }
+
     public enum Status implements StringRepresentable {
         UNLINKED("unlinked"),
         LINKED_IDLE("linked_idle"),

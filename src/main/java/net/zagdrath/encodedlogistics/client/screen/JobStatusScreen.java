@@ -158,7 +158,7 @@ public class JobStatusScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     @Override

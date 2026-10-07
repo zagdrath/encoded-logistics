@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -40,6 +41,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // port on its FRONT only; cables connect on the other five faces. Placed with the port toward the player, like a
 // dispenser. POWERED while it has received FE in the last second. Uses no lanes and drains nothing.
 public class PowerInletBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<PowerInletBlock> CODEC = simpleCodec(PowerInletBlock::new);
+
+    @Override
+    protected MapCodec<PowerInletBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 

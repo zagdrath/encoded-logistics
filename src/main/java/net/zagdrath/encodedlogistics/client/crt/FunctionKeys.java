@@ -29,7 +29,7 @@ final class FunctionKeys {
         for (KeyMapping mapping : List.of(minecraft.options.keyFullscreen, minecraft.options.keyScreenshot)) {
             InputConstants.Key key = mapping.getKey();
             int code = key.getValue();
-            if (key.getType() == InputConstants.Type.KEYBOARD
+            if (key.getType() == InputConstants.Type.KEYSYM
                     && (code >= InputConstants.KEY_F1 && code <= InputConstants.KEY_F12 || code >= InputConstants.KEY_F13 && code <= InputConstants.KEY_F24)) {
                 borrowed.add(mapping);
                 borrowedKeys.add(key);

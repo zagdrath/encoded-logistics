@@ -11,12 +11,12 @@ import java.util.List;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -50,11 +50,11 @@ public final class MachineBridgeRenderer {
         PoseStack poseStack = event.getPoseStack();
         // The one under the crosshair is outlined as a block would be (WirelessHud finds it).
         AABB hovered = WirelessHud.bridgeBox();
-        if (hovered != null && !minecraft.gui.hud.isHidden()) {
+        if (hovered != null && !minecraft.options.hideGui) {
             poseStack.pushPose();
             poseStack.translate(hovered.minX - camera.x, hovered.minY - camera.y, hovered.minZ - camera.z);
-            event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.create(0, 0, 0, hovered.getXsize(), hovered.getYsize(), hovered.getZsize()),
-                    RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
+            ShapeOutlines.submit(event.getSubmitNodeCollector(), poseStack, Shapes.create(0, 0, 0, hovered.getXsize(), hovered.getYsize(), hovered.getZsize()),
+                    RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH);
             poseStack.popPose();
         }
         for (MachineBridgesPayload.Entry entry : MachineBridgesPayload.shown().values()) {
@@ -72,7 +72,7 @@ public final class MachineBridgeRenderer {
             poseStack.pushPose();
             poseStack.translate(at.getX() - camera.x, at.getY() - camera.y, at.getZ() - camera.z);
             event.getSubmitNodeCollector().submitBlockModel(poseStack, Sheets.cutoutBlockItemSheet(), parts, NO_TINTS,
-                    LightCoordsUtil.getLightCoords(minecraft.level, at), OverlayTexture.NO_OVERLAY, 0);
+                    LevelRenderer.getLightCoords(minecraft.level, at), OverlayTexture.NO_OVERLAY, 0);
             poseStack.popPose();
         }
     }

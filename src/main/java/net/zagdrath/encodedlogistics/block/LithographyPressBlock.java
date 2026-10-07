@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -35,6 +36,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // LithographyPressBlockEntity). Faces the player when placed; ACTIVE while it's working (the UV lamp and window glow).
 // The comparator reads its progress, 0-15.
 public class LithographyPressBlock extends BaseEntityBlock {
+    private static final MapCodec<LithographyPressBlock> CODEC = simpleCodec(LithographyPressBlock::new);
+
+    @Override
+    protected MapCodec<LithographyPressBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
 

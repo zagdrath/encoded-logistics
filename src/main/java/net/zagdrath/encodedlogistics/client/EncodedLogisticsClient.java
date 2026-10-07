@@ -194,7 +194,7 @@ public class EncodedLogisticsClient {
 
     @SubscribeEvent
     static void hideHudUnderCrt(RenderGuiLayerEvent.Pre event) {
-        Screen screen = Minecraft.getInstance().gui.screen();
+        Screen screen = Minecraft.getInstance().screen;
         if ((screen instanceof CrtScreen || screen instanceof CrtMachineScreen<?> || screen instanceof PlcEditorScreen) && CRT_HIDDEN.contains(event.getName())) {
             event.setCanceled(true);
         }

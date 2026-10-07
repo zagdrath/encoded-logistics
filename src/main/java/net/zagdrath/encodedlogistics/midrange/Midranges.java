@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -90,7 +89,7 @@ public final class Midranges {
                 return InteractionResult.PASS;
             }
             for (ItemStack stack : out) {
-                player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
+                player.getInventory().placeItemBackInInventory(stack);
             }
             level.playSound(null, peripheral.getBlockPos(), ModSounds.DISKETTE_LATCH.value(), SoundSource.BLOCKS, 0.8F, 1.2F);
             return InteractionResult.SUCCESS;

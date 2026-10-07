@@ -21,6 +21,10 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Added
+
+- Support for Minecraft 26.1.2, on NeoForge 26.1.2.114 or later.
+
 ## [1.0.0] - 2026-10-07
 
 The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI, Jade and Arcforge are optional.

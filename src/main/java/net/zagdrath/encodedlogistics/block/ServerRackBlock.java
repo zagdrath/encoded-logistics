@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +68,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // On the network: cables join it on the back face of the back blocks and on the top of the top blocks. Its blocks pass
 // lanes through to each other; the master is the network device, using a lane for each device in it (RackBlockEntity).
 public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<ServerRackBlock> CODEC = simpleCodec(ServerRackBlock::new);
+
+    @Override
+    protected MapCodec<ServerRackBlock> codec() {
+        return CODEC;
+    }
+
     public enum Part implements StringRepresentable {
         MASTER, DUMMY;
 

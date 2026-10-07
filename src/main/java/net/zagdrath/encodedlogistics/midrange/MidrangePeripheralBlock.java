@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.midrange;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -37,6 +38,13 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 // cabled to the same network; it uses no lanes (I/O for the Midrange, not a network device) and doesn't carry the
 // network on through it. ACTIVE: while it punches or prints.
 public class MidrangePeripheralBlock extends FootprintBlock implements NetworkNodeBlock {
+    // 26.1 requires a block codec. Nothing decodes this block type, and its constructor arguments aren't
+    // data, so the codec stands for this instance.
+    @Override
+    protected MapCodec<MidrangePeripheralBlock> codec() {
+        return MapCodec.unit(this);
+    }
+
     private final String key;
     private final List<Vec3i> footprint;
     private final BiFunction<BlockPos, BlockState, ? extends PeripheralBlockEntity> entity;

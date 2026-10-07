@@ -39,6 +39,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.client.ShapeOutlines;
 import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.net.RackUnitPayloads;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
@@ -133,12 +134,13 @@ public final class RackHud {
             box = Shapes.create(world);
         }
         VoxelShape shape = box;
-        event.addCustomRenderer((state, collector, poseStack, levelState) -> {
-            if (shape != null) {
+        // Called in the opaque and the translucent pass; draws in the one the rack's own outline would use.
+        event.addCustomRenderer((state, buffers, poseStack, translucentPass, levelState) -> {
+            if (shape != null && state.isTranslucent() == translucentPass) {
                 Vec3 camera = levelState.cameraRenderState.pos;
                 poseStack.pushPose();
                 poseStack.translate(master.getX() - camera.x, master.getY() - camera.y, master.getZ() - camera.z);
-                collector.submitShapeOutline(poseStack, shape, RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
+                ShapeOutlines.draw(poseStack, buffers.getBuffer(RenderTypes.linesTranslucent()), shape, OUTLINE_COLOR, OUTLINE_WIDTH);
                 poseStack.popPose();
             }
             return true;
@@ -150,7 +152,7 @@ public final class RackHud {
     public static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         Target at = target;
-        if (at == null || minecraft.gui.hud.isHidden() || minecraft.gui.screen() != null) {
+        if (at == null || minecraft.options.hideGui || minecraft.screen != null) {
             return;
         }
         Font font = minecraft.font;

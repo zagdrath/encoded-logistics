@@ -19,7 +19,6 @@ import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
@@ -252,16 +251,16 @@ public final class EncodedLogisticsGameTests {
 
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(EncodedLogistics.id("default"));
-        TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
+        TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(environment, Identifier.withDefaultNamespace("empty"),
                 200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
         TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
                 ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), data)));
         if (MachineBridges.enabled()) {
-            TestData<Holder<TestEnvironmentDefinition<?>>> longer = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
+            TestData<Holder<TestEnvironmentDefinition<?>>> longer = new TestData<>(environment, Identifier.withDefaultNamespace("empty"),
                     1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
             // The reload test replaces the level's bridges wholesale: in a batch of its own, so the others' aren't swapped under them.
             Holder<TestEnvironmentDefinition<?>> alone = event.registerEnvironment(EncodedLogistics.id("arcforge_reload"));
-            TestData<Holder<TestEnvironmentDefinition<?>>> reload = new TestData<>(alone, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
+            TestData<Holder<TestEnvironmentDefinition<?>>> reload = new TestData<>(alone, Identifier.withDefaultNamespace("empty"),
                     1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
             ARCFORGE_TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
                     ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), name.equals("arcforge_survives_reload") ? reload : longer)));

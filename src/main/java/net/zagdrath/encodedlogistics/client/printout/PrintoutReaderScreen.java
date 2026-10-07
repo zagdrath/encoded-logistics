@@ -42,7 +42,7 @@ public class PrintoutReaderScreen extends Screen {
     public static void open(ItemStack stack) {
         Printout printout = PrintoutItem.printout(stack);
         if (printout != null) {
-            Minecraft.getInstance().gui.setScreen(new PrintoutReaderScreen(printout));
+            Minecraft.getInstance().setScreen(new PrintoutReaderScreen(printout));
         }
     }
 

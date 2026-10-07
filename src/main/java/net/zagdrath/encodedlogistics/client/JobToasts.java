@@ -38,7 +38,7 @@ public final class JobToasts {
             return;
         }
         Minecraft minecraft = Minecraft.getInstance();
-        ToastManager toasts = minecraft.gui.toastManager();
+        ToastManager toasts = minecraft.getToastManager();
         long now = System.currentTimeMillis();
         JobToastBatch.Event event = new JobToastBatch.Event(payload.item(), payload.amount(), outcome, payload.processing(), payload.reason());
         JobToast showing = toasts.getToast(JobToast.class, outcome);

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.plc;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -20,7 +21,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Prediction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -65,6 +65,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // only whoever placed it: config plcOpenToAnyone). Cabled to a network on any face but its front, it's a device
 // there (PLC01...) with one lane, powered by the network; otherwise it runs on FE from any face.
 public class PlcBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<PlcBlock> CODEC = simpleCodec(PlcBlock::new);
+
+    @Override
+    protected MapCodec<PlcBlock> codec() {
+        return CODEC;
+    }
+
     public enum Mode implements StringRepresentable {
         OFF("off"), STOP("stop"), RUN("run"), FAULT("fault");
 
@@ -232,7 +239,7 @@ public class PlcBlock extends BaseEntityBlock implements NetworkNodeBlock {
             if (out.isEmpty()) {
                 return InteractionResult.PASS;
             }
-            player.getInventory().placeItemBackInInventory(out, Prediction.SERVER_ONLY);
+            player.getInventory().placeItemBackInInventory(out);
             level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.5F, 1.6F);
             return InteractionResult.SUCCESS;
         }

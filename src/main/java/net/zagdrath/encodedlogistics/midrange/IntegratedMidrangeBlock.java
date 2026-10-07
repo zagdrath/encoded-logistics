@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.midrange;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -37,6 +38,13 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 // booting, on: a session open at it). Where a click lands on the model (HANDOFF 3): the console hood or keyboard opens
 // the Terminal OS; the left body or the magazine unit, the control panel; the right body and plinth, nothing.
 public class IntegratedMidrangeBlock extends MidrangeHostBlock implements NetworkNodeBlock {
+    private static final MapCodec<IntegratedMidrangeBlock> CODEC = simpleCodec(IntegratedMidrangeBlock::new);
+
+    @Override
+    protected MapCodec<IntegratedMidrangeBlock> codec() {
+        return CODEC;
+    }
+
     private static final List<Vec3i> FOOTPRINT = List.of(new Vec3i(-1, 0, 0), Vec3i.ZERO, new Vec3i(1, 0, 0), new Vec3i(-1, 1, 0), new Vec3i(0, 1, 0));
     // The model's boxes a click zone is made of (px, from the master's corner, facing north), a little grown: a hit is on
     // a face.

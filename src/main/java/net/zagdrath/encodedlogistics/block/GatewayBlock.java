@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // them and keeps chosen items stocked for them. Cables connect on every face. ACTIVE (its corner lights) while it moved
 // items in the last 20 ticks. A device: one lane, gatewayDrain FE/t.
 public class GatewayBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<GatewayBlock> CODEC = simpleCodec(GatewayBlock::new);
+
+    @Override
+    protected MapCodec<GatewayBlock> codec() {
+        return CODEC;
+    }
+
     public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
     private static final Set<Direction> ALL = EnumSet.allOf(Direction.class);
 

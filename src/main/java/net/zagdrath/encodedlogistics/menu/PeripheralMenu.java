@@ -14,7 +14,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Prediction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -176,7 +175,7 @@ public abstract class PeripheralMenu extends AbstractContainerMenu {
     // Gives an item to the player (option 4: it comes out of the machine): into the inventory, or dropped at their feet.
     protected void give(ItemStack stack) {
         if (!stack.isEmpty()) {
-            player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
+            player.getInventory().placeItemBackInInventory(stack);
         }
     }
 

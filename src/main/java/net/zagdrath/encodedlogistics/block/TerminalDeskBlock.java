@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -62,6 +63,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // Use the master for the green-screen terminal (CrtScreen); the pedestal for the drawer (9 slots, where *DRAWER
 // withdrawals go; hoppers can take from it). Sneak-use either half empty-handed to tidy or clutter the desk top.
 public class TerminalDeskBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<TerminalDeskBlock> CODEC = simpleCodec(TerminalDeskBlock::new);
+
+    @Override
+    protected MapCodec<TerminalDeskBlock> codec() {
+        return CODEC;
+    }
+
     public enum Part implements StringRepresentable {
         MASTER, DUMMY;
 

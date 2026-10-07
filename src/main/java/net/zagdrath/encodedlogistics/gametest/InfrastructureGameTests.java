@@ -13,7 +13,6 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -150,7 +149,7 @@ final class InfrastructureGameTests {
                     helper.assertTrue(shape.maxZ == 14.5 / 16.0 && shape.minX == 4 / 16.0, "Anchored shape is " + shape);
                 })
                 // Dyeing the cable keeps its anchor.
-                .thenExecute(() -> useOnSide(helper, player, b, Direction.NORTH, new ItemStack(Items.DYE.pick(DyeColor.BLUE))))
+                .thenExecute(() -> useOnSide(helper, player, b, Direction.NORTH, new ItemStack(Items.BLUE_DYE)))
                 .thenIdle(1)
                 .thenExecute(() -> {
                     helper.assertTrue(helper.getBlockState(b).getBlock() == ModBlocks.cable(CableTier.NORMAL, CableColor.BLUE).get(), "Not dyed");

@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.midrange;
 
+import com.mojang.serialization.MapCodec;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -47,6 +48,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // beside a Midrange System (or cabled to its network), uses no lanes and doesn't carry the network on. ACTIVE: while it
 // reads.
 public class CardReaderBlock extends BaseEntityBlock implements NetworkNodeBlock {
+    private static final MapCodec<CardReaderBlock> CODEC = simpleCodec(CardReaderBlock::new);
+
+    @Override
+    protected MapCodec<CardReaderBlock> codec() {
+        return CODEC;
+    }
+
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
     public CardReaderBlock(BlockBehaviour.Properties properties) {

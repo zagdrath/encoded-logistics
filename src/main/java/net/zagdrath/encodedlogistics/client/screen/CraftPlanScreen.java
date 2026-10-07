@@ -309,7 +309,7 @@ public class CraftPlanScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.gui.setScreen(terminal);
+        minecraft.setScreen(terminal);
     }
 
     @Override

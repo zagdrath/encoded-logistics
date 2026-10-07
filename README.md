@@ -4,7 +4,7 @@
 
 <p align="center">
   Your base on the mainframe: storage networks and automation with server racks, servers and a scriptable terminal
-  operating system. For Minecraft 26.3 on NeoForge.
+  operating system. For Minecraft 26.1.2 on NeoForge.
 </p>
 
 ## About
@@ -31,8 +31,8 @@ The full list is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Requirements
 
-- Minecraft 26.3
-- NeoForge 26.3.0.0-beta or later
+- Minecraft 26.1.2
+- NeoForge 26.1.2.114 or later
 
 Optional: [JEI](https://modrinth.com/mod/jei), [Jade](https://modrinth.com/mod/jade) and
 [Arcforge](https://github.com/zagdrath/arcforge) 2.5.0 or later, whose machines join a network through the Small

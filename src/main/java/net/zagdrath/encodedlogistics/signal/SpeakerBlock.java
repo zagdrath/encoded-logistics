@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.signal;
 
+import com.mojang.serialization.MapCodec;
 import java.util.Locale;
 
 import net.minecraft.core.BlockPos;
@@ -25,6 +26,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // entity's (SpeakerBlockEntity); a note it's told to play reaches clients as a block event (instrument, note and a MIDI
 // note's velocity, packed: NoteInstruments.eventA / eventB).
 public class SpeakerBlock extends SignalBlock {
+    private static final MapCodec<SpeakerBlock> CODEC = simpleCodec(SpeakerBlock::new);
+
+    @Override
+    protected MapCodec<SpeakerBlock> codec() {
+        return CODEC;
+    }
+
     public enum State implements StringRepresentable {
         IDLE, PLAYING, ERROR;
 

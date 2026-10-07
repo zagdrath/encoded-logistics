@@ -144,7 +144,7 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
     }
 
     @Override
-    protected boolean shouldRedstoneWireConnectTo(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
+    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, @Nullable Direction direction) {
         return direction != null && PartHosting.hasSensor(level, pos);
     }
 }

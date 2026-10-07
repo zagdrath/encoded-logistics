@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.block;
 
+import com.mojang.serialization.MapCodec;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -33,6 +34,13 @@ import net.zagdrath.encodedlogistics.entity.SeatEntity;
 // renderer at the chair's yaw). Placed facing the way its placer looks; right-click to sit (on a SeatEntity), and the
 // chair turns with its sitter; sneak to get up. One sitter at a time. Dye it in a crafting grid (dyed_color).
 public class SwivelChairBlock extends BaseEntityBlock {
+    private static final MapCodec<SwivelChairBlock> CODEC = simpleCodec(SwivelChairBlock::new);
+
+    @Override
+    protected MapCodec<SwivelChairBlock> codec() {
+        return CODEC;
+    }
+
     private static final VoxelShape SHAPE = Shapes.or(Block.box(1, 0, 1, 15, 2, 15), Block.box(7, 2, 7, 9, 7, 9), Block.box(2.5, 6, 2.5, 13.5, 9, 13.5));
 
     public SwivelChairBlock(BlockBehaviour.Properties properties) {

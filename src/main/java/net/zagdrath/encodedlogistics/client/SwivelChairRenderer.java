@@ -81,7 +81,7 @@ public class SwivelChairRenderer implements BlockEntityRenderer<SwivelChairBlock
         poseStack.pushPose();
         // The seat's front faces north (yaw 180); turn it to face the yaw.
         poseStack.translate(0.5F, 0, 0.5F);
-        poseStack.rotate(Axis.YP.rotationDegrees(180 - state.yaw));
+        poseStack.mulPose(Axis.YP.rotationDegrees(180 - state.yaw));
         poseStack.translate(-0.5F, 0, -0.5F);
         collector.submitBlockModel(poseStack, Sheets.cutoutBlockItemSheet(), List.of(seat), new int[] { state.color }, state.lightCoords,
                 OverlayTexture.NO_OVERLAY, 0);

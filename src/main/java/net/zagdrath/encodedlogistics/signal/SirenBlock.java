@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.signal;
 
+import com.mojang.serialization.MapCodec;
 import java.util.Locale;
 
 import net.minecraft.core.BlockPos;
@@ -25,6 +26,13 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 // steel whites times the dye (lime, orange, red), so strobes and Cage Lights match. LIGHT: off, or the lens lit solid
 // or flashing slow, medium or fast (the lens textures' animations); the siren is the block entity's (SirenBlockEntity).
 public class SirenBlock extends SignalBlock {
+    // 26.1 requires a block codec. Nothing decodes this block type, and its constructor arguments aren't
+    // data, so the codec stands for this instance.
+    @Override
+    protected MapCodec<SirenBlock> codec() {
+        return MapCodec.unit(this);
+    }
+
     public enum Colour {
         GREEN(DyeColor.LIME), AMBER(DyeColor.ORANGE), RED(DyeColor.RED);
 
