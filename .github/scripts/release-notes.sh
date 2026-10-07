@@ -2,7 +2,7 @@
 # Checks CHANGELOG.md is ready to release VERSION for MINECRAFT and writes that version's section, the release notes,
 # to OUT. The release's tag is vVERSION+MINECRAFT; each Minecraft version's branch has its own CHANGELOG.md.
 # Usage: .github/scripts/release-notes.sh VERSION MINECRAFT [CHANGELOG] [OUT]
-# Run it locally before tagging (bash .github/scripts/release-notes.sh 1.0.0 26.1.2); release.yml runs it on the tag.
+# Run it locally before tagging (bash .github/scripts/release-notes.sh 1.0.1 26.3); release.yml runs it on the tag.
 set -euo pipefail
 
 usage="usage: release-notes.sh VERSION MINECRAFT [CHANGELOG] [OUT]"

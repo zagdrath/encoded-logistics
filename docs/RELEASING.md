@@ -1,7 +1,7 @@
 # Releasing
 
 A release is a pushed `vX.Y.Z+MC` tag, where `X.Y.Z` is `mod_version` and `MC` is `minecraft_version` in
-`gradle.properties` (for example `v1.0.0+26.1.2`). `.github/workflows/release.yml` builds that commit, runs the game
+`gradle.properties` (for example `v1.0.1+26.3`). `.github/workflows/release.yml` builds that commit, runs the game
 tests and publishes a GitHub Release with `encodedlogistics-X.Y.Z+MC.jar` and the version's section of `CHANGELOG.md`
 as its notes. Its `curseforge` job then uploads the same jar and notes to
 [CurseForge](https://www.curseforge.com/minecraft/mc-mods/encoded-logistics) (project 1731316). `build.yml` runs the
@@ -55,7 +55,7 @@ Do this on the branch for the Minecraft version you're releasing.
 6. Watch the Release run on the Actions tab. When it's green, the release is on the Releases page with the jar, and
    the file is on CurseForge (it shows there once CurseForge has approved it, usually within minutes).
 
-A tag with a pre-release part (`v1.1.0-beta.1+26.1.2`, with `mod_version=1.1.0-beta.1`) is published as a pre-release.
+A tag with a pre-release part (`v1.1.0-beta.1+26.3`, with `mod_version=1.1.0-beta.1`) is published as a pre-release.
 
 The first release, 1.0.0 for Minecraft 26.3, was tagged `v1.0.0` before tags carried the Minecraft version.
 
@@ -94,13 +94,14 @@ git push origin vX.Y.Z+MC
 ## Arcforge's API
 
 The Arcforge integration compiles against `net.zagdrath.arcforge:arcforge-api`, kept in `libs/maven` so local and
-CI builds need no Arcforge checkout. Each version is the `arcforge-api-<version>.jar` attached to the Arcforge
-release that ships it (1.1.0 from Arcforge v2.5.0). The API uses Minecraft and NeoForge types, so each branch takes
-the jar from Arcforge's release for the same Minecraft version (Arcforge's tags are `vA.B.C+MC` too). To move to a new
-API version:
+CI builds need no Arcforge checkout. The API uses Minecraft and NeoForge types, so Arcforge builds it for each
+Minecraft version and puts that in its version: `arcforge-api-<API version>+MC.jar`, Maven version
+`<API version>+MC`. Each branch takes the jar attached to the Arcforge release for the same Minecraft version
+(Arcforge's tags are `vA.B.C+MC` too). API 1.1.0 ships in Arcforge v2.5.0+26.1.2 and in Arcforge's first `+26.3`
+release. To move to a new API version:
 
-1. Download that jar from the Arcforge release for this branch's Minecraft version.
-2. Put it in `libs/maven/net/zagdrath/arcforge/arcforge-api/<version>/`, with a pom like the 1.1.0 one (change the
-   version).
-3. Raise `arcforge_api_version` in `gradle.properties`.
+1. Download `arcforge-api-<API version>+MC.jar` from the Arcforge release for this branch's Minecraft version.
+2. Put it in `libs/maven/net/zagdrath/arcforge/arcforge-api/<API version>+MC/`, with a pom like the current one
+   (change the version), and remove the old version's directory.
+3. Set `arcforge_api_version=<API version>+MC` in `gradle.properties`.
 4. If players need a newer Arcforge, say so in the changelog.

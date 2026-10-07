@@ -1,10 +1,10 @@
 name: Release
 
-# Pushing a version tag, v<mod_version>+<minecraft_version> (git tag -a v1.0.0+26.1.2 -m "Encoded Logistics 1.0.0 for
-# Minecraft 26.1.2" && git push origin v1.0.0+26.1.2), builds that commit, checks it, publishes a GitHub Release with
+# Pushing a version tag, v<mod_version>+<minecraft_version> (git tag -a v1.0.1+26.3 -m "Encoded Logistics 1.0.1 for
+# Minecraft 26.3" && git push origin v1.0.1+26.3), builds that commit, checks it, publishes a GitHub Release with
 # the jar and that version's changelog section, then uploads the same jar and notes to CurseForge (project 1731316).
 # Each Minecraft version has its own branch (main for the newest, mc/<major.minor> for the others), and its tags are
-# cut from it. A tag with a pre-release part (v1.1.0-beta.1+26.1.2) is published as a pre-release. See
+# cut from it. A tag with a pre-release part (v1.1.0-beta.1+26.3) is published as a pre-release. See
 # docs/RELEASING.md.
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      # The tag must be v<mod_version>+<minecraft_version>, so v1.1.0+26.1.2 can't ship a jar built as 1.0.0, or one
+      # The tag must be v<mod_version>+<minecraft_version>, so v1.1.0+26.3 can't ship a jar built as 1.0.0, or one
       # built from another Minecraft version's branch.
       - name: Check the tag matches mod_version and minecraft_version
         id: version
