@@ -2,7 +2,8 @@
  "parent": "minecraft:block/block",
  "render_type": "minecraft:cutout",
  "textures": {
-  "lamp": "encodedlogistics:block/control_interface/online"
+  "lamp": "encodedlogistics:block/control_interface/online",
+  "particle": "encodedlogistics:block/control_interface/side"
  },
  "elements": [
   {

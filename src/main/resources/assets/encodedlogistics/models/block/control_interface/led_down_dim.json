@@ -2,7 +2,8 @@
  "parent": "minecraft:block/block",
  "render_type": "minecraft:cutout",
  "textures": {
-  "led": "encodedlogistics:block/control_interface/led_dim"
+  "led": "encodedlogistics:block/control_interface/led_dim",
+  "particle": "encodedlogistics:block/control_interface/side"
  },
  "elements": [
   {
