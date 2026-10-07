@@ -13,7 +13,8 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = mod_version
+// Full version is <mod_version>+<minecraft_version>, e.g. 1.0.0+26.3 (SemVer build metadata).
+version = "${mod_version}+${minecraft_version}"
 group = mod_group_id
 
 sourceSets.main.resources {
@@ -41,9 +42,12 @@ repositories {
         url = "https://api.modrinth.com/maven"
         content { includeGroup "maven.modrinth" }
     }
-    // Arcforge's machine control API: published to the local Maven repository from an Arcforge checkout
-    // (./gradlew publishApiPublicationToMavenLocal there; Arcforge's docs/API.md).
-    mavenLocal {
+    // Arcforge's API, kept in the repository so local and CI builds resolve it the same way. Each version's jar is the
+    // arcforge-api-<version>.jar attached to the Arcforge release that ships it (1.1.0: Arcforge v2.5.0); to move to a
+    // new API version, add its jar and pom under libs/maven and raise arcforge_api_version.
+    maven {
+        name = "Arcforge API (libs/maven)"
+        url = file('libs/maven')
         content { includeGroup "net.zagdrath.arcforge" }
     }
 }
@@ -190,7 +194,7 @@ tasks.withType(ProcessResources).configureEach {
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
-            mod_version            : mod_version,
+            mod_version            : project.version,
     ]
     inputs.properties replaceProperties
 

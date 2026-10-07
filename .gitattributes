@@ -3,3 +3,7 @@
 # are changed when only line endings change.
 src/generated/**/.cache/* text eol=lf
 src/generated/**/*.json text eol=lf
+
+# Shell scripts run on the Linux release runner; jars are binaries.
+*.sh text eol=lf
+*.jar binary
