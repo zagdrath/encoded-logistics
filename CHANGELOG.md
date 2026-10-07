@@ -21,9 +21,9 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
-Suggested version: **1.0.0** (the first release).
+## [1.0.0] - 2026-10-07
 
-Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI, Jade and Arcforge are optional.
+The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI, Jade and Arcforge are optional.
 
 ### Added
 
@@ -84,4 +84,5 @@ Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI, Jade and Arcforge
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/commits/main
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/zagdrath/encoded-logistics/commits/v1.0.0
