@@ -4,5 +4,5 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.zagdrath.arcforge</groupId>
   <artifactId>arcforge-api</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.0+26.1.2</version>
 </project>
