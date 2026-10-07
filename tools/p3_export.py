@@ -10,7 +10,7 @@ import blocks_p3 as B
 from p1_blocks import term_front, term_side, term_back, press_glass
 A='src/main/resources/assets/encodedlogistics/'; D='src/main/resources/data/'
 T=A+'textures/'; M=A+'models/'; RL=lambda p:'encodedlogistics:'+p
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 MC8='{\n  "animation": {\n    "frametime": 3,\n    "interpolate": true\n  }\n}\n'
 MC6='{\n  "animation": {\n    "frametime": 6,\n    "interpolate": false\n  }\n}\n'
 def save(im,p): os.makedirs(os.path.dirname(p),exist_ok=True); im.save(p)

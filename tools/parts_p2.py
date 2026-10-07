@@ -58,7 +58,7 @@ def port_models(kind,acc,inward):
          {'from':[4,4,4],'to':[12,12,4.5],'faces':{'south':face('#casing',[4,4,12,12]),'east':face('#parts',PU['mid']),'west':face('#parts',PU['mid']),
           'up':face('#parts',PU['lit']),'down':face('#parts',PU['dark'])}},
          {'from':[6,6,4.5],'to':[10,10,5],'faces':{f:face('#parts',PU['mid']) for f in ('east','west','up','down')}}]
-    glow={'from':[3,3,1],'to':[13,13,4],'faces':side_faces('#side_glow',1,4),'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+    glow={'from':[3,3,1],'to':[13,13,4],'faces':side_faces('#side_glow',1,4),'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
     return {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':els},\
            {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':els+[glow]}
 # ---------------- inventory tap ----------------
@@ -92,7 +92,7 @@ def tap_models():
           'south':face('#parts',PU['dark'])}},
          {'from':[6,6,3],'to':[10,10,5],'faces':{f:face('#parts',PU['mid']) for f in ('east','west','up','down')}}]
     glow={'from':[4,4,1],'to':[12,12,3],'faces':{'east':face('#body_glow',[0,0,2,8]),'west':face('#body_glow',[0,0,2,8]),
-          'up':face('#body_glow',[4,0,12,2]),'down':face('#body_glow',[4,0,12,2])},'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+          'up':face('#body_glow',[4,0,12,2]),'down':face('#body_glow',[4,0,12,2])},'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
     return {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':els},\
            {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':els+[glow]}
 # ---------------- threshold sensor ----------------
@@ -120,7 +120,7 @@ def sensor_models():
            'east':face('#parts',PU['side']),'west':face('#parts',PU['side']),'up':face('#parts',PU['lit']),'down':face('#parts',PU['shadow'])}},
           {'from':[6,6,2],'to':[10,10,5],'faces':{f:face('#parts',PU['mid']) for f in ('east','west','up','down')}}]
     lamp=lambda t:{'from':[6,6,0],'to':[10,10,0.5],'faces':{f:face(t,[0,0,4,4] if f=='north' else [0,0,4,0.5] if f in ('up','down') else [0,0,0.5,4]) for f in ('north','east','west','up','down')}}
-    on=lamp('#lamp_on'); g_=dict(lamp('#lamp_on')); g_.update({'neoforge_data':{'block_light':15,'sky_light':15},'shade':False})
+    on=lamp('#lamp_on'); g_=dict(lamp('#lamp_on')); g_.update({'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'})
     return {'parent':'minecraft:block/block','textures':tx,'elements':base+[lamp('#lamp_off')]},\
            {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':base+[on,g_]}
 # ---------------- fabrication terminal ----------------

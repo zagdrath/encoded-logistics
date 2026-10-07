@@ -9,7 +9,7 @@ from PIL import Image
 from item_display import centred
 A='src/main/resources/assets/encodedlogistics'; T=A+'/textures'; M=A+'/models'
 RL=lambda p:'encodedlogistics:'+p
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 MC8='{\n  "animation": {\n    "frametime": 3,\n    "interpolate": true\n  }\n}\n'
 def save(im,p): os.makedirs(os.path.dirname(p),exist_ok=True); im.save(p)
 def jd(o,p): os.makedirs(os.path.dirname(p),exist_ok=True); json.dump(o,open(p,'w',newline='\n'),indent=1)

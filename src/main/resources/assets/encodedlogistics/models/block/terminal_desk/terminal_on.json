@@ -215,7 +215,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   },
   {
    "name": "glass_bulge",
@@ -244,7 +244,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   },
   {
    "name": "switch",
@@ -333,7 +333,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   }
  ]
 }

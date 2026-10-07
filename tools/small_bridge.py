@@ -105,7 +105,7 @@ def models():
                             'particle': 'encodedlogistics:block/small_wireless_bridge/led_' + name},
                'elements': [{'name': 'led', 'from': [3, 3, 4.01], 'to': [13, 13, 4.01],
                              'faces': {'south': {'texture': '#led', 'uv': [3, 3, 13, 13]}},
-                             'neoforge_data': {'block_light': 15, 'sky_light': 15}, 'shade': False}]}
+                             'neoforge_data': {'block_light': 15, 'sky_light': 15}, 'shade_direction_override': 'up'}]}
         json.dump(led, open(mdir + 'led_%s.json' % name, 'w', newline='\n'), indent=1)
 
 

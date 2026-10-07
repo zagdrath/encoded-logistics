@@ -7,7 +7,7 @@ from PIL import Image
 A='src/main/resources/assets/encodedlogistics'
 TEX=A+'/textures/block/cable'; MOD=A+'/models/block/cable'
 COLOURS=['neutral','white','orange','magenta','light_blue','yellow','lime','pink','cyan','purple','blue','green','red']
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 SOLID=[15,15,16,16]
 def face(t,uv): return {'texture':t,'uv':uv}
 def el(a,b,f): return {'from':list(a),'to':list(b),'faces':f}

@@ -34,7 +34,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   },
   {
    "name": "fascia_display",
@@ -63,7 +63,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   }
  ]
 }

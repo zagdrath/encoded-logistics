@@ -4,7 +4,7 @@ sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image
 import devices3 as D, rack_models as RM
 A='src/main/resources/assets/encodedlogistics/'; T=A+'textures/'; M=A+'models/'; DD='src/main/resources/data/'; RL=lambda p:'encodedlogistics:'+p
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 def save(im,p): os.makedirs(os.path.dirname(p),exist_ok=True); im.save(p)
 def jd(o,p): os.makedirs(os.path.dirname(p),exist_ok=True); json.dump(o,open(p,'w'),indent=1)
 def mc(ft,w=None,h=None):

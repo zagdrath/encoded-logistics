@@ -3,7 +3,7 @@
 # keyboard, clutter (when clutter=true). The dummy renders nothing.
 import json, math
 RL=lambda p:'encodedlogistics:'+p
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 def uvf(r,tw,th): x0,y0,x1,y1=r; return [round(x0*16/tw,4),round(y0*16/th,4),round(x1*16/tw,4),round(y1*16/th,4)]
 def f(t,uv,**k): d={'texture':t,'uv':uv}; d.update(k); return d
 def el(n,a,b,faces,**k): d={'name':n,'from':list(a),'to':list(b),'faces':faces}; d.update(k); return d

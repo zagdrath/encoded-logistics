@@ -23,6 +23,13 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-07
+
+### Fixed
+
+- Glowing parts (LEDs, status lights, screens, lamps and the lit parts of cables) were shaded darker on their sides
+  and undersides like ordinary block faces. They're now evenly bright from every side.
+
 ## [1.0.0] - 2026-10-07
 
 The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI, Jade and Arcforge are optional.
@@ -86,5 +93,6 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.1+26.3...HEAD
+[1.0.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0...v1.0.1+26.3
 [1.0.0]: https://github.com/zagdrath/encoded-logistics/commits/v1.0.0

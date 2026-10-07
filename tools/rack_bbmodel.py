@@ -18,7 +18,7 @@ def bbmodel(name,model,tex_paths,pivot=None,out_dir='blockbench'):
             faces[f]={'uv':fd.get('uv',[0,0,16,16]),'texture':idx.get(fd['texture'].lstrip('#'),0)}
             if 'rotation' in fd: faces[f]['rotation']=fd['rotation']
         els.append({'name':e.get('name','cube'),'type':'cube','uuid':_u(),'from':e['from'],'to':e['to'],
-                    'origin':pivot or [8,8,8],'faces':faces,'box_uv':False,'rescale':False,'shade':e.get('shade',True)})
+                    'origin':pivot or [8,8,8],'faces':faces,'box_uv':False,'rescale':False,'shade':e.get('shade_direction_override')!='up'})
     group={'name':name,'origin':pivot or [8,8,8],'uuid':_u(),'export':True,'isOpen':True,'children':[e['uuid'] for e in els]}
     bb={'meta':{'format_version':'4.10','model_format':'java_block','box_uv':False},'name':name,'model_identifier':'',
         'visible_box':[1,1,0],'resolution':{'width':16,'height':16},'elements':els,'outliner':[group],'textures':texs,

@@ -10,7 +10,7 @@ from p1_blocks import term_front, term_side, term_back
 A='src/main/resources/assets/encodedlogistics/'; D='src/main/resources/data/'
 T=A+'textures/'; M=A+'models/'
 RL=lambda p:'encodedlogistics:'+p
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 MC8='{\n  "animation": {\n    "frametime": 3,\n    "interpolate": true\n  }\n}\n'
 def save(im,p): os.makedirs(os.path.dirname(p),exist_ok=True); im.save(p)
 def jd(o,p): os.makedirs(os.path.dirname(p),exist_ok=True); json.dump(o,open(p,'w',newline='\n'),indent=1)
@@ -134,7 +134,7 @@ def recipes():
     shaped('storage_die_512k',['NDN','DMD','NTN'],{'N':E('neodymium_ingot'),'D':E('storage_die_128k'),'M':E('memory_die'),'T':E('tantalum_capacitor')},E('storage_die_512k'))
     # From 128K up the housing is tantalum-plated.
     for t in ('128k','512k'):
-        shaped(f'storage_drive_{t}',['TFT','IDI','ICI'],{'T':E('tantalum_ingot'),{'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
+        shaped(f'storage_drive_{t}',['TFT','IDI','ICI'],{'T':E('tantalum_ingot'),'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
     shapeless('ingress_port',[E('circuit_substrate'),E('logic_die'),E('tantalum_capacitor'),V('iron_ingot'),V('hopper')],E('ingress_port'))
     shapeless('egress_port',[E('circuit_substrate'),E('logic_die'),E('tantalum_capacitor'),V('iron_ingot'),V('dropper')],E('egress_port'))
     shapeless('inventory_tap',[E('circuit_substrate'),E('logic_die'),E('memory_die'),V('chest'),E('ferrite')],E('inventory_tap'))

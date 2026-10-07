@@ -61,7 +61,7 @@ def face_corners(face,f,t):
 def model_quads(rl,rx,ry,origin,frame=0):
     m=load_model(rl); T=m.get('textures',{}); out=[]
     for e in m['elements']:
-        bright=bool(e.get('neoforge_data',{}).get('block_light',0)>=15) or e.get('shade',True) is False
+        bright=bool(e.get('neoforge_data',{}).get('block_light',0)>=15) or e.get('shade_direction_override')=='up'
         for face,fd in e['faces'].items():
             tex=load_tex(resolve(fd['texture'],T),frame)
             if 'uv' in fd: u1,v1,u2,v2=fd['uv']

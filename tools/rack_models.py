@@ -88,5 +88,5 @@ def device_model(name,n,glow=None):
     if glow:
         tx['glow']=f'encodedlogistics:block/rack_device/{name}_{glow}'
         E.append(el('leds',(1.55,0,1.74),(14.45,n,29.26),{'north':face('#glow',fr),'south':face('#glow',rr)},
-                    neoforge_data={'block_light':15,'sky_light':15},shade=False))
+                    neoforge_data={'block_light':15,'sky_light':15},shade_direction_override='up'))
     return {'parent':'minecraft:block/block','render_type':'minecraft:cutout','textures':tx,'elements':E}

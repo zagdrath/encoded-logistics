@@ -6,7 +6,7 @@ from PIL import Image
 import mr2_tex as T, mid_tex as M
 from el_style import put
 A_='src/main/resources/assets/encodedlogistics/'; D_='src/main/resources/data/encodedlogistics/'; RL=lambda p:'encodedlogistics:'+p
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 def save(im,p): os.makedirs(os.path.dirname(A_+p),exist_ok=True); im.save(A_+p)
 def jd(o,p,root=A_): os.makedirs(os.path.dirname(root+p),exist_ok=True); json.dump(o,open(root+p,'w'),indent=1)
 def mc(p,ft,w=None,h=None):

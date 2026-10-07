@@ -346,7 +346,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   },
   {
    "from": [
@@ -529,7 +529,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   },
   {
    "from": [
@@ -580,7 +580,7 @@
     "block_light": 15,
     "sky_light": 15
    },
-   "shade": false
+   "shade_direction_override": "up"
   },
   {
    "from": [

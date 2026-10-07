@@ -6,7 +6,7 @@ sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from PIL import Image
 from w2_tex import S, outline
 A_='src/main/resources/assets/encodedlogistics/'; RL=lambda p:'encodedlogistics:'+p
-GLOW={'shade':False,'neoforge_data':{'block_light':15,'sky_light':15}}
+GLOW={'shade_direction_override':'up','neoforge_data':{'block_light':15,'sky_light':15}}
 H=lambda h: tuple(int(h[i:i+2],16) for i in (1,3,5))
 DYES={'white':'#F9FFFE','orange':'#F9801D','magenta':'#C74EBD','light_blue':'#3AB3DA','yellow':'#FED83D','lime':'#80C71F','pink':'#F38BAA','gray':'#474F52',
       'light_gray':'#9D9D97','cyan':'#169C9C','purple':'#8932B8','blue':'#3C44AA','brown':'#835432','green':'#5E7C16','red':'#B02E26','black':'#1D1D21'}

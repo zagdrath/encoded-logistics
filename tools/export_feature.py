@@ -15,7 +15,7 @@ MCMETA_CYCLE='{\n  "animation": {\n    "frametime": 6,\n    "interpolate": true\
 RL=lambda p:'encodedlogistics:'+p
 def face(tex,uv,**kw): d={'texture':tex,'uv':uv}; d.update(kw); return d
 def el(frm,to,faces,**kw): d={'from':list(frm),'to':list(to),'faces':faces}; d.update(kw); return d
-GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade':False}
+GLOW={'neoforge_data':{'block_light':15,'sky_light':15},'shade_direction_override':'up'}
 def tex_rect(x0,y0,w,h):
     """Front-texture rect -> world box x/y on a NORTH face (north u runs toward -x)."""
     return (16-x0-w,16-y0-h,16-x0,16-y0)
