@@ -5,8 +5,10 @@ All notable changes to Encoded Logistics are listed here, newest first. The form
 
 ## Versioning
 
-Versions are `MAJOR.MINOR.PATCH+MINECRAFT` (for example `1.2.0+26.3`), set by `mod_version` in
-`gradle.properties`; the Minecraft version after the `+` changes only when the mod moves to a new one.
+Versions are `MAJOR.MINOR.PATCH+MINECRAFT` (for example `1.2.0+26.3`), set by `mod_version` and
+`minecraft_version` in `gradle.properties`, and each is released as the tag `vMAJOR.MINOR.PATCH+MINECRAFT` (1.0.0,
+the first release, was tagged `v1.0.0`). Each Minecraft version has its own branch and its own changelog; this one is
+Minecraft 26.3's (`main`). The same version number on two Minecraft versions has the same changes.
 
 - **PATCH** (1.2.0 → 1.2.1): bug fixes and small tweaks. No new content, and worlds and configs carry
   over untouched.

@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Checks CHANGELOG.md is ready to release VERSION and writes that version's section, the release notes, to OUT.
-# Usage: .github/scripts/release-notes.sh VERSION [CHANGELOG] [OUT]
-# Run it locally before tagging (bash .github/scripts/release-notes.sh 1.0.0); release.yml runs it on the tag.
+# Checks CHANGELOG.md is ready to release VERSION for MINECRAFT and writes that version's section, the release notes,
+# to OUT. The release's tag is vVERSION+MINECRAFT; each Minecraft version's branch has its own CHANGELOG.md.
+# Usage: .github/scripts/release-notes.sh VERSION MINECRAFT [CHANGELOG] [OUT]
+# Run it locally before tagging (bash .github/scripts/release-notes.sh 1.0.0 26.1.2); release.yml runs it on the tag.
 set -euo pipefail
 
-version="${1:?usage: release-notes.sh VERSION [CHANGELOG] [OUT]}"
-changelog="${2:-CHANGELOG.md}"
-out="${3:-release-notes.md}"
+usage="usage: release-notes.sh VERSION MINECRAFT [CHANGELOG] [OUT]"
+version="${1:?${usage}}"
+minecraft="${2:?${usage}}"
+changelog="${3:-CHANGELOG.md}"
+out="${4:-release-notes.md}"
 repo_url="https://github.com/zagdrath/encoded-logistics"
 heading="## [${version}]"
+tag="v${version}+${minecraft}"
+tag_re="$(printf '%s' "${tag}" | sed 's/[.+]/\\&/g')"
 errors=0
 
 fail() {
@@ -45,17 +50,17 @@ else
   fi
 fi
 
-# Link definitions: the version's own (a compare from the previous tag, or its commits for the first release), and
-# Unreleased comparing from this version.
-if ! grep -Eq "^\[${version//./\\.}\]: ${repo_url}/(compare/.+\.\.\.v${version//./\\.}|commits/v${version//./\\.})\$" "${changelog}"; then
-  fail "no '[${version}]: ${repo_url}/compare/vPREVIOUS...v${version}' link (or '.../commits/v${version}' for the first release)"
+# Link definitions: the version's own (a compare from the branch's previous tag, or the tag's commits for the
+# branch's first release), and Unreleased comparing from this version's tag.
+if ! grep -Eq "^\[${version//./\\.}\]: ${repo_url}/(compare/.+\.\.\.${tag_re}|commits/${tag_re})\$" "${changelog}"; then
+  fail "no '[${version}]: ${repo_url}/compare/vPREVIOUS...${tag}' link (or '.../commits/${tag}' for the branch's first release)"
 fi
-if ! grep -Fxq "[Unreleased]: ${repo_url}/compare/v${version}...HEAD" "${changelog}"; then
-  fail "the '[Unreleased]' link must be '${repo_url}/compare/v${version}...HEAD'"
+if ! grep -Fxq "[Unreleased]: ${repo_url}/compare/${tag}...HEAD" "${changelog}"; then
+  fail "the '[Unreleased]' link must be '${repo_url}/compare/${tag}...HEAD'"
 fi
 
 if [ "${errors}" -gt 0 ]; then
-  echo "${changelog} isn't ready to release ${version} (${errors} problem(s))." >&2
+  echo "${changelog} isn't ready to release ${tag} (${errors} problem(s))." >&2
   exit 1
 fi
-echo "${changelog} is ready to release ${version}; release notes written to ${out}."
+echo "${changelog} is ready to release ${tag}; release notes written to ${out}."

@@ -1,9 +1,11 @@
 name: Release
 
-# Pushing a version tag (git tag -a v1.0.0 -m "Encoded Logistics 1.0.0" && git push origin v1.0.0) builds that
-# commit, checks it, publishes a GitHub Release with the jar and that version's changelog section, then uploads the
-# same jar and notes to CurseForge (project 1731316).
-# A tag with a pre-release part (v1.1.0-beta.1) is published as a pre-release. See docs/RELEASING.md.
+# Pushing a version tag, v<mod_version>+<minecraft_version> (git tag -a v1.0.0+26.1.2 -m "Encoded Logistics 1.0.0 for
+# Minecraft 26.1.2" && git push origin v1.0.0+26.1.2), builds that commit, checks it, publishes a GitHub Release with
+# the jar and that version's changelog section, then uploads the same jar and notes to CurseForge (project 1731316).
+# Each Minecraft version has its own branch (main for the newest, mc/<major.minor> for the others), and its tags are
+# cut from it. A tag with a pre-release part (v1.1.0-beta.1+26.1.2) is published as a pre-release. See
+# docs/RELEASING.md.
 on:
   push:
     tags:
@@ -38,18 +40,20 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      # The tag must match mod_version, so v1.1.0 can't ship a jar built as 1.0.0.
-      - name: Check the tag matches mod_version
+      # The tag must be v<mod_version>+<minecraft_version>, so v1.1.0+26.1.2 can't ship a jar built as 1.0.0, or one
+      # built from another Minecraft version's branch.
+      - name: Check the tag matches mod_version and minecraft_version
         id: version
         run: |
-          tag_version="${GITHUB_REF_NAME#v}"
           mod_version="$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
           minecraft_version="$(grep -E '^minecraft_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')"
-          echo "Tag: ${GITHUB_REF_NAME}, mod_version: ${mod_version}"
-          if [ "${tag_version}" != "${mod_version}" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match mod_version=${mod_version} in gradle.properties"
+          expected="v${mod_version}+${minecraft_version}"
+          echo "Tag: ${GITHUB_REF_NAME}, expected: ${expected}"
+          if [ "${GITHUB_REF_NAME}" != "${expected}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} doesn't match ${expected} (mod_version and minecraft_version in gradle.properties)"
             exit 1
           fi
+          echo "MINECRAFT=${minecraft_version}" >> "$GITHUB_ENV"
           echo "VERSION=${mod_version}" >> "$GITHUB_ENV"
           echo "JAR=build/libs/encodedlogistics-${mod_version}+${minecraft_version}.jar" >> "$GITHUB_ENV"
           echo "version=${mod_version}" >> "$GITHUB_OUTPUT"
@@ -60,7 +64,7 @@ jobs:
       # "Suggested version" line, with an Unreleased section above it and with its compare links.
       - name: Check CHANGELOG.md and extract release notes
         run: |
-          bash .github/scripts/release-notes.sh "${VERSION}" CHANGELOG.md release-notes.md
+          bash .github/scripts/release-notes.sh "${VERSION}" "${MINECRAFT}" CHANGELOG.md release-notes.md
           cat release-notes.md
 
       - name: Build
@@ -83,11 +87,14 @@ jobs:
         run: |
           prerelease=()
           case "${VERSION}" in *-*) prerelease=(--prerelease) ;; esac
+          # Only main's full releases (the newest Minecraft version) are marked latest, not backports or pre-releases.
+          latest=(--latest=false)
+          if [ "${#prerelease[@]}" -eq 0 ] && git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then latest=(--latest); fi
           gh release create "${GITHUB_REF_NAME}" "${JAR}" \
-            --title "Encoded Logistics ${VERSION}" \
+            --title "Encoded Logistics ${VERSION} for Minecraft ${MINECRAFT}" \
             --notes-file release-notes.md \
             --verify-tag \
-            "${prerelease[@]}"
+            "${prerelease[@]}" "${latest[@]}"
 
       # The jar and notes the curseforge job uploads, so it sends exactly what the GitHub Release has.
       - name: Gather the jar and release notes
