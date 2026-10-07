@@ -72,11 +72,11 @@ def worldgen():
           'tantalum':dict(size=6,air=0.4,count=4,h={'type':'minecraft:uniform','min_inclusive':{'above_bottom':0},'max_inclusive':{'absolute':-8}})}
     for metal,s in spec.items():
         o=ORES[metal]
-        # 26.3: configured features live in worldgen/feature, flat (no "config"), states by id
-        jd({'type':'minecraft:ore','discard_chance_on_air_exposure':s['air'],'size':s['size'],'targets':[
-            {'state':RL(o['stone']),'target':{'predicate_type':'minecraft:tag_match','tag':'minecraft:stone_ore_replaceables'}},
-            {'state':RL(o['deep']),'target':{'predicate_type':'minecraft:tag_match','tag':'minecraft:deepslate_ore_replaceables'}}]},
-           W+f'feature/ore_{metal}.json')
+        # 26.1: configured features live in worldgen/configured_feature, under "config", states as {"Name": id}
+        jd({'type':'minecraft:ore','config':{'discard_chance_on_air_exposure':s['air'],'size':s['size'],'targets':[
+            {'state':{'Name':RL(o['stone'])},'target':{'predicate_type':'minecraft:tag_match','tag':'minecraft:stone_ore_replaceables'}},
+            {'state':{'Name':RL(o['deep'])},'target':{'predicate_type':'minecraft:tag_match','tag':'minecraft:deepslate_ore_replaceables'}}]}},
+           W+f'configured_feature/ore_{metal}.json')
         jd({'feature':RL(f'ore_{metal}'),'placement':[{'type':'minecraft:count','count':s['count']},{'type':'minecraft:in_square'},
             {'type':'minecraft:height_range','height':s['h']},{'type':'minecraft:biome'}]},W+f'placed_feature/ore_{metal}.json')
         jd({'type':'neoforge:add_features','biomes':'#minecraft:is_overworld','features':RL(f'ore_{metal}'),'step':'underground_ores'},
@@ -134,7 +134,7 @@ def recipes():
     shaped('storage_die_512k',['NDN','DMD','NTN'],{'N':E('neodymium_ingot'),'D':E('storage_die_128k'),'M':E('memory_die'),'T':E('tantalum_capacitor')},E('storage_die_512k'))
     # From 128K up the housing is tantalum-plated.
     for t in ('128k','512k'):
-        shaped(f'storage_drive_{t}',['TFT','IDI','ICI'],{'T':E('tantalum_ingot'),{'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
+        shaped(f'storage_drive_{t}',['TFT','IDI','ICI'],{'T':E('tantalum_ingot'),'I':V('iron_ingot'),'F':E('ferrite'),'D':E(f'storage_die_{t}'),'C':E('circuit_substrate')},E(f'storage_drive_{t}'))
     shapeless('ingress_port',[E('circuit_substrate'),E('logic_die'),E('tantalum_capacitor'),V('iron_ingot'),V('hopper')],E('ingress_port'))
     shapeless('egress_port',[E('circuit_substrate'),E('logic_die'),E('tantalum_capacitor'),V('iron_ingot'),V('dropper')],E('egress_port'))
     shapeless('inventory_tap',[E('circuit_substrate'),E('logic_die'),E('memory_die'),V('chest'),E('ferrite')],E('inventory_tap'))

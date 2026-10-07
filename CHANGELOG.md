@@ -5,8 +5,10 @@ All notable changes to Encoded Logistics are listed here, newest first. The form
 
 ## Versioning
 
-Versions are `MAJOR.MINOR.PATCH+MINECRAFT` (for example `1.2.0+26.3`), set by `mod_version` in
-`gradle.properties`; the Minecraft version after the `+` changes only when the mod moves to a new one.
+Versions are `MAJOR.MINOR.PATCH+MINECRAFT` (for example `1.2.0+26.1.2`), set by `mod_version` and
+`minecraft_version` in `gradle.properties`, and each is released as the tag `vMAJOR.MINOR.PATCH+MINECRAFT`. Each
+Minecraft version has its own branch and its own changelog; this one is Minecraft 26.1.2's (`mc/26.1`). The same
+version number on two Minecraft versions has the same changes.
 
 - **PATCH** (1.2.0 → 1.2.1): bug fixes and small tweaks. No new content, and worlds and configs carry
   over untouched.
@@ -21,13 +23,9 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
-### Added
-
-- Support for Minecraft 26.1.2, on NeoForge 26.1.2.114 or later.
-
 ## [1.0.0] - 2026-10-07
 
-The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI, Jade and Arcforge are optional.
+The first release. Needs Minecraft 26.1.2 and NeoForge 26.1.2.114 or later. JEI, Jade and Arcforge are optional.
 
 ### Added
 
@@ -88,5 +86,5 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/zagdrath/encoded-logistics/commits/v1.0.0
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0+26.1.2...HEAD
+[1.0.0]: https://github.com/zagdrath/encoded-logistics/commits/v1.0.0+26.1.2

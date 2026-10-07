@@ -45,9 +45,10 @@ def ore():
                                             {'type':'minecraft:explosion_decay'}],'name':RL('raw_gallium')}]}],'rolls':1}],
         'random_sequence':RL(f'blocks/{name}')},f'{D}encodedlogistics/loot_table/blocks/{name}.json')
     W=D+'encodedlogistics/worldgen/'
-    # 26.3: configured features live in worldgen/feature, flat (no "config"), states by id
-    jd({'type':'minecraft:ore','discard_chance_on_air_exposure':0.6,'size':4,'targets':[
-        {'state':RL(name),'target':{'predicate_type':'minecraft:tag_match','tag':'minecraft:deepslate_ore_replaceables'}}]},W+'feature/ore_gallium.json')
+    # 26.1: configured features live in worldgen/configured_feature, under "config", states as {"Name": id}
+    jd({'type':'minecraft:ore','config':{'discard_chance_on_air_exposure':0.6,'size':4,'targets':[
+        {'state':{'Name':RL(name)},'target':{'predicate_type':'minecraft:tag_match','tag':'minecraft:deepslate_ore_replaceables'}}]}},
+       W+'configured_feature/ore_gallium.json')
     jd({'feature':RL('ore_gallium'),'placement':[{'type':'minecraft:count','count':2},{'type':'minecraft:in_square'},
         {'type':'minecraft:height_range','height':{'type':'minecraft:trapezoid','min_inclusive':{'above_bottom':0},'max_inclusive':{'absolute':-32}}},
         {'type':'minecraft:biome'}]},W+'placed_feature/ore_gallium.json')
