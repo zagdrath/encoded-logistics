@@ -8,6 +8,7 @@ package net.zagdrath.encodedlogistics.block;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -79,6 +80,17 @@ public class SwivelChairBlock extends BaseEntityBlock {
         chair.setYaw(player.getYRot());
         player.startRiding(seat);
         return InteractionResult.SUCCESS;
+    }
+
+    // The seat goes with the chair, its sitter standing up, rather than waiting for the seat's next tick (which can be
+    // a long wait, or never, where entities aren't ticking).
+    @Override
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        for (SeatEntity seat : level.getEntitiesOfClass(SeatEntity.class, new AABB(pos))) {
+            seat.ejectPassengers();
+            seat.discard();
+        }
     }
 
     @Override

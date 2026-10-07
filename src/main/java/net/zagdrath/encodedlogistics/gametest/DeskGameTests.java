@@ -166,7 +166,7 @@ final class DeskGameTests {
                     helper.assertTrue(Math.abs(helper.getBlockEntity(pos, SwivelChairBlockEntity.class).yaw() - 90) < 1, "Chair didn't turn");
                     helper.getLevel().destroyBlock(helper.absolutePos(pos), false);
                 })
-                // The seat goes on its own next tick, whenever entities in this test's area tick.
+                // The seat goes with the chair (SwivelChairBlock.affectNeighborsAfterRemoval), not on its own next tick.
                 .thenWaitUntil(() -> helper.assertTrue(helper.getLevel().getEntitiesOfClass(SeatEntity.class, new AABB(helper.absolutePos(pos)).inflate(1))
                         .isEmpty(), "Seat left behind"))
                 .thenExecute(() -> {

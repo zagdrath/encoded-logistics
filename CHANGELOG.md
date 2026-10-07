@@ -29,6 +29,8 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 - Glowing parts (LEDs, status lights, screens, lamps and the lit parts of cables) were shaded darker on their sides
   and undersides like ordinary block faces. They're now evenly bright from every side.
+- Breaking a Swivel Chair with someone in it could leave them sitting in mid-air for a moment, or for good where
+  entities weren't ticking. They now stand up as soon as the chair is gone.
 
 ## [1.0.0] - 2026-10-07
 
