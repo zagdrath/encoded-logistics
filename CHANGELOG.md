@@ -54,6 +54,9 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Changed
 
+- The Server Rack screen's sneak-clicks follow the vanilla Sneak key instead of Shift: taking a device out,
+  stepping a storage priority by 10, and moving a stack between slots. With Sneak on Shift (the default) either Shift
+  still works. The screen's hint names the key Sneak is bound to. Sneak-using a rack in the world already followed it.
 - **Rack Schedulers pool across racks.** Compute and Memory Servers on the same network now form one Scheduler
   however many racks they are spread over, with every server's threads and job memory added together. One rack heads
   the pool (the first, by position, with an online Compute Server serving the network) and holds its jobs; when the

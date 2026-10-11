@@ -33,6 +33,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.TagValueInput;
@@ -40,6 +41,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.client.SneakKey;
 import net.zagdrath.encodedlogistics.client.rack.RackClientDevices;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
@@ -451,7 +453,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (info != null) {
                 graphics.nextStratum();
                 RackHud.popup(graphics, font, device, info, mouseX + 12, mouseY - 8,
-                        Component.translatable(RackClientDevices.hasPanel(device.type()) ? "gui.encodedlogistics.rack.hint" : "gui.encodedlogistics.rack.hint_take"));
+                        Component.translatable(RackClientDevices.hasPanel(device.type()) ? "gui.encodedlogistics.rack.hint" : "gui.encodedlogistics.rack.hint_take",
+                                SneakKey.name()));
             }
         }
     }
@@ -511,7 +514,8 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double mouseX = event.x(), mouseY = event.y();
         int button = event.button();
-        boolean shift = event.hasShiftDown();
+        // Sneak-clicks follow the vanilla Sneak key (Shift by default).
+        boolean shift = SneakKey.held(event.hasShiftDown());
         if (showingPanel()) {
             if (button == InputConstants.MOUSE_BUTTON_LEFT && over(mouseX, mouseY, BACK_X, BACK_Y, 16, 16)) {
                 buttonClick(RackMenu.PICK);
@@ -524,7 +528,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             if (panel != null && mouseY < topPos + topHeight() && panel.mouseClicked(mouseX - leftPos, mouseY - topPos, button, shift)) {
                 return true;
             }
-            return super.mouseClicked(event, doubleClick);
+            return sneakQuickMove(event, shift) || super.mouseClicked(event, doubleClick);
         }
         if (button == InputConstants.MOUSE_BUTTON_LEFT && view.press(mouseX - leftPos, mouseY - topPos)) {
             return true;
@@ -545,7 +549,23 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             }
             return true;
         }
-        return super.mouseClicked(event, doubleClick);
+        return sneakQuickMove(event, shift) || super.mouseClicked(event, doubleClick);
+    }
+
+    // Sneak held on a slot without Shift (Sneak bound to another key): the slot's stack moves across, as a Shift-click
+    // does. With Shift down, vanilla does it.
+    private boolean sneakQuickMove(MouseButtonEvent event, boolean sneak) {
+        int button = event.button();
+        if (!sneak || event.hasShiftDown() || !menu.getCarried().isEmpty()
+                || (button != InputConstants.MOUSE_BUTTON_LEFT && button != InputConstants.MOUSE_BUTTON_RIGHT)) {
+            return false;
+        }
+        Slot slot = getHoveredSlot();
+        if (slot == null) {
+            return false;
+        }
+        slotClicked(slot, slot.index, button == InputConstants.MOUSE_BUTTON_LEFT ? 0 : 1, ContainerInput.QUICK_MOVE);
+        return true;
     }
 
     @Override
