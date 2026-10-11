@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.gui.handlers.IGuiProperties;
 import mezz.jei.api.gui.handlers.IScreenHandler;
@@ -25,7 +27,11 @@ final class RackElevationJei {
 
     static final class Bounds implements IScreenHandler<RackElevationScreen> {
         @Override
-        public IGuiProperties apply(RackElevationScreen screen) {
+        public @Nullable IGuiProperties apply(RackElevationScreen screen) {
+            // JEI can ask before the screen is laid out (no size yet, so no position): nothing to show beside until then.
+            if (screen.width <= 1 || screen.height <= 1) {
+                return null;
+            }
             return new IGuiProperties() {
                 @Override
                 public Class<? extends net.minecraft.client.gui.screens.Screen> screenClass() {
