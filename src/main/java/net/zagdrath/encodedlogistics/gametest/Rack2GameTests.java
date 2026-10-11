@@ -19,10 +19,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.JobHost;
@@ -34,6 +36,7 @@ import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RackScheduler;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FabricationServerDevice;
@@ -52,8 +55,8 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
 
-// Rack devices, batch 2: switches pooling lanes, the NAS and SAN as storage, the rack's Scheduler crafting through a
-// Fabrication Server, a device serving a segment and an L3 Switch routing to it, the Router linking two unconnected
+// Rack devices, batch 2: switches pooling lanes, the NAS and SAN as storage, the rack Scheduler crafting through a
+// Fabrication Server (and pooling across racks, sharing its threads out), a device serving a segment and an L3 Switch routing to it, the Router linking two unconnected
 // networks, and the Monitoring Server sampling.
 final class Rack2GameTests {
     private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), LOG = StorageKey.of(new ItemStack(Items.OAK_LOG)),
@@ -184,6 +187,134 @@ final class Rack2GameTests {
                     helper.assertTrue(RackGameTests.storage(helper, master).count(PLANKS) == 8,
                             "Network has " + RackGameTests.storage(helper, master).count(PLANKS) + " planks");
                     helper.assertTrue(rack.scheduler().jobs().isEmpty(), "Job not finished");
+                })
+                .thenSucceed();
+    }
+
+
+    // Two racks on one network: a Compute Server (and Fabrication Server) in one, the Memory Server in the other, pool into
+    // one Scheduler, headed by one rack, counting both racks' servers. A job started on it runs. A second Compute Server
+    // in the other rack adds its threads. The head's Compute Server removed, the other rack heads the pool and the job
+    // moves to it, and finishes there.
+    static void rackSchedulerPool(GameTestHelper helper) {
+        RackGameTests.controller(helper, RackGameTests.CONTROLLER, 20_000);
+        BlockPos a = RackGameTests.rack(helper, new BlockPos(2, 1, 0), Direction.NORTH), b = RackGameTests.rack(helper, new BlockPos(5, 1, 0), Direction.NORTH);
+        for (BlockPos pos : new BlockPos[] { new BlockPos(1, 1, 0), new BlockPos(1, 1, 1), new BlockPos(1, 1, 2), new BlockPos(2, 1, 2),
+                new BlockPos(3, 1, 2), new BlockPos(4, 1, 2), new BlockPos(5, 1, 2) }) {
+            RackGameTests.cable(helper, pos);
+        }
+        RackGameTests.install(helper, a, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
+        FabricationServerDevice fabrication = RackGameTests.install(helper, a, RackDeviceType.FABRICATION_SERVER, 4, FabricationServerDevice.class);
+        storageDevice(helper, a, RackDeviceType.NAS, 6, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        MemoryServerDevice memory = RackGameTests.install(helper, b, RackDeviceType.MEMORY_SERVER, 1, MemoryServerDevice.class);
+        ItemStack card = new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
+        card.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_LOG)),
+                List.of(new ItemStack(Items.OAK_PLANKS, 4))));
+        fabrication.items().set(0, card);
+        fabrication.itemsChanged();
+        int threads = Config.COMPUTE_SERVER_THREADS.getAsInt();
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    ServerLevel level = helper.getLevel();
+                    BlockPos device = helper.absolutePos(a);
+                    RackBlockEntity rackA = helper.getBlockEntity(a, RackBlockEntity.class), rackB = helper.getBlockEntity(b, RackBlockEntity.class);
+                    RackScheduler pool = RackScheduler.of(level.getServer(), network(helper, a));
+                    helper.assertTrue(pool == rackA.scheduler(), "Pool not headed by the rack with the Compute Server");
+                    helper.assertTrue(pool.active(), "Pool inactive with the servers in two racks");
+                    helper.assertTrue(!rackB.scheduler().active(), "The other rack is a Scheduler too");
+                    helper.assertTrue(pool.threads() == threads && pool.memory() == Config.MEMORY_SERVER_MEMORY.getAsInt(),
+                            "Pool has " + pool.threads() + " threads, " + pool.memory() + " memory");
+                    helper.assertTrue(rackB.scheduler().badges(memory), "Memory Server in the other rack without the badge");
+                    List<JobHost> schedulers = CraftRequests.schedulers(level, device);
+                    helper.assertTrue(schedulers.size() == 1 && schedulers.contains(pool), "Schedulers offered: " + schedulers.size());
+                    RackGameTests.storage(helper, a).insert(LOG, 4, false);
+                    CraftPlanner.Plan plan = CraftRequests.plan(level, device, PLANKS, 16);
+                    helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+                    helper.assertTrue(CraftRequests.start(level, device, plan, pool) != null, "Job didn't start");
+                    RackGameTests.install(helper, b, RackDeviceType.COMPUTE_SERVER, 3, ComputeServerDevice.class);
+                })
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    RackBlockEntity rackA = helper.getBlockEntity(a, RackBlockEntity.class), rackB = helper.getBlockEntity(b, RackBlockEntity.class);
+                    RackScheduler pool = RackScheduler.of(helper.getLevel().getServer(), network(helper, a));
+                    helper.assertTrue(pool != null && pool.active() && pool.threads() == 2 * threads, "Second rack's Compute Server not pooled");
+                    helper.assertTrue(pool.jobs().size() == 1, "Pool has " + pool.jobs().size() + " jobs");
+                    // The head's Compute Server goes: the other rack heads the pool and takes the job.
+                    (pool == rackA.scheduler() ? rackA : rackB).remove(pool == rackA.scheduler() ? 1 : 3);
+                })
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    RackBlockEntity rackA = helper.getBlockEntity(a, RackBlockEntity.class), rackB = helper.getBlockEntity(b, RackBlockEntity.class);
+                    RackScheduler pool = RackScheduler.of(helper.getLevel().getServer(), network(helper, a));
+                    helper.assertTrue(pool != null && pool.active() && pool.threads() == threads, "Pool didn't move to the other rack");
+                    helper.assertTrue(pool.jobs().size() == 1 && rackA.scheduler().jobs().size() + rackB.scheduler().jobs().size() == 1,
+                            "Job didn't move with the pool: " + pool.jobs().size());
+                    helper.assertTrue(JobHost.at(helper.getLevel(), helper.absolutePos(a)) == pool && JobHost.at(helper.getLevel(), helper.absolutePos(b)) == pool,
+                            "A pool rack doesn't resolve to the head");
+                })
+                .thenIdle(90)
+                .thenExecute(() -> {
+                    RackBlockEntity rackA = helper.getBlockEntity(a, RackBlockEntity.class), rackB = helper.getBlockEntity(b, RackBlockEntity.class);
+                    helper.assertTrue(RackGameTests.storage(helper, a).count(PLANKS) == 16,
+                            "Network has " + RackGameTests.storage(helper, a).count(PLANKS) + " planks");
+                    helper.assertTrue(rackA.scheduler().jobs().isEmpty() && rackB.scheduler().jobs().isEmpty(), "Job not finished");
+                })
+                .thenSucceed();
+    }
+
+    // Threads are shared out by the crafts a job has left (threadRuns a thread): a big job takes every free thread of its
+    // Scheduler, a second job takes one back, and a job's threads are counted in the Scheduler's use.
+    static void jobThreads(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 3, ComputeServerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 5, MemoryServerDevice.class);
+        FabricationServerDevice fabrication = RackGameTests.install(helper, master, RackDeviceType.FABRICATION_SERVER, 6, FabricationServerDevice.class);
+        storageDevice(helper, master, RackDeviceType.NAS, 8, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        ItemStack card = new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
+        card.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_LOG)),
+                List.of(new ItemStack(Items.OAK_PLANKS, 4))));
+        fabrication.items().set(0, card);
+        fabrication.itemsChanged();
+        int threads = 2 * Config.COMPUTE_SERVER_THREADS.getAsInt(), runs = Config.THREAD_RUNS.getAsInt();
+        // 64 crafts: wants ceil(64 / threadRuns) threads, the whole pool at the defaults.
+        int wanted = runs <= 0 ? 1 : Math.min(threads, (64 + runs - 1) / runs);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    ServerLevel level = helper.getLevel();
+                    BlockPos device = helper.absolutePos(master);
+                    RackScheduler scheduler = helper.getBlockEntity(master, RackBlockEntity.class).scheduler();
+                    helper.assertTrue(scheduler.active() && scheduler.threads() == threads, "Scheduler has " + scheduler.threads() + " threads");
+                    RackGameTests.storage(helper, master).insert(LOG, 66, false);
+                    CraftPlanner.Plan plan = CraftRequests.plan(level, device, PLANKS, 256);
+                    helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+                    helper.assertTrue(CraftRequests.start(level, device, plan, scheduler) != null, "Big job didn't start");
+                })
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    ServerLevel level = helper.getLevel();
+                    RackScheduler scheduler = helper.getBlockEntity(master, RackBlockEntity.class).scheduler();
+                    CraftingJob big = scheduler.jobs().get(0);
+                    helper.assertTrue(big.running && big.threads == wanted, "Big job runs on " + big.threads + " threads, not " + wanted);
+                    helper.assertTrue(scheduler.threadsUsed() == wanted, "Threads in use " + scheduler.threadsUsed());
+                    helper.assertTrue(runs <= 0 || big.inFlight() <= big.threads * runs, "More in flight than its threads run: " + big.inFlight());
+                    CraftPlanner.Plan plan = CraftRequests.plan(level, helper.absolutePos(master), PLANKS, 4);
+                    helper.assertTrue(plan != null && plan.complete(), "Small plan: " + plan);
+                    helper.assertTrue(CraftRequests.start(level, helper.absolutePos(master), plan, scheduler) != null, "Small job didn't start");
+                })
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    RackScheduler scheduler = helper.getBlockEntity(master, RackBlockEntity.class).scheduler();
+                    helper.assertTrue(scheduler.jobs().size() == 2, "Jobs: " + scheduler.jobs().size());
+                    CraftingJob big = scheduler.jobs().get(0), small = scheduler.jobs().get(1);
+                    helper.assertTrue(small.running && small.threads == 1, "Small job on " + small.threads + " threads, running " + small.running);
+                    int expected = wanted == threads ? threads - 1 : wanted;
+                    helper.assertTrue(big.threads == expected, "Big job kept " + big.threads + " threads, not " + expected);
+                    helper.assertTrue(scheduler.threadsUsed() == big.threads + 1 && scheduler.threadsUsed() <= threads,
+                            "Threads in use " + scheduler.threadsUsed());
+                    helper.assertTrue(scheduler.cancel(big.id) && scheduler.cancel(small.id), "Couldn't cancel the jobs");
                 })
                 .thenSucceed();
     }

@@ -15,7 +15,8 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
-// The Memory Server (1U): memoryServerMemory job memory (buffer) for its rack's Scheduler (RackScheduler).
+// The Memory Server (1U): memoryServerMemory job memory (buffer) for its network's rack Scheduler (RackScheduler), pooled
+// with every other on the network, whichever rack it's in.
 public class MemoryServerDevice extends ServerDevice {
     public MemoryServerDevice(RackDeviceType type) {
         super(type);

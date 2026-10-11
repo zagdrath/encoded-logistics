@@ -79,8 +79,9 @@ import net.zagdrath.encodedlogistics.registry.ModSounds;
 // its lanes (hasLanes: granted, or pooled by a granted switch, or using none).
 //
 // It also knows the segments its devices can serve (networks beyond Segment Isolators, linked with a Link Card): a
-// pooled device set to segment i serves that network instead of the rack's own (network(device)). And it runs the
-// rack's Scheduler (RackScheduler) when it has Compute and Memory Servers.
+// pooled device set to segment i serves that network instead of the rack's own (network(device)). And it has a
+// RackScheduler: the network's Compute and Memory Servers pool across its racks into one Scheduler, run by the rack
+// that heads the pool.
 //
 // Clients get the doors, whether each device is on, off or faulted, and what each device's front shows (writeClient).
 // Door changes are sent at once; device changes at most every SYNC_INTERVAL ticks. The doors animate on the client

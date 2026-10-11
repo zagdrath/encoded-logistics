@@ -14,7 +14,8 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
-// The Compute Server (2U): computeServerThreads crafting threads for its rack's Scheduler (RackScheduler).
+// The Compute Server (2U): computeServerThreads crafting threads for its network's rack Scheduler (RackScheduler), pooled
+// with every other on the network, whichever rack it's in.
 public class ComputeServerDevice extends ServerDevice {
     public ComputeServerDevice(RackDeviceType type) {
         super(type);

@@ -1238,7 +1238,8 @@ public class ControllerStructures extends SavedData {
         return schedulersOf(level.getServer(), owner.ref);
     }
 
-    // The online, formed Schedulers of a network, then the Rack Schedulers serving it, then its running Midrange Systems.
+    // The online, formed Schedulers of a network, then its racks' pooled Scheduler (the head rack's), then its running
+    // Midrange Systems.
     public static List<JobHost> schedulersOf(MinecraftServer server, @Nullable NetworkRef network) {
         Owner owner = owner(server, network);
         List<JobHost> schedulers = new ArrayList<>();

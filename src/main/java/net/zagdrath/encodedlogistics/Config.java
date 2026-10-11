@@ -188,6 +188,11 @@ public class Config {
             .comment("Jobs each Thread Unit adds.")
             .defineInRange("threadUnitThreads", 1, 0, 1024);
 
+    public static final ModConfigSpec.IntValue THREAD_RUNS = BUILDER
+            .comment("Crafts a thread keeps going at once. A job with more crafts left takes more of its Scheduler's free threads,",
+                    "and gives them back as it nears its end; every job gets at least one. 0: a thread runs any number of crafts.")
+            .defineInRange("threadRuns", 8, 0, 100_000);
+
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> FABRICATOR_CRAFT_TICKS = BUILDER
             .comment("Ticks a Fabricator takes per craft with 0, 1 and 2 Throughput Modules.")
             .defineList("fabricatorCraftTicks", List.of(20, 10, 5), () -> 20, entry -> entry instanceof Integer value && value >= 1);
@@ -423,11 +428,11 @@ public class Config {
             .defineInRange("l3SwitchRate", 32, 0, 4096);
 
     public static final ModConfigSpec.IntValue COMPUTE_SERVER_THREADS = BUILDER
-            .comment("Crafting threads each Compute Server gives its rack's scheduler.")
+            .comment("Crafting threads each Compute Server gives its network's rack scheduler (the pool of every rack on the network).")
             .defineInRange("computeServerThreads", 2, 0, 1024);
 
     public static final ModConfigSpec.IntValue MEMORY_SERVER_MEMORY = BUILDER
-            .comment("Job memory each Memory Server gives its rack's scheduler.")
+            .comment("Job memory each Memory Server gives its network's rack scheduler.")
             .defineInRange("memoryServerMemory", 32_768, 0, Integer.MAX_VALUE);
 
     public static final ModConfigSpec.DoubleValue COMPUTE_SERVER_DRAIN = BUILDER

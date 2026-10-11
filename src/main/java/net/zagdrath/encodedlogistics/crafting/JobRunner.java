@@ -20,16 +20,24 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Runs a job host's jobs (JobHost). Each job holds the items it took from storage from the moment it's accepted (and
-// takes any it awaits from tape as they come back, once a second), waits in the queue for a thread, and then runs: every tick each of its steps with the inputs for another run is offered to
-// the network's Fabricators and Gateways (and Fabrication Servers) holding its schematic. Whatever they make comes back
-// to the job (SchedulerCoreBlockEntity.deliver); when every step is done the job puts all it holds into the network.
+// takes any it awaits from tape as they come back, once a second), waits in the queue for a thread, and then runs: every
+// tick each of its steps with the inputs for another run is offered to the network's Fabricators and Gateways (and
+// Fabrication Servers) holding its schematic. Whatever they make comes back to the job (SchedulerCoreBlockEntity.deliver);
+// when every step is done the job puts all it holds into the network.
+//
+// Threads are shared out like a cluster's nodes: a thread keeps threadRuns crafts in flight at once, so a job wants
+// ceil(crafts left / threadRuns) of them (CraftingJob.threadsWanted). Every queued job gets one thread first (taking one
+// back from the job with most, if none is free), then free threads go round the running jobs that can use more, one at
+// a time; a job gives threads back as it nears its end. So a big job spreads over every Compute Server and Thread Unit
+// the host has, and still leaves room for the next job to start.
 public final class JobRunner {
-    // Dispatches tried per job per tick, so a huge job can't stall the server.
+    // Dispatches tried per job thread per tick, so a huge job can't stall the server.
     private static final int MAX_OFFERS = 64;
     private static final int AWAIT_INTERVAL = 20;
 
@@ -67,7 +75,7 @@ public final class JobRunner {
     }
 
     public int threadsUsed() {
-        return (int) jobs.stream().filter(job -> job.running).count();
+        return jobs.stream().filter(job -> job.running).mapToInt(job -> Math.max(1, job.threads)).sum();
     }
 
     public long memoryUsed() {
@@ -82,22 +90,19 @@ public final class JobRunner {
         jobs.add(job);
     }
 
+    // Takes over another runner's jobs (and which are held), as they are: a rack's pool moving to another rack.
+    public void adopt(JobRunner from) {
+        jobs.addAll(from.jobs);
+        heldJobs.addAll(from.heldJobs);
+        from.jobs.clear();
+        from.heldJobs.clear();
+    }
+
     // One tick: queued jobs take free threads, running ones dispatch their steps, finished ones empty into storage.
     // host: the job host's position (on its tasks); finished: called for each job done. Returns whether anything changed.
     public boolean tick(ServerLevel level, BlockPos host, int threads, Supplier<List<CraftingProvider>> providers,
             Supplier<@Nullable NetworkStorage> storage, Consumer<CraftingJob> finished) {
-        boolean changed = false;
-        int free = threads - threadsUsed();
-        for (CraftingJob job : jobs) {
-            if (free <= 0) {
-                break;
-            }
-            if (!job.running && !heldJobs.contains(job.id)) {
-                job.running = true;
-                free--;
-                changed = true;
-            }
-        }
+        boolean changed = allocate(threads);
         if (level.getGameTime() % AWAIT_INTERVAL == 0 && jobs.stream().anyMatch(job -> !job.awaiting.isEmpty())) {
             changed |= takeAwaited(storage.get());
         }
@@ -123,7 +128,86 @@ public final class JobRunner {
             if (found == null) {
                 found = providers.get();
             }
-            changed |= dispatch(level, host, job, found);
+            changed |= dispatch(level, host, job, found, runsPerThread());
+        }
+        return changed;
+    }
+
+    // Crafts a thread keeps in flight (threadRuns); 0 for no limit.
+    private static int runsPerThread() {
+        return Config.THREAD_RUNS.getAsInt();
+    }
+
+    // The running job with most threads beyond its first, which can give one up; null when every job has just one.
+    private @Nullable CraftingJob donor() {
+        CraftingJob donor = null;
+        for (CraftingJob job : jobs) {
+            if (job.running && job.threads > 1 && (donor == null || job.threads > donor.threads)) {
+                donor = job;
+            }
+        }
+        return donor;
+    }
+
+    // Shares the host's threads out among the jobs (see the class comment); returns whether anything changed.
+    private boolean allocate(int threads) {
+        boolean changed = false;
+        int runs = runsPerThread();
+        // Running jobs keep what they still need: one nearing its end, or held, gives the rest back.
+        for (CraftingJob job : jobs) {
+            if (!job.running) {
+                continue;
+            }
+            int want = heldJobs.contains(job.id) ? 1 : job.threadsWanted(runs);
+            if (job.threads > want || job.threads < 1) {
+                job.threads = Math.max(1, Math.min(job.threads, want));
+                changed = true;
+            }
+        }
+        int free = threads - threadsUsed();
+        // Fewer threads than the jobs hold (a Compute Server went): the jobs with most give them back, down to one each.
+        while (free < 0) {
+            CraftingJob donor = donor();
+            if (donor == null) {
+                break;
+            }
+            donor.threads--;
+            free++;
+            changed = true;
+        }
+        // Queued jobs start, a thread each, in order; when none is free, the job with most gives one up.
+        for (CraftingJob job : jobs) {
+            if (job.running || heldJobs.contains(job.id)) {
+                continue;
+            }
+            if (free <= 0) {
+                CraftingJob donor = free < 0 ? null : donor();
+                if (donor == null) {
+                    break;
+                }
+                donor.threads--;
+                free++;
+            }
+            job.running = true;
+            job.threads = 1;
+            free--;
+            changed = true;
+        }
+        // Free threads go round the running jobs that can use more, one at a time, so they share them fairly.
+        boolean given = true;
+        while (free > 0 && given) {
+            given = false;
+            for (CraftingJob job : jobs) {
+                if (free <= 0) {
+                    break;
+                }
+                if (job.running && !heldJobs.contains(job.id) && job.threads < job.threadsWanted(runs)) {
+                    job.threads++;
+                    free--;
+                    given = true;
+                    changed = true;
+                }
+            }
         }
         return changed;
     }
@@ -153,13 +237,15 @@ public final class JobRunner {
         return changed;
     }
 
-    // Offers each step's next runs to the providers holding its schematic, while the job holds the inputs.
-    private static boolean dispatch(ServerLevel level, BlockPos host, CraftingJob job, List<CraftingProvider> providers) {
+    // Offers each step's next runs to the providers holding its schematic, while the job holds the inputs and its
+    // threads have room for another craft in flight (runsPerThread each; 0: any number).
+    private static boolean dispatch(ServerLevel level, BlockPos host, CraftingJob job, List<CraftingProvider> providers, int runsPerThread) {
         boolean changed = false;
-        int offers = 0;
+        int offers = 0, maxOffers = MAX_OFFERS * Math.max(1, job.threads);
+        int inFlight = job.inFlight(), capacity = runsPerThread <= 0 ? Integer.MAX_VALUE : Math.max(1, job.threads) * runsPerThread;
         for (int index = 0; index < job.steps.size(); index++) {
             CraftingJob.Step step = job.steps.get(index);
-            while (step.left() > 0 && offers < MAX_OFFERS && job.holds(step.schematic.inputTotals())) {
+            while (step.left() > 0 && offers < maxOffers && inFlight < capacity && job.holds(step.schematic.inputTotals())) {
                 CraftTask task = new CraftTask(host, job.id, index, step.schematic, step.schematic.inputs().stream()
                         .map(input -> input.item().create()).toList());
                 boolean taken = false;
@@ -175,6 +261,7 @@ public final class JobRunner {
                 }
                 job.takeInputs(step.schematic);
                 step.running++;
+                inFlight++;
                 changed = true;
             }
         }

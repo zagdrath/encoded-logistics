@@ -85,12 +85,16 @@ public final class CraftingJob {
             Held.CODEC.listOf().optionalFieldOf("taken", List.of())
                     .forGetter(job -> job.taken.entrySet().stream().map(e -> new Held(e.getKey(), e.getValue())).toList()),
             Codec.STRING.optionalFieldOf("origin", "").forGetter(job -> job.origin),
-            Codec.LONG.optionalFieldOf("started_clock", -1L).forGetter(job -> job.startedClock))
-            .apply(i, (id, target, amount, memory, steps, held, running, awaiting, requester, user, runAs, started, taken, origin, startedClock) -> {
+            Codec.LONG.optionalFieldOf("started_clock", -1L).forGetter(job -> job.startedClock),
+            Codec.INT.optionalFieldOf("threads", -1).forGetter(job -> job.threads))
+            .apply(i, (id, target, amount, memory, steps, held, running, awaiting, requester, user, runAs, started, taken, origin, startedClock,
+                    threads) -> {
                 CraftingJob job = new CraftingJob(id, target, amount, memory, steps);
                 held.forEach(entry -> job.held.put(entry.key(), entry.count()));
                 awaiting.forEach(entry -> job.awaiting.put(entry.key(), entry.count()));
                 job.running = running;
+                // Saved before jobs had threads: a running one has one.
+                job.threads = threads >= 0 ? threads : running ? 1 : 0;
                 job.requester = requester;
                 job.user = user;
                 job.runAs = runAs;
@@ -109,8 +113,10 @@ public final class CraftingJob {
     public final Map<StorageKey, Long> held = new LinkedHashMap<>();
     // Items it's still to take from storage, being recalled from tape.
     public final Map<StorageKey, Long> awaiting = new LinkedHashMap<>();
-    // Running (has a thread) or waiting in the queue.
+    // Running (has threads) or waiting in the queue.
     public boolean running;
+    // The threads it runs on (JobRunner shares them out); 0 while it waits.
+    public int threads;
     // Who asked for it (none for jobs saved before this was kept), their Terminal OS user, the user it runs as (empty:
     // the requester's), and the game time it started (-1 unknown).
     public Optional<UUID> requester = Optional.empty();
@@ -166,6 +172,24 @@ public final class CraftingJob {
 
     public boolean finished() {
         return steps.stream().allMatch(Step::finished);
+    }
+
+    // Crafts dispatched and not yet back.
+    public int inFlight() {
+        return steps.stream().mapToInt(step -> Math.max(0, step.running)).sum();
+    }
+
+    // The threads it can use: enough to keep every craft it has left (in flight or not) going, runsPerThread to a thread;
+    // at least one. With no limit (0), one.
+    public int threadsWanted(int runsPerThread) {
+        if (runsPerThread <= 0) {
+            return 1;
+        }
+        long left = 0;
+        for (Step step : steps) {
+            left += Math.max(0, step.total - step.done);
+        }
+        return (int) Math.max(1, Math.min(Integer.MAX_VALUE, (left + runsPerThread - 1) / runsPerThread));
     }
 
     // An item stack, or a fluid or gas (a Resource Entry, by its amount), into what the job holds.

@@ -18,15 +18,17 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
-// A Compute or Memory Server: what it gives its rack's Scheduler (RackScheduler). Its panel shows its own share, the
-// Scheduler's use of it, and the jobs the Scheduler runs (each with a cancel button: JobCancelPayload).
+// A Compute or Memory Server: what it gives its network's rack Scheduler (RackScheduler: the pool of every rack on the
+// network). Its panel shows its own share, the pool's use of it, and the jobs the pool runs (each with a cancel button:
+// JobCancelPayload, to the rack, which resolves to the pool's head).
 public abstract class ServerDevice extends RackDevice {
     protected ServerDevice(RackDeviceType type) {
         super(type);
     }
 
+    // The pool this server is part of: its network's, headed by whichever rack heads it.
     protected @Nullable RackScheduler scheduler() {
-        return rack() != null ? rack().scheduler() : null;
+        return rack() != null ? rack().scheduler().forDevice(this) : null;
     }
 
     @Override
@@ -50,7 +52,7 @@ public abstract class ServerDevice extends RackDevice {
             child.putBoolean("running", job.running);
             child.putLong("memory", job.memory);
         }
-        // The last few that ended on this rack's Scheduler (CraftLog).
+        // The last few that ended on the pool (CraftLog, by its head rack).
         if (rack() != null && rack().getLevel() instanceof ServerLevel level) {
             NetworkRef network = scheduler.network();
             ElclSystem system = network != null ? new ElclSystem(level.getServer(), network) : null;

@@ -137,6 +137,8 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_lane_pool", Rack2GameTests::lanePool);
         TESTS.put("rack_storage_devices", Rack2GameTests::storageDevices);
         TESTS.put("rack_scheduler", Rack2GameTests::rackScheduler);
+        TESTS.put("rack_scheduler_pool", Rack2GameTests::rackSchedulerPool);
+        TESTS.put("job_threads", Rack2GameTests::jobThreads);
         TESTS.put("rack_segments", Rack2GameTests::segments);
         TESTS.put("rack_router_wan", Rack2GameTests::routerWan);
         TESTS.put("rack_route_filters", Rack2GameTests::routeFilters);

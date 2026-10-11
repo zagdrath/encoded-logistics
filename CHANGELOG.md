@@ -50,6 +50,18 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Changed
 
+- **Rack Schedulers pool across racks.** Compute and Memory Servers on the same network now form one Scheduler
+  however many racks they are spread over, with every server's threads and job memory added together. One rack heads
+  the pool (the first, by position, with an online Compute Server serving the network) and holds its jobs; when the
+  head changes, the jobs move with it. Fabrication Servers in any of the pool's racks are offered its crafts first.
+  Before, each rack needed a Compute and a Memory Server of its own to be a Scheduler. The Compute and Memory Server
+  panels show the pool.
+- **Large jobs run on several threads.** A thread now keeps `threadRuns` crafts (8) in flight at once. A job with
+  more crafts left takes more of its Scheduler's free threads, one at a time round the running jobs, like nodes in a
+  cluster, and gives them back as it nears its end. Every queued job still gets a thread first, taking one back from
+  the job with most if none is free. So a big job spreads across every Compute Server, Thread Unit or Midrange
+  cabinet its Scheduler has, and a Scheduler's "Threads x / y" counts the threads its jobs use. Set `threadRuns` to 0
+  for the old behaviour (one thread a job, any number of crafts at once).
 - The mod's jar carries JLayer's licence (GNU LGPL 2.1) at `META-INF/licenses/jlayer-LGPL-2.1.txt`, and the mod list
   credits JLayer. The mod list links to the issue tracker on GitHub and the mod's CurseForge page.
 - New Storage Drives of every type (item, fluid, pressurized and energy) stack to 64, as cells do in AE2. A drive

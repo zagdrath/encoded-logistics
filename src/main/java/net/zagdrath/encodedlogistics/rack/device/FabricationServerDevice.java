@@ -34,7 +34,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // The Fabrication Server (2U): a Fabricator in a rack. Nine Crafting Schematic slots and two Throughput Module slots;
-// any Scheduler on the network it serves offers it crafts (its own rack's Scheduler first), and it works as a
+// any Scheduler on the network it serves offers it crafts (the network's rack Scheduler first), and it works as a
 // Fabricator does: fabricatorEnergyPerCraft FE a craft, fabricatorCraftTicks[modules] ticks (pausing while offline),
 // the result and any remainders back to the job.
 public class FabricationServerDevice extends RackDevice implements CraftingProvider {
