@@ -489,14 +489,16 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
     // A NAS's or SAN's drives in their bays, as the rack in the world shows them (RackClientDevices.DriveBays): each
     // drive's sled for its tier and type (typed drives from <nas|san>_sleds_<type>.png) and its light (fill, or an energy
-    // drive's charge), at the front texture's place, scaled as the front is.
+    // drive's charge), at the front texture's place, scaled as the front is: front() draws the texture's first SLOT_W
+    // columns 1:1 (only its rows are scaled, 8 a unit to ROW_H), so the bays keep their texel x. (Scaling x by SLOT_W/128
+    // too squeezed a full SAN's 12 sleds a row into the first 9 bays, leaving the last 3 looking empty.)
     private static void bays(GuiGraphicsExtractor graphics, StorageDevice storage, int x, int y, int shown, int height, int sheet) {
         boolean san = storage instanceof SanDevice;
         int w = san ? 6 : 12, h = 14, sledRow = san ? 80 : 64;
         String kind = san ? "san" : "nas";
         graphics.pose().pushMatrix();
         graphics.pose().translate(x, y);
-        graphics.pose().scale((float) SLOT_W / 128, (float) shown / height);
+        graphics.pose().scale(1.0F, (float) shown / height);
         for (int i = 0; i < storage.drives(); i++) {
             int code = storage.shownBay(i);
             if (code < 0) {

@@ -23,6 +23,11 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Fixed
+
+- The Server Rack screen drew a NAS's or SAN's drive sleds squeezed into the left of their bays (a full SAN looked
+  like 9 drives a row with 3 empty bays); they now sit in their bays as the rack in the world shows them.
+
 ## [1.0.1] - 2026-10-07
 
 ### Fixed
