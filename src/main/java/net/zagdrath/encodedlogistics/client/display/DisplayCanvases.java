@@ -145,7 +145,7 @@ public final class DisplayCanvases {
         }
         CanvasPainter painter = new CanvasPainter(image, sheet, smallFont());
         if (content.mode == DisplayContent.Mode.TEXT) {
-            painter.lines(0, 0, image.getWidth(), image.getHeight(), content.lines);
+            painter.lines(0, 0, image.getWidth(), image.getHeight(), DisplayContent.TEXT_PAD, content.lines);
             return;
         }
         Map<String, DisplayFrame> frames = new HashMap<>();

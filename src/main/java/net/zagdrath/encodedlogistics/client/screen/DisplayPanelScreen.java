@@ -665,7 +665,8 @@ public class DisplayPanelScreen extends AbstractContainerScreen<DisplayPanelMenu
             if (dragOuter) {
                 DisplayContent.Region region = editing.get(dragRegion);
                 int low = dragSide <= 1 ? region.x() : region.y(), high = dragSide <= 1 ? region.x() + region.w() : region.y() + region.h();
-                dragTo = Math.clamp(to, low + SNAP, high - SNAP);
+                // Too thin to split (each part at least SNAP): the drag does nothing.
+                dragTo = high - low < 2 * SNAP ? dragFrom : Math.clamp(to, low + SNAP, high - SNAP);
             } else {
                 List<DisplayContent.Region> next = moveEdge(regionsBeforeDrag(display), dragRegion, dragSide, dragFrom, to);
                 if (next != null) {

@@ -44,8 +44,11 @@ public final class DisplayContent {
     public static final int SMALL = 0, NORMAL = 1, LARGE = 2, HUGE = 3;
     // A write's size, colour or alignment left as the line had it (every int is a colour, so not -1).
     public static final int KEEP = Integer.MIN_VALUE;
+    // What's painted stands this many canvas px in from the screen's edges: the bezel (a 1/16 block strip, 2 px, standing
+    // proud of the glass) and 2 px clear of it. Region backgrounds still run to the edges.
+    public static final int SCREEN_PAD = 4;
     // Text stands this many canvas px in from the screen's edges.
-    public static final int TEXT_PAD = 3;
+    public static final int TEXT_PAD = SCREEN_PAD;
 
     // A character cell at a size, in canvas px.
     public static int cellWidth(int size) {
@@ -211,6 +214,24 @@ public final class DisplayContent {
             }
         }
         regions.add(region);
+    }
+
+    // A resized screen (panels added or taken away): each region's edges move with it in proportion, so the layout keeps
+    // its shape - a region that ran to an edge still does, and neighbours still meet.
+    public void rescale(int fromW, int fromH, int toW, int toH) {
+        if (fromW <= 0 || fromH <= 0 || fromW == toW && fromH == toH) {
+            return;
+        }
+        for (int i = 0; i < regions.size(); i++) {
+            Region region = regions.get(i);
+            int x0 = scale(region.x(), fromW, toW), x1 = scale(region.x() + region.w(), fromW, toW);
+            int y0 = scale(region.y(), fromH, toH), y1 = scale(region.y() + region.h(), fromH, toH);
+            regions.set(i, region.at(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0), region.bg()));
+        }
+    }
+
+    private static int scale(int at, int from, int to) {
+        return (int) Math.round((double) at * to / from);
     }
 
     // A smaller screen: regions clamped to it (dropped when nothing's left of them); text lines past it dropped.

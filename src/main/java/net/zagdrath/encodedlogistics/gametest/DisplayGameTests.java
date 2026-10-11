@@ -111,6 +111,39 @@ final class DisplayGameTests {
         helper.succeed();
     }
 
+    // Regions grow and shrink with their screen: a 3 x 1 screen split down the middle, made 4 x 1, is still split down
+    // the middle with both halves to the edges; back to 3 x 1, it's as it was.
+    static void regionsScale(GameTestHelper helper) {
+        for (int x = 2; x <= 4; x++) {
+            panel(helper, new BlockPos(x, 1, 2), Direction.NORTH);
+        }
+        BlockPos master = new BlockPos(4, 1, 2);
+        assertScreen(helper, master, 3, 1);
+        DisplayPanelBlockEntity panel = at(helper, master);
+        DisplayContent content = panel.displayContent();
+        content.put(new DisplayContent.Region("A", 0, 0, 48, 32, 0, DisplayContent.Widget.NONE), panel.canvasWidth(), panel.canvasHeight());
+        content.put(new DisplayContent.Region("B", 48, 0, 48, 32, 0, DisplayContent.Widget.NONE), panel.canvasWidth(), panel.canvasHeight());
+        panel.changed();
+        panel(helper, new BlockPos(1, 1, 2), Direction.NORTH);
+        assertScreen(helper, master, 4, 1);
+        assertRegions(helper, master, List.of(new int[] { 0, 0, 64, 32 }, new int[] { 64, 0, 64, 32 }));
+        helper.setBlock(new BlockPos(1, 1, 2), Blocks.AIR);
+        assertScreen(helper, master, 3, 1);
+        assertRegions(helper, master, List.of(new int[] { 0, 0, 48, 32 }, new int[] { 48, 0, 48, 32 }));
+        helper.succeed();
+    }
+
+    private static void assertRegions(GameTestHelper helper, BlockPos master, List<int[]> wanted) {
+        DisplayPanelBlockEntity panel = at(helper, master);
+        List<DisplayContent.Region> regions = panel.displayContent().regions(panel.canvasWidth(), panel.canvasHeight());
+        helper.assertTrue(regions.size() == wanted.size(), "Regions " + regions);
+        for (int i = 0; i < wanted.size(); i++) {
+            DisplayContent.Region r = regions.get(i);
+            int[] w = wanted.get(i);
+            helper.assertTrue(r.x() == w[0] && r.y() == w[1] && r.w() == w[2] && r.h() == w[3], "Region " + r.name() + " is " + r);
+        }
+    }
+
     // A 1 x 2 screen against the controller: boots, then online; DSP01 with 6 lines of 5 characters, written to. A lone
     // panel: no signal.
     static void onNetwork(GameTestHelper helper) {
@@ -191,10 +224,10 @@ final class DisplayGameTests {
                     ElclServices.jobs().interactive(system, context.user(), "test", "ELDESK01");
                     DisplayPanelBlockEntity display = at(helper, master);
                     // Styled text: SIZE, COLOR, ALIGN (a colour name it doesn't know: ELC0103; a bad #RRGGBB: ELC0003).
-                    ok(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('HELLO') LINE(1) CLEAR(*YES) SIZE(*HUGE) COLOR(*MINT) ALIGN(*CENTER)");
+                    ok(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('HEY') LINE(1) CLEAR(*YES) SIZE(*HUGE) COLOR(*MINT) ALIGN(*CENTER)");
                     DisplayContent.TextLine huge = display.displayContent().lines.getFirst();
                     helper.assertTrue(huge.scale() == DisplayContent.HUGE && huge.color() == 0xFF00D992 && huge.align() == DisplayContent.CENTRE
-                            && huge.text().equals("HELLO"), "Styled line " + huge);
+                            && huge.text().equals("HEY"), "Styled line " + huge);
                     ElclGameTests.expect(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('X') COLOR(*PLAID)", "ELC0103");
                     ElclGameTests.expect(helper, context, "SNDDSPTXT DEV(DSP01) TEXT('X') COLOR('#12')", "ELC0003");
                     // Regions.

@@ -138,15 +138,19 @@ public class DisplayPanelBlockEntity extends BlockEntity implements NetworkDevic
     }
 
     // This block is a screen's master now, with the content of the screen that was there (null: keep its own); a
-    // changed size keeps the setup, clamped to it.
+    // changed size keeps the setup, its regions scaled to it.
     void becomeMaster(int width, int height, @Nullable Content carried) {
         boolean resized = this.width != width || this.height != height;
+        int fromW = this.width, fromH = this.height;
         this.width = width;
         this.height = height;
         if (carried != null && carried.content() != content) {
             content = carried.content().copy();
+            fromW = carried.width();
+            fromH = carried.height();
             resized |= carried.width() != width || carried.height() != height;
         }
+        content.rescale(fromW * CANVAS, fromH * CANVAS, canvasWidth(), canvasHeight());
         content.clamp(canvasWidth(), canvasHeight(), lines());
         if (resized) {
             images.clear();

@@ -121,17 +121,14 @@ final class CanvasPainter {
         return text.length() * DisplayContent.cellWidth(scale);
     }
 
-    // Text lines in a box, LINES_PAD px in from its edges so none touches the bezel: each with its colour (0: the text
-    // colour), alignment and scale.
-    private static final int LINES_PAD = DisplayContent.TEXT_PAD;
-
-    void lines(int x, int y, int w, int h, List<DisplayContent.TextLine> lines) {
-        int top = y + LINES_PAD;
+    // Text lines in a box, pad px in from its edges: each with its colour (0: the text colour), alignment and scale.
+    void lines(int x, int y, int w, int h, int pad, List<DisplayContent.TextLine> lines) {
+        int top = y + pad;
         for (DisplayContent.TextLine line : lines) {
             int scale = Math.clamp(line.scale(), DisplayContent.SMALL, DisplayContent.HUGE);
             int lw = width(line.text(), scale);
             int lx = line.align() == DisplayContent.CENTRE ? x + (w - lw) / 2
-                    : line.align() == DisplayContent.RIGHT ? x + w - lw - LINES_PAD : x + LINES_PAD;
+                    : line.align() == DisplayContent.RIGHT ? x + w - lw - pad : x + pad;
             text(lx, top, line.text(), line.color() != 0 ? line.color() : TEXT, scale);
             top += DisplayContent.cellHeight(scale);
             if (top >= y + h) {
@@ -317,16 +314,27 @@ final class CanvasPainter {
 
     // --- A region's widget ---
 
+    // Region text stands this far in from a region's edges inside the screen (SCREEN_PAD at the screen's own edges).
+    private static final int REGION_TEXT_PAD = 2;
+
     void region(DisplayContent.Region region, @Nullable DisplayFrame frame, List<DisplayContent.TextLine> lines, Map<String, int[]> images, long dayTime) {
-        int x = region.x(), y = region.y(), w = region.w(), h = region.h();
-        clip(x, y, w, h);
+        clip(region.x(), region.y(), region.w(), region.h());
         if (region.bg() != 0) {
-            fill(x, y, w, h, region.bg());
+            fill(region.x(), region.y(), region.w(), region.h(), region.bg());
         }
+        // The widget keeps SCREEN_PAD clear of the screen's edges (the bezel), wherever the region meets them.
+        int pad = DisplayContent.SCREEN_PAD;
+        int x = Math.max(region.x(), pad), y = Math.max(region.y(), pad);
+        int w = Math.min(region.x() + region.w(), image.getWidth() - pad) - x, h = Math.min(region.y() + region.h(), image.getHeight() - pad) - y;
+        if (w <= 0 || h <= 0) {
+            clip(0, 0, image.getWidth(), image.getHeight());
+            return;
+        }
+        clip(x, y, w, h);
         DisplayContent.Widget widget = region.widget();
         int[] colorRamp = widget.color() != 0 ? ramp(widget.color()) : null;
         switch (widget.kind()) {
-            case "*TEXT" -> lines(x, y, w, h, lines);
+            case "*TEXT" -> lines(x, y, w, h, REGION_TEXT_PAD, lines);
             case "*CLOCK" -> clock(x, y, w, h, dayTime, widget.color() != 0 ? widget.color() : ACCENT);
             case "*IMAGE" -> image(x, y, w, h, images.get(region.name().toUpperCase(Locale.ROOT)));
             case "*STORAGE", "*COLD", "*ENERGY", "*LANES", "*UPS" -> {
