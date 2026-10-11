@@ -376,17 +376,26 @@ public class SchematicTerminalScreen extends AbstractContainerScreen<SchematicTe
         List<Placed> placed = placed(lines);
         int rowsTop = y + layout.topHeight;
         if (tab == SCHEMATICS) {
-            // Each row its piece: a header bar, or slots; past the content, empty slot rows.
+            // Each row its piece: a header bar, or slots; past the content, plain list rows (no slots where there are none).
             int drawn = 0;
             for (Placed line : placed) {
                 Identifier piece = line.line().type() == HEADER ? headerRow : layout.row;
                 int texWidth = piece == headerRow ? layout.width : 256, texHeight = piece == headerRow ? layout.rowHeight : 32;
                 graphics.blit(RenderPipelines.GUI_TEXTURED, piece, x, line.y(), 0.0F, 0.0F, layout.width, layout.rowHeight, texWidth, texHeight);
+                if (line.line().type() == SLOTS) {
+                    // A holder's last row short of a full one: its unused cells plain, not slots.
+                    int used = Math.max(0, line.line().holder().slots().size() - line.line().row() * layout.columns);
+                    if (used < layout.columns) {
+                        int from = layout.gridLeft - 1 + used * layout.cell, to = layout.gridLeft - 1 + layout.columns * layout.cell;
+                        graphics.blit(RenderPipelines.GUI_TEXTURED, listRow, x + from, line.y(), from, 0.0F, to - from, layout.rowHeight, layout.width,
+                                layout.rowHeight);
+                    }
+                }
                 drawn++;
             }
             for (int row = drawn; row < rows; row++) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, layout.row, x, rowsTop + row * layout.rowHeight, 0.0F, 0.0F, layout.width, layout.rowHeight,
-                        256, 32);
+                graphics.blit(RenderPipelines.GUI_TEXTURED, listRow, x, rowsTop + row * layout.rowHeight, 0.0F, 0.0F, layout.width, layout.rowHeight,
+                        layout.width, layout.rowHeight);
             }
         } else {
             for (int row = 0; row < rows; row++) {
