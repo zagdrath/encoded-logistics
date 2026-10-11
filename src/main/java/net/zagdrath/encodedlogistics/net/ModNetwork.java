@@ -24,6 +24,9 @@ public final class ModNetwork {
         registrar.playToClient(CapacitorBankPayload.TYPE, CapacitorBankPayload.STREAM_CODEC, CapacitorBankPayload::handle);
         registrar.playToClient(TerminalItemsPayload.TYPE, TerminalItemsPayload.STREAM_CODEC, TerminalItemsPayload::handle);
         registrar.playToServer(TerminalClickPayload.TYPE, TerminalClickPayload.STREAM_CODEC, TerminalClickPayload::handle);
+        registrar.playToClient(SchematicTerminalPayload.TYPE, SchematicTerminalPayload.STREAM_CODEC, SchematicTerminalPayload::handle);
+        registrar.playToServer(SchematicTerminalActionPayload.TYPE, SchematicTerminalActionPayload.STREAM_CODEC, SchematicTerminalActionPayload::handle);
+        registrar.playToClient(LocatePayload.TYPE, LocatePayload.STREAM_CODEC, LocatePayload::handle);
         registrar.playToServer(TerminalRecipePayload.TYPE, TerminalRecipePayload.STREAM_CODEC, TerminalRecipePayload::handle);
         registrar.playToServer(CrtRequestPayload.TYPE, CrtRequestPayload.STREAM_CODEC, CrtRequestPayload::handle);
         registrar.playToClient(CrtResponsePayload.TYPE, CrtResponsePayload.STREAM_CODEC, CrtResponsePayload::handle);

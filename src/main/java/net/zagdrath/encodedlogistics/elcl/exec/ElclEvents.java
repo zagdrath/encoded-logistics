@@ -77,6 +77,17 @@ public final class ElclEvents {
         fire(server, new Event(network, "*CRAFTEND", "", ElclItems.text(job.target), id + " " + status));
     }
 
+    // *CRFSTALL: a crafting job stalled (no progress for jobStallSeconds). &DATA = "C0042 minecraft:iron_ingot machine
+    // output full" (the job, the item of the step it's stuck on, and the reason, when one was found); its item for ITEM().
+    public static void craftStalled(MinecraftServer server, NetworkRef network, CraftingJob job) {
+        String id = String.format(Locale.ROOT, "C%04d", ControllerStructures.jobNumber(server, network, job.id));
+        String step = job.stallStep >= 0 && job.stallStep < job.steps.size()
+                ? ElclItems.id(job.steps.get(job.stallStep).schematic.output().getItem()) : ElclItems.text(job.target);
+        String reason = job.stallReason != null ? net.minecraft.network.chat.Component.translatable("gui.encodedlogistics.jobs.reason." + job.stallReason)
+                .getString() : "";
+        fire(server, new Event(network, "*CRFSTALL", "", ElclItems.text(job.target), (id + " " + step + " " + reason).trim()));
+    }
+
     // *MCHIDLE, *MCHFAULT, *MCHNOPWR: a machine with a Small Wireless Bridge on went idle, faulted or ran short of power.
     // &DATA = "ARCCRU01 Too hot" (its name, then the machine's own words).
     public static void machineStatus(MinecraftServer server, NetworkRef network, String event, String device, String reason) {

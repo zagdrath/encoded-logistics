@@ -102,6 +102,12 @@ public final class JobRunner {
     // host: the job host's position (on its tasks); finished: called for each job done. Returns whether anything changed.
     public boolean tick(ServerLevel level, BlockPos host, int threads, Supplier<List<CraftingProvider>> providers,
             Supplier<@Nullable NetworkStorage> storage, Consumer<CraftingJob> finished) {
+        return tick(level, host, threads, providers, storage, finished, job -> {});
+    }
+
+    // The same; stalled: called once when a job stalls (no progress for jobStallSeconds), with its reason worked out.
+    public boolean tick(ServerLevel level, BlockPos host, int threads, Supplier<List<CraftingProvider>> providers,
+            Supplier<@Nullable NetworkStorage> storage, Consumer<CraftingJob> finished, Consumer<CraftingJob> stalled) {
         boolean changed = allocate(threads);
         if (level.getGameTime() % AWAIT_INTERVAL == 0 && jobs.stream().anyMatch(job -> !job.awaiting.isEmpty())) {
             changed |= takeAwaited(storage.get());
@@ -130,7 +136,50 @@ public final class JobRunner {
             }
             changed |= dispatch(level, host, job, found, runsPerThread());
         }
+        if (level.getGameTime() % STALL_INTERVAL == 0) {
+            checkStalls(level, providers, stalled);
+        }
         return changed;
+    }
+
+    // Stall detection: a running job (not held) whose done count, crafts in flight and awaited items haven't changed for
+    // jobStallSeconds is stalled, with its reason (JobStalls); any progress clears it. Looked at once a second.
+    private static final int STALL_INTERVAL = 20;
+
+    private void checkStalls(ServerLevel level, Supplier<List<CraftingProvider>> providers, Consumer<CraftingJob> stalled) {
+        long now = level.getGameTime();
+        long limit = Config.JOB_STALL_SECONDS.getAsInt() * 20L;
+        List<CraftingProvider> found = null;
+        for (CraftingJob job : jobs) {
+            if (!job.running || heldJobs.contains(job.id)) {
+                job.progressAt = now;
+                job.stalled = false;
+                continue;
+            }
+            int mark = job.done() * 1_000_003 + job.inFlight() * 1_009 + job.awaiting.size();
+            // Not looked at yet (progressMark -1: marks are never negative), or it moved on.
+            if (job.progressMark < 0 || mark != job.progressMark) {
+                job.progressMark = mark;
+                job.progressAt = now;
+                job.stalled = false;
+                job.stallReason = null;
+                job.stallStep = -1;
+                continue;
+            }
+            if (now - job.progressAt < limit) {
+                continue;
+            }
+            if (found == null) {
+                found = providers.get();
+            }
+            JobStalls.Stall stall = JobStalls.find(level, job, found);
+            job.stallReason = stall.reason();
+            job.stallStep = stall.step();
+            if (!job.stalled) {
+                job.stalled = true;
+                stalled.accept(job);
+            }
+        }
     }
 
     // Crafts a thread keeps in flight (threadRuns); 0 for no limit.

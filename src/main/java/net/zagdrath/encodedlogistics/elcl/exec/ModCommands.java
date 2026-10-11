@@ -66,6 +66,9 @@ import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalActions;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
+import net.zagdrath.encodedlogistics.schematic.SchematicData;
+import net.zagdrath.encodedlogistics.schematic.SchematicHolders;
+import net.zagdrath.encodedlogistics.schematic.SchematicTerminalService;
 
 // The mod commands (COMMANDS.md 3-8) on the network the job runs on: inventory (counts, lists, moving items to a
 // device or the desk, importing from one, tape tiers, storage status), crafting (start, status, end), devices
@@ -635,6 +638,57 @@ public final class ModCommands {
                 }
             }
             call.returns("RTNLST", ids);
+        });
+        // RTVSCHLST: what the network's schematic holders make (item IDs, each once) - all of them, or one holder's
+        // (by its device name or the start of its shown name; ELC2501 when there's none).
+        CommandRegistry.bind("RTVSCHLST", call -> {
+            ElclContext context = context(call);
+            String holder = call.text("HOLDER");
+            List<SchematicHolders.Holder> holders = SchematicHolders.of(context.server(), context.network());
+            java.util.Set<String> outputs = new java.util.LinkedHashSet<>();
+            boolean found = false;
+            for (SchematicHolders.Holder each : holders) {
+                if (!net.zagdrath.encodedlogistics.terminal.TerminalService.holderMatches(each, holder)) {
+                    continue;
+                }
+                found = true;
+                for (net.zagdrath.encodedlogistics.crafting.Schematic schematic : each.schematics()) {
+                    schematic.outputTotals().keySet().forEach(key -> outputs.add(ElclItems.text(key)));
+                }
+            }
+            if (!found && !holder.equalsIgnoreCase("*ALL")) {
+                throw new ElclException("ELC2501", holder.toUpperCase(Locale.ROOT));
+            }
+            call.returns("RTNLIST", new ArrayList<>(outputs));
+            call.returns("RTNCOUNT", BigDecimal.valueOf(outputs.size()));
+        });
+        // RTVCRFSTP: a running or queued job's steps, 'item done/total *STATE' each, and why it's stalled (*TAPE,
+        // *NOMACHINE, *NOPOWER, *OUTPUTFULL, *BLOCKED, *INGREDIENTS, *UNKNOWN; blank when it isn't). ELC2502 for no such
+        // job, ELC2503 (a warning) when it has no steps.
+        CommandRegistry.bind("RTVCRFSTP", call -> {
+            ElclContext context = context(call);
+            String text = call.text("JOB");
+            int number;
+            try {
+                number = craftNumber(text);
+            } catch (ElclException e) {
+                throw new ElclException("ELC2502", text.trim().toUpperCase(Locale.ROOT));
+            }
+            UUID id = ControllerStructures.jobByNumber(context.server(), context.network(), number);
+            CraftingJob job = id != null ? SchematicTerminalService.findJob(context.server(), context.network(), id) : null;
+            if (job == null) {
+                throw new ElclException("ELC2502", text.trim().toUpperCase(Locale.ROOT));
+            }
+            List<SchematicData.Step> steps = SchematicTerminalService.steps(context.server(), context.network(), job);
+            if (steps.isEmpty()) {
+                call.send(ElclMessage.of("ELC2503", String.format(Locale.ROOT, "C%04d", number)));
+            }
+            List<String> list = new ArrayList<>();
+            for (SchematicData.Step step : steps) {
+                list.add(ElclItems.id(step.item().getItem()) + " " + step.done() + "/" + step.total() + " " + SchematicTerminalService.stateSpecial(step.state()));
+            }
+            call.returns("RTNLIST", list);
+            call.returns("RTNSTALL", job.stalled ? SchematicTerminalService.reasonSpecial(job.stallReason) : "");
         });
         CommandRegistry.bind("ENDCRAFT", call -> {
             ElclContext context = context(call);

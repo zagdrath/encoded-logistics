@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.ValueInput;
@@ -187,7 +188,7 @@ public final class RackScheduler implements JobHost {
                 job -> {
                     ControllerStructures.jobFinished(server, served);
                     JobEvents.ended(server, served, this, job, JobEvents.Outcome.COMPLETED, "");
-                })) {
+                }, job -> JobEvents.stalled(server, served, job))) {
             rack.setChanged();
         }
     }
@@ -283,6 +284,20 @@ public final class RackScheduler implements JobHost {
         rack.setChanged();
     }
 
+    @Override
+    public boolean holdJob(UUID id, boolean hold) {
+        if (!runner.setHeld(id, hold)) {
+            return false;
+        }
+        rack.setChanged();
+        return true;
+    }
+
+    @Override
+    public boolean isHeld(UUID id) {
+        return runner.isHeld(id);
+    }
+
     // The rack broken: what its jobs hold drops, and they've failed.
     public void dropAll(ServerLevel level) {
         NetworkRef served = network;
@@ -295,9 +310,15 @@ public final class RackScheduler implements JobHost {
         if (!runner.jobs().isEmpty()) {
             output.store("jobs", CraftingJob.CODEC.listOf(), runner.jobs());
         }
+        if (!runner.heldJobs().isEmpty()) {
+            output.store("held_jobs", UUIDUtil.CODEC.listOf(), List.copyOf(runner.heldJobs()));
+        }
     }
 
     public void load(ValueInput input) {
         runner.load(input.read("jobs", CraftingJob.CODEC.listOf()).orElse(List.of()));
+        runner.heldJobs().clear();
+        runner.heldJobs().addAll(input.read("held_jobs", UUIDUtil.CODEC.listOf()).orElse(List.of()));
+        runner.heldJobs().removeIf(id -> runner.job(id) == null);
     }
 }

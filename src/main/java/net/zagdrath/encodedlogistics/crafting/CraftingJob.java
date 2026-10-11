@@ -131,6 +131,13 @@ public final class CraftingJob {
     // What it held when it finished, before that went into the network (not saved: a job finishing across a restart
     // reports what it still held).
     public @Nullable Map<StorageKey, Long> returned;
+    // Stall detection (JobRunner; not saved): when it last made progress and what it looked like then, whether it's
+    // stalled, why (JobStalls; null: not known) and on which step (-1: none in particular).
+    public long progressAt = -1;
+    public int progressMark = -1;
+    public boolean stalled;
+    public @Nullable String stallReason;
+    public int stallStep = -1;
 
     // What it holds at its end: what went back to the network, or what it holds still.
     public Map<StorageKey, Long> atEnd() {

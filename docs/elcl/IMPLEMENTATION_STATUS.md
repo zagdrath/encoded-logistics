@@ -39,6 +39,7 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | §2 Lists | ADDLSTE, RMVLSTE, CLRLST | Done | `elcl/vm/Vm` |
 | §3 Inventory | RTVITMCNT, RTVITMLST, MOVITM, IMPITM, CHGITMTIER, RTVSTGSTS | Done | `ModCommands`. MOVITM / IMPITM work on a cable part's faced inventory or `*DESK`; CHGITMTIER through the Tape Libraries' keep-hot and pinned lists |
 | §4 Crafting | STRCRAFT, RTVCRFSTS, RTVCRFLOG, ENDCRAFT | Done | `ModCommands`; ended jobs from the saved history `crafting/CraftLog` (CRFLOGRTN) |
+| §4 Crafting (added) | RTVSCHLST, RTVCRFSTP, the *CRFSTALL trigger | Done | `ModCommands`, `schematic/SchematicHolders`, `schematic/SchematicTerminalService`; stalls from `crafting/JobRunner` and `crafting/JobStalls` |
 | §5 Devices | RTVDEVSTS, RTVDEVLST, CHGDEVSTS, CHGDEVFTR, RTVLANES; RNMDEV (added) | Done | `ModCommands`, `RedstoneCommands`. Cable parts can be disabled and have filters; other devices answer ELC1303 |
 | §5 Machines (added) | RTVMCHSTS, RTVMCHSTAT, RTVMCHLST, CHGMCHSTS, CHGMCHCFG | Done | `MachineCommands`: Arcforge machines with a Small Wireless Bridge on (`machine/`, `compat/arcforge/`) |
 | §6 Power | RTVPWRSTS | Done | `ModCommands` |
@@ -55,7 +56,7 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | §9 | ADDTRGEVT, RMVTRGEVT, WRKTRGEVT, HLDTRGEVT, RLSTRGEVT; all fifteen events (`*MCHIDLE`, `*MCHDONE`, `*MCHFAULT`, `*MCHNOPWR` added) | Done | `StoredJobService`, `Triggers`; machine events from Arcforge's listeners (`MachineBridge.events`) |
 | §9 | WRKSYSVAL, RTVSYSVAL, CHGSYSVAL | Done | `StoredSysvalService` (SYSNAME, DATFMT, SECLVL, QMAXJOB, LOGRTN, PHOSPHOR all take effect; DATFMT in the dates the system writes, not the screens' header clock) |
 | §9 | SAVLIB, RSTLIB | Done | `midrange/MidrangeSystemBlockEntity` (slot A, B with an Expansion Cabinet; the Integrated system's magazine; the default library's diskette first), `CardReaderBlockEntity`, `DisketteStack` |
-| §9 | WRKDEV, WRKINV, DSPNETSTS, WRKCRFJOB, WRKMCH (added), SIGNOFF, GO, CLEAR | Done | Client screens (`client/ScreenCommands`) |
+| §9 | WRKDEV, WRKINV, DSPNETSTS, WRKCRFJOB, WRKMCH (added), WRKSCH (added), SIGNOFF, GO, CLEAR | Done | Client screens (`client/ScreenCommands`) |
 | §10 | The old CLI's aliases | Done | `terminal/TerminalCommands` |
 | §11 Database files (added) | DCLF, RCVF, POSDBF, CLOF, CHNRCD, WRTRCD, UPDRCD, DLTRCD | Done | `elcl/compile/Compiler` (DCLF's variables from a `FileResolver`; the formats kept with the program), `elcl/vm/Vm` (file state in the frame, saved with the job; a level check each operation), `elcl/db/FileAccess` |
 | §11 | CRTPF, CHGPF, DLTF, CLRPFM, CPYF, CPYTOIMPF, CPYFRMIMPF, RUNQRY; CRTMBR SRCTYPE(PF) | Done | `elcl/exec/DbCommands`, `elcl/store/StoredFileService`, `elcl/db` (`Dds`, `DbFile`, `Query`, `Csv`, `Report`); ELSYS's INVITEMS, DEVICES, CRFHIST and JOBS from `elcl/exec/LiveFiles` |

@@ -25,6 +25,26 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Added
 
+- **Schematic Terminal**: a cable-face terminal (one lane, lit while online) for the network's schematics and crafting
+  jobs. Its **Schematics** tab lists every Fabricator, Gateway, Fabrication Server and Midrange System with its
+  schematics: click a slot to take one out or put the carried one in, select a holder and Sneak-click a schematic in
+  your inventory to put it into a free slot, and right-click a holder to locate it (an outline for ten seconds, and
+  its coordinates in chat) or rename it. Badges mark an output another holder also makes, different recipes for the
+  same output (naming the one the planner uses), and a Gateway whose machine is missing or rejects the inputs. A
+  Midrange System's diskette recipes show read-only. Its **Jobs** tab lists the network's crafting jobs with
+  progress, scheduler and time; click one for its step tree, right-click to cancel (confirmed), hold or release it.
+  It shows active jobs, or also the last 20 that ended, filtered by scheduler and requester. Moving schematics and
+  renaming need Build; cancelling, holding and releasing need Craft unless it's your own job.
+- **Rack Fabrication Console** and **Rack Schematic Console**: 1U consoles with the Fabrication Terminal's screen
+  (crafting grid included) and the Schematic Terminal's, with amber and light-blue accents. All three consoles keep
+  8U apart from each other.
+- Crafting jobs that make no progress for `jobStallSeconds` (30) show as **stalled**, with a reason where one can be
+  told: items still coming back from tape, no online holder of the step's schematic, a Gateway's machine missing,
+  unpowered or with its output blocked, a Gateway unable to push its inputs, or no ingredients to run anything. The
+  `*CRFSTALL` trigger event fires when a job stalls. Jobs on Scheduler Cores and the rack Scheduler can now be held
+  and released too, and stay held across a restart.
+- Terminal OS: **WRKSCH** (Work with Schematics: 4=Remove into the desk drawer, 5=Display, 8=Locate), WRKCRFJOB's
+  **8=Display steps**, and the ELCL commands **RTVSCHLST** and **RTVCRFSTP** (messages ELC2501-ELC2504).
 - **Creative Capacitor Bank**, in the creative menu only (it has no recipe). It is always full and has no transfer
   limit: it gives its network, and anything on any face, all the FE asked of it, and takes (voids) all it's offered.
   The network fills its controllers and other storage first, so it only voids what they can't take. Its screen shows
@@ -52,8 +72,16 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   images over the new `displayMaxImagePixels` (16,777,216 pixels by default), as well as over `displayMaxImageSize`
   and `displayMaxImageBytes`. The image is decoded by the same reader that checked it.
 
+### Upgrading
+
+- A Rack Console that had the Memory Die upgrade becomes a Rack Fabrication Console in the same unit when its rack
+  loads, keeping its crafting grid. The Memory Die drops out of the rack, and the next player to open the console is
+  told what happened. Nothing needs redoing.
+
 ### Changed
 
+- The Rack Console no longer takes a Memory Die for a crafting grid: the Rack Fabrication Console replaces that
+  upgrade.
 - Compute, Memory and Fabrication Servers show their lights solid while they're online and idle, and blink only
   while they're working: a Compute Server while its pool runs jobs, a Memory Server while jobs hold memory, and a
   Fabrication Server while it crafts. They keep blinking for a second after work stops, so the lights don't flicker

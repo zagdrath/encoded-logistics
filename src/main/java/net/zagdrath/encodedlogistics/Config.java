@@ -188,6 +188,11 @@ public class Config {
             .comment("Jobs each Thread Unit adds.")
             .defineInRange("threadUnitThreads", 1, 0, 1024);
 
+    public static final ModConfigSpec.IntValue JOB_STALL_SECONDS = BUILDER
+            .comment("Seconds a running crafting job can go without progress before it shows as stalled (the Schematic Terminal's",
+                    "Jobs tab, WRKCRFJOB's steps, the *CRFSTALL trigger).")
+            .defineInRange("jobStallSeconds", 30, 5, 3_600);
+
     public static final ModConfigSpec.IntValue THREAD_RUNS = BUILDER
             .comment("Crafts a thread keeps going at once. A job with more crafts left takes more of its Scheduler's free threads,",
                     "and gives them back as it nears its end; every job gets at least one. 0: a thread runs any number of crafts.")

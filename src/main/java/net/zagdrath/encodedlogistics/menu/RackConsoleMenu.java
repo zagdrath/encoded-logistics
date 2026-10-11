@@ -21,7 +21,8 @@ import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
 // A Rack Console's terminal (screens/rack_console.json): the Access Terminal's, reaching the network the console serves
-// while it's online and its drawer is out. pos is the rack's master; u the console's unit.
+// while it's online and its drawer is out. pos is the rack's master; u the console's unit. The other consoles' menus
+// (RackConsoleFabricationMenu, SchematicTerminalMenu) use the helpers here.
 public class RackConsoleMenu extends AccessTerminalMenu {
     private final int u;
 
@@ -35,33 +36,39 @@ public class RackConsoleMenu extends AccessTerminalMenu {
         this.u = u;
     }
 
-    // Opens a console's terminal: its crafting one once it has a Memory Die.
-    public static void open(ServerPlayer player, BlockPos rack, int u, boolean fabrication) {
-        Component title = Component.translatable("item.encodedlogistics.rack_console");
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> fabrication ? new RackConsoleFabricationMenu(id, inventory, rack, u, DEFAULT_ROWS)
-                : new RackConsoleMenu(id, inventory, rack, u, DEFAULT_ROWS), title), buf -> {
+    // Opens a console's terminal: the Access Terminal's, the Fabrication Terminal's or the Schematic Terminal's, by kind.
+    public static void open(ServerPlayer player, BlockPos rack, int u, RackConsoleDevice.Kind kind) {
+        if (kind == RackConsoleDevice.Kind.SCHEMATIC) {
+            SchematicTerminalMenu.openConsole(player, rack, u);
+            return;
+        }
+        Component title = Component.translatable(kind == RackConsoleDevice.Kind.FABRICATION ? "item.encodedlogistics.rack_fabrication_console"
+                : "item.encodedlogistics.rack_console");
+        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> kind == RackConsoleDevice.Kind.FABRICATION
+                ? new RackConsoleFabricationMenu(id, inventory, rack, u, DEFAULT_ROWS) : new RackConsoleMenu(id, inventory, rack, u, DEFAULT_ROWS), title),
+                buf -> {
                     buf.writeBlockPos(rack);
                     buf.writeVarInt(u);
                 });
     }
 
     // The console at a rack's unit, or null.
-    static @Nullable RackConsoleDevice console(Player player, BlockPos rack, int u) {
+    public static @Nullable RackConsoleDevice console(Player player, BlockPos rack, int u) {
         return player.level().getBlockEntity(rack) instanceof RackBlockEntity at && at.deviceAt(u) instanceof RackConsoleDevice console ? console : null;
     }
 
-    static @Nullable NetworkRef homeNetwork(Player player, BlockPos rack, int u) {
+    public static @Nullable NetworkRef homeNetwork(Player player, BlockPos rack, int u) {
         RackConsoleDevice console = console(player, rack, u);
         return console != null && console.rack() != null ? console.rack().network(console) : null;
     }
 
-    static @Nullable NetworkRef network(Player player, BlockPos rack, int u) {
+    public static @Nullable NetworkRef network(Player player, BlockPos rack, int u) {
         RackConsoleDevice console = console(player, rack, u);
         return console != null && console.isOnline() && console.isOpen() ? homeNetwork(player, rack, u) : null;
     }
 
     // Open while the console is there with its drawer out, and the player near it.
-    static boolean stillValid(Player player, BlockPos rack, int u) {
+    public static boolean stillValid(Player player, BlockPos rack, int u) {
         RackConsoleDevice console = console(player, rack, u);
         return console != null && console.isOpen() && player.isWithinBlockInteractionRange(rack, 4.0);
     }

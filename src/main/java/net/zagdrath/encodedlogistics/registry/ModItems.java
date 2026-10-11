@@ -219,6 +219,10 @@ public final class ModItems {
 
     public static final DeferredItem<RackDeviceItem> RACK_CONSOLE = ITEMS.registerItem("rack_console", p -> new RackDeviceItem(p, RackDeviceType.RACK_CONSOLE),
             p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> RACK_FABRICATION_CONSOLE = ITEMS.registerItem("rack_fabrication_console",
+            p -> new RackDeviceItem(p, RackDeviceType.RACK_FABRICATION_CONSOLE), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> RACK_SCHEMATIC_CONSOLE = ITEMS.registerItem("rack_schematic_console",
+            p -> new RackDeviceItem(p, RackDeviceType.RACK_SCHEMATIC_CONSOLE), p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> WIRELESS_CONTROLLER = ITEMS.registerItem("wireless_controller",
             p -> new RackDeviceItem(p, RackDeviceType.WIRELESS_CONTROLLER), p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> TAPE_LIBRARY_4U = ITEMS.registerItem("tape_library_4u",

@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -143,6 +144,20 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         setChanged();
     }
 
+    @Override
+    public boolean holdJob(UUID id, boolean hold) {
+        if (!runner.setHeld(id, hold)) {
+            return false;
+        }
+        setChanged();
+        return true;
+    }
+
+    @Override
+    public boolean isHeld(UUID id) {
+        return runner.isHeld(id);
+    }
+
     // Cancels a job: everything it holds goes into the network (or drops at the Core when it doesn't fit).
     @Override
     public boolean cancel(UUID id) {
@@ -171,7 +186,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
                 () -> structures.sharedStorageAt(serverLevel, worldPosition, true), job -> {
                     ControllerStructures.jobFinished(serverLevel, worldPosition);
                     JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), this, job, JobEvents.Outcome.COMPLETED, "");
-                })) {
+                }, job -> JobEvents.stalled(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), job))) {
             setChanged();
         }
         updateActive(false);
@@ -257,11 +272,17 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         runner.load(input.read("jobs", CraftingJob.CODEC.listOf()).orElse(List.of()));
+        runner.heldJobs().clear();
+        runner.heldJobs().addAll(input.read("held_jobs", UUIDUtil.CODEC.listOf()).orElse(List.of()));
+        runner.heldJobs().removeIf(id -> runner.job(id) == null);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.store("jobs", CraftingJob.CODEC.listOf(), runner.jobs());
+        if (!runner.heldJobs().isEmpty()) {
+            output.store("held_jobs", UUIDUtil.CODEC.listOf(), List.copyOf(runner.heldJobs()));
+        }
     }
 }

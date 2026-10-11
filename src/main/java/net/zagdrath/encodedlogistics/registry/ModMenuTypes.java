@@ -36,6 +36,7 @@ import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.menu.PointToPointMenu;
 import net.zagdrath.encodedlogistics.menu.PortMenu;
 import net.zagdrath.encodedlogistics.menu.RackConsoleFabricationMenu;
+import net.zagdrath.encodedlogistics.menu.SchematicTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.RackConsoleMenu;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.menu.RelayAntennaMenu;
@@ -76,6 +77,10 @@ public final class ModMenuTypes {
             () -> IMenuTypeExtension.<AccessTerminalMenu>create(RackConsoleMenu::new));
     public static final Supplier<MenuType<FabricationTerminalMenu>> RACK_CONSOLE_FABRICATION = MENU_TYPES.register("rack_console_fabrication",
             () -> IMenuTypeExtension.<FabricationTerminalMenu>create(RackConsoleFabricationMenu::new));
+
+    // The Schematic Terminal's (a cable face's, or a Rack Schematic Console's).
+    public static final Supplier<MenuType<SchematicTerminalMenu>> SCHEMATIC_TERMINAL = MENU_TYPES.register("schematic_terminal",
+            () -> IMenuTypeExtension.create(SchematicTerminalMenu::new));
 
     public static final Supplier<MenuType<PortMenu>> PORT = MENU_TYPES.register("port", () -> IMenuTypeExtension.create(PortMenu::new));
 

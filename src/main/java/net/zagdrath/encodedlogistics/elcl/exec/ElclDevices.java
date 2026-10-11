@@ -39,8 +39,8 @@ import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
 // The devices scripts name (COMMANDS.md 5): CTLIF01 (Control Interfaces), ELDESK01 (Terminal Desks), rack devices by
 // kind - FIREWALL01, ROUTER01, UPS01, SWITCH01, L3SWITCH01, CMPSRV01, MEMSRV01, FABSRV01, MONSRV01, NAS01, SAN01,
-// RACKCON01, WLC01, TAPELIB01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
-// DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01 - and wireless: AP01 (Access Points), WBRIDGE01 (Wireless Bridges),
+// RACKCON01, RACKFAB01, RACKSCH01, WLC01, TAPELIB01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
+// DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01, SCHTERM01 - and wireless: AP01 (Access Points), WBRIDGE01 (Wireless Bridges),
 // WINGRESS01 / WEGRESS01 (Wireless Ports: a port in every other way) - and the Midrange line: MIDRANGE01, KEYPUNCH01,
 // CARDRDR01, PRT01; Display Panel screens: DSP01; Gateways: GATEWAY01; PLCs: PLC01; Cage Lights, Alarm Strobes and Speakers: LGT01, SRN01, SPK01; and machines with a Small Wireless Bridge on, by their type
 // (MachineBridge.typeCode: ARCCRU01 for an Arc Crusher, ELECTR01 for an Electrolyzer).
@@ -124,6 +124,8 @@ public final class ElclDevices {
             case "fabrication_server" -> "FABSRV";
             case "monitoring_server" -> "MONSRV";
             case "rack_console" -> "RACKCON";
+            case "rack_fabrication_console" -> "RACKFAB";
+            case "rack_schematic_console" -> "RACKSCH";
             case "wireless_controller" -> "WLC";
             case "tape_library_4u", "tape_library_6u" -> "TAPELIB";
             default -> id.toUpperCase(Locale.ROOT);
@@ -144,6 +146,7 @@ public final class ElclDevices {
             case ACCESS_TERMINAL -> "TERM";
             case FABRICATION_TERMINAL -> "FABTERM";
             case SCHEMATIC_ENCODER -> "ENCODER";
+            case SCHEMATIC_TERMINAL -> "SCHTERM";
         };
     }
 

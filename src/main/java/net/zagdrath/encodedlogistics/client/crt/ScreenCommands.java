@@ -19,7 +19,7 @@ import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 
 // The commands that open a screen (screens handoff D: WRKLIB, WRKMBR LIB(), EDTMBR MBR(), WRKACTJOB, WRKJOB JOB(),
 // DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF, WRKSYSVAL, and the desk's own WRKINV, WRKDEV, DSPNETSTS,
-// WRKCRFJOB; the database's WRKF LIB(), DSPPFM, DSPFD, UPDDTA, and RUNQRY OUTPUT(*DISPLAY)), typed on any command line:
+// WRKCRFJOB, WRKSCH HOLDER(); the database's WRKF LIB(), DSPPFM, DSPFD, UPDDTA, and RUNQRY OUTPUT(*DISPLAY)), typed on any command line:
 // the screen opens on this terminal, checked against the command's schema first. GO MAIN goes back to the main menu,
 // SIGNOFF signs off. RUNQRY's other outputs run on the server as any command does.
 final class ScreenCommands {
@@ -69,6 +69,7 @@ final class ScreenCommands {
             case "WRKMCH" -> new WrkMchPanel(screen);
             case "DSPNETSTS" -> new StatusPanel(screen);
             case "WRKCRFJOB" -> new JobsPanel(screen);
+            case "WRKSCH" -> new SchematicsPanel(screen, value(statement, "HOLDER", "*ALL"));
             case "WRKACTJOB" -> new WrkActJobPanel(screen);
             case "WRKJOB" -> new WrkJobPanel(screen, value(statement, "JOB", "*"));
             case "DSPJOBLOG" -> new DspJobLogPanel(screen, value(statement, "JOB", "*"));

@@ -28,19 +28,32 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
-import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The Rack Console (1U): an Access Terminal in a rack drawer. Right-click it through the open front door and the
 // drawer slides out (8 ticks) and its screen folds up (6 ticks); right-click it open (its network online) for the
-// terminal - a Fabrication Terminal's once a Memory Die has been applied (sneak-use the die on it). Sneak-right-click,
-// closing the door, or nobody within 4 blocks folds it away again, screen first - snapped shut together in 2 ticks when
-// the door is closing, ahead of the door. Its crafting grid stays in it.
+// terminal. Sneak-right-click, closing the door, or nobody within 4 blocks folds it away again, screen first - snapped
+// shut together in 2 ticks when the door is closing, ahead of the door.
+//
+// Three kinds share it (Kind, by device type): the Rack Console (the Access Terminal's screen), the Rack Fabrication
+// Console (the Fabrication Terminal's, its crafting grid kept in the console) and the Rack Schematic Console (the
+// Schematic Terminal's). The Memory Die upgrade that once gave a Rack Console its crafting grid is gone: a console saved
+// with it becomes a Rack Fabrication Console when its rack loads (RackBlockEntity), keeping its grid, and the die comes
+// back out of the rack; the next player to open it is told (migrated).
 //
 // Open, its lid stands in front of the rack about 7.6 px (U) above its own bottom, where the drawer of a console above
 // would slide out: two consoles need SPACING units between their bottoms (7U free between them), or they'd clip.
 public class RackConsoleDevice extends RackDevice {
+    // Which terminal it opens.
+    public enum Kind {
+        ACCESS, FABRICATION, SCHEMATIC;
+
+        public static Kind of(RackDeviceType type) {
+            return type == RackDeviceType.RACK_FABRICATION_CONSOLE ? FABRICATION : type == RackDeviceType.RACK_SCHEMATIC_CONSOLE ? SCHEMATIC : ACCESS;
+        }
+    }
+
     // Units from one console's bottom to the next's, at least: the lid's 7 px on its 0.625 px hinge, rounded up.
     public static final int SPACING = 8;
 
@@ -53,7 +66,9 @@ public class RackConsoleDevice extends RackDevice {
     private static final double REACH = 4.0;
     private static final int CHECK_INTERVAL = 10;
 
-    private boolean open, fabrication;
+    private boolean open;
+    // Converted from an upgraded Rack Console: the next player to open it hears about it.
+    private boolean migrated;
     private final NonNullList<ItemStack> grid = NonNullList.withSize(9, ItemStack.EMPTY);
     // Server: a sound due in so many ticks.
     private int soundIn = -1, checkTimer;
@@ -70,8 +85,16 @@ public class RackConsoleDevice extends RackDevice {
         return open;
     }
 
-    public boolean fabrication() {
-        return fabrication;
+    public Kind kind() {
+        return Kind.of(type());
+    }
+
+    // An old Rack Console with the Memory Die upgrade, made a Rack Fabrication Console: its grid, the message to come.
+    public void adoptUpgraded(RackConsoleDevice old) {
+        for (int i = 0; i < grid.size(); i++) {
+            grid.set(i, old.grid.get(i));
+        }
+        migrated = true;
     }
 
     public NonNullList<ItemStack> grid() {
@@ -101,23 +124,15 @@ public class RackConsoleDevice extends RackDevice {
         if (!open) {
             setOpen(true);
         } else if (isOnline() && rack() != null) {
-            RackConsoleMenu.open(player, rack().getBlockPos(), u(), fabrication);
+            if (migrated) {
+                migrated = false;
+                player.sendSystemMessage(Component.translatable("message.encodedlogistics.console.migrated"));
+                saveOnly();
+            }
+            RackConsoleMenu.open(player, rack().getBlockPos(), u(), kind());
         } else {
             player.sendOverlayMessage(Component.translatable("gui.encodedlogistics.terminal.offline"));
         }
-        return true;
-    }
-
-    // A Memory Die, sneak-used on it: the crafting grid.
-    @Override
-    public boolean useItem(ServerPlayer player, ItemStack stack, boolean atUnit) {
-        if (!atUnit || fabrication || !player.isSecondaryUseActive() || !stack.is(ModItems.MEMORY_DIE.get())) {
-            return false;
-        }
-        fabrication = true;
-        stack.consume(1, player);
-        player.sendOverlayMessage(Component.translatable("message.encodedlogistics.console.upgraded"));
-        changed(false);
         return true;
     }
 
@@ -194,27 +209,24 @@ public class RackConsoleDevice extends RackDevice {
 
     // --- Saving ---
 
-    @Override
-    public void saveSettings(ValueOutput output) {
-        output.putBoolean("fabrication", fabrication);
-    }
-
-    @Override
-    public void loadSettings(ValueInput input) {
-        fabrication = input.getBooleanOr("fabrication", false);
+    // Whether a saved Rack Console had the Memory Die upgrade (its old "fabrication" setting): RackBlockEntity converts it.
+    public static boolean upgraded(ValueInput data) {
+        return data.getBooleanOr("fabrication", false);
     }
 
     @Override
     public void save(ValueOutput output) {
-        saveSettings(output);
         output.putBoolean("open", open);
+        if (migrated) {
+            output.putBoolean("migrated", true);
+        }
         ContainerHelper.saveAllItems(output.child("grid"), grid);
     }
 
     @Override
     public void load(ValueInput input) {
-        loadSettings(input);
         open = input.getBooleanOr("open", false);
+        migrated = input.getBooleanOr("migrated", false);
         grid.replaceAll(stack -> ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input.childOrEmpty("grid"), grid);
     }
@@ -222,14 +234,12 @@ public class RackConsoleDevice extends RackDevice {
     @Override
     public void writeClient(ValueOutput output) {
         output.putBoolean("open", open);
-        output.putBoolean("fabrication", fabrication);
     }
 
     @Override
     public void readClient(ValueInput input) {
         boolean wasOpen = open;
         open = input.getBooleanOr("open", false);
-        fabrication = input.getBooleanOr("fabrication", false);
         // A console seen for the first time open is open already, not opening.
         if (open && !wasOpen && drawer == 0 && lastDrawer == 0 && !seen) {
             drawer = lastDrawer = DRAWER_TICKS;

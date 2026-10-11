@@ -230,6 +230,14 @@ final class BuiltinCommands {
                 .p(rtn("RTNLST", "Return list", VarType.LIST).req()));
         add(CommandDefinition.of("ENDCRAFT", "End Crafting").auth(CRAFT).positional(1)
                 .p(p("CRFJOB", "Craft job", Kind.NAME).req()));
+        add(CommandDefinition.of("RTVSCHLST", "Retrieve Schematic List").auth(VIEW)
+                .p(rtn("RTNLIST", "Return list", VarType.LIST).req())
+                .p(p("HOLDER", "Holder", Kind.NAME).sv("*ALL").dft("*ALL"))
+                .p(rtn("RTNCOUNT", "Return count", VarType.INT)));
+        add(CommandDefinition.of("RTVCRFSTP", "Retrieve Craft Steps").auth(VIEW).positional(1)
+                .p(p("JOB", "Craft job", Kind.NAME).req())
+                .p(rtn("RTNLIST", "Return list", VarType.LIST).req())
+                .p(rtn("RTNSTALL", "Return stall reason", VarType.CHAR)));
 
         // --- 5. Devices ---
         add(CommandDefinition.of("RTVDEVSTS", "Retrieve Device Status").auth(VIEW).positional(1)
@@ -501,7 +509,8 @@ final class BuiltinCommands {
         add(CommandDefinition.of("ADDTRGEVT", "Add Trigger Event").positional(3)
                 .p(p("TRG", "Trigger", Kind.NAME).req())
                 .p(p("EVENT", "Event", Kind.SPECIAL).req().sv("*ITMBELOW", "*ITMABOVE", "*STGFULL", "*DEVFAULT", "*DEVONLINE", "*DEVOFFLINE",
-                        "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*RSCHANGE", "*DSPTOUCH", "*MCHIDLE", "*MCHDONE", "*MCHFAULT", "*MCHNOPWR"))
+                        "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*CRFSTALL", "*RSCHANGE", "*DSPTOUCH", "*MCHIDLE", "*MCHDONE", "*MCHFAULT",
+                        "*MCHNOPWR"))
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ANY").dft("*ANY").len(64))
                 .p(p("DEV", "Device", Kind.DEVICE).sv("*ANY").dft("*ANY"))
@@ -532,6 +541,8 @@ final class BuiltinCommands {
         add(CommandDefinition.of("WRKINV", "Work with Inventory").context(INTERACTIVE).positional(1)
                 .p(p("FILTER", "Position to", Kind.CHAR).sv("*ALL").dft("*ALL").len(30)));
         add(CommandDefinition.of("WRKCRFJOB", "Work with Crafting Jobs").context(INTERACTIVE));
+        add(CommandDefinition.of("WRKSCH", "Work with Schematics").context(INTERACTIVE).positional(1)
+                .p(p("HOLDER", "Holder", Kind.NAME).sv("*ALL").dft("*ALL")));
         add(CommandDefinition.of("DSPNETSTS", "Display Network Status").context(INTERACTIVE));
         add(CommandDefinition.of("WRKSPLF", "Work with Spooled Files").context(INTERACTIVE).positional(1)
                 .p(p("JOB", "Job name", Kind.NAME).sv("*ALL").dft("*ALL").len(28)));

@@ -1,0 +1,78 @@
+{
+ "includes": [
+  "terminal/base_terminal.json"
+ ],
+ "text": {
+  "title": {
+   "key": "gui.encodedlogistics.schematic_terminal"
+  }
+ },
+ "features": {
+  "crafting_grid": false,
+  "tabs": [
+   "schematics",
+   "jobs"
+  ]
+ },
+ "tabs": {
+  "sprite": "schematic/tab_active",
+  "sprite_inactive": "schematic/tab_inactive",
+  "size": [
+   64,
+   13
+  ],
+  "left": 8,
+  "step": 65,
+  "top": -12,
+  "label_color": "TEXT",
+  "label_color_inactive": "TEXT_MUTED"
+ },
+ "pieces": {
+  "header_row": {
+   "texture": "gui/terminal/row_header.png",
+   "height": 18
+  },
+  "list_row": {
+   "texture": "gui/terminal/row_list.png",
+   "height": 18
+  }
+ },
+ "sections": {
+  "summary": "terminal/summary_section.json"
+ },
+ "toolbar": {
+  "buttons": [
+   {
+    "id": "sort_mode",
+    "icons": [
+     "terminal/icon_sort_name",
+     "terminal/icon_sort_count",
+     "terminal/icon_sort_mod"
+    ]
+   },
+   {
+    "id": "sort_direction",
+    "icons": [
+     "terminal/icon_dir_asc",
+     "terminal/icon_dir_desc"
+    ]
+   },
+   {
+    "id": "holder_filter",
+    "icons": [
+     "terminal/icon_type_all",
+     "terminal/icon_type_items"
+    ]
+   },
+   {
+    "id": "height",
+    "icons": [
+     "terminal/icon_height_small",
+     "terminal/icon_height_medium",
+     "terminal/icon_height_tall",
+     "terminal/icon_height_fill"
+    ]
+   }
+  ]
+ }
+}

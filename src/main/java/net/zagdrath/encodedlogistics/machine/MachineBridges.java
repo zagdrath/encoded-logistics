@@ -354,6 +354,25 @@ public final class MachineBridges extends SavedData {
 
     // --- Gateways ---
 
+    // The online bridged machines on the Gateway at pos's network whose Gateway setting is that Gateway.
+    public static List<MachineBridge> gatewayMachines(ServerLevel level, BlockPos gateway) {
+        NetworkRef network = ControllerStructures.networkOf(level, gateway);
+        if (access == null || network == null) {
+            return List.of();
+        }
+        GlobalPos at = GlobalPos.of(level.dimension(), gateway);
+        List<MachineBridge> found = new ArrayList<>();
+        for (ServerLevel there : level.getServer().getAllLevels()) {
+            for (MachineBridge bridge : get(there).bridges.values()) {
+                if (at.equals(bridge.gateway()) && bridge.isOnline() && there.isLoaded(bridge.pos())
+                        && network.equals(ControllerStructures.networkOf(there, bridge.pos()))) {
+                    found.add(bridge);
+                }
+            }
+        }
+        return found;
+    }
+
     // The item handlers of the online bridged machines whose Gateway setting is the Gateway at pos and that are on its
     // network: where it pushes inputs and pulls outputs over the air, as with a machine beside it.
     public static List<ResourceHandler<ItemResource>> gatewayTargets(ServerLevel level, BlockPos gateway) {

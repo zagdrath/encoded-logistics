@@ -88,6 +88,8 @@ public final class RackClientDevices {
         EXTRAS.put(RackDeviceType.NAS, new DriveBays(false));
         EXTRAS.put(RackDeviceType.SAN, new DriveBays(true));
         EXTRAS.put(RackDeviceType.RACK_CONSOLE, new RackConsoleRender());
+        EXTRAS.put(RackDeviceType.RACK_FABRICATION_CONSOLE, new RackConsoleRender());
+        EXTRAS.put(RackDeviceType.RACK_SCHEMATIC_CONSOLE, new RackConsoleRender());
         EXTRAS.put(RackDeviceType.TAPE_LIBRARY_4U, new TapeLibraryRender());
         EXTRAS.put(RackDeviceType.TAPE_LIBRARY_6U, new TapeLibraryRender());
         PANELS.put(RackDeviceType.WIRELESS_CONTROLLER, WirelessControllerPanel::new);

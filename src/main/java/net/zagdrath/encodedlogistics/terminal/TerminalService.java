@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,6 +30,11 @@ import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftLog;
 import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.Schematic;
+import net.zagdrath.encodedlogistics.item.SchematicItem;
+import net.zagdrath.encodedlogistics.schematic.SchematicData;
+import net.zagdrath.encodedlogistics.schematic.SchematicHolders;
+import net.zagdrath.encodedlogistics.schematic.SchematicTerminalService;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
@@ -116,6 +124,11 @@ public final class TerminalService {
             case "status" -> status(context);
             case "detail" -> detail(context, words.size() > 1 ? words.get(1) : "");
             case "plan" -> plan(context, words.size() > 1 ? words.get(1) : "", words.size() > 2 ? TerminalItems.amount(words.get(2)) : 1);
+            case "schematics" -> schematics(context, words.size() > 1 ? words.get(1) : "*ALL");
+            case "schematic" -> schematic(context, words.size() > 1 ? words.get(1) : "");
+            case "locateschematic" -> locateSchematic(context, words.size() > 1 ? words.get(1) : "");
+            case "removeschematic" -> removeSchematic(context, words.size() > 1 ? words.get(1) : "");
+            case "jobsteps" -> jobSteps(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             default -> new TerminalOutput();
         };
     }
@@ -395,6 +408,176 @@ public final class TerminalService {
             }
         }
         return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_job", String.format("%04d", Math.max(0, number))));
+    }
+
+    // --- Schematics (WRKSCH) ---
+
+    // WRKSCH's rows: a schematic each - holder, output, quantity, kind, R/O for a read-only holder, location - and a row
+    // for a holder with none. The first cell (width 0, not shown) is the row's key, "<holder key>#<slot>" (-1: the
+    // holder itself). holder: *ALL, or a holder's name (its device name, or the start of its shown name).
+    private static TerminalOutput schematics(TerminalContext context, String holder) {
+        TerminalOutput out = new TerminalOutput();
+        for (SchematicHolders.Holder each : SchematicHolders.of(context.server(), context.network())) {
+            if (!holderMatches(each, holder)) {
+                continue;
+            }
+            boolean any = false;
+            for (int slot = 0; slot < each.slots(); slot++) {
+                Schematic schematic = SchematicItem.schematic(each.get(slot));
+                if (schematic == null) {
+                    continue;
+                }
+                any = true;
+                ItemStack output = schematic.output();
+                out.line(TerminalLine.builder().cell(Component.literal(each.key() + "#" + slot), 0, false).left(each.name(), 18)
+                        .left(output.getHoverName(), 22).right(TerminalItems.count(Math.max(1, output.getCount())), 4).text("  ")
+                        .left(schematic.kind() == Schematic.Kind.PROCESSING ? "PROC" : "CRAFT", 6).left(each.readOnly() ? "R/O" : "", 4)
+                        .text(each.location()).build());
+            }
+            if (!any) {
+                out.line(TerminalLine.builder().cell(Component.literal(each.key() + "#-1"), 0, false).left(each.name(), 18)
+                        .left(Component.translatable("crt.encodedlogistics.sch.none"), 36).text(each.location()).attr(TerminalLine.DIM).build());
+            }
+        }
+        return out;
+    }
+
+    public static boolean holderMatches(SchematicHolders.Holder holder, String spec) {
+        String wanted = spec.trim().toUpperCase(Locale.ROOT);
+        return wanted.isEmpty() || wanted.equals("*ALL") || holder.deviceName().equalsIgnoreCase(wanted)
+                || holder.name().toUpperCase(Locale.ROOT).startsWith(wanted);
+    }
+
+    private record SchematicAt(SchematicHolders.Holder holder, int slot) {}
+
+    private static @Nullable SchematicAt schematicAt(TerminalContext context, String key) {
+        int hash = key.lastIndexOf('#');
+        if (hash < 0) {
+            return null;
+        }
+        String holderKey = key.substring(0, hash);
+        int slot;
+        try {
+            slot = Integer.parseInt(key.substring(hash + 1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        for (SchematicHolders.Holder holder : SchematicHolders.of(context.server(), context.network())) {
+            if (holder.key().equalsIgnoreCase(holderKey)) {
+                return slot < holder.slots() ? new SchematicAt(holder, slot) : null;
+            }
+        }
+        return null;
+    }
+
+    // 5=Display: the holder and the schematic - what it makes, from what.
+    private static TerminalOutput schematic(TerminalContext context, String key) {
+        SchematicAt at = schematicAt(context, key);
+        if (at == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.sch.gone"));
+        }
+        TerminalOutput out = new TerminalOutput();
+        out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.sch.holder"), 28).text(at.holder().name()).attr(TerminalLine.BRIGHT)
+                .build());
+        out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.sch.location"), 28).text(at.holder().location()).build());
+        out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.sch.readonly"), 28)
+                .text(Component.translatable(at.holder().readOnly() ? "crt.encodedlogistics.yes" : "crt.encodedlogistics.no")).build());
+        Schematic schematic = at.slot() >= 0 ? SchematicItem.schematic(at.holder().get(at.slot())) : null;
+        if (schematic == null) {
+            out.line(TerminalLine.of(Component.translatable("crt.encodedlogistics.sch.none"), TerminalLine.DIM));
+            return out;
+        }
+        out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.sch.kind"), 28)
+                .text(schematic.kind() == Schematic.Kind.PROCESSING ? "*PROCESSING" : "*CRAFTING").build());
+        out.line(TerminalLine.blank());
+        out.line(TerminalLine.builder().left("  " + Component.translatable("crt.encodedlogistics.sch.makes").getString(), 30).attr(TerminalLine.BRIGHT).build());
+        schematic.outputTotals().forEach((output, count) -> out.line(TerminalLine.builder().text("  ").right(output.format(count), 10).text("  ")
+                .text(output.displayName()).build()));
+        out.line(TerminalLine.builder().left("  " + Component.translatable("crt.encodedlogistics.sch.takes").getString(), 30).attr(TerminalLine.BRIGHT).build());
+        schematic.inputTotals().forEach((input, count) -> out.line(TerminalLine.builder().text("  ").right(input.format(count), 10).text("  ")
+                .text(input.displayName()).build()));
+        return out;
+    }
+
+    // 8=Locate: where its holder is (the screen outlines it, as Work with Devices' does).
+    private static TerminalOutput locateSchematic(TerminalContext context, String key) {
+        SchematicAt at = schematicAt(context, key);
+        if (at == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.sch.gone"));
+        }
+        AABB box = at.holder().box(context.server());
+        BlockPos pos = at.holder().pos().pos();
+        TerminalOutput out = new TerminalOutput();
+        out.line(String.format(Locale.ROOT, "%.4f %.4f %.4f %.4f %.4f %.4f %s", box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
+                at.holder().pos().dimension().identifier()));
+        out.setMessage(Component.translatable("crt.encodedlogistics.msg.located", at.holder().name(), pos.getX() + ", " + pos.getY() + ", " + pos.getZ()));
+        return out;
+    }
+
+    // 4=Remove: the schematic out of its holder into the Terminal Desk's drawer (ELC2504); BUILD, a writable holder, a desk.
+    private static TerminalOutput removeSchematic(TerminalContext context, String key) {
+        if (!context.allowed(RackPermission.BUILD)) {
+            return TerminalOutput.message(TerminalActions.notAuthorised(RackPermission.BUILD));
+        }
+        if (context.desk() == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.sch.no_desk"));
+        }
+        SchematicAt at = schematicAt(context, key);
+        if (at == null || at.slot() < 0 || at.holder().get(at.slot()).isEmpty()) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.sch.gone"));
+        }
+        if (at.holder().readOnly()) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.sch.readonly_holder", at.holder().name()));
+        }
+        ItemStack stack = at.holder().get(at.slot());
+        Schematic schematic = SchematicItem.schematic(stack);
+        String name = schematic != null ? schematic.output().getHoverName().getString() : stack.getHoverName().getString();
+        ItemStack rest = context.desk().addToDrawer(stack.copy());
+        if (!rest.isEmpty()) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.sch.drawer_full"));
+        }
+        at.holder().set(at.slot(), ItemStack.EMPTY);
+        return TerminalOutput.message(Component.literal(ElclMessage.of("ELC2504", name).toString()));
+    }
+
+    // WRKCRFJOB's 8=Display steps: the job's steps as a tree - state, item and quantity, done of total - with a stalled
+    // step's reason under it.
+    private static TerminalOutput jobSteps(TerminalContext context, int number) {
+        UUID id = context.job(number);
+        CraftingJob job = id != null ? SchematicTerminalService.findJob(context.server(), context.network(), id) : null;
+        String shown = String.format(Locale.ROOT, "%04d", Math.max(0, number));
+        if (job == null) {
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_job", shown));
+        }
+        TerminalOutput out = new TerminalOutput();
+        out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.job.job"), 28).text(shown).build());
+        out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.job.item"), 28).text(TerminalItems.count(job.amount) + " x ")
+                .text(job.target.displayName()).attr(TerminalLine.BRIGHT).build());
+        if (job.stalled) {
+            out.line(TerminalLine.builder().left(Component.translatable("crt.encodedlogistics.job.stalled"), 28)
+                    .text(job.stallReason != null ? Component.translatable("gui.encodedlogistics.jobs.reason." + job.stallReason)
+                            : Component.translatable("crt.encodedlogistics.job.stall_unknown")).attr(TerminalLine.BRIGHT).build());
+        }
+        out.line(TerminalLine.blank());
+        out.line(TerminalLine.builder().left("  STEP", 36).left("STATE", 10).right("DONE/TOTAL", 12).attr(TerminalLine.BRIGHT).build());
+        List<SchematicData.Step> steps = SchematicTerminalService.steps(context.server(), context.network(), job);
+        if (steps.isEmpty()) {
+            out.line(TerminalLine.of(Component.literal(ElclMessage.of("ELC2503", shown).text()), TerminalLine.DIM));
+        }
+        for (int i = 0; i < steps.size(); i++) {
+            SchematicData.Step step = steps.get(i);
+            boolean last = i == steps.size() - 1;
+            String state = Component.translatable("crt.encodedlogistics.step." + SchematicTerminalService.stateSpecial(step.state()).substring(1)
+                    .toLowerCase(Locale.ROOT)).getString();
+            out.line(TerminalLine.builder().text(last ? "  `- " : "  |- ").left(step.item().getHoverName().getString() + " x" + step.amount(), 31)
+                    .left(state, 10).right(step.done() + "/" + step.total(), 12)
+                    .attr(step.state() == SchematicData.STEP_STALLED ? TerminalLine.BRIGHT : TerminalLine.NORMAL).build());
+            if (!step.reason().isEmpty()) {
+                out.line(TerminalLine.builder().text(last ? "       " : "  |    ").text(Component.translatable("gui.encodedlogistics.jobs.reason." + step.reason()))
+                        .attr(TerminalLine.BRIGHT).build());
+            }
+        }
+        return out;
     }
 
     // --- Devices ---

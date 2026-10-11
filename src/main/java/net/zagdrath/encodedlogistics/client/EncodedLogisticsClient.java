@@ -61,6 +61,7 @@ import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
 import net.zagdrath.encodedlogistics.client.rack.WirelessHud;
 import net.zagdrath.encodedlogistics.client.screen.AccessTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CapacitorBankScreen;
+import net.zagdrath.encodedlogistics.client.screen.SchematicTerminalScreen;
 import net.zagdrath.encodedlogistics.client.screen.CollectorPlaneScreen;
 import net.zagdrath.encodedlogistics.client.screen.DeployerPlaneScreen;
 import net.zagdrath.encodedlogistics.client.screen.DisplayPanelScreen;
@@ -137,6 +138,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.FABRICATION_TERMINAL.get(), FabricationTerminalScreen::new);
         event.register(ModMenuTypes.RACK_CONSOLE.get(), AccessTerminalScreen::new);
         event.register(ModMenuTypes.RACK_CONSOLE_FABRICATION.get(), FabricationTerminalScreen::new);
+        event.register(ModMenuTypes.SCHEMATIC_TERMINAL.get(), SchematicTerminalScreen::new);
         event.register(ModMenuTypes.PORT.get(), PortScreen::new);
         event.register(ModMenuTypes.INVENTORY_TAP.get(), InventoryTapScreen::new);
         event.register(ModMenuTypes.THRESHOLD_SENSOR.get(), ThresholdSensorScreen::new);

@@ -1,0 +1,110 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "tex": "encodedlogistics:block/rack_device/rack_fabrication_console",
+  "parts": "encodedlogistics:block/rack_device/rack_console_parts",
+  "screen": "encodedlogistics:block/rack_device/rack_console_screen_fab",
+  "particle": "encodedlogistics:block/rack_device/rack_fabrication_console"
+ },
+ "elements": [
+  {
+   "name": "lid",
+   "from": [
+    3,
+    0.5,
+    6.5
+   ],
+   "to": [
+    13,
+    0.75,
+    13.5
+   ],
+   "faces": {
+    "up": {
+     "texture": "#parts",
+     "uv": [
+      7.75,
+      1.25,
+      12.75,
+      4.75
+     ]
+    },
+    "down": {
+     "texture": "#parts",
+     "uv": [
+      0.75,
+      7.75,
+      5.75,
+      11.25
+     ]
+    },
+    "north": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    },
+    "east": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    },
+    "west": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    },
+    "south": {
+     "texture": "#parts",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      0.125
+     ]
+    }
+   }
+  },
+  {
+   "name": "screen",
+   "from": [
+    3.5,
+    0.49,
+    7
+   ],
+   "to": [
+    12.5,
+    0.49,
+    13
+   ],
+   "faces": {
+    "down": {
+     "texture": "#screen",
+     "uv": [
+      0,
+      0,
+      9,
+      6
+     ]
+    }
+   },
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   },
+   "shade_direction_override": "up"
+  }
+ ]
+}

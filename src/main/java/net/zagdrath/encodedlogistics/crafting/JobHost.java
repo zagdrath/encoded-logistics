@@ -48,6 +48,16 @@ public interface JobHost {
     // A job's progress changed (saves it).
     void jobChanged();
 
+    // Holds a job (it starts no more steps; those running finish) or releases it; false when there's no such job or
+    // nothing changed.
+    default boolean holdJob(UUID id, boolean hold) {
+        return false;
+    }
+
+    default boolean isHeld(UUID id) {
+        return false;
+    }
+
     // The job host at pos, if it's loaded.
     static @Nullable JobHost at(ServerLevel level, BlockPos pos) {
         if (!level.isLoaded(pos)) {

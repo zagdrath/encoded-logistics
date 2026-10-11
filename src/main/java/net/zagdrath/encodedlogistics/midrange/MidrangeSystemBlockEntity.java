@@ -404,7 +404,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
                     job -> {
                         ControllerStructures.jobFinished(server, network);
                         JobEvents.ended(server, network, this, job, JobEvents.Outcome.COMPLETED, "");
-                    })) {
+                    }, job -> JobEvents.stalled(server, network, job))) {
                 setChanged();
             }
         }
@@ -620,6 +620,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     }
 
     // 3=Hold / 6=Release a job: a held job doesn't start, a running one starts no more steps.
+    @Override
     public boolean holdJob(UUID id, boolean hold) {
         if (runner.setHeld(id, hold)) {
             setChanged();
@@ -630,6 +631,11 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
 
     public boolean jobHeld(UUID id) {
         return runner.isHeld(id);
+    }
+
+    @Override
+    public boolean isHeld(UUID id) {
+        return jobHeld(id);
     }
 
     // --- RecipeLibrarySource and DisketteDevice ---

@@ -21,7 +21,8 @@ import net.zagdrath.encodedlogistics.terminal.TerminalService;
 // WRKCRFJOB (Main Menu option 2; WRKJOB until the Terminal OS took that name for its Work with Job): the network's
 // crafting jobs, active and queued - Opt, Job, Item, Qty, Status (Active, Waiting, Recall), Progress (bar
 // and %), Scheduler - refreshed every two seconds. Options: 4=Cancel (Enter again, with no other option typed, to
-// confirm; F5 or any other option forgets it), 5=Display; several are done in turn, an unknown one put back.
+// confirm; F5 or any other option forgets it), 5=Display, 8=Display steps (the step tree: each step's state, and a
+// stalled step's reason); several are done in turn, an unknown one put back.
 //
 // F10 switches to the jobs that ended (the network's history, CraftLog) and back: Opt, Job, Item, Qty, Status (Done,
 // Failed, Cancelled), Ended, Duration, Requested by - newest first, F11 sorting by ended time, item or status, and
@@ -287,6 +288,7 @@ final class JobsPanel extends ListPanel<TerminalLine> {
             switch (option.option().trim()) {
                 case "4" -> cancel.add(job);
                 case "5" -> then(() -> screen.push(new TextPanel(screen, "DSPJOB", tr("crt.encodedlogistics.job.title"), "job " + job)));
+                case "8" -> then(() -> screen.push(new TextPanel(screen, "DSPJOBSTP", tr("crt.encodedlogistics.job.steps_title"), "jobsteps " + job)));
                 default -> {
                     pending.clear();
                     return invalid(option);

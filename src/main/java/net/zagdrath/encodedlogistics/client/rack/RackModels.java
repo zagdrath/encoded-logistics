@@ -27,12 +27,12 @@ public final class RackModels {
     public static final Identifier DOOR_FRONT = EncodedLogistics.id("block/rack/rack_door_front");
     public static final Identifier DOOR_REAR_LEFT = EncodedLogistics.id("block/rack/rack_door_rear_left");
     public static final Identifier DOOR_REAR_RIGHT = EncodedLogistics.id("block/rack/rack_door_rear_right");
-    public static final Identifier CONSOLE_DRAWER = EncodedLogistics.id("block/rack_device/rack_console_drawer"),
-            CONSOLE_DRAWER_ON = EncodedLogistics.id("block/rack_device/rack_console_drawer_on"),
-            CONSOLE_DRAWER_FAULT = EncodedLogistics.id("block/rack_device/rack_console_drawer_fault"),
-            CONSOLE_KEYBOARD = EncodedLogistics.id("block/rack_device/rack_console_keyboard"),
-            CONSOLE_LID = EncodedLogistics.id("block/rack_device/rack_console_lid"), CONSOLE_LID_ON = EncodedLogistics.id("block/rack_device/rack_console_lid_on"),
-            CONSOLE_LID_FAB = EncodedLogistics.id("block/rack_device/rack_console_lid_fab");
+    // A console's moving parts, each console type its own set: <type>_drawer (_on, _fault), _keyboard, _lid (_on).
+    public static final List<String> CONSOLE_PARTS = List.of("drawer", "drawer_on", "drawer_fault", "keyboard", "lid", "lid_on");
+
+    public static Identifier consolePart(RackDeviceType type, String part) {
+        return type.id().withPath("block/rack_device/" + type.id().getPath() + "_" + part);
+    }
 
     private static final Map<Identifier, StandaloneModelKey<BlockStateModelPart>> KEYS = new HashMap<>();
 
@@ -42,8 +42,12 @@ public final class RackModels {
         register(event, DOOR_FRONT);
         register(event, DOOR_REAR_LEFT);
         register(event, DOOR_REAR_RIGHT);
-        for (Identifier part : List.of(CONSOLE_DRAWER, CONSOLE_DRAWER_ON, CONSOLE_DRAWER_FAULT, CONSOLE_KEYBOARD, CONSOLE_LID, CONSOLE_LID_ON, CONSOLE_LID_FAB)) {
-            register(event, part);
+        for (RackDeviceType type : RackDeviceType.all()) {
+            if (type.isConsole()) {
+                for (String part : CONSOLE_PARTS) {
+                    register(event, consolePart(type, part));
+                }
+            }
         }
         for (RackDeviceType type : RackDeviceType.all()) {
             for (RackDeviceInfo.Status status : RackDeviceInfo.Status.values()) {

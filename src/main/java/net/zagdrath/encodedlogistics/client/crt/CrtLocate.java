@@ -36,7 +36,7 @@ public final class CrtLocate {
     private CrtLocate() {}
 
     // "minX minY minZ maxX maxY maxZ dimension", as the server says where it is.
-    static void locate(String where) {
+    public static void locate(String where) {
         String[] parts = where.trim().split(" ");
         if (parts.length < 7) {
             return;

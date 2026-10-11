@@ -94,6 +94,13 @@ public final class JobEvents {
         }
     }
 
+    // A running job stalled (JobRunner): the *CRFSTALL trigger event.
+    public static void stalled(MinecraftServer server, @Nullable NetworkRef network, CraftingJob job) {
+        if (network != null) {
+            net.zagdrath.encodedlogistics.elcl.exec.ElclEvents.craftStalled(server, network, job);
+        }
+    }
+
     private static void notify(Notice notice) {
         List.copyOf(LISTENERS).forEach(listener -> listener.accept(notice));
     }

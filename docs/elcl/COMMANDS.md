@@ -76,6 +76,15 @@ have aged out), and `RTVCRFLOG` returns their IDs, newest first, filtered by ite
 | `RTVCRFSTS` | `CRFJOB`(P1, Req) `RTNSTS`(*CHAR: `*QUEUED\|*ACTIVE\|*DONE\|*FAILED\|*CANCELLED`) `RTNPCT`(*DEC) | view | ELC1404 |
 | `RTVCRFLOG` | `ITEM(*ALL\|item)` `STATUS(*ALL\|*DONE\|*FAILED\|*CANCELLED)` `MAX(*NOMAX\|1-999)` `RTNLST`(*LIST, Req) | view | ELC1201 |
 | `ENDCRAFT` | `CRFJOB`(P1, Req) | craft | ELC1404 |
+| `RTVSCHLST` **[EXT]** | `RTNLIST`(*LIST, Req) `HOLDER(*ALL\|name)` `RTNCOUNT`(*INT) | view | ELC2501 |
+| `RTVCRFSTP` **[EXT]** | `JOB`(P1, Req) `RTNLIST`(*LIST, Req) `RTNSTALL`(*CHAR) | view | ELC2502, ELC2503 |
+
+`RTVSCHLST` returns what the network's schematic holders make (Fabricators, Gateways, Fabrication Servers, Midrange
+Systems), each item ID once - all of them, or one holder's (`HOLDER`: its device name, or the start of the name the
+Schematic Terminal shows). `RTVCRFSTP` returns a running or queued job's steps as `'IRON_INGOT 4/4 *DONE'` (`*DONE`,
+`*ACTIVE`, `*WAITING`, `*STALLED`, `*MISSING`: nobody online holds the schematic) and, when the job is stalled (no
+progress for `jobStallSeconds`), why: `*TAPE`, `*NOMACHINE`, `*NOPOWER`, `*OUTPUTFULL`, `*BLOCKED`, `*INGREDIENTS` or
+`*UNKNOWN` (blank when it isn't stalled).
 
 ## 5. Devices
 
@@ -218,6 +227,8 @@ single-player, off on dedicated servers), `webAudioHosts` (a listed host allows 
 | `SAVLIB LIB() DEV()` / `RSTLIB LIB() DEV()` | 8" Diskette in a Midrange System or Card Reader. *(Implemented against `DisketteDevice`, docs/elcl/INTERFACES.md: ELC1301 no device, ELC1310 no diskette, ELC1311 too big; RSTLIB makes the library or replaces its members and programs)* *(Added: and its files with their records, and its members' types; the records count against the diskette's capacity)* | IB |
 | `WRKDEV` / `WRKINV` / `DSPNETSTS` | existing screens | I |
 | `WRKMCH` **[EXT]** | Work with Machines: 2=Change (`CHGMCHCFG`), 5=Display, 7=Enable/Disable (`CHGMCHSTS`) | I |
+| `WRKSCH` **[EXT]** | Work with Schematics, `HOLDER(*ALL\|name)`: each holder's schematics; 4=Remove (into the Terminal Desk drawer, ELC2504), 5=Display, 8=Locate | I |
+| `WRKCRFJOB` | Work with Crafting Jobs: 4=Cancel, 5=Display, 8=Display steps (the step tree, states, stall reasons) | I |
 | `SIGNOFF` | | I |
 
 **Display colours** (`COLOR`, `BG`): `*DFT`, a panel palette name (`*DARK *STEEL *GREY *SILVER *LIGHT *WHITE *NAVY
@@ -234,6 +245,7 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 | `*DEVFAULT` / `*DEVONLINE` / `*DEVOFFLINE` | `DEV` (or `*ANY`) | device name |
 | `*PWRUPS` / `*PWRRESTORED` | — | UPS charge % |
 | `*CRAFTEND` | `ITEM` (or `*ANY`) | craft job id and status |
+| `*CRFSTALL` **[EXT]** | `ITEM` (or `*ANY`): a crafting job of it stalls (no progress for `jobStallSeconds`) | craft job id, the stuck step's item and the reason, e.g. `C0042 TRANSCEIVER machine output full` |
 | `*RSCHANGE` | `DEV`, optional `VALUE` (side) | side and new level |
 | `*DSPTOUCH` **[EXT]** | `DEV` (or `*ANY`) | screen, region and canvas point, e.g. `DSP01 A 40 12` |
 | `*MCHIDLE` / `*MCHFAULT` / `*MCHNOPWR` **[EXT]** | `DEV` (or `*ANY`): an Arcforge machine goes idle, faults, runs short of power | machine name and the machine's words, e.g. `ARCCRU01 No power` |

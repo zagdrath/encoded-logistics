@@ -226,6 +226,10 @@ The commands on files:
 | ELC2410 | 30 | MIDI file &1 is format &2: only formats 0 and 1 play. | *(format 2)*
 | ELC2411 | 30 | Track &1 is not in MIDI file &2. | *(`PLYMID MAP` by track)*
 | ELC2412 | 30 | Channel &1 has no notes in MIDI file &2. | *(`PLYMID MAP` by channel)*
+| ELC2501 | 30 | Holder &1 not found. | *(`RTVSCHLST HOLDER`)*
+| ELC2502 | 30 | Crafting job &1 not found. | *(`RTVCRFSTP`: no running or queued job with that number)*
+| ELC2503 | 10 | Job &1 has no steps (not planned yet). | *(`RTVCRFSTP`, WRKCRFJOB 8=Display steps)*
+| ELC2504 | 00 | Schematic &1 moved to the drawer. | *(WRKSCH 4=Remove)*
 
 ## USRxxxx — User messages
 

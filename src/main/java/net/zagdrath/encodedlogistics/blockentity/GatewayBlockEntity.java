@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -48,6 +49,8 @@ import net.zagdrath.encodedlogistics.elcl.exec.NamedDevice;
 import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
 import net.zagdrath.encodedlogistics.item.SchematicItem;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
+import net.zagdrath.encodedlogistics.machine.MachineBridge;
+import net.zagdrath.encodedlogistics.machine.MachineInfo;
 import net.zagdrath.encodedlogistics.menu.GatewayMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
@@ -518,6 +521,105 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
             return null;
         }
         return level.getCapability(Capabilities.Item.BLOCK, pos, face);
+    }
+
+    // --- What it feeds (the Schematic Terminal, stall reasons) ---
+
+    // The machine it feeds, for its name: the first neighbour with an item handler, then the first bridged machine; "" for
+    // none.
+    public String machineName(ServerLevel level) {
+        for (Direction side : Direction.values()) {
+            if (neighbour(level, side) != null) {
+                return level.getBlockState(worldPosition.relative(side)).getBlock().getName().getString();
+            }
+        }
+        for (MachineBridge bridge : MachineBridges.gatewayMachines(level, worldPosition)) {
+            return bridge.shownName().getString();
+        }
+        return "";
+    }
+
+    // Whether its schematics can't run: no machine beside it or bridged to it, or one of a schematic's item inputs taken
+    // by none of them (a simulated insert).
+    public boolean machineProblem(ServerLevel level) {
+        List<ResourceHandler<ItemResource>> targets = new ArrayList<>();
+        for (Direction side : Direction.values()) {
+            ResourceHandler<ItemResource> target = neighbour(level, side);
+            if (target != null) {
+                targets.add(target);
+            }
+        }
+        targets.addAll(MachineBridges.gatewayTargets(level, worldPosition));
+        List<Schematic> held = schematics();
+        if (held.isEmpty()) {
+            return false;
+        }
+        if (targets.isEmpty() && MachineBridges.gatewayMachines(level, worldPosition).isEmpty()) {
+            return true;
+        }
+        for (Schematic schematic : held) {
+            for (Schematic.Input input : schematic.inputs()) {
+                ItemStack stack = input.item().create();
+                if (ResourceEntryItem.key(stack) != null) {
+                    continue;
+                }
+                boolean taken = false;
+                for (ResourceHandler<ItemResource> target : targets) {
+                    try (Transaction transaction = Transaction.openRoot()) {
+                        if (target.insert(ItemResource.of(stack), 1, transaction) > 0) {
+                            taken = true;
+                            break;
+                        }
+                    }
+                }
+                if (!taken) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Why a run (of that job, or any) isn't moving, as JobStalls names it: its bridged machine missing, unpowered or
+    // with its output blocked; no machine at all; or inputs it can't push. null when nothing's wrong that it can tell.
+    public @Nullable String stallReason(ServerLevel level, @Nullable UUID job) {
+        boolean pushing = false, any = false;
+        for (Run run : runs) {
+            if (job == null || run.task.job().equals(job)) {
+                any = true;
+                pushing |= !run.toPush.isEmpty();
+            }
+        }
+        if (!any && job != null) {
+            return null;
+        }
+        boolean neighbours = false;
+        for (Direction side : Direction.values()) {
+            neighbours |= neighbour(level, side) != null;
+        }
+        List<MachineBridge> bridges = MachineBridges.gatewayMachines(level, worldPosition);
+        if (!neighbours && bridges.isEmpty()) {
+            return "missing_machine";
+        }
+        for (MachineBridge bridge : bridges) {
+            MachineInfo info = bridge.info(level.getServer());
+            if (info == null) {
+                return "missing_machine";
+            }
+            switch (info.status()) {
+                case NO_POWER -> {
+                    return "unpowered";
+                }
+                case OUTPUT_BLOCKED -> {
+                    return "output_full";
+                }
+                case NOT_FORMED, FAULT -> {
+                    return "missing_machine";
+                }
+                default -> {}
+            }
+        }
+        return pushing ? "gateway_blocked" : null;
     }
 
     // --- Handler ---

@@ -1229,6 +1229,27 @@ public class ControllerStructures extends SavedData {
         return providers;
     }
 
+    // Every crafting provider of a network, online or not: its provider blocks (Fabricators, Gateways, Midrange Systems),
+    // then the rack devices serving it that are providers (Fabrication Servers). The Schematic Terminal's holders.
+    public static List<CraftingProvider> allProvidersOf(MinecraftServer server, @Nullable NetworkRef network) {
+        Owner owner = owner(server, network);
+        List<CraftingProvider> providers = new ArrayList<>();
+        if (owner == null) {
+            return providers;
+        }
+        for (NodePos pos : owner.runtime.providers) {
+            if (blockEntity(server, pos) instanceof CraftingProvider provider) {
+                providers.add(provider);
+            }
+        }
+        for (RackDevice device : rackDevicesServing(server, network)) {
+            if (device instanceof CraftingProvider provider) {
+                providers.add(provider);
+            }
+        }
+        return providers;
+    }
+
     // The online, formed Schedulers on the network a device at pos is on, then its racks' Rack Schedulers.
     public List<JobHost> schedulersAt(ServerLevel level, BlockPos device) {
         Owner owner = owner(level, device);

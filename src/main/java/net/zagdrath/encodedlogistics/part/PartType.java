@@ -37,7 +37,8 @@ public enum PartType implements StringRepresentable {
     THRESHOLD_SENSOR("threshold_sensor", "on", true, true, Boxes.SENSOR, ThresholdSensorPart::new),
     POINT_TO_POINT_LINK("point_to_point_link", "linked", false, true, Boxes.P2P, PointToPointPart::new),
     COLLECTOR_PLANE("collector_plane", "active", false, true, Boxes.PLANE, CollectorPlanePart::new),
-    DEPLOYER_PLANE("deployer_plane", "active", false, true, Boxes.PLANE, DeployerPlanePart::new);
+    DEPLOYER_PLANE("deployer_plane", "active", false, true, Boxes.PLANE, DeployerPlanePart::new),
+    SCHEMATIC_TERMINAL("schematic_terminal", "online", true, false, Boxes.TERMINAL, SchematicTerminalPart::new);
 
     public static final Codec<PartType> CODEC = StringRepresentable.fromEnum(PartType::values);
 
@@ -114,7 +115,7 @@ public enum PartType implements StringRepresentable {
     }
 
     public boolean isTerminal() {
-        return this == ACCESS_TERMINAL || this == FABRICATION_TERMINAL || this == SCHEMATIC_ENCODER;
+        return this == ACCESS_TERMINAL || this == FABRICATION_TERMINAL || this == SCHEMATIC_ENCODER || this == SCHEMATIC_TERMINAL;
     }
 
     public double[][] boxes() {

@@ -1,0 +1,13 @@
+{
+ "$comment": "12-px summary strip between the rows and the inventory (row.png's frame columns, panel fill).",
+ "texture": "gui/terminal/summary_section.png",
+ "height": 12,
+ "text": {
+  "summary": {
+   "left": 9,
+   "top": 2,
+   "color": "TEXT_MUTED",
+   "max_right": 171
+  }
+ }
+}

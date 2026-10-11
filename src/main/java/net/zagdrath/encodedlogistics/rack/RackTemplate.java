@@ -177,9 +177,9 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
                 return false;
             }
         }
-        if (type == RackDeviceType.RACK_CONSOLE) {
+        if (type.isConsole()) {
             for (Planned planned : devices) {
-                if (planned.u() != ignoreU && planned.deviceType() == RackDeviceType.RACK_CONSOLE && RackConsoleDevice.tooClose(u, planned.u())) {
+                if (planned.u() != ignoreU && planned.deviceType() != null && planned.deviceType().isConsole() && RackConsoleDevice.tooClose(u, planned.u())) {
                     return false;
                 }
             }
@@ -222,9 +222,9 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
             for (int unit = planned.u(); unit <= planned.top(); unit++) {
                 free &= !used[unit];
             }
-            if (type == RackDeviceType.RACK_CONSOLE) {
+            if (type.isConsole()) {
                 for (Planned other : kept) {
-                    free &= !(other.deviceType() == RackDeviceType.RACK_CONSOLE && RackConsoleDevice.tooClose(planned.u(), other.u()));
+                    free &= !(other.deviceType() != null && other.deviceType().isConsole() && RackConsoleDevice.tooClose(planned.u(), other.u()));
                 }
             }
             if (!free) {

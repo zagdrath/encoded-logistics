@@ -77,7 +77,8 @@ on the message line; a number not on the menu shows "Option n is not on this men
 | Option | Label | Command | Screen | Status | Data behind it |
 |---|---|---|---|---|---|
 | 1 | Work with Inventory | WRKINV | `InventoryPanel` | Available | the network's storage (real) |
-| 2 | Work with Jobs | WRKCRFJOB | `JobsPanel` | Available | crafting jobs (real); F10 the crafting job history (`CraftLog`) |
+| 2 | Work with Jobs | WRKCRFJOB | `JobsPanel` | Available | crafting jobs (real); 8=Display steps (`DSPJOBSTP`); F10 the crafting job history (`CraftLog`) |
+| - | Work with Schematics | WRKSCH | `SchematicsPanel` | Available | the network's schematic holders and their schematics; 4=Remove, 5=Display (`DSPSCH`), 8=Locate |
 | 3 | Work with Devices | WRKDEV | `DevicesPanel` | Available | the network's topology (real) |
 | 4 | Display Network Status | DSPNETSTS | `StatusPanel` | Available | the network's status (real) |
 | 5 | Work with Libraries | WRKLIB | `WrkLibPanel` | Available | `elcl.store.StoredLibraryService`: libraries, members and programs in the system's saved data |

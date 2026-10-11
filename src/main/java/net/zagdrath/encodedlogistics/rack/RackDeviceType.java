@@ -81,7 +81,12 @@ public final class RackDeviceType {
     public static final RackDeviceType SAN = register("san", 4, () -> ModItems.SAN.get(), SanDevice::new).frames(4).slots(sanSlots());
 
     // Batch 3: the console, wireless, tape.
+    // The three consoles: one drawer, each with its own terminal (RackConsoleDevice.Kind).
     public static final RackDeviceType RACK_CONSOLE = register("rack_console", 1, () -> ModItems.RACK_CONSOLE.get(), RackConsoleDevice::new).frames(4);
+    public static final RackDeviceType RACK_FABRICATION_CONSOLE = register("rack_fabrication_console", 1, () -> ModItems.RACK_FABRICATION_CONSOLE.get(),
+            RackConsoleDevice::new).frames(4);
+    public static final RackDeviceType RACK_SCHEMATIC_CONSOLE = register("rack_schematic_console", 1, () -> ModItems.RACK_SCHEMATIC_CONSOLE.get(),
+            RackConsoleDevice::new).frames(4);
     public static final RackDeviceType WIRELESS_CONTROLLER = register("wireless_controller", 1, () -> ModItems.WIRELESS_CONTROLLER.get(),
             WirelessControllerDevice::new).frames(4);
     public static final RackDeviceType TAPE_LIBRARY_4U = register("tape_library_4u", 4, () -> ModItems.TAPE_LIBRARY_4U.get(),
@@ -135,6 +140,11 @@ public final class RackDeviceType {
     RackDeviceType variants(Map<String, Integer> variants) {
         this.variants = Map.copyOf(variants);
         return this;
+    }
+
+    // A Rack Console of any kind (they share the drawer, its moving parts and the spacing rule).
+    public boolean isConsole() {
+        return this == RACK_CONSOLE || this == RACK_FABRICATION_CONSOLE || this == RACK_SCHEMATIC_CONSOLE;
     }
 
     // Its extra looks' suffixes and frame counts: models/block/rack_device/<id><suffix>.json, textures the same.

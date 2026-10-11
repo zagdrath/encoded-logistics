@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:fabrication_terminal",
+  "encodedlogistics:circuit_substrate",
+  "minecraft:iron_ingot"
+ ],
+ "result": {
+  "id": "encodedlogistics:rack_fabrication_console",
+  "count": 1
+ }
+}

@@ -18,8 +18,8 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
-// A Rack Console's terminal once a Memory Die has been applied (screens/rack_console_fabrication.json): the
-// Fabrication Terminal's, its crafting grid kept in the console. As RackConsoleMenu otherwise.
+// The Rack Fabrication Console's terminal (screens/rack_console_fabrication.json): the Fabrication Terminal's, its
+// crafting grid kept in the console. As RackConsoleMenu otherwise.
 public class RackConsoleFabricationMenu extends FabricationTerminalMenu {
     private final int u;
 

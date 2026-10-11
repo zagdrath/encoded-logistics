@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:access_terminal",
+  "encodedlogistics:schematic_card",
+  "encodedlogistics:memory_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:schematic_terminal",
+  "count": 1
+ }
+}

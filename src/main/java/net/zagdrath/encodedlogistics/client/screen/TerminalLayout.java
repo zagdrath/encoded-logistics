@@ -57,6 +57,8 @@ public final class TerminalLayout {
     // titleMaxRight: the title is cut short (with "...") before it reaches the search field.
     public final int titleLeft, titleTop, titleMaxRight, inventoryLeft, inventoryTopInBottom;
     public final JsonObject features;
+    // The whole merged layout, for a screen's own keys (the Schematic Terminal's tabs and row pieces).
+    public final JsonObject json;
     // A section between the item rows and the bottom piece (which is then the lip-less bottom_texture): the Fabrication
     // Terminal's crafting grid (sections.crafting), the Schematic Encoder's crafting and processing sections. Every
     // section of a terminal has the same height; the screen picks which one shows. sectionHeight 0 when there's none.
@@ -70,6 +72,7 @@ public final class TerminalLayout {
     public final Identifier clear, clearHover;
 
     private TerminalLayout(JsonObject json) {
+        this.json = json;
         JsonObject pieces = object(json, "pieces");
         width = integer(json, "width", 195);
         topHeight = integer(object(pieces, "top"), "height", 19);

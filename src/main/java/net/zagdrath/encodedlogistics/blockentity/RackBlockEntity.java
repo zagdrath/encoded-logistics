@@ -72,6 +72,7 @@ import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
+import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // The Server Rack's master block entity: the devices by the unit they sit at (bottom U), the doors, and the rack's place
 // on its network. It's one network device (RackNode), draining what its devices drain. Its lanes: each switch's uplink,
@@ -98,6 +99,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     // Linked segments, each found through a block on it (the one next to a Segment Isolator's end).
     private final List<GlobalPos> segments = new ArrayList<>();
     private final RackScheduler scheduler = new RackScheduler(this);
+    // Memory Dies owed for upgraded Rack Consoles converted on load, given back on the next tick.
+    private int migrationDies;
     private boolean frontOpen, rearOpen;
     private boolean online;
     // As last solved: which units got their lanes, and the rack's uplinks.
@@ -163,11 +166,11 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     // For a Rack Console at u: the installed console it would clip with when both are open (RackConsoleDevice.SPACING),
     // else null.
     public @Nullable RackDevice consoleInTheWay(int u, RackDeviceType type) {
-        if (type != RackDeviceType.RACK_CONSOLE) {
+        if (!type.isConsole()) {
             return null;
         }
         for (RackDevice device : devices.values()) {
-            if (device.type() == RackDeviceType.RACK_CONSOLE && RackConsoleDevice.tooClose(u, device.u())) {
+            if (device.type().isConsole() && RackConsoleDevice.tooClose(u, device.u())) {
                 return device;
             }
         }
@@ -787,6 +790,12 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
+        if (rack.migrationDies > 0) {
+            // The Memory Dies of consoles converted on load, back out of the rack.
+            Block.popResource(serverLevel, pos, new ItemStack(ModItems.MEMORY_DIE.get(), rack.migrationDies));
+            rack.migrationDies = 0;
+            rack.setChanged();
+        }
         rack.checkControllerStructure(serverLevel);
         rack.checkHome(serverLevel);
         rack.powerThisTick = 0;
@@ -870,10 +879,22 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         segments.clear();
         input.read("segments", GlobalPos.CODEC.listOf()).ifPresent(segments::addAll);
         devices.clear();
+        migrationDies = input.getIntOr("migration_dies", 0);
         for (ValueInput child : input.childrenListOrEmpty("devices")) {
-            RackDevice device = read(child);
-            if (device != null) {
-                device.load(child.childOrEmpty("data"));
+            RackDevice read = read(child);
+            if (read != null) {
+                read.load(child.childOrEmpty("data"));
+                // A Rack Console with the old Memory Die upgrade: a Rack Fabrication Console now, with its grid; the die
+                // comes back out of the rack (serverTick).
+                if (read instanceof RackConsoleDevice old && read.type() == RackDeviceType.RACK_CONSOLE
+                        && RackConsoleDevice.upgraded(child.childOrEmpty("data"))) {
+                    RackConsoleDevice converted = (RackConsoleDevice) RackDeviceType.RACK_FABRICATION_CONSOLE.create();
+                    converted.attach(this, old.u());
+                    converted.adoptUpgraded(old);
+                    read = converted;
+                    migrationDies++;
+                }
+                RackDevice device = read;
                 device.setSegment(child.getIntOr("segment", 0));
                 child.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
                 device.setDeviceName(child.getStringOr("device_name", ""));
@@ -923,6 +944,9 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         }
         if (!segments.isEmpty()) {
             output.store("segments", GlobalPos.CODEC.listOf(), segments);
+        }
+        if (migrationDies > 0) {
+            output.putInt("migration_dies", migrationDies);
         }
         scheduler.save(output);
     }

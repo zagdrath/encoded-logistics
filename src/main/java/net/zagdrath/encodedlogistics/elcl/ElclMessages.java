@@ -202,6 +202,11 @@ public final class ElclMessages {
         define("ELC2410", SEVERE, "MIDI file &1 is format &2: only formats 0 and 1 play.");
         define("ELC2411", SEVERE, "Track &1 is not in MIDI file &2.");
         define("ELC2412", SEVERE, "Channel &1 has no notes in MIDI file &2.");
+        // Schematics and crafting steps (the Schematic Terminal handoff): RTVSCHLST, RTVCRFSTP, WRKSCH.
+        define("ELC2501", SEVERE, "Holder &1 not found.");
+        define("ELC2502", SEVERE, "Crafting job &1 not found.");
+        define("ELC2503", WARNING, "Job &1 has no steps (not planned yet).");
+        define("ELC2504", INFO, "Schematic &1 moved to the drawer.");
     }
 
     public static Map<String, Definition> all() {
