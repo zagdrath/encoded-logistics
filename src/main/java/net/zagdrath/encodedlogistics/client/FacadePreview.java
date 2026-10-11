@@ -62,7 +62,7 @@ public final class FacadePreview {
             poseStack.pushPose();
             poseStack.translate(pos.getX() - camera.x, pos.getY() - camera.y, pos.getZ() - camera.z);
             collector.submitCustomGeometry(poseStack, RenderTypes.debugQuads(), (pose, buffer) -> box(buffer, pose.pose(), box, fill));
-            collector.submitShapeOutline(poseStack, Shapes.create(box), RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
+            collector.submitShapeOutline(poseStack, Shapes.create(box), OutlineRenderTypes.translucentLines(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
             poseStack.popPose();
             // The cable's own outline still shows.
             return false;

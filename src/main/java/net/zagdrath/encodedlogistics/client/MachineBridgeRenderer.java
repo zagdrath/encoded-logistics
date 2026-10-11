@@ -54,7 +54,7 @@ public final class MachineBridgeRenderer {
             poseStack.pushPose();
             poseStack.translate(hovered.minX - camera.x, hovered.minY - camera.y, hovered.minZ - camera.z);
             event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.create(0, 0, 0, hovered.getXsize(), hovered.getYsize(), hovered.getZsize()),
-                    RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
+                    OutlineRenderTypes.translucentLines(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
             poseStack.popPose();
         }
         for (MachineBridgesPayload.Entry entry : MachineBridgesPayload.shown().values()) {

@@ -18,6 +18,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+import net.zagdrath.encodedlogistics.client.OutlineRenderTypes;
 
 // Work with Devices' 8=Locate: a box (the rack's hover outline's mint) blinking around the device for ten seconds - a rack device's own units, or
 // the device's block (in the player's dimension).
@@ -72,7 +73,7 @@ public final class CrtLocate {
         poseStack.pushPose();
         poseStack.translate(box.minX - camera.x, box.minY - camera.y, box.minZ - camera.z);
         event.getSubmitNodeCollector().submitShapeOutline(poseStack, Shapes.create(0, 0, 0, box.getXsize(), box.getYsize(), box.getZsize()),
-                RenderTypes.linesTranslucent(), COLOR, WIDTH, false);
+                OutlineRenderTypes.translucentLines(), COLOR, WIDTH, false);
         poseStack.popPose();
     }
 }

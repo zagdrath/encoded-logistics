@@ -36,6 +36,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.zagdrath.encodedlogistics.client.OutlineRenderTypes;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
@@ -138,7 +139,7 @@ public final class RackHud {
                 Vec3 camera = levelState.cameraRenderState.pos;
                 poseStack.pushPose();
                 poseStack.translate(master.getX() - camera.x, master.getY() - camera.y, master.getZ() - camera.z);
-                collector.submitShapeOutline(poseStack, shape, RenderTypes.linesTranslucent(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
+                collector.submitShapeOutline(poseStack, shape, OutlineRenderTypes.translucentLines(), OUTLINE_COLOR, OUTLINE_WIDTH, false);
                 poseStack.popPose();
             }
             return true;

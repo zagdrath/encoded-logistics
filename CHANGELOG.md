@@ -85,6 +85,9 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Fixed
 
+- The game crashed with Graphics set to Fabulous when aiming at a Server Rack's devices through its open doors ("Render
+  type lines_translucent does not have OIT pipelines set up"). The rack's unit outline, the facade preview, located
+  devices and Small Wireless Bridge targets now draw their outlines with the line type vanilla uses on Fabulous.
 - Display Panels had no back round their back plate, so you could see into them from behind, and their bezels
   overlapped at the corners and flickered. The back is closed and the bezels meet at corner pieces.
 - PLCs had no back on their backplate, DIN rail, CPU or modules, so you could see through them from behind.
