@@ -67,11 +67,20 @@ public final class TerminalSettings {
     private static final ModConfigSpec.BooleanValue NEVER_PLAY_WEB_AUDIO = BUILDER.pop().push("audio")
             .comment("Never play web audio from Speakers. Playing it means this game fetches the URL itself, which shows your IP address to whoever hosts it.")
             .define("neverPlayWebAudio", false);
+    // UPSes: their alarms are played by the server (upsAlarms in the server's config turns them off for everyone); this
+    // silences them for this player only, on any server.
+    private static final ModConfigSpec.BooleanValue UPS_ALARM_SOUNDS = BUILDER
+            .comment("Hear UPS alarms (the beeps on battery, the rapid low-battery beep, and the beep when power's back). Off silences every UPS for you only.")
+            .define("upsAlarmSounds", true);
 
     public static final ModConfigSpec SPEC = BUILDER.pop().build();
 
     public static boolean neverPlayWebAudio() {
         return SPEC.isLoaded() ? NEVER_PLAY_WEB_AUDIO.get() : NEVER_PLAY_WEB_AUDIO.getDefault();
+    }
+
+    public static boolean upsAlarmSounds() {
+        return SPEC.isLoaded() ? UPS_ALARM_SOUNDS.get() : UPS_ALARM_SOUNDS.getDefault();
     }
 
     private TerminalSettings() {}

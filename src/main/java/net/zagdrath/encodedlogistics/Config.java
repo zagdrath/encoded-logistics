@@ -375,7 +375,7 @@ public class Config {
             .defineInRange("upsLowBatteryPercent", 20, 0, 100);
 
     public static final ModConfigSpec.BooleanValue UPS_ALARMS = BUILDER
-            .comment("Whether UPSes sound their alarms on battery.")
+            .comment("Whether UPSes sound their alarms on battery, for every player. (Each player can also turn them off for themselves: upsAlarmSounds in their client config.)")
             .define("upsAlarms", true);
 
     public static final ModConfigSpec.IntValue RACK_CONTROLLER_2U_ENERGY_BLOCKS = BUILDER

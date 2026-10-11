@@ -31,6 +31,7 @@ import net.neoforged.neoforge.client.event.RegisterItemModelsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
+import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -91,6 +92,7 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
+import net.zagdrath.encodedlogistics.registry.ModSounds;
 
 // This class will not load on dedicated servers. Accessing client side code from here is safe.
 @Mod(value = EncodedLogistics.MODID, dist = Dist.CLIENT)
@@ -109,6 +111,19 @@ public class EncodedLogisticsClient {
         // The Server Rack's elevation: as many rows as fit the window, up to MAX_ROWS (it scrolls).
         RackMenu.clientRows = () -> Math.clamp(RackMenu.ROWS + (Minecraft.getInstance().getWindow().getGuiScaledHeight() - 8
                 - RackMenu.TOP_HEIGHT - RackMenu.INVENTORY_HEIGHT) / RackMenu.ROW_H, RackMenu.ROWS, RackMenu.MAX_ROWS);
+    }
+
+    // A UPS's alarm, beep and low-battery beep, dropped as they reach this client while the player has turned them off
+    // (upsAlarmSounds in encodedlogistics-client.toml). The server's upsAlarms only stops them for everyone at once.
+    @SubscribeEvent
+    static void silenceUpsAlarms(PlaySoundEvent event) {
+        if (event.getSound() == null || TerminalSettings.upsAlarmSounds()) {
+            return;
+        }
+        Identifier id = event.getSound().getIdentifier();
+        if (ModSounds.UPS_ALARM.is(id) || ModSounds.UPS_ALARM_LOW.is(id) || ModSounds.UPS_BEEP.is(id)) {
+            event.setSound(null);
+        }
     }
 
     @SubscribeEvent

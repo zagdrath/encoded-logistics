@@ -27,6 +27,10 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 - The Server Rack screen drew a NAS's or SAN's drive sleds squeezed into the left of their bays (a full SAN looked
   like 9 drives a row with 3 empty bays); they now sit in their bays as the rack in the world shows them.
+- Turning off UPS alarms in your own config did nothing on a server, since only the server's `upsAlarms` was
+  checked. A new client option, *Hear UPS Alarms* (`upsAlarmSounds` in `encodedlogistics-client.toml`, under
+  Sounds), silences every UPS's alarm and beeps for you alone. The server's `upsAlarms` still turns them off for
+  everyone.
 
 ## [1.0.1] - 2026-10-07
 

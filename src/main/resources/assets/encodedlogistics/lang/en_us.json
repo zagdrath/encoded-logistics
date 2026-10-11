@@ -2139,6 +2139,7 @@
   "encodedlogistics.configuration.audioMaxSeconds": "Audio Max Length (s)",
   "encodedlogistics.configuration.allowWebAudio": "Allow Web Audio",
   "encodedlogistics.configuration.webAudioHosts": "Web Audio Hosts",
-  "encodedlogistics.configuration.audio": "Speakers",
-  "encodedlogistics.configuration.neverPlayWebAudio": "Never Play Web Audio"
+  "encodedlogistics.configuration.audio": "Sounds",
+  "encodedlogistics.configuration.neverPlayWebAudio": "Never Play Web Audio",
+  "encodedlogistics.configuration.upsAlarmSounds": "Hear UPS Alarms"
 }
