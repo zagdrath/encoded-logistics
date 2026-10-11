@@ -234,6 +234,8 @@ public class RackElevationScreen extends Screen {
         view.background(graphics, left, top);
         int sx = sideX();
         graphics.blit(RenderPipelines.GUI_TEXTURED, SIDE, sx, top, 0.0F, 0.0F, SIDE_W, HEIGHT, 256, 256);
+        bottomEdge(graphics, left, RackElevationView.WIDTH);
+        bottomEdge(graphics, sx, SIDE_W);
         extractElevation(graphics, mouseX, mouseY);
         Component heading = template.name().isEmpty() ? title : title.copy().append("  ").append(template.name());
         graphics.text(font, heading, left + 8, top + 5, TEXT, false);
@@ -247,6 +249,15 @@ public class RackElevationScreen extends Screen {
         } else {
             extractSide(graphics, mouseX, mouseY, sx);
         }
+    }
+
+    // A panel's bottom edge, shaded like its right one: the textures are the rack screen's top half, open at the bottom
+    // where its inventory joins on, but here each panel stands alone.
+    private void bottomEdge(GuiGraphicsExtractor graphics, int x, int w) {
+        int bottom = top + HEIGHT;
+        graphics.fill(x + 2, bottom - 3, x + w - 2, bottom - 2, 0xFF363636);
+        graphics.fill(x + 1, bottom - 2, x + w - 1, bottom - 1, 0xFF262626);
+        graphics.fill(x, bottom - 1, x + w, bottom, 0xFF141414);
     }
 
     // The ghosts, the selected unit and the drag's drop target, clipped to the rows.
