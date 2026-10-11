@@ -93,6 +93,7 @@ import net.zagdrath.encodedlogistics.rack.device.TapeLibraryDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.signal.SignalBlockEntity;
+import net.zagdrath.encodedlogistics.storage.DriveCopies;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.DriveView;
@@ -863,7 +864,7 @@ public class ControllerStructures extends SavedData {
         for (NodePos pos : runtime.driveBays) {
             if (blockEntity(server, pos) instanceof DriveHolder bay) {
                 for (int slot = 0; slot < bay.driveSlots(); slot++) {
-                    ItemStack stack = bay.drive(slot);
+                    ItemStack stack = mounted(server, bay, slot);
                     if (stack != null && EnergyDrives.is(stack) && seen.add(StorageDriveItem.id(stack))) {
                         int changed = slot;
                         cells.add(new EnergyDrives.Cell(stack, () -> bay.driveChanged(changed)));
@@ -873,7 +874,7 @@ public class ControllerStructures extends SavedData {
         }
         for (RackDevice device : rackDevicesServing(server, ref)) {
             if (device instanceof StorageDevice storage) {
-                cells.addAll(storage.energyCells(seen));
+                cells.addAll(storage.energyCells(server, seen));
             }
         }
         for (EnergyDrives.Cell cell : cells) {
@@ -1073,6 +1074,16 @@ public class ControllerStructures extends SavedData {
 
     // A network's own storage: its online Drive Bays' and Disk Drives' drives, its online Inventory Taps' inventories, its
     // rack storage devices; and its Tape Libraries and Tape Drives.
+    // A holder's drive as the network reads it, mounted there: a copy of a drive mounted elsewhere (one in a copied Drive
+    // Bay) gets its own id first (DriveCopies), and the holder saves it.
+    private static @Nullable ItemStack mounted(MinecraftServer server, DriveHolder holder, int slot) {
+        ItemStack stack = holder.drive(slot);
+        if (stack != null && DriveCopies.mount(server, stack, holder, slot)) {
+            holder.driveChanged(slot);
+        }
+        return stack;
+    }
+
     private static void views(MinecraftServer server, Owner owner, Set<UUID> seen, List<StorageView> views, List<TapeSource> libraries) {
         DriveStorage drives = DriveStorage.get(server);
         for (NodePos pos : owner.runtime.driveBays) {
@@ -1081,7 +1092,7 @@ public class ControllerStructures extends SavedData {
             }
             if (owner.runtime.online.contains(pos) && blockEntity(server, pos) instanceof DriveHolder bay) {
                 for (int slot = 0; slot < bay.driveSlots(); slot++) {
-                    ItemStack stack = bay.drive(slot);
+                    ItemStack stack = mounted(server, bay, slot);
                     if (stack != null && stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY
                             && seen.add(StorageDriveItem.id(stack))) {
                         views.add(new DriveView(drives, bay, slot, StorageDriveItem.id(stack), drive.getTier(), drive.getType()));

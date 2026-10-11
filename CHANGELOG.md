@@ -23,7 +23,17 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Changed
+
+- New Storage Drives of every type (item, fluid, pressurized and energy) stack to 64, as cells do in AE2. A drive
+  that has been in a holder is one of a kind and stacks to 1, until it is empty again in your inventory: then it
+  goes back to a new drive and stacks with the others.
+
 ### Fixed
+
+- A copied Storage Drive (a creative middle-click, or Ctrl+pick-block of a Drive Bay, NAS or SAN with drives in)
+  shared its original's contents: taking items out of one took them out of both, and a network with both counted
+  them once. A copy now becomes a drive of its own, holding a copy of what the original had.
 
 - The Server Rack screen drew a NAS's or SAN's drive sleds squeezed into the left of their bays (a full SAN looked
   like 9 drives a row with 3 empty bays); they now sit in their bays as the rack in the world shows them.

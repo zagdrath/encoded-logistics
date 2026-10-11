@@ -10,8 +10,8 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.world.item.ItemStack;
 
 // A block holding Storage Drives that are its network's hot storage, a slot each (DriveView): a Drive Bay's ten, a Disk
-// Drive's one.
-public interface DriveHolder {
+// Drive's one. Its drives are mounted there (DriveCopies.Mount: mountedDrive is the slot's drive while the block is there).
+public interface DriveHolder extends DriveCopies.Mount {
     int driveSlots();
 
     // The drive in a slot when it can be read now (it has its id), else null.

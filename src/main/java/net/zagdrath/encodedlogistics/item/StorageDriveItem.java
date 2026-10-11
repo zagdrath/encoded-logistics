@@ -10,9 +10,13 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
+import net.zagdrath.encodedlogistics.storage.DriveCopies;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.EnergyDrives;
@@ -25,6 +29,9 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // An item, fluid or pressurized drive's contents are kept in DriveStorage under its drive_id; the item carries only that
 // id and a cache of its fill (drive_stats). Works once it's in a Drive Bay on a network. An Energy Storage Drive keeps
 // its FE on the item itself (drive_energy, EnergyDrives), so it holds its charge out of a holder.
+//
+// New drives stack to 64. A drive with an id stacks to 1 (it's one of a kind), until it's empty again in a player's
+// inventory and goes back to blank; a copy of one gets an id and contents of its own (DriveCopies).
 public class StorageDriveItem extends Item {
     private final StorageTier tier;
     private final ResourceType type;
@@ -55,17 +62,15 @@ public class StorageDriveItem extends Item {
         return stack.getItem() instanceof StorageDriveItem drive ? drive.type : ResourceType.ITEM;
     }
 
-    // A drive in a holder: its id (given the first time), and its fill cached on it (not for an Energy Storage Drive,
-    // whose charge is on the item already). Returns its id, or null for anything but a drive.
-    public static @Nullable UUID refresh(MinecraftServer server, ItemStack stack) {
+    // A drive in a holder's slot: its id (given the first time, or a new one for a copy of a drive mounted elsewhere:
+    // DriveCopies.mount), and its fill cached on it (not for an Energy Storage Drive, whose charge is on the item
+    // already). Returns its id, or null for anything but a drive.
+    public static @Nullable UUID refresh(MinecraftServer server, ItemStack stack, DriveCopies.Mount holder, int slot) {
         if (!(stack.getItem() instanceof StorageDriveItem drive)) {
             return null;
         }
+        DriveCopies.mount(server, stack, holder, slot);
         UUID id = id(stack);
-        if (id == null) {
-            id = UUID.randomUUID();
-            stack.set(ModDataComponents.DRIVE_ID.get(), id);
-        }
         if (drive.type != ResourceType.ENERGY) {
             DriveStats stats = DriveStorage.get(server).stats(id, drive.tier, drive.type);
             if (!stats.equals(stack.get(ModDataComponents.DRIVE_STATS.get()))) {
@@ -73,6 +78,12 @@ public class StorageDriveItem extends Item {
             }
         }
         return id;
+    }
+
+    // In a player's inventory: back to blank once it's empty, so it stacks with new drives.
+    @Override
+    public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
+        DriveCopies.clearIfEmpty(level.getServer(), stack);
     }
 
     // What a holder's model draws for a drive (Drive Bay sleds, NAS / SAN bays): type * 64 + tier * 8 + light, the light

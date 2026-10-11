@@ -168,6 +168,20 @@ public class DriveStorage extends SavedData {
         return Math.max(0, free * type.unitsPerByte() - total);
     }
 
+    // A copy of a drive's contents (and when each type was last touched) under a new id: a copied drive (DriveCopies).
+    public void copy(UUID from, UUID to) {
+        Map<StorageKey, Long> items = drives.get(from);
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        drives.put(to, new LinkedHashMap<>(items));
+        Map<StorageKey, Long> times = touched.get(from);
+        if (times != null) {
+            touched.put(to, new HashMap<>(times));
+        }
+        setDirty();
+    }
+
     // Takes up to amount of an item out of a drive; returns how many it had.
     public long extract(UUID drive, StorageKey key, long amount, boolean simulate) {
         Map<StorageKey, Long> items = drives.get(drive);

@@ -168,7 +168,12 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
     }
 
     private void refreshDrive(ServerLevel level, int slot) {
-        StorageDriveItem.refresh(level.getServer(), items.get(slot));
+        StorageDriveItem.refresh(level.getServer(), items.get(slot), this, slot);
+    }
+
+    @Override
+    public @Nullable ItemStack mountedDrive(int slot) {
+        return isRemoved() || slot < 0 || slot >= SLOTS ? null : items.get(slot);
     }
 
     // The drive in a slot as the network uses it, or null when the slot is empty.

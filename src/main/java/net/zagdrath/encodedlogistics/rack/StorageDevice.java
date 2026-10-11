@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -22,8 +24,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
-import net.zagdrath.encodedlogistics.registry.ModDataComponents;
+import net.zagdrath.encodedlogistics.storage.DriveCopies;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.EnergyDrives;
@@ -36,7 +39,7 @@ import net.zagdrath.encodedlogistics.storage.StorageView;
 // with a priority (-999..999) and an access mode (read-write, read-only, write-only) as an Inventory Tap has. A drive
 // gets its id the first time it goes in; its stats (the item's tooltip, the bay's fill light) are refreshed whenever the
 // network changes it. The first drives() item slots hold the drives.
-public abstract class StorageDevice extends RackDevice {
+public abstract class StorageDevice extends RackDevice implements DriveCopies.Mount {
     public static final int READ_WRITE = 0, READ = 1, WRITE = 2, MIN_PRIORITY = -999, MAX_PRIORITY = 999;
     public static final int ACTION_SET_PRIORITY = 0, ACTION_STEP_PRIORITY = 1, ACTION_CYCLE_ACCESS = 2;
     public static final int LIGHT_OFF = 4;
@@ -94,8 +97,8 @@ public abstract class StorageDevice extends RackDevice {
         return views(server, new HashSet<>());
     }
 
-    // Its drives as storage, skipping drives whose id is in seen (and adding the rest): a copied drive (creative
-    // pick-block) shares its id, and so its contents, with the original, so each id counts once on a network.
+    // Its drives as storage, skipping drives whose id is in seen (and adding the rest). A copied drive gets its own id
+    // when it's mounted (DriveCopies), so seen only guards against two drives with one id slipping through.
     public List<StorageView> views(MinecraftServer server, Set<UUID> seen) {
         List<StorageView> views = new ArrayList<>();
         if (!ready()) {
@@ -105,7 +108,7 @@ public abstract class StorageDevice extends RackDevice {
         for (int slot = 0; slot < drives(); slot++) {
             ItemStack stack = items().get(slot);
             if (stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY) {
-                UUID id = assignId(stack);
+                UUID id = assignId(server, stack, slot);
                 if (seen.add(id)) {
                     views.add(new DriveView(data, slot, id, drive.getTier(), drive.getType()));
                 }
@@ -115,14 +118,14 @@ public abstract class StorageDevice extends RackDevice {
     }
 
     // Its Energy Storage Drives, as part of its network's energy pool (when it's ready), skipping ids in seen.
-    public List<EnergyDrives.Cell> energyCells(Set<UUID> seen) {
+    public List<EnergyDrives.Cell> energyCells(MinecraftServer server, Set<UUID> seen) {
         List<EnergyDrives.Cell> cells = new ArrayList<>();
         if (!ready()) {
             return cells;
         }
         for (int slot = 0; slot < drives(); slot++) {
             ItemStack stack = items().get(slot);
-            if (EnergyDrives.is(stack) && seen.add(assignId(stack))) {
+            if (EnergyDrives.is(stack) && seen.add(assignId(server, stack, slot))) {
                 int changed = slot;
                 cells.add(new EnergyDrives.Cell(stack, () -> driveChanged(changed)));
             }
@@ -130,18 +133,24 @@ public abstract class StorageDevice extends RackDevice {
         return cells;
     }
 
-    private static UUID assignId(ItemStack stack) {
-        UUID id = StorageDriveItem.id(stack);
-        if (id == null) {
-            id = UUID.randomUUID();
-            stack.set(ModDataComponents.DRIVE_ID.get(), id);
+    // A drive's id, mounted here (a copy of a drive mounted elsewhere gets its own, and is saved with it).
+    private UUID assignId(MinecraftServer server, ItemStack stack, int slot) {
+        if (DriveCopies.mount(server, stack, this, slot)) {
+            saveOnly();
         }
-        return id;
+        return StorageDriveItem.id(stack);
     }
 
     // A drive's stats, refreshed from DriveStorage.
     private void refresh(MinecraftServer server, int slot) {
-        StorageDriveItem.refresh(server, items().get(slot));
+        StorageDriveItem.refresh(server, items().get(slot), this, slot);
+    }
+
+    // Its drives are mounted while it's in a rack that's there.
+    @Override
+    public @Nullable ItemStack mountedDrive(int slot) {
+        RackBlockEntity rack = rack();
+        return rack == null || rack.isRemoved() || slot < 0 || slot >= drives() ? null : items().get(slot);
     }
 
     private void driveChanged(int slot) {

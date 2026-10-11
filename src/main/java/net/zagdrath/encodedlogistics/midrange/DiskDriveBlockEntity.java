@@ -191,7 +191,7 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
 
     // Its id and its fill on the item, and the pack it shows (its drive's type).
     private void refresh(ServerLevel level) {
-        StorageDriveItem.refresh(level.getServer(), getItem(0));
+        StorageDriveItem.refresh(level.getServer(), getItem(0), this, 0);
         BlockState state = getBlockState();
         ResourceType type = StorageDriveItem.type(getItem(0));
         if (state.hasProperty(DiskDriveBlock.DRIVE_TYPE) && state.getValue(DiskDriveBlock.DRIVE_TYPE) != type) {
@@ -265,6 +265,11 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
     public @Nullable ItemStack drive(int slot) {
         ItemStack stack = getItem(0);
         return slot == 0 && state() == State.SPINNING && StorageDriveItem.id(stack) != null ? stack : null;
+    }
+
+    @Override
+    public @Nullable ItemStack mountedDrive(int slot) {
+        return isRemoved() || slot != 0 ? null : getItem(0);
     }
 
     @Override

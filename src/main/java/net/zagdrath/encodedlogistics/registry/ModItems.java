@@ -254,7 +254,7 @@ public final class ModItems {
             Map<StorageTier, DeferredItem<StorageDriveItem>> drives = new EnumMap<>(StorageTier.class);
             String prefix = type == ResourceType.ITEM ? "" : type.getSerializedName() + "_";
             for (StorageTier tier : StorageTier.REGISTERED) {
-                drives.put(tier, ITEMS.registerItem(prefix + "storage_drive_" + tier.id(), p -> new StorageDriveItem(p, tier, type), p -> p.stacksTo(1)));
+                drives.put(tier, ITEMS.registerItem(prefix + "storage_drive_" + tier.id(), p -> new StorageDriveItem(p, tier, type)));
             }
             DRIVES.put(type, drives);
         }

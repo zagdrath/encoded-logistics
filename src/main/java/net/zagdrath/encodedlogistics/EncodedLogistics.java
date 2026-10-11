@@ -11,6 +11,7 @@ import com.mojang.logging.LogUtils;
 
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -19,6 +20,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.compat.arcforge.ArcforgeCompat;
@@ -47,6 +49,7 @@ import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.registry.ModRecipeSerializers;
 import net.zagdrath.encodedlogistics.registry.ModRecipeTypes;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
+import net.zagdrath.encodedlogistics.storage.DriveCopies;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(EncodedLogistics.MODID)
@@ -72,6 +75,7 @@ public class EncodedLogistics {
         modEventBus.addListener(EncodedLogistics::registerTicketControllers);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onServerTick);
+        NeoForge.EVENT_BUS.addListener(EncodedLogistics::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
         FirewallEvents.register();
         MachineBridges.register();
@@ -117,6 +121,13 @@ public class EncodedLogistics {
         }
         JobManager.of(event.getServer()).tick(event.getServer());
         AudioPayloads.tick(event.getServer());
+    }
+
+    // A creative player's copied Storage Drives (a middle-click) get ids and contents of their own (DriveCopies).
+    private static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player && player.hasInfiniteMaterials()) {
+            DriveCopies.creativeTick(player);
+        }
     }
 
     // Scheduler and controller structures revalidate (and controllers tick) once per level tick, then the level's Small

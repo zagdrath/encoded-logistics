@@ -67,6 +67,10 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("isolator_splits_network", InfrastructureGameTests::isolatorSplitsNetwork);
         TESTS.put("lithography_press_etches", Phase1GameTests::lithographyPressEtches);
         TESTS.put("drive_storage", Phase1GameTests::driveStorage);
+        TESTS.put("new_drives_stack", DriveCopyGameTests::newDrivesStack);
+        TESTS.put("copied_drive_in_bay", DriveCopyGameTests::copiedDriveInBay);
+        TESTS.put("creative_drive_copy", DriveCopyGameTests::creativeCopy);
+        TESTS.put("empty_drive_goes_blank", DriveCopyGameTests::emptyDriveGoesBlank);
         TESTS.put("access_terminals", Phase1GameTests::terminals);
         TESTS.put("typed_drives", TypedStorageGameTests::typedDrives);
         TESTS.put("storage_key_codecs", TypedStorageGameTests::keyCodecs);
