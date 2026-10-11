@@ -24,6 +24,7 @@ import net.zagdrath.encodedlogistics.client.screen.DeployerPlaneScreen;
 import net.zagdrath.encodedlogistics.client.screen.GatewayScreen;
 import net.zagdrath.encodedlogistics.client.screen.InventoryTapScreen;
 import net.zagdrath.encodedlogistics.client.screen.PortScreen;
+import net.zagdrath.encodedlogistics.client.screen.RackElevationScreen;
 import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
@@ -66,6 +67,8 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
         registration.addGhostIngredientHandler(RackScreen.class, new RackGhostHandler());
+        registration.addGuiScreenHandler(RackElevationScreen.class, new RackElevationJei.Bounds());
+        registration.addGhostIngredientHandler(RackElevationScreen.class, new RackElevationJei.Ghosts());
         registration.addGhostIngredientHandler(PortScreen.class, new GhostSlotHandler<>());
         registration.addGhostIngredientHandler(InventoryTapScreen.class, new GhostSlotHandler<>());
         registration.addGhostIngredientHandler(CollectorPlaneScreen.class, new GhostSlotHandler<>());

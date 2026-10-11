@@ -115,6 +115,12 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_geometry", RackGameTests::geometry);
         TESTS.put("rack_targeting", RackGameTests::targeting);
         TESTS.put("rack_on_network", RackGameTests::onNetwork);
+        TESTS.put("rack_elevation_record_apply", RackElevationGameTests::recordAndApply);
+        TESTS.put("rack_elevation_skip_missing", RackElevationGameTests::skipsAndReportsMissing);
+        TESTS.put("rack_elevation_creative", RackElevationGameTests::creativeNeedsNoItems);
+        TESTS.put("rack_elevation_shulker_same", RackElevationGameTests::shulkerBoxAndSameDevice);
+        TESTS.put("rack_elevation_edit_rules", RackElevationGameTests::editRules);
+        TESTS.put("rack_elevation_recipes", RackElevationGameTests::recipes);
         TESTS.put("rack_firewall", RackGameTests::firewall);
         TESTS.put("rack_access", RackSecurityGameTests::rackAccess);
         TESTS.put("rack_access_open_and_offline", RackSecurityGameTests::openAndOffline);

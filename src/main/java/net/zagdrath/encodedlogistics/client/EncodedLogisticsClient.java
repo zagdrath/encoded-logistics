@@ -54,6 +54,7 @@ import net.zagdrath.encodedlogistics.client.model.ControllerModel;
 import net.zagdrath.encodedlogistics.client.model.FacadeTints;
 import net.zagdrath.encodedlogistics.client.model.SchedulerModel;
 import net.zagdrath.encodedlogistics.client.model.SchematicOutputModel;
+import net.zagdrath.encodedlogistics.client.rack.RackElevationPreview;
 import net.zagdrath.encodedlogistics.client.rack.RackHud;
 import net.zagdrath.encodedlogistics.client.rack.RackModels;
 import net.zagdrath.encodedlogistics.client.rack.RackRenderer;
@@ -198,6 +199,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, RackHud.LAYER, RackHud::render);
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, RackElevationPreview.LAYER, RackElevationPreview::render);
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, WirelessHud.LAYER, WirelessHud::render);
     }
 
@@ -205,7 +207,7 @@ public class EncodedLogisticsClient {
     private static final Set<Identifier> CRT_HIDDEN = Set.of(VanillaGuiLayers.CROSSHAIR, VanillaGuiLayers.HOTBAR, VanillaGuiLayers.PLAYER_HEALTH,
             VanillaGuiLayers.ARMOR_LEVEL, VanillaGuiLayers.FOOD_LEVEL, VanillaGuiLayers.VEHICLE_HEALTH, VanillaGuiLayers.AIR_LEVEL,
             VanillaGuiLayers.CONTEXTUAL_INFO_BAR_BACKGROUND, VanillaGuiLayers.EXPERIENCE_LEVEL, VanillaGuiLayers.CONTEXTUAL_INFO_BAR,
-            VanillaGuiLayers.SELECTED_ITEM_NAME, VanillaGuiLayers.EFFECTS, RackHud.LAYER, WirelessHud.LAYER);
+            VanillaGuiLayers.SELECTED_ITEM_NAME, VanillaGuiLayers.EFFECTS, RackHud.LAYER, RackElevationPreview.LAYER, WirelessHud.LAYER);
 
     @SubscribeEvent
     static void hideHudUnderCrt(RenderGuiLayerEvent.Pre event) {
@@ -218,6 +220,7 @@ public class EncodedLogisticsClient {
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
         RackHud.tick(event);
+        RackElevationPreview.tick(event);
         WirelessHud.tick(event);
         CrtLocate.tick();
     }
@@ -226,6 +229,7 @@ public class EncodedLogisticsClient {
     static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         MachineBridgesPayload.clear();
         SignalSounds.clear();
+        RackElevationPreview.clear();
     }
 
     @SubscribeEvent

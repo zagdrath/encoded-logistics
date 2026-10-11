@@ -150,7 +150,8 @@ public final class RackHud {
     public static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         Target at = target;
-        if (at == null || minecraft.gui.hud.isHidden() || minecraft.gui.screen() != null) {
+        // Holding a written Rack Elevation, the rack's popup is the plan's (RackElevationPreview).
+        if (at == null || minecraft.gui.hud.isHidden() || minecraft.gui.screen() != null || RackElevationPreview.active()) {
             return;
         }
         Font font = minecraft.font;

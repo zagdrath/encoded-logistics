@@ -65,49 +65,29 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     public static final int TEXT = 0xFFF0F0F0, TEXT_MUTED = 0xFFB4B4B4, TEXT_DISABLED = 0xFF7A7A7A, ACCENT = 0xFF00D992, WARNING = 0xFFE8C24A,
             ERROR = 0xFFFF6B6B, AMBER = 0xFFF5B23A;
 
-    private static final Identifier ELEVATION = EncodedLogistics.id("textures/gui/rack/elevation.png");
     private static final Identifier INVENTORY = EncodedLogistics.id("textures/gui/rack/inventory.png");
-    private static final Identifier SLOT_EMPTY = EncodedLogistics.id("rack/slot_empty"), SELECT_1U = EncodedLogistics.id("rack/select_1u"),
-            SELECT_2U = EncodedLogistics.id("rack/select_2u"), DROP_1U = EncodedLogistics.id("rack/drop_target_1u"),
-            DROP_2U = EncodedLogistics.id("rack/drop_target_2u"), DROP_BLOCKED = EncodedLogistics.id("rack/drop_blocked"),
-            BACK = EncodedLogistics.id("rack/back");
+    private static final Identifier BACK = EncodedLogistics.id("rack/back");
     private static final Identifier[] PRIORITY = { EncodedLogistics.id("rack/priority/high"), EncodedLogistics.id("rack/priority/normal"),
             EncodedLogistics.id("rack/priority/low") };
     private static final Identifier MARK_HIGH = EncodedLogistics.id("rack/priority/mark_high"), MARK_LOW = EncodedLogistics.id("rack/priority/mark_low");
-    // The controller's scrollbar, as on the other screens: an 8 px track, its 6x15 thumb one in from the left.
-    private static final Identifier THUMB = EncodedLogistics.id("controller/scroll_thumb"),
-            THUMB_HOVER = EncodedLogistics.id("controller/scroll_thumb_hover");
 
-    // At 16 rows (RackMenu.ROWS); the inset and the scrollbar grow with the rows the window has room for.
-    private static final int INSET_X = 15, INSET_Y = 18, INSET_W = 124, INSET_H = 146;
-    private static final int ROW_H = RackMenu.ROW_H, FIRST_ROW_Y = 19, NUMBER_RIGHT = 30, SLOT_X = 33, SLOT_W = 104;
-    private static final int SCROLL_X = 153, SCROLL_Y = 18, SCROLL_W = 8, SCROLL_H = 146, THUMB_W = 6, THUMB_H = 15;
-    // The elevation texture's rows repeat every ROW_H from here (a row and its separator line).
-    private static final int STRIP_Y = FIRST_ROW_Y + 9 * ROW_H;
+    private static final int SLOT_X = RackElevationView.SLOT_X;
     // Panels' backgrounds: this row (plain body and sides) stretches over the extra height.
     private static final int PANEL_FILL_Y = 166;
     static final int BACK_X = 150, BACK_Y = 2, PRIORITY_X = 132;
 
-    // The rows shown (16 to RackMenu.MAX_ROWS, as the window has room) and the extra height they add.
-    private final int rows, extra;
-    // Rows scrolled down from the top (U42); starts at the top.
-    private int scroll;
-    private boolean draggingThumb;
+    // The elevation (RackElevationView: 16 to RackMenu.MAX_ROWS rows, as the window has room).
+    private final RackElevationView view;
     private @Nullable Panel panel;
     private int panelU;
 
     public RackScreen(RackMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, RackMenu.WIDTH, menu.topHeight() + RackMenu.INVENTORY_HEIGHT);
-        this.rows = menu.rows();
-        this.extra = menu.topHeight() - RackMenu.TOP_HEIGHT;
+        this.view = new RackElevationView(menu.rows());
         this.titleLabelX = 8;
         this.titleLabelY = 5;
         this.inventoryLabelX = 8;
         this.inventoryLabelY = menu.topHeight() + 6;
-    }
-
-    private int maxScroll() {
-        return RackGeometry.UNITS - rows;
     }
 
     // The top half's height now: the elevation's (it grows with the window), or the open panel's own.
@@ -329,18 +309,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         int topHeight = topHeight();
         if (showingPanel()) {
             // A panel's background down to its height, then the texture's plain bottom rows.
-            Identifier top = panel != null ? panel.background() : ELEVATION;
+            Identifier top = panel != null ? panel.background() : RackElevationView.ELEVATION;
             int bottom = RackMenu.TOP_HEIGHT - PANEL_FILL_Y;
             graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos, 0.0F, 0.0F, imageWidth, topHeight - bottom, 256, 256);
             graphics.blit(RenderPipelines.GUI_TEXTURED, top, leftPos, topPos + topHeight - bottom, 0.0F, PANEL_FILL_Y, imageWidth, bottom, 256, 256);
         } else {
-            // The elevation: its top, a row's strip for each extra row, its bottom.
-            graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos, 0.0F, 0.0F, imageWidth, STRIP_Y, 256, 256);
-            for (int i = 0; i < extra / ROW_H; i++) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos + STRIP_Y + i * ROW_H, 0.0F, STRIP_Y, imageWidth, ROW_H, 256, 256);
-            }
-            graphics.blit(RenderPipelines.GUI_TEXTURED, ELEVATION, leftPos, topPos + STRIP_Y + extra, 0.0F, STRIP_Y, imageWidth,
-                    RackMenu.TOP_HEIGHT - STRIP_Y, 256, 256);
+            view.background(graphics, leftPos, topPos);
         }
         graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY, leftPos, topPos + topHeight, 0.0F, 0.0F, imageWidth, RackMenu.INVENTORY_HEIGHT, 256, 128);
         if (showingPanel()) {
@@ -364,59 +338,31 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
     private void extractElevation(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         RackBlockEntity rack = menu.rack();
         int x = leftPos, y = topPos;
-        graphics.enableScissor(x + INSET_X, y + INSET_Y, x + INSET_X + INSET_W, y + INSET_Y + INSET_H + extra);
-        for (int row = 0; row < rows; row++) {
-            int u = unitAtRow(row);
-            if (rack == null || rack.deviceAt(u) == null) {
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_EMPTY, x + SLOT_X, y + rowY(row), SLOT_W, 8);
-            }
-        }
+        view.begin(graphics, x, y);
+        view.emptySlots(graphics, x, y, u -> rack == null || rack.deviceAt(u) == null);
         if (rack != null) {
             for (RackDevice device : rack.devices()) {
-                int topRow = rowOf(device.top());
-                if (topRow + device.size() <= 0 || topRow >= rows) {
+                if (!view.visible(device.u(), device.size())) {
                     continue;
                 }
-                front(graphics, device, x + SLOT_X, y + rowY(topRow));
+                view.device(graphics, x, y, device, device.u(), -1);
                 if (device.lanePriority() != RackDevice.Priority.NORMAL) {
                     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, device.lanePriority() == RackDevice.Priority.HIGH ? MARK_HIGH : MARK_LOW, x + SLOT_X,
-                            y + rowY(topRow), 2, 7);
+                            y + RackElevationView.rowY(view.rowOf(device.top())), 2, 7);
                 }
                 if (device.u() == menu.picked() || hoveredDevice(mouseX, mouseY) == device) {
-                    if (device.size() <= 2) {
-                        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, device.size() > 1 ? SELECT_2U : SELECT_1U, x + SLOT_X - 1,
-                                y + rowY(topRow) - 1, SLOT_W + 2, device.size() * ROW_H + 1);
-                    } else {
-                        outline(graphics, x + SLOT_X - 1, y + rowY(topRow) - 1, SLOT_W + 2, device.size() * ROW_H + 1, SELECT, false);
-                    }
+                    view.select(graphics, x, y, device.u(), device.size());
                 }
             }
             // Where the carried device would go.
             RackDeviceType carried = RackDeviceType.of(menu.getCarried());
             int u = hoveredUnit(mouseX, mouseY);
             if (carried != null && u > 0 && rack.deviceAt(u) == null) {
-                int topU = Math.min(u + carried.size() - 1, RackGeometry.UNITS);
-                int drawY = y + rowY(rowOf(topU)) - 1;
-                if (rack.fits(u, carried.size()) && carried.size() <= 2) {
-                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, carried.size() > 1 ? DROP_2U : DROP_1U, x + SLOT_X - 1, drawY, SLOT_W + 2,
-                            carried.size() * ROW_H + 1);
-                } else if (rack.fits(u, carried.size())) {
-                    outline(graphics, x + SLOT_X - 1, drawY, SLOT_W + 2, carried.size() * ROW_H + 1, DROP, true);
-                } else {
-                    for (int unit = u; unit <= topU; unit++) {
-                        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, DROP_BLOCKED, x + SLOT_X - 1, y + rowY(rowOf(unit)) - 1, SLOT_W + 2, 10);
-                    }
-                }
+                view.drop(graphics, x, y, u, carried.size(), rack.fits(u, carried.size()));
             }
         }
-        graphics.disableScissor();
-        // The scrollbar's thumb (none when every unit shows).
-        if (maxScroll() <= 0) {
-            return;
-        }
-        int thumbY = y + thumbTop();
-        boolean hover = draggingThumb || over(mouseX, mouseY, SCROLL_X + 1, thumbTop(), THUMB_W, THUMB_H);
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hover ? THUMB_HOVER : THUMB, x + SCROLL_X + 1, thumbY, THUMB_W, THUMB_H);
+        view.end(graphics);
+        view.thumb(graphics, x, y, mouseX, mouseY);
     }
 
     // A route's filter box (the 12x12 item at x+1, y+1 inside it): a dark well, its border lit while hovered.
@@ -449,95 +395,6 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         }
     }
 
-    // The selection and drop-target outlines drawn for devices taller than the 1U and 2U sprites (3U, 4U): the same
-    // 1 px line, solid or dashed.
-    private static final int SELECT = 0xFF5CF0B8, DROP = 0xFFF5B23A;
-
-    private static void outline(GuiGraphicsExtractor graphics, int x, int y, int width, int height, int color, boolean dashed) {
-        for (int i = 0; i < width; i++) {
-            if (!dashed || i % 2 == 0) {
-                graphics.fill(x + i, y, x + i + 1, y + 1, color);
-                graphics.fill(x + i, y + height - 1, x + i + 1, y + height, color);
-            }
-        }
-        for (int i = 1; i < height - 1; i++) {
-            if (!dashed || i % 2 == 0) {
-                graphics.fill(x, y + i, x + 1, y + i + 1, color);
-                graphics.fill(x + width - 1, y + i, x + width, y + i + 1, color);
-            }
-        }
-    }
-
-    // A device's real front, from its texture (128 x sheetHeight, frames that tall), with its lights for its state (an animated overlay shown frame by frame,
-    // as the block does: 3 ticks a frame).
-    // Drawn ROW_H a unit (less the last row's gap), so a device fills its rows with no gaps between its units.
-    private void front(GuiGraphicsExtractor graphics, RackDevice device, int x, int y) {
-        int height = 8 * device.size(), shown = device.size() * ROW_H - 1, sheet = device.type().sheetHeight();
-        graphics.blit(RenderPipelines.GUI_TEXTURED, device.type().texture(""), x, y, 0.0F, 0.0F, SLOT_W, shown, SLOT_W, height, 128, sheet);
-        RackDeviceInfo.Status status = device.shownStatus();
-        String variant = device.shownVariant();
-        String lit = variant != null && device.type().variants().containsKey(variant) ? variant
-                : status == RackDeviceInfo.Status.ONLINE || status == RackDeviceInfo.Status.WARNING ? "_on" : status == RackDeviceInfo.Status.FAULT ? "_fault"
-                        : null;
-        if (lit != null) {
-            litFront(graphics, device, lit, x, y, shown, height, sheet);
-        }
-        if (device instanceof StorageDevice storage) {
-            bays(graphics, storage, x, y, shown, height, sheet);
-        }
-    }
-
-    // A NAS's or SAN's drives in their bays, as the rack in the world shows them (RackClientDevices.DriveBays): each
-    // drive's sled for its tier and type (typed drives from <nas|san>_sleds_<type>.png) and its light (fill, or an energy
-    // drive's charge), at the front texture's place, scaled as the front is: front() draws the texture's first SLOT_W
-    // columns 1:1 (only its rows are scaled, 8 a unit to ROW_H), so the bays keep their texel x. (Scaling x by SLOT_W/128
-    // too squeezed a full SAN's 12 sleds a row into the first 9 bays, leaving the last 3 looking empty.)
-    private static void bays(GuiGraphicsExtractor graphics, StorageDevice storage, int x, int y, int shown, int height, int sheet) {
-        boolean san = storage instanceof SanDevice;
-        int w = san ? 6 : 12, h = 14, sledRow = san ? 80 : 64;
-        String kind = san ? "san" : "nas";
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(x, y);
-        graphics.pose().scale(1.0F, (float) shown / height);
-        for (int i = 0; i < storage.drives(); i++) {
-            int code = storage.shownBay(i);
-            if (code < 0) {
-                continue;
-            }
-            ResourceType type = StorageDriveItem.sledType(code);
-            int tier = StorageDriveItem.sledTier(code), lit = StorageDriveItem.sledLight(code);
-            int bx = san ? 14 + 6 * (i % 12) : 15 + 12 * i, by = san ? 1 + 15 * (i / 12) : 1;
-            Identifier sheetId = type == ResourceType.ITEM ? storage.type().texture("")
-                    : EncodedLogistics.id("textures/block/rack_device/" + kind + "_sleds_" + type.getSerializedName() + ".png");
-            int row = type == ResourceType.ITEM ? sledRow : 0, sheetH = type == ResourceType.ITEM ? sheet : 16;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, sheetId, bx, by, tier * (w + 1), row, w, h, w, h, 128, sheetH);
-            if (lit == StorageDriveItem.LIGHT_CHARGING) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, CHARGING, bx + w - 3, by + h - 4, 0, 0, 2, 2, 2, 2, 16, 64);
-            } else {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, sheetId, bx + w - 3, by + h - 4, 70 + 3 * Math.min(4, lit), row, 2, 2, 2, 2, 128, sheetH);
-            }
-        }
-        graphics.pose().popMatrix();
-    }
-
-    private static final Identifier CHARGING = EncodedLogistics.id("textures/block/drive_bay/leds_energy_charging.png");
-
-    // A device's lit overlay as the block atlas has it this moment: the atlas animates these textures (frame time,
-    // interpolation and all) just as it does for the rack in the world, so the screen shows the same frame. (Loaded as a
-    // plain texture, an animated strip only has its first frame.)
-    private static void litFront(GuiGraphicsExtractor graphics, RackDevice device, String suffix, int x, int y, int shown, int height, int sheet) {
-        Identifier id = device.type().id().withPath("block/rack_device/" + device.type().id().getPath() + suffix);
-        TextureAtlas atlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
-        TextureAtlasSprite sprite = atlas.getSprite(id);
-        if (sprite == atlas.missingSprite() || sprite.getU1() <= sprite.getU0() || sprite.getV1() <= sprite.getV0()) {
-            return;
-        }
-        // By the sprite's own UVs (its pixel position in the atlas isn't where its frame's texels start, so working from
-        // that put the overlay off its front): the front's part of the frame, SLOT_W x height of 128 x sheet.
-        graphics.blit(sprite.atlasLocation(), x, y, x + SLOT_W, y + shown, sprite.getU0(), sprite.getU((float) SLOT_W / 128), sprite.getV0(),
-                sprite.getV((float) height / sheet));
-    }
-
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT_MUTED, false);
@@ -557,12 +414,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             Component free = Component.translatable("gui.encodedlogistics.rack.free", rack.freeUnits());
             graphics.text(font, free, 168 - font.width(free), titleLabelY, TEXT_MUTED, false);
         }
-        for (int row = 0; row < rows; row++) {
-            int u = unitAtRow(row);
-            String number = Integer.toString(u);
-            boolean used = rack != null && rack.deviceAt(u) != null;
-            graphics.text(font, number, NUMBER_RIGHT - font.width(number), rowY(row), used ? TEXT : TEXT_MUTED, false);
-        }
+        view.numbers(graphics, font, u -> rack != null && rack.deviceAt(u) != null);
     }
 
     @Override
@@ -636,32 +488,11 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         };
     }
 
-    // The thumb's top, relative to the screen, inside the track's 1 px rim.
-    private int thumbTop() {
-        return SCROLL_Y + 1 + Math.round((SCROLL_H + extra - 2 - THUMB_H) * (float) scroll / maxScroll());
-    }
-
     // --- Rows ---
-
-    private int unitAtRow(int row) {
-        return RackGeometry.UNITS - scroll - row;
-    }
-
-    private int rowOf(int u) {
-        return RackGeometry.UNITS - scroll - u;
-    }
-
-    private static int rowY(int row) {
-        return FIRST_ROW_Y + row * ROW_H;
-    }
 
     // The unit under the mouse in the elevation, or 0.
     private int hoveredUnit(double mouseX, double mouseY) {
-        double x = mouseX - leftPos, y = mouseY - topPos;
-        if (x < INSET_X || x >= INSET_X + INSET_W || y < FIRST_ROW_Y || y >= FIRST_ROW_Y + rows * ROW_H) {
-            return 0;
-        }
-        return unitAtRow(Mth.floor((y - FIRST_ROW_Y) / ROW_H));
+        return view.unitAt(mouseX - leftPos, mouseY - topPos);
     }
 
     private @Nullable RackDevice hoveredDevice(double mouseX, double mouseY) {
@@ -695,9 +526,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             }
             return super.mouseClicked(event, doubleClick);
         }
-        if (button == InputConstants.MOUSE_BUTTON_LEFT && maxScroll() > 0 && over(mouseX, mouseY, SCROLL_X, SCROLL_Y, SCROLL_W, SCROLL_H + extra)) {
-            draggingThumb = true;
-            scrollTo(mouseY);
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && view.press(mouseX - leftPos, mouseY - topPos)) {
             return true;
         }
         int u = hoveredUnit(mouseX, mouseY);
@@ -721,8 +550,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        if (draggingThumb) {
-            scrollTo(event.y());
+        if (view.drag(event.y() - topPos)) {
             return true;
         }
         if (showingPanel() && panel != null && panel.mouseDragged(event.x() - leftPos, event.y() - topPos)) {
@@ -733,16 +561,11 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        draggingThumb = false;
+        view.release();
         if (panel != null) {
             panel.mouseReleased();
         }
         return super.mouseReleased(event);
-    }
-
-    private void scrollTo(double mouseY) {
-        double fraction = (mouseY - topPos - SCROLL_Y - 1 - THUMB_H / 2.0) / (SCROLL_H + extra - 2 - THUMB_H);
-        scroll = Mth.clamp((int) Math.round(fraction * maxScroll()), 0, Math.max(0, maxScroll()));
     }
 
     @Override
@@ -752,7 +575,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
                 return true;
             }
         } else if (mouseY < topPos + topHeight() && mouseX >= leftPos && mouseX < leftPos + imageWidth) {
-            scroll = Mth.clamp(scroll - (int) Math.signum(scrollY) * 2, 0, Math.max(0, maxScroll()));
+            view.wheel(scrollY);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);

@@ -40,10 +40,7 @@ public class RackDeviceItem extends Item {
         RackDevice device = type.create();
         CustomData data = stack.get(ModDataComponents.RACK_DEVICE_STATE.get());
         if (data != null && !data.isEmpty()) {
-            var input = TagValueInput.create(ProblemReporter.DISCARDING, registries, data.copyTag());
-            device.loadSettings(input);
-            input.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
-            device.setDeviceName(input.getStringOr("device_name", ""));
+            loadSettings(device, data.copyTag(), registries);
         }
         return device;
     }
@@ -51,6 +48,16 @@ public class RackDeviceItem extends Item {
     // The item a device comes back as, carrying its settings.
     public static ItemStack toStack(RackDevice device, HolderLookup.Provider registries) {
         ItemStack stack = new ItemStack(device.type().item());
+        CompoundTag tag = settings(device, registries);
+        if (!tag.isEmpty()) {
+            stack.set(ModDataComponents.RACK_DEVICE_STATE.get(), CustomData.of(tag));
+        }
+        return stack;
+    }
+
+    // A device's settings as its item carries them: its own (saveSettings), its lane priority when it isn't the default,
+    // and its device name. A Rack Elevation records the same.
+    public static CompoundTag settings(RackDevice device, HolderLookup.Provider registries) {
         TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, registries);
         device.saveSettings(output);
         if (device.lanePriority() != device.defaultPriority()) {
@@ -59,10 +66,14 @@ public class RackDeviceItem extends Item {
         if (!device.deviceName().isEmpty()) {
             output.putString("device_name", device.deviceName());
         }
-        CompoundTag tag = output.buildResult();
-        if (!tag.isEmpty()) {
-            stack.set(ModDataComponents.RACK_DEVICE_STATE.get(), CustomData.of(tag));
-        }
-        return stack;
+        return output.buildResult();
+    }
+
+    // Puts settings(...) back on a device.
+    public static void loadSettings(RackDevice device, CompoundTag tag, HolderLookup.Provider registries) {
+        var input = TagValueInput.create(ProblemReporter.DISCARDING, registries, tag);
+        device.loadSettings(input);
+        input.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
+        device.setDeviceName(input.getStringOr("device_name", ""));
     }
 }

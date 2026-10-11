@@ -28,6 +28,7 @@ import net.zagdrath.encodedlogistics.midrange.DisketteData;
 import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.plc.PlcProgram;
+import net.zagdrath.encodedlogistics.rack.RackTemplate;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 
 public final class ModDataComponents {
@@ -105,6 +106,10 @@ public final class ModDataComponents {
     // A rack device's settings while it's out of a rack (RackDeviceItem).
     public static final Supplier<DataComponentType<CustomData>> RACK_DEVICE_STATE = DATA_COMPONENTS.registerComponentType("rack_device_state",
             builder -> builder.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC));
+
+    // A Rack Elevation's plan of a Server Rack (RackTemplate); without it, the elevation is blank.
+    public static final Supplier<DataComponentType<RackTemplate>> RACK_TEMPLATE = DATA_COMPONENTS.registerComponentType("rack_template",
+            builder -> builder.persistent(RackTemplate.CODEC).networkSynchronized(RackTemplate.STREAM_CODEC));
 
     private ModDataComponents() {}
 }

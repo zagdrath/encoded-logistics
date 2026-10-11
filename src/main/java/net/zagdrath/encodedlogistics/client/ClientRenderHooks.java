@@ -19,6 +19,16 @@ public final class ClientRenderHooks {
         net.zagdrath.encodedlogistics.client.printout.PrintoutReaderScreen.open(stack);
     }
 
+    // A Rack Elevation used in the air: its editor, for the elevation in that hand.
+    public static void openRackElevation(net.minecraft.world.InteractionHand hand) {
+        net.zagdrath.encodedlogistics.client.screen.RackElevationScreen.open(hand);
+    }
+
+    // A Rack Elevation report's [show] link: the materials list (counted against the rack at rack, or none).
+    public static void openRackElevationMaterials(long rack) {
+        net.zagdrath.encodedlogistics.client.screen.RackElevationMaterialsScreen.openFromReport(rack);
+    }
+
     // A controller's look depends on blocks up to two away (whether its neighbours are column pieces), while vanilla
     // only re-meshes one block round a change: re-mesh the sections two blocks round it.
     public static void controllerChanged(LevelReader level, BlockPos pos) {

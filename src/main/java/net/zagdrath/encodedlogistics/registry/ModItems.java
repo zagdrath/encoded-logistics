@@ -22,6 +22,7 @@ import net.zagdrath.encodedlogistics.crafting.Schematic;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.item.HandheldTerminalItem;
 import net.zagdrath.encodedlogistics.item.LinkCardItem;
+import net.zagdrath.encodedlogistics.item.RackElevationItem;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.item.PartItem;
 import net.zagdrath.encodedlogistics.item.ResourceEntryItem;
@@ -116,6 +117,8 @@ public final class ModItems {
     // Phase 4: wireless access, long-range links.
     public static final DeferredItem<Item> OPTICAL_TRANSCEIVER = ITEMS.registerSimpleItem("optical_transceiver");
     public static final DeferredItem<LinkCardItem> LINK_CARD = ITEMS.registerItem("link_card", LinkCardItem::new);
+    // A plan of a Server Rack: blank ones stack to 16, written ones to 1 (RackTemplate#write).
+    public static final DeferredItem<RackElevationItem> RACK_ELEVATION = ITEMS.registerItem("rack_elevation", RackElevationItem::new, p -> p.stacksTo(16));
     public static final DeferredItem<HandheldTerminalItem> HANDHELD_TERMINAL = ITEMS.registerItem("handheld_terminal", HandheldTerminalItem::new,
             p -> p.stacksTo(1));
     public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);

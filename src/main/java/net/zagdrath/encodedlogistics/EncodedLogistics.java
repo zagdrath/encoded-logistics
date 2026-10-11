@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
 import net.zagdrath.encodedlogistics.net.AudioPayloads;
 import net.zagdrath.encodedlogistics.net.ModNetwork;
+import net.zagdrath.encodedlogistics.net.RackElevationPayloads;
 import net.zagdrath.encodedlogistics.rack.FirewallEvents;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
@@ -77,6 +78,8 @@ public class EncodedLogistics {
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onServerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
+        // A Rack Elevation report's [show] link.
+        NeoForge.EVENT_BUS.addListener(RackElevationPayloads::onCustomClick);
         FirewallEvents.register();
         MachineBridges.register();
         ElclSetup.init();

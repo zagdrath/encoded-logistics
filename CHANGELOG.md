@@ -23,6 +23,18 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Added
+
+- **Rack Elevation**: a clipboard that plans a Server Rack. Sneak-use it on a rack to record every device, and
+  optionally what each holds and its settings. Use it in the air to open the editor: the rack screen's own
+  elevation with the planned devices as ghosts, a searchable device list to drag from, and a materials list of
+  what you have and need. Use it on a rack to install the plan into empty units from your inventory, shulker boxes
+  included, and optionally the network's storage. It never removes or replaces a device, and it reports what it
+  skipped or was missing, with a [show] link to the list. Holding a written one shows the plan on the rack in green,
+  amber and red, with a summary popup. In creative it needs no items (`rackElevationCreativeFree`). Copy one by
+  crafting it with a blank one, and clear one by crafting it alone. Rack Elevation needs Rack access, and network
+  storage needs Extract.
+
 ### Security
 
 - Speakers' web audio is now off for each player until they turn on *Allow Web Audio* (`allowWebAudio` in

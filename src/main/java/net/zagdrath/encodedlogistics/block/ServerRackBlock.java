@@ -43,6 +43,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.item.RackElevationItem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
@@ -199,6 +200,10 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hit) {
+        // A Rack Elevation records or applies itself (RackElevationItem#useOn), from any side, door open or not.
+        if (stack.getItem() instanceof RackElevationItem) {
+            return InteractionResult.PASS;
+        }
         RackDeviceType type = RackDeviceType.of(stack);
         RackBlockEntity rack = rack(level, pos, state);
         if (rack == null) {

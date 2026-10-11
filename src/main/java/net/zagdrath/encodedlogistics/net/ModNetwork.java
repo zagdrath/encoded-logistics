@@ -42,6 +42,13 @@ public final class ModNetwork {
         registrar.playToServer(RackActionPayload.TYPE, RackActionPayload.STREAM_CODEC, RackActionPayload::handle);
         registrar.playToServer(RackUnitPayloads.Query.TYPE, RackUnitPayloads.Query.STREAM_CODEC, RackUnitPayloads.Query::handle);
         registrar.playToClient(RackUnitPayloads.Info.TYPE, RackUnitPayloads.Info.STREAM_CODEC, RackUnitPayloads.Info::handle);
+        registrar.playToServer(RackElevationPayloads.Edit.TYPE, RackElevationPayloads.Edit.STREAM_CODEC, RackElevationPayloads.Edit::handle);
+        registrar.playToServer(RackElevationPayloads.MaterialsQuery.TYPE, RackElevationPayloads.MaterialsQuery.STREAM_CODEC,
+                RackElevationPayloads.MaterialsQuery::handle);
+        registrar.playToClient(RackElevationPayloads.Materials.TYPE, RackElevationPayloads.Materials.STREAM_CODEC, RackElevationPayloads.Materials::handle);
+        registrar.playToServer(RackElevationPayloads.PreviewQuery.TYPE, RackElevationPayloads.PreviewQuery.STREAM_CODEC,
+                RackElevationPayloads.PreviewQuery::handle);
+        registrar.playToClient(RackElevationPayloads.Preview.TYPE, RackElevationPayloads.Preview.STREAM_CODEC, RackElevationPayloads.Preview::handle);
         registrar.playToServer(WirelessInfoPayloads.Query.TYPE, WirelessInfoPayloads.Query.STREAM_CODEC, WirelessInfoPayloads.Query::handle);
         registrar.playToClient(WirelessInfoPayloads.Info.TYPE, WirelessInfoPayloads.Info.STREAM_CODEC, WirelessInfoPayloads.Info::handle);
         registrar.playToServer(MachinePayloads.Text.TYPE, MachinePayloads.Text.STREAM_CODEC, MachinePayloads.Text::handle);

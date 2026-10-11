@@ -318,6 +318,10 @@ public class Config {
             .comment("Blocks away beyond which a Server Rack with both doors closed doesn't draw its devices.")
             .defineInRange("rackCullDistance", 24, 0, 256);
 
+    public static final ModConfigSpec.BooleanValue RACK_ELEVATION_CREATIVE_FREE = BUILDER
+            .comment("Whether a player in creative mode applying a Rack Elevation installs its devices (and their contents) without using up items.")
+            .define("rackElevationCreativeFree", true);
+
     public static final ModConfigSpec.DoubleValue FIREWALL_DRAIN = BUILDER
             .comment("FE per tick a Firewall drains while its network runs.")
             .defineInRange("firewallDrain", 2.0, 0.0, 1_000.0);

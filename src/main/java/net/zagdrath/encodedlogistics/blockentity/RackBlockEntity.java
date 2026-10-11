@@ -114,6 +114,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     private final PowerPort powerPort = new PowerPort();
     private boolean syncPending;
     private int syncCooldown;
+    // Ticks until the front door closes again after a visit (visitFront); 0: none pending.
+    private int closeFrontIn;
     // Client: door animation, 0 (closed) to DOOR_TICKS (open), this tick and last.
     private int frontTicks, rearTicks, lastFrontTicks, lastRearTicks;
     private boolean synced;
@@ -246,6 +248,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     }
 
     public void setFrontOpen(boolean open) {
+        // Any other open or close ends a visit (a player who opens it keeps it open).
+        closeFrontIn = 0;
         if (frontOpen != open) {
             frontOpen = open;
             doorMoved(open);
@@ -254,6 +258,15 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                     device.frontDoorChanged(open);
                 }
             }
+        }
+    }
+
+    // Something works on the devices through the front (a Rack Elevation installing): the door swings open, with its
+    // sound, and closes again once it has had time to - unless it was open already, when it's left so.
+    public void visitFront() {
+        if (!frontOpen) {
+            setFrontOpen(true);
+            closeFrontIn = DOOR_TICKS + 20;
         }
     }
 
@@ -755,6 +768,9 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             device.tick(serverLevel);
         }
         rack.scheduler.tick(serverLevel);
+        if (rack.closeFrontIn > 0 && --rack.closeFrontIn == 0) {
+            rack.setFrontOpen(false);
+        }
         if (rack.syncCooldown > 0) {
             rack.syncCooldown--;
         } else if (rack.syncPending) {

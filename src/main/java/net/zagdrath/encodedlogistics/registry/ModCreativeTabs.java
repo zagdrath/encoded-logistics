@@ -94,6 +94,7 @@ public final class ModCreativeTabs {
                 }
                 output.accept(ModItems.HANDHELD_TERMINAL.get());
                 output.accept(ModItems.LINK_CARD.get());
+                output.accept(ModItems.RACK_ELEVATION.get());
                 output.accept(ModItems.SCHEMATIC_CARD.get());
                 for (ResourceType type : ResourceType.values()) {
                     for (StorageTier tier : StorageTier.REGISTERED) {
