@@ -67,12 +67,13 @@ public final class RackDeviceType {
     public static final RackDeviceType L2_SWITCH_24 = register("l2_switch_24", 1, () -> ModItems.L2_SWITCH_24.get(), SwitchDevice::new).frames(4);
     public static final RackDeviceType L2_SWITCH_48 = register("l2_switch_48", 1, () -> ModItems.L2_SWITCH_48.get(), SwitchDevice::new).frames(4);
     public static final RackDeviceType L3_SWITCH = register("l3_switch", 1, () -> ModItems.L3_SWITCH.get(), L3SwitchDevice::new).frames(4);
+    // The servers blink (_on) while working and show their lights solid (_idle, ServerDevice.IDLE) while idle.
     public static final RackDeviceType COMPUTE_SERVER = register("compute_server", 2, () -> ModItems.COMPUTE_SERVER.get(), ComputeServerDevice::new)
-            .frames(4);
+            .frames(4).variants(Map.of("_idle", 1));
     public static final RackDeviceType MEMORY_SERVER = register("memory_server", 1, () -> ModItems.MEMORY_SERVER.get(), MemoryServerDevice::new)
-            .frames(4);
+            .frames(4).variants(Map.of("_idle", 1));
     public static final RackDeviceType FABRICATION_SERVER = register("fabrication_server", 2, () -> ModItems.FABRICATION_SERVER.get(),
-            FabricationServerDevice::new).frames(4).slots(fabricationSlots());
+            FabricationServerDevice::new).frames(4).variants(Map.of("_idle", 1)).slots(fabricationSlots());
     public static final RackDeviceType MONITORING_SERVER = register("monitoring_server", 1, () -> ModItems.MONITORING_SERVER.get(),
             MonitoringServerDevice::new).frames(4);
     public static final RackDeviceType NAS = register("nas", 2, () -> ModItems.NAS.get(), NasDevice::new).frames(4)

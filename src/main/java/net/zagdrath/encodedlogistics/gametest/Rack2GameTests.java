@@ -34,6 +34,7 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.part.PartFilter;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
@@ -47,6 +48,7 @@ import net.zagdrath.encodedlogistics.rack.device.MonitoringServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.SanDevice;
+import net.zagdrath.encodedlogistics.rack.device.ServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
@@ -154,11 +156,12 @@ final class Rack2GameTests {
     }
 
     // A rack with a Compute and a Memory Server is a Scheduler on its network: a job started on it runs its crafts on the
-    // rack's Fabrication Server and puts the result in the network.
+    // rack's Fabrication Server and puts the result in the network. The servers' lights are solid while idle, blink
+    // while the job runs, and go solid again after it.
     static void rackScheduler(GameTestHelper helper) {
         BlockPos master = RackGameTests.networkedRack(helper);
         ComputeServerDevice compute = RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
-        RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 3, MemoryServerDevice.class);
+        MemoryServerDevice memory = RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 3, MemoryServerDevice.class);
         FabricationServerDevice fabrication = RackGameTests.install(helper, master, RackDeviceType.FABRICATION_SERVER, 4, FabricationServerDevice.class);
         storageDevice(helper, master, RackDeviceType.NAS, 6, NasDevice.class, 0, StorageDevice.READ_WRITE);
         ItemStack card = new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
@@ -174,6 +177,9 @@ final class Rack2GameTests {
                     RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
                     helper.assertTrue(rack.scheduler().active(), "Rack isn't a Scheduler");
                     helper.assertTrue(rack.scheduler().badges(compute) && rack.scheduler().badges(fabrication), "Servers without the badge");
+                    for (RackDevice server : List.of(compute, memory, fabrication)) {
+                        helper.assertTrue(ServerDevice.IDLE.equals(server.modelVariant()), server.type().id() + " not solid while idle: " + server.modelVariant());
+                    }
                     RackGameTests.storage(helper, master).insert(LOG, 2, false);
                     List<JobHost> schedulers = CraftRequests.schedulers(level, device);
                     helper.assertTrue(schedulers.contains(rack.scheduler()), "Rack Scheduler not offered: " + schedulers.size());
@@ -181,12 +187,24 @@ final class Rack2GameTests {
                     helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
                     helper.assertTrue(CraftRequests.start(level, device, plan, rack.scheduler()) != null, "Job didn't start");
                 })
-                .thenIdle(60)
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    for (RackDevice server : List.of(compute, memory, fabrication)) {
+                        helper.assertTrue(server.modelVariant() == null, server.type().id() + " not blinking while working: " + server.modelVariant());
+                    }
+                })
+                .thenIdle(57)
                 .thenExecute(() -> {
                     RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
                     helper.assertTrue(RackGameTests.storage(helper, master).count(PLANKS) == 8,
                             "Network has " + RackGameTests.storage(helper, master).count(PLANKS) + " planks");
                     helper.assertTrue(rack.scheduler().jobs().isEmpty(), "Job not finished");
+                })
+                .thenIdle(ServerDevice.LINGER + 2)
+                .thenExecute(() -> {
+                    for (RackDevice server : List.of(compute, memory, fabrication)) {
+                        helper.assertTrue(ServerDevice.IDLE.equals(server.modelVariant()), server.type().id() + " not solid after the job: " + server.modelVariant());
+                    }
                 })
                 .thenSucceed();
     }

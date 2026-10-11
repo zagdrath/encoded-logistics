@@ -54,6 +54,10 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Changed
 
+- Compute, Memory and Fabrication Servers show their lights solid while they're online and idle, and blink only
+  while they're working: a Compute Server while its pool runs jobs, a Memory Server while jobs hold memory, and a
+  Fabrication Server while it crafts. They keep blinking for a second after work stops, so the lights don't flicker
+  between jobs. The rack screen's elevation shows the same.
 - Rack Consoles have to be at least 8U apart (7U free between them), so one's open screen can't clip through the
   drawer of the one above. This applies when installing one and in Rack Elevation plans, which skip a console that
   is too close and say which one is in the way. Other devices can still go between them. Racks that already have

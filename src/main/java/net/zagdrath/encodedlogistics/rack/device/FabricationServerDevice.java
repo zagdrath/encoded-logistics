@@ -43,6 +43,9 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     private @Nullable CraftTask task;
     private int progress, duration;
     private double energyCredit;
+    // Its lights: blinking while it crafts and ServerDevice.LINGER ticks after, solid while online and idle.
+    private long busyUntil;
+    private boolean busy;
 
     public FabricationServerDevice(RackDeviceType type) {
         super(type);
@@ -104,7 +107,21 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     }
 
     @Override
+    public @Nullable String modelVariant() {
+        return isOnline() && !busy ? ServerDevice.IDLE : null;
+    }
+
+    @Override
     public void tick(ServerLevel level) {
+        long now = level.getGameTime();
+        if (task != null && isOnline()) {
+            busyUntil = now + ServerDevice.LINGER;
+        }
+        boolean shown = isOnline() && now < busyUntil;
+        if (shown != busy) {
+            busy = shown;
+            changed(false);
+        }
         if (task == null || !isOnline() || rack() == null) {
             return;
         }

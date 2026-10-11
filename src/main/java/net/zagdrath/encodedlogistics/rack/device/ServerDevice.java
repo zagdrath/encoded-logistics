@@ -21,9 +21,45 @@ import net.zagdrath.encodedlogistics.rack.RackScheduler;
 // A Compute or Memory Server: what it gives its network's rack Scheduler (RackScheduler: the pool of every rack on the
 // network). Its panel shows its own share, the pool's use of it, and the jobs the pool runs (each with a cancel button:
 // JobCancelPayload, to the rack, which resolves to the pool's head).
+//
+// Its lights blink while the pool uses it (running jobs, for a Compute Server; jobs holding memory, for a Memory Server:
+// the pool's head marks it, markBusy) and stay solid while it's online and idle (the IDLE look). Busy lingers LINGER
+// ticks, so the lights don't flicker between one job and the next.
 public abstract class ServerDevice extends RackDevice {
+    // The idle look's suffix (RackDeviceType variants): its lights solid.
+    public static final String IDLE = "_idle";
+    // Ticks it still shows busy after its work stops.
+    public static final int LINGER = 20;
+
+    private long busyUntil;
+    private boolean busy;
+
     protected ServerDevice(RackDeviceType type) {
         super(type);
+    }
+
+    // The pool is using it this tick (RackScheduler).
+    public void markBusy(long gameTime) {
+        busyUntil = gameTime + LINGER;
+    }
+
+    // Shown busy: blinking.
+    public boolean busy() {
+        return busy;
+    }
+
+    @Override
+    public void tick(ServerLevel level) {
+        boolean now = isOnline() && level.getGameTime() < busyUntil;
+        if (now != busy) {
+            busy = now;
+            changed(false);
+        }
+    }
+
+    @Override
+    public @Nullable String modelVariant() {
+        return isOnline() && !busy ? IDLE : null;
     }
 
     // The pool this server is part of: its network's, headed by whichever rack heads it.

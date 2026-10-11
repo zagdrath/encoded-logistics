@@ -28,6 +28,7 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FabricationServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
+import net.zagdrath.encodedlogistics.rack.device.ServerDevice;
 
 // A network's rack Scheduler, a cluster: every online Compute and Memory Server serving a network, in whichever of its
 // racks, pools into one Scheduler with computeServerThreads threads per Compute Server and memoryServerMemory job
@@ -129,7 +130,8 @@ public final class RackScheduler implements JobHost {
         if (!head) {
             return;
         }
-        for (RackDevice device : ControllerStructures.rackDevicesServing(server, network)) {
+        List<RackDevice> serving = ControllerStructures.rackDevicesServing(server, network);
+        for (RackDevice device : serving) {
             if (!device.isOnline()) {
                 continue;
             }
@@ -137,6 +139,16 @@ public final class RackScheduler implements JobHost {
                 threads += Config.COMPUTE_SERVER_THREADS.getAsInt();
             } else if (device instanceof MemoryServerDevice) {
                 memory += Config.MEMORY_SERVER_MEMORY.getAsInt();
+            }
+        }
+        // Its servers' lights: Compute Servers blink while jobs run, Memory Servers while jobs hold memory.
+        boolean computing = active() && runner.threadsUsed() > 0, holding = active() && runner.memoryUsed() > 0;
+        if (computing || holding) {
+            long now = level.getGameTime();
+            for (RackDevice device : serving) {
+                if (device.isOnline() && (computing && device instanceof ComputeServerDevice || holding && device instanceof MemoryServerDevice)) {
+                    ((ServerDevice) device).markBusy(now);
+                }
             }
         }
     }
