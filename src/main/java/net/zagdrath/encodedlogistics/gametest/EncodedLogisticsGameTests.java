@@ -154,6 +154,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_tape_archives", Rack3GameTests::tapeArchives);
         TESTS.put("rack_tape_recalls", Rack3GameTests::tapeRecalls);
         TESTS.put("rack_plan_with_tape", Rack3GameTests::planWithTape);
+        TESTS.put("plan_alternate_recipes", Rack3GameTests::planAlternates);
         TESTS.put("rack_wireless_controller", Rack3GameTests::wirelessController);
         TESTS.put("wireless_port_capacity_fault", WirelessGameTests::portCapacityAndFault);
         TESTS.put("wireless_bridge_segment", WirelessGameTests::bridgeSegment);

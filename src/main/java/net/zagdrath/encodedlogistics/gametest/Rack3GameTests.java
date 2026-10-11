@@ -124,6 +124,39 @@ final class Rack3GameTests {
         helper.succeed();
     }
 
+    // Alternate recipes: a chest from oak planks comes first, from birch second. Only birch planks: the birch one (and
+    // nothing of the oak attempt left in the plan); both: oak, its priority kept; oak planks only to be made from oak logs
+    // there are none of: birch again; neither: the oak one, showing its planks missing.
+    static void planAlternates(GameTestHelper helper) {
+        StorageKey oak = StorageKey.of(new ItemStack(Items.OAK_PLANKS)), birch = StorageKey.of(new ItemStack(Items.BIRCH_PLANKS)),
+                chest = StorageKey.of(new ItemStack(Items.CHEST));
+        Schematic oakChest = Schematic.of(Schematic.Kind.CRAFTING, java.util.Collections.nCopies(8, new ItemStack(Items.OAK_PLANKS)), List.of(new ItemStack(Items.CHEST)));
+        Schematic birchChest = Schematic.of(Schematic.Kind.CRAFTING, java.util.Collections.nCopies(8, new ItemStack(Items.BIRCH_PLANKS)), List.of(new ItemStack(Items.CHEST)));
+        Schematic oakPlanks = Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_LOG)), List.of(new ItemStack(Items.OAK_PLANKS, 4)));
+        Map<StorageKey, List<Schematic>> recipes = CraftPlanner.byOutput(List.of(oakChest, birchChest, oakPlanks));
+
+        CraftPlanner.Plan birchOnly = CraftPlanner.plan(Map.of(birch, 8L), recipes, chest, 1);
+        helper.assertTrue(birchOnly.complete(), "Birch planks there, yet incomplete: " + birchOnly.lines());
+        helper.assertTrue(birchOnly.crafts().equals(Map.of(birchChest, 1L)), "Crafts " + birchOnly.crafts());
+        helper.assertTrue(birchOnly.take().equals(Map.of(birch, 8L)), "Takes " + birchOnly.take());
+        helper.assertTrue(birchOnly.lines().stream().noneMatch(line -> line.key().equals(oak) || line.key().equals(LOG)), "The oak attempt left lines: "
+                + birchOnly.lines());
+        helper.assertTrue(birchOnly.memory() == 9, "Memory " + birchOnly.memory() + " counts the oak attempt");
+
+        CraftPlanner.Plan both = CraftPlanner.plan(Map.of(oak, 8L, birch, 8L), recipes, chest, 1);
+        helper.assertTrue(both.complete() && both.crafts().equals(Map.of(oakChest, 1L)), "Priority not kept: " + both.crafts());
+
+        CraftPlanner.Plan logs = CraftPlanner.plan(Map.of(LOG, 2L), recipes, chest, 1);
+        helper.assertTrue(logs.complete() && logs.crafts().equals(Map.of(oakChest, 1L, oakPlanks, 2L)), "Oak through logs: " + logs.crafts());
+
+        CraftPlanner.Plan neither = CraftPlanner.plan(Map.of(), recipes, chest, 1);
+        helper.assertTrue(!neither.complete() && neither.crafts().containsKey(oakChest) && !neither.crafts().containsKey(birchChest),
+                "Neither: " + neither.crafts());
+        helper.assertTrue(neither.lines().stream().anyMatch(line -> line.key().equals(LOG) && line.missing() > 0), "Not showing the oak tree missing: "
+                + neither.lines());
+        helper.succeed();
+    }
+
     // A Handheld Terminal linked to a Wireless Controller reaches the network through it (anywhere); unlinked, it doesn't.
     @SuppressWarnings("removal")
     static void wirelessController(GameTestHelper helper) {
