@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.item.RackElevationItem;
@@ -51,6 +52,7 @@ import net.zagdrath.encodedlogistics.network.RackPartNode;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RackBreakGuard;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
@@ -284,6 +286,39 @@ public class ServerRackBlock extends BaseEntityBlock implements NetworkNodeBlock
             rack.setRearOpen(!rack.isRearOpen());
         }
         return InteractionResult.SUCCESS;
+    }
+
+    // --- Breaking (RackBreakGuard: sneak, or left-click twice) ---
+
+    private static BlockPos master(BlockPos pos, BlockState state) {
+        return RackGeometry.masterPos(pos, state.getValue(FACING), state.getValue(PART_INDEX));
+    }
+
+    @Override
+    protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
+        RackBreakGuard.clicked(player, master(pos, state));
+        super.attack(state, level, pos, player);
+    }
+
+    // Not armed and confirmed (nor sneaking): mining it makes no progress.
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        return RackBreakGuard.allowed(player, master(pos, state)) ? super.getDestroyProgress(state, player, level, pos) : 0;
+    }
+
+    // The last word, on both sides: a creative break (which mines nothing first) is a click, the first arming it.
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, ItemStack toolStack, boolean willHarvest,
+            FluidState fluid) {
+        BlockPos master = master(pos, state);
+        if (player.getAbilities().instabuild) {
+            RackBreakGuard.clicked(player, master);
+        }
+        if (!RackBreakGuard.allowed(player, master)) {
+            return false;
+        }
+        RackBreakGuard.clear(player);
+        return super.onDestroyedByPlayer(state, level, pos, player, toolStack, willHarvest, fluid);
     }
 
     // --- Network ---

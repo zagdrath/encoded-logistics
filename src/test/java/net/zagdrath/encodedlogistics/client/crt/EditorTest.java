@@ -289,6 +289,42 @@ class EditorTest {
         assertEquals(List.of("", "PGM", "ENDPGM", ""), editor.model().texts().subList(0, 4));
     }
 
+    // A whole script pasted into a new member: a line each (Windows line breaks, a tab and a trailing break), the
+    // cursor on the line after it, and it saves as pasted.
+    @Test
+    void pasteScript() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "NEW", List.of(), false);
+        terminal.push(editor);
+        terminal.paste("PGM\r\nDCL VAR(&N) TYPE(*INT)\r\n\tCHGVAR VAR(&N) VALUE(1)\r\nENDPGM\r\n");
+        assertEquals(List.of("PGM", "DCL VAR(&N) TYPE(*INT)", "    CHGVAR VAR(&N) VALUE(1)", "ENDPGM"), SourceLine.texts(editor.model().save(5)));
+        assertEquals(4, terminal.focused().row - 4, "the cursor on the line after the paste");
+        assertTrue(LayoutTest.row(terminal.compose(), 22).contains("5 lines pasted"), LayoutTest.row(terminal.compose(), 22));
+    }
+
+    // Pasted mid-line: the line splits round it - its head on the first pasted line, its tail after the last; lines
+    // past 80 columns are cut; one line still types into the field.
+    @Test
+    void pasteIntoLine() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "TEST", numbered("PGM", "SNDMSG MSG('x')", "ENDPGM"), false);
+        terminal.push(editor);
+        List<CrtField> texts = terminal.current().fields.stream().filter(field -> field.col == 8).toList();
+        terminal.focus(texts.get(1));
+        terminal.focused().cursor = 7;
+        terminal.paste("ONE\nTWO\nTHREE " + "X".repeat(90));
+        List<String> lines = editor.model().texts();
+        assertEquals("SNDMSG ONE", lines.get(1));
+        assertEquals("TWO", lines.get(2));
+        assertEquals(80, lines.get(3).length(), "not cut at 80");
+        assertEquals("ENDPGM", lines.get(4));
+        assertTrue(LayoutTest.row(terminal.compose(), 22).contains("1 cut"), LayoutTest.row(terminal.compose(), 22));
+        terminal.focus(texts.get(0));
+        terminal.focused().cursor = 3;
+        terminal.paste(" X");
+        assertEquals(5, editor.model().lines.size(), "a one-line paste added lines");
+    }
+
     // Lines typed into a new member get their sequence numbers on Enter (the open blank line keeps '''''''), and Up /
     // Down move the cursor between the lines' text at the same column, not into the margins.
     @Test

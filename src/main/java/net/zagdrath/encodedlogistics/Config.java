@@ -345,6 +345,11 @@ public class Config {
             .comment("Whether breaking a Server Rack (and so pulling its devices out) needs the Firewall's rack access permission on its network.")
             .define("rackBreakProtection", true);
 
+    public static final ModConfigSpec.BooleanValue RACK_BREAK_CONFIRM = BUILDER
+            .comment("Whether breaking a Server Rack takes a sneak, or a second left click within a second of the first, so a stray click",
+                    "can't start taking one down.")
+            .define("rackBreakConfirm", true);
+
     public static final ModConfigSpec.DoubleValue ROUTER_DRAIN = BUILDER
             .comment("FE per tick a Router drains while its network runs.")
             .defineInRange("routerDrain", 4.0, 0.0, 1_000.0);

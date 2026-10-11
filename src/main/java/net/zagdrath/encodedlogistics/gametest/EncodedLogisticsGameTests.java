@@ -129,6 +129,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_elevation_recipes", RackElevationGameTests::recipes);
         TESTS.put("rack_firewall", RackGameTests::firewall);
         TESTS.put("rack_access", RackSecurityGameTests::rackAccess);
+        TESTS.put("rack_break_confirm", RackSecurityGameTests::rackBreakConfirm);
         TESTS.put("rack_access_open_and_offline", RackSecurityGameTests::openAndOffline);
         TESTS.put("link_card_permissions", RackSecurityGameTests::linkCards);
         TESTS.put("display_merging", DisplayGameTests::merging);

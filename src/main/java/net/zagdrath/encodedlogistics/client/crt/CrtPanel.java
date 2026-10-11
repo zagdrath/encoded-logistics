@@ -110,6 +110,11 @@ abstract class CrtPanel {
         return false;
     }
 
+    // A paste (the clipboard's text) this screen takes itself (the editor's lines); false to type it into the field.
+    boolean paste(String text) {
+        return false;
+    }
+
     // A field of a row from the server (the screens' queries send one cell per field), "" past the last.
     static String cell(TerminalLine line, int index) {
         return index < line.cells().size() ? line.cells().get(index).text().getString() : "";

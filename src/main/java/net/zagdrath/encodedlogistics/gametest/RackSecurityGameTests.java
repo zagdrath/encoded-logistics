@@ -14,6 +14,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -33,6 +34,7 @@ import net.zagdrath.encodedlogistics.item.LinkCardItem;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
+import net.zagdrath.encodedlogistics.rack.RackBreakGuard;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
@@ -113,9 +115,52 @@ final class RackSecurityGameTests {
         }
     }
 
+    // Sneaking, so the break needs no second click (RackBreakGuard): only the Firewall decides.
     private static boolean breakRack(GameTestHelper helper, BlockPos master, ServerPlayer player) {
+        player.setShiftKeyDown(true);
         player.gameMode.destroyBlock(helper.absolutePos(master));
+        player.setShiftKeyDown(false);
         return helper.getLevel().getBlockState(helper.absolutePos(master)).isAir();
+    }
+
+    // A stray break doesn't take a rack down. Survival: mining it unarmed makes no progress; one click arms it and leaves
+    // it standing, a second confirms and it breaks. Creative: the first break arms it, the second breaks it. Sneaking
+    // breaks it straight away.
+    static void rackBreakConfirm(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        ServerPlayer player = player(helper);
+        BlockPos rack = helper.absolutePos(master);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setGameMode(GameType.SURVIVAL);
+                    helper.assertTrue(helper.getBlockState(master).getDestroyProgress(player, helper.getLevel(), rack) == 0, "Mining an unarmed rack progresses");
+                    player.gameMode.destroyBlock(rack);
+                    helper.assertFalse(helper.getLevel().getBlockState(rack).isAir(), "Broken without confirming");
+                    RackBreakGuard.clicked(player, rack);
+                    player.gameMode.destroyBlock(rack);
+                    helper.assertFalse(helper.getLevel().getBlockState(rack).isAir(), "Broken on the first click");
+                    RackBreakGuard.clicked(player, rack);
+                    helper.assertTrue(helper.getBlockState(master).getDestroyProgress(player, helper.getLevel(), rack) > 0, "Confirmed, yet no progress");
+                    player.gameMode.destroyBlock(rack);
+                    helper.assertTrue(helper.getLevel().getBlockState(rack).isAir(), "Not broken on the second click");
+                })
+                .thenExecute(() -> RackGameTests.networkedRack(helper))
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setGameMode(GameType.CREATIVE);
+                    player.gameMode.destroyBlock(rack);
+                    helper.assertFalse(helper.getLevel().getBlockState(rack).isAir(), "Creative: broken on the first break");
+                    player.gameMode.destroyBlock(rack);
+                    helper.assertTrue(helper.getLevel().getBlockState(rack).isAir(), "Creative: not broken on the second break");
+                })
+                .thenExecute(() -> RackGameTests.networkedRack(helper))
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    player.setGameMode(GameType.SURVIVAL);
+                    helper.assertTrue(breakRack(helper, master, player), "Sneaking didn't break it");
+                })
+                .thenSucceed();
     }
 
     // The stranger and the builder are kept out (doors, screen, devices, breaking); the rack hand and the trusted player

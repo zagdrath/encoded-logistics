@@ -543,6 +543,9 @@ final class CrtTerminal {
     }
 
     void paste(String text) {
+        if (window() == null && current().paste(text)) {
+            return;
+        }
         if (focused != null) {
             for (char c : text.toCharArray()) {
                 if (c >= 32 && c < 127) {

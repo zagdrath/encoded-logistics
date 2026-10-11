@@ -378,8 +378,27 @@ final class EditorPanel extends CrtPanel {
 
     // What was typed into the rows' text fields back into the lines; their margins' commands.
     private List<EditorModel.Command> sync() {
+        syncText();
         List<EditorModel.Command> commands = new ArrayList<>();
         for (RowFields row : rows) {
+            EditorModel.Line line = row.item().kind() == Item.BEGIN ? EditorModel.TOP : row.item().line();
+            if (line == null) {
+                continue;
+            }
+            if (row.margin() != null && !row.margin().value.equals(row.marginShown())) {
+                String command = EditorModel.typed(row.marginShown(), row.margin().value);
+                if (!command.isEmpty()) {
+                    commands.add(new EditorModel.Command(line, command));
+                }
+            }
+        }
+        return commands;
+    }
+
+    // What was typed into the rows' text fields back into the lines (each row's text taken once: what it shows now).
+    private void syncText() {
+        for (int i = 0; i < rows.size(); i++) {
+            RowFields row = rows.get(i);
             EditorModel.Line line = row.item().kind() == Item.BEGIN ? EditorModel.TOP : row.item().line();
             if (line == null) {
                 continue;
@@ -394,14 +413,75 @@ final class EditorPanel extends CrtPanel {
                 model.setText(line, joined);
                 unchecked.add(line);
             }
-            if (row.margin() != null && !row.margin().value.equals(row.marginShown())) {
-                String command = EditorModel.typed(row.marginShown(), row.margin().value);
-                if (!command.isEmpty()) {
-                    commands.add(new EditorModel.Command(line, command));
-                }
+        }
+    }
+
+    // --- Pasting ---
+
+    // A paste of several lines (a whole script): the first goes in at the cursor on its line, the rest as new lines
+    // under it, and what was right of the cursor follows the last (a paste ending in a line break so goes in above the
+    // line). Tabs become spaces, other characters the terminal can't show are left out, and lines past 80 columns are
+    // cut. False (one line, read-only, or the cursor off the source): the terminal types it into the field as usual.
+    @Override
+    boolean paste(String text) {
+        if (readOnly || !loaded) {
+            return false;
+        }
+        String clean = text.replace("\r\n", "\n").replace('\r', '\n').replace("\t", "    ");
+        if (clean.indexOf('\n') < 0) {
+            return false;
+        }
+        CrtField focused = screen.focused();
+        RowFields at = null;
+        for (RowFields row : rows) {
+            if (row.item().line() != null && focused != null && (focused == row.text() || focused == row.margin())) {
+                at = row;
             }
         }
-        return commands;
+        if (at == null) {
+            return false;
+        }
+        syncText();
+        EditorModel.Line line = at.item().line();
+        int index = model.lines.indexOf(line);
+        int column = focused == at.text() ? focused.cursor + (full ? 0 : offset) : 0;
+        String current = line.text;
+        String before = current.length() >= column ? current.substring(0, column) : CrtGrid.pad(current, column);
+        String after = current.length() > column ? current.substring(column) : "";
+        String[] pasted = clean.split("\n", -1);
+        int cut = 0;
+        for (int i = 0; i < pasted.length; i++) {
+            StringBuilder printable = new StringBuilder();
+            for (char c : pasted[i].toCharArray()) {
+                if (c >= 32 && c < 127) {
+                    printable.append(c);
+                }
+            }
+            String value = (i == 0 ? before : "") + printable + (i == pasted.length - 1 ? after : "");
+            value = value.stripTrailing();
+            if (value.length() > EditorModel.WIDTH) {
+                cut++;
+            }
+            if (i == 0) {
+                model.setText(line, value);
+                unchecked.add(line);
+                continue;
+            }
+            // Blank lines inside the paste are spacing, kept; a blank last one (the paste ended in a line break) is the
+            // open line the cursor goes to, dropped like any other if nothing's typed on it.
+            EditorModel.Line added = i == pasted.length - 1 && value.isEmpty() ? EditorModel.blank() : new EditorModel.Line(0, "", 0);
+            added.changed = true;
+            model.lines.add(index + i, added);
+            model.setText(added, value);
+            unchecked.add(added);
+        }
+        model.dirty = true;
+        fillPage();
+        int lastIndex = index + pasted.length - 1;
+        int lastColumn = Math.min(EditorModel.WIDTH - 1, (pasted.length == 1 ? before.length() : 0) + pasted[pasted.length - 1].length());
+        show(lastIndex, lastColumn);
+        screen.message(cut > 0 ? tr("crt.encodedlogistics.edit.pasted_cut", pasted.length, cut) : tr("crt.encodedlogistics.edit.pasted", pasted.length));
+        return true;
     }
 
     // --- Drawing ---
