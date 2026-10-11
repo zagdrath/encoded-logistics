@@ -44,6 +44,18 @@ Wireless Bridge.
 - [ELCL reference](docs/elcl)
 - [Releasing](docs/RELEASING.md)
 
+## Sounds
+
+All of the mod's sounds are original: they were synthesised for Encoded Logistics, with no recorded samples or
+third-party sounds. The scripts in [tools/](tools) generate the Terminal Desk's sounds (`desk_sound.py`) and the
+Server Rack's door, console and tape sounds (`rack_sound.py`, `sound3.py`).
+
+## Credits
+
+Speakers decode MP3 files with JLayer 1.0.1 by JavaZOOM, licensed under the GNU Lesser
+General Public License 2.1. JLayer is carried inside the mod's jar as its own unmodified jar, and its licence text is
+in the mod's jar at `META-INF/licenses/jlayer-LGPL-2.1.txt`.
+
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). JLayer, carried in the jar, is LGPL 2.1 (see Credits).

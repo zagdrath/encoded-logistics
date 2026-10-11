@@ -613,6 +613,10 @@ public class Config {
             .comment("The largest source image a Display Panel takes, in pixels each way.")
             .defineInRange("displayMaxImageSize", 4_096, 16, 16_384);
 
+    public static final ModConfigSpec.IntValue DISPLAY_MAX_IMAGE_PIXELS = BUILDER
+            .comment("The most pixels (width x height) a source image for a Display Panel may have. Read from the file's header before it's decoded, so a small file can't unpack into a huge image.")
+            .defineInRange("displayMaxImagePixels", 16_777_216, 256, 268_435_456);
+
     public static final ModConfigSpec.IntValue DISPLAY_MAX_IMAGE_BYTES = BUILDER
             .comment("The largest source image file a Display Panel takes, in MB.")
             .defineInRange("displayMaxImageBytes", 4, 1, 64);

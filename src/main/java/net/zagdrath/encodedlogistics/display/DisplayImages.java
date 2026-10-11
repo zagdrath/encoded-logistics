@@ -8,15 +8,14 @@ package net.zagdrath.encodedlogistics.display;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -24,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
@@ -33,7 +34,9 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 
 // Images on Display Panels (HANDOFF 3): PNGs in <world>/encodedlogistics/images/<SYSNAME>/, scaled to their region.
 // Server config: allowImages (AUTO: on in single-player, off on dedicated servers), displayMaxImageSize (source px each
-// way), displayMaxImageBytes and displayImageColors (the most a player may pick). Colour modes: 16 = the fixed panel
+// way), displayMaxImagePixels (source width x height), displayMaxImageBytes and displayImageColors (the most a player
+// may pick). The limits are checked from the file's size and, through an ImageReader, its header's width and height
+// before any pixels are decoded - when the image is chosen, and again by the same reader that then decodes it. Colour modes: 16 = the fixed panel
 // palette; 64 / 256 = an adaptive palette for the image (median cut); FULL = 24-bit. The palettes use an ordered 4 x 4
 // Bayer dither (strength 48 / 24 / 12), stable between frames; FULL and SCALE(*NEAREST) aren't dithered. Decoded off the
 // server thread straight to the region's size and cached per file, its change time, region size and mode; clients get
@@ -108,7 +111,7 @@ public final class DisplayImages {
     }
 
     // The file an image name means in the system's folder, checked: images allowed (ELC1315), a plain .png name that's
-    // there (ELC1312), not too big (ELC1313).
+    // there and reads as a PNG (ELC1312), not too big (ELC1313: its file size, sides or pixels).
     public static Path check(MinecraftServer server, String system, String name) throws ElclException {
         if (!allowed(server)) {
             throw new ElclException("ELC1315");
@@ -125,17 +128,36 @@ public final class DisplayImages {
                 throw new ElclException("ELC1312", file);
             }
         }
-        int maxSize = Config.DISPLAY_MAX_IMAGE_SIZE.getAsInt();
-        long maxBytes = Config.DISPLAY_MAX_IMAGE_BYTES.getAsInt() * 1024L * 1024L;
+        Limits limits = Limits.configured();
         try {
-            int[] size = pngSize(path);
-            if (Files.size(path) > maxBytes || size[0] > maxSize || size[1] > maxSize) {
-                throw new ElclException("ELC1313", file, maxSize + " x " + maxSize + " px, " + Config.DISPLAY_MAX_IMAGE_BYTES.getAsInt() + " MB");
+            if (Files.size(path) > limits.bytes()) {
+                throw new ElclException("ELC1313", file, limits.text());
+            }
+            int[] size = dimensions(path);
+            if (!limits.fits(size[0], size[1])) {
+                throw new ElclException("ELC1313", file, limits.text());
             }
         } catch (IOException e) {
             throw new ElclException("ELC1312", file);
         }
         return path;
+    }
+
+    // How big a source image may be: its file in bytes, each side and width x height in pixels.
+    record Limits(long bytes, int side, long pixels) {
+        static Limits configured() {
+            return new Limits(Config.DISPLAY_MAX_IMAGE_BYTES.getAsInt() * 1024L * 1024L, Config.DISPLAY_MAX_IMAGE_SIZE.getAsInt(),
+                    Config.DISPLAY_MAX_IMAGE_PIXELS.getAsInt());
+        }
+
+        boolean fits(int width, int height) {
+            return width > 0 && height > 0 && width <= side && height <= side && (long) width * height <= pixels;
+        }
+
+        // ELC1313's limit, as it's always been worded.
+        String text() {
+            return side + " x " + side + " px, " + bytes / (1024L * 1024L) + " MB";
+        }
     }
 
     private static Path findIgnoringCase(Path folder, String name) {
@@ -146,17 +168,52 @@ public final class DisplayImages {
         }
     }
 
-    // A PNG's width and height from its header.
-    private static int[] pngSize(Path path) throws IOException {
-        try (InputStream in = Files.newInputStream(path); DataInputStream data = new DataInputStream(in)) {
-            byte[] signature = data.readNBytes(8);
-            if (signature.length < 8 || signature[1] != 'P' || signature[2] != 'N' || signature[3] != 'G') {
-                throw new IOException("not a PNG");
+    // A PNG's width and height, from its header by an ImageReader (nothing decoded).
+    static int[] dimensions(Path path) throws IOException {
+        try (ImageInputStream in = ImageIO.createImageInputStream(path.toFile())) {
+            ImageReader reader = pngReader(in);
+            try {
+                return new int[] { reader.getWidth(0), reader.getHeight(0) };
+            } finally {
+                reader.dispose();
             }
-            data.readInt();
-            data.readInt();
-            return new int[] { data.readInt(), data.readInt() };
         }
+    }
+
+    // The image, decoded only once its file size and its header's width and height are within the limits - by the
+    // same reader, from the same open file, so it can't change in between. Too big: an IOException.
+    static BufferedImage decode(Path path, Limits limits) throws IOException {
+        if (Files.size(path) > limits.bytes()) {
+            throw new IOException("too large");
+        }
+        try (ImageInputStream in = ImageIO.createImageInputStream(path.toFile())) {
+            ImageReader reader = pngReader(in);
+            try {
+                if (!limits.fits(reader.getWidth(0), reader.getHeight(0))) {
+                    throw new IOException("too large");
+                }
+                return reader.read(0);
+            } finally {
+                reader.dispose();
+            }
+        }
+    }
+
+    // A PNG reader on the stream (an IOException for anything else).
+    private static ImageReader pngReader(ImageInputStream in) throws IOException {
+        if (in == null) {
+            throw new IOException("unreadable");
+        }
+        Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
+        while (readers.hasNext()) {
+            ImageReader reader = readers.next();
+            if (reader.getFormatName().equalsIgnoreCase("png")) {
+                reader.setInput(in, true, true);
+                return reader;
+            }
+            reader.dispose();
+        }
+        throw new IOException("not a PNG");
     }
 
     // The image at the region's size (ARGB), off the server thread; cached.
@@ -168,6 +225,7 @@ public final class DisplayImages {
             return CompletableFuture.failedFuture(e);
         }
         Key key = new Key(path, modified, w, h, nearest, colors);
+        Limits limits = Limits.configured();
         synchronized (CACHE) {
             int[] cached = CACHE.get(key);
             if (cached != null) {
@@ -176,10 +234,7 @@ public final class DisplayImages {
         }
         return CompletableFuture.supplyAsync(() -> {
             try {
-                BufferedImage source = ImageIO.read(path.toFile());
-                if (source == null) {
-                    throw new IOException("unreadable");
-                }
+                BufferedImage source = decode(path, limits);
                 int[] pixels = convert(source, w, h, nearest, colors);
                 synchronized (CACHE) {
                     CACHE.put(key, pixels);

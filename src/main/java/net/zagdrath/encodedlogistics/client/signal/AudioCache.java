@@ -6,12 +6,6 @@
 package net.zagdrath.encodedlogistics.client.signal;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,8 +22,9 @@ import net.zagdrath.encodedlogistics.net.AudioPayloads;
 import net.zagdrath.encodedlogistics.signal.AudioFiles;
 
 // The client's Speaker audio: files the server sent (asked for by hash, assembled from its chunks, kept by hash up to
-// BUDGET bytes, least recently played dropped first), and web URLs this game fetched itself (no redirects - they could
-// leave the server's allowed hosts - at most maxBytes, the last few kept). Cleared on leaving the world.
+// BUDGET bytes, least recently played dropped first), and web URLs this game fetched itself (WebAudioFetch: checked
+// again here, public addresses only, no redirects, at most maxBytes; the last few kept). Only ever in memory, and
+// cleared on leaving the world.
 final class AudioCache {
     private static final long BUDGET = 64L * 1024 * 1024;
     private static final int URLS_KEPT = 8;
@@ -134,25 +129,9 @@ final class AudioCache {
 
     private static byte[] fetch(String url, int maxBytes) {
         try {
-            HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NEVER).connectTimeout(Duration.ofSeconds(10)).build();
-            HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(30)).header("User-Agent", "EncodedLogistics-Speaker")
-                    .GET().build();
-            HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-            try (InputStream body = response.body()) {
-                if (response.statusCode() != 200) {
-                    throw new CompletionException(new IOException("web: HTTP " + response.statusCode()));
-                }
-                byte[] bytes = body.readNBytes(maxBytes + 1);
-                if (bytes.length > maxBytes) {
-                    throw new CompletionException(new IOException("web: too large"));
-                }
-                return bytes;
-            }
-        } catch (IOException | IllegalArgumentException e) {
-            throw new CompletionException(new IOException(e.getMessage() != null && e.getMessage().startsWith("web:") ? e.getMessage() : "web: no answer", e));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new CompletionException(new IOException("web: no answer", e));
+            return WebAudioFetch.fetch(url, maxBytes);
+        } catch (IOException e) {
+            throw new CompletionException(e.getMessage() != null && e.getMessage().startsWith("web:") ? e : new IOException("web: no answer", e));
         }
     }
 

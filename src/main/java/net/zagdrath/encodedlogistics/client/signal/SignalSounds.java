@@ -36,8 +36,9 @@ import net.zagdrath.encodedlogistics.signal.SpeakerBlockEntity;
 // - a Speaker's note (a block event: PLYNOTE's, or a MIDI file's from the server) plays at once, at the instrument's
 //   pitch for it and its velocity times the speaker's volume;
 // - a Speaker playing a file asks the server for it (AudioCache) and, once it's here, starts it where the play should be
-//   by now; a URL is fetched by this game (unless neverPlayWebAudio) with the server's limits, and its length - or why
-//   it failed - reported back (AudioPayloads.Report). Each device's sound stops when it does, or its block goes.
+//   by now; a URL is fetched by this game (only when the player has opted in: allowWebAudio, off by default; else the
+//   Speaker's popup says it was skipped) with the server's limits, and its length - or why it failed - reported back
+//   (AudioPayloads.Report). Each device's sound stops when it does, or its block goes.
 public final class SignalSounds implements SignalClientHooks {
     private static final int LATE_TICKS = 10;
 
@@ -183,8 +184,8 @@ public final class SignalSounds implements SignalClientHooks {
             start(speaker, state, bytes, speaker.lengthTicks() / 20.0);
             return;
         }
-        // A URL.
-        if (TerminalSettings.neverPlayWebAudio()) {
+        // A URL: only for a player who has opted in (the popup says why there's nothing to hear: webAudioSkipped).
+        if (!TerminalSettings.allowWebAudio()) {
             state.started = true;
             return;
         }
@@ -243,6 +244,11 @@ public final class SignalSounds implements SignalClientHooks {
                 () -> !speaker.isRemoved() && speaker.playing() && speaker.play() == play);
         state.sound = sound;
         play(sound);
+    }
+
+    // Whether a Speaker is playing web audio this player hasn't opted in to (so they hear nothing from it).
+    public static boolean webAudioSkipped(SpeakerBlockEntity speaker) {
+        return speaker.playing() && speaker.playingSource() == SpeakerBlockEntity.Source.URL && !TerminalSettings.allowWebAudio();
     }
 
     private static void report(SpeakerBlockEntity speaker, Playing state, float seconds, String problem) {

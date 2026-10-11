@@ -23,8 +23,23 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Security
+
+- Speakers' web audio is now off for each player until they turn on *Allow Web Audio* (`allowWebAudio` in
+  `encodedlogistics-client.toml`, under Sounds). It replaces the client option *Never Play Web Audio*. A Speaker
+  playing web audio you haven't opted in to says so on its popup.
+- Before fetching web audio, your game checks the URL itself instead of trusting the server: http or https only, no
+  user name or password, and the host must resolve only to public addresses (not loopback, private, link-local,
+  multicast or unspecified). The host is looked up once, and the game connects to that checked address only.
+  Redirects stay off, the size limit stays, and the audio is only kept in memory.
+- Display Panel images: the server reads an image's width and height from its header before decoding it, and refuses
+  images over the new `displayMaxImagePixels` (16,777,216 pixels by default), as well as over `displayMaxImageSize`
+  and `displayMaxImageBytes`. The image is decoded by the same reader that checked it.
+
 ### Changed
 
+- The mod's jar carries JLayer's licence (GNU LGPL 2.1) at `META-INF/licenses/jlayer-LGPL-2.1.txt`, and the mod list
+  credits JLayer. The mod list links to the issue tracker on GitHub and the mod's CurseForge page.
 - New Storage Drives of every type (item, fluid, pressurized and energy) stack to 64, as cells do in AE2. A drive
   that has been in a holder is one of a kind and stacks to 1, until it is empty again in your inventory: then it
   goes back to a new drive and stacks with the others.
@@ -34,7 +49,6 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 - A copied Storage Drive (a creative middle-click, or Ctrl+pick-block of a Drive Bay, NAS or SAN with drives in)
   shared its original's contents: taking items out of one took them out of both, and a network with both counted
   them once. A copy now becomes a drive of its own, holding a copy of what the original had.
-
 - The Server Rack screen drew a NAS's or SAN's drive sleds squeezed into the left of their bays (a full SAN looked
   like 9 drives a row with 3 empty bays); they now sit in their bays as the rack in the world shows them.
 - Turning off UPS alarms in your own config did nothing on a server, since only the server's `upsAlarms` was

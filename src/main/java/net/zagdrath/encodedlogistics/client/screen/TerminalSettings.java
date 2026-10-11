@@ -63,10 +63,10 @@ public final class TerminalSettings {
     private static final ModConfigSpec.BooleanValue TOAST_SOUND = BUILDER.comment("A quiet chime with each toast (a lower tone for failures).")
             .define("sound", true);
 
-    // Speakers (docs/signals): web audio is fetched by this game, from its host.
-    private static final ModConfigSpec.BooleanValue NEVER_PLAY_WEB_AUDIO = BUILDER.pop().push("audio")
-            .comment("Never play web audio from Speakers. Playing it means this game fetches the URL itself, which shows your IP address to whoever hosts it.")
-            .define("neverPlayWebAudio", false);
+    // Speakers (docs/signals): web audio is fetched by this game, from its host, so it's off until the player opts in.
+    private static final ModConfigSpec.BooleanValue ALLOW_WEB_AUDIO = BUILDER.pop().push("audio")
+            .comment("Play web audio from Speakers. Off by default: playing it means this game fetches the URL itself, which shows your IP address to whoever hosts it.")
+            .define("allowWebAudio", false);
     // UPSes: their alarms are played by the server (upsAlarms in the server's config turns them off for everyone); this
     // silences them for this player only, on any server.
     private static final ModConfigSpec.BooleanValue UPS_ALARM_SOUNDS = BUILDER
@@ -75,8 +75,9 @@ public final class TerminalSettings {
 
     public static final ModConfigSpec SPEC = BUILDER.pop().build();
 
-    public static boolean neverPlayWebAudio() {
-        return SPEC.isLoaded() ? NEVER_PLAY_WEB_AUDIO.get() : NEVER_PLAY_WEB_AUDIO.getDefault();
+    // Whether this player has opted in to web audio (off until they do, and off before the config has loaded).
+    public static boolean allowWebAudio() {
+        return SPEC.isLoaded() ? ALLOW_WEB_AUDIO.get() : ALLOW_WEB_AUDIO.getDefault();
     }
 
     public static boolean upsAlarmSounds() {

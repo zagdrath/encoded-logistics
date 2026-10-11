@@ -183,7 +183,7 @@ ELC2408; `*ALL` leaves it out.
 Server config (`signals`): `audioMaxBytes` (MB, 4), `audioMaxSeconds` (180), `midiMaxKilobytes` (256),
 `midiMaxSeconds` (600), `midiMaxNotes` (notes one speaker starts in a tick, 8), `allowWebAudio` (AUTO: on in
 single-player, off on dedicated servers), `webAudioHosts` (a listed host allows its subdomains; empty: none),
-`sirenMaxRange` (96), `speakerMaxRange` (64), `signalDeviceDrain` (FE/t). Client config: `neverPlayWebAudio`.
+`sirenMaxRange` (96), `speakerMaxRange` (64), `signalDeviceDrain` (FE/t). Client config: `allowWebAudio` (off: web audio plays only for a player who turns it on).
 
 ## 8. Messages, displays and output
 

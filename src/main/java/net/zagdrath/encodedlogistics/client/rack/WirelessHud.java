@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.client.rack;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
@@ -28,14 +30,17 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.WirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
+import net.zagdrath.encodedlogistics.client.signal.SignalSounds;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.midrange.DiskDriveBlock;
 import net.zagdrath.encodedlogistics.midrange.TapeDriveBlock;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.net.WirelessInfoPayloads;
+import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.signal.SignalBlock;
+import net.zagdrath.encodedlogistics.signal.SpeakerBlockEntity;
 
 // The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports, and Small Wireless
 // Bridges - not the machines they're on - the Midrange Disk and Tape Drives, and the Cage Lights, Alarm Strobes and Speakers): the rack's popup (RackHud.popup) with the block's icon, its name and device name
@@ -133,6 +138,15 @@ public final class WirelessHud {
         }
         ItemStack icon = bridge ? ModItems.SMALL_WIRELESS_BRIDGE.toStack() : new ItemStack(minecraft.level.getBlockState(at).getBlock());
         Component subtitle = Component.literal(info.name());
-        RackHud.popup(graphics, minecraft.font, icon, subtitle, info.info(), graphics.guiWidth() / 2 + OFFSET_X, graphics.guiHeight() / 2 + OFFSET_Y, null);
+        RackDeviceInfo shown = info.info();
+        // A Speaker playing web audio this player hasn't opted in to: why they hear nothing (their own setting, so it's
+        // added here rather than by the server).
+        if (!bridge && minecraft.level.getBlockEntity(at) instanceof SpeakerBlockEntity speaker && SignalSounds.webAudioSkipped(speaker)) {
+            List<RackDeviceInfo.InfoLine> lines = new ArrayList<>(shown.lines());
+            lines.add(new RackDeviceInfo.InfoLine(Component.translatable("gui.encodedlogistics.signal.web_audio"),
+                    Component.translatable("gui.encodedlogistics.signal.web_audio.skipped")));
+            shown = new RackDeviceInfo(shown.name(), shown.status(), shown.statusText(), lines, shown.schedulerBadge(), shown.header());
+        }
+        RackHud.popup(graphics, minecraft.font, icon, subtitle, shown, graphics.guiWidth() / 2 + OFFSET_X, graphics.guiHeight() / 2 + OFFSET_Y, null);
     }
 }
