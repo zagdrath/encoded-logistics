@@ -22,6 +22,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
+import net.zagdrath.encodedlogistics.block.CreativeCapacitorBankBlock;
 import net.zagdrath.encodedlogistics.block.ControlInterfaceBlock;
 import net.zagdrath.encodedlogistics.block.DriveBayBlock;
 import net.zagdrath.encodedlogistics.block.FabricatorBlock;
@@ -73,6 +74,10 @@ public final class ModBlocks {
 
     public static final DeferredBlock<CapacitorBankBlock> CAPACITOR_BANK = BLOCKS.registerBlock("capacitor_bank", CapacitorBankBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
+
+    // Creative only (no recipe): unbreakable by hand in survival, like other creative blocks.
+    public static final DeferredBlock<CreativeCapacitorBankBlock> CREATIVE_CAPACITOR_BANK = BLOCKS.registerBlock("creative_capacitor_bank",
+            CreativeCapacitorBankBlock::new, p -> p.mapColor(MapColor.COLOR_MAGENTA).strength(-1.0F, 3_600_000.0F).noLootTable().sound(SoundType.METAL));
 
     public static final DeferredBlock<SegmentIsolatorBlock> SEGMENT_ISOLATOR = BLOCKS.registerBlock("segment_isolator", SegmentIsolatorBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());

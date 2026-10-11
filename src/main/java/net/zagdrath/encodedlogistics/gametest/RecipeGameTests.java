@@ -21,13 +21,14 @@ import net.zagdrath.encodedlogistics.recipe.LithographyRecipe;
 
 // Every item the mod registers comes out of some loaded recipe, except the ones that come from elsewhere: ores and raw
 // metals (worldgen and ore loot), dusts (crushing, only with Arcforge installed), encoded schematics (the Schematic
-// Encoder writes them) and printouts (the Line Printer prints them).
+// Encoder writes them), printouts (the Line Printer prints them) and creative-only blocks (creative_*, from the creative
+// menu alone).
 final class RecipeGameTests {
     private RecipeGameTests() {}
 
     private static boolean obtainedElsewhere(String path) {
         return path.endsWith("_ore") || path.startsWith("raw_") || path.endsWith("_dust") || path.startsWith("encoded_schematic_") || path.equals("printout")
-                || path.equals("resource_entry");
+                || path.equals("resource_entry") || path.startsWith("creative_");
     }
 
     static void everyItemCraftable(GameTestHelper helper) {

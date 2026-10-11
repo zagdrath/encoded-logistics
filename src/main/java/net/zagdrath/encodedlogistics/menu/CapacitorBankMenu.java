@@ -48,8 +48,10 @@ public class CapacitorBankMenu extends AbstractContainerMenu {
         }
         ticksUntilSync = SYNC_INTERVAL;
         if (player.level().getBlockEntity(pos) instanceof CapacitorBankBlockEntity bank) {
-            PacketDistributor.sendToPlayer(serverPlayer, new CapacitorBankPayload(containerId, bank.getStored(), bank.getCapacity(),
-                    bank.averageInput(), bank.averageOutput()));
+            // A creative bank's figures are -1: the screen shows it as endless.
+            long stored = bank.creative() ? -1 : bank.getStored(), capacity = bank.creative() ? -1 : bank.getCapacity();
+            PacketDistributor.sendToPlayer(serverPlayer, new CapacitorBankPayload(containerId, stored, capacity, bank.averageInput(),
+                    bank.averageOutput()));
         }
     }
 
@@ -60,6 +62,6 @@ public class CapacitorBankMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBlocks.CAPACITOR_BANK.get());
+        return stillValid(access, player, ModBlocks.CAPACITOR_BANK.get()) || stillValid(access, player, ModBlocks.CREATIVE_CAPACITOR_BANK.get());
     }
 }

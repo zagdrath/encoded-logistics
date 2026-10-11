@@ -48,7 +48,8 @@ public class CapacitorBankScreen extends AbstractContainerScreen<CapacitorBankMe
         graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
         CapacitorBankPayload figures = figures();
         // Drawn bottom-up and cropped from the bottom, like the controller's gauge.
-        int height = figures.capacity() <= 0 ? 0 : (int) Math.min(GAUGE_H, Math.round((double) figures.stored() * GAUGE_H / figures.capacity()));
+        int height = figures.capacity() < 0 ? GAUGE_H
+                : figures.capacity() == 0 ? 0 : (int) Math.min(GAUGE_H, Math.round((double) figures.stored() * GAUGE_H / figures.capacity()));
         if (height > 0) {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ENERGY_BAR, GAUGE_W, GAUGE_H, 0, GAUGE_H - height,
                     leftPos + GAUGE_X, topPos + GAUGE_Y + GAUGE_H - height, GAUGE_W, height);
@@ -59,14 +60,22 @@ public class CapacitorBankScreen extends AbstractContainerScreen<CapacitorBankMe
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         CapacitorBankPayload figures = figures();
         graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
+        boolean endless = figures.capacity() < 0;
         int percent = figures.capacity() <= 0 ? 0 : (int) (figures.stored() * 100 / figures.capacity());
-        Component fill = Component.translatable("gui.encodedlogistics.capacitor_bank.fill", percent);
+        Component fill = endless ? Component.translatable("gui.encodedlogistics.capacitor_bank.creative")
+                : Component.translatable("gui.encodedlogistics.capacitor_bank.fill", percent);
         graphics.text(font, fill, FILL_RIGHT - font.width(fill), titleLabelY, ACCENT, false);
 
-        row(graphics, "stored", Component.literal(String.format(Locale.ROOT, "%,d FE", figures.stored())), TEXT, STORED_Y);
+        row(graphics, "stored", amount(figures.stored()), TEXT, STORED_Y);
         row(graphics, "input", Component.literal("+" + rate(figures.input())), ACCENT, INPUT_Y);
         row(graphics, "output", Component.literal("-" + rate(figures.output())), OUTPUT, OUTPUT_Y);
-        row(graphics, "capacity", Component.literal(String.format(Locale.ROOT, "%,d FE", figures.capacity())), TEXT, CAPACITY_Y);
+        row(graphics, "capacity", amount(figures.capacity()), TEXT, CAPACITY_Y);
+    }
+
+    // "2,000,000 FE", or "Infinite" for a creative bank's (-1).
+    private static Component amount(long fe) {
+        return fe < 0 ? Component.translatable("gui.encodedlogistics.capacitor_bank.infinite")
+                : Component.literal(String.format(Locale.ROOT, "%,d FE", fe));
     }
 
     private void row(GuiGraphicsExtractor graphics, String key, Component value, int color, int y) {
@@ -80,8 +89,10 @@ public class CapacitorBankScreen extends AbstractContainerScreen<CapacitorBankMe
         double x = mouseX - leftPos, y = mouseY - topPos;
         if (x >= GAUGE_X && x < GAUGE_X + GAUGE_W && y >= GAUGE_Y && y < GAUGE_Y + GAUGE_H) {
             CapacitorBankPayload figures = figures();
+            Component amount = figures.capacity() < 0 ? Component.translatable("gui.encodedlogistics.capacitor_bank.infinite")
+                    : Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", figures.stored(), figures.capacity()));
             graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.capacitor_bank.stored"),
-                    Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", figures.stored(), figures.capacity())).withColor(TEXT_MUTED)),
+                    amount.copy().withColor(TEXT_MUTED)),
                     mouseX, mouseY);
         }
     }

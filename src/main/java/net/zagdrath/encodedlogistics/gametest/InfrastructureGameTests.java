@@ -295,6 +295,41 @@ final class InfrastructureGameTests {
                 .thenSucceed();
     }
 
+    // A Creative Capacitor Bank powers an unpowered controller's network on its own, keeps it full, gives any FE asked
+    // on a face and takes (voids) any offered, past the normal bank's per-tick limit; a pull that's undone isn't counted.
+    static void creativeBank(GameTestHelper helper) {
+        BlockPos controller = new BlockPos(0, 1, 0), cablePos = new BlockPos(1, 1, 0), bank = new BlockPos(2, 1, 0);
+        helper.setBlock(controller, ModBlocks.NETWORK_CONTROLLER.get());
+        cable(helper, cablePos, CableTier.NORMAL, CableColor.NEUTRAL);
+        helper.setBlock(bank, ModBlocks.CREATIVE_CAPACITOR_BANK.get());
+        helper.startSequence()
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    CapacitorBankBlockEntity capacitor = helper.getBlockEntity(bank, CapacitorBankBlockEntity.class);
+                    helper.assertTrue(capacitor.creative(), "Not a creative bank");
+                    NetworkSnapshot snapshot = snapshot(helper, controller);
+                    helper.assertTrue(snapshot.status() == net.zagdrath.encodedlogistics.network.NetworkStatus.ONLINE,
+                            "Network is " + snapshot.status());
+                    helper.assertTrue(capacitor.getStored() == CapacitorBankBlockEntity.CREATIVE_FE
+                            && capacitor.getCapacity() == CapacitorBankBlockEntity.CREATIVE_FE, "Creative bank not full");
+                    helper.assertTrue(helper.getBlockState(bank).getValue(CapacitorBankBlock.FILL) == 4, "Gauge not full");
+                    helper.assertTrue(capacitor.comparatorSignal() == 15, "Comparator reads " + capacitor.comparatorSignal());
+                    EnergyHandler face = energy(helper, bank, Direction.EAST);
+                    helper.assertTrue(face != null, "No energy on the creative bank's face");
+                    helper.assertTrue(insert(face, 1_000_000) == 1_000_000, "Didn't take everything offered");
+                    try (Transaction transaction = Transaction.openRoot()) {
+                        helper.assertTrue(face.extract(5_000_000, transaction) == 5_000_000, "Didn't give everything asked");
+                        transaction.commit();
+                    }
+                    try (Transaction transaction = Transaction.openRoot()) {
+                        face.extract(7_000_000, transaction);
+                    }
+                    helper.assertTrue(capacitor.getStored() == CapacitorBankBlockEntity.CREATIVE_FE, "Creative bank emptied");
+                    helper.assertTrue(capacitor.drain(Integer.MAX_VALUE) == Integer.MAX_VALUE, "Network drain limited");
+                })
+                .thenSucceed();
+    }
+
     // --- Segment Isolator ---
 
     // An isolator splits the network: the inlet past it isn't on the controller's network (it takes nothing) until the

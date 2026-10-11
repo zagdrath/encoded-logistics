@@ -25,6 +25,10 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Added
 
+- **Creative Capacitor Bank**, in the creative menu only (it has no recipe). It is always full and has no transfer
+  limit: it gives its network, and anything on any face, all the FE asked of it, and takes (voids) all it's offered.
+  The network fills its controllers and other storage first, so it only voids what they can't take. Its screen shows
+  Infinite, and its gauge glows round the colour wheel. It can't be broken in survival.
 - **Rack Elevation**: a clipboard that plans a Server Rack. Sneak-use it on a rack to record every device, and
   optionally what each holds and its settings. Use it in the air to open the editor: the rack screen's own
   elevation with the planned devices as ghosts, a searchable device list to drag from, and a materials list of
@@ -70,6 +74,9 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Fixed
 
+- Display Panels had no back round their back plate, so you could see into them from behind, and their bezels
+  overlapped at the corners and flickered. The back is closed and the bezels meet at corner pieces.
+- PLCs had no back on their backplate, DIN rail, CPU or modules, so you could see through them from behind.
 - A copied Storage Drive (a creative middle-click, or Ctrl+pick-block of a Drive Bay, NAS or SAN with drives in)
   shared its original's contents: taking items out of one took them out of both, and a network with both counted
   them once. A copy now becomes a drive of its own, holding a copy of what the original had.

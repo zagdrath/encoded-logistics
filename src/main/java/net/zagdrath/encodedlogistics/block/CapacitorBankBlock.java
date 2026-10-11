@@ -11,7 +11,6 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -62,7 +61,7 @@ public class CapacitorBankBlock extends BaseEntityBlock implements NetworkNodeBl
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof CapacitorBankBlockEntity) {
             serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, p) -> new CapacitorBankMenu(id, inventory, pos),
-                    Component.translatable("block.encodedlogistics.capacitor_bank")), buf -> buf.writeBlockPos(pos));
+                    state.getBlock().getName()), buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.SUCCESS;
     }

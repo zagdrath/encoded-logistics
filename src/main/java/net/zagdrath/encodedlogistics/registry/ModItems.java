@@ -13,6 +13,7 @@ import java.util.Map;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -49,6 +50,8 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> NETWORK_CONTROLLER = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_CONTROLLER);
     public static final DeferredItem<BlockItem> POWER_INLET = ITEMS.registerSimpleBlockItem(ModBlocks.POWER_INLET);
     public static final DeferredItem<BlockItem> CAPACITOR_BANK = ITEMS.registerSimpleBlockItem(ModBlocks.CAPACITOR_BANK);
+    public static final DeferredItem<BlockItem> CREATIVE_CAPACITOR_BANK = ITEMS.registerSimpleBlockItem(ModBlocks.CREATIVE_CAPACITOR_BANK,
+            p -> p.rarity(Rarity.EPIC));
     public static final DeferredItem<BlockItem> SEGMENT_ISOLATOR = ITEMS.registerSimpleBlockItem(ModBlocks.SEGMENT_ISOLATOR);
 
     // Cable attachments: mounted on a cable's side (see NetworkCableBlock).

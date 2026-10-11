@@ -61,7 +61,8 @@ public final class ModBlockEntityTypes {
             "power_inlet", () -> new BlockEntityType<>(PowerInletBlockEntity::new, ModBlocks.POWER_INLET.get()));
 
     public static final Supplier<BlockEntityType<CapacitorBankBlockEntity>> CAPACITOR_BANK = BLOCK_ENTITY_TYPES.register(
-            "capacitor_bank", () -> new BlockEntityType<>(CapacitorBankBlockEntity::new, ModBlocks.CAPACITOR_BANK.get()));
+            "capacitor_bank", () -> new BlockEntityType<>(CapacitorBankBlockEntity::new, ModBlocks.CAPACITOR_BANK.get(),
+                    ModBlocks.CREATIVE_CAPACITOR_BANK.get()));
 
     public static final Supplier<BlockEntityType<LithographyPressBlockEntity>> LITHOGRAPHY_PRESS = BLOCK_ENTITY_TYPES.register(
             "lithography_press", () -> new BlockEntityType<>(LithographyPressBlockEntity::new, ModBlocks.LITHOGRAPHY_PRESS.get()));

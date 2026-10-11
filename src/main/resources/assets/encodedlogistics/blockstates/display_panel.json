@@ -319,6 +319,290 @@
     "model": "encodedlogistics:block/display_panel/led_nosignal",
     "y": 270
    }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "north",
+      "top": "false"
+     },
+     {
+      "facing": "north",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_left"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "north",
+      "top": "false"
+     },
+     {
+      "facing": "north",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_right"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "north",
+      "bottom": "false"
+     },
+     {
+      "facing": "north",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_left"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "north",
+      "bottom": "false"
+     },
+     {
+      "facing": "north",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_right"
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "east",
+      "top": "false"
+     },
+     {
+      "facing": "east",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_left",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "east",
+      "top": "false"
+     },
+     {
+      "facing": "east",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_right",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "east",
+      "bottom": "false"
+     },
+     {
+      "facing": "east",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_left",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "east",
+      "bottom": "false"
+     },
+     {
+      "facing": "east",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_right",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "south",
+      "top": "false"
+     },
+     {
+      "facing": "south",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_left",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "south",
+      "top": "false"
+     },
+     {
+      "facing": "south",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_right",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "south",
+      "bottom": "false"
+     },
+     {
+      "facing": "south",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_left",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "south",
+      "bottom": "false"
+     },
+     {
+      "facing": "south",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_right",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "west",
+      "top": "false"
+     },
+     {
+      "facing": "west",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_left",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "west",
+      "top": "false"
+     },
+     {
+      "facing": "west",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_top_right",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "west",
+      "bottom": "false"
+     },
+     {
+      "facing": "west",
+      "left": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_left",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "OR": [
+     {
+      "facing": "west",
+      "bottom": "false"
+     },
+     {
+      "facing": "west",
+      "right": "false"
+     }
+    ]
+   },
+   "apply": {
+    "model": "encodedlogistics:block/display_panel/corner_bottom_right",
+    "y": 270
+   }
   }
  ]
 }
