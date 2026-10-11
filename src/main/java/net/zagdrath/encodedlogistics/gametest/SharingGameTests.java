@@ -16,17 +16,29 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.TagValueInput;
+import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
+import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.DriveBayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.part.PortPart;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
+import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
@@ -34,11 +46,15 @@ import net.zagdrath.encodedlogistics.storage.StorageTier;
 // Share routes on an L3 Switch. The rig: three networks split by Segment Isolators - A (controller (0,1,0), cable
 // (1,1,0), Drive Bay (1,1,1)), B east of the isolator at (2,1,0) (cable (3,1,0), controller (4,1,0), Drive Bay (3,1,1))
 // and C north of the isolator at (1,1,-1) (cable (1,1,-2), controller (1,1,-3), Drive Bay (2,1,-2)) - and a rack on A
-// facing south at (1,1,3) with an L3 Switch that knows B (segment 1) and C (segment 2).
+// facing south at (1,1,3) with an L3 Switch that knows B (segment 1) and C (segment 2). The Ingress tests put an Ingress
+// Port on top of B's cable facing a chest (or cauldron) at (3,2,0); the wireless one adds a Wireless Controller to the
+// rack, an Access Point on A's cable and a Wireless Ingress Port at (6,1,5) on a chest at (6,1,6).
 final class SharingGameTests {
     private static final BlockPos CABLE_B = new BlockPos(3, 1, 0), CABLE_C = new BlockPos(1, 1, -2), BAY_A = new BlockPos(1, 1, 1),
-            BAY_B = new BlockPos(3, 1, 1), BAY_C = new BlockPos(2, 1, -2);
-    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), DIRT = StorageKey.of(new ItemStack(Items.DIRT));
+            BAY_B = new BlockPos(3, 1, 1), BAY_C = new BlockPos(2, 1, -2), ABOVE_B = new BlockPos(3, 2, 0), AP = new BlockPos(1, 2, 0),
+            WIRELESS_PORT = new BlockPos(6, 1, 5), WIRELESS_CHEST = new BlockPos(6, 1, 6);
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE)), DIRT = StorageKey.of(new ItemStack(Items.DIRT)),
+            WATER = StorageKey.fluid(Fluids.WATER);
     private static final int A = 0, B = 1, C = 2;
 
     private SharingGameTests() {}
@@ -229,6 +245,160 @@ final class SharingGameTests {
                 .thenExecute(() -> {
                     helper.assertTrue(own(helper, BAY_A).count(COBBLESTONE) == 0, "A still has " + own(helper, BAY_A).count(COBBLESTONE));
                     helper.assertTrue(own(helper, CABLE_B).count(COBBLESTONE) == 10, "B has " + own(helper, CABLE_B).count(COBBLESTONE));
+                })
+                .thenSucceed();
+    }
+
+    // --- Ingress Ports overflowing into Share routes ---
+
+    // Fills the network's own storage at node with an item until nothing more goes in (cobblestone included).
+    private static void fill(GameTestHelper helper, BlockPos node, StorageKey key) {
+        NetworkStorage storage = own(helper, node);
+        for (int i = 0; i < 100 && storage.insert(key, 1_000_000, false) > 0; i++) {}
+        helper.assertTrue(storage.insert(COBBLESTONE, 1, true) == 0, "Still room at " + node);
+    }
+
+    private static ChestBlockEntity chest(GameTestHelper helper, BlockPos pos) {
+        return helper.getBlockEntity(pos, ChestBlockEntity.class);
+    }
+
+    private static PortPart port(GameTestHelper helper) {
+        return (PortPart) helper.getBlockEntity(CABLE_B, CableBlockEntity.class).part(Direction.UP);
+    }
+
+    private static int perMinute(GameTestHelper helper, PortPart port) {
+        return port.movedPerMinute(helper.getLevel().getGameTime());
+    }
+
+    // B's drive full of dirt, A <-> B shared Read/Write both ways (the bug report's Router route): an Ingress Port on B
+    // moves its chest's cobblestone into A's drive, nothing lost or duplicated, at a rate it shows.
+    static void ingressOverflow(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        helper.setBlock(ABOVE_B, Blocks.CHEST);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    share(link(helper, master), A, B, true, false, true);
+                    fill(helper, CABLE_B, DIRT);
+                    chest(helper, ABOVE_B).setItem(0, new ItemStack(Items.COBBLESTONE, 10));
+                    Phase4GameTests.mount(helper, CABLE_B, Direction.UP, PartType.INGRESS_PORT);
+                })
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    long inA = own(helper, BAY_A).count(COBBLESTONE), left = chest(helper, ABOVE_B).getItem(0).getCount();
+                    helper.assertTrue(inA > 0, "Nothing overflowed into A; chest has " + left);
+                    helper.assertTrue(inA + left == 10, "Lost or duplicated: A " + inA + ", chest " + left);
+                    helper.assertTrue(own(helper, CABLE_B).count(COBBLESTONE) == 0, "B took cobblestone while full");
+                    helper.assertTrue(perMinute(helper, port(helper)) == inA, "Rate " + perMinute(helper, port(helper)) + ", moved " + inA);
+                })
+                .thenSucceed();
+    }
+
+    // Nowhere the port may put things: with a Read-only share it takes nothing; with Read/Write and A full too, nothing.
+    static void ingressNoRoom(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        helper.setBlock(ABOVE_B, Blocks.CHEST);
+        L3SwitchDevice[] l3 = new L3SwitchDevice[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    l3[0] = link(helper, master);
+                    share(l3[0], A, B, false, false, true);
+                    fill(helper, CABLE_B, DIRT);
+                    chest(helper, ABOVE_B).setItem(0, new ItemStack(Items.COBBLESTONE, 10));
+                    Phase4GameTests.mount(helper, CABLE_B, Direction.UP, PartType.INGRESS_PORT);
+                })
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    helper.assertTrue(chest(helper, ABOVE_B).getItem(0).getCount() == 10, "Read-only share took " + chest(helper, ABOVE_B).getItem(0));
+                    helper.assertTrue(own(helper, BAY_A).count(COBBLESTONE) == 0, "Read-only share wrote to A");
+                    helper.assertTrue(perMinute(helper, port(helper)) == 0, "Rate " + perMinute(helper, port(helper)));
+                    l3[0].routes().clear();
+                    share(l3[0], A, B, true, false, true);
+                    fill(helper, BAY_A, DIRT);
+                })
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    helper.assertTrue(chest(helper, ABOVE_B).getItem(0).getCount() == 10, "Took with nowhere to go: " + chest(helper, ABOVE_B).getItem(0));
+                    helper.assertTrue(own(helper, BAY_A).count(COBBLESTONE) == 0 && own(helper, CABLE_B).count(COBBLESTONE) == 0, "Stored somewhere");
+                })
+                .thenSucceed();
+    }
+
+    // B's drive with room for 2 more cobblestone: those fill it first, the rest goes across to A.
+    static void ingressPartial(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        helper.setBlock(ABOVE_B, Blocks.CHEST);
+        long[] full = new long[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    share(link(helper, master), A, B, true, false, true);
+                    fill(helper, CABLE_B, COBBLESTONE);
+                    full[0] = own(helper, CABLE_B).count(COBBLESTONE);
+                    helper.assertTrue(own(helper, CABLE_B).extract(COBBLESTONE, 2, false) == 2, "Couldn't make room");
+                    chest(helper, ABOVE_B).setItem(0, new ItemStack(Items.COBBLESTONE, 10));
+                    Phase4GameTests.mount(helper, CABLE_B, Direction.UP, PartType.INGRESS_PORT);
+                })
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    long inB = own(helper, CABLE_B).count(COBBLESTONE), inA = own(helper, BAY_A).count(COBBLESTONE),
+                            left = chest(helper, ABOVE_B).getItem(0).getCount();
+                    helper.assertTrue(inB == full[0], "B not filled first: " + inB + " of " + full[0]);
+                    helper.assertTrue(inA > 0, "Nothing went across to A");
+                    helper.assertTrue(2 + inA + left == 10, "Lost or duplicated: 2 into B, A " + inA + ", chest " + left);
+                })
+                .thenSucceed();
+    }
+
+    // Fluid mode: B has no fluid drive, A has one; the port on B drains a water cauldron into A.
+    static void ingressFluidOverflow(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        helper.getBlockEntity(BAY_A, DriveBayBlockEntity.class).setItem(1, new ItemStack(ModItems.storageDrive(ResourceType.FLUID, StorageTier.K8).get()));
+        helper.setBlock(ABOVE_B, Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    share(link(helper, master), A, B, true, false, true);
+                    Phase4GameTests.mount(helper, CABLE_B, Direction.UP, PartType.INGRESS_PORT);
+                })
+                .thenIdle(2)
+                .thenExecute(() -> port(helper).setResourceType(ResourceType.FLUID))
+                .thenIdle(45)
+                .thenExecute(() -> {
+                    helper.assertTrue(own(helper, BAY_A).count(WATER) == 1_000, "A has " + own(helper, BAY_A).count(WATER) + " mB water");
+                    helper.assertTrue(helper.getBlockState(ABOVE_B).is(Blocks.CAULDRON), "Cauldron is " + helper.getBlockState(ABOVE_B));
+                    helper.assertTrue(perMinute(helper, port(helper)) == 1_000, "Rate " + perMinute(helper, port(helper)));
+                })
+                .thenSucceed();
+    }
+
+    // A Wireless Ingress Port on A (through a Wireless Controller in A's rack), A full: its chest goes across into B.
+    static void wirelessIngressOverflow(GameTestHelper helper) {
+        BlockPos master = rig(helper, true);
+        RackGameTests.install(helper, master, RackDeviceType.WIRELESS_CONTROLLER, 2, WirelessControllerDevice.class);
+        helper.setBlock(AP, ModBlocks.ACCESS_POINT.get().defaultBlockState().setValue(AccessPointBlock.FACING, Direction.UP));
+        helper.setBlock(WIRELESS_CHEST, Blocks.CHEST);
+        helper.setBlock(WIRELESS_PORT, ModBlocks.WIRELESS_INGRESS_PORT.get().defaultBlockState().setValue(WirelessPortBlock.FACING, Direction.SOUTH));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    share(link(helper, master), A, B, true, false, true);
+                    fill(helper, BAY_A, DIRT);
+                    chest(helper, WIRELESS_CHEST).setItem(0, new ItemStack(Items.COBBLESTONE, 10));
+                    WirelessControllerDevice controller = (WirelessControllerDevice) helper.getBlockEntity(master, RackBlockEntity.class).deviceAt(2);
+                    helper.assertTrue(controller.link(helper.getBlockEntity(WIRELESS_PORT, WirelessPortBlockEntity.class)), "Port not linked");
+                })
+                .thenIdle(80)
+                .thenExecute(() -> {
+                    WirelessPortBlockEntity entity = helper.getBlockEntity(WIRELESS_PORT, WirelessPortBlockEntity.class);
+                    helper.assertTrue(entity.isOnline(), "Wireless port offline");
+                    long inB = own(helper, CABLE_B).count(COBBLESTONE), left = chest(helper, WIRELESS_CHEST).getItem(0).getCount();
+                    helper.assertTrue(inB > 0, "Nothing overflowed into B; chest has " + left);
+                    helper.assertTrue(inB + left == 10, "Lost or duplicated: B " + inB + ", chest " + left);
+                    helper.assertTrue(own(helper, BAY_A).count(COBBLESTONE) == 0, "A took cobblestone while full");
+                    PortPart port = (PortPart) entity.part(Direction.SOUTH);
+                    helper.assertTrue(perMinute(helper, port) == inB, "Rate " + perMinute(helper, port) + ", moved " + inB);
                 })
                 .thenSucceed();
     }

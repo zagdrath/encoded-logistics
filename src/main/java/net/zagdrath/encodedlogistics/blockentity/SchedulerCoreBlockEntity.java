@@ -162,7 +162,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
     @Override
     public boolean cancel(UUID id) {
         CraftingJob job = level instanceof ServerLevel serverLevel
-                ? runner.cancel(serverLevel, worldPosition, id, ControllerStructures.get(serverLevel).storageAt(serverLevel, worldPosition)) : null;
+                ? runner.cancel(serverLevel, worldPosition, id, ControllerStructures.get(serverLevel).sharedStorageAt(serverLevel, worldPosition, false)) : null;
         if (job == null) {
             return false;
         }
@@ -183,7 +183,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         }
         ControllerStructures structures = ControllerStructures.get(serverLevel);
         if (runner.tick(serverLevel, worldPosition, threads(), () -> structures.providersAt(serverLevel, worldPosition),
-                () -> structures.sharedStorageAt(serverLevel, worldPosition, true), job -> {
+                () -> structures.sharedStorageAt(serverLevel, worldPosition, true), () -> structures.sharedStorageAt(serverLevel, worldPosition, false), job -> {
                     ControllerStructures.jobFinished(serverLevel, worldPosition);
                     JobEvents.ended(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), this, job, JobEvents.Outcome.COMPLETED, "");
                 }, job -> JobEvents.stalled(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition), job))) {
@@ -244,7 +244,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
 
     // Puts items into the network the device at pos is on; what doesn't fit drops there.
     public static void returnToNetwork(ServerLevel level, BlockPos pos, List<ItemStack> items) {
-        JobRunner.putBack(level, pos, items, ControllerStructures.get(level).storageAt(level, pos));
+        JobRunner.putBack(level, pos, items, ControllerStructures.get(level).sharedStorageAt(level, pos, false));
     }
 
     // --- Menu ---

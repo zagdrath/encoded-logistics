@@ -103,7 +103,7 @@ public class CollectorPlanePart extends PlanePart {
 
     @Override
     protected void work(ServerLevel level) {
-        NetworkStorage storage = storage(level);
+        NetworkStorage storage = sharedStorage(level);
         if (storage == null) {
             stopBreaking(level);
             return;

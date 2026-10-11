@@ -185,7 +185,7 @@ public final class RackScheduler implements JobHost {
         MinecraftServer server = level.getServer();
         NetworkRef served = network;
         if (runner.tick(level, rack.getBlockPos(), threads, () -> providers(server), () -> ControllerStructures.sharedStorageOf(server, served, true),
-                job -> {
+                () -> ControllerStructures.sharedStorageOf(server, served, false), job -> {
                     ControllerStructures.jobFinished(server, served);
                     JobEvents.ended(server, served, this, job, JobEvents.Outcome.COMPLETED, "");
                 }, job -> JobEvents.stalled(server, served, job))) {
@@ -270,7 +270,7 @@ public final class RackScheduler implements JobHost {
     @Override
     public boolean cancel(UUID id) {
         CraftingJob job = rack.getLevel() instanceof ServerLevel level
-                ? runner.cancel(level, rack.getBlockPos(), id, ControllerStructures.storageOf(level.getServer(), network)) : null;
+                ? runner.cancel(level, rack.getBlockPos(), id, ControllerStructures.sharedStorageOf(level.getServer(), network, false)) : null;
         if (job == null) {
             return false;
         }

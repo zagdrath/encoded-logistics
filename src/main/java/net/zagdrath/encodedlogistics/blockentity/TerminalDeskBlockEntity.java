@@ -186,10 +186,11 @@ public class TerminalDeskBlockEntity extends BaseContainerBlockEntity implements
         return deliveries;
     }
 
-    // Finished jobs' output comes out of the network to where it was asked for.
+    // Finished jobs' output comes out of the network to where it was asked for (wherever it went in: its own storage or
+    // a Share route's).
     private void deliver(MinecraftServer server) {
         NetworkRef network = network();
-        NetworkStorage storage = network != null ? ControllerStructures.storageOf(server, network) : null;
+        NetworkStorage storage = network != null ? ControllerStructures.sharedStorageOf(server, network, false) : null;
         if (storage == null) {
             return;
         }

@@ -154,6 +154,12 @@ public abstract class CablePart {
         return ControllerStructures.get(level).storageAt(level, host.getBlockPos());
     }
 
+    // The storage it puts items into: the network's own, then what Read/Write Share routes share into it (the same path
+    // as a terminal), while the host is online.
+    protected @Nullable NetworkStorage sharedStorage(ServerLevel level) {
+        return ControllerStructures.get(level).sharedStorageAt(level, host.getBlockPos(), false);
+    }
+
     // Takes FE from the network's energy for work done; returns what it got.
     protected int drawEnergy(ServerLevel level, int amount) {
         return ControllerStructures.get(level).drawEnergy(level, host.getBlockPos(), amount);

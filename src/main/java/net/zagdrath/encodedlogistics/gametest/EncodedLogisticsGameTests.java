@@ -238,6 +238,11 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("share_not_transitive", SharingGameTests::shareNotTransitive);
         TESTS.put("share_stops_with_switch", SharingGameTests::shareStopsWithSwitch);
         TESTS.put("share_old_routes_move", SharingGameTests::oldRoutesMove);
+        TESTS.put("share_ingress_overflow", SharingGameTests::ingressOverflow);
+        TESTS.put("share_ingress_no_room", SharingGameTests::ingressNoRoom);
+        TESTS.put("share_ingress_partial", SharingGameTests::ingressPartial);
+        TESTS.put("share_ingress_fluid_overflow", SharingGameTests::ingressFluidOverflow);
+        TESTS.put("share_wireless_ingress_overflow", SharingGameTests::wirelessIngressOverflow);
         TESTS.put("db_files", DatabaseGameTests::files);
         TESTS.put("db_programs", DatabaseGameTests::programs);
         TESTS.put("db_query", DatabaseGameTests::query);

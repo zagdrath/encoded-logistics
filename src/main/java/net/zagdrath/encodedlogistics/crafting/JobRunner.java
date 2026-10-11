@@ -108,6 +108,14 @@ public final class JobRunner {
     // The same; stalled: called once when a job stalls (no progress for jobStallSeconds), with its reason worked out.
     public boolean tick(ServerLevel level, BlockPos host, int threads, Supplier<List<CraftingProvider>> providers,
             Supplier<@Nullable NetworkStorage> storage, Consumer<CraftingJob> finished, Consumer<CraftingJob> stalled) {
+        return tick(level, host, threads, providers, storage, storage, finished, stalled);
+    }
+
+    // The same; output: where finished jobs empty into (the network's storage with every Read/Write Share route, as a
+    // terminal puts items in), where storage is what jobs draw from (only shares that allow crafting).
+    public boolean tick(ServerLevel level, BlockPos host, int threads, Supplier<List<CraftingProvider>> providers,
+            Supplier<@Nullable NetworkStorage> storage, Supplier<@Nullable NetworkStorage> output, Consumer<CraftingJob> finished,
+            Consumer<CraftingJob> stalled) {
         boolean changed = allocate(threads);
         if (level.getGameTime() % AWAIT_INTERVAL == 0 && jobs.stream().anyMatch(job -> !job.awaiting.isEmpty())) {
             changed |= takeAwaited(storage.get());
@@ -120,7 +128,7 @@ public final class JobRunner {
                 continue;
             }
             if (job.finished()) {
-                if (finish(job, storage.get())) {
+                if (finish(job, output.get())) {
                     iterator.remove();
                     heldJobs.remove(job.id);
                     finished.accept(job);

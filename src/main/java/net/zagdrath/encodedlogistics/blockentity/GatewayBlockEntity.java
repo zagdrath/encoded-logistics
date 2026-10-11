@@ -473,9 +473,10 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         return totals;
     }
 
-    // Each buffer slot to its stock setting: topped up from the network, the rest (or anything else) back into it.
+    // Each buffer slot to its stock setting: topped up from the network, the rest (or anything else) back into it (its own
+    // storage first, then Share routes, as a terminal sees it).
     private boolean restock(ServerLevel level) {
-        NetworkStorage storage = ControllerStructures.get(level).storageAt(level, worldPosition);
+        NetworkStorage storage = ControllerStructures.get(level).sharedStorageAt(level, worldPosition, false);
         if (storage == null) {
             return false;
         }

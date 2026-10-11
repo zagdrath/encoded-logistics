@@ -183,7 +183,8 @@ public class PortPart extends CablePart {
         timer = 0;
         boolean wasActive = active;
         active = false;
-        NetworkStorage storage = isOnline() && resourceType != ResourceType.ENERGY ? storage(level) : null;
+        // Ingress overflows into Share routes like a terminal does; Egress only draws from the network's own storage.
+        NetworkStorage storage = !isOnline() || resourceType == ResourceType.ENERGY ? null : ingress() ? sharedStorage(level) : storage(level);
         long moved = 0;
         if (resourceType == ResourceType.ITEM) {
             ResourceHandler<ItemResource> target = level.getCapability(Capabilities.Item.BLOCK, facing(), side.getOpposite());

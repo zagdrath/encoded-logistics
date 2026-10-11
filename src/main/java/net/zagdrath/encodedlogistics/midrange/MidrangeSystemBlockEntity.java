@@ -401,7 +401,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
             MinecraftServer server = level.getServer();
             NetworkRef network = network();
             if (runner.tick(level, worldPosition, threads(), () -> providers(server, network), () -> ControllerStructures.sharedStorageOf(server, network, true),
-                    job -> {
+                    () -> ControllerStructures.sharedStorageOf(server, network, false), job -> {
                         ControllerStructures.jobFinished(server, network);
                         JobEvents.ended(server, network, this, job, JobEvents.Outcome.COMPLETED, "");
                     }, job -> JobEvents.stalled(server, network, job))) {
@@ -778,7 +778,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
     @Override
     public boolean cancel(UUID id) {
         CraftingJob job = level instanceof ServerLevel serverLevel
-                ? runner.cancel(serverLevel, worldPosition, id, ControllerStructures.storageOf(serverLevel.getServer(), network())) : null;
+                ? runner.cancel(serverLevel, worldPosition, id, ControllerStructures.sharedStorageOf(serverLevel.getServer(), network(), false)) : null;
         if (job == null) {
             return false;
         }
