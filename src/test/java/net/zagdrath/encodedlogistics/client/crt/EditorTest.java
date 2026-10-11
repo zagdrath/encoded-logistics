@@ -344,6 +344,43 @@ class EditorTest {
         }
     }
 
+    // Saved, a member still grows: Enter on its last line opens another under it, on a new member's page and on one
+    // opened with lines already in it. Enter on a line in the middle opens nothing.
+    @Test
+    void enterOnTheLastLineAfterSaving() {
+        CrtTerminal terminal = LayoutTest.terminal();
+        EditorPanel editor = new EditorPanel(terminal, "ZAGLIB", "NEW", List.of(), false);
+        terminal.push(editor);
+        terminal.focused().set("PGM");
+        terminal.submit();
+        terminal.focused().set("ENDPGM");
+        terminal.submit();
+        editor.model().saved(5);
+        List<CrtField> texts = terminal.current().fields.stream().filter(field -> field.col == 8).toList();
+        terminal.focus(texts.get(1));
+        terminal.submit();
+        assertEquals(2, terminal.focused().row - 4, "Enter on the saved last line didn't go to the line under it");
+        terminal.focused().set("SNDMSG MSG('x')");
+        terminal.submit();
+        assertEquals(List.of("PGM", "ENDPGM", "SNDMSG MSG('x')"), SourceLine.texts(editor.model().save(5)));
+
+        CrtTerminal reopened = LayoutTest.terminal();
+        EditorPanel existing = new EditorPanel(reopened, "ZAGLIB", "TEST", numbered("PGM", "ENDPGM"), false);
+        reopened.push(existing);
+        List<CrtField> lines = reopened.current().fields.stream().filter(field -> field.col == 8).toList();
+        reopened.focus(lines.get(0));
+        reopened.submit();
+        assertEquals(List.of("PGM", "ENDPGM"), existing.model().texts(), "Enter on a middle line opened one");
+        lines = reopened.current().fields.stream().filter(field -> field.col == 8).toList();
+        reopened.focus(lines.get(1));
+        reopened.submit();
+        assertEquals(List.of("PGM", "ENDPGM", ""), existing.model().texts(), "Enter on the last line opened nothing");
+        assertEquals(2, reopened.focused().row - 4, "the cursor not on the open line");
+        reopened.focused().set("SNDMSG MSG('y')");
+        reopened.submit();
+        assertEquals(List.of("PGM", "ENDPGM", "SNDMSG MSG('y')", ""), existing.model().texts(), "typing on it didn't open the next");
+    }
+
     // A click anywhere on "F11=Full screen" (its second word too) presses F11.
     @Test
     void clickingAKeyLabel() {

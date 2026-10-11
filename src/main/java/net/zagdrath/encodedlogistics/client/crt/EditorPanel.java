@@ -587,18 +587,20 @@ final class EditorPanel extends CrtPanel {
                     keep.add(model.lines.get(i));
                 }
             }
-            // Typed on a new line, the last of its run: another under it, the cursor there.
+            // Typed on a new line, the last of its run, or on the member's last line (saved or not): another under it,
+            // the cursor there. An open line already under it takes the cursor instead.
             EditorModel.Line next = null;
             int index = at != null ? model.lines.indexOf(at) : -1;
-            if (commands.isEmpty() && index >= 0 && at.seq == 0 && at.changed && !at.text.isBlank()
-                    && (index + 1 >= model.lines.size() || model.lines.get(index + 1).seq != 0)) {
+            boolean below = index >= 0 && index + 1 < model.lines.size();
+            boolean openBelow = below && model.lines.get(index + 1).fresh && model.lines.get(index + 1).text.isBlank();
+            boolean newRun = index >= 0 && at.seq == 0 && at.changed && (!below || model.lines.get(index + 1).seq != 0);
+            if (commands.isEmpty() && index >= 0 && !at.text.isBlank() && openBelow && (filling || lastTyped(index))) {
+                next = model.lines.get(index + 1);
+                keep.add(next);
+            } else if (commands.isEmpty() && index >= 0 && !at.text.isBlank() && (newRun || lastTyped(index))) {
                 next = EditorModel.blank();
                 model.lines.add(index + 1, next);
                 keep.add(next);
-            } else if (filling && commands.isEmpty() && index >= 0 && at.changed && !at.text.isBlank() && index + 1 < model.lines.size()
-                    && model.lines.get(index + 1).fresh) {
-                // Typed on, with an open line under it: the cursor goes there.
-                next = model.lines.get(index + 1);
             }
             model.dropFresh(keep);
             // The lines typed on are numbered now; the open one shows ' until it's typed on.
@@ -617,6 +619,17 @@ final class EditorPanel extends CrtPanel {
             show(model.lines.indexOf(opened), 0);
         }
         screen.message(message != null ? message : problem);
+        return true;
+    }
+
+    // Whether the line at index is the member's last: only open lines (fresh and blank) under it, if any.
+    private boolean lastTyped(int index) {
+        for (int i = index + 1; i < model.lines.size(); i++) {
+            EditorModel.Line line = model.lines.get(i);
+            if (!(line.fresh && line.text.isBlank())) {
+                return false;
+            }
+        }
         return true;
     }
 
