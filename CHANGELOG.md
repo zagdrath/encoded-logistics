@@ -54,6 +54,10 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Changed
 
+- Rack Consoles have to be at least 8U apart (7U free between them), so one's open screen can't clip through the
+  drawer of the one above. This applies when installing one and in Rack Elevation plans, which skip a console that
+  is too close and say which one is in the way. Other devices can still go between them. Racks that already have
+  consoles closer than that keep them.
 - The Server Rack screen's sneak-clicks follow the vanilla Sneak key instead of Shift: taking a device out,
   stepping a storage priority by 10, and moving a stack between slots. With Sneak on Shift (the default) either Shift
   still works. The screen's hint names the key Sneak is bound to. Sneak-using a rack in the world already followed it.

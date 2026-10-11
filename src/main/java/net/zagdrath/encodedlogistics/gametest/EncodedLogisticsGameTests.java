@@ -113,6 +113,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("copied_drives_count_once", PlacementGameTests::copiedDrivesCountOnce);
         TESTS.put("rack_places_and_breaks", RackGameTests::placesAndBreaks);
         TESTS.put("rack_unit_rules", RackGameTests::unitRules);
+        TESTS.put("rack_console_spacing", RackGameTests::consoleSpacing);
         TESTS.put("rack_geometry", RackGameTests::geometry);
         TESTS.put("rack_targeting", RackGameTests::targeting);
         TESTS.put("rack_on_network", RackGameTests::onNetwork);

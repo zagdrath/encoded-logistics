@@ -66,6 +66,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
+import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
 import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
@@ -154,6 +155,25 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         return true;
     }
 
+    // Whether a device of that type fits at u: its units free, and (a Rack Console) clear of the other consoles.
+    public boolean fits(int u, RackDeviceType type) {
+        return fits(u, type.size()) && consoleInTheWay(u, type) == null;
+    }
+
+    // For a Rack Console at u: the installed console it would clip with when both are open (RackConsoleDevice.SPACING),
+    // else null.
+    public @Nullable RackDevice consoleInTheWay(int u, RackDeviceType type) {
+        if (type != RackDeviceType.RACK_CONSOLE) {
+            return null;
+        }
+        for (RackDevice device : devices.values()) {
+            if (device.type() == RackDeviceType.RACK_CONSOLE && RackConsoleDevice.tooClose(u, device.u())) {
+                return device;
+            }
+        }
+        return null;
+    }
+
     // The lowest unit a device of that size fits at, or 0.
     public int lowestFit(int size) {
         for (int u = 1; u + size - 1 <= RackGeometry.UNITS; u++) {
@@ -201,6 +221,11 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         }
         if (!fits(u, type.size())) {
             player.sendOverlayMessage(Component.translatable("gui.encodedlogistics.rack.no_room", type.size()));
+            return false;
+        }
+        RackDevice console = consoleInTheWay(u, type);
+        if (console != null) {
+            player.sendOverlayMessage(Component.translatable("gui.encodedlogistics.rack.console_spacing", RackConsoleDevice.SPACING, console.u()));
             return false;
         }
         RackDevice device = RackDeviceItem.create(stack, serverLevel.registryAccess());

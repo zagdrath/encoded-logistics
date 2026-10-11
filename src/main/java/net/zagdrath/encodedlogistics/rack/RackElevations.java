@@ -280,7 +280,7 @@ public final class RackElevations {
             Component blocker = null;
             if (same) {
                 state = State.SAME;
-            } else if (rack != null && !rack.fits(planned.u(), planned.size())) {
+            } else if (rack != null && !rack.fits(planned.u(), type)) {
                 state = State.SKIP;
                 blocker = blocker(rack, planned);
             } else {
@@ -325,6 +325,11 @@ public final class RackElevations {
                 return device.name();
             }
         }
+        RackDeviceType type = planned.deviceType();
+        RackDevice console = type != null ? rack.consoleInTheWay(planned.u(), type) : null;
+        if (console != null) {
+            return Component.translatable("message.encodedlogistics.rack_elevation.console_spacing", console.u());
+        }
         return Component.translatable("message.encodedlogistics.rack_elevation.blocked");
     }
 
@@ -355,7 +360,7 @@ public final class RackElevations {
             RackDevice device;
             if (existing != null && existing.u() == planned.u() && existing.type() == type) {
                 device = existing;
-            } else if (!rack.fits(planned.u(), planned.size())) {
+            } else if (!rack.fits(planned.u(), type)) {
                 skipped++;
                 report.add(Component.translatable("message.encodedlogistics.rack_elevation.skipped", planned.u(), blocker(rack, planned))
                         .withStyle(ChatFormatting.GOLD));

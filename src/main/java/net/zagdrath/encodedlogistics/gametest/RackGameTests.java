@@ -5,6 +5,8 @@
 
 package net.zagdrath.encodedlogistics.gametest;
 
+import java.util.List;
+
 import java.util.function.Function;
 
 import net.minecraft.core.BlockPos;
@@ -55,8 +57,10 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
+import net.zagdrath.encodedlogistics.rack.RackTemplate;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
+import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -206,6 +210,31 @@ final class RackGameTests {
         helper.assertTrue(rack.deviceAt(4) == ups && rack.deviceAt(3) == ups, "UPS doesn't take U3-U4");
         helper.assertTrue(rack.freeUnits() == 39, "Rack has " + rack.freeUnits() + "U free");
         helper.assertTrue(rack.remove(4) == ups && rack.deviceAt(3) == null, "UPS not removed from its upper unit");
+        helper.succeed();
+    }
+
+    // Rack Consoles stay RackConsoleDevice.SPACING units apart, so their open lids don't clip: in the rack (installing,
+    // and the screen's drop check) and in a Rack Elevation's plan. Other devices may go between them.
+    static void consoleSpacing(GameTestHelper helper) {
+        BlockPos master = rack(helper, new BlockPos(1, 1, 1), Direction.NORTH);
+        RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+        int spacing = RackConsoleDevice.SPACING;
+        install(helper, master, RackDeviceType.RACK_CONSOLE, 10, RackConsoleDevice.class);
+        for (int u = 10 - spacing + 1; u < 10 + spacing; u++) {
+            if (u != 10) {
+                helper.assertFalse(rack.fits(u, RackDeviceType.RACK_CONSOLE), "A console fits " + (u - 10) + "U from another");
+            }
+        }
+        helper.assertTrue(rack.consoleInTheWay(10 + spacing - 1, RackDeviceType.RACK_CONSOLE) == rack.deviceAt(10), "Wrong console in the way");
+        helper.assertTrue(rack.fits(10 + spacing, RackDeviceType.RACK_CONSOLE) && rack.fits(10 - spacing, RackDeviceType.RACK_CONSOLE),
+                "A console doesn't fit " + spacing + "U away");
+        helper.assertTrue(rack.fits(11, RackDeviceType.FIREWALL), "Other devices kept away from a console");
+        RackTemplate plan = RackTemplate.EMPTY.place(RackDeviceType.RACK_CONSOLE, 10);
+        helper.assertTrue(plan != null && plan.place(RackDeviceType.RACK_CONSOLE, 10 + spacing - 1) == null, "Plan took two consoles too close");
+        helper.assertTrue(plan.place(RackDeviceType.RACK_CONSOLE, 10 + spacing) != null, "Plan refused consoles " + spacing + "U apart");
+        RackTemplate tooClose = plan.withDevices(List.of(new RackTemplate.Planned(10, RackDeviceType.RACK_CONSOLE),
+                new RackTemplate.Planned(12, RackDeviceType.RACK_CONSOLE)));
+        helper.assertTrue(tooClose.valid().devices().size() == 1, "A plan kept two consoles too close");
         helper.succeed();
     }
 

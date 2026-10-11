@@ -55,6 +55,7 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.rack.device.SanDevice;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
 
@@ -360,7 +361,7 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
             RackDeviceType carried = RackDeviceType.of(menu.getCarried());
             int u = hoveredUnit(mouseX, mouseY);
             if (carried != null && u > 0 && rack.deviceAt(u) == null) {
-                view.drop(graphics, x, y, u, carried.size(), rack.fits(u, carried.size()));
+                view.drop(graphics, x, y, u, carried.size(), rack.fits(u, carried));
             }
         }
         view.end(graphics);
@@ -444,6 +445,12 @@ public class RackScreen extends AbstractContainerScreen<RackMenu> {
         RackDeviceType carried = RackDeviceType.of(menu.getCarried());
         if (carried != null && !rack.fits(u, carried.size()) && rack.deviceAt(u) == null) {
             graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.rack.no_room", carried.size()).withColor(ERROR), mouseX, mouseY);
+            return;
+        }
+        RackDevice console = carried != null && rack.deviceAt(u) == null ? rack.consoleInTheWay(u, carried) : null;
+        if (console != null) {
+            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.rack.console_spacing", RackConsoleDevice.SPACING, console.u())
+                    .withColor(ERROR), mouseX, mouseY);
             return;
         }
         RackDevice device = rack.deviceAt(u);

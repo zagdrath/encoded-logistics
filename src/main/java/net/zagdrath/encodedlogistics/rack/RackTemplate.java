@@ -27,6 +27,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
+import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 
 // What a Rack Elevation (RackElevationItem) holds: a plan of a Server Rack, the encodedlogistics:rack_template
@@ -36,7 +37,8 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 // recording copies and applying installs, and where applying looks for items; the mode is how it treats the rack
 // (fill empty units only - nothing is ever removed or replaced).
 //
-// The plan obeys the rack's rules (placeable): a known type, its real size, inside the 42 units, no overlaps.
+// The plan obeys the rack's rules (placeable): a known type, its real size, inside the 42 units, no overlaps, and Rack
+// Consoles RackConsoleDevice.SPACING units apart.
 public record RackTemplate(String name, List<Planned> devices, boolean includeContents, boolean includeSettings, boolean useNetworkStorage,
         Mode mode) {
     public static final int MAX_NAME = 32;
@@ -175,6 +177,13 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
                 return false;
             }
         }
+        if (type == RackDeviceType.RACK_CONSOLE) {
+            for (Planned planned : devices) {
+                if (planned.u() != ignoreU && planned.deviceType() == RackDeviceType.RACK_CONSOLE && RackConsoleDevice.tooClose(u, planned.u())) {
+                    return false;
+                }
+            }
+        }
         return true;
     }
 
@@ -199,7 +208,8 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
         return withDevices(list);
     }
 
-    // Only the devices that obey the rack's rules (a known type, its real size, inside the rack, no overlaps), in U order.
+    // Only the devices that obey the rack's rules (a known type, its real size, inside the rack, no overlaps, consoles
+    // spaced apart), in U order.
     public RackTemplate valid() {
         List<Planned> kept = new ArrayList<>();
         boolean[] used = new boolean[RackGeometry.UNITS + 1];
@@ -211,6 +221,11 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
             boolean free = true;
             for (int unit = planned.u(); unit <= planned.top(); unit++) {
                 free &= !used[unit];
+            }
+            if (type == RackDeviceType.RACK_CONSOLE) {
+                for (Planned other : kept) {
+                    free &= !(other.deviceType() == RackDeviceType.RACK_CONSOLE && RackConsoleDevice.tooClose(planned.u(), other.u()));
+                }
             }
             if (!free) {
                 continue;

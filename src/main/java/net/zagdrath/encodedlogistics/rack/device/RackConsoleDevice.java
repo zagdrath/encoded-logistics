@@ -37,7 +37,18 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // terminal - a Fabrication Terminal's once a Memory Die has been applied (sneak-use the die on it). Sneak-right-click,
 // closing the door, or nobody within 4 blocks folds it away again, screen first - snapped shut together in 2 ticks when
 // the door is closing, ahead of the door. Its crafting grid stays in it.
+//
+// Open, its lid stands in front of the rack about 7.6 px (U) above its own bottom, where the drawer of a console above
+// would slide out: two consoles need SPACING units between their bottoms (7U free between them), or they'd clip.
 public class RackConsoleDevice extends RackDevice {
+    // Units from one console's bottom to the next's, at least: the lid's 7 px on its 0.625 px hinge, rounded up.
+    public static final int SPACING = 8;
+
+    // Whether consoles at these units would clip when both are open.
+    public static boolean tooClose(int u, int other) {
+        return u != other && Math.abs(u - other) < SPACING;
+    }
+
     public static final int DRAWER_TICKS = 8, LID_TICKS = 6;
     private static final double REACH = 4.0;
     private static final int CHECK_INTERVAL = 10;
