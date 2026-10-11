@@ -135,7 +135,8 @@ final class CraftingCompletionGameTests {
                 .thenExecute(() -> start(helper, master))
                 .thenIdle(25)
                 .thenExecute(() -> {
-                    helper.assertTrue(scheduler(helper, master).threadsUsed() == 1, "No thread in use");
+                    // A thread a run (threadCrafts 1): both of the Compute Server's.
+                    helper.assertTrue(scheduler(helper, master).threadsUsed() == 2, "Threads in use " + scheduler(helper, master).threadsUsed());
                     smelt(helper, OUTPUT);
                 })
                 .thenIdle(45)

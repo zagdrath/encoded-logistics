@@ -278,9 +278,10 @@ final class Phase3GameTests {
                 .thenSucceed();
     }
 
-    // A Gateway runs a raw iron -> ingot schematic through the chest next to it (standing in for a furnace): it pushes
-    // both runs' raw iron in, pulls the first ingot back out, takes the second through its handler (as a machine pushing
-    // it), and the job puts both into the network. Meanwhile it keeps 8 cobblestone stocked in its buffer.
+    // A Gateway runs a raw iron -> ingot schematic through the chest next to it (standing in for a furnace), a run at a
+    // time on the Scheduler Core's one thread: it pushes the first run's raw iron in and takes its ingot through its
+    // handler (as a machine pushing it), then pushes the second's and pulls that ingot back out, and the job puts both
+    // into the network. Meanwhile it keeps 8 cobblestone stocked in its buffer.
     static void gatewayProcesses(GameTestHelper helper) {
         BlockPos gateway = new BlockPos(1, 1, 1), machine = new BlockPos(2, 1, 1), core = new BlockPos(1, 2, 0);
         helper.setBlock(gateway, ModBlocks.GATEWAY.get());
@@ -304,9 +305,8 @@ final class Phase3GameTests {
                 .thenIdle(6)
                 .thenExecute(() -> {
                     ChestBlockEntity chest = helper.getBlockEntity(machine, ChestBlockEntity.class);
-                    helper.assertTrue(chest.countItem(Items.RAW_IRON) == 2, "Chest has " + chest.countItem(Items.RAW_IRON) + " raw iron");
+                    helper.assertTrue(chest.countItem(Items.RAW_IRON) == 1, "Chest has " + chest.countItem(Items.RAW_IRON) + " raw iron");
                     chest.clearContent();
-                    chest.setItem(0, new ItemStack(Items.IRON_INGOT));
                     ResourceHandler<ItemResource> handler = helper.getLevel().getCapability(Capabilities.Item.BLOCK, helper.absolutePos(gateway), Direction.EAST);
                     try (Transaction transaction = Transaction.openRoot()) {
                         helper.assertTrue(handler.insert(ItemResource.of(new ItemStack(Items.STONE)), 1, transaction) == 0, "Took stone");
@@ -314,7 +314,15 @@ final class Phase3GameTests {
                         transaction.commit();
                     }
                 })
-                .thenIdle(25)
+                .thenIdle(6)
+                .thenExecute(() -> {
+                    ChestBlockEntity chest = helper.getBlockEntity(machine, ChestBlockEntity.class);
+                    helper.assertTrue(chest.countItem(Items.RAW_IRON) == 1, "Second run: chest has " + chest.countItem(Items.RAW_IRON) + " raw iron");
+                    chest.clearContent();
+                    chest.setItem(0, new ItemStack(Items.IRON_INGOT));
+                })
+                // Within a pull (PULL_INTERVAL) and the light's ACTIVE_TICKS after it.
+                .thenIdle(15)
                 .thenExecute(() -> {
                     helper.assertTrue(storage(helper).count(INGOT) == 2, "Network has " + storage(helper).count(INGOT) + " ingots");
                     helper.assertTrue(helper.getBlockEntity(machine, ChestBlockEntity.class).countItem(Items.IRON_INGOT) == 0, "Ingot left in the machine");

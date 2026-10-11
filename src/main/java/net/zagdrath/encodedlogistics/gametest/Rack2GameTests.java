@@ -281,7 +281,7 @@ final class Rack2GameTests {
                 .thenSucceed();
     }
 
-    // Threads are shared out by the crafts a job has left (threadRuns a thread): a big job takes every free thread of its
+    // Threads are shared out by the crafts a job has left (threadCrafts a thread): a big job takes every free thread of its
     // Scheduler, a second job takes one back, and a job's threads are counted in the Scheduler's use.
     static void jobThreads(GameTestHelper helper) {
         BlockPos master = RackGameTests.networkedRack(helper);
@@ -296,7 +296,7 @@ final class Rack2GameTests {
         fabrication.items().set(0, card);
         fabrication.itemsChanged();
         int threads = 2 * Config.COMPUTE_SERVER_THREADS.getAsInt(), runs = Config.THREAD_RUNS.getAsInt();
-        // 64 crafts: wants ceil(64 / threadRuns) threads, the whole pool at the defaults.
+        // 64 crafts: wants ceil(64 / threadCrafts) threads, the whole pool at the defaults.
         int wanted = runs <= 0 ? 1 : Math.min(threads, (64 + runs - 1) / runs);
         helper.startSequence()
                 .thenIdle(3)
@@ -334,6 +334,49 @@ final class Rack2GameTests {
                             "Threads in use " + scheduler.threadsUsed());
                     helper.assertTrue(scheduler.cancel(big.id) && scheduler.cancel(small.id), "Couldn't cancel the jobs");
                 })
+                .thenSucceed();
+    }
+
+    // A job's threads are crafts side by side: on one Fabrication Server, a job on N threads (threadCrafts 1) has N crafts
+    // going at once - no more - and gets N done each craft's time, not one.
+    static void jobThreadsCraftSideBySide(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 3, ComputeServerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 5, MemoryServerDevice.class);
+        FabricationServerDevice fabrication = RackGameTests.install(helper, master, RackDeviceType.FABRICATION_SERVER, 6, FabricationServerDevice.class);
+        storageDevice(helper, master, RackDeviceType.NAS, 8, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        ItemStack card = new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
+        card.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_LOG)),
+                List.of(new ItemStack(Items.OAK_PLANKS, 4))));
+        fabrication.items().set(0, card);
+        fabrication.itemsChanged();
+        int threads = 2 * Config.COMPUTE_SERVER_THREADS.getAsInt(), runs = Config.THREAD_RUNS.getAsInt();
+        // 16 crafts, more than the pool: the job takes every thread, and keeps a craft going on each.
+        int perCraft = Config.FABRICATOR_CRAFT_TICKS.get().getFirst();
+        CraftingJob[] job = new CraftingJob[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(runs == 1, "threadCrafts is " + runs + ", not the default 1");
+                    ServerLevel level = helper.getLevel();
+                    BlockPos device = helper.absolutePos(master);
+                    RackScheduler scheduler = helper.getBlockEntity(master, RackBlockEntity.class).scheduler();
+                    RackGameTests.storage(helper, master).insert(LOG, 16, false);
+                    CraftPlanner.Plan plan = CraftRequests.plan(level, device, PLANKS, 64);
+                    helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+                    helper.assertTrue(CraftRequests.start(level, device, plan, scheduler) != null, "Job didn't start");
+                    job[0] = scheduler.jobs().get(0);
+                })
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    helper.assertTrue(job[0].running && job[0].threads == threads, "Job on " + job[0].threads + " threads, not " + threads);
+                    helper.assertTrue(fabrication.craftsRunning() == threads, "Fabrication Server runs " + fabrication.craftsRunning() + " crafts at once, not "
+                            + threads);
+                    helper.assertTrue(job[0].inFlight() == threads, "In flight " + job[0].inFlight());
+                })
+                .thenIdle(perCraft + 2)
+                .thenExecute(() -> helper.assertTrue(job[0].done() >= threads, "Done " + job[0].done() + " after a craft's time, not " + threads))
                 .thenSucceed();
     }
 

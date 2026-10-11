@@ -31,8 +31,9 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 // Fabrication Servers) holding its schematic. Whatever they make comes back to the job (SchedulerCoreBlockEntity.deliver);
 // when every step is done the job puts all it holds into the network.
 //
-// Threads are shared out like a cluster's nodes: a thread keeps threadRuns crafts in flight at once, so a job wants
-// ceil(crafts left / threadRuns) of them (CraftingJob.threadsWanted). Every queued job gets one thread first (taking one
+// Threads are shared out like a cluster's nodes: a thread keeps threadCrafts crafts in flight at once (one, by default:
+// Fabricators and Fabrication Servers run every craft they're given side by side, so a job on 39 threads makes 39 crafts
+// at a time), and a job wants ceil(crafts left / threadCrafts) of them (CraftingJob.threadsWanted). Every queued job gets one thread first (taking one
 // back from the job with most, if none is free), then free threads go round the running jobs that can use more, one at
 // a time; a job gives threads back as it nears its end. So a big job spreads over every Compute Server and Thread Unit
 // the host has, and still leaves room for the next job to start.
@@ -190,7 +191,7 @@ public final class JobRunner {
         }
     }
 
-    // Crafts a thread keeps in flight (threadRuns); 0 for no limit.
+    // Crafts a thread keeps in flight (threadCrafts); 0 for no limit.
     private static int runsPerThread() {
         return Config.THREAD_RUNS.getAsInt();
     }

@@ -23,6 +23,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.SchedulerCoreBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftQueue;
 import net.zagdrath.encodedlogistics.crafting.CraftTask;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
@@ -35,13 +36,12 @@ import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // The Fabrication Server (2U): a Fabricator in a rack. Nine Crafting Schematic slots and two Throughput Module slots;
 // any Scheduler on the network it serves offers it crafts (the network's rack Scheduler first), and it works as a
-// Fabricator does: fabricatorEnergyPerCraft FE a craft, fabricatorCraftTicks[modules] ticks (pausing while offline),
-// the result and any remainders back to the job.
+// Fabricator does: as many crafts at once as the jobs' threads allow (CraftQueue), fabricatorEnergyPerCraft FE a craft,
+// fabricatorCraftTicks[modules] ticks (pausing while offline), the result and any remainders back to the job.
 public class FabricationServerDevice extends RackDevice implements CraftingProvider {
     public static final int SCHEMATIC_SLOTS = 9;
 
-    private @Nullable CraftTask task;
-    private int progress, duration;
+    private final CraftQueue crafts = new CraftQueue();
     private double energyCredit;
     // Its lights: blinking while it crafts and ServerDevice.LINGER ticks after, solid while online and idle.
     private long busyUntil;
@@ -87,7 +87,7 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
 
     @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
-        if (task != null || !isOnline() || rack() == null || offered.schematic().kind() != Schematic.Kind.CRAFTING
+        if (!isOnline() || rack() == null || offered.schematic().kind() != Schematic.Kind.CRAFTING
                 || !accepts(offered.schematic())) {
             return false;
         }
@@ -99,9 +99,7 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
             }
         }
         energyCredit -= cost;
-        task = offered;
-        progress = 0;
-        duration = craftTicks();
+        crafts.add(offered, craftTicks());
         changed(false);
         return true;
     }
@@ -114,7 +112,7 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     @Override
     public void tick(ServerLevel level) {
         long now = level.getGameTime();
-        if (task != null && isOnline()) {
+        if (!crafts.isEmpty() && isOnline()) {
             busyUntil = now + ServerDevice.LINGER;
         }
         boolean shown = isOnline() && now < busyUntil;
@@ -122,14 +120,14 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
             busy = shown;
             changed(false);
         }
-        if (task == null || !isOnline() || rack() == null) {
+        if (crafts.isEmpty() || !isOnline() || rack() == null) {
             return;
         }
-        if (++progress >= duration) {
-            CraftTask done = task;
-            task = null;
-            progress = 0;
-            SchedulerCoreBlockEntity.deliver(level, done, craft(level, done), true, rack().getBlockPos());
+        List<CraftTask> done = crafts.tick();
+        for (CraftTask task : done) {
+            SchedulerCoreBlockEntity.deliver(level, task, craft(level, task), true, rack().getBlockPos());
+        }
+        if (!done.isEmpty()) {
             changed(false);
         } else {
             saveOnly();
@@ -153,19 +151,31 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
         return made;
     }
 
-    // Taken out mid-craft: the inputs go back to the job.
+    // Taken out mid-craft: the inputs go back to the jobs.
     @Override
     public void onRemoved() {
-        if (task != null && rack() != null && rack().getLevel() instanceof ServerLevel level) {
-            SchedulerCoreBlockEntity.refund(level, task, task.inputs(), rack().getBlockPos());
-            task = null;
+        if (rack() != null && rack().getLevel() instanceof ServerLevel level) {
+            for (CraftTask task : crafts.clear()) {
+                SchedulerCoreBlockEntity.refund(level, task, task.inputs(), rack().getBlockPos());
+            }
         }
+    }
+
+    // How many crafts it's working on at once.
+    public int craftsRunning() {
+        return crafts.size();
     }
 
     @Override
     protected List<RackDeviceInfo.InfoLine> lines(ServerPlayer viewer) {
+        CraftTask task = crafts.lead();
+        int progress = crafts.leadProgress(), duration = crafts.leadDuration();
         Component job = task != null ? task.schematic().outputTotals().keySet().stream().findFirst()
                 .map(key -> key.stack().getHoverName()).orElse(Component.literal("?")) : Component.translatable("hud.encodedlogistics.fab.idle");
+        if (crafts.size() > 1) {
+            // Several crafts side by side: how many.
+            job = job.copy().append(" \u00d7" + crafts.size());
+        }
         return List.of(
                 new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.fab.schematics"),
                         Component.literal(schematics().size() + " / " + SCHEMATIC_SLOTS)),
@@ -178,8 +188,9 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     @Override
     public void writePanel(ValueOutput output, ServerPlayer viewer) {
         save(output);
-        output.putInt("progress_now", progress);
-        output.putInt("duration_now", task != null ? duration : 0);
+        CraftTask task = crafts.lead();
+        output.putInt("progress_now", crafts.leadProgress());
+        output.putInt("duration_now", crafts.leadDuration());
         if (task != null) {
             task.schematic().outputTotals().forEach((key, count) -> {
                 output.putString("job", key.stack().getHoverName().getString());
@@ -193,20 +204,14 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     @Override
     public void save(ValueOutput output) {
         saveItems(output);
-        if (task != null) {
-            output.store("task", CraftTask.CODEC, task);
-            output.putInt("progress", progress);
-            output.putInt("duration", duration);
-        }
+        crafts.save(output);
         output.putDouble("energy", energyCredit);
     }
 
     @Override
     public void load(ValueInput input) {
         loadItems(input);
-        task = input.read("task", CraftTask.CODEC).orElse(null);
-        progress = input.getIntOr("progress", 0);
-        duration = input.getIntOr("duration", 20);
+        crafts.load(input);
         energyCredit = input.getDoubleOr("energy", 0);
     }
 }

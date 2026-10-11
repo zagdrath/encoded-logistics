@@ -31,6 +31,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.FabricatorBlock;
+import net.zagdrath.encodedlogistics.crafting.CraftQueue;
 import net.zagdrath.encodedlogistics.crafting.CraftTask;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
@@ -41,26 +42,27 @@ import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
-// A Fabricator's nine Crafting Schematic slots and two Throughput Module slots, and the craft it's working on. A
-// Scheduler offers it a craft (with the inputs) when it's free and online; it pays fabricatorEnergyPerCraft FE, works for
-// fabricatorCraftTicks[modules] ticks (pausing while offline), then crafts the recipe the schematic's grid matches and
-// sends the result and any remainders (buckets) back to the job. Broken mid-craft, it gives the inputs back to the job.
+// A Fabricator's nine Crafting Schematic slots and two Throughput Module slots, and the crafts it's working on. A
+// Scheduler offers it crafts (with the inputs) while it's online, as many at once as the jobs' threads allow (CraftQueue);
+// it pays fabricatorEnergyPerCraft FE each, works each for fabricatorCraftTicks[modules] ticks (pausing while offline),
+// then crafts the recipe the schematic's grid matches and sends the result and any remainders (buckets) back to the job.
+// Broken mid-craft, it gives the inputs back to the jobs.
 public class FabricatorBlockEntity extends BaseContainerBlockEntity implements NetworkDevice, CraftingProvider {
     public static final int SCHEMATIC_SLOTS = 9, MODULE_SLOTS = 2, SLOTS = SCHEMATIC_SLOTS + MODULE_SLOTS;
     // Stays lit this long after a craft, so back-to-back crafts don't flicker.
     private static final int LINGER = 10;
 
     private NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
-    private @Nullable CraftTask task;
-    private int progress, duration, idle;
+    private final CraftQueue crafts = new CraftQueue();
+    private int idle;
     private double energyCredit;
     private boolean online;
 
-    // For the screen: progress, duration.
+    // For the screen: the progress and duration of the craft nearest done.
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == 0 ? progress : task != null ? duration : 0;
+            return index == 0 ? crafts.leadProgress() : crafts.leadDuration();
         }
 
         @Override
@@ -82,7 +84,12 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
     }
 
     public boolean isWorking() {
-        return task != null;
+        return !crafts.isEmpty();
+    }
+
+    // How many crafts it's working on at once.
+    public int craftsRunning() {
+        return crafts.size();
     }
 
     public int throughputModules() {
@@ -116,7 +123,7 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
 
     @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
-        if (task != null || !online || offered.schematic().kind() != Schematic.Kind.CRAFTING || !accepts(offered.schematic())) {
+        if (!online || offered.schematic().kind() != Schematic.Kind.CRAFTING || !accepts(offered.schematic())) {
             return false;
         }
         int cost = Config.FABRICATOR_ENERGY_PER_CRAFT.getAsInt();
@@ -127,16 +134,14 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
             }
         }
         energyCredit -= cost;
-        task = offered;
-        progress = 0;
-        duration = craftTicks();
+        crafts.add(offered, craftTicks());
         setActive(true);
         setChanged();
         return true;
     }
 
     public void serverTick(ServerLevel level) {
-        if (task == null) {
+        if (crafts.isEmpty()) {
             if (idle > 0 && --idle == 0) {
                 setActive(false);
             }
@@ -145,12 +150,12 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
         if (!online) {
             return;
         }
-        if (++progress >= duration) {
-            CraftTask done = task;
-            task = null;
-            progress = 0;
+        List<CraftTask> done = crafts.tick();
+        for (CraftTask task : done) {
+            SchedulerCoreBlockEntity.deliver(level, task, craft(level, task), true, worldPosition);
+        }
+        if (!done.isEmpty()) {
             idle = LINGER;
-            SchedulerCoreBlockEntity.deliver(level, done, craft(level, done), true, worldPosition);
             setChanged();
         }
     }
@@ -220,13 +225,14 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
         return new FabricatorMenu(containerId, inventory, this, data);
     }
 
-    // Breaking it drops its schematics and modules, and gives a craft in progress back to its job.
+    // Breaking it drops its schematics and modules, and gives the crafts in progress back to their jobs.
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
-        if (task != null && level instanceof ServerLevel serverLevel) {
-            SchedulerCoreBlockEntity.refund(serverLevel, task, task.inputs(), pos);
-            task = null;
+        if (level instanceof ServerLevel serverLevel) {
+            for (CraftTask task : crafts.clear()) {
+                SchedulerCoreBlockEntity.refund(serverLevel, task, task.inputs(), pos);
+            }
         }
     }
 
@@ -237,9 +243,7 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
         super.loadAdditional(input);
         items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, items);
-        task = input.read("task", CraftTask.CODEC).orElse(null);
-        progress = input.getIntOr("progress", 0);
-        duration = input.getIntOr("duration", 20);
+        crafts.load(input);
         energyCredit = input.getDoubleOr("energy", 0);
     }
 
@@ -247,11 +251,7 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, items);
-        if (task != null) {
-            output.store("task", CraftTask.CODEC, task);
-            output.putInt("progress", progress);
-            output.putInt("duration", duration);
-        }
+        crafts.save(output);
         output.putDouble("energy", energyCredit);
     }
 }

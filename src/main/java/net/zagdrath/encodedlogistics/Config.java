@@ -194,9 +194,10 @@ public class Config {
             .defineInRange("jobStallSeconds", 30, 5, 3_600);
 
     public static final ModConfigSpec.IntValue THREAD_RUNS = BUILDER
-            .comment("Crafts a thread keeps going at once. A job with more crafts left takes more of its Scheduler's free threads,",
-                    "and gives them back as it nears its end; every job gets at least one. 0: a thread runs any number of crafts.")
-            .defineInRange("threadRuns", 8, 0, 100_000);
+            .comment("Crafts a thread keeps going at once (Fabricators and Fabrication Servers run every craft they're given side by",
+                    "side). A job with more crafts left takes more of its Scheduler's free threads, and gives them back as it nears",
+                    "its end; every job gets at least one. 0: a thread runs any number of crafts.")
+            .defineInRange("threadCrafts", 1, 0, 100_000);
 
     public static final ModConfigSpec.ConfigValue<List<? extends Integer>> FABRICATOR_CRAFT_TICKS = BUILDER
             .comment("Ticks a Fabricator takes per craft with 0, 1 and 2 Throughput Modules.")
