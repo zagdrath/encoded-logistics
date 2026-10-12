@@ -23,6 +23,30 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-12
+
+### Changed
+
+- **Much less server time on busy networks.** What a network works out from its layout (its storage and the order
+  items go in and out, its Energy Storage Drives, the rack devices serving it, the racks in order, each rack
+  Scheduler's pool) is kept until something it depends on changes, instead of being worked out again every tick. Idle
+  Tape Libraries no longer look at the network's storage, rack Schedulers re-check their pool only when something
+  changes (and every 40 ticks), and FE pushed into a Server Rack's connection points is taken without walking the
+  network, reaching its energy when the network ticks. Controllers and racks no longer update comparators every
+  tick, and racks only resync to clients when something they show changed. Priority order, routing and energy
+  totals are unchanged.
+- **New LTO tapes stack** to 64 and copy freely, as new Storage Drives do, so libraries are quick to fill. A tape that
+  has been in a library is one of a kind and stacks to 1; one that's empty again goes back to blank in a player's
+  inventory.
+- `/encodedlogistics caches` (operators) shows how often each network cache was rebuilt over the last minute, and
+  `/encodedlogistics caches log true` writes it to the server log every minute.
+
+### Fixed
+
+- Gateways couldn't run stonecutting schematics: a Stonecutter has no inventory to push into. A Gateway beside a
+  Stonecutter now cuts the inputs itself and hands the outputs to the job; anything cut beyond what the job expects
+  goes to the network.
+
 ## [1.2.0] - 2026-10-11
 
 ### Added
@@ -243,7 +267,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.0+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.1+26.3...HEAD
+[1.2.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.0+26.3...v1.2.1+26.3
 [1.2.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.1.0+26.3...v1.2.0+26.3
 [1.1.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.1+26.3...v1.1.0+26.3
 [1.0.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0...v1.0.1+26.3
