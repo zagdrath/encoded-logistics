@@ -89,6 +89,20 @@ public final class DriveCopies {
         return forked;
     }
 
+    // The same, but only when the drive isn't already mounted at this holder's slot (its id given, its place recorded):
+    // what reading a holder's drives does, so a drive is mounted once (when it goes in, or is first read after a load)
+    // and not again on every read.
+    public static boolean ensureMounted(MinecraftServer server, ItemStack stack, Mount holder, int slot) {
+        UUID id = StorageDriveItem.id(stack);
+        if (id != null) {
+            Place place = mounts(server).get(id);
+            if (place != null && place.is(holder, slot) && place.stack() == stack) {
+                return false;
+            }
+        }
+        return mount(server, stack, holder, slot);
+    }
+
     // A creative player's inventory, cursor and open container: two drives with one id there are a drive and its copy
     // (or copies), and each copy gets an id of its own. A stack of one id's drives (a copy of a drive from before drives
     // with ids stacked to 1) is one drive.

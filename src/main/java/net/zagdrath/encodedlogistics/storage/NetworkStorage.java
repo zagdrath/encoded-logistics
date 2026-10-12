@@ -6,6 +6,8 @@
 package net.zagdrath.encodedlogistics.storage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +41,9 @@ public final class NetworkStorage {
     }
 
     private final List<StorageView> fillOrder, emptyOrder;
+    // Each fill-order view's priority and whether it's shared, as they were when the storage was built (and sorted).
+    private final int[] fillPriority;
+    private final boolean[] fillShared;
     private final Claim claim;
     // Told how many items really went in or came out (not simulations; not fluids or gases): the network's item flow.
     private final LongConsumer moved;
@@ -61,12 +66,52 @@ public final class NetworkStorage {
         this.cold = cold;
         this.claim = claim;
         // Shared storage (another segment's, through a Share route) comes after all of the network's own, both ways.
-        fillOrder = new ArrayList<>(views);
-        fillOrder.sort(Comparator.comparing(StorageView::isShared).thenComparing(Comparator.comparingInt(StorageView::priority).reversed())
-                .thenComparing(StorageView::isTap));
-        emptyOrder = new ArrayList<>(views);
-        emptyOrder.sort(Comparator.comparing(StorageView::isShared).thenComparingInt(StorageView::priority).thenComparing(view -> !view.isTap()));
+        // Each view's keys are read once, not on every comparison (the sorts are stable, as List.sort was).
+        Keys[] keys = new Keys[views.size()];
+        for (int i = 0; i < keys.length; i++) {
+            StorageView view = views.get(i);
+            keys[i] = new Keys(view, view.priority(), view.isShared(), view.isTap());
+        }
+        Keys[] fill = keys.clone();
+        Arrays.sort(fill, FILL);
+        Keys[] empty = keys.clone();
+        Arrays.sort(empty, EMPTY);
+        List<StorageView> fillViews = new ArrayList<>(fill.length), emptyViews = new ArrayList<>(empty.length);
+        fillPriority = new int[fill.length];
+        fillShared = new boolean[fill.length];
+        for (int i = 0; i < fill.length; i++) {
+            fillViews.add(fill[i].view());
+            fillPriority[i] = fill[i].priority();
+            fillShared[i] = fill[i].shared();
+            emptyViews.add(empty[i].view());
+        }
+        fillOrder = Collections.unmodifiableList(fillViews);
+        emptyOrder = Collections.unmodifiableList(emptyViews);
     }
+
+    private record Keys(StorageView view, int priority, boolean shared, boolean tap) {}
+
+    // In: the network's own first, highest priority first, drives before taps.
+    private static final Comparator<Keys> FILL = (a, b) -> {
+        if (a.shared() != b.shared()) {
+            return a.shared() ? 1 : -1;
+        }
+        if (a.priority() != b.priority()) {
+            return Integer.compare(b.priority(), a.priority());
+        }
+        return a.tap() == b.tap() ? 0 : a.tap() ? 1 : -1;
+    };
+
+    // Out: the network's own first, lowest priority first, taps before drives.
+    private static final Comparator<Keys> EMPTY = (a, b) -> {
+        if (a.shared() != b.shared()) {
+            return a.shared() ? 1 : -1;
+        }
+        if (a.priority() != b.priority()) {
+            return Integer.compare(a.priority(), b.priority());
+        }
+        return a.tap() == b.tap() ? 0 : a.tap() ? -1 : 1;
+    };
 
     // Everything stored hot, added up.
     public Map<StorageKey, Long> list() {
@@ -112,7 +157,7 @@ public final class NetworkStorage {
 
     // Its storage views, in fill order (the inventory report's locations).
     public List<StorageView> views() {
-        return List.copyOf(fillOrder);
+        return fillOrder;
     }
 
     public ColdTier cold() {
@@ -150,9 +195,9 @@ public final class NetworkStorage {
         long left = amount;
         int start = 0;
         while (start < fillOrder.size() && left > 0) {
-            int priority = fillOrder.get(start).priority(), end = start;
-            boolean shared = fillOrder.get(start).isShared();
-            while (end < fillOrder.size() && fillOrder.get(end).priority() == priority && fillOrder.get(end).isShared() == shared) {
+            int priority = fillPriority[start], end = start;
+            boolean shared = fillShared[start];
+            while (end < fillOrder.size() && fillPriority[end] == priority && fillShared[end] == shared) {
                 end++;
             }
             // Within a priority (shared storage on its own, after all of the network's): where it already is, then

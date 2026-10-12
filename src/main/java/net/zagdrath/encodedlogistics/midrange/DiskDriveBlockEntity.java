@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
@@ -59,6 +60,9 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
     private boolean online;
     private int spinUp, spinDown;
     private @Nullable UUID ejectTo;
+    // The drive the network could read (and its id) when last looked at (checkReadable).
+    private @Nullable ItemStack readable;
+    private @Nullable UUID readableId;
 
     public DiskDriveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntityTypes.DISK_DRIVE.get(), pos, state, 1);
@@ -142,6 +146,7 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
             spinDown = Math.max(1, Config.DISK_SPIN_DOWN_TICKS.getAsInt());
             spinUp = 0;
             ejectTo = player.getUUID();
+            checkReadable();
             setChanged();
             if (level != null) {
                 level.playSound(null, worldPosition, ModSounds.DRIVE_SEEK.value(), SoundSource.BLOCKS, 0.6F, 0.7F);
@@ -152,6 +157,11 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
 
     @Override
     protected void tick(ServerLevel level) {
+        spin(level);
+        checkReadable();
+    }
+
+    private void spin(ServerLevel level) {
         if (spinDown > 0) {
             if (--spinDown == 0) {
                 out(level);
@@ -160,6 +170,46 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
         }
         if (spinUp > 0 && online && !getItem(0).isEmpty() && --spinUp == 0) {
             showSpinning();
+        }
+    }
+
+    // Which drive the network can read (drive: spun up, not spinning down) changed - or its id did: its network's cached
+    // storage and energy go.
+    private void checkReadable() {
+        if (!(level instanceof ServerLevel)) {
+            return;
+        }
+        ItemStack now = drive(0);
+        UUID id = now != null ? StorageDriveItem.id(now) : null;
+        if (now != readable || !Objects.equals(id, readableId)) {
+            readable = now;
+            readableId = id;
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    // Coming or going (its chunk loading or unloading, or broken): its drive joins or leaves the cached storage.
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
         }
     }
 
@@ -187,6 +237,7 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
     private void showSpinning() {
         State state = state();
         showActive(state == State.SPIN_UP || state == State.SPINNING);
+        checkReadable();
     }
 
     // Its id and its fill on the item, and the pack it shows (its drive's type).

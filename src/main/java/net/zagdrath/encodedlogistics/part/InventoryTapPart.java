@@ -16,8 +16,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.ICapabilityInvalidationListener;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.InventoryTapMenu;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.storage.ResourceIO;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.StorageView;
@@ -37,6 +39,8 @@ public class InventoryTapPart extends CablePart {
     private int priority, access = READ_WRITE;
     private boolean attached;
     private int timer;
+    private @Nullable ICapabilityInvalidationListener listener;
+    private boolean gone;
 
     public InventoryTapPart(PartType type, CableBlockEntity host, Direction side) {
         super(type, host, side);
@@ -52,6 +56,10 @@ public class InventoryTapPart extends CablePart {
 
     public void setPriority(int priority) {
         this.priority = Mth.clamp(priority, MIN_PRIORITY, MAX_PRIORITY);
+        // Its priority orders the network's cached storage (NetworkStorage).
+        if (host.getLevel() instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
         changed();
     }
 
@@ -88,6 +96,7 @@ public class InventoryTapPart extends CablePart {
         boolean now = handler(level) != null;
         if (now != attached) {
             attached = now;
+            ControllerStructures.contentChanged();
             changed();
         }
     }
@@ -96,10 +105,34 @@ public class InventoryTapPart extends CablePart {
         return ResourceIO.all(level, facing(), side.getOpposite());
     }
 
-    // The faced inventory and tanks as network storage, or null when there are none.
+    // The faced inventory and tanks as network storage, or null when there are none. The network keeps it (cached
+    // storage) until the faced block's capabilities change (listen).
     public @Nullable StorageView view(ServerLevel level) {
+        listen(level);
         ResourceIO handler = handler(level);
         return handler == null ? null : new View(handler);
+    }
+
+    // Hears when the faced block's capabilities are invalidated (it's placed, broken or swapped, or its chunk loads or
+    // unloads), and lets what's cached from the networks go. Levels hold listeners weakly: the part keeps it.
+    private void listen(ServerLevel level) {
+        if (listener == null) {
+            listener = () -> {
+                if (gone || host.isRemoved()) {
+                    return false;
+                }
+                ControllerStructures.contentChanged();
+                return true;
+            };
+            level.registerCapabilityListener(facing(), listener);
+        }
+    }
+
+    @Override
+    public void removed(ServerLevel level) {
+        super.removed(level);
+        gone = true;
+        ControllerStructures.contentChanged();
     }
 
     private final class View implements StorageView {

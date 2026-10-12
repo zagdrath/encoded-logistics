@@ -96,6 +96,10 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
             }
         }
         syncParts();
+        if (level instanceof ServerLevel) {
+            // Parts on or off: an Inventory Tap's inventory joins or leaves its network's cached storage.
+            ControllerStructures.contentChanged();
+        }
         setChanged();
         updateTicking();
         updateLit(false);
@@ -228,6 +232,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         if (level instanceof ServerLevel serverLevel && !remoteLinks().isEmpty()) {
             ControllerStructures.get(serverLevel).markTopologyChanged();
         }
+        partsCameOrWent();
     }
 
     @Override
@@ -236,6 +241,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         if (level instanceof ServerLevel serverLevel) {
             ControllerStructures.get(serverLevel).setTicking(this, false);
         }
+        partsCameOrWent();
     }
 
     @Override
@@ -246,6 +252,14 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
             if (!remoteLinks().isEmpty()) {
                 ControllerStructures.get(serverLevel).markTopologyChanged();
             }
+        }
+        partsCameOrWent();
+    }
+
+    // Its parts (an Inventory Tap's inventory among them) join or leave its network's cached storage.
+    private void partsCameOrWent() {
+        if (level instanceof ServerLevel && !parts.isEmpty()) {
+            ControllerStructures.contentChanged();
         }
     }
 

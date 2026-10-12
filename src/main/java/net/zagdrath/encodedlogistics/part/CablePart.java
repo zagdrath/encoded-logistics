@@ -69,6 +69,10 @@ public abstract class CablePart {
     public void setEnabled(boolean enabled) {
         if (this.enabled != enabled) {
             this.enabled = enabled;
+            // A disabled Inventory Tap's inventory leaves its network's cached storage.
+            if (host.getLevel() instanceof ServerLevel) {
+                ControllerStructures.contentChanged();
+            }
             changed();
         }
     }

@@ -52,6 +52,9 @@ public final class RackScheduler implements JobHost {
     private boolean head;
     private int threads;
     private long memory;
+    private static final int REFRESH_INTERVAL = 40;
+    private long refreshedKey = -1;
+    private int sinceRefresh;
 
     public RackScheduler(RackBlockEntity rack) {
         this.rack = rack;
@@ -72,17 +75,9 @@ public final class RackScheduler implements JobHost {
     }
 
     // The Scheduler of a network's pool: its head rack's, or null while no loaded rack has an online Compute Server
-    // serving it.
+    // serving it. (Worked out for every network at once, and cached: ControllerStructures.rackSchedulerOf.)
     public static @Nullable RackScheduler of(MinecraftServer server, @Nullable NetworkRef network) {
-        if (network == null) {
-            return null;
-        }
-        for (RackBlockEntity rack : ControllerStructures.allRacks(server)) {
-            if (network.equals(rack.scheduler().ownNetwork())) {
-                return rack.scheduler();
-            }
-        }
-        return null;
+        return network != null ? ControllerStructures.rackSchedulerOf(server, network) : null;
     }
 
     // The Scheduler a device of this rack is part of: the pool of the network it serves.
@@ -131,8 +126,7 @@ public final class RackScheduler implements JobHost {
         if (!head) {
             return;
         }
-        List<RackDevice> serving = ControllerStructures.rackDevicesServing(server, network);
-        for (RackDevice device : serving) {
+        for (RackDevice device : ControllerStructures.rackDevicesServing(server, network)) {
             if (!device.isOnline()) {
                 continue;
             }
@@ -142,11 +136,14 @@ public final class RackScheduler implements JobHost {
                 memory += Config.MEMORY_SERVER_MEMORY.getAsInt();
             }
         }
-        // Its servers' lights: Compute Servers blink while jobs run, Memory Servers while jobs hold memory.
+    }
+
+    // Its servers' lights, every tick: Compute Servers blink while jobs run, Memory Servers while jobs hold memory.
+    private void markBusy(ServerLevel level) {
         boolean computing = active() && runner.threadsUsed() > 0, holding = active() && runner.memoryUsed() > 0;
         if (computing || holding) {
             long now = level.getGameTime();
-            for (RackDevice device : serving) {
+            for (RackDevice device : ControllerStructures.rackDevicesServing(level.getServer(), network)) {
                 if (device.isOnline() && (computing && device instanceof ComputeServerDevice || holding && device instanceof MemoryServerDevice)) {
                     ((ServerDevice) device).markBusy(now);
                 }
@@ -174,7 +171,15 @@ public final class RackScheduler implements JobHost {
     }
 
     public void tick(ServerLevel level) {
-        refresh();
+        // Worked out again only when the networks' caches changed (devices, racks, topology: ControllerStructures
+        // cacheKey), and every REFRESH_INTERVAL ticks anyway (settings such as threads per server).
+        long key = ControllerStructures.cacheKey(level.getServer());
+        if (key != refreshedKey || ++sinceRefresh >= REFRESH_INTERVAL) {
+            refresh();
+            refreshedKey = key;
+            sinceRefresh = 0;
+        }
+        markBusy(level);
         if (!head) {
             handOver(level);
             return;

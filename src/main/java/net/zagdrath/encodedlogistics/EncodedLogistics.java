@@ -33,6 +33,7 @@ import net.zagdrath.encodedlogistics.elcl.screen.ElclServices;
 import net.zagdrath.encodedlogistics.elcl.sync.FolderSync;
 import net.zagdrath.encodedlogistics.gametest.EncodedLogisticsGameTests;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
+import net.zagdrath.encodedlogistics.multiblock.CacheCommand;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
 import net.zagdrath.encodedlogistics.net.AudioPayloads;
@@ -78,6 +79,8 @@ public class EncodedLogistics {
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onServerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
+        // /encodedlogistics caches: how often the network caches are rebuilt.
+        NeoForge.EVENT_BUS.addListener(CacheCommand::register);
         // A Rack Elevation report's [show] link.
         NeoForge.EVENT_BUS.addListener(RackElevationPayloads::onCustomClick);
         FirewallEvents.register();

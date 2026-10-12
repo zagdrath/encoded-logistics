@@ -222,7 +222,11 @@ public class NetworkControllerBlockEntity extends BlockEntity implements Control
             if (energy > previousAmount) {
                 receivedThisTick += energy - previousAmount;
             }
-            setChanged();
+            // Saved with its chunk. (Not setChanged: that updates comparators every tick the energy moves, and the
+            // structure updates them itself when its signal changes: ControllerStructures.tickStructure.)
+            if (level != null) {
+                level.blockEntityChanged(worldPosition);
+            }
         }
     }
 }

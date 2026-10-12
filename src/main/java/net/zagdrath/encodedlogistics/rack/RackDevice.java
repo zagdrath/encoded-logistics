@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.RemoteLink;
 
 // A device mounted in a Server Rack at U u (taking size U from there up). The rack is its network node: each device
@@ -95,6 +96,10 @@ public abstract class RackDevice {
     public final void setOnline(boolean online) {
         if (this.online != online) {
             this.online = online;
+            // What's cached from the networks (storage, Scheduler pools) may count it in or out now.
+            if (rack != null && rack.getLevel() instanceof ServerLevel) {
+                ControllerStructures.contentChanged();
+            }
             onlineChanged();
             changed(false);
         }
@@ -358,7 +363,7 @@ public abstract class RackDevice {
 
     protected final void saveOnly() {
         if (rack != null) {
-            rack.setChanged();
+            rack.markUnsaved();
         }
     }
 }

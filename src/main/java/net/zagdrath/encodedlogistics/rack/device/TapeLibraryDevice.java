@@ -554,6 +554,11 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
 
     // Gives idle drives work: waiting recalls it can serve first, then items to archive.
     private boolean assign(MinecraftServer server, TapeRecalls recalls) {
+        // Nothing to do without an idle drive, or with nothing waiting to be recalled or archived: not even a look at
+        // the network's storage.
+        if (!anyIdleBay() || !recalls.anyWaiting() && toArchive.isEmpty()) {
+            return false;
+        }
         boolean changed = false;
         DriveStorage data = DriveStorage.get(server);
         for (int bay = 0; bay < bays; bay++) {
@@ -561,7 +566,7 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
                 continue;
             }
             Op op = nextRecall(data, recalls);
-            if (op == null) {
+            if (op == null && !toArchive.isEmpty()) {
                 op = nextArchive(server, data, recalls);
             }
             if (op != null) {
@@ -662,8 +667,12 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         toArchive.clear();
         toArchive.addAll(forced);
         backlog = toArchive.size();
+        // The cheap checks first: an idle library with no free drive or no tapes doesn't look at the network's storage.
+        if (!anyIdleBay() || tapeCount() == 0) {
+            return;
+        }
         NetworkStorage storage = storage(server);
-        if (storage == null || !anyIdleBay() || tapeCount() == 0 || trigger && storage.hotFill() * 100 < percent || !mostFreeSpace(server)) {
+        if (storage == null || trigger && storage.hotFill() * 100 < percent || !mostFreeSpace(server)) {
             return;
         }
         long now = DriveStorage.get(server).clock();

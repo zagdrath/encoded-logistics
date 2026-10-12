@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.multiblock;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,7 +25,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
 // Which network every node on a controller's network is on, across all dimensions (a Network Bridge can carry a
 // network into another one): kept with the overworld, rebuilt as networks are solved, never saved. Also a counter that
@@ -50,8 +53,43 @@ public final class NetworkIndex extends SavedData {
     // Every Server Rack on any network (their devices may serve another network than the rack's: a segment).
     final Set<NodePos> racks = new HashSet<>();
     int generation;
+    // Cached (ControllerStructures, "Caches"): racks in NetworkGraph.ORDER (sorted again only when racks changes:
+    // racksVersion), the loaded ones' block entities, and each network's rack Scheduler pool head.
+    int racksVersion;
+    int sortedVersion = -1;
+    List<NodePos> sortedRacks = List.of();
+    long loadedKey = -1;
+    List<RackBlockEntity> loadedRacks = List.of();
+    long headsKey = -1;
+    Map<NetworkRef, RackScheduler> heads = Map.of();
+    final CacheStats stats = new CacheStats();
 
     public NetworkIndex() {}
+
+    void addRacks(Iterable<NodePos> added) {
+        boolean changed = false;
+        for (NodePos pos : added) {
+            changed |= racks.add(pos);
+        }
+        if (changed) {
+            racksChanged();
+        }
+    }
+
+    void removeRacks(Iterable<NodePos> gone) {
+        boolean changed = false;
+        for (NodePos pos : gone) {
+            changed |= racks.remove(pos);
+        }
+        if (changed) {
+            racksChanged();
+        }
+    }
+
+    private void racksChanged() {
+        racksVersion++;
+        ControllerStructures.contentChanged();
+    }
 
     static NetworkIndex get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(TYPE);

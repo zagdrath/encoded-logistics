@@ -26,6 +26,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.storage.DriveCopies;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
@@ -133,9 +134,10 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
         return cells;
     }
 
-    // A drive's id, mounted here (a copy of a drive mounted elsewhere gets its own, and is saved with it).
+    // A drive's id, mounted here (a copy of a drive mounted elsewhere gets its own, and is saved with it). Mounted when
+    // it goes in (itemsChanged); here only a drive not mounted here yet (the first read after a load) is.
     private UUID assignId(MinecraftServer server, ItemStack stack, int slot) {
-        if (DriveCopies.mount(server, stack, this, slot)) {
+        if (DriveCopies.ensureMounted(server, stack, this, slot)) {
             saveOnly();
         }
         return StorageDriveItem.id(stack);
@@ -160,13 +162,14 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
         changed(false);
     }
 
-    // Drives in or out: they get their ids and stats, and its drain changes.
+    // Drives in or out: they get their ids and stats, and its drain changes (and so does the network's storage).
     @Override
     public void itemsChanged() {
         if (rack() != null && rack().getLevel() instanceof ServerLevel level) {
             for (int slot = 0; slot < drives(); slot++) {
                 refresh(level.getServer(), slot);
             }
+            ControllerStructures.contentChanged();
         }
         changed(true);
     }
@@ -224,6 +227,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
                 return;
             }
         }
+        // Its priority orders the network's storage (built with it: NetworkStorage).
+        ControllerStructures.contentChanged();
         changed(false);
     }
 

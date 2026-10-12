@@ -65,6 +65,10 @@ public final class TapeRecalls {
         return new ArrayList<>(waiting.keySet());
     }
 
+    public boolean anyWaiting() {
+        return !waiting.isEmpty();
+    }
+
     public long waitingAmount(StorageKey key) {
         return waiting.getOrDefault(key, 0L);
     }

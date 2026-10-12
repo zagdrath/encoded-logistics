@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.multiblock;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -39,6 +41,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
@@ -83,6 +87,7 @@ import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.InventoryTapPart;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.RackScheduler;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.TapeRecalls;
 import net.zagdrath.encodedlogistics.rack.TapeSource;
@@ -226,8 +231,55 @@ public class ControllerStructures extends SavedData {
     }
 
     // A network node was added, removed or reconnected somewhere: re-solve every network (in every level) next tick.
+    // What's cached from the networks as they were goes at once.
     public void markTopologyChanged() {
         topologyChanged = true;
+        contentChanged();
+    }
+
+    // --- Caches ---
+    //
+    // What's worked out from a network's layout - its storage (NetworkStorage), its Energy Storage Drive cells, the rack
+    // devices serving it, every rack in order and each rack Scheduler pool's head - is kept until something it's made
+    // from changes, not rebuilt on every call. cacheKey says when: NetworkIndex.generation goes up with the topology
+    // (anything placed, broken, reconnected, loaded or unloaded), contentEpoch with what's in it (contentChanged: drives
+    // in or out of a holder, rack devices installed or removed, coming online or going off, a storage priority or a
+    // segment set, a tap's faced inventory changing). A structure's own caches also go when its node lists or its online
+    // devices change (Runtime.version). /encodedlogistics caches shows how often each is rebuilt (CacheStats).
+    private static int contentEpoch;
+
+    // Something cached networks are made from changed (server thread only).
+    public static void contentChanged() {
+        contentEpoch++;
+    }
+
+    public static int contentEpoch() {
+        return contentEpoch;
+    }
+
+    // /encodedlogistics caches: each cache's rebuilds over the last full minute (and the one so far), server-wide and
+    // for each structure in every level.
+    public static List<String> cacheReport(MinecraftServer server) {
+        NetworkIndex index = NetworkIndex.get(server);
+        List<String> lines = new ArrayList<>();
+        lines.add("Cache rebuilds per minute (last full minute | this one so far); generation " + index.generation + ", content epoch "
+                + contentEpoch);
+        lines.add("server: " + index.stats.describe(true) + " | " + index.stats.describe(false));
+        for (ServerLevel level : server.getAllLevels()) {
+            ControllerStructures structures = get(level);
+            for (Structure structure : structures.structures.values()) {
+                Runtime runtime = structures.runtimes.get(structure.id());
+                if (runtime != null) {
+                    lines.add(level.dimension().identifier() + " #" + structure.id() + " (" + runtime.status + "): " + runtime.stats.describe(true)
+                            + " | " + runtime.stats.describe(false));
+                }
+            }
+        }
+        return lines;
+    }
+
+    public static long cacheKey(MinecraftServer server) {
+        return (long) NetworkIndex.get(server).generation << 32 | contentEpoch & 0xFFFFFFFFL;
     }
 
     // --- Ticking ---
@@ -242,14 +294,25 @@ public class ControllerStructures extends SavedData {
         }
         boolean topology = index.generation != seenGeneration;
         seenGeneration = index.generation;
+        boolean minute = level.getGameTime() % CacheStats.MINUTE == 0;
+        if (minute && level == server.overworld()) {
+            index.stats.roll(null);
+        }
         List<NodePos> online = new ArrayList<>();
         for (Structure structure : List.copyOf(structures.values())) {
             Runtime runtime = runtimes.computeIfAbsent(structure.id(), id -> new Runtime());
             if (topology) {
                 runtime.dirty = true;
             }
+            if (minute) {
+                runtime.stats.roll(new NetworkRef(level.dimension(), structure.id()));
+            }
             Set<NodePos> before = runtime.online;
             tickStructure(level, index, structure, runtime);
+            if (!runtime.online.equals(before)) {
+                // Its online devices changed: what its storage and drive cells are made of may have.
+                runtime.version++;
+            }
             for (NodePos pos : before) {
                 if (!runtime.online.contains(pos)) {
                     setDeviceOnline(server, pos, false);
@@ -335,13 +398,13 @@ public class ControllerStructures extends SavedData {
                     runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
                     NetworkRef ref = new NetworkRef(level.dimension(), id);
                     runtime.members.forEach(pos -> index.members.remove(pos, ref));
-                    runtime.racks.forEach(index.racks::remove);
+                    index.removeRacks(runtime.racks);
                 }
             }
         }
         touched.clear();
         // A structure appearing or disappearing can change the networks next to it.
-        topologyChanged = true;
+        markTopologyChanged();
         setDirty();
     }
 
@@ -463,6 +526,9 @@ public class ControllerStructures extends SavedData {
             }
             runtime.standbys.forEach(NetworkControllerDevice::takeReceived);
         }
+        if (status == null && !conflict) {
+            fillPending(level, structure.id(), runtime);
+        }
         int received = 0;
         long stored = 0, capacity = 0;
         for (ControllerBuffer buffer : buffers) {
@@ -578,7 +644,7 @@ public class ControllerStructures extends SavedData {
         long id = nextId++;
         structures.put(id, new Structure(id, List.of(rack.immutable()), ControllerFrame.Problem.NONE, true, false));
         runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
-        topologyChanged = true;
+        markTopologyChanged();
         setDirty();
         return id;
     }
@@ -588,7 +654,7 @@ public class ControllerStructures extends SavedData {
         long id = nextId++;
         structures.put(id, new Structure(id, List.of(master.immutable()), ControllerFrame.Problem.NONE, false, true));
         runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
-        topologyChanged = true;
+        markTopologyChanged();
         setDirty();
         return id;
     }
@@ -605,9 +671,9 @@ public class ControllerStructures extends SavedData {
             runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
             NetworkRef ref = new NetworkRef(level.dimension(), id);
             runtime.members.forEach(pos -> index.members.remove(pos, ref));
-            runtime.racks.forEach(index.racks::remove);
+            index.removeRacks(runtime.racks);
         }
-        topologyChanged = true;
+        markTopologyChanged();
         setDirty();
     }
 
@@ -635,14 +701,24 @@ public class ControllerStructures extends SavedData {
         return count;
     }
 
-    // The rack Network Controllers on a network, by rack (NetworkGraph.ORDER) then unit.
-    private static List<NetworkControllerDevice> rackControllers(MinecraftServer server, NetworkGraph graph) {
-        List<Map.Entry<NodePos, NetworkNode>> entries = new ArrayList<>(graph.entries().entrySet());
-        entries.sort(Map.Entry.comparingByKey(NetworkGraph.ORDER));
+    // The rack Network Controllers on a network, by rack (NetworkGraph.ORDER) then unit. Which racks have them is read
+    // off the graph (and sorted) once each time it's discovered, not every tick.
+    private static List<NetworkControllerDevice> rackControllers(MinecraftServer server, Runtime runtime) {
+        NetworkDiscovery.Discovered discovered = Objects.requireNonNull(runtime.discovered);
+        if (runtime.controllerRacksOf != discovered) {
+            List<NodePos> racks = new ArrayList<>();
+            discovered.graph().entries().forEach((pos, node) -> {
+                if (node instanceof RackNode rack && !rack.controllers().isEmpty()) {
+                    racks.add(pos);
+                }
+            });
+            racks.sort(NetworkGraph.ORDER);
+            runtime.controllerRacks = List.copyOf(racks);
+            runtime.controllerRacksOf = discovered;
+        }
         List<NetworkControllerDevice> controllers = new ArrayList<>();
-        for (Map.Entry<NodePos, NetworkNode> entry : entries) {
-            if (entry.getValue() instanceof RackNode node && !node.controllers().isEmpty()
-                    && blockEntity(server, entry.getKey()) instanceof RackBlockEntity rack) {
+        for (NodePos pos : runtime.controllerRacks) {
+            if (blockEntity(server, pos) instanceof RackBlockEntity rack) {
                 controllers.addAll(rack.controllers());
             }
         }
@@ -654,7 +730,7 @@ public class ControllerStructures extends SavedData {
     // can, or Switch over was asked for, the standby takes over after FAILOVER_TICKS. The one handing over stays as
     // standby; nothing fails back on its own.
     private static @Nullable NetworkControllerDevice runPair(ServerLevel level, Runtime runtime) {
-        List<NetworkControllerDevice> all = rackControllers(level.getServer(), runtime.discovered.graph());
+        List<NetworkControllerDevice> all = rackControllers(level.getServer(), runtime);
         runtime.pair = all;
         NetworkControllerDevice active = null;
         boolean requested = false;
@@ -717,7 +793,7 @@ public class ControllerStructures extends SavedData {
         }
         NetworkGraph graph = runtime.discovered.graph();
         if (conflict) {
-            List<NetworkControllerDevice> all = rackControllers(server, graph);
+            List<NetworkControllerDevice> all = rackControllers(server, runtime);
             NodePos block = null;
             for (Map.Entry<NodePos, NetworkNode> entry : graph.entries().entrySet()) {
                 if (entry.getValue().isController() && (block == null || NetworkGraph.ORDER.compare(entry.getKey(), block) < 0)) {
@@ -801,8 +877,10 @@ public class ControllerStructures extends SavedData {
     // devices, Drive Bays, part hosts, autocrafting blocks and Relay Antennas. Nothing when it has no working network.
     private void setNetworkNodes(ServerLevel level, NetworkIndex index, long id, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
         NetworkRef ref = new NetworkRef(level.dimension(), id);
-        runtime.members.forEach(pos -> index.members.remove(pos, ref));
-        runtime.racks.forEach(index.racks::remove);
+        // (Run every tick for a structure with the wrong shape: the caches only go when something really changed.)
+        boolean[] changed = { false };
+        runtime.members.forEach(pos -> changed[0] |= index.members.remove(pos, ref));
+        index.removeRacks(runtime.racks);
         List<NodePos> members = new ArrayList<>(), banks = new ArrayList<>(), devices = new ArrayList<>(), driveBays = new ArrayList<>(),
                 partHosts = new ArrayList<>(), providers = new ArrayList<>(), schedulers = new ArrayList<>(), relays = new ArrayList<>(),
                 racks = new ArrayList<>();
@@ -812,7 +890,7 @@ public class ControllerStructures extends SavedData {
                     return;
                 }
                 members.add(pos);
-                index.members.put(pos, ref);
+                changed[0] |= !ref.equals(index.members.put(pos, ref));
                 if (node.isDevice()) {
                     devices.add(pos);
                 }
@@ -837,6 +915,12 @@ public class ControllerStructures extends SavedData {
         for (List<NodePos> list : List.of(banks, driveBays, partHosts, providers, schedulers, relays, racks)) {
             list.sort(NetworkGraph.ORDER);
         }
+        if (changed[0] || !members.equals(runtime.members) || !driveBays.equals(runtime.driveBays) || !partHosts.equals(runtime.partHosts)
+                || !providers.equals(runtime.providers) || !racks.equals(runtime.racks)) {
+            // Which network the nodes are on (segments' too) and what this one's storage is made of.
+            runtime.version++;
+            contentChanged();
+        }
         runtime.members = List.copyOf(members);
         runtime.banks = List.copyOf(banks);
         runtime.devices = List.copyOf(devices);
@@ -846,7 +930,7 @@ public class ControllerStructures extends SavedData {
         runtime.schedulers = List.copyOf(schedulers);
         runtime.relays = List.copyOf(relays);
         runtime.racks = List.copyOf(racks);
-        index.racks.addAll(racks);
+        index.addRacks(racks);
     }
 
     // A network's Capacitor Banks, then the Energy Storage Drives in its drive holders: its energy besides the controllers.
@@ -857,8 +941,13 @@ public class ControllerStructures extends SavedData {
     }
 
     // The Energy Storage Drives in a network's Drive Bays and Disk Drives (whether or not those have their lanes: like
-    // banks, they keep the network powered) and in the rack storage devices serving it.
+    // banks, they keep the network powered) and in the rack storage devices serving it. Cached ("Caches"): a cell reads
+    // its drive's charge off the stack the holder keeps, so it only goes when a drive goes in or out.
     private static List<EnergyDrives.Cell> driveCells(MinecraftServer server, Runtime runtime, NetworkRef ref) {
+        long key = cacheKey(server);
+        if (runtime.driveCells.valid(key, runtime.version)) {
+            return runtime.driveCells.value();
+        }
         List<EnergyDrives.Cell> cells = new ArrayList<>();
         Set<UUID> seen = new HashSet<>();
         for (NodePos pos : runtime.driveBays) {
@@ -880,7 +969,8 @@ public class ControllerStructures extends SavedData {
         for (EnergyDrives.Cell cell : cells) {
             cell.received(amount -> runtime.driveReceived += amount);
         }
-        return cells;
+        runtime.stats.rebuilt(CacheStats.Kind.DRIVE_CELLS);
+        return runtime.driveCells.set(List.copyOf(cells), key, runtime.version);
     }
 
     // After a tick's energy: the drives' share of it, and which drives are charging (their lights).
@@ -1021,30 +1111,56 @@ public class ControllerStructures extends SavedData {
     // crafting: null for the network's own storage alone; false with everything Share routes share into it; true with
     // only the shares that allow crafting.
     private static NetworkStorage storage(MinecraftServer server, Owner owner, @Nullable Boolean crafting) {
-        List<StorageView> views = new ArrayList<>();
-        DriveStorage drives = DriveStorage.get(server);
+        OwnStorage own = ownStorage(server, owner);
+        if (crafting == null) {
+            return own.storage();
+        }
+        List<StorageView> views = new ArrayList<>(own.views());
         // A copied drive (creative pick-block) shares its id, and so its contents, with the original: each id counts once.
         // So does a drive reached both here and through a share.
         Set<UUID> seen = new HashSet<>();
-        List<TapeSource> libraries = new ArrayList<>();
-        views(server, owner, seen, views, libraries);
-        if (crafting != null) {
-            // Only the source's own storage, not what's shared into it: shares don't chain.
-            for (ItemRouting.ShareLink link : shareLinks(server)) {
-                Owner source = owner(server, link.from());
-                if (!link.into().equals(owner.ref) || crafting && !link.route().crafting() || source == null || source.runtime.status != NetworkStatus.ONLINE) {
-                    continue;
-                }
-                List<StorageView> theirs = new ArrayList<>();
-                views(server, source, seen, theirs, new ArrayList<>());
-                for (StorageView view : theirs) {
+        for (StorageView view : own.views()) {
+            if (view.driveId() != null) {
+                seen.add(view.driveId());
+            }
+        }
+        // Only the source's own storage, not what's shared into it: shares don't chain.
+        for (ItemRouting.ShareLink link : shareLinks(server)) {
+            Owner source = owner(server, link.from());
+            if (!link.into().equals(owner.ref) || crafting && !link.route().crafting() || source == null || source.runtime.status != NetworkStatus.ONLINE) {
+                continue;
+            }
+            for (StorageView view : ownStorage(server, source).views()) {
+                if (view.driveId() == null || seen.add(view.driveId())) {
                     views.add(new SharedView(view, link.route()::matches, link.route().readWrite(), link.fromName()));
                 }
             }
         }
         Runtime runtime = owner.runtime;
-        // Gateways' runs waiting for outputs claim them as they come in, whatever way they come.
-        NetworkStorage.Claim claim = (key, amount, simulate) -> {
+        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(own.libraries(), DriveStorage.get(server), runtime.recalls),
+                claim(server, runtime));
+    }
+
+    // A network's own storage, cached ("Caches"): rebuilt when its node lists or online devices change (version) or
+    // anything cached networks are made of does (cacheKey).
+    private static OwnStorage ownStorage(MinecraftServer server, Owner owner) {
+        Runtime runtime = owner.runtime;
+        long key = cacheKey(server);
+        if (runtime.storage.valid(key, runtime.version)) {
+            return runtime.storage.value();
+        }
+        List<StorageView> views = new ArrayList<>();
+        List<TapeSource> libraries = new ArrayList<>();
+        views(server, owner, new HashSet<>(), views, libraries);
+        NetworkStorage storage = new NetworkStorage(views, moved -> runtime.itemsMoved += moved,
+                new TapeTier(List.copyOf(libraries), DriveStorage.get(server), runtime.recalls), claim(server, runtime));
+        runtime.stats.rebuilt(CacheStats.Kind.STORAGE);
+        return runtime.storage.set(new OwnStorage(List.copyOf(views), List.copyOf(libraries), storage), key, runtime.version);
+    }
+
+    // Gateways' runs waiting for outputs claim them as they come in, whatever way they come.
+    private static NetworkStorage.Claim claim(MinecraftServer server, Runtime runtime) {
+        return (key, amount, simulate) -> {
             long taken = 0;
             for (NodePos pos : runtime.providers) {
                 if (taken >= amount) {
@@ -1056,7 +1172,6 @@ public class ControllerStructures extends SavedData {
             }
             return taken;
         };
-        return new NetworkStorage(views, moved -> runtime.itemsMoved += moved, new TapeTier(libraries, drives, runtime.recalls), claim);
     }
 
     // Every active Share on any network: the online L3 Switches' and Routers' Share routes.
@@ -1075,10 +1190,11 @@ public class ControllerStructures extends SavedData {
     // A network's own storage: its online Drive Bays' and Disk Drives' drives, its online Inventory Taps' inventories, its
     // rack storage devices; and its Tape Libraries and Tape Drives.
     // A holder's drive as the network reads it, mounted there: a copy of a drive mounted elsewhere (one in a copied Drive
-    // Bay) gets its own id first (DriveCopies), and the holder saves it.
+    // Bay) gets its own id first (DriveCopies), and the holder saves it. Mounted once, not on every read (only cache
+    // rebuilds read holders anyway).
     private static @Nullable ItemStack mounted(MinecraftServer server, DriveHolder holder, int slot) {
         ItemStack stack = holder.drive(slot);
-        if (stack != null && DriveCopies.mount(server, stack, holder, slot)) {
+        if (stack != null && DriveCopies.ensureMounted(server, stack, holder, slot)) {
             holder.driveChanged(slot);
         }
         return stack;
@@ -1161,29 +1277,73 @@ public class ControllerStructures extends SavedData {
         return racks;
     }
 
-    // Every loaded Server Rack on any network, in a stable order.
+    // Every loaded Server Rack on any network, in a stable order (unmodifiable). Cached ("Caches"): the positions are
+    // sorted again only when the racks on networks change, and looked up again when anything cached changes (a rack
+    // loading, unloading or breaking among it: RackBlockEntity).
     public static List<RackBlockEntity> allRacks(MinecraftServer server) {
-        List<NodePos> positions = new ArrayList<>(NetworkIndex.get(server).racks);
-        positions.sort(NetworkGraph.ORDER);
-        List<RackBlockEntity> racks = new ArrayList<>();
-        for (NodePos pos : positions) {
+        NetworkIndex index = NetworkIndex.get(server);
+        long key = cacheKey(server);
+        if (index.loadedKey == key) {
+            return index.loadedRacks;
+        }
+        if (index.sortedVersion != index.racksVersion) {
+            List<NodePos> positions = new ArrayList<>(index.racks);
+            positions.sort(NetworkGraph.ORDER);
+            index.sortedRacks = List.copyOf(positions);
+            index.sortedVersion = index.racksVersion;
+        }
+        List<RackBlockEntity> racks = new ArrayList<>(index.sortedRacks.size());
+        for (NodePos pos : index.sortedRacks) {
             if (blockEntity(server, pos) instanceof RackBlockEntity rack) {
                 racks.add(rack);
             }
         }
-        return racks;
+        index.loadedRacks = List.copyOf(racks);
+        index.loadedKey = key;
+        index.stats.rebuilt(CacheStats.Kind.RACKS);
+        return index.loadedRacks;
     }
 
     // The rack devices serving a network: in racks on it, or on a segment of another rack set to it (online or not),
-    // by rack then unit.
+    // by rack then unit (unmodifiable). Cached per structure ("Caches").
     public static List<RackDevice> rackDevicesServing(MinecraftServer server, @Nullable NetworkRef network) {
-        List<RackDevice> devices = new ArrayList<>();
-        if (network != null) {
-            for (RackBlockEntity rack : allRacks(server)) {
-                devices.addAll(rack.devicesServing(network));
-            }
+        if (network == null) {
+            return List.of();
         }
-        return devices;
+        Owner owner = owner(server, network);
+        long key = cacheKey(server);
+        if (owner != null && owner.runtime.serving.valid(key, 0)) {
+            return owner.runtime.serving.value();
+        }
+        List<RackDevice> devices = new ArrayList<>();
+        for (RackBlockEntity rack : allRacks(server)) {
+            devices.addAll(rack.devicesServing(network));
+        }
+        if (owner == null) {
+            return Collections.unmodifiableList(devices);
+        }
+        owner.runtime.stats.rebuilt(CacheStats.Kind.SERVING);
+        return owner.runtime.serving.set(List.copyOf(devices), key, 0);
+    }
+
+    // Each network's rack Scheduler pool head (RackScheduler.of): for every network, the first rack (in allRacks order)
+    // whose lowest online Compute Server serves it. Worked out for all networks at once, and cached ("Caches").
+    public static @Nullable RackScheduler rackSchedulerOf(MinecraftServer server, NetworkRef network) {
+        NetworkIndex index = NetworkIndex.get(server);
+        long key = cacheKey(server);
+        if (index.headsKey != key) {
+            Map<NetworkRef, RackScheduler> heads = new HashMap<>();
+            for (RackBlockEntity rack : allRacks(server)) {
+                NetworkRef served = rack.scheduler().ownNetwork();
+                if (served != null) {
+                    heads.putIfAbsent(served, rack.scheduler());
+                }
+            }
+            index.heads = heads;
+            index.headsKey = key;
+            index.stats.rebuilt(CacheStats.Kind.SCHEDULER_HEADS);
+        }
+        return index.heads.get(network);
     }
 
     // The Firewall a network uses: the first serving it (by rack position, then unit), or null.
@@ -1658,6 +1818,41 @@ public class ControllerStructures extends SavedData {
         return amount - left;
     }
 
+    // FE into a network through a Server Rack's power port, taken without walking the network: as much as its energy had
+    // room for as of its last tick (its standbys' too), less what's waiting already, goes into the structure's pending
+    // buffer, and from there into its energy (fill) when it next ticks - in the same tick, as ports are pushed into
+    // while block entities tick and structures tick after them. Returns what it took.
+    public static int bufferPower(MinecraftServer server, NetworkRef network, int amount, TransactionContext transaction) {
+        Owner owner = owner(server, network);
+        if (owner == null || owner.runtime.status.isError() || amount <= 0) {
+            return 0;
+        }
+        Runtime runtime = owner.runtime;
+        long room = runtime.capacity - runtime.stored - runtime.pendingPower;
+        for (NetworkControllerDevice standby : runtime.standbys) {
+            room += standby.getCapacity() - standby.getEnergy();
+        }
+        int taken = (int) Math.max(0, Math.min(amount, room));
+        if (taken > 0) {
+            runtime.pendingJournal.updateSnapshots(transaction);
+            runtime.pendingPower += taken;
+        }
+        return taken;
+    }
+
+    // What rack power ports took in goes into the network's energy; anything it has no room for after all waits for the
+    // next tick (none of it is lost).
+    private static void fillPending(ServerLevel level, long id, Runtime runtime) {
+        if (runtime.pendingPower <= 0) {
+            return;
+        }
+        try (Transaction transaction = Transaction.openRoot()) {
+            int put = fill(level.getServer(), new NetworkRef(level.dimension(), id), (int) Math.min(Integer.MAX_VALUE, runtime.pendingPower), transaction);
+            transaction.commit();
+            runtime.pendingPower -= put;
+        }
+    }
+
     // The buffers that are a network's working energy: its controller blocks (loaded), or its working rack controller.
     private static List<ControllerBuffer> buffers(Owner owner) {
         List<ControllerBuffer> buffers = new ArrayList<>();
@@ -1811,6 +2006,9 @@ public class ControllerStructures extends SavedData {
         // progress.
         long lead;
         List<NetworkControllerDevice> pair = List.of(), standbys = List.of();
+        // The racks with controllers on its network, in order, and the discovery they were read off (rackControllers).
+        List<NodePos> controllerRacks = List.of();
+        NetworkDiscovery.@Nullable Discovered controllerRacksOf;
         @Nullable NetworkControllerDevice active, working, failoverTarget;
         int failoverTicks;
         boolean hadActive;
@@ -1820,5 +2018,52 @@ public class ControllerStructures extends SavedData {
         // Crafting jobs' numbers as the Terminal Desk shows them (0001-9999, in the order it first saw them).
         final Map<UUID, Integer> jobNumbers = new HashMap<>();
         int nextJob = 1;
+        // Goes up when its node lists or its online devices change; with cacheKey, what its caches were built for.
+        int version;
+        // Its caches ("Caches"): its own storage, its Energy Storage Drive cells, the rack devices serving it.
+        final Cache<OwnStorage> storage = new Cache<>();
+        final Cache<List<EnergyDrives.Cell>> driveCells = new Cache<>();
+        final Cache<List<RackDevice>> serving = new Cache<>();
+        final CacheStats stats = new CacheStats();
+        // FE taken in through rack power ports since the structure last ticked, waiting to go into its energy
+        // (bufferPower), and the transactions it was taken in.
+        long pendingPower;
+        final SnapshotJournal<Long> pendingJournal = new SnapshotJournal<>() {
+            @Override
+            protected Long createSnapshot() {
+                return pendingPower;
+            }
+
+            @Override
+            protected void revertToSnapshot(Long snapshot) {
+                pendingPower = snapshot;
+            }
+        };
     }
+
+    // One cached value and the cacheKey and Runtime.version it was built for.
+    private static final class Cache<T> {
+        private @Nullable T value;
+        private long key = -1;
+        private int version;
+
+        boolean valid(long key, int version) {
+            return value != null && this.key == key && this.version == version;
+        }
+
+        T value() {
+            return Objects.requireNonNull(value);
+        }
+
+        T set(T value, long key, int version) {
+            this.value = value;
+            this.key = key;
+            this.version = version;
+            return value;
+        }
+    }
+
+    // A network's own storage as cached: its views and tape sources (what shared storage is built on) and the
+    // NetworkStorage made of them.
+    private record OwnStorage(List<StorageView> views, List<TapeSource> libraries, NetworkStorage storage) {}
 }

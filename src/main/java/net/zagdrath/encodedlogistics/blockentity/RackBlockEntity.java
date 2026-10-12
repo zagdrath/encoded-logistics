@@ -117,8 +117,18 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     // FE taken in through its connection points this tick (rackPowerMaxInput a tick, across them all).
     private int powerThisTick;
     private final PowerPort powerPort = new PowerPort();
+    // lanes() as last worked out, for the devices as they were then (NO_EPOCH: work it out again), and lanes(granted)
+    // for the rack lanes it was worked out for.
+    private static final int NO_EPOCH = Integer.MIN_VALUE;
+    private @Nullable Lanes lanesCache;
+    private int lanesEpoch = NO_EPOCH;
+    private @Nullable Lanes grantedLanesCache;
+    private @Nullable RackLanes grantedLanesFor;
+    private int grantedLanesEpoch = NO_EPOCH;
     private boolean syncPending;
     private int syncCooldown;
+    // What clients were last sent (getUpdateTag): a pending sync that wouldn't change it isn't sent.
+    private @Nullable CompoundTag lastSent;
     // Ticks until the front door closes again after a visit (visitFront); 0: none pending.
     private int closeFrontIn;
     // Client: door animation, 0 (closed) to DOOR_TICKS (open), this tick and last.
@@ -198,6 +208,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     public void install(RackDevice device, int u, @Nullable ServerPlayer by) {
         device.attach(this, u);
         devices.put(u, device);
+        devicesChanged();
         device.setOnline(online && hasLanes(device));
         device.onInstalled(by);
         deviceChanged(true);
@@ -209,11 +220,30 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             return null;
         }
         devices.remove(device.u());
+        devicesChanged();
         device.onRemoved();
         device.detach();
         device.setSegment(0);
         deviceChanged(true);
         return device;
+    }
+
+    // Devices went in or out: the lanes are worked out again, and what's cached from the networks goes
+    // (ControllerStructures.contentChanged).
+    private void devicesChanged() {
+        lanesEpoch = NO_EPOCH;
+        grantedLanesEpoch = NO_EPOCH;
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    // A segment linked or unlinked, or a device moved to another: which network its devices serve changed.
+    private void segmentsChanged() {
+        deviceChanged(false);
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
     }
 
     // A player mounts the device in their hand at u (the open front, or the screen); rack access on its network.
@@ -253,6 +283,15 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         device.contents().forEach(stack -> player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY));
         device.clearContents();
         return true;
+    }
+
+    // A device's state changed in a way only saving cares about (a tape op's progress, a controller's energy): saved
+    // with the chunk. Not setChanged, which also updates comparators (the rack has no comparator output) and is called
+    // every tick for these.
+    public void markUnsaved() {
+        if (level != null) {
+            level.blockEntityChanged(worldPosition);
+        }
     }
 
     // A device's settings or state changed.
@@ -511,7 +550,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             if (network == null || allowed <= 0) {
                 return 0;
             }
-            int filled = ControllerStructures.fill(serverLevel.getServer(), network, allowed, transaction);
+            // Into the network's pending buffer; it reaches the drives, controllers and banks when the network ticks.
+            int filled = ControllerStructures.bufferPower(serverLevel.getServer(), network, allowed, transaction);
             if (filled > 0) {
                 journal.updateSnapshots(transaction);
                 powerThisTick += filled;
@@ -616,7 +656,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (device.lanePool() != null) {
             return device.lanePool().uplinkCost() <= 0 || rackLanes.granted().contains(device.u());
         }
-        if (lanes(rackLanes.granted()).isPooled(device)) {
+        if (grantedLanes().isPooled(device)) {
             return true;
         }
         return device.laneCost() <= 0 || rackLanes.granted().contains(device.u());
@@ -644,8 +684,25 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
 
     // The switches pool their capacity for the other devices, in unit order until it's used; each switch costs its
     // uplink on the network, every device it doesn't pool its own lanes.
+    // Kept until devices go in or out, or anything cached from the networks changes (a switch's capacity is a setting).
     public Lanes lanes() {
-        return lanes(null);
+        int epoch = ControllerStructures.contentEpoch();
+        if (lanesCache == null || lanesEpoch != epoch) {
+            lanesCache = lanes(null);
+            lanesEpoch = epoch;
+        }
+        return lanesCache;
+    }
+
+    // The same with only the switches that got their uplinks pooling, for the rack lanes as last solved.
+    private Lanes grantedLanes() {
+        int epoch = ControllerStructures.contentEpoch();
+        if (grantedLanesCache == null || grantedLanesEpoch != epoch || grantedLanesFor != rackLanes) {
+            grantedLanesCache = lanes(rackLanes.granted());
+            grantedLanesEpoch = epoch;
+            grantedLanesFor = rackLanes;
+        }
+        return grantedLanesCache;
     }
 
     // The same with only the switches at the given units (null: all of them) pooling.
@@ -711,7 +768,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             return SegmentResult.FULL;
         }
         segments.add(node);
-        deviceChanged(false);
+        segmentsChanged();
         return SegmentResult.LINKED;
     }
 
@@ -730,7 +787,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 l3.routes().addAll(kept);
             }
         }
-        deviceChanged(false);
+        segmentsChanged();
     }
 
     // The next (or previous) segment for the device at u, if a switch pools it.
@@ -740,7 +797,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             return;
         }
         device.setSegment(Math.floorMod(device.segment() + step, segmentCount()));
-        deviceChanged(false);
+        segmentsChanged();
     }
 
     // The network a device serves: its segment's while a switch pools it, otherwise the rack's own.
@@ -823,11 +880,45 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         }
     }
 
+    // Sends clients what they see of the rack, unless it's what they were last sent (a device's change that clients
+    // don't see: items moving through a drive whose fill light stays the same).
     private void syncNow() {
         syncPending = false;
         syncCooldown = SYNC_INTERVAL;
         if (level != null) {
+            CompoundTag shown = getUpdateTag(level.registryAccess());
+            if (shown.equals(lastSent)) {
+                return;
+            }
+            lastSent = shown;
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    // --- Loading and unloading ---
+
+    // A rack coming or going (its chunk loading or unloading, or broken) changes which racks are there to cache.
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
         }
     }
 
@@ -859,6 +950,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 device.onRemoved();
             }
             devices.clear();
+            lanesEpoch = grantedLanesEpoch = NO_EPOCH;
             scheduler.dropAll(serverLevel);
             if (controllerStructure > 0) {
                 ControllerStructures.get(serverLevel).removeRack(serverLevel, controllerStructure);
@@ -902,6 +994,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             }
         }
         scheduler.load(input);
+        lanesEpoch = grantedLanesEpoch = NO_EPOCH;
     }
 
     // A device's type and place from a saved or synced entry, or null if it's unknown or doesn't fit.
@@ -1017,5 +1110,6 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 devices.put(device.u(), device);
             }
         }
+        lanesEpoch = grantedLanesEpoch = NO_EPOCH;
     }
 }

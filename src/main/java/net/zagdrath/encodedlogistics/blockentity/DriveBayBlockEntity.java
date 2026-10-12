@@ -149,7 +149,34 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
             }
             drives = count;
         }
+        // Which drives are in it is part of its network's cached storage and energy.
+        ControllerStructures.contentChanged();
         sync();
+    }
+
+    // Coming or going (its chunk loading or unloading, or broken): its drives join or leave the cached storage.
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
     }
 
     @Override

@@ -13,6 +13,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
@@ -24,9 +25,23 @@ import net.minecraft.world.level.Level;
 // The nodes of one network, by dimension and position, and the links between them: neighbours, and remote links
 // (Network Bridges, lanes Point-to-Point Links) that may reach into another dimension. What the LaneSolver routes over.
 public final class NetworkGraph {
-    // A stable order for positions across dimensions: by dimension id, then position.
-    public static final Comparator<NodePos> ORDER = Comparator.<NodePos, String>comparing(pos -> pos.dimension().identifier().toString())
-            .thenComparing(NodePos::pos);
+    // A stable order for positions across dimensions: by dimension id (as a string, "minecraft:overworld"), then
+    // position. Dimension keys are interned, so the same dimension skips the id; each key's string is made once.
+    public static final Comparator<NodePos> ORDER = (a, b) -> {
+        if (a.dimension() != b.dimension()) {
+            int byDimension = dimensionName(a.dimension()).compareTo(dimensionName(b.dimension()));
+            if (byDimension != 0) {
+                return byDimension;
+            }
+        }
+        return a.pos().compareTo(b.pos());
+    };
+
+    private static final Map<ResourceKey<Level>, String> DIMENSION_NAMES = new ConcurrentHashMap<>();
+
+    private static String dimensionName(ResourceKey<Level> dimension) {
+        return DIMENSION_NAMES.computeIfAbsent(dimension, key -> key.identifier().toString());
+    }
 
     private final Map<NodePos, NetworkNode> nodes = new HashMap<>();
     private final Map<NodePos, Map<Direction, NetworkLink>> links = new HashMap<>();

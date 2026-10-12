@@ -283,6 +283,31 @@ public class TapeDriveBlockEntity extends PeripheralBlockEntity implements Netwo
         return Math.max(1, (int) Math.round(Config.TAPE_DRIVE_BASE_TICKS.getAsInt() + Config.TAPE_DRIVE_TICKS_PER_4K.getAsInt() * (amount / 4096.0)));
     }
 
+    // Coming or going (its chunk loading or unloading, or broken): it joins or leaves its network's cached cold tier.
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level instanceof ServerLevel) {
+            ControllerStructures.contentChanged();
+        }
+    }
+
     @Override
     protected void tick(ServerLevel level) {
         MinecraftServer server = level.getServer();

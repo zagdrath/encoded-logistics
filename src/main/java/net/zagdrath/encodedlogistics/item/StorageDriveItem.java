@@ -63,13 +63,13 @@ public class StorageDriveItem extends Item {
     }
 
     // A drive in a holder's slot: its id (given the first time, or a new one for a copy of a drive mounted elsewhere:
-    // DriveCopies.mount), and its fill cached on it (not for an Energy Storage Drive, whose charge is on the item
-    // already). Returns its id, or null for anything but a drive.
+    // DriveCopies.mount; not again while it stays mounted there), and its fill cached on it (not for an Energy Storage
+    // Drive, whose charge is on the item already). Returns its id, or null for anything but a drive.
     public static @Nullable UUID refresh(MinecraftServer server, ItemStack stack, DriveCopies.Mount holder, int slot) {
         if (!(stack.getItem() instanceof StorageDriveItem drive)) {
             return null;
         }
-        DriveCopies.mount(server, stack, holder, slot);
+        DriveCopies.ensureMounted(server, stack, holder, slot);
         UUID id = id(stack);
         if (drive.type != ResourceType.ENERGY) {
             DriveStats stats = DriveStorage.get(server).stats(id, drive.tier, drive.type);
