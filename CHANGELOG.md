@@ -23,6 +23,46 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-11
+
+### Added
+
+- **Schematic fallback.** When an item has more than one schematic, the planner tries them in priority order and uses
+  the first whose whole ingredient tree the network has or can craft: a chest is made from birch planks when the
+  oak-plank schematic's planks can't be had. When none can, the plan uses the first, so it still shows what that one
+  is missing. Very deep trees with many recipes stop trying alternatives past a limit, so planning can't hang.
+- **EDTMBR paste.** Pasting a whole script into the Terminal OS editor puts each clipboard line in as a member line at
+  the cursor, and says how many lines went in (and how many were cut at column 80).
+- **Server Rack break confirmation** (`rackBreakConfirm`, on by default). A stray left click no longer starts taking a
+  rack down: sneak while breaking it, or left-click it a second time within a second. In creative, the first break
+  arms it and the second breaks it.
+
+### Upgrading
+
+- `threadRuns` is replaced by `threadCrafts` (default 1). A server config that changed `threadRuns` needs the value
+  set again under `threadCrafts`; the old key is ignored.
+
+### Changed
+
+- **Fabricators and Fabrication Servers run crafts side by side.** Each takes a craft from every job thread that offers
+  one, and works them all at once, paying its FE per craft. A job's threads now keep `threadCrafts` crafts (1) in
+  flight each, so a job's parallelism follows the threads its Scheduler gives it. 0 still means a thread runs any
+  number of crafts.
+- Display Panel regions scale with their screen when panels are added or removed, and their content keeps 4 px inside
+  the bezel.
+
+### Fixed
+
+- Ingress Ports, Collector Planes, Gateways and crafting job outputs didn't overflow into Read/Write Share routes when
+  local storage was full.
+- Opening the Rack Elevation editor with JEI installed could crash ("screenWidth must be greater than 1"), as JEI was
+  given the screen's bounds before it was laid out.
+- The Rack Elevation editor's panels were open along their bottom edge.
+- Splitting a Display Panel region too thin to split crashed the game.
+- The Schematic Terminal drew its empty list space and a holder's unused cells as inventory slots; they're plain rows.
+- The Creative Capacitor Bank's title ran into the "Creative" tag on its screen; long titles are now cut short with
+  "...".
+
 ## [1.1.0] - 2026-10-11
 
 ### Added
@@ -203,7 +243,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.1.0+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.0+26.3...HEAD
+[1.2.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.1.0+26.3...v1.2.0+26.3
 [1.1.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.1+26.3...v1.1.0+26.3
 [1.0.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.0...v1.0.1+26.3
 [1.0.0]: https://github.com/zagdrath/encoded-logistics/commits/v1.0.0
