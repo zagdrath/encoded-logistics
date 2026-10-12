@@ -24,6 +24,7 @@ import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.zagdrath.encodedlogistics.item.LtoTapeItem;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModRecipeSerializers;
+import net.zagdrath.encodedlogistics.storage.DriveCopies;
 
 // A shapeless recipe that upgrades an LTO tape: the new tape takes the old one's id, so it keeps what's on it (its fill
 // is worked out again once it's in a library). Written as a shapeless recipe, type encodedlogistics:tape_upgrade.
@@ -62,6 +63,8 @@ public class TapeUpgradeRecipe extends ShapelessRecipe {
             ItemStack stack = input.getItem(slot);
             if (stack.getItem() instanceof LtoTapeItem && LtoTapeItem.id(stack) != null) {
                 result.set(ModDataComponents.DRIVE_ID.get(), LtoTapeItem.id(stack));
+                // A tape with an id is one of a kind.
+                DriveCopies.unique(result);
                 break;
             }
         }

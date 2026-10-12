@@ -231,12 +231,13 @@ public final class ModItems {
             p -> new RackDeviceItem(p, RackDeviceType.TAPE_LIBRARY_6U), p -> p.stacksTo(1));
     public static final DeferredItem<Item> LTO_TAPE_DRIVE = ITEMS.registerSimpleItem("lto_tape_drive", p -> p.stacksTo(16));
 
-    // LTO tapes, one per generation (TapeGeneration).
+    // LTO tapes, one per generation (TapeGeneration). New ones stack to 64, as Storage Drives do; one with an id stacks
+    // to 1 (LtoTapeItem).
     private static final Map<TapeGeneration, DeferredItem<LtoTapeItem>> TAPES = new EnumMap<>(TapeGeneration.class);
 
     static {
         for (TapeGeneration generation : TapeGeneration.values()) {
-            TAPES.put(generation, ITEMS.registerItem(generation.id(), p -> new LtoTapeItem(p, generation), p -> p.stacksTo(1)));
+            TAPES.put(generation, ITEMS.registerItem(generation.id(), p -> new LtoTapeItem(p, generation)));
         }
     }
 

@@ -43,6 +43,7 @@ import net.zagdrath.encodedlogistics.rack.TapeSource;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.registry.ModSounds;
+import net.zagdrath.encodedlogistics.storage.DriveCopies;
 import net.zagdrath.encodedlogistics.storage.DriveStats;
 import net.zagdrath.encodedlogistics.storage.DriveStorage;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
@@ -247,11 +248,13 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         return list;
     }
 
+    // A tape's id, given the first time it's read in a library: from then on it's one of a kind (stacks to 1).
     private static UUID assignId(ItemStack stack) {
         UUID id = LtoTapeItem.id(stack);
         if (id == null) {
             id = UUID.randomUUID();
             stack.set(ModDataComponents.DRIVE_ID.get(), id);
+            DriveCopies.unique(stack);
         }
         return id;
     }
@@ -260,6 +263,8 @@ public class TapeLibraryDevice extends RackDevice implements TapeSource {
         ItemStack stack = items().get(slot);
         if (stack.getItem() instanceof LtoTapeItem tape) {
             DriveStats stats = DriveStorage.get(server).stats(assignId(stack), tape.generation());
+            // (A tape given its id before tapes stacked.)
+            DriveCopies.unique(stack);
             if (!stats.equals(stack.get(ModDataComponents.DRIVE_STATS.get()))) {
                 stack.set(ModDataComponents.DRIVE_STATS.get(), stats);
             }
