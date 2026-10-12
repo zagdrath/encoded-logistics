@@ -157,6 +157,44 @@ final class CraftingCompletionGameTests {
                 .thenSucceed();
     }
 
+    // A Stonecutter beside the Gateway instead of a machine with an inventory: the Gateway cuts the stone itself (1 stone ->
+    // 2 slabs, a schematic as JEI encodes the recipe) and a 4-slab job finishes with the slabs in the network.
+    static void cutByStonecutter(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        RackGameTests.install(helper, master, RackDeviceType.COMPUTE_SERVER, 1, ComputeServerDevice.class);
+        RackGameTests.install(helper, master, RackDeviceType.MEMORY_SERVER, 3, MemoryServerDevice.class);
+        NasDevice nas = RackGameTests.install(helper, master, RackDeviceType.NAS, 6, NasDevice.class);
+        nas.items().set(0, new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
+        nas.itemsChanged();
+        helper.setBlock(GATEWAY, ModBlocks.GATEWAY.get());
+        helper.setBlock(INPUT, Blocks.STONECUTTER);
+        ItemStack card = new ItemStack(ModItems.ENCODED_SCHEMATIC_PROCESSING.get());
+        card.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.PROCESSING, List.of(new ItemStack(Items.STONE)),
+                List.of(new ItemStack(Items.STONE_SLAB, 2))));
+        helper.getBlockEntity(GATEWAY, GatewayBlockEntity.class).schematicSlots().set(0, card);
+        StorageKey stone = StorageKey.of(new ItemStack(Items.STONE)), slab = StorageKey.of(new ItemStack(Items.STONE_SLAB));
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(!helper.getBlockEntity(GATEWAY, GatewayBlockEntity.class).machineProblem(helper.getLevel()),
+                            "Gateway says the Stonecutter can't cut its schematic");
+                    RackGameTests.storage(helper, master).insert(stone, 2, false);
+                    BlockPos device = helper.absolutePos(master);
+                    CraftPlanner.Plan plan = CraftRequests.plan(helper.getLevel(), device, slab, 4);
+                    helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+                    helper.assertTrue(CraftRequests.start(helper.getLevel(), device, plan, scheduler(helper, master), CraftRequests.Requester.NONE) != null,
+                            "Job didn't start");
+                })
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    RackScheduler scheduler = scheduler(helper, master);
+                    helper.assertTrue(scheduler.jobs().isEmpty(), "Job still listed: " + scheduler.jobs().size());
+                    long slabs = RackGameTests.storage(helper, master).count(slab), left = RackGameTests.storage(helper, master).count(stone);
+                    helper.assertTrue(slabs == 4 && left == 0, "Network has " + slabs + " slabs and " + left + " stone");
+                })
+                .thenSucceed();
+    }
+
     // Cancelled while it waits: its thread and memory are free at once, and the ingots, when they turn up, are just items.
     static void cancelWhileWaiting(GameTestHelper helper) {
         BlockPos master = rig(helper, true);

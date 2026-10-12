@@ -224,6 +224,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("device_topology_pair", RackCablingGameTests::deviceTopologyPair);
         TESTS.put("job_returned_through_port", CraftingCompletionGameTests::returnedThroughPort);
         TESTS.put("job_returned_through_gateway", CraftingCompletionGameTests::returnedThroughGateway);
+        TESTS.put("job_cut_by_stonecutter", CraftingCompletionGameTests::cutByStonecutter);
         TESTS.put("job_cancel_while_waiting", CraftingCompletionGameTests::cancelWhileWaiting);
         TESTS.put("job_survives_reload", CraftingCompletionGameTests::survivesReload);
         TESTS.put("job_toast_to_requester", CraftingCompletionGameTests::toastToRequester);

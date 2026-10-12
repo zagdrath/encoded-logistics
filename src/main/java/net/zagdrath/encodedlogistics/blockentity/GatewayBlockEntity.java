@@ -29,7 +29,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.StonecutterBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -237,6 +242,9 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
             if (run.toPush.isEmpty()) {
                 continue;
             }
+            if (cut(level, run)) {
+                return true;
+            }
             boolean moved = false;
             List<ResourceHandler<ItemResource>> targets = new ArrayList<>();
             for (Direction side : Direction.values()) {
@@ -281,6 +289,87 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
             return moved;
         }
         return false;
+    }
+
+    // --- A Stonecutter beside it ---
+    //
+    // A Stonecutter has no inventory to push into or pull out of, so the Gateway cuts for it: a run whose inputs are all
+    // one item, expecting one item a stonecutting recipe makes from it (as many as the Stonecutter would cut from them,
+    // or fewer), is cut at once and its outputs go straight to the job; anything cut beyond what it expects goes to the
+    // network. A run it can't cut goes to the other neighbours as usual.
+
+    private boolean besideStonecutter(ServerLevel level) {
+        for (Direction side : Direction.values()) {
+            BlockPos pos = worldPosition.relative(side);
+            if (level.isLoaded(pos) && level.getBlockState(pos).getBlock() instanceof StonecutterBlock) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean cut(ServerLevel level, Run run) {
+        if (!besideStonecutter(level)) {
+            return false;
+        }
+        Map<StorageKey, Long> inputs = new LinkedHashMap<>();
+        for (ItemStack stack : run.toPush) {
+            if (ResourceEntryItem.key(stack) != null) {
+                return false;
+            }
+            inputs.merge(StorageKey.of(stack), (long) stack.getCount(), Long::sum);
+        }
+        ItemStack each = stonecutterResult(level, inputs, run.expected);
+        if (each == null) {
+            return false;
+        }
+        StorageKey made = StorageKey.of(each);
+        long count = (long) each.getCount() * inputs.values().iterator().next();
+        run.toPush.clear();
+        long left = receive(level, made, count);
+        List<ItemStack> extra = new ArrayList<>();
+        while (left > 0) {
+            int part = (int) Math.min(left, each.getMaxStackSize());
+            extra.add(made.toStack(part));
+            left -= part;
+        }
+        if (!extra.isEmpty()) {
+            SchedulerCoreBlockEntity.returnToNetwork(level, worldPosition, extra);
+        }
+        finishIfDone(level, run);
+        return true;
+    }
+
+    // What one of the input cuts into, for a run or schematic with one item in and one item out that a stonecutting recipe
+    // makes enough of; null otherwise.
+    private static @Nullable ItemStack stonecutterResult(ServerLevel level, Map<StorageKey, Long> inputs, Map<StorageKey, Long> outputs) {
+        Map<StorageKey, Long> wanted = new LinkedHashMap<>();
+        outputs.forEach((key, count) -> {
+            if (count > 0) {
+                wanted.put(key, count);
+            }
+        });
+        if (inputs.size() != 1 || wanted.size() != 1) {
+            return null;
+        }
+        Map.Entry<StorageKey, Long> input = inputs.entrySet().iterator().next();
+        Map.Entry<StorageKey, Long> output = wanted.entrySet().iterator().next();
+        if (!input.getKey().isItem() || !output.getKey().isItem() || input.getValue() <= 0) {
+            return null;
+        }
+        SingleRecipeInput recipeInput = new SingleRecipeInput(input.getKey().toStack(1));
+        for (RecipeHolder<StonecutterRecipe> recipe : level.recipeAccess().recipeMap().getRecipesFor(RecipeType.STONECUTTING, recipeInput, level).toList()) {
+            ItemStack result = recipe.value().assemble(recipeInput);
+            if (!result.isEmpty() && StorageKey.of(result).equals(output.getKey()) && (long) result.getCount() * input.getValue() >= output.getValue()) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    // Whether a schematic is one the Stonecutter beside it can cut.
+    private boolean cuttable(ServerLevel level, Schematic schematic) {
+        return besideStonecutter(level) && stonecutterResult(level, schematic.inputTotals(), schematic.outputTotals()) != null;
     }
 
     // Outputs machines put into the intake slots go to the runs waiting for them.
@@ -534,6 +623,12 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
                 return level.getBlockState(worldPosition.relative(side)).getBlock().getName().getString();
             }
         }
+        for (Direction side : Direction.values()) {
+            BlockPos pos = worldPosition.relative(side);
+            if (level.isLoaded(pos) && level.getBlockState(pos).getBlock() instanceof StonecutterBlock stonecutter) {
+                return stonecutter.getName().getString();
+            }
+        }
         for (MachineBridge bridge : MachineBridges.gatewayMachines(level, worldPosition)) {
             return bridge.shownName().getString();
         }
@@ -555,10 +650,14 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         if (held.isEmpty()) {
             return false;
         }
-        if (targets.isEmpty() && MachineBridges.gatewayMachines(level, worldPosition).isEmpty()) {
+        boolean stonecutter = besideStonecutter(level);
+        if (targets.isEmpty() && !stonecutter && MachineBridges.gatewayMachines(level, worldPosition).isEmpty()) {
             return true;
         }
         for (Schematic schematic : held) {
+            if (stonecutter && cuttable(level, schematic)) {
+                continue;
+            }
             for (Schematic.Input input : schematic.inputs()) {
                 ItemStack stack = input.item().create();
                 if (ResourceEntryItem.key(stack) != null) {
@@ -594,7 +693,7 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
         if (!any && job != null) {
             return null;
         }
-        boolean neighbours = false;
+        boolean neighbours = besideStonecutter(level);
         for (Direction side : Direction.values()) {
             neighbours |= neighbour(level, side) != null;
         }
