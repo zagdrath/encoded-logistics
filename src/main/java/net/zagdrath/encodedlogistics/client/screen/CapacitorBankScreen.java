@@ -29,7 +29,7 @@ public class CapacitorBankScreen extends AbstractContainerScreen<CapacitorBankMe
 
     private static final int WIDTH = 176, HEIGHT = 80;
     private static final int GAUGE_X = 9, GAUGE_Y = 19, GAUGE_W = 10, GAUGE_H = 50;
-    private static final int FILL_RIGHT = 168;
+    private static final int FILL_RIGHT = 168, TITLE_GAP = 4;
     private static final int LABEL_X = 28, VALUE_X = 84, STORED_Y = 22, INPUT_Y = 35, OUTPUT_Y = 46, CAPACITY_Y = 57;
 
     public CapacitorBankScreen(CapacitorBankMenu menu, Inventory inventory, Component title) {
@@ -59,12 +59,17 @@ public class CapacitorBankScreen extends AbstractContainerScreen<CapacitorBankMe
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         CapacitorBankPayload figures = figures();
-        graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
         boolean endless = figures.capacity() < 0;
         int percent = figures.capacity() <= 0 ? 0 : (int) (figures.stored() * 100 / figures.capacity());
         Component fill = endless ? Component.translatable("gui.encodedlogistics.capacitor_bank.creative")
                 : Component.translatable("gui.encodedlogistics.capacitor_bank.fill", percent);
-        graphics.text(font, fill, FILL_RIGHT - font.width(fill), titleLabelY, ACCENT, false);
+        int fillX = FILL_RIGHT - font.width(fill);
+        // The title is cut short (with "...") before it reaches the fill, as "Creative Capacitor Bank" would.
+        int room = fillX - TITLE_GAP - titleLabelX;
+        Component shown = font.width(title) <= room ? title
+                : Component.literal(font.plainSubstrByWidth(title.getString(), room - font.width("...")) + "...");
+        graphics.text(font, shown, titleLabelX, titleLabelY, TEXT, false);
+        graphics.text(font, fill, fillX, titleLabelY, ACCENT, false);
 
         row(graphics, "stored", amount(figures.stored()), TEXT, STORED_Y);
         row(graphics, "input", Component.literal("+" + rate(figures.input())), ACCENT, INPUT_Y);
