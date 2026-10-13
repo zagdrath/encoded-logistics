@@ -38,7 +38,8 @@ public enum PartType implements StringRepresentable {
     POINT_TO_POINT_LINK("point_to_point_link", "linked", false, true, Boxes.P2P, PointToPointPart::new),
     COLLECTOR_PLANE("collector_plane", "active", false, true, Boxes.PLANE, CollectorPlanePart::new),
     DEPLOYER_PLANE("deployer_plane", "active", false, true, Boxes.PLANE, DeployerPlanePart::new),
-    SCHEMATIC_TERMINAL("schematic_terminal", "online", true, false, Boxes.TERMINAL, SchematicTerminalPart::new);
+    SCHEMATIC_TERMINAL("schematic_terminal", "online", true, false, Boxes.TERMINAL, SchematicTerminalPart::new),
+    TRUNK_PORT("trunk_port", "active", false, false, Boxes.PORT, TrunkPortPart::new);
 
     public static final Codec<PartType> CODEC = StringRepresentable.fromEnum(PartType::values);
 

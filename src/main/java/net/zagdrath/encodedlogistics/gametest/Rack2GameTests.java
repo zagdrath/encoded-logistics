@@ -402,7 +402,7 @@ final class Rack2GameTests {
                     helper.assertTrue(rack.toggleSegment(GlobalPos.of(helper.getLevel().dimension(), helper.absolutePos(cableB)))
                             == RackBlockEntity.SegmentResult.LINKED, "Segment not linked");
                     rack.cycleSegment(nas.u(), 1);
-                    helper.assertTrue(nas.segment() == 1, "NAS still on segment " + nas.segment());
+                    helper.assertTrue(nas.segment() == 2, "NAS still on segment " + nas.segment());
                     NetworkRef b = network(helper, cableB);
                     helper.assertTrue(b.equals(rack.network(nas)), "NAS serves " + rack.network(nas));
                     helper.assertTrue(ControllerStructures.rackDevicesServing(helper.getLevel().getServer(), network(helper, bayA)).stream()

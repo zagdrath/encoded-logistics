@@ -42,6 +42,8 @@ public abstract class RackDevice {
     private @Nullable RackBlockEntity rack;
     private boolean online;
     private int segment;
+    private boolean trunk;
+    private final java.util.Set<Integer> allowed = new java.util.LinkedHashSet<>();
     private Priority priority;
     private final NonNullList<ItemStack> items;
     // The name scripts know it by (UPS01): given once on its first network, kept until renamed, carried by its item.
@@ -140,14 +142,28 @@ public abstract class RackDevice {
         int uplinkCost();
     }
 
-    // The segment it serves: 0 the rack's own network, i (1+) the rack's i-th linked segment. Only pooled devices can
-    // be on another segment.
+    // The segment it serves, by ID (a VLAN ID): 1 (or 0) the rack's own network, else one of the segments the rack
+    // knows (RackBlockEntity#knownSegments). Only pooled devices can be on another segment. A trunk port's native one.
     public final int segment() {
         return segment;
     }
 
     public final void setSegment(int segment) {
         this.segment = Math.max(0, segment);
+    }
+
+    // Its switch port's mode: an access port (one segment) or a trunk (the allowed segments - all, while none are
+    // picked - and its native one, segment()).
+    public final boolean trunk() {
+        return trunk;
+    }
+
+    public final void setTrunk(boolean trunk) {
+        this.trunk = trunk;
+    }
+
+    public final java.util.Set<Integer> allowed() {
+        return allowed;
     }
 
     // FE per tick it drains while its network runs.

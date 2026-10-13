@@ -52,6 +52,17 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   directly reached network. Its screen has Members, Peers and Setup tabs; its popup shows members, sessions and owner.
   It keeps its chunk loaded while it has members (`exchangeChunkLoading`). Config: `exchangePorts` (32),
   `exchangePortLanes`, `exchangeDrain`. Terminal OS: the `WRKIX` screen, `APVIXMBR` and `RMVIXMBR`.
+- **VLAN trunking.** A rack's segments now have IDs (its own network is 1). Each device a switch pools is a port: an
+  **access** port on one segment, as before, or a **trunk** that serves several segments at once (all of them, or the
+  ones picked) with a native one; segments on a trunk still can't see each other's storage. The L2 and L3 Switch
+  panels have a **Ports** view (the L3 Switch's first tab). The new **Trunk Port** cable part carries segments (added
+  with a Link Card) into the network it's on, so every rack there can use them without a Link Card of its own; its
+  lanes (`trunkPortLanes`) are shared by its segments.
+
+### Upgrading
+
+- Routers load in Static mode with their routes unchanged; racks' linked segments get IDs in order (2, 3, ...) and
+  every pooled device loads as an access port on the segment it was on. Nothing needs redoing.
 
 ## [1.2.1] - 2026-10-12
 

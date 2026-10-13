@@ -11,6 +11,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,14 @@ import net.zagdrath.encodedlogistics.network.routing.RoutingDomain;
 import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
 import net.zagdrath.encodedlogistics.blockentity.ExchangeSwitchBlockEntity;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
+import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
+import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.part.TrunkPortPart;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -180,5 +189,63 @@ final class RoutingGameTests {
                     helper.assertTrue(routerA.routesVia(networkB[0]) == 1, "Routes via B: " + routerA.routesVia(networkB[0]));
                 })
                 .thenSucceed();
+    }
+
+    // VLAN trunking, on two networks split by a Segment Isolator (as Rack2GameTests.segments). A rack on the first,
+    // pooling a NAS through an L2 Switch: the NAS as a trunk serves both networks (each segment sees it), and only its
+    // native one once its allowed segments are just that. Then a Trunk Port on the first network's cable carries the
+    // second network (ID 10) instead of the rack's own link: the rack knows it, and an access port on it serves it.
+    static void vlanTrunking(GameTestHelper helper) {
+        BlockPos bayA = new BlockPos(1, 1, 1), isolator = new BlockPos(2, 1, 0), cableA = RackGameTests.CONTROLLER.east(), cableB = new BlockPos(3, 1, 0),
+                controllerB = new BlockPos(4, 1, 0);
+        RackGameTests.controller(helper, RackGameTests.CONTROLLER, 20_000);
+        RackGameTests.controller(helper, controllerB, 20_000);
+        RackGameTests.driveBay(helper, bayA);
+        helper.setBlock(isolator, ModBlocks.SEGMENT_ISOLATOR.get().defaultBlockState().setValue(SegmentIsolatorBlock.AXIS, Direction.Axis.X));
+        BlockPos master = RackGameTests.rack(helper, new BlockPos(1, 1, 3), Direction.SOUTH);
+        RackGameTests.cable(helper, cableA);
+        RackGameTests.cable(helper, cableB);
+        RackGameTests.install(helper, master, RackDeviceType.L2_SWITCH_24, 1, SwitchDevice.class);
+        NasDevice nas = Rack2GameTests.storageDevice(helper, master, RackDeviceType.NAS, 2, NasDevice.class, 10, StorageDevice.READ_WRITE);
+        GlobalPos nodeB = at(helper, cableB);
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+                    MinecraftServer server = helper.getLevel().getServer();
+                    NetworkRef a = RouterDevice.networkAt(server, at(helper, bayA)), b = RouterDevice.networkAt(server, nodeB);
+                    helper.assertTrue(rack.toggleSegment(nodeB) == RackBlockEntity.SegmentResult.LINKED, "Segment not linked");
+                    helper.assertTrue(rack.knownSegments().get(1).id() == 2, "Segment ID " + rack.knownSegments().get(1).id());
+                    rack.togglePortMode(nas.u());
+                    helper.assertTrue(nas.trunk(), "Not a trunk");
+                    helper.assertTrue(serving(server, a, nas) && serving(server, b, nas), "A trunk carrying all serves both");
+                    rack.togglePortAllowed(nas.u(), RackBlockEntity.OWN_ID);
+                    helper.assertTrue(serving(server, a, nas) && !serving(server, b, nas), "Allowed only its native segment, it still serves B");
+                    // Back to an access port; the rack's own link goes.
+                    rack.togglePortMode(nas.u());
+                    rack.togglePortAllowed(nas.u(), -1);
+                    helper.assertTrue(rack.toggleSegment(nodeB) == RackBlockEntity.SegmentResult.UNLINKED, "Segment not unlinked");
+                    Phase4GameTests.mount(helper, cableA, Direction.NORTH, PartType.TRUNK_PORT);
+                    TrunkPortPart trunk = (TrunkPortPart) helper.getBlockEntity(cableA, CableBlockEntity.class).part(Direction.NORTH);
+                    helper.assertTrue(trunk != null, "No Trunk Port");
+                    helper.assertTrue(trunk.toggle(nodeB) == TrunkPortPart.LinkResult.LINKED && trunk.segments().getFirst().id() == 10, "Trunk segment");
+                })
+                .thenWaitUntil(() -> {
+                    RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+                    helper.assertTrue(rack.knownSegments().stream().anyMatch(segment -> segment.id() == 10 && segment.trunk()),
+                            "The rack doesn't know the trunk's segment: " + rack.knownSegments());
+                })
+                .thenExecute(() -> {
+                    RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+                    MinecraftServer server = helper.getLevel().getServer();
+                    rack.cycleSegment(nas.u(), 1);
+                    helper.assertTrue(nas.segment() == 10, "NAS on " + nas.segment());
+                    helper.assertTrue(RouterDevice.networkAt(server, nodeB).equals(rack.network(nas)), "NAS serves " + rack.network(nas));
+                })
+                .thenSucceed();
+    }
+
+    private static boolean serving(MinecraftServer server, NetworkRef network, RackDevice device) {
+        return ControllerStructures.rackDevicesServing(server, network).contains(device);
     }
 }

@@ -19,9 +19,12 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 // An L2 Switch (24 or 48 port, 1U): rack-local lanes. The other devices in its rack take their lanes from the switches
 // (in unit order, until the pool's full) instead of from the network, which only carries the switches' uplinks (one lane
 // each); devices beyond the pool use their own network lanes as before. A pooled device can be put on another segment
-// the rack knows (a network beyond a Segment Isolator, linked with a Link Card), and then serves that network.
+// the rack knows (a network beyond a Segment Isolator, linked with a Link Card or carried by a Trunk Port on the rack's
+// network), and then serves that network. Each pooled device is a port: an access port (one segment) or a trunk (the
+// segments it allows, with a native one), whose lanes its segments share.
 public class SwitchDevice extends RackDevice implements RackDevice.LanePool {
-    public static final int ACTION_CYCLE_SEGMENT = 100;
+    // ACTION_PORT_ALLOWED: text "+" (the next segment), "-" (the last added) or "all".
+    public static final int ACTION_CYCLE_SEGMENT = 100, ACTION_PORT_MODE = 101, ACTION_PORT_ALLOWED = 102;
 
     public SwitchDevice(RackDeviceType type) {
         super(type);
@@ -77,8 +80,36 @@ public class SwitchDevice extends RackDevice implements RackDevice.LanePool {
 
     @Override
     public void handleAction(ServerPlayer player, int action, int value, String text) {
-        if (action == ACTION_CYCLE_SEGMENT && rack() != null) {
-            rack().cycleSegment(value, text.equals("back") ? -1 : 1);
+        RackBlockEntity rack = rack();
+        if (rack == null) {
+            return;
+        }
+        switch (action) {
+            case ACTION_CYCLE_SEGMENT -> rack.cycleSegment(value, text.equals("back") ? -1 : 1);
+            case ACTION_PORT_MODE -> rack.togglePortMode(value);
+            case ACTION_PORT_ALLOWED -> {
+                RackDevice device = rack.deviceAt(value);
+                if (device == null) {
+                    return;
+                }
+                if (text.equals("all")) {
+                    rack.togglePortAllowed(value, -1);
+                } else if (text.equals("-")) {
+                    if (!device.allowed().isEmpty()) {
+                        rack.togglePortAllowed(value, List.copyOf(device.allowed()).getLast());
+                    }
+                } else {
+                    // The next segment it knows that the trunk doesn't carry yet.
+                    for (RackBlockEntity.KnownSegment segment : rack.knownSegments()) {
+                        if (!device.allowed().contains(segment.id()) && segment.id() != Math.max(RackBlockEntity.OWN_ID, device.segment())) {
+                            rack.togglePortAllowed(value, segment.id());
+                            break;
+                        }
+                    }
+                }
+            }
+            default -> {
+            }
         }
     }
 
@@ -104,11 +135,15 @@ public class SwitchDevice extends RackDevice implements RackDevice.LanePool {
             child.putString("type", device.type().id().toString());
             child.putBoolean("pooled", lanes.isPooled(device));
             child.putInt("lanes", device.laneCost());
-            child.putInt("segment", device.segment());
+            child.putInt("segment", Math.max(RackBlockEntity.OWN_ID, device.segment()));
+            child.putBoolean("trunk", device.trunk());
+            child.putIntArray("allowed", device.allowed().stream().mapToInt(Integer::intValue).toArray());
         }
         ValueOutput.ValueOutputList segments = output.childrenList("segments");
         for (int i = 0; i < rack.segmentCount(); i++) {
-            segments.addChild().putString("name", rack.segmentName(i).getString());
+            ValueOutput segment = segments.addChild();
+            segment.putString("name", rack.segmentName(i).getString());
+            segment.putInt("id", rack.segmentId(i));
         }
     }
 }

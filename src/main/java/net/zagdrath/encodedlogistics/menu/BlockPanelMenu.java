@@ -107,6 +107,6 @@ public class BlockPanelMenu extends AbstractContainerMenu {
         if (host instanceof BlockEntity entity) {
             return !entity.isRemoved() && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64;
         }
-        return true;
+        return host == null || host.stillValid(player);
     }
 }

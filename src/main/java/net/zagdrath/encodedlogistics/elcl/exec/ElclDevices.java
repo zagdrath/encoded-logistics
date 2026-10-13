@@ -147,6 +147,7 @@ public final class ElclDevices {
             case FABRICATION_TERMINAL -> "FABTERM";
             case SCHEMATIC_ENCODER -> "ENCODER";
             case SCHEMATIC_TERMINAL -> "SCHTERM";
+            case TRUNK_PORT -> "TRK";
         };
     }
 

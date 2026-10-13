@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:network_cable",
+  "encodedlogistics:logic_die",
+  "encodedlogistics:memory_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:trunk_port",
+  "count": 1
+ }
+}

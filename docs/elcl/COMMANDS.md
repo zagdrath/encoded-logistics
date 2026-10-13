@@ -226,7 +226,7 @@ other Routers, each one's ACLs on the networks either side of its hop apply too.
 
 *(Exchange Switches: Routers join with a Cross-Connect; members peer through the route server (those who opt in) or
 bilaterally (both sides accept), and each side sets, per peer, whether it exchanges routes and allows transit. A peer's
-network is `*CONNECTED`, its next hop `IX:name`. Exchange Switches are devices of type `XSW`.)*
+network is `*CONNECTED`, its next hop `IX:name`. Exchange Switches are devices of type `XSW`, Trunk Ports (VLAN trunking) of type `TRK`.)*
 
 ## 8. Messages, displays and output
 

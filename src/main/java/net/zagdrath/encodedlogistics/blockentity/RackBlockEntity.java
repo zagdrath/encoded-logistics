@@ -51,6 +51,7 @@ import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
+import net.zagdrath.encodedlogistics.part.TrunkPortPart;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
 import net.zagdrath.encodedlogistics.network.RackLanes;
@@ -96,8 +97,17 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
     public static final int MAX_SEGMENTS = 5;
 
     private final TreeMap<Integer, RackDevice> devices = new TreeMap<>();
-    // Linked segments, each found through a block on it (the one next to a Segment Isolator's end).
-    private final List<GlobalPos> segments = new ArrayList<>();
+    // Linked segments, each found through a block on it (the one next to a Segment Isolator's end), with its segment
+    // (VLAN) ID: 1 is the rack's own network.
+    private final List<Segment> segments = new ArrayList<>();
+
+    public static final int OWN_ID = 1, MAX_ID = 4094;
+
+    public record Segment(int id, GlobalPos node) {}
+
+    // A segment the rack knows: its own network (OWN_ID), its own linked ones, then those the Trunk Ports on its network
+    // carry (trunk; an ID it has itself wins).
+    public record KnownSegment(int id, @Nullable GlobalPos node, boolean trunk) {}
     private final RackScheduler scheduler = new RackScheduler(this);
     // Memory Dies owed for upgraded Rack Consoles converted on load, given back on the next tick.
     private int migrationDies;
@@ -732,17 +742,58 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
 
     // --- Segments ---
 
-    // Segments: 0 the rack's own network, then the linked ones.
+    // The segments it knows, in order: its own network, its own linked segments, the Trunk Ports' (L3 Switch routes
+    // name them by this order; a Trunk Port's come after the rack's own, so those keep their places).
+    public List<KnownSegment> knownSegments() {
+        long key = level instanceof ServerLevel serverLevel ? ControllerStructures.cacheKey(serverLevel.getServer()) : -1;
+        if (knownCache != null && key == knownKey && key != -1) {
+            return knownCache;
+        }
+        List<KnownSegment> known = new ArrayList<>();
+        known.add(new KnownSegment(OWN_ID, null, false));
+        Set<Integer> ids = new HashSet<>();
+        ids.add(OWN_ID);
+        for (Segment segment : segments) {
+            known.add(new KnownSegment(segment.id(), segment.node(), false));
+            ids.add(segment.id());
+        }
+        if (level instanceof ServerLevel serverLevel) {
+            for (TrunkPortPart.Segment carried : TrunkPortPart.carriedOn(serverLevel.getServer(), ControllerStructures.networkOf(serverLevel, worldPosition))) {
+                if (ids.add(carried.id())) {
+                    known.add(new KnownSegment(carried.id(), carried.node(), true));
+                }
+            }
+        }
+        knownCache = List.copyOf(known);
+        knownKey = key;
+        return knownCache;
+    }
+
+    // knownSegments as last worked out, until anything networks are made of changes (segmentsChanged does).
+    private @Nullable List<KnownSegment> knownCache;
+    private long knownKey = -1;
+
+    // Segments: 0 the rack's own network, then the others it knows (by index in knownSegments).
     public int segmentCount() {
-        return 1 + segments.size();
+        return level instanceof ServerLevel ? knownSegments().size() : 1 + segments.size();
     }
 
     public Component segmentName(int index) {
-        return index == 0 ? Component.translatable("gui.encodedlogistics.switch.segment.default")
-                : Component.translatable("gui.encodedlogistics.rack.segment", index);
+        List<KnownSegment> known = knownSegments();
+        if (index <= 0 || index >= known.size()) {
+            return Component.translatable("gui.encodedlogistics.switch.segment.default");
+        }
+        return Component.translatable(known.get(index).trunk() ? "gui.encodedlogistics.rack.segment_trunk" : "gui.encodedlogistics.rack.segment_id",
+                known.get(index).id());
     }
 
-    // The network a segment is, if it's on one right now.
+    // The ID of the segment at index, or OWN_ID.
+    public int segmentId(int index) {
+        List<KnownSegment> known = knownSegments();
+        return index > 0 && index < known.size() ? known.get(index).id() : OWN_ID;
+    }
+
+    // The network a segment (by index) is, if it's on one right now.
     public @Nullable NetworkRef segmentNetwork(int index) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return null;
@@ -750,37 +801,97 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (index == 0) {
             return ControllerStructures.networkOf(serverLevel, worldPosition);
         }
-        return index - 1 < segments.size() ? RouterDevice.networkAt(serverLevel.getServer(), segments.get(index - 1)) : null;
+        List<KnownSegment> known = knownSegments();
+        return index < known.size() && known.get(index).node() != null ? RouterDevice.networkAt(serverLevel.getServer(), known.get(index).node()) : null;
+    }
+
+    // The network a segment (by ID) is, if the rack knows it and it's on one right now.
+    public @Nullable NetworkRef segmentNetworkById(int id) {
+        if (id <= OWN_ID) {
+            return segmentNetwork(0);
+        }
+        List<KnownSegment> known = knownSegments();
+        for (int i = 1; i < known.size(); i++) {
+            if (known.get(i).id() == id) {
+                return segmentNetwork(i);
+            }
+        }
+        return null;
+    }
+
+    // The IDs a device serves: an access port's segment; a trunk's native one and the allowed ones (all it knows,
+    // while none are picked).
+    public List<Integer> servedIds(RackDevice device) {
+        int own = device.segment() <= OWN_ID ? OWN_ID : device.segment();
+        if (!device.trunk()) {
+            return List.of(own);
+        }
+        List<Integer> ids = new ArrayList<>();
+        ids.add(own);
+        for (KnownSegment segment : knownSegments()) {
+            if ((device.allowed().isEmpty() || device.allowed().contains(segment.id())) && !ids.contains(segment.id())) {
+                ids.add(segment.id());
+            }
+        }
+        return ids;
+    }
+
+    // A pooled device's port: access or trunk (an L2 / L3 Switch's Ports tab).
+    public void togglePortMode(int u) {
+        RackDevice device = deviceAt(u);
+        if (device == null || device.lanePool() != null || !lanes().isPooled(device)) {
+            return;
+        }
+        device.setTrunk(!device.trunk());
+        segmentsChanged();
+    }
+
+    // A trunk's allowed segments: id added or taken off (-1: back to all).
+    public void togglePortAllowed(int u, int id) {
+        RackDevice device = deviceAt(u);
+        if (device == null || device.lanePool() != null || !lanes().isPooled(device) || !device.trunk()) {
+            return;
+        }
+        if (id < 0) {
+            device.allowed().clear();
+        } else if (!device.allowed().remove(id)) {
+            device.allowed().add(id);
+        }
+        segmentsChanged();
     }
 
     public enum SegmentResult {
         LINKED, UNLINKED, FULL
     }
 
-    // Links a segment (a Link Card's); linking one it already has unlinks it.
+    // Links a segment (a Link Card's) with the next free ID; linking one it already has unlinks it.
     public SegmentResult toggleSegment(GlobalPos node) {
-        int index = segments.indexOf(node);
-        if (index >= 0) {
-            unlinkSegment(index + 1);
-            return SegmentResult.UNLINKED;
+        for (int i = 0; i < segments.size(); i++) {
+            if (segments.get(i).node().equals(node)) {
+                unlinkSegment(i + 1);
+                return SegmentResult.UNLINKED;
+            }
         }
         if (segments.size() >= MAX_SEGMENTS) {
             return SegmentResult.FULL;
         }
-        segments.add(node);
+        int id = OWN_ID + 1;
+        for (Segment segment : segments) {
+            id = Math.max(id, segment.id() + 1);
+        }
+        segments.add(new Segment(Math.min(MAX_ID, id), node));
         segmentsChanged();
         return SegmentResult.LINKED;
     }
 
-    // Devices on it go back to the rack's own network; later segments move down one, as do L3 routes through them.
+    // Devices on it go back to the rack's own network (trunks drop it); later L3 routes through it move down one.
     private void unlinkSegment(int index) {
-        segments.remove(index - 1);
+        int id = segments.remove(index - 1).id();
         for (RackDevice device : devices.values()) {
-            if (device.segment() == index) {
-                device.setSegment(0);
-            } else if (device.segment() > index) {
-                device.setSegment(device.segment() - 1);
+            if (device.segment() == id) {
+                device.setSegment(OWN_ID);
             }
+            device.allowed().remove(id);
             if (device instanceof L3SwitchDevice l3) {
                 List<ItemRouting.Route> kept = ItemRouting.withoutEndpoint(l3.routes(), index);
                 l3.routes().clear();
@@ -790,34 +901,49 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         segmentsChanged();
     }
 
-    // The next (or previous) segment for the device at u, if a switch pools it.
+    // The next (or previous) segment (a trunk's native one) for the device at u, if a switch pools it.
     public void cycleSegment(int u, int step) {
         RackDevice device = deviceAt(u);
         if (device == null || device.lanePool() != null || !lanes().isPooled(device)) {
             return;
         }
-        device.setSegment(Math.floorMod(device.segment() + step, segmentCount()));
+        List<KnownSegment> known = knownSegments();
+        int at = 0;
+        for (int i = 0; i < known.size(); i++) {
+            if (known.get(i).id() == Math.max(OWN_ID, device.segment())) {
+                at = i;
+            }
+        }
+        device.setSegment(known.get(Math.floorMod(at + step, known.size())).id());
         segmentsChanged();
     }
 
-    // The network a device serves: its segment's while a switch pools it, otherwise the rack's own.
+    // The network a device serves: its segment's (a trunk's native one) while a switch pools it, otherwise the rack's
+    // own (and its own while its segment isn't known any more).
     public @Nullable NetworkRef network(RackDevice device) {
-        if (device.segment() > 0 && device.segment() < segmentCount() && lanes().isPooled(device)) {
-            return segmentNetwork(device.segment());
+        if (device.segment() > OWN_ID && lanes().isPooled(device)) {
+            NetworkRef network = segmentNetworkById(device.segment());
+            if (network != null) {
+                return network;
+            }
         }
         return segmentNetwork(0);
     }
 
-    // Its devices serving a network.
+    // Its devices serving a network: on its segment, or a trunk carrying it.
     public List<RackDevice> devicesServing(NetworkRef network) {
         List<RackDevice> serving = new ArrayList<>();
-        NetworkRef own = segmentNetwork(0);
         Lanes lanes = lanes();
         for (RackDevice device : devices.values()) {
-            NetworkRef served = device.segment() > 0 && device.segment() < segmentCount() && lanes.isPooled(device) ? segmentNetwork(device.segment())
-                    : own;
-            if (network.equals(served)) {
+            if (network.equals(network(device))) {
                 serving.add(device);
+            } else if (device.trunk() && lanes.isPooled(device)) {
+                for (int id : servedIds(device)) {
+                    if (network.equals(segmentNetworkById(id))) {
+                        serving.add(device);
+                        break;
+                    }
+                }
             }
         }
         return serving;
@@ -969,7 +1095,20 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         controllerStructure = input.getLongOr("controller_structure", 0L);
         home = input.read("home", NetworkRef.CODEC).orElse(null);
         segments.clear();
-        input.read("segments", GlobalPos.CODEC.listOf()).ifPresent(segments::addAll);
+        // Racks saved before segment IDs: their segments get IDs in order (index i is ID i + 1; the rack's own is 1),
+        // and so do their devices' segments; every port loads as an access port.
+        boolean ids = input.getBooleanOr("segment_ids", false);
+        if (ids) {
+            for (ValueInput child : input.childrenListOrEmpty("segment_list")) {
+                child.read("node", GlobalPos.CODEC).ifPresent(node -> segments.add(new Segment(Math.clamp(child.getIntOr("id", OWN_ID + 1), OWN_ID + 1, MAX_ID), node)));
+            }
+        } else {
+            input.read("segments", GlobalPos.CODEC.listOf()).ifPresent(nodes -> {
+                for (GlobalPos node : nodes) {
+                    segments.add(new Segment(segments.size() + 2, node));
+                }
+            });
+        }
         devices.clear();
         migrationDies = input.getIntOr("migration_dies", 0);
         for (ValueInput child : input.childrenListOrEmpty("devices")) {
@@ -987,7 +1126,12 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                     migrationDies++;
                 }
                 RackDevice device = read;
-                device.setSegment(child.getIntOr("segment", 0));
+                int segment = child.getIntOr("segment", 0);
+                device.setSegment(ids ? segment : segment + 1);
+                device.setTrunk(child.getBooleanOr("trunk", false));
+                for (int id : child.getIntArray("allowed").orElse(new int[0])) {
+                    device.allowed().add(id);
+                }
                 child.getInt("priority").ifPresent(id -> device.setLanePriority(RackDevice.Priority.byId(id)));
                 device.setDeviceName(child.getStringOr("device_name", ""));
                 devices.put(device.u(), device);
@@ -1026,8 +1170,14 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             ValueOutput child = list.addChild();
             child.putString("type", device.type().id().toString());
             child.putInt("u", device.u());
-            if (device.segment() > 0) {
+            if (device.segment() > OWN_ID) {
                 child.putInt("segment", device.segment());
+            }
+            if (device.trunk()) {
+                child.putBoolean("trunk", true);
+            }
+            if (!device.allowed().isEmpty()) {
+                child.putIntArray("allowed", device.allowed().stream().mapToInt(Integer::intValue).toArray());
             }
             child.putInt("priority", device.lanePriority().ordinal());
             if (!device.deviceName().isEmpty()) {
@@ -1035,8 +1185,12 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             }
             device.save(child.child("data"));
         }
-        if (!segments.isEmpty()) {
-            output.store("segments", GlobalPos.CODEC.listOf(), segments);
+        output.putBoolean("segment_ids", true);
+        ValueOutput.ValueOutputList segmentList = output.childrenList("segment_list");
+        for (Segment segment : segments) {
+            ValueOutput child = segmentList.addChild();
+            child.putInt("id", segment.id());
+            child.store("node", GlobalPos.CODEC, segment.node());
         }
         if (migrationDies > 0) {
             output.putInt("migration_dies", migrationDies);

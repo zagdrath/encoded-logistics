@@ -1646,6 +1646,21 @@ public class ControllerStructures extends SavedData {
         return found;
     }
 
+    // The cable part hosts on a network (online or not): its cables and part hosts with parts on.
+    public static List<CableBlockEntity> partHosts(MinecraftServer server, @Nullable NetworkRef ref) {
+        Owner owner = owner(server, ref);
+        List<CableBlockEntity> found = new ArrayList<>();
+        if (owner == null) {
+            return found;
+        }
+        for (NodePos pos : owner.runtime.partHosts) {
+            if (blockEntity(server, pos) instanceof CableBlockEntity host) {
+                found.add(host);
+            }
+        }
+        return found;
+    }
+
     // Whether the device at pos has its lanes on a running network.
     public static boolean deviceOnline(ServerLevel level, BlockPos pos) {
         return onlineRuntime(level, pos) != null;

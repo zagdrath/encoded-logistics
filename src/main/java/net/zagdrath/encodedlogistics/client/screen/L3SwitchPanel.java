@@ -49,6 +49,16 @@ public class L3SwitchPanel extends SwitchPanel {
                 L3SwitchDevice.ACTION_FILTER_OPTION, L3SwitchDevice.ACTION_SHARE_OPTION);
     }
 
+    // Its first tab opens on the ports (switch to the devices and their lanes under the list).
+    {
+        ports = true;
+    }
+
+    @Override
+    protected int toggleY() {
+        return 148;
+    }
+
     // The route being edited (on the Routes tab), or null.
     private ItemRouting.@Nullable Route editing(@Nullable L3SwitchDevice l3) {
         return l3 != null && tab == 1 ? editor.current(l3.routes()) : null;
@@ -252,7 +262,7 @@ public class L3SwitchPanel extends SwitchPanel {
             return true;
         }
         if (tab == 0) {
-            return clickScrollbar(x, y) || clickDevices(x, y, button);
+            return clickScrollbar(x, y) || clickDevices(x, y, button, shift);
         }
         if (left && x >= ADD_X && x < ADD_X + ADD_W && y >= ADD_Y && y < ADD_Y + ADD_H) {
             send(tab == 1 ? L3SwitchDevice.ACTION_ADD_ROUTE : L3SwitchDevice.ACTION_ADD_QOS, 0, "");

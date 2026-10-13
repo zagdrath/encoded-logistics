@@ -24,7 +24,10 @@ import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 // An L2 Switch's panel (screens/rack/l2_switch_24.json, l2_switch_48.json): the rack's lane pool (bar and "N / M
 // lanes"), the rack's other devices - icon, name, whether the pool carries them, and the segment each serves (click to
 // step through the segments the rack knows, right-click back; only pooled devices can change; a scrollbar beside the
-// list, as on the rack's own screen) - and the uplink.
+// list, as on the rack's own screen) - and the uplink. "Ports" shows the same devices as switch ports instead (VLAN
+// trunking): the unit, the mode (click: Access / Trunk), the segments (an access port's one: click to step through them;
+// a trunk's allowed ones: click to add the next, right-click to take the last off, shift-click for all) and a trunk's
+// native segment (click to step).
 public class SwitchPanel extends RackScreen.Panel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/switch.png");
     protected static final Identifier LANE_TRACK = EncodedLogistics.id("rack/switch/lane_bar_track"),
@@ -39,9 +42,15 @@ public class SwitchPanel extends RackScreen.Panel {
     private static final int TRACK_X = 160, THUMB_W = 6, THUMB_H = 15;
 
     // A device in the list, as the server sent it.
-    protected record Row(int u, RackDeviceType type, boolean pooled, int segment) {}
+    protected record Row(int u, RackDeviceType type, boolean pooled, int segment, boolean trunk, List<Integer> allowed) {}
+
+    // The ports view's columns (from the list's left): mode, segments, native (right edge).
+    private static final int PORT_MODE_X = 20, PORT_ALLOWED_X = 60, PORT_NATIVE_X = 120, PORT_NATIVE_RIGHT = 142, TOGGLE_W = 44, TOGGLE_H = 12;
+    protected static final int TRUNK_BLUE = 0xFF50C2EC;
 
     protected int scroll;
+    // Showing the ports (VLAN trunking) rather than the devices and their lanes.
+    protected boolean ports;
     private boolean dragging;
 
     public SwitchPanel(RackScreen screen) {
@@ -80,7 +89,12 @@ public class SwitchPanel extends RackScreen.Panel {
             Identifier id = Identifier.tryParse(child.getStringOr("type", ""));
             RackDeviceType type = id != null ? RackDeviceType.byId(id) : null;
             if (type != null) {
-                rows.add(new Row(child.getIntOr("u", 0), type, child.getBooleanOr("pooled", false), child.getIntOr("segment", 0)));
+                List<Integer> allowed = new ArrayList<>();
+                for (int segment : child.getIntArray("allowed").orElse(new int[0])) {
+                    allowed.add(segment);
+                }
+                rows.add(new Row(child.getIntOr("u", 0), type, child.getBooleanOr("pooled", false), child.getIntOr("segment", 1),
+                        child.getBooleanOr("trunk", false), allowed));
             }
         }
         return rows;
@@ -95,6 +109,34 @@ public class SwitchPanel extends RackScreen.Panel {
             }
         }
         return names;
+    }
+
+    // The segments' IDs, in the order of segments().
+    protected List<Integer> segmentIds() {
+        List<Integer> ids = new ArrayList<>();
+        ValueInput data = data();
+        if (data != null) {
+            for (ValueInput child : data.childrenListOrEmpty("segments")) {
+                ids.add(child.getIntOr("id", 1));
+            }
+        }
+        return ids;
+    }
+
+    // A segment's name by its ID.
+    protected String segmentName(int id) {
+        int index = segmentIds().indexOf(id);
+        List<String> names = segments();
+        return index >= 0 && index < names.size() ? names.get(index) : Integer.toString(id);
+    }
+
+    // Where the Devices / Ports switch is.
+    protected int toggleX() {
+        return 124;
+    }
+
+    protected int toggleY() {
+        return 142;
     }
 
     protected Component poolText() {
@@ -124,8 +166,13 @@ public class SwitchPanel extends RackScreen.Panel {
     protected void extractDevices(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int x = screen.left(), y = screen.top();
         List<Row> rows = rows();
-        List<String> segments = segments();
         scroll = Mth.clamp(scroll, 0, Math.max(0, rows.size() - listRows()));
+        PartScreens.wideButton(graphics, font(), x + toggleX(), y + toggleY(), TOGGLE_W, TOGGLE_H,
+                Component.translatable(ports ? "gui.encodedlogistics.switch.show_devices" : "gui.encodedlogistics.switch.show_ports"), true, mouseX, mouseY);
+        if (ports) {
+            extractScrollbar(graphics, rows.size(), mouseX, mouseY);
+            return;
+        }
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
             int rowY = y + listY() + i * rowHeight();
@@ -138,7 +185,7 @@ public class SwitchPanel extends RackScreen.Panel {
             if (row.pooled()) {
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LANE_FILL, x + listX() + LANES_X + 1, rowY + 5, 30, 2);
             }
-            String segment = row.segment() < segments.size() ? segments.get(row.segment()) : "-";
+            String segment = (row.trunk() ? "T " : "") + segmentName(row.segment());
             PartScreens.wideButton(graphics, font(), x + listX() + SEGMENT_X, rowY + 1, SEGMENT_W, SEGMENT_H, Component.literal(segment), row.pooled(),
                     mouseX, mouseY);
         }
@@ -218,6 +265,10 @@ public class SwitchPanel extends RackScreen.Panel {
     }
 
     protected void extractDeviceNames(GuiGraphicsExtractor graphics) {
+        if (ports) {
+            extractPorts(graphics);
+            return;
+        }
         List<Row> rows = rows();
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
@@ -226,8 +277,40 @@ public class SwitchPanel extends RackScreen.Panel {
         }
     }
 
+    // The ports: unit, mode, segments, native.
+    private void extractPorts(GuiGraphicsExtractor graphics) {
+        List<Row> rows = rows();
+        for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
+            Row row = rows.get(scroll + i);
+            int rowY = listY() + i * rowHeight() + 3;
+            int color = row.pooled() ? RackScreen.TEXT : RackScreen.TEXT_DISABLED;
+            graphics.text(font(), "U" + row.u(), listX() + 2, rowY, row.pooled() ? RackScreen.TEXT_MUTED : RackScreen.TEXT_DISABLED, false);
+            graphics.text(font(), Component.translatable(row.trunk() ? "gui.encodedlogistics.switch.port.trunk" : "gui.encodedlogistics.switch.port.access"),
+                    listX() + PORT_MODE_X, rowY, row.pooled() && row.trunk() ? TRUNK_BLUE : color, false);
+            String segments = !row.trunk() ? Integer.toString(row.segment()) : row.allowed().isEmpty()
+                    ? Component.translatable("gui.encodedlogistics.switch.port.all").getString()
+                    : String.join(",", row.allowed().stream().map(String::valueOf).toList());
+            graphics.text(font(), font().plainSubstrByWidth(segments, PORT_NATIVE_X - PORT_ALLOWED_X - 4), listX() + PORT_ALLOWED_X, rowY, color, false);
+            String nativeId = row.trunk() ? Integer.toString(row.segment()) : "-";
+            graphics.text(font(), nativeId, listX() + PORT_NATIVE_RIGHT - font().width(nativeId), rowY, color, false);
+        }
+        if (rows.isEmpty()) {
+            graphics.text(font(), Component.translatable("gui.encodedlogistics.switch.no_ports"), listX() + 2, listY() + 3, RackScreen.TEXT_DISABLED, false);
+        }
+    }
+
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (screen.over(mouseX, mouseY, toggleX(), toggleY(), TOGGLE_W, TOGGLE_H)) {
+            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.switch.ports_hint"), mouseX, mouseY);
+            return;
+        }
+        if (ports) {
+            if (screen.over(mouseX, mouseY, listX(), listY(), PORT_NATIVE_RIGHT + 2, listRows() * rowHeight())) {
+                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.switch.port_hint"), mouseX, mouseY);
+            }
+            return;
+        }
         List<Row> rows = rows();
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
@@ -251,11 +334,41 @@ public class SwitchPanel extends RackScreen.Panel {
 
     @Override
     protected boolean mouseClicked(double x, double y, int button, boolean shift) {
-        return clickScrollbar(x, y) || clickDevices(x, y, button);
+        return clickScrollbar(x, y) || clickDevices(x, y, button, shift);
     }
 
-    protected boolean clickDevices(double x, double y, int button) {
+    protected boolean clickDevices(double x, double y, int button, boolean shift) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && x >= toggleX() && x < toggleX() + TOGGLE_W && y >= toggleY() && y < toggleY() + TOGGLE_H) {
+            ports = !ports;
+            return true;
+        }
         List<Row> rows = rows();
+        if (ports) {
+            boolean right = button == InputConstants.MOUSE_BUTTON_RIGHT;
+            for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
+                Row row = rows.get(scroll + i);
+                int rowY = listY() + i * rowHeight();
+                if (y < rowY || y >= rowY + rowHeight() || !row.pooled()) {
+                    continue;
+                }
+                double at = x - listX();
+                if (at >= PORT_MODE_X && at < PORT_ALLOWED_X) {
+                    send(SwitchDevice.ACTION_PORT_MODE, row.u(), "");
+                } else if (at >= PORT_ALLOWED_X && at < PORT_NATIVE_X) {
+                    if (row.trunk()) {
+                        send(SwitchDevice.ACTION_PORT_ALLOWED, row.u(), shift ? "all" : right ? "-" : "+");
+                    } else {
+                        send(SwitchDevice.ACTION_CYCLE_SEGMENT, row.u(), right ? "back" : "");
+                    }
+                } else if (at >= PORT_NATIVE_X && at < PORT_NATIVE_RIGHT + 2 && row.trunk()) {
+                    send(SwitchDevice.ACTION_CYCLE_SEGMENT, row.u(), right ? "back" : "");
+                } else {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
         for (int i = 0; i < listRows() && scroll + i < rows.size(); i++) {
             Row row = rows.get(scroll + i);
             int rowY = listY() + i * rowHeight();

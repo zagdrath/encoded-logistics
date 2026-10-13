@@ -384,6 +384,10 @@ public class Config {
             .comment("Router ACLs: whether what no rule matches is permitted (*PERMIT) or denied (*DENY).")
             .define("aclDefaultPermit", true);
 
+    public static final ModConfigSpec.IntValue TRUNK_PORT_LANES = BUILDER
+            .comment("Lanes a Trunk Port carries, shared by the devices on its segments.")
+            .defineInRange("trunkPortLanes", 64, 1, 4096);
+
     public static final ModConfigSpec.IntValue EXCHANGE_PORTS = BUILDER
             .comment("Ports an Exchange Switch has (each member Router takes one; its owner can offer fewer).")
             .defineInRange("exchangePorts", 32, 1, 256);

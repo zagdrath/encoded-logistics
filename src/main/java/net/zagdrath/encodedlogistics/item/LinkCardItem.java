@@ -45,6 +45,7 @@ import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
+import net.zagdrath.encodedlogistics.part.TrunkPortPart;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
@@ -266,6 +267,20 @@ public class LinkCardItem extends Item {
             return InteractionResult.SUCCESS;
         }
         LinkAddress stored = address(stack);
+        // A Trunk Port: it carries the stored segment (or stops carrying it).
+        if (stored != null && (stored.kind() == LinkAddress.Kind.SEGMENT || stored.kind() == LinkAddress.Kind.NETWORK) && !player.isSecondaryUseActive()
+                && level.getBlockEntity(pos) instanceof CableBlockEntity host) {
+            Direction side = state.getBlock() instanceof PartHostBlock ? PartHostBlock.mount(host.getAttachments())
+                    : NetworkCableBlock.sideAt(context.getClickLocation(), pos);
+            if (side != null && host.part(side) instanceof TrunkPortPart trunk) {
+                if (level instanceof ServerLevel serverLevel && NetworkAccess.guard(serverLevel, pos, player, RackPermission.BUILD)
+                        && NetworkAccess.guard(serverLevel.getServer(), stored.pos(), player, RackPermission.BUILD)) {
+                    player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.trunk_"
+                            + trunk.toggle(stored.pos()).name().toLowerCase(Locale.ROOT)));
+                }
+                return InteractionResult.SUCCESS;
+            }
+        }
         if (!(state.getBlock() instanceof ServerRackBlock) || stored == null
                 || stored.kind() != LinkAddress.Kind.SEGMENT && stored.kind() != LinkAddress.Kind.NETWORK) {
             return null;
