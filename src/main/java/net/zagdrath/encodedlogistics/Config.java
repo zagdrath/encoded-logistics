@@ -385,7 +385,8 @@ public class Config {
             .define("aclDefaultPermit", true);
 
     public static final ModConfigSpec.IntValue TRUNK_PORT_LANES = BUILDER
-            .comment("Lanes a Trunk Port carries, shared by the devices on its segments.")
+            .comment("Lanes a Trunk Port is rated for: its panel shows what the devices on its segments use against them (each device's lanes",
+                    "are its rack's to grant).")
             .defineInRange("trunkPortLanes", 64, 1, 4096);
 
     public static final ModConfigSpec.DoubleValue DIRECTORY_DRAIN = BUILDER

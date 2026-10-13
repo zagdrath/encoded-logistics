@@ -85,33 +85,33 @@ public final class RoutingGraph<N, C> {
     // The best paths from source to every network it can reach. crossable(network, source): whether a path may pass
     // through network (not end there) for traffic from source.
     public Map<N, Path<N, C>> paths(N source, BiPredicate<N, N> crossable, int maxHops) {
-        Map<N, Path<N, C>> best = new HashMap<>();
-        // A path found but not yet settled: ordered by cost, then hops.
+        // Paths are taken cheapest first (fewer hops breaking ties): the first to reach a network is its best. Under the
+        // hop limit a dearer path with fewer hops may still go further, so a network is passed through again by any path
+        // with fewer hops than the cheaper ones that passed through it already (fewestHops).
         PriorityQueue<Path<N, C>> queue = new PriorityQueue<>(Comparator.<Path<N, C>>comparingLong(Path::cost).thenComparingInt(Path::hopCount));
         queue.add(new Path<>(source, 0, List.of()));
         Map<N, Path<N, C>> result = new LinkedHashMap<>();
+        Map<N, Integer> fewestHops = new HashMap<>();
         while (!queue.isEmpty()) {
             Path<N, C> path = queue.poll();
-            if (result.containsKey(path.dest())) {
+            Integer passed = fewestHops.get(path.dest());
+            if (passed != null && passed <= path.hopCount()) {
                 continue;
             }
-            result.put(path.dest(), path);
+            result.putIfAbsent(path.dest(), path);
             boolean expand = path.dest().equals(source) || crossable.test(path.dest(), source) && !path.hops().getLast().direct();
             if (!expand || path.hopCount() >= maxHops) {
                 continue;
             }
+            fewestHops.put(path.dest(), path.hopCount());
             for (Hop<N, C> hop : hopsFrom(path.dest())) {
-                if (result.containsKey(hop.to()) || hop.direct() && !path.hops().isEmpty()) {
+                Integer through = fewestHops.get(hop.to());
+                if (through != null && through <= path.hopCount() + 1 || hop.direct() && !path.hops().isEmpty()) {
                     continue;
                 }
                 List<Hop<N, C>> hops = new ArrayList<>(path.hops());
                 hops.add(hop);
-                Path<N, C> next = new Path<>(hop.to(), (int) Math.min(Integer.MAX_VALUE, (long) path.cost() + hop.cost()), List.copyOf(hops));
-                Path<N, C> known = best.get(hop.to());
-                if (known == null || next.cost() < known.cost() || next.cost() == known.cost() && next.hopCount() < known.hopCount()) {
-                    best.put(hop.to(), next);
-                    queue.add(next);
-                }
+                queue.add(new Path<>(hop.to(), (int) Math.min(Integer.MAX_VALUE, (long) path.cost() + hop.cost()), List.copyOf(hops)));
             }
         }
         result.remove(source);

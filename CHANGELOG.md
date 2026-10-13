@@ -57,7 +57,7 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   ones picked) with a native one; segments on a trunk still can't see each other's storage. The L2 and L3 Switch
   panels have a **Ports** view (the L3 Switch's first tab). The new **Trunk Port** cable part carries segments (added
   with a Link Card) into the network it's on, so every rack there can use them without a Link Card of its own; its
-  lanes (`trunkPortLanes`) are shared by its segments.
+  panel shows the lanes its segments' devices use (`trunkPortLanes`).
 - **Directory Servers and qualified names.** The **Directory Server** (a block, or a 1U rack device) publishes chosen
   devices of its network. Any Terminal OS command that takes a device then takes `SYSNAME/DEVICE` for a device on
   another network, when a Router has a route there with the new **Control** policy (a third route mode beside Move
@@ -68,7 +68,8 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 ### Upgrading
 
 - Routers load in Static mode with their routes unchanged; racks' linked segments get IDs in order (2, 3, ...) and
-  every pooled device loads as an access port on the segment it was on. Nothing needs redoing.
+  every pooled device loads as an access port on the segment it was on; L3 Switch routes keep the segments they
+  had (now by ID). Nothing needs redoing.
 
 ## [1.2.1] - 2026-10-12
 

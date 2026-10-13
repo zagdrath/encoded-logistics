@@ -29,7 +29,8 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
 // The L3 Switch (1U): an L2 Switch's lane pool (32 lanes), plus routing between the segments its rack knows (the rack's
 // own network and the networks beyond Segment Isolators it's linked to): each route moves items from one segment's
-// storage to another's, optionally only one item. Once a second it moves up to l3SwitchRate items, shared between its
+// storage to another's, optionally only one item. A route names its segments by ID (RackBlockEntity#knownSegments: 1 is
+// the rack's own network), so segments coming and going (a Trunk Port's) never point it elsewhere. Once a second it moves up to l3SwitchRate items, shared between its
 // active routes (each with a port's filter: ItemRouting); QoS rules mark items high, normal or low priority, and each route moves its high-priority items
 // first, then normal, then low. A Share route moves nothing: the source segment's items are part of the destination's
 // storage instead, while the switch is online (ItemRouting.ShareSource; QoS has nothing to order there).
@@ -74,8 +75,24 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
         return qos;
     }
 
-    private int endpoints() {
-        return rack() != null ? rack().segmentCount() : 1;
+    // The segment IDs the rack knows, in order (its own network first).
+    private List<Integer> segmentIds() {
+        List<Integer> ids = new ArrayList<>();
+        if (rack() != null) {
+            for (RackBlockEntity.KnownSegment segment : rack().knownSegments()) {
+                ids.add(segment.id());
+            }
+        }
+        if (ids.isEmpty()) {
+            ids.add(RackBlockEntity.OWN_ID);
+        }
+        return ids;
+    }
+
+    // The segment after (or the first) one in the rack's order.
+    private int nextId(int id) {
+        List<Integer> ids = segmentIds();
+        return ids.get((ids.indexOf(id) + 1) % ids.size());
     }
 
     // An item's priority level: the highest of the rules it matches, or normal.
@@ -99,13 +116,14 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
         return (double) total / WINDOW;
     }
 
-    // Adds a route between two of the rack's segments (by index) for the items filter passes; false when it's full or a
-    // segment doesn't exist.
+    // Adds a route between two of the rack's segments (by their place in its order: 0 its own network) for the items
+    // filter passes; false when it's full or a segment doesn't exist.
     public boolean addRoute(int source, int dest, PartFilter filter) {
-        if (routes.size() >= MAX_ROUTES || source < 0 || source >= endpoints() || dest < 0 || dest >= endpoints()) {
+        List<Integer> ids = segmentIds();
+        if (routes.size() >= MAX_ROUTES || source < 0 || source >= ids.size() || dest < 0 || dest >= ids.size()) {
             return false;
         }
-        routes.add(new ItemRouting.Route(source, dest, filter));
+        routes.add(new ItemRouting.Route(ids.get(source), ids.get(dest), filter));
         changed(false);
         return true;
     }
@@ -126,7 +144,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
         List<ItemRouting.Leg> legs = new ArrayList<>();
         int shares = 0;
         for (ItemRouting.Route route : routes) {
-            NetworkRef source = rack().segmentNetwork(route.source()), dest = rack().segmentNetwork(route.dest());
+            NetworkRef source = rack().segmentNetworkById(route.source()), dest = rack().segmentNetworkById(route.dest());
             if (route.shares()) {
                 if (source != null && dest != null && !source.equals(dest)) {
                     shares++;
@@ -171,7 +189,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
         if (rack == null || !isOnline()) {
             return List.of();
         }
-        return ItemRouting.shareLinks(routes, rack::segmentNetwork, rack::segmentName);
+        return ItemRouting.shareLinks(routes, rack::segmentNetworkById, id -> rack.segmentName(segmentIds().indexOf(id)));
     }
 
     // --- Panel ---
@@ -182,7 +200,6 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
             super.handleAction(player, action, value, text);
             return;
         }
-        int n = endpoints();
         ItemStack filter = filter(player, text);
         switch (action) {
             case ACTION_ADD_ROUTE -> {
@@ -190,7 +207,8 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
                     return;
                 }
                 // An empty allow list: it moves nothing until it's set up.
-                routes.add(new ItemRouting.Route(0, n > 1 ? 1 : 0));
+                List<Integer> ids = segmentIds();
+                routes.add(new ItemRouting.Route(ids.getFirst(), ids.size() > 1 ? ids.get(1) : ids.getFirst()));
             }
             case ACTION_REMOVE_ROUTE -> {
                 if (value < 0 || value >= routes.size()) {
@@ -203,7 +221,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
                     return;
                 }
                 ItemRouting.Route route = routes.get(value);
-                routes.set(value, action == ACTION_CYCLE_SOURCE ? route.withSource((route.source() + 1) % n) : route.withDest((route.dest() + 1) % n));
+                routes.set(value, action == ACTION_CYCLE_SOURCE ? route.withSource(nextId(route.source())) : route.withDest(nextId(route.dest())));
             }
             case ACTION_SET_FILTER -> {
                 if (!ItemRouting.setEntry(routes, value, filter)) {
@@ -265,6 +283,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
     @Override
     public void saveSettings(ValueOutput output) {
         ItemRouting.save(output, "routes", routes);
+        output.putBoolean("segment_ids", true);
         ValueOutput.ValueOutputList list = output.childrenList("qos");
         for (QosRule rule : qos) {
             ValueOutput child = list.addChild();
@@ -278,8 +297,11 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
     @Override
     public void loadSettings(ValueInput input) {
         routes.clear();
-        // Segment indices are the rack's: up to 1 + the most it can know.
-        routes.addAll(ItemRouting.load(input, "routes", 1 + RackBlockEntity.MAX_SEGMENTS, MAX_ROUTES));
+        // Routes saved before segment IDs named segments by index: index i is ID i + 1 (the rack's own network is 1).
+        boolean ids = input.getBooleanOr("segment_ids", false);
+        for (ItemRouting.Route route : ItemRouting.load(input, "routes", ids ? RackBlockEntity.MAX_ID + 1 : 1 + RackBlockEntity.MAX_SEGMENTS, MAX_ROUTES)) {
+            routes.add(ids ? route : route.withSource(route.source() + 1).withDest(route.dest() + 1));
+        }
         qos.clear();
         for (ValueInput child : input.childrenListOrEmpty("qos")) {
             if (qos.size() < MAX_QOS) {

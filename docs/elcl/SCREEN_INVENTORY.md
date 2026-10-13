@@ -59,6 +59,10 @@ Client classes are in `client/crt/` unless a path is given; server classes under
 | - | The Midrange machines' frame | NEW | `CrtMachineScreen`: the desk's CRT (`CrtDisplay`, shared with `CrtScreen`) and the same frame as every screen (the panel's id: MRCTL, CARDPUNCH, ...). Text only (HANDOFF v4 3): no buttons, no slots, no inventory; the hotbar and HUD hidden while it's open. Fields: values, options beside a list's rows (sent on Enter, then cleared), the command line; F1 help, F4 a list, F12 back or close; Tab and Up / Down move between fields |
 | - | Integrated Midrange System console | EXTENDED | The Terminal Desk's session (`TerminalDeskMenu` opened at the system's master), while the system is running |
 | - | Work with Machines | NEW | `WrkMchPanel` (WRKMCH; `ScreenQueries` "machines"): Arcforge machines with a Small Wireless Bridge on - Machine, Type, Status, Prog, Energy, Rate; 2=Change (`CHGMCHCFG`), 5=Display (DSPMCH: `TextPanel`, `TerminalService` "machine"), 7=Enable/Disable (`CHGMCHSTS`), 8=Sides (`CHGMCHCFG SIDE() SIDEMODE()` a changed side); F4 steps a `FormWindow` field through its choices |
+| - | Display Route Table / Neighbours | NEW | `RoutingPanel` (DSPROUTE / DSPNBR RTR(); `TerminalService` "routes" / "neighbours"): a Router's route table (destination, next hop, cost, hops, source, age) or its neighbours (via, state, cost, override, uptime); F11 / F10 switch; refreshed every two seconds. Layouts `23_dsproute`, `24_dspnbr` |
+| - | Work with ACLs | NEW | `WrkAclPanel` (WRKACL RTR() ACL(); `ScreenQueries` "acl"): seq, match, dir, action, limit, hits, last matched, the default last; 2=Change (CHGACLE), 4=Remove (RMVACLE), 6 / 7=Move (CHGACLE MOVE); F6 adds (ADDACLE). Layout `25_wrkacl` |
+| - | Work with Exchange | NEW | `WrkIxPanel` (WRKIX IX(); `ScreenQueries` "ix"): an Exchange Switch's members and requests; 4=Remove (RMVIXMBR), 5=Display (DSPIXMBR: `TextPanel`, `TerminalService` "ixmember"), 8=Approve (APVIXMBR); F10 sessions, F11 requests. Layout `26_wrkix` |
+| - | Work with Directory | NEW | `WrkDirPanel` (WRKDIR DIR(); `ScreenQueries` "directory"): the network's devices by qualified name, published or private, lookups in the last hour; the latest lookups under them; 2 / 3=Publish / Unpublish (CHGDIRENT), 5=Display (RTVDIRENT); F10 lookups. Layout `27_wrkdir` |
 | - | Work with Files | NEW | `WrkFPanel` (WRKF LIB(); `elcl/screen/FileQueries` files): File, Attr, Chg, Records, Text; 2=Change data (`UpdDtaPanel`), 4=Delete (DLTF), 5=Display data (`DspPfmPanel`), 8=Display description (`DspFdPanel`); F6 prompts CRTPF. ELSYS: 2 and 4 refused (ELC0205). Layout `17_wrkf` |
 | - | Work with Members' files | EXTENDED | `WrkMbrPanel`: PF members beside ELCLP; the library's files after the members (Type `*FILE`, the file options and 8); 14=Compile on a PF member runs CRTPF (CHGPF when its file is there). Layout `22_wrkmbr_files` |
 | - | Display Physical File Member / Display Report | NEW | `DspPfmPanel` (DSPPFM FILE(), RUNQRY OUTPUT(*DISPLAY); FileQueries filedata / runqry, 200 records a window): headings bright, Position to (a key, or a record number), PageUp / PageDown, F19 / F20 shift 40. Layouts `18_dsppfm`, `19_runqry` |
@@ -90,7 +94,8 @@ on the message line; a number not on the menu shows "Option n is not on this men
 Every screen also opens from its command on any command line (`ScreenCommands`): WRKLIB, WRKMBR LIB(), WRKF LIB(), DSPPFM FILE(),
 DSPFD FILE(), UPDDTA FILE(), RUNQRY (OUTPUT(*DISPLAY)), EDTMBR MBR(),
 WRKACTJOB, WRKJOB JOB(), DSPJOBLOG JOB(), WRKJOBSCDE, WRKTRGEVT, DSPMSG, WRKSPLF JOB(), WRKSYSVAL, WRKINV, WRKDEV,
-WRKMCH, DSPNETSTS, WRKCRFJOB; GO MAIN / GO HELP, SIGNOFF.
+WRKMCH, DSPNETSTS, WRKCRFJOB, DSPROUTE RTR(), DSPNBR RTR(), WRKACL RTR() ACL(), WRKIX IX(), WRKDIR DIR(); GO MAIN / GO HELP,
+SIGNOFF.
 
 ## ELCL packages
 

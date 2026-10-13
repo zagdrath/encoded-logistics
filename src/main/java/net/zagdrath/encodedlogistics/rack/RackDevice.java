@@ -42,7 +42,7 @@ public abstract class RackDevice {
     private @Nullable RackBlockEntity rack;
     private boolean online;
     private int segment;
-    private boolean trunk;
+    private boolean trunk, allowAll = true;
     private final java.util.Set<Integer> allowed = new java.util.LinkedHashSet<>();
     private Priority priority;
     private final NonNullList<ItemStack> items;
@@ -152,8 +152,8 @@ public abstract class RackDevice {
         this.segment = Math.max(0, segment);
     }
 
-    // Its switch port's mode: an access port (one segment) or a trunk (the allowed segments - all, while none are
-    // picked - and its native one, segment()).
+    // Its switch port's mode: an access port (one segment) or a trunk (all the segments the rack knows, or only those
+    // picked - none picked: its native one alone - and its native one, segment()).
     public final boolean trunk() {
         return trunk;
     }
@@ -164,6 +164,15 @@ public abstract class RackDevice {
 
     public final java.util.Set<Integer> allowed() {
         return allowed;
+    }
+
+    // A trunk carrying every segment (not only those picked).
+    public final boolean allowAll() {
+        return allowAll;
+    }
+
+    public final void setAllowAll(boolean allowAll) {
+        this.allowAll = allowAll;
     }
 
     // FE per tick it drains while its network runs.

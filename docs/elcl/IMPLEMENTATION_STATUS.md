@@ -53,11 +53,12 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | §9 OS | WRKLIB, CRTLIB, CHGLIB, DLTLIB, WRKMBR, EDTMBR, CRTMBR, CPYMBR, RNMMBR, DLTMBR, CRTELPGM, DLTPGM | Done | `OsCommands`, `StoredLibraryService` |
 | §9 | SBMJOB, WRKACTJOB, WRKJOB, DSPJOBLOG, HLDJOB, RLSJOB, ENDJOB, CHGJOB | Done | `StoredJobService` |
 | §9 | ADDJOBSCDE, RMVJOBSCDE, WRKJOBSCDE, HLDJOBSCDE, RLSJOBSCDE | Done | `StoredJobService`, `Schedules` |
-| §9 | ADDTRGEVT, RMVTRGEVT, WRKTRGEVT, HLDTRGEVT, RLSTRGEVT; all fifteen events (`*MCHIDLE`, `*MCHDONE`, `*MCHFAULT`, `*MCHNOPWR` added) | Done | `StoredJobService`, `Triggers`; machine events from Arcforge's listeners (`MachineBridge.events`) |
+| §9 | ADDTRGEVT, RMVTRGEVT, WRKTRGEVT, HLDTRGEVT, RLSTRGEVT; all nineteen events (`*MCHIDLE`, `*MCHDONE`, `*MCHFAULT`, `*MCHNOPWR`, `*NBRUP`, `*NBRDOWN`, `*RTECHG`, `*ACLDENY` added) | Done | `StoredJobService`, `Triggers`; machine events from Arcforge's listeners (`MachineBridge.events`) |
 | §9 | WRKSYSVAL, RTVSYSVAL, CHGSYSVAL | Done | `StoredSysvalService` (SYSNAME, DATFMT, SECLVL, QMAXJOB, LOGRTN, PHOSPHOR all take effect; DATFMT in the dates the system writes, not the screens' header clock) |
 | §9 | SAVLIB, RSTLIB | Done | `midrange/MidrangeSystemBlockEntity` (slot A, B with an Expansion Cabinet; the Integrated system's magazine; the default library's diskette first), `CardReaderBlockEntity`, `DisketteStack` |
 | §9 | WRKDEV, WRKINV, DSPNETSTS, WRKCRFJOB, WRKMCH (added), WRKSCH (added), SIGNOFF, GO, CLEAR | Done | Client screens (`client/ScreenCommands`) |
 | §10 | The old CLI's aliases | Done | `terminal/TerminalCommands` |
+| §7c Routing and interconnect (added) | RTVRTE, RTVNBRSTS, CHGNBR, ADDACLE, RMVACLE, CHGACLE, APVIXMBR, RMVIXMBR, RTVDIRENT, CHGDIRENT; DSPROUTE, DSPNBR, WRKACL, WRKIX, WRKDIR; `SYSNAME/DEVICE` names for any device parameter | Done | `elcl/exec/RoutingCommands`, `ExchangeCommands`, `DirectoryCommands`; qualified names through `ElclDevices.run` / `find` and `network/routing/Directories` (docs/routing/HANDOFF.txt) |
 | §11 Database files (added) | DCLF, RCVF, POSDBF, CLOF, CHNRCD, WRTRCD, UPDRCD, DLTRCD | Done | `elcl/compile/Compiler` (DCLF's variables from a `FileResolver`; the formats kept with the program), `elcl/vm/Vm` (file state in the frame, saved with the job; a level check each operation), `elcl/db/FileAccess` |
 | §11 | CRTPF, CHGPF, DLTF, CLRPFM, CPYF, CPYTOIMPF, CPYFRMIMPF, RUNQRY; CRTMBR SRCTYPE(PF) | Done | `elcl/exec/DbCommands`, `elcl/store/StoredFileService`, `elcl/db` (`Dds`, `DbFile`, `Query`, `Csv`, `Report`); ELSYS's INVITEMS, DEVICES, CRFHIST and JOBS from `elcl/exec/LiveFiles` |
 | §11 | WRKF, DSPPFM, DSPFD, UPDDTA; RUNQRY OUTPUT(*DISPLAY) | Done | Client screens (`client/WrkFPanel`, `DspPfmPanel`, `DspFdPanel`, `UpdDtaPanel`) on `elcl/screen/FileQueries` |
@@ -86,6 +87,7 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | ELC1401-1404 | Done | Crafting commands |
 | ELC1501-1509 (added) | Done | PLCs (`plc/`, `elcl/exec/PlcCommands`, `Compiler.Target.PLC_LOCAL`) |
 | ELC2201-2209, 2220-2228, 2230-2247 (added) | Done | Database files: the VM's file operations and the file service (2201-2209), the definition compiler `elcl/db/Dds` (2220-2228), the database commands (2230-2247) |
+| ELC2601-2618 (added) | Done | Routing and interconnect: Routers, neighbours, ACLs, exchanges, Directory Servers and qualified names |
 | USRnnnn | Done | SNDPGMMSG |
 
 ## 4. Screens (OS.md §8)
@@ -114,6 +116,10 @@ command (WRKLIB, DSPMSG...) run inside a program, which has no screen to open.
 | 18 | Display Physical File Member / Display Report (added) | Done | `client/DspPfmPanel` |
 | 19 | Display File Description (added) | Done | `client/DspFdPanel` |
 | 20 | Update Data (added) | Done | `client/UpdDtaPanel` |
+| 21 | Display Route Table / Display Neighbours (added) | Done | `client/RoutingPanel` on `terminal/RoutingScreens`. Layouts `23_dsproute`, `24_dspnbr` |
+| 22 | Work with ACLs (added) | Done | `client/WrkAclPanel`. Layout `25_wrkacl` |
+| 23 | Work with Exchange (added) | Done | `client/WrkIxPanel`. Layout `26_wrkix` |
+| 24 | Work with Directory (added) | Done | `client/WrkDirPanel`. Layout `27_wrkdir` |
 
 ## 5. Blocked on hardware not in the mod
 

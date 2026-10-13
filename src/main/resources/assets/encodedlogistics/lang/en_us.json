@@ -2502,7 +2502,7 @@
   "message.encodedlogistics.link_card.trunk_linked": "Segment added to the Trunk Port",
   "message.encodedlogistics.link_card.trunk_unlinked": "Segment taken off the Trunk Port",
   "message.encodedlogistics.link_card.trunk_full": "The Trunk Port carries as many segments as it can",
-  "tooltip.encodedlogistics.info.trunk_port": "A cable part: VLAN trunking. Carries segments (networks beyond Segment Isolators, added with a Link Card) into the network it's on, so every rack there can put its pooled devices on them. Access or Trunk, with a native segment; its lanes are shared by its segments.",
+  "tooltip.encodedlogistics.info.trunk_port": "A cable part: VLAN trunking. Carries segments (networks beyond Segment Isolators, added with a Link Card) into the network it's on, so every rack there can put its pooled devices on them. Access or Trunk, with a native segment.",
   "encodedlogistics.configuration.trunkPortLanes": "Trunk Port Lanes",
   "gui.encodedlogistics.route.mode.control": "Control: lets this network's Terminal OS reach devices the destination publishes",
   "gui.encodedlogistics.directory.title": "Directory  %s",

@@ -42,7 +42,7 @@ public class SwitchPanel extends RackScreen.Panel {
     private static final int TRACK_X = 160, THUMB_W = 6, THUMB_H = 15;
 
     // A device in the list, as the server sent it.
-    protected record Row(int u, RackDeviceType type, boolean pooled, int segment, boolean trunk, List<Integer> allowed) {}
+    protected record Row(int u, RackDeviceType type, boolean pooled, int segment, boolean trunk, List<Integer> allowed, boolean all) {}
 
     // The ports view's columns (from the list's left): mode, segments, native (right edge).
     private static final int PORT_MODE_X = 20, PORT_ALLOWED_X = 60, PORT_NATIVE_X = 120, PORT_NATIVE_RIGHT = 142, TOGGLE_W = 44, TOGGLE_H = 12;
@@ -94,7 +94,7 @@ public class SwitchPanel extends RackScreen.Panel {
                     allowed.add(segment);
                 }
                 rows.add(new Row(child.getIntOr("u", 0), type, child.getBooleanOr("pooled", false), child.getIntOr("segment", 1),
-                        child.getBooleanOr("trunk", false), allowed));
+                        child.getBooleanOr("trunk", false), allowed, child.getBooleanOr("all", true)));
             }
         }
         return rows;
@@ -287,9 +287,9 @@ public class SwitchPanel extends RackScreen.Panel {
             graphics.text(font(), "U" + row.u(), listX() + 2, rowY, row.pooled() ? RackScreen.TEXT_MUTED : RackScreen.TEXT_DISABLED, false);
             graphics.text(font(), Component.translatable(row.trunk() ? "gui.encodedlogistics.switch.port.trunk" : "gui.encodedlogistics.switch.port.access"),
                     listX() + PORT_MODE_X, rowY, row.pooled() && row.trunk() ? TRUNK_BLUE : color, false);
-            String segments = !row.trunk() ? Integer.toString(row.segment()) : row.allowed().isEmpty()
+            String segments = !row.trunk() ? Integer.toString(row.segment()) : row.all()
                     ? Component.translatable("gui.encodedlogistics.switch.port.all").getString()
-                    : String.join(",", row.allowed().stream().map(String::valueOf).toList());
+                    : row.allowed().isEmpty() ? "-" : String.join(",", row.allowed().stream().map(String::valueOf).toList());
             graphics.text(font(), font().plainSubstrByWidth(segments, PORT_NATIVE_X - PORT_ALLOWED_X - 4), listX() + PORT_ALLOWED_X, rowY, color, false);
             String nativeId = row.trunk() ? Integer.toString(row.segment()) : "-";
             graphics.text(font(), nativeId, listX() + PORT_NATIVE_RIGHT - font().width(nativeId), rowY, color, false);

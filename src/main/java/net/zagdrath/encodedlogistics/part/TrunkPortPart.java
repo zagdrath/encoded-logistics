@@ -38,8 +38,9 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 // The Trunk Port (the routing handoff 4): VLAN trunking on a cable. It carries segments (networks beyond Segment
 // Isolators, each linked with a Link Card used on it and given a segment ID) into the network it's on: every Server Rack
 // on that network can put its pooled devices on them as on its own linked segments, without a Link Card of its own.
-// ACCESS: it carries one segment (its native one); TRUNK: the allowed segments (all, unless some are picked), the native
-// one for untagged traffic. Its lanes (trunkPortLanes) are shared by the devices on its segments. Segments on a trunk
+// ACCESS: it carries one segment (its native one); TRUNK: the allowed segments (all, or those picked), the native one
+// for untagged traffic. Its panel shows the lanes the devices on its segments use against trunkPortLanes, as a guide
+// (each device's lanes are its rack's to grant). Segments on a trunk
 // still can't see each other: only an L3 Switch or a Router routes between them.
 public class TrunkPortPart extends CablePart implements PanelHost {
     public static final int MAX_SEGMENTS = 8, MAX_ID = 4094, ID_STEP = 10;
@@ -61,7 +62,9 @@ public class TrunkPortPart extends CablePart implements PanelHost {
 
     private final List<Segment> segments = new ArrayList<>();
     private Mode mode = Mode.TRUNK;
-    // TRUNK: the IDs it carries (empty: all of them). The native segment's ID (ACCESS: the one it carries).
+    // TRUNK: whether it carries all its segments, else the IDs it carries (none: its native one alone). The native
+    // segment's ID (ACCESS: the one it carries).
+    private boolean allowAll = true;
     private final Set<Integer> allowed = new LinkedHashSet<>();
     private int nativeId;
 
@@ -89,7 +92,7 @@ public class TrunkPortPart extends CablePart implements PanelHost {
     public List<Segment> carried() {
         List<Segment> carried = new ArrayList<>();
         for (Segment segment : segments) {
-            boolean in = mode == Mode.ACCESS ? segment.id() == nativeId : allowed.isEmpty() || allowed.contains(segment.id()) || segment.id() == nativeId;
+            boolean in = mode == Mode.ACCESS ? segment.id() == nativeId : allowAll || allowed.contains(segment.id()) || segment.id() == nativeId;
             if (in) {
                 carried.add(segment);
             }
@@ -215,9 +218,9 @@ public class TrunkPortPart extends CablePart implements PanelHost {
             row.putInt("id", segment.id());
             NetworkRef network = RouterDevice.networkAt(server, segment.node());
             row.putString("network", network != null ? RouterDevice.networkName(server, network) : "");
-            row.putBoolean("allowed", allowed.isEmpty() || allowed.contains(segment.id()));
+            row.putBoolean("allowed", allowAll || allowed.contains(segment.id()));
         }
-        output.putBoolean("all", allowed.isEmpty());
+        output.putBoolean("all", allowAll);
     }
 
     @Override
@@ -228,19 +231,18 @@ public class TrunkPortPart extends CablePart implements PanelHost {
         switch (action) {
             case ACTION_MODE -> mode = mode == Mode.ACCESS ? Mode.TRUNK : Mode.ACCESS;
             case ACTION_ALLOW -> {
-                // value: a segment's row; -1 back to all.
+                // value: a segment's row (from all: every other one); -1 back to all.
                 if (value < 0) {
                     allowed.clear();
+                    allowAll = true;
                 } else if (value < segments.size()) {
                     int id = segments.get(value).id();
-                    if (allowed.isEmpty()) {
+                    if (allowAll) {
+                        allowAll = false;
                         segments.forEach(segment -> allowed.add(segment.id()));
                     }
                     if (!allowed.remove(id)) {
                         allowed.add(id);
-                    }
-                    if (allowed.size() == segments.size()) {
-                        allowed.clear();
                     }
                 }
             }
@@ -268,6 +270,7 @@ public class TrunkPortPart extends CablePart implements PanelHost {
             child.read("node", GlobalPos.CODEC).ifPresent(node -> segments.add(new Segment(child.getIntOr("id", ID_STEP), node)));
         }
         mode = input.getStringOr("mode", "TRUNK").equals("ACCESS") ? Mode.ACCESS : Mode.TRUNK;
+        allowAll = input.getBooleanOr("allow_all", true);
         allowed.clear();
         for (int id : input.getIntArray("allowed").orElse(new int[0])) {
             allowed.add(id);
@@ -284,7 +287,8 @@ public class TrunkPortPart extends CablePart implements PanelHost {
             child.store("node", GlobalPos.CODEC, segment.node());
         }
         output.putString("mode", mode.name());
-        if (!allowed.isEmpty()) {
+        if (!allowAll) {
+            output.putBoolean("allow_all", false);
             output.putIntArray("allowed", allowed.stream().mapToInt(Integer::intValue).toArray());
         }
         output.putInt("native", nativeId);

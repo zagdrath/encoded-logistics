@@ -177,6 +177,14 @@ New screens, all in the existing green-screen style:
 20. **Update Data** (`UPDDTA FILE()`, 2=Change data) *(added)* — a record-entry screen in the style of a midrange data
     file utility: change mode (a record at a time; Enter changes it, F7 / F8 previous / next, F11 deletes, Position to
     key) and entry mode (F6: new records, one after another); values checked by type.
+21. **Display Route Table** / **Display Neighbours** (`DSPROUTE RTR()`, `DSPNBR RTR()`) *(added)* — a Router's route
+    table (destination, next hop, cost, hops, source, age) or its dynamic-routing neighbours; F11 / F10 switch.
+22. **Work with ACLs** (`WRKACL RTR() ACL()`) *(added)* — an ACL's rules with their hit counters; 2=Change, 4=Remove,
+    6 / 7 move a rule; F6 adds one.
+23. **Work with Exchange** (`WRKIX IX()`) *(added)* — an Exchange Switch's members, sessions (F10) and join requests
+    (F11); 4=Remove, 5=Display, 8=Approve.
+24. **Work with Directory** (`WRKDIR DIR()`) *(added)* — a Directory Server's network's devices by qualified name
+    (`SYSNAME/DEVICE`), published or private, and the latest lookups; 2=Publish, 3=Unpublish, 5=Display.
 
 New block: **Control Interface** (redstone I/O for scripts), named
 `CTLIFnn` by default, 1 lane, six sides independently readable/writable.

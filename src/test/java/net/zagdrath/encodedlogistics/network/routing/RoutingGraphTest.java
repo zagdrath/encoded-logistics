@@ -103,4 +103,18 @@ class RoutingGraphTest {
         assertNull(graph.path("A", "C", RoutingGraphTest::anywhere, 16));
         assertNull(graph.path("B", "D", RoutingGraphTest::anywhere, 16));
     }
+
+    @Test
+    void hopLimitFindsAShorterDearerPath() {
+        RoutingGraph<String, String> graph = new RoutingGraph<>();
+        // The cheapest way to B takes both hops allowed; the dearer direct one leaves a hop for C.
+        link(graph, "S", "A", 1, 64, "r1");
+        link(graph, "A", "B", 1, 64, "r2");
+        link(graph, "S", "B", 10, 64, "r3");
+        link(graph, "B", "C", 1, 64, "r4");
+        Map<String, RoutingGraph.Path<String, String>> paths = graph.paths("S", RoutingGraphTest::anywhere, 2);
+        assertEquals(2, paths.get("B").cost());
+        assertNotNull(paths.get("C"));
+        assertEquals(11, paths.get("C").cost());
+    }
 }

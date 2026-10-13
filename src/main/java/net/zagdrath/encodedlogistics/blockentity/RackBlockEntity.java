@@ -819,8 +819,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         return null;
     }
 
-    // The IDs a device serves: an access port's segment; a trunk's native one and the allowed ones (all it knows,
-    // while none are picked).
+    // The IDs a device serves: an access port's segment; a trunk's native one and the allowed ones (all it knows, or
+    // those picked).
     public List<Integer> servedIds(RackDevice device) {
         int own = device.segment() <= OWN_ID ? OWN_ID : device.segment();
         if (!device.trunk()) {
@@ -829,7 +829,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         List<Integer> ids = new ArrayList<>();
         ids.add(own);
         for (KnownSegment segment : knownSegments()) {
-            if ((device.allowed().isEmpty() || device.allowed().contains(segment.id())) && !ids.contains(segment.id())) {
+            if ((device.allowAll() || device.allowed().contains(segment.id())) && !ids.contains(segment.id())) {
                 ids.add(segment.id());
             }
         }
@@ -846,7 +846,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         segmentsChanged();
     }
 
-    // A trunk's allowed segments: id added or taken off (-1: back to all).
+    // A trunk's allowed segments: id added or taken off (the first pick turns "all" into a list; -1: back to all).
     public void togglePortAllowed(int u, int id) {
         RackDevice device = deviceAt(u);
         if (device == null || device.lanePool() != null || !lanes().isPooled(device) || !device.trunk()) {
@@ -854,6 +854,10 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         }
         if (id < 0) {
             device.allowed().clear();
+            device.setAllowAll(true);
+        } else if (device.allowAll()) {
+            device.setAllowAll(false);
+            device.allowed().add(id);
         } else if (!device.allowed().remove(id)) {
             device.allowed().add(id);
         }
@@ -884,7 +888,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         return SegmentResult.LINKED;
     }
 
-    // Devices on it go back to the rack's own network (trunks drop it); later L3 routes through it move down one.
+    // Devices on it go back to the rack's own network (trunks drop it); L3 routes through it go.
     private void unlinkSegment(int index) {
         int id = segments.remove(index - 1).id();
         for (RackDevice device : devices.values()) {
@@ -893,9 +897,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             }
             device.allowed().remove(id);
             if (device instanceof L3SwitchDevice l3) {
-                List<ItemRouting.Route> kept = ItemRouting.withoutEndpoint(l3.routes(), index);
-                l3.routes().clear();
-                l3.routes().addAll(kept);
+                l3.routes().removeIf(route -> route.source() == id || route.dest() == id);
             }
         }
         segmentsChanged();
@@ -918,13 +920,15 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         segmentsChanged();
     }
 
-    // The network a device serves: its segment's (a trunk's native one) while a switch pools it, otherwise the rack's
-    // own (and its own while its segment isn't known any more).
+    // The network a device serves: its segment's (a trunk's native one) while a switch pools it - none while that
+    // segment's network can't be reached (it's unloaded or down: the device never falls back to another network) -
+    // otherwise the rack's own (and its own once its segment isn't known any more: a Trunk Port stopped carrying it).
     public @Nullable NetworkRef network(RackDevice device) {
         if (device.segment() > OWN_ID && lanes().isPooled(device)) {
-            NetworkRef network = segmentNetworkById(device.segment());
-            if (network != null) {
-                return network;
+            for (KnownSegment segment : knownSegments()) {
+                if (segment.id() == device.segment()) {
+                    return segmentNetworkById(device.segment());
+                }
             }
         }
         return segmentNetwork(0);
@@ -1129,6 +1133,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
                 int segment = child.getIntOr("segment", 0);
                 device.setSegment(ids ? segment : segment + 1);
                 device.setTrunk(child.getBooleanOr("trunk", false));
+                device.setAllowAll(child.getBooleanOr("allow_all", true));
                 for (int id : child.getIntArray("allowed").orElse(new int[0])) {
                     device.allowed().add(id);
                 }
@@ -1176,7 +1181,8 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
             if (device.trunk()) {
                 child.putBoolean("trunk", true);
             }
-            if (!device.allowed().isEmpty()) {
+            if (!device.allowAll()) {
+                child.putBoolean("allow_all", false);
                 child.putIntArray("allowed", device.allowed().stream().mapToInt(Integer::intValue).toArray());
             }
             child.putInt("priority", device.lanePriority().ordinal());

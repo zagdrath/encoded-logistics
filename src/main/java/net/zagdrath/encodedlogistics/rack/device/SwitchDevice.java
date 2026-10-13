@@ -12,9 +12,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 
 // An L2 Switch (24 or 48 port, 1U): rack-local lanes. The other devices in its rack take their lanes from the switches
 // (in unit order, until the pool's full) instead of from the network, which only carries the switches' uplinks (one lane
@@ -86,22 +88,28 @@ public class SwitchDevice extends RackDevice implements RackDevice.LanePool {
         }
         switch (action) {
             case ACTION_CYCLE_SEGMENT -> rack.cycleSegment(value, text.equals("back") ? -1 : 1);
-            case ACTION_PORT_MODE -> rack.togglePortMode(value);
+            // A port's mode and allowed segments: BUILD on the rack's network, as trunk settings are.
+            case ACTION_PORT_MODE -> {
+                if (NetworkAccess.check(player.level().getServer(), rack.network(this), player, RackPermission.BUILD)) {
+                    rack.togglePortMode(value);
+                }
+            }
             case ACTION_PORT_ALLOWED -> {
                 RackDevice device = rack.deviceAt(value);
-                if (device == null) {
+                if (device == null || !NetworkAccess.check(player.level().getServer(), rack.network(this), player, RackPermission.BUILD)) {
                     return;
                 }
                 if (text.equals("all")) {
                     rack.togglePortAllowed(value, -1);
                 } else if (text.equals("-")) {
-                    if (!device.allowed().isEmpty()) {
+                    if (!device.allowAll() && !device.allowed().isEmpty()) {
                         rack.togglePortAllowed(value, List.copyOf(device.allowed()).getLast());
                     }
                 } else {
                     // The next segment it knows that the trunk doesn't carry yet.
                     for (RackBlockEntity.KnownSegment segment : rack.knownSegments()) {
-                        if (!device.allowed().contains(segment.id()) && segment.id() != Math.max(RackBlockEntity.OWN_ID, device.segment())) {
+                        if ((device.allowAll() || !device.allowed().contains(segment.id()))
+                                && segment.id() != Math.max(RackBlockEntity.OWN_ID, device.segment())) {
                             rack.togglePortAllowed(value, segment.id());
                             break;
                         }
@@ -138,6 +146,7 @@ public class SwitchDevice extends RackDevice implements RackDevice.LanePool {
             child.putInt("segment", Math.max(RackBlockEntity.OWN_ID, device.segment()));
             child.putBoolean("trunk", device.trunk());
             child.putIntArray("allowed", device.allowed().stream().mapToInt(Integer::intValue).toArray());
+            child.putBoolean("all", device.allowAll());
         }
         ValueOutput.ValueOutputList segments = output.childrenList("segments");
         for (int i = 0; i < rack.segmentCount(); i++) {

@@ -582,7 +582,11 @@ public class ExchangeSwitchBlockEntity extends BlockEntity implements NetworkDev
                     case ACTION_APPROVE -> approve(value);
                     case ACTION_MEMBERSHIP -> membership = membership == Membership.OPEN ? Membership.APPROVAL : Membership.OPEN;
                     case ACTION_ROUTE_SERVER -> routeServer = !routeServer;
-                    case ACTION_PORTS -> ports = Math.clamp(ports() + (value < 0 ? -1 : 1), Math.max(1, approved().size()), Config.EXCHANGE_PORTS.getAsInt());
+                    case ACTION_PORTS -> {
+                        // Never below its members (nor above the config's ports, even if they now are).
+                        int max = Config.EXCHANGE_PORTS.getAsInt();
+                        ports = Math.clamp(ports() + (value < 0 ? -1 : 1), Math.min(max, Math.max(1, approved().size())), max);
+                    }
                     default -> {
                         String upper = text.trim().toUpperCase(Locale.ROOT);
                         if (upper.isEmpty() || upper.matches("[A-Z][A-Z0-9]{0," + (MAX_NAME - 1) + "}")) {

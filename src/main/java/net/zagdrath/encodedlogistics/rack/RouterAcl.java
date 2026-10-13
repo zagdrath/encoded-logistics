@@ -30,7 +30,8 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 // (aclDefault). Each rule counts what it matched (hits) and when it last did.
 //
 // An ACL is applied to a route (a policy) or to a network the Router reaches directly (a neighbour, an exchange peer):
-// a Move moves only what it permits; a Share shows only what it permits.
+// a Move moves only what it permits; a Share shows only what it permits (a rule's rate and quota count what Moves move:
+// a Share honours them only once a Move has used them up).
 public final class RouterAcl {
     public static final int MAX_RULES = 16, MAX_ACLS = 8, SEQ_STEP = 10, MAX_NAME = 10;
     public static final long MINUTE = 1_200, DAY = 24_000;
@@ -282,6 +283,26 @@ public final class RouterAcl {
         }
         int at = seq >= 0 ? seq : rules.isEmpty() ? SEQ_STEP : rules.getLast().seq + SEQ_STEP;
         rules.add(new Rule(at, match, dir, permit, rate, quota));
+        sort();
+        return true;
+    }
+
+    // Adds a rule right after rule seq: in the gap before the next, the rules numbered again (by SEQ_STEP) when there
+    // isn't one. False when it's full or there's no such rule.
+    public boolean insertAfter(int seq, String match, Dir dir, boolean permit, int rate, int quota) {
+        Rule after = rule(seq);
+        if (after == null || rules.size() >= MAX_RULES) {
+            return false;
+        }
+        int index = rules.indexOf(after);
+        int next = index + 1 < rules.size() ? rules.get(index + 1).seq : after.seq + 2 * SEQ_STEP;
+        if (next - after.seq < 2) {
+            for (int i = 0; i < rules.size(); i++) {
+                rules.get(i).seq = (i + 1) * SEQ_STEP;
+            }
+            next = index + 1 < rules.size() ? rules.get(index + 1).seq : after.seq + 2 * SEQ_STEP;
+        }
+        rules.add(new Rule(after.seq + (next - after.seq) / 2, match, dir, permit, rate, quota));
         sort();
         return true;
     }

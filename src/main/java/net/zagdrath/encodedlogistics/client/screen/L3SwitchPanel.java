@@ -93,9 +93,9 @@ public class L3SwitchPanel extends SwitchPanel {
         return device(L3SwitchDevice.class);
     }
 
-    private Component segment(int index) {
-        List<String> segments = segments();
-        return Component.literal(index < segments.size() ? segments.get(index) : "?");
+    // A route's segment, by its ID.
+    private Component segment(int id) {
+        return Component.literal(segmentIds().contains(id) ? segmentName(id) : "?");
     }
 
     // --- Drawing ---

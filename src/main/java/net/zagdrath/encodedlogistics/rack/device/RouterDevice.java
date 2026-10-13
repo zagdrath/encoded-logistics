@@ -1084,14 +1084,8 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
                 }
                 if (action == ACTION_ACL_ADD) {
                     // After rule value (its seq), or at the end.
-                    RouterAcl.Rule after = acl.rule(value);
-                    int seq = -1;
-                    if (after != null) {
-                        int index = acl.rules().indexOf(after);
-                        int next = index + 1 < acl.rules().size() ? acl.rules().get(index + 1).seq() : after.seq() + 2 * RouterAcl.SEQ_STEP;
-                        seq = next - after.seq() > 1 ? after.seq() + (next - after.seq()) / 2 : -1;
-                    }
-                    return acl.add(seq, parsed.match(), parsed.dir(), parsed.permit(), parsed.rate(), parsed.quota());
+                    return acl.rule(value) != null ? acl.insertAfter(value, parsed.match(), parsed.dir(), parsed.permit(), parsed.rate(), parsed.quota())
+                            : acl.add(-1, parsed.match(), parsed.dir(), parsed.permit(), parsed.rate(), parsed.quota());
                 }
                 RouterAcl.Rule rule = acl.rule(value);
                 if (rule == null) {
@@ -1116,6 +1110,9 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
 
     @Override
     public void handleAction(ServerPlayer player, int action, int value, String text) {
+        if (guarded(action, value) && (rack() == null || !NetworkAccess.check(player.level().getServer(), rack().network(this), player, RackPermission.BUILD))) {
+            return;
+        }
         switch (action) {
             case ACTION_ADD_ROUTE -> {
                 // An empty allow list: it moves nothing until it's set up.
@@ -1192,6 +1189,22 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             }
         }
         changed(false);
+    }
+
+    // Rack access is enough to edit routes, but not to get round an ACL (removing or retargeting a route that has one)
+    // or to open or close a CONTROL policy (a mode step into or out of Control): those need BUILD, as ACLs do.
+    private boolean guarded(int action, int value) {
+        int index = action == ACTION_SHARE_OPTION ? value / ItemRouting.SHARE_OPTIONS : value;
+        if (index < 0 || index >= routes.size()) {
+            return false;
+        }
+        ItemRouting.Route route = routes.get(index);
+        return switch (action) {
+            case ACTION_REMOVE_ROUTE, ACTION_CYCLE_SOURCE, ACTION_CYCLE_DEST -> !route.acl().isEmpty() || route.controls();
+            case ACTION_SHARE_OPTION -> value % ItemRouting.SHARE_OPTIONS == ItemRouting.SHARE_MODE
+                    && (!route.acl().isEmpty() || route.shares() || route.controls());
+            default -> false;
+        };
     }
 
     // Routing settings need BUILD on its network.

@@ -34,7 +34,8 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 //  - a Directory Server there is online and publishes DEVICE,
 //  - one of those Routers has a CONTROL policy from the caller's network to it, with a path, its ACL permitting *CONTROL,
 //  - and the caller has the command's Firewall permission on the target network (checked on the target side).
-// What resolved is kept directoryCacheSeconds (until a route or anything networks are made of changes); the Firewall is
+// Where a name's network is (its route table search) is kept directoryCacheSeconds (until a route or anything networks
+// are made of changes); whether the device is still published, the CONTROL policy and its ACL, and the Firewall are
 // asked every time. A name on the caller's own network resolves as a plain name.
 public final class Directories {
     private static final Map<MinecraftServer, Map<String, Cached>> CACHE = new WeakHashMap<>();
@@ -42,7 +43,11 @@ public final class Directories {
     private Directories() {}
 
     // Where a name went: its network, the device's own name there, the hops to it, and whether it came from the cache.
-    public record Resolution(NetworkRef network, String device, String type, int hops, boolean cached) {}
+    public record Resolution(NetworkRef network, String device, String type, int hops, boolean cached) {
+        Resolution fromCache() {
+            return new Resolution(network, device, type, hops, true);
+        }
+    }
 
     // Why a name didn't resolve: an ELCL message (ELC2603, ELC2604) and its data.
     public static final class Refusal extends Exception {
@@ -154,7 +159,12 @@ public final class Directories {
         }
         Resolution resolution;
         if (cached != null && cached.key() == epoch && now - cached.at() <= Config.DIRECTORY_CACHE_SECONDS.getAsInt() * 20L) {
-            resolution = new Resolution(cached.network(), cached.device(), cached.type(), cached.hops(), true);
+            try {
+                resolution = verify(server, caller, name, cached.network(), device, cached.hops(), now).fromCache();
+            } catch (Refusal refusal) {
+                record(server, caller, name, refusal.id(), 0, now);
+                throw refusal;
+            }
         } else {
             try {
                 resolution = lookUp(server, caller, name, system, device, now);
@@ -194,7 +204,16 @@ public final class Directories {
                 break;
             }
         }
-        if (target == null || !published(server, target, device)) {
+        if (target == null) {
+            throw new Refusal("ELC2603", name);
+        }
+        return verify(server, caller, name, target, device, hops, now);
+    }
+
+    // What's asked every time: the device is published and there, and a CONTROL policy (its ACL permitting) goes there.
+    private static Resolution verify(MinecraftServer server, NetworkRef caller, String name, NetworkRef target, String device, int hops, long now)
+            throws Refusal {
+        if (!published(server, target, device)) {
             throw new Refusal("ELC2603", name);
         }
         ElclDevices.Device found = ElclDevices.find(server, target, device);
@@ -202,7 +221,7 @@ public final class Directories {
             throw new Refusal("ELC2603", name);
         }
         boolean byDefault = Config.ACL_DEFAULT_PERMIT.getAsBoolean();
-        for (RouterDevice router : routers) {
+        for (RouterDevice router : routers(server, caller)) {
             for (ItemRouting.Route route : router.routes()) {
                 if (!route.controls() || !target.equals(route.target()) || !caller.equals(router.network(server, route.source()))) {
                     continue;

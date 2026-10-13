@@ -89,9 +89,11 @@ final class SharingGameTests {
         return (L3SwitchDevice) rack.deviceAt(1);
     }
 
-    // A Share route from source to dest passing everything, with its options.
+    // A Share route from source to dest (the rack's segments by place: 0 its own, then B, C) passing everything, with its
+    // options. Routes name segments by ID: the place plus one.
     private static void share(L3SwitchDevice l3, int source, int dest, boolean readWrite, boolean crafting, boolean bidirectional) {
-        l3.routes().add(new ItemRouting.Route(source, dest, ItemRouting.everything(), ItemRouting.Mode.SHARE, readWrite, crafting, bidirectional));
+        l3.routes().add(new ItemRouting.Route(source + 1, dest + 1, ItemRouting.everything(), ItemRouting.Mode.SHARE, readWrite, crafting,
+                bidirectional));
     }
 
     private static NetworkRef network(GameTestHelper helper, BlockPos node) {
@@ -222,7 +224,8 @@ final class SharingGameTests {
                 .thenSucceed();
     }
 
-    // A route saved before modes loads as Move; a Move route still moves A's items into B.
+    // A route saved before modes loads as Move; a Move route still moves A's items into B. The L3 Switch loads it as it
+    // was saved then, by segment index (0 the rack's own, 1 the first linked): those become segment IDs 1 and 2.
     static void oldRoutesMove(GameTestHelper helper) {
         CompoundTag saved = new CompoundTag();
         ListTag list = new ListTag();
@@ -238,7 +241,7 @@ final class SharingGameTests {
         helper.startSequence()
                 .thenIdle(3)
                 .thenExecute(() -> {
-                    link(helper, master).routes().add(loaded);
+                    link(helper, master).loadSettings(TagValueInput.create(ProblemReporter.DISCARDING, helper.getLevel().registryAccess(), saved));
                     own(helper, BAY_A).insert(COBBLESTONE, 10, false);
                 })
                 .thenIdle(45)
