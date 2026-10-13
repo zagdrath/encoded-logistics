@@ -244,6 +244,12 @@ The commands on files:
 | ELC2607 | 30 | ACL &1 has no rule &2. | *(`RMVACLE`, `CHGACLE`)*
 | ELC2608 | 10 | &1 resolved from cache. | *(a qualified name answered from the Directory cache)*
 | ELC2609 | 00 | Neighbour &1 of &2 changed. | *(added: `CHGNBR`)*
+| ELC2610 | 30 | Exchange &1 not found. | *(added: `WRKIX`, `APVIXMBR`, `RMVIXMBR`)*
+| ELC2611 | 30 | &1 is not a member of exchange &2. | *(added)*
+| ELC2612 | 30 | Only the exchange's owner (&1) can do that. | *(added)*
+| ELC2613 | 30 | No join request to approve, or no free port, on exchange &1. | *(added: `APVIXMBR`)*
+| ELC2614 | 00 | &1 joined exchange &2. | *(added: `APVIXMBR`)*
+| ELC2615 | 00 | &1 removed from exchange &2. | *(added: `RMVIXMBR`)*
 
 ## USRxxxx — User messages
 

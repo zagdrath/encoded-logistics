@@ -45,6 +45,13 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   minute or a game day. Apply one to a route or to a network the Router reaches directly: a Move moves only what it
   permits, a Share shows only that. Each rule counts its hits. What no rule matches is permitted (`aclDefaultPermit`).
   Terminal OS: `ADDACLE`, `CHGACLE`, `RMVACLE`, the `WRKACL` screen, and the `*ACLDENY` trigger event.
+- **Internet Exchange.** The **Exchange Switch** (two blocks tall) is where Routers on any networks meet. Use a
+  **Cross-Connect** on a Router's unit, then on the exchange: the Router joins (or asks to, when its owner approves
+  members). Members peer through the route server (on by default, members opt in) or with each other (both sides
+  accept), and each side sets per peer whether to exchange routes and allow transit; ACLs apply to peers as to any
+  directly reached network. Its screen has Members, Peers and Setup tabs; its popup shows members, sessions and owner.
+  It keeps its chunk loaded while it has members (`exchangeChunkLoading`). Config: `exchangePorts` (32),
+  `exchangePortLanes`, `exchangeDrain`. Terminal OS: the `WRKIX` screen, `APVIXMBR` and `RMVIXMBR`.
 
 ## [1.2.1] - 2026-10-12
 

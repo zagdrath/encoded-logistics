@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.midrange.FootprintBlock;
@@ -63,7 +64,7 @@ public final class WirelessInfoPayloads {
             // A Midrange Disk or Tape Drive (any of its blocks), or a signal device: its own popup.
             BlockState state = level.getBlockState(query.pos());
             BlockPos master = state.getBlock() instanceof FootprintBlock footprint ? footprint.master(level, query.pos(), state)
-                    : query.pos();
+                    : state.getBlock() instanceof ExchangeSwitchBlock ? ExchangeSwitchBlock.lower(query.pos(), state) : query.pos();
             if (master != null && level.getBlockEntity(master) instanceof MidrangeHud hud) {
                 PacketDistributor.sendToPlayer(player, new Info(query.pos(), hud.deviceName(), hud.hudInfo()));
                 return;

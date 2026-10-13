@@ -384,6 +384,22 @@ public class Config {
             .comment("Router ACLs: whether what no rule matches is permitted (*PERMIT) or denied (*DENY).")
             .define("aclDefaultPermit", true);
 
+    public static final ModConfigSpec.IntValue EXCHANGE_PORTS = BUILDER
+            .comment("Ports an Exchange Switch has (each member Router takes one; its owner can offer fewer).")
+            .defineInRange("exchangePorts", 32, 1, 256);
+
+    public static final ModConfigSpec.IntValue EXCHANGE_PORT_LANES = BUILDER
+            .comment("Lanes an Exchange Switch port carries: a peering's throughput (and cost) is the smaller of these and its Routers' rates.")
+            .defineInRange("exchangePortLanes", 64, 1, 4096);
+
+    public static final ModConfigSpec.DoubleValue EXCHANGE_DRAIN = BUILDER
+            .comment("FE per tick an Exchange Switch drains while its network runs.")
+            .defineInRange("exchangeDrain", 8.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.BooleanValue EXCHANGE_CHUNK_LOADING = BUILDER
+            .comment("Whether an Exchange Switch keeps its chunk loaded while it has members.")
+            .define("exchangeChunkLoading", true);
+
     public static final ModConfigSpec.IntValue UPS_CAPACITY = BUILDER
             .comment("FE a UPS's battery holds.")
             .defineInRange("upsCapacity", 1_000_000, 1, Integer.MAX_VALUE);

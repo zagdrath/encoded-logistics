@@ -28,7 +28,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.Config;
+import net.zagdrath.encodedlogistics.blockentity.ExchangeSwitchBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
+import net.zagdrath.encodedlogistics.item.CrossConnectItem;
+import net.zagdrath.encodedlogistics.network.routing.ExchangeRegistry;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.elcl.screen.ElclSystem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -94,7 +97,27 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
 
     // A route table entry: the destination network, its next hop (direct, a network or IX:name), the path's cost and
     // hops, and since when it's been this (game time).
-    public record TableEntry(NetworkRef dest, String name, String next, int cost, int hops, Source source, long since) {}
+    // firstHop: the network the path's first hop goes to.
+    public record TableEntry(NetworkRef dest, String name, String next, int cost, int hops, Source source, long since, @Nullable NetworkRef firstHop) {}
+
+    public enum PeerTransit {
+        DEFAULT, YES, NO
+    }
+
+    // Its own side's policy for an exchange peer (by the peer's network): whether it exchanges routes with it (if not,
+    // the peering only carries traffic between the two networks), and whether it lets the peer's traffic cross its
+    // network (DEFAULT: as its transit setting says).
+    public record PeerPolicy(boolean routes, PeerTransit transit) {
+        public static final PeerPolicy DEFAULT = new PeerPolicy(true, PeerTransit.DEFAULT);
+
+        public PeerPolicy withRoutes(boolean routes) {
+            return new PeerPolicy(routes, transit);
+        }
+
+        public PeerPolicy nextTransit() {
+            return new PeerPolicy(routes, PeerTransit.values()[(transit.ordinal() + 1) % PeerTransit.values().length]);
+        }
+    }
 
     // A neighbour as the panels and ELCL show it: its network, how it's reached, its state and cost (override: -1 none).
     public record NeighbourEntry(NetworkRef home, String name, String via, RoutingDomain.State state, int cost, int override, long since) {}
@@ -137,6 +160,7 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
     // ACLs by name, and the ones applied to networks it reaches directly.
     private final Map<String, RouterAcl> acls = new LinkedHashMap<>();
     private final Map<NetworkRef, String> networkAcls = new LinkedHashMap<>();
+    private final Map<NetworkRef, PeerPolicy> peerPolicies = new LinkedHashMap<>();
     private final Map<Object, Long> lastDenied = new HashMap<>();
     // Routes (bits) that have no path right now, and how many remote Shares are active (a change resets storage caches).
     private int paused, remoteShares = -1;
@@ -387,6 +411,12 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         for (RoutingDomain.RouterId carrier : carriers) {
             domain.charge(carrier, done, now);
         }
+        // Exchange hops (two carriers): their traffic counts at the exchange.
+        for (RoutingGraph.Hop<NetworkRef, RoutingDomain.RouterId> hop : path.hops()) {
+            if (done > 0 && hop.carriers().size() == 2) {
+                ExchangeRegistry.traffic(server, hop.carriers().get(0), hop.carriers().get(1), done, now);
+            }
+        }
         return done;
     }
 
@@ -505,8 +535,36 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
                 links.add(new RoutingDomain.Link(network, linkCost(), rate(), networkName(server, network), null, false));
             }
         }
-        return new RoutingDomain.Lsa(id, home, networkName(server, home), deviceName(), List.copyOf(links), transit, Set.copyOf(transitList), Set.of(),
-                Map.copyOf(costOverrides), rate(), 0);
+        // Its exchange peerings (up sessions): through the port, with the peer as the hop's other carrier.
+        Set<NetworkRef> granted = new LinkedHashSet<>(), refused = new LinkedHashSet<>();
+        for (ExchangeSwitchBlockEntity exchange : ExchangeRegistry.of(server, id)) {
+            for (ExchangeSwitchBlockEntity.Member peer : exchange.peersOf(id)) {
+                NetworkRef peerHome = peer.home();
+                if (peerHome == null || peerHome.equals(home)) {
+                    continue;
+                }
+                PeerPolicy policy = peerPolicy(peerHome);
+                links.add(new RoutingDomain.Link(peerHome, exchangeCost(), Math.min(rate(), Config.EXCHANGE_PORT_LANES.getAsInt()),
+                        "IX:" + exchange.exchangeName(), peer.router(), !policy.routes()));
+                switch (policy.transit()) {
+                    case YES -> granted.add(peerHome);
+                    case NO -> refused.add(peerHome);
+                    default -> {
+                    }
+                }
+            }
+        }
+        // Peers let through on their own: a Router with no transit lets them (alone) through, as a Listed one would.
+        RoutingDomain.Transit effective = transit;
+        Set<NetworkRef> listed = new LinkedHashSet<>(transitList);
+        if (transit == RoutingDomain.Transit.NONE && !granted.isEmpty()) {
+            effective = RoutingDomain.Transit.LISTED;
+            listed = granted;
+        } else {
+            listed.addAll(granted);
+        }
+        return new RoutingDomain.Lsa(id, home, networkName(server, home), deviceName(), List.copyOf(links), effective, Set.copyOf(listed),
+                Set.copyOf(refused), Map.copyOf(costOverrides), rate(), 0);
     }
 
     // Leaves dynamic routing (static mode, offline, taken out): its neighbours see it go, its paths are dropped.
@@ -558,7 +616,7 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         for (int i = 1; i < endpointCount(); i++) {
             NetworkRef network = network(server, i);
             if (network != null && !network.equals(home) && !entries.containsKey(network)) {
-                entries.put(network, entry(network, networkName(server, network), "direct", linkCost(), 1, Source.STATIC, now));
+                entries.put(network, entry(network, networkName(server, network), "direct", linkCost(), 1, Source.STATIC, now, network));
             }
         }
         RoutingDomain.View current = view;
@@ -571,7 +629,7 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
                 String next = !first.label().isEmpty() ? first.label() : path.hopCount() == 1 ? "direct" : current.name(first.to());
                 String name = current.name(path.dest());
                 entries.put(path.dest(), entry(path.dest(), name.isEmpty() ? networkName(server, path.dest()) : name, next, path.cost(), path.hopCount(),
-                        path.hopCount() == 1 ? Source.CONNECTED : Source.DYNAMIC, now));
+                        path.hopCount() == 1 ? Source.CONNECTED : Source.DYNAMIC, now, first.to()));
             }
         }
         if (mode == Mode.DYNAMIC && tableKnown && home != null) {
@@ -594,10 +652,58 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
     }
 
     // An entry, keeping how old it is while its next hop and cost stay the same.
-    private TableEntry entry(NetworkRef dest, String name, String next, int cost, int hops, Source source, long now) {
+    private TableEntry entry(NetworkRef dest, String name, String next, int cost, int hops, Source source, long now, @Nullable NetworkRef firstHop) {
         TableEntry was = lastBest.get(dest);
         long since = was != null && was.next().equals(next) && was.cost() == cost && was.source() == source ? was.since() : now;
-        return new TableEntry(dest, name, next, cost, hops, source, since);
+        return new TableEntry(dest, name, next, cost, hops, source, since, firstHop);
+    }
+
+    // How many networks its route table reaches through a peer (the peer's own included): the routes exchanged.
+    public int routesVia(NetworkRef peer) {
+        int count = 0;
+        for (TableEntry entry : table) {
+            if (peer.equals(entry.firstHop()) && entry.source() != Source.STATIC) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // --- Exchange peers ---
+
+    public PeerPolicy peerPolicy(NetworkRef peer) {
+        return peerPolicies.getOrDefault(peer, PeerPolicy.DEFAULT);
+    }
+
+    public void setPeerPolicy(NetworkRef peer, PeerPolicy policy) {
+        if (policy.equals(PeerPolicy.DEFAULT)) {
+            peerPolicies.remove(peer);
+        } else {
+            peerPolicies.put(peer, policy);
+        }
+        changed(false);
+    }
+
+    // A hop through an exchange port: its lanes against this Router's throughput.
+    private int exchangeCost() {
+        return RoutingGraph.cost(Config.ROUTING_BASE_COST.getAsInt(), Config.EXCHANGE_PORT_LANES.getAsInt(), rate());
+    }
+
+    // The Cross-Connect: used on its unit, it records this Router (then used on an Exchange Switch, it joins it there).
+    @Override
+    public boolean useItem(ServerPlayer player, ItemStack stack, boolean atUnit) {
+        if (!atUnit || !stack.is(ModItems.CROSS_CONNECT.get()) || rack() == null) {
+            return false;
+        }
+        if (!NetworkAccess.check(player.level().getServer(), rack().network(this), player, RackPermission.BUILD)) {
+            return true;
+        }
+        RoutingDomain.RouterId id = routerId();
+        if (id != null) {
+            CrossConnectItem.record(stack, id, deviceName());
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.cross_connect.recorded", deviceName()));
+        }
+        return true;
     }
 
     private List<NeighbourEntry> neighbours(@Nullable NetworkRef home) {
@@ -1207,6 +1313,13 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             child.store("network", NetworkRef.CODEC, entry.getKey());
             child.putString("acl", entry.getValue());
         }
+        ValueOutput.ValueOutputList policies = output.childrenList("peer_policies");
+        for (Map.Entry<NetworkRef, PeerPolicy> entry : peerPolicies.entrySet()) {
+            ValueOutput child = policies.addChild();
+            child.store("network", NetworkRef.CODEC, entry.getKey());
+            child.putBoolean("routes", entry.getValue().routes());
+            child.putString("transit", entry.getValue().transit().name());
+        }
         ValueOutput.ValueOutputList overrides = output.childrenList("cost_overrides");
         for (Map.Entry<NetworkRef, Integer> entry : costOverrides.entrySet()) {
             ValueOutput child = overrides.addChild();
@@ -1239,6 +1352,17 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             if (acls.size() < RouterAcl.MAX_ACLS) {
                 acls.put(acl.name(), acl);
             }
+        }
+        peerPolicies.clear();
+        for (ValueInput child : input.childrenListOrEmpty("peer_policies")) {
+            PeerTransit peerTransit;
+            try {
+                peerTransit = PeerTransit.valueOf(child.getStringOr("transit", "DEFAULT"));
+            } catch (IllegalArgumentException e) {
+                peerTransit = PeerTransit.DEFAULT;
+            }
+            PeerPolicy policy = new PeerPolicy(child.getBooleanOr("routes", true), peerTransit);
+            child.read("network", NetworkRef.CODEC).ifPresent(network -> peerPolicies.put(network, policy));
         }
         networkAcls.clear();
         for (ValueInput child : input.childrenListOrEmpty("network_acls")) {

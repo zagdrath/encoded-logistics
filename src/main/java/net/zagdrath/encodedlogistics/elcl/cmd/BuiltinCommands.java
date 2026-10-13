@@ -299,6 +299,13 @@ final class BuiltinCommands {
                 .p(p("RATE", "Rate per minute", Kind.INT).sv("*SAME", "*NONE").dft("*SAME").range(1, 1_000_000))
                 .p(p("QUOTA", "Quota per day", Kind.INT).sv("*SAME", "*NONE").dft("*SAME").range(1, 1_000_000_000))
                 .p(p("MOVE", "Move", Kind.SPECIAL).sv("*NONE", "*UP", "*DOWN").dft("*NONE")));
+        // [EXT] Exchange Switches (the routing handoff): ExchangeCommands.
+        add(CommandDefinition.of("APVIXMBR", "Approve Exchange Member").auth(CONFIGURE).positional(2)
+                .p(p("IX", "Exchange", Kind.NAME).req())
+                .p(p("NETWORK", "Network", Kind.NAME).req()));
+        add(CommandDefinition.of("RMVIXMBR", "Remove Exchange Member").auth(CONFIGURE).positional(2)
+                .p(p("IX", "Exchange", Kind.NAME).req())
+                .p(p("NETWORK", "Network", Kind.NAME).req()));
         // [EXT] Machines with a Small Wireless Bridge on (Arcforge): MachineCommands.
         add(CommandDefinition.of("RTVMCHSTS", "Retrieve Machine Status").auth(VIEW).positional(1)
                 .p(p("MCH", "Machine", Kind.DEVICE).req())
@@ -588,6 +595,8 @@ final class BuiltinCommands {
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
         add(CommandDefinition.of("DSPNBR", "Display Neighbours").context(INTERACTIVE).positional(1)
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
+        add(CommandDefinition.of("WRKIX", "Work with Exchange").context(INTERACTIVE).positional(1)
+                .p(p("IX", "Exchange", Kind.NAME).req()));
         add(CommandDefinition.of("WRKACL", "Work with ACLs").context(INTERACTIVE).positional(2)
                 .p(p("RTR", "Router", Kind.DEVICE).req())
                 .p(p("ACL", "ACL", Kind.NAME).req()));

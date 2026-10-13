@@ -13,6 +13,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.menu.BlockPanelMenu;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.CapacitorBankMenu;
 import net.zagdrath.encodedlogistics.menu.CardReaderMenu;
@@ -104,6 +105,9 @@ public final class ModMenuTypes {
 
     public static final Supplier<MenuType<RelayAntennaMenu>> RELAY_ANTENNA = MENU_TYPES.register("relay_antenna",
             () -> new MenuType<>(RelayAntennaMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static final Supplier<MenuType<BlockPanelMenu>> BLOCK_PANEL = MENU_TYPES.register("block_panel",
+            () -> IMenuTypeExtension.create(BlockPanelMenu::new));
 
     public static final Supplier<MenuType<NetworkBridgeMenu>> NETWORK_BRIDGE = MENU_TYPES.register("network_bridge",
             () -> IMenuTypeExtension.create(NetworkBridgeMenu::new));

@@ -42,6 +42,8 @@ public final class ModNetwork {
         registrar.playToClient(JobToastPayload.TYPE, JobToastPayload.STREAM_CODEC, JobToastPayload::handle);
         registrar.playToClient(RelayTerminalsPayload.TYPE, RelayTerminalsPayload.STREAM_CODEC, RelayTerminalsPayload::handle);
         registrar.playToClient(RackPanelPayload.TYPE, RackPanelPayload.STREAM_CODEC, RackPanelPayload::handle);
+        registrar.playToClient(BlockPanelPayloads.Data.TYPE, BlockPanelPayloads.Data.STREAM_CODEC, BlockPanelPayloads.Data::handle);
+        registrar.playToServer(BlockPanelPayloads.Action.TYPE, BlockPanelPayloads.Action.STREAM_CODEC, BlockPanelPayloads.Action::handle);
         registrar.playToServer(RackActionPayload.TYPE, RackActionPayload.STREAM_CODEC, RackActionPayload::handle);
         registrar.playToServer(RackUnitPayloads.Query.TYPE, RackUnitPayloads.Query.STREAM_CODEC, RackUnitPayloads.Query::handle);
         registrar.playToClient(RackUnitPayloads.Info.TYPE, RackUnitPayloads.Info.STREAM_CODEC, RackUnitPayloads.Info::handle);

@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.CapacitorBankBlock;
@@ -113,6 +114,8 @@ public final class ModBlocks {
     public static final DeferredBlock<ThreadUnitBlock> THREAD_UNIT = BLOCKS.registerBlock("thread_unit", ThreadUnitBlock::new, ModBlocks::scheduler);
 
     // Reach (Phase 4): wireless coverage for Handheld Terminals, and long-range links between networks.
+    public static final DeferredBlock<ExchangeSwitchBlock> EXCHANGE_SWITCH = BLOCKS.registerBlock("exchange_switch", ExchangeSwitchBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
     public static final DeferredBlock<RelayAntennaBlock> RELAY_ANTENNA = BLOCKS.registerBlock("relay_antenna", RelayAntennaBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 

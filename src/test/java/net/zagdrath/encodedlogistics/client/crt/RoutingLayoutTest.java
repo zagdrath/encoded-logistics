@@ -91,4 +91,20 @@ class RoutingLayoutTest {
         CrtGrid grid = terminal.compose();
         LayoutTest.compare("25_wrkacl", grid, 0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 21, 23);
     }
+
+    @Test
+    void workWithExchange() throws IOException {
+        CrtTerminal terminal = LayoutTest.terminal();
+        terminal.runCommand("WRKIX IX(MAIN)");
+        assertEquals("WRKIX", terminal.current().id());
+        LayoutTest.answer(terminal, "ix", LayoutTest.cells("MAIN", "Cody", "5", "32", "*APPROVAL"),
+                LayoutTest.cells("ELNET01", "Cody", "1", "*UP", "*RS", "12", "3,410"),
+                LayoutTest.cells("ELNET15", "Alex", "2", "*UP", "*RS", "6", "1,220"),
+                LayoutTest.cells("ELNET22", "Sam", "5", "*UP", "*BILAT", "4", "610"),
+                LayoutTest.cells("FARMNET", "Rin", "7", "*DOWN", "*RS", "0", "0"),
+                LayoutTest.cells("MINES", "Jo", "9", "*UP", "*BILAT", "3", "95"),
+                LayoutTest.cells("QUARRY", "Kim", "-", "*REQUEST", "-", "-", "-"));
+        CrtGrid grid = terminal.compose();
+        LayoutTest.compare("26_wrkix", grid, 0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 21, 23);
+    }
 }

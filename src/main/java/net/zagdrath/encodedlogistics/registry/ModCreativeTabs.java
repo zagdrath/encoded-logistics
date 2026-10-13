@@ -38,7 +38,7 @@ public final class ModCreativeTabs {
                 for (var block : List.of(ModItems.NETWORK_CONTROLLER, ModItems.POWER_INLET, ModItems.CAPACITOR_BANK, ModItems.CREATIVE_CAPACITOR_BANK,
                         ModItems.SEGMENT_ISOLATOR,
                         ModItems.LITHOGRAPHY_PRESS, ModItems.DRIVE_BAY, ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE,
-                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.ACCESS_POINT,
+                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.EXCHANGE_SWITCH, ModItems.ACCESS_POINT,
                         ModItems.WIRELESS_BRIDGE, ModItems.WIRELESS_INGRESS_PORT, ModItems.WIRELESS_EGRESS_PORT, ModItems.SMALL_WIRELESS_BRIDGE,
                         ModItems.DISPLAY_PANEL, ModItems.MIDRANGE_SYSTEM,
                         ModItems.EXPANSION_CABINET, ModItems.INTEGRATED_MIDRANGE, ModItems.KEYPUNCH, ModItems.CARD_READER, ModItems.LINE_PRINTER,
@@ -96,6 +96,7 @@ public final class ModCreativeTabs {
                 }
                 output.accept(ModItems.HANDHELD_TERMINAL.get());
                 output.accept(ModItems.LINK_CARD.get());
+                output.accept(ModItems.CROSS_CONNECT.get());
                 output.accept(ModItems.RACK_ELEVATION.get());
                 output.accept(ModItems.SCHEMATIC_CARD.get());
                 for (ResourceType type : ResourceType.values()) {

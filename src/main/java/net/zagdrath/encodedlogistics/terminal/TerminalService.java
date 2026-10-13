@@ -121,6 +121,7 @@ public final class TerminalService {
             case "device" -> device(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "machine" -> machine(context, words.size() > 1 ? words.get(1) : "");
             case "routes" -> RoutingScreens.routes(context, words.size() > 1 ? words.get(1) : "");
+            case "ixmember" -> RoutingScreens.ixMember(context, words.size() > 1 ? words.get(1) : "", words.size() > 2 ? words.get(2) : "");
             case "neighbours" -> RoutingScreens.neighbours(context, words.size() > 1 ? words.get(1) : "");
             case "locate" -> locate(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "status" -> status(context);

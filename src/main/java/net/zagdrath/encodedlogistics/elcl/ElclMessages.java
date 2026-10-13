@@ -217,6 +217,12 @@ public final class ElclMessages {
         define("ELC2607", SEVERE, "ACL &1 has no rule &2.");
         define("ELC2608", WARNING, "&1 resolved from cache.");
         define("ELC2609", INFO, "Neighbour &1 of &2 changed.");
+        define("ELC2610", SEVERE, "Exchange &1 not found.");
+        define("ELC2611", SEVERE, "&1 is not a member of exchange &2.");
+        define("ELC2612", SEVERE, "Only the exchange's owner (&1) can do that.");
+        define("ELC2613", SEVERE, "No join request to approve, or no free port, on exchange &1.");
+        define("ELC2614", INFO, "&1 joined exchange &2.");
+        define("ELC2615", INFO, "&1 removed from exchange &2.");
     }
 
     public static Map<String, Definition> all() {

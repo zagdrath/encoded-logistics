@@ -1,0 +1,14 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:fiber_cable",
+  "encodedlogistics:fiber_cable",
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:copper_foil"
+ ],
+ "result": {
+  "id": "encodedlogistics:cross_connect",
+  "count": 4
+ }
+}

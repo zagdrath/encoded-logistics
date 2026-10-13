@@ -11,8 +11,14 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.entity.player.Player;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.routing.RoutingDomain;
+import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
+import net.zagdrath.encodedlogistics.blockentity.ExchangeSwitchBlockEntity;
+import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
@@ -129,6 +135,49 @@ final class RoutingGameTests {
                             + " / " + acl.rules().get(1).hits());
                     helper.assertTrue(ElclEvents.recent().stream().skip(events).anyMatch(event -> event.event().equals("*ACLDENY")
                             && event.data().endsWith("NOFUEL 10 COAL")), "No *ACLDENY");
+                })
+                .thenSucceed();
+    }
+
+    // Two networks nothing links, their Dynamic Routers both members of an Exchange Switch (open membership, the route
+    // server on): they peer there, and a route from one reaches the other through the exchange (IX:name).
+    static void exchangePeering(GameTestHelper helper) {
+        BlockPos masterA = networkedRackAt(helper, 0), masterB = networkedRackAt(helper, 9);
+        BlockPos exchangePos = new BlockPos(2, 1, 1);
+        helper.setBlock(exchangePos, ModBlocks.EXCHANGE_SWITCH.get().defaultBlockState());
+        helper.setBlock(exchangePos.above(), ModBlocks.EXCHANGE_SWITCH.get().defaultBlockState().setValue(ExchangeSwitchBlock.HALF, DoubleBlockHalf.UPPER));
+        Rack2GameTests.storageDevice(helper, masterA, RackDeviceType.NAS, 1, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        Rack2GameTests.storageDevice(helper, masterB, RackDeviceType.NAS, 1, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        RouterDevice routerA = RackGameTests.install(helper, masterA, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        RouterDevice routerB = RackGameTests.install(helper, masterB, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        NetworkRef[] networkB = new NetworkRef[1];
+        helper.startSequence()
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    ExchangeSwitchBlockEntity exchange = helper.getBlockEntity(exchangePos, ExchangeSwitchBlockEntity.class);
+                    exchange.setMembership(ExchangeSwitchBlockEntity.Membership.OPEN);
+                    routerA.setMode(RouterDevice.Mode.DYNAMIC);
+                    routerB.setMode(RouterDevice.Mode.DYNAMIC);
+                    helper.assertTrue(exchange.join(routerA, helper.getLevel().getServer(), player) == ExchangeSwitchBlockEntity.JoinResult.JOINED, "A didn't join");
+                    helper.assertTrue(exchange.join(routerB, helper.getLevel().getServer(), player) == ExchangeSwitchBlockEntity.JoinResult.JOINED, "B didn't join");
+                    networkB[0] = routerB.network(helper.getLevel().getServer(), 0);
+                    helper.assertTrue(networkB[0] != null, "B has no network");
+                    RackGameTests.storage(helper, masterA).insert(COBBLESTONE, 10, false);
+                    helper.assertTrue(routerA.addRoute(0, 0, ItemRouting.everything()), "Route not added");
+                    routerA.routes().set(0, routerA.routes().getFirst().toRemote(networkB[0]));
+                })
+                .thenWaitUntil(() -> {
+                    ExchangeSwitchBlockEntity exchange = helper.getBlockEntity(exchangePos, ExchangeSwitchBlockEntity.class);
+                    helper.assertTrue(exchange.online() && exchange.sessionsUp() == 1, "Sessions up: " + exchange.sessionsUp() + ", online " + exchange.online());
+                })
+                .thenWaitUntil(() -> helper.assertTrue(RackGameTests.storage(helper, masterB).count(COBBLESTONE) == 10,
+                        "B has " + RackGameTests.storage(helper, masterB).count(COBBLESTONE) + "; A's table " + routerA.table()))
+                .thenExecute(() -> {
+                    RouterDevice.TableEntry entry = routerA.routeTo(networkB[0]);
+                    helper.assertTrue(entry != null && entry.next().startsWith("IX:") && entry.source() == RouterDevice.Source.CONNECTED,
+                            "Route table: " + routerA.table());
+                    helper.assertTrue(routerA.routesVia(networkB[0]) == 1, "Routes via B: " + routerA.routesVia(networkB[0]));
                 })
                 .thenSucceed();
     }

@@ -209,6 +209,9 @@ networks and neighbours by their system names (`ELNET02`), as the Router's route
 | `RMVACLE` | `RTR`(P1, Req) `ACL`(P2, Req) `SEQ`(P3, Req) | configure | ELC2601, ELC2606, ELC2607 |
 | `CHGACLE` | `RTR`(P1, Req) `ACL`(P2, Req) `SEQ`(P3, Req) and the `ADDACLE` parameters (`*SAME`), `MOVE(*NONE\|*UP\|*DOWN)` **[EXT]** (swap with the rule before / after it) | configure | ELC2601, ELC2606, ELC2607 |
 | `WRKACL` | `RTR`(P1, Req) `ACL`(P2, Req): Work with ACLs: 2=Change (`CHGACLE`), 4=Remove (`RMVACLE`), 6=Move up, 7=Move down; F6=Add rule (`ADDACLE`); interactive only | view | ELC2601, ELC2606 |
+| `APVIXMBR` | `IX`(P1, Req: an Exchange Switch by device name, `XSW01`, or its own name) `NETWORK`(P2, Req): approve a join request | configure (and the exchange's owner) | ELC2610, ELC2611, ELC2612, ELC2613; ELC2614 on success |
+| `RMVIXMBR` | `IX`(P1, Req) `NETWORK`(P2, Req): remove a member or refuse a request | configure (and the exchange's owner) | ELC2610, ELC2611, ELC2612; ELC2615 on success |
+| `WRKIX` | `IX`(P1, Req): Work with Exchange: members and requests (port, status, peering, routes learned, traffic); 4=Remove member, 5=Display, 8=Approve request; F10=Sessions, F11=Requests; interactive only | view | ELC2610 |
 
 *(Dynamic routing: a Router in Dynamic mode learns, from the other Dynamic Routers it neighbours (one links to the
 other's network with a Link Card, or both peer at an Exchange Switch), a path to every network beyond, and its routes
@@ -220,6 +223,10 @@ a link, a neighbour, an exchange peer. The first rule matching a resource going 
 network, `*OUT` out of it) decides; with none, the default (`aclDefaultPermit`). A Move moves only what they permit, a
 Share shows only that; past a rule's rate or quota it denies until the minute or game day turns. On a path through
 other Routers, each one's ACLs on the networks either side of its hop apply too.)*
+
+*(Exchange Switches: Routers join with a Cross-Connect; members peer through the route server (those who opt in) or
+bilaterally (both sides accept), and each side sets, per peer, whether it exchanges routes and allows transit. A peer's
+network is `*CONNECTED`, its next hop `IX:name`. Exchange Switches are devices of type `XSW`.)*
 
 ## 8. Messages, displays and output
 

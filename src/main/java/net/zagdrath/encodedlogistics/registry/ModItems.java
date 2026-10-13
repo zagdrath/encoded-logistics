@@ -17,6 +17,7 @@ import net.minecraft.world.item.Rarity;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.zagdrath.encodedlogistics.item.CrossConnectItem;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.crafting.Schematic;
@@ -120,11 +121,13 @@ public final class ModItems {
     // Phase 4: wireless access, long-range links.
     public static final DeferredItem<Item> OPTICAL_TRANSCEIVER = ITEMS.registerSimpleItem("optical_transceiver");
     public static final DeferredItem<LinkCardItem> LINK_CARD = ITEMS.registerItem("link_card", LinkCardItem::new);
+    public static final DeferredItem<CrossConnectItem> CROSS_CONNECT = ITEMS.registerItem("cross_connect", CrossConnectItem::new);
     // A plan of a Server Rack: blank ones stack to 16, written ones to 1 (RackTemplate#write).
     public static final DeferredItem<RackElevationItem> RACK_ELEVATION = ITEMS.registerItem("rack_elevation", RackElevationItem::new, p -> p.stacksTo(16));
     public static final DeferredItem<HandheldTerminalItem> HANDHELD_TERMINAL = ITEMS.registerItem("handheld_terminal", HandheldTerminalItem::new,
             p -> p.stacksTo(1));
     public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);
+    public static final DeferredItem<BlockItem> EXCHANGE_SWITCH = ITEMS.registerSimpleBlockItem(ModBlocks.EXCHANGE_SWITCH);
     public static final DeferredItem<BlockItem> NETWORK_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_BRIDGE);
     public static final DeferredItem<Item> RADIO_MODULE = ITEMS.registerSimpleItem("radio_module");
     public static final DeferredItem<BlockItem> MIDRANGE_SYSTEM = ITEMS.registerSimpleBlockItem(ModBlocks.MIDRANGE_SYSTEM);

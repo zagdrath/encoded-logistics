@@ -8,6 +8,8 @@ package net.zagdrath.encodedlogistics.terminal;
 import java.util.Locale;
 
 import net.minecraft.network.chat.Component;
+import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.exec.ExchangeCommands;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.exec.RoutingCommands;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
@@ -94,6 +96,17 @@ public final class RoutingScreens {
 
     public static String neighbourRow(String name, String via, String state, String cost, String override, String uptime) {
         return String.format(Locale.ROOT, "%-14s%-18s%-10s%4s%10s  %s", name, via, state, cost, override, uptime);
+    }
+
+    // WRKIX 5=Display: an exchange member's details.
+    static TerminalOutput ixMember(TerminalContext context, String exchange, String network) {
+        TerminalOutput out = new TerminalOutput();
+        try {
+            ExchangeCommands.member(context, exchange, network).forEach(out::line);
+        } catch (ElclException e) {
+            return TerminalOutput.message(Component.literal(e.elclMessage().toString()));
+        }
+        return out;
     }
 
     // "2:14:06" from seconds.

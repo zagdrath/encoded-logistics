@@ -13,6 +13,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.zagdrath.encodedlogistics.blockentity.ExchangeSwitchBlockEntity;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.AccessPointBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
@@ -89,6 +90,9 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<SchedulerCoreBlockEntity>> SCHEDULER_CORE = BLOCK_ENTITY_TYPES.register(
             "scheduler_core", () -> new BlockEntityType<>(SchedulerCoreBlockEntity::new, ModBlocks.SCHEDULER_CORE.get()));
+
+    public static final Supplier<BlockEntityType<ExchangeSwitchBlockEntity>> EXCHANGE_SWITCH = BLOCK_ENTITY_TYPES.register(
+            "exchange_switch", () -> new BlockEntityType<>(ExchangeSwitchBlockEntity::new, ModBlocks.EXCHANGE_SWITCH.get()));
 
     public static final Supplier<BlockEntityType<RelayAntennaBlockEntity>> RELAY_ANTENNA = BLOCK_ENTITY_TYPES.register(
             "relay_antenna", () -> new BlockEntityType<>(RelayAntennaBlockEntity::new, ModBlocks.RELAY_ANTENNA.get()));

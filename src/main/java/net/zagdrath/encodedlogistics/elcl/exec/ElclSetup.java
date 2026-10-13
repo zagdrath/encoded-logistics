@@ -40,6 +40,7 @@ public final class ElclSetup {
         PlcCommands.bind();
         SignalCommands.bind();
         RoutingCommands.bind();
+        ExchangeCommands.bind();
         StoredFileService.setLive(new LiveFiles());
         Midranges.register();
         Displays.register(system -> {

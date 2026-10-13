@@ -35,6 +35,7 @@ import net.neoforged.neoforge.client.event.sound.PlaySoundEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.zagdrath.encodedlogistics.client.screen.BlockPanelScreen;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.crt.CardReaderScreen;
 import net.zagdrath.encodedlogistics.client.crt.CrtLocate;
@@ -148,6 +149,7 @@ public class EncodedLogisticsClient {
         event.register(ModMenuTypes.SCHEDULER_CORE.get(), SchedulerCoreScreen::new);
         event.register(ModMenuTypes.RELAY_ANTENNA.get(), RelayAntennaScreen::new);
         event.register(ModMenuTypes.NETWORK_BRIDGE.get(), NetworkBridgeScreen::new);
+        event.register(ModMenuTypes.BLOCK_PANEL.get(), BlockPanelScreen::new);
         event.register(ModMenuTypes.HANDHELD_TERMINAL.get(), HandheldTerminalScreen::new);
         event.register(ModMenuTypes.POINT_TO_POINT_LINK.get(), PointToPointScreen::new);
         event.register(ModMenuTypes.COLLECTOR_PLANE.get(), CollectorPlaneScreen::new);
