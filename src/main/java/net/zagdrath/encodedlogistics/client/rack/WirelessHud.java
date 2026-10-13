@@ -26,6 +26,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.zagdrath.encodedlogistics.block.DirectoryServerBlock;
 import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
@@ -78,7 +79,7 @@ public final class WirelessHud {
             var block = state.getBlock();
             if (block instanceof AccessPointBlock || block instanceof WirelessBridgeBlock || block instanceof WirelessPortBlock
                     || block instanceof DiskDriveBlock || block instanceof TapeDriveBlock || block instanceof SignalBlock
-                    || block instanceof ExchangeSwitchBlock) {
+                    || block instanceof ExchangeSwitchBlock || block instanceof DirectoryServerBlock) {
                 now = hit.getBlockPos().immutable();
                 answer = now;
             } else if (block instanceof SmallWirelessBridgeBlock && MachineBridgesPayload.has(hit.getBlockPos().relative(state.getValue(SmallWirelessBridgeBlock.FACING)))) {

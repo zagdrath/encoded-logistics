@@ -38,7 +38,7 @@ public final class ModCreativeTabs {
                 for (var block : List.of(ModItems.NETWORK_CONTROLLER, ModItems.POWER_INLET, ModItems.CAPACITOR_BANK, ModItems.CREATIVE_CAPACITOR_BANK,
                         ModItems.SEGMENT_ISOLATOR,
                         ModItems.LITHOGRAPHY_PRESS, ModItems.DRIVE_BAY, ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE,
-                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.EXCHANGE_SWITCH, ModItems.ACCESS_POINT,
+                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.EXCHANGE_SWITCH, ModItems.DIRECTORY_SERVER, ModItems.ACCESS_POINT,
                         ModItems.WIRELESS_BRIDGE, ModItems.WIRELESS_INGRESS_PORT, ModItems.WIRELESS_EGRESS_PORT, ModItems.SMALL_WIRELESS_BRIDGE,
                         ModItems.DISPLAY_PANEL, ModItems.MIDRANGE_SYSTEM,
                         ModItems.EXPANSION_CABINET, ModItems.INTEGRATED_MIDRANGE, ModItems.KEYPUNCH, ModItems.CARD_READER, ModItems.LINE_PRINTER,
@@ -84,7 +84,7 @@ public final class ModCreativeTabs {
                     output.accept(item.get());
                 }
                 for (var device : List.of(ModItems.FIREWALL, ModItems.ROUTER, ModItems.UPS, ModItems.L2_SWITCH_24, ModItems.L2_SWITCH_48,
-                        ModItems.L3_SWITCH, ModItems.COMPUTE_SERVER, ModItems.MEMORY_SERVER, ModItems.FABRICATION_SERVER, ModItems.MONITORING_SERVER,
+                        ModItems.L3_SWITCH, ModItems.COMPUTE_SERVER, ModItems.MEMORY_SERVER, ModItems.FABRICATION_SERVER, ModItems.MONITORING_SERVER, ModItems.DIRECTORY_SERVER_RACK,
                         ModItems.NAS, ModItems.SAN, ModItems.RACK_CONSOLE, ModItems.RACK_FABRICATION_CONSOLE,
                         ModItems.RACK_SCHEMATIC_CONSOLE, ModItems.WIRELESS_CONTROLLER, ModItems.TAPE_LIBRARY_4U,
                         ModItems.TAPE_LIBRARY_6U, ModItems.NETWORK_CONTROLLER_2U, ModItems.NETWORK_CONTROLLER_4U)) {

@@ -123,7 +123,7 @@ final class RouteFilterEditor {
     // A share toggle's icon (an item), and whether it's on (off ones are dimmed).
     private static ItemStack shareIcon(ItemRouting.Route route, int option) {
         return new ItemStack(switch (option) {
-            case ItemRouting.SHARE_MODE -> route.shares() ? Items.SPYGLASS : Items.HOPPER;
+            case ItemRouting.SHARE_MODE -> route.controls() ? Items.COMPARATOR : route.shares() ? Items.SPYGLASS : Items.HOPPER;
             case ItemRouting.SHARE_ACCESS -> route.readWrite() ? Items.WRITABLE_BOOK : Items.BOOK;
             case ItemRouting.SHARE_CRAFTING -> Items.CRAFTING_TABLE;
             default -> Items.COMPASS;
@@ -140,7 +140,8 @@ final class RouteFilterEditor {
 
     private static Component shareTip(ItemRouting.Route route, int option) {
         return Component.translatable(switch (option) {
-            case ItemRouting.SHARE_MODE -> route.shares() ? "gui.encodedlogistics.route.mode.share" : "gui.encodedlogistics.route.mode.move";
+            case ItemRouting.SHARE_MODE -> route.controls() ? "gui.encodedlogistics.route.mode.control" : route.shares() ? "gui.encodedlogistics.route.mode.share"
+                    : "gui.encodedlogistics.route.mode.move";
             case ItemRouting.SHARE_ACCESS -> route.readWrite() ? "gui.encodedlogistics.route.access.read_write" : "gui.encodedlogistics.route.access.read";
             case ItemRouting.SHARE_CRAFTING -> route.crafting() ? "gui.encodedlogistics.route.crafting.on" : "gui.encodedlogistics.route.crafting.off";
             default -> route.bidirectional() ? "gui.encodedlogistics.route.bidirectional.on" : "gui.encodedlogistics.route.bidirectional.off";
@@ -149,6 +150,9 @@ final class RouteFilterEditor {
 
     // A route's mode for its row's tooltip: "Move", or "Share (Read/Write, crafting, both ways)".
     static Component modeLine(ItemRouting.Route route) {
+        if (route.controls()) {
+            return Component.translatable("gui.encodedlogistics.route.mode.control");
+        }
         if (!route.shares()) {
             return Component.translatable("gui.encodedlogistics.route.mode.move");
         }
@@ -161,7 +165,7 @@ final class RouteFilterEditor {
 
     // The colour a route row's arrow is tinted: white for Move, blue for Share.
     static int arrowColor(ItemRouting.Route route) {
-        return route.shares() ? 0xFF8FB8F0 : 0xFFFFFFFF;
+        return route.controls() ? 0xFFE8C24A : route.shares() ? 0xFF8FB8F0 : 0xFFFFFFFF;
     }
 
     // --- Drawing ---

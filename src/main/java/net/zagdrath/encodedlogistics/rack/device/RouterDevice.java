@@ -333,6 +333,13 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         List<Integer> remote = new ArrayList<>();
         for (int i = 0; i < routes.size(); i++) {
             ItemRouting.Route route = routes.get(i);
+            if (route.controls()) {
+                // A CONTROL policy moves nothing (Directories); it pauses like any other without a path.
+                if (route.remote() && path(server, route) == null) {
+                    pausedNow |= 1 << i;
+                }
+                continue;
+            }
             if (route.remote()) {
                 if (path(server, route) == null) {
                     pausedNow |= 1 << i;
@@ -1152,7 +1159,12 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
                 }
             }
             case ACTION_SHARE_OPTION -> {
-                if (!ItemRouting.toggleShare(routes, value)) {
+                // The mode steps Move, Share, Control.
+                int index = value / ItemRouting.SHARE_OPTIONS;
+                if (value >= 0 && value % ItemRouting.SHARE_OPTIONS == ItemRouting.SHARE_MODE && index < routes.size()) {
+                    ItemRouting.Route route = routes.get(index);
+                    routes.set(index, route.withMode(ItemRouting.Mode.values()[(route.mode().ordinal() + 1) % ItemRouting.Mode.values().length]));
+                } else if (!ItemRouting.toggleShare(routes, value)) {
                     return;
                 }
             }

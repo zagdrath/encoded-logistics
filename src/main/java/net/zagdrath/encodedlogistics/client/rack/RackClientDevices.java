@@ -9,10 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.jspecify.annotations.Nullable;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Sheets;
@@ -22,6 +21,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
+import net.zagdrath.encodedlogistics.client.screen.BodyPanel;
 import net.zagdrath.encodedlogistics.client.screen.FabricationServerPanel;
 import net.zagdrath.encodedlogistics.client.screen.FirewallPanel;
 import net.zagdrath.encodedlogistics.client.screen.L3SwitchPanel;
@@ -81,6 +81,7 @@ public final class RackClientDevices {
         PANELS.put(RackDeviceType.MEMORY_SERVER, ServerPanel::new);
         PANELS.put(RackDeviceType.FABRICATION_SERVER, FabricationServerPanel::new);
         PANELS.put(RackDeviceType.MONITORING_SERVER, MonitoringPanel::new);
+        PANELS.put(RackDeviceType.DIRECTORY_SERVER, BodyPanel::directory);
         PANELS.put(RackDeviceType.NAS, StoragePanel::new);
         PANELS.put(RackDeviceType.SAN, StoragePanel::new);
         EXTRAS.put(RackDeviceType.ROUTER, new RouterCages());

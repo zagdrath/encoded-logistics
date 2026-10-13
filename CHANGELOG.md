@@ -58,6 +58,12 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   panels have a **Ports** view (the L3 Switch's first tab). The new **Trunk Port** cable part carries segments (added
   with a Link Card) into the network it's on, so every rack there can use them without a Link Card of its own; its
   lanes (`trunkPortLanes`) are shared by its segments.
+- **Directory Servers and qualified names.** The **Directory Server** (a block, or a 1U rack device) publishes chosen
+  devices of its network. Any Terminal OS command that takes a device then takes `SYSNAME/DEVICE` for a device on
+  another network, when a Router has a route there with the new **Control** policy (a third route mode beside Move
+  and Share; ACLs match it with `*CONTROL`) and the caller has the Firewall's permission on that network. Lookups are
+  cached for `directoryCacheSeconds` (30). Its screen has Published, Remote and Lookups tabs. Terminal OS: the
+  `WRKDIR` screen, `RTVDIRENT` and `CHGDIRENT`.
 
 ### Upgrading
 

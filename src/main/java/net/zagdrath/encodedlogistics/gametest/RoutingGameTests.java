@@ -9,32 +9,36 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.entity.player.Player;
-import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
-import net.zagdrath.encodedlogistics.network.routing.RoutingDomain;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
-import net.zagdrath.encodedlogistics.blockentity.ExchangeSwitchBlockEntity;
-import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.block.SegmentIsolatorBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.DirectoryServerBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.ExchangeSwitchBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.network.routing.Directories;
+import net.zagdrath.encodedlogistics.network.routing.RoutingDomain;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.part.TrunkPortPart;
-import net.zagdrath.encodedlogistics.rack.RackDevice;
-import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
-import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RouterAcl;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
+import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
+import net.zagdrath.encodedlogistics.registry.ModBlocks;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Dynamic routing between networks: Routers finding each other, learning paths beyond their own links, and moving items
@@ -247,5 +251,62 @@ final class RoutingGameTests {
 
     private static boolean serving(MinecraftServer server, NetworkRef network, RackDevice device) {
         return ControllerStructures.rackDevicesServing(server, network).contains(device);
+    }
+
+    // Qualified names: network A's Router links B, where a Directory Server is. B's directory device is refused while
+    // unpublished (ELC2603), then while A's Router has no CONTROL policy to B (ELC2604); with one it resolves (one hop),
+    // the second time from the cache. A plain lookup with no command running doesn't resolve qualified names.
+    static void directoryControl(GameTestHelper helper) {
+        BlockPos masterA = networkedRackAt(helper, 0), masterB = networkedRackAt(helper, 9);
+        BlockPos controllerB = new BlockPos(9, 1, 0), directoryPos = new BlockPos(11, 1, 1);
+        helper.setBlock(directoryPos, ModBlocks.DIRECTORY_SERVER.get().defaultBlockState());
+        RouterDevice router = RackGameTests.install(helper, masterA, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        String[] qualified = new String[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> helper.assertTrue(router.link(at(helper, controllerB)) == RouterDevice.LinkResult.LINKED, "Not linked"))
+                .thenWaitUntil(() -> {
+                    DirectoryServerBlockEntity directory = helper.getBlockEntity(directoryPos, DirectoryServerBlockEntity.class);
+                    helper.assertTrue(directory.isOnline() && router.table().size() == 1, "Directory online " + directory.isOnline() + ", table " + router.table());
+                })
+                .thenExecute(() -> {
+                    MinecraftServer server = helper.getLevel().getServer();
+                    DirectoryServerBlockEntity directory = helper.getBlockEntity(directoryPos, DirectoryServerBlockEntity.class);
+                    NetworkRef a = router.network(server, 0), b = directory.directoryNetwork();
+                    ElclDevices.list(server, b);
+                    helper.assertTrue(!directory.deviceName().isEmpty(), "Directory has no name");
+                    qualified[0] = RouterDevice.networkName(server, b) + "/" + directory.deviceName();
+                    helper.assertTrue(refusal(server, a, qualified[0]).equals("ELC2603"), "Unpublished: " + refusal(server, a, qualified[0]));
+                    directory.directory().setPublished(directory.deviceName(), true);
+                    helper.assertTrue(refusal(server, a, qualified[0]).equals("ELC2604"), "No policy: " + refusal(server, a, qualified[0]));
+                    helper.assertTrue(router.addRoute(0, 1, ItemRouting.everything()), "Route not added");
+                    router.routes().set(0, router.routes().getFirst().withMode(ItemRouting.Mode.CONTROL));
+                    helper.assertTrue(ElclDevices.find(server, a, qualified[0]) == null, "Resolved with no command running");
+                })
+                .thenIdle(25)
+                .thenExecute(() -> {
+                    MinecraftServer server = helper.getLevel().getServer();
+                    NetworkRef a = router.network(server, 0);
+                    try {
+                        Directories.Resolution first = Directories.resolve(server, a, qualified[0], null, null, RackPermission.VIEW);
+                        helper.assertTrue(first.hops() == 1 && first.type().equals("DIR") && !first.cached(), "First: " + first);
+                        Directories.Resolution second = Directories.resolve(server, a, qualified[0], null, null, RackPermission.VIEW);
+                        helper.assertTrue(second.cached(), "Not cached");
+                    } catch (Directories.Refusal refusal) {
+                        helper.fail("Refused with a CONTROL policy: " + refusal.id());
+                    }
+                    DirectoryServerBlockEntity directory = helper.getBlockEntity(directoryPos, DirectoryServerBlockEntity.class);
+                    helper.assertTrue(directory.directory().lookups(directory.deviceName(), server.overworld().getGameTime()) >= 2, "Lookups not counted");
+                })
+                .thenSucceed();
+    }
+
+    private static String refusal(MinecraftServer server, NetworkRef caller, String name) {
+        try {
+            Directories.resolve(server, caller, name, null, null, RackPermission.VIEW);
+            return "resolved";
+        } catch (Directories.Refusal refusal) {
+            return refusal.id();
+        }
     }
 }

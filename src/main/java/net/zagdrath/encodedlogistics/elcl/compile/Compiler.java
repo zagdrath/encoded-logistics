@@ -857,7 +857,9 @@ public final class Compiler {
                         case Expr.Str str -> {}
                         case Expr.Num num -> {}
                         case Expr.Path path -> {
-                            if (def.kind() != Kind.NAME || def.length() <= 10) {
+                            // A qualified device name: SYSNAME/DEVICE.
+                            boolean qualifiedDevice = def.kind() == Kind.DEVICE && path.parts().size() == 2;
+                            if (!qualifiedDevice && (def.kind() != Kind.NAME || def.length() <= 10)) {
                                 report(line, "ELC0103", path, keyword);
                             }
                         }

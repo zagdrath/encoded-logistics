@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKDIR                       Work with Directory              System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Directory  :  DIR01 (ELNET01)   Published :  8   Cache :  12 names, 30 s
+03 |  Type options, press Enter.
+04 |    2=Publish  3=Unpublish  5=Display
+05 | 
+06 | Opt  Qualified name     Type   Status       Lookups (1h)
+07 |      ELNET01/LGT01      LGT    *PUBLISHED      41
+08 |      ELNET01/SRN01      SRN    *PUBLISHED      12
+09 |      ELNET01/SPK01      SPK    *PUBLISHED       3
+10 |      ELNET01/PLC02      PLC    *PRIVATE         0
+11 | 
+12 |  Recent lookups:
+13 |    ELNET15/LGT01      resolved, 2 hops
+14 |    ELNET22/SRN03      resolved, 3 hops
+15 |    FARMNET/SPK01      ELC2603 no route
+16 |    ELNET07/PLC02      ELC2604 not permitted
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command
+21 |  ===>
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F10=Lookups F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (9,0,3) input; (10,0,3) input

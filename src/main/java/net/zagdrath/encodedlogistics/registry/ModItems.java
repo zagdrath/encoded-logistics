@@ -128,6 +128,7 @@ public final class ModItems {
             p -> p.stacksTo(1));
     public static final DeferredItem<BlockItem> RELAY_ANTENNA = ITEMS.registerSimpleBlockItem(ModBlocks.RELAY_ANTENNA);
     public static final DeferredItem<BlockItem> EXCHANGE_SWITCH = ITEMS.registerSimpleBlockItem(ModBlocks.EXCHANGE_SWITCH);
+    public static final DeferredItem<BlockItem> DIRECTORY_SERVER = ITEMS.registerSimpleBlockItem(ModBlocks.DIRECTORY_SERVER);
     public static final DeferredItem<BlockItem> NETWORK_BRIDGE = ITEMS.registerSimpleBlockItem(ModBlocks.NETWORK_BRIDGE);
     public static final DeferredItem<Item> RADIO_MODULE = ITEMS.registerSimpleItem("radio_module");
     public static final DeferredItem<BlockItem> MIDRANGE_SYSTEM = ITEMS.registerSimpleBlockItem(ModBlocks.MIDRANGE_SYSTEM);
@@ -213,6 +214,8 @@ public final class ModItems {
             p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> FABRICATION_SERVER = ITEMS.registerItem("fabrication_server", p -> new RackDeviceItem(p, RackDeviceType.FABRICATION_SERVER),
             p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> DIRECTORY_SERVER_RACK = ITEMS.registerItem("directory_server_rack",
+            p -> new RackDeviceItem(p, RackDeviceType.DIRECTORY_SERVER), p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> MONITORING_SERVER = ITEMS.registerItem("monitoring_server", p -> new RackDeviceItem(p, RackDeviceType.MONITORING_SERVER),
             p -> p.stacksTo(1));
     public static final DeferredItem<RackDeviceItem> NAS = ITEMS.registerItem("nas", p -> new RackDeviceItem(p, RackDeviceType.NAS),

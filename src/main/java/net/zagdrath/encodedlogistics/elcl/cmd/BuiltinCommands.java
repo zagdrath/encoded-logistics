@@ -299,6 +299,15 @@ final class BuiltinCommands {
                 .p(p("RATE", "Rate per minute", Kind.INT).sv("*SAME", "*NONE").dft("*SAME").range(1, 1_000_000))
                 .p(p("QUOTA", "Quota per day", Kind.INT).sv("*SAME", "*NONE").dft("*SAME").range(1, 1_000_000_000))
                 .p(p("MOVE", "Move", Kind.SPECIAL).sv("*NONE", "*UP", "*DOWN").dft("*NONE")));
+        // [EXT] Directory Servers and qualified names (the routing handoff): DirectoryCommands.
+        add(CommandDefinition.of("RTVDIRENT", "Retrieve Directory Entry").auth(VIEW).positional(1)
+                .p(p("NAME", "Qualified name", Kind.CHAR).req().len(24))
+                .p(rtn("RTNTYPE", "Return device type", VarType.CHAR))
+                .p(rtn("RTNNETWORK", "Return network", VarType.CHAR))
+                .p(rtn("RTNHOPS", "Return hops", VarType.INT)));
+        add(CommandDefinition.of("CHGDIRENT", "Change Directory Entry").auth(CONFIGURE).positional(2)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("PUBLISH", "Published", Kind.SPECIAL).req().sv("*YES", "*NO")));
         // [EXT] Exchange Switches (the routing handoff): ExchangeCommands.
         add(CommandDefinition.of("APVIXMBR", "Approve Exchange Member").auth(CONFIGURE).positional(2)
                 .p(p("IX", "Exchange", Kind.NAME).req())
@@ -595,6 +604,8 @@ final class BuiltinCommands {
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
         add(CommandDefinition.of("DSPNBR", "Display Neighbours").context(INTERACTIVE).positional(1)
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
+        add(CommandDefinition.of("WRKDIR", "Work with Directory").context(INTERACTIVE).positional(1)
+                .p(p("DIR", "Directory Server", Kind.DEVICE).sv("*FIRST").dft("*FIRST")));
         add(CommandDefinition.of("WRKIX", "Work with Exchange").context(INTERACTIVE).positional(1)
                 .p(p("IX", "Exchange", Kind.NAME).req()));
         add(CommandDefinition.of("WRKACL", "Work with ACLs").context(INTERACTIVE).positional(2)

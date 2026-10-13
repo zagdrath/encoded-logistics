@@ -250,6 +250,9 @@ The commands on files:
 | ELC2613 | 30 | No join request to approve, or no free port, on exchange &1. | *(added: `APVIXMBR`)*
 | ELC2614 | 00 | &1 joined exchange &2. | *(added: `APVIXMBR`)*
 | ELC2615 | 00 | &1 removed from exchange &2. | *(added: `RMVIXMBR`)*
+| ELC2616 | 30 | No Directory Server on the network. | *(added: `CHGDIRENT`, `WRKDIR`)*
+| ELC2617 | 00 | &1 published. | *(added: `CHGDIRENT`)*
+| ELC2618 | 00 | &1 no longer published. | *(added: `CHGDIRENT`)*
 
 ## USRxxxx — User messages
 

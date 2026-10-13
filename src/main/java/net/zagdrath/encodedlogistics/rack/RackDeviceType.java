@@ -21,6 +21,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.zagdrath.encodedlogistics.rack.device.DirectoryServerDevice;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FabricationServerDevice;
@@ -74,6 +75,8 @@ public final class RackDeviceType {
             .frames(4).variants(Map.of("_idle", 1));
     public static final RackDeviceType FABRICATION_SERVER = register("fabrication_server", 2, () -> ModItems.FABRICATION_SERVER.get(),
             FabricationServerDevice::new).frames(4).variants(Map.of("_idle", 1)).slots(fabricationSlots());
+    public static final RackDeviceType DIRECTORY_SERVER = register("directory_server", 1, () -> ModItems.DIRECTORY_SERVER_RACK.get(),
+            DirectoryServerDevice::new).frames(4);
     public static final RackDeviceType MONITORING_SERVER = register("monitoring_server", 1, () -> ModItems.MONITORING_SERVER.get(),
             MonitoringServerDevice::new).frames(4);
     public static final RackDeviceType NAS = register("nas", 2, () -> ModItems.NAS.get(), NasDevice::new).frames(4)

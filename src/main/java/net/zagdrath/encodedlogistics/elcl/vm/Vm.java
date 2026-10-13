@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.elcl.db.DbRecord;
 import net.zagdrath.encodedlogistics.elcl.db.FieldDef;
 import net.zagdrath.encodedlogistics.elcl.db.FileAccess;
 import net.zagdrath.encodedlogistics.elcl.db.RecordFormat;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.parse.Expr;
 import net.zagdrath.encodedlogistics.elcl.parse.Stmt;
 import net.zagdrath.encodedlogistics.elcl.vm.VmProgram.Insn;
@@ -751,7 +752,7 @@ public final class Vm {
         if (command.executor() == null) {
             throw new ElclException("ELC0107", command.name());
         }
-        command.executor().run(new Call(f, s, command));
+        ElclDevices.run(command, new Call(f, s, command));
     }
 
     // A command's run inside the VM: its values from the frame's variables, its RTN* values into them.

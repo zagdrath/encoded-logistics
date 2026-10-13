@@ -39,6 +39,7 @@ public class BlockPanelScreen extends AbstractContainerScreen<BlockPanelMenu> im
         this.body = switch (menu.kind()) {
             case "exchange" -> new ExchangePanel(this);
             case "trunk" -> new TrunkPortPanel(this);
+            case "directory" -> new DirectoryPanel(this);
             default -> null;
         };
     }

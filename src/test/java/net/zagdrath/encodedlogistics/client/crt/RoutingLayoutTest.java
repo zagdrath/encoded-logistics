@@ -107,4 +107,22 @@ class RoutingLayoutTest {
         CrtGrid grid = terminal.compose();
         LayoutTest.compare("26_wrkix", grid, 0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 21, 23);
     }
+
+    @Test
+    void workWithDirectory() throws IOException {
+        CrtTerminal terminal = LayoutTest.terminal();
+        terminal.runCommand("WRKDIR");
+        assertEquals("WRKDIR", terminal.current().id());
+        LayoutTest.answer(terminal, "directory", LayoutTest.cells("DIR01", "ELNET01", "8", "12", "30"),
+                LayoutTest.cells("ELNET01/LGT01", "LGT", "*PUBLISHED", "41", "LGT01"),
+                LayoutTest.cells("ELNET01/SRN01", "SRN", "*PUBLISHED", "12", "SRN01"),
+                LayoutTest.cells("ELNET01/SPK01", "SPK", "*PUBLISHED", "3", "SPK01"),
+                LayoutTest.cells("ELNET01/PLC02", "PLC", "*PRIVATE", "0", "PLC02"),
+                LayoutTest.cells("*LOOKUP", "ELNET15/LGT01", "", "2"),
+                LayoutTest.cells("*LOOKUP", "ELNET22/SRN03", "", "3"),
+                LayoutTest.cells("*LOOKUP", "FARMNET/SPK01", "ELC2603", "0"),
+                LayoutTest.cells("*LOOKUP", "ELNET07/PLC02", "ELC2604", "0"));
+        CrtGrid grid = terminal.compose();
+        LayoutTest.compare("27_wrkdir", grid, 0, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 21, 23);
+    }
 }

@@ -41,8 +41,10 @@ public final class ItemRouting {
     // A filter's options, as the panels' option buttons number them.
     public static final int OPTION_DENY = 0, OPTION_TAGS = 1, OPTION_COMPONENTS = 2, OPTIONS = 3;
 
+    // CONTROL (a Router's only): nothing moves or shows; it lets the source network's Terminal OS reach devices the
+    // destination network's Directory Servers publish (SYSNAME/DEVICE).
     public enum Mode {
-        MOVE, SHARE
+        MOVE, SHARE, CONTROL
     }
 
     // A Share route's options, as the panels number them (with the mode toggle first).
@@ -76,6 +78,19 @@ public final class ItemRouting {
 
         public boolean shares() {
             return mode == Mode.SHARE;
+        }
+
+        public boolean controls() {
+            return mode == Mode.CONTROL;
+        }
+
+        // Only Move routes move items.
+        public boolean moves() {
+            return mode == Mode.MOVE;
+        }
+
+        public Route withMode(Mode mode) {
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target, acl);
         }
 
         public boolean remote() {
@@ -306,6 +321,9 @@ public final class ItemRouting {
             }
             child.putBoolean("lists", true);
             route.filter().save(child);
+            if (route.controls()) {
+                child.putString("mode", "control");
+            }
             if (route.shares()) {
                 child.putString("mode", "share");
                 child.putBoolean("read_write", route.readWrite());
@@ -337,8 +355,8 @@ public final class ItemRouting {
                     ItemStack old = child.read("filter", ItemStack.CODEC).orElse(ItemStack.EMPTY);
                     filter = old.isEmpty() ? everything() : only(old);
                 }
-                boolean share = child.getStringOr("mode", "move").equals("share");
-                routes.add(new Route(source, dest, filter, share ? Mode.SHARE : Mode.MOVE, child.getBooleanOr("read_write", true),
+                String mode = child.getStringOr("mode", "move");
+                routes.add(new Route(source, dest, filter, mode.equals("share") ? Mode.SHARE : mode.equals("control") ? Mode.CONTROL : Mode.MOVE, child.getBooleanOr("read_write", true),
                         child.getBooleanOr("crafting", true), child.getBooleanOr("bidirectional", false), target, child.getStringOr("acl", "")));
             }
         }

@@ -10,6 +10,7 @@
   "encodedlogistics:memory_server",
   "encodedlogistics:fabrication_server",
   "encodedlogistics:monitoring_server",
+  "encodedlogistics:directory_server_rack",
   "encodedlogistics:nas",
   "encodedlogistics:san",
   "encodedlogistics:rack_console",

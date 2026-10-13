@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.zagdrath.encodedlogistics.elcl.exec.DirectoryCommands;
 import net.zagdrath.encodedlogistics.elcl.exec.ExchangeCommands;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
@@ -109,6 +110,11 @@ public final class ScreenQueries {
                 case "callstack" -> callStack(system, own(system, user, arg(words, 1)));
                 case "schedules" -> schedules(system);
                 case "triggers" -> triggers(system);
+                case "directory" -> {
+                    TerminalOutput out = new TerminalOutput();
+                    DirectoryCommands.rows(context, words.size() > 1 ? words.get(1) : "*FIRST").forEach(out::line);
+                    yield out;
+                }
                 case "ix" -> {
                     TerminalOutput out = new TerminalOutput();
                     ExchangeCommands.rows(context, arg(words, 1), words.size() > 2 ? words.get(2) : "*MEMBERS").forEach(out::line);

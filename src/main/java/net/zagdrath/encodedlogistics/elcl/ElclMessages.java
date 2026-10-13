@@ -223,6 +223,9 @@ public final class ElclMessages {
         define("ELC2613", SEVERE, "No join request to approve, or no free port, on exchange &1.");
         define("ELC2614", INFO, "&1 joined exchange &2.");
         define("ELC2615", INFO, "&1 removed from exchange &2.");
+        define("ELC2616", SEVERE, "No Directory Server on the network.");
+        define("ELC2617", INFO, "&1 published.");
+        define("ELC2618", INFO, "&1 no longer published.");
     }
 
     public static Map<String, Definition> all() {

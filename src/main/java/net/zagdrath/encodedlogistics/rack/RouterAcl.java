@@ -240,6 +240,23 @@ public final class RouterAcl {
         return verdict.rule() != null ? verdict.rule().room(amount, now) : amount;
     }
 
+    // Whether a Directory control request may go (*CONTROL or *ANY rules, out of the Router's network); counted.
+    public boolean permitsControl(boolean permitByDefault, long now) {
+        for (Rule rule : rules) {
+            if ((rule.match.equals("*CONTROL") || rule.match.equals("*ANY")) && rule.dir.covers(Dir.OUT)) {
+                if (rule.permit && rule.room(1, now) > 0) {
+                    rule.count(1, now);
+                    return true;
+                }
+                rule.count(1, now);
+                return false;
+            }
+        }
+        defaultHits++;
+        defaultLast = now;
+        return permitByDefault;
+    }
+
     // Whether a resource may be seen (a Share): permitted, with room left in its windows.
     public boolean permits(StorageKey key, Dir way, boolean permitByDefault, long now) {
         Verdict verdict = verdict(key, way, permitByDefault);

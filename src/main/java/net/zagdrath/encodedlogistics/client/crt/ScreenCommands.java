@@ -70,6 +70,7 @@ final class ScreenCommands {
             case "DSPNETSTS" -> new StatusPanel(screen);
             case "DSPROUTE" -> new RoutingPanel(screen, value(statement, "RTR", ""), false);
             case "DSPNBR" -> new RoutingPanel(screen, value(statement, "RTR", ""), true);
+            case "WRKDIR" -> new WrkDirPanel(screen, value(statement, "DIR", "*FIRST"));
             case "WRKIX" -> new WrkIxPanel(screen, value(statement, "IX", ""));
             case "WRKACL" -> new WrkAclPanel(screen, value(statement, "RTR", ""), value(statement, "ACL", ""));
             case "WRKCRFJOB" -> new JobsPanel(screen);

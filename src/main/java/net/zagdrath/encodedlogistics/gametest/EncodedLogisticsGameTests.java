@@ -273,6 +273,7 @@ public final class EncodedLogisticsGameTests {
         ROUTING_TESTS.put("routing_acl_on_route", RoutingGameTests::aclOnRoute);
         ROUTING_TESTS.put("routing_exchange_peering", RoutingGameTests::exchangePeering);
         ROUTING_TESTS.put("routing_vlan_trunking", RoutingGameTests::vlanTrunking);
+        ROUTING_TESTS.put("routing_directory_control", RoutingGameTests::directoryControl);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ROUTING_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));

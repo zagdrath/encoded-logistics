@@ -388,6 +388,14 @@ public class Config {
             .comment("Lanes a Trunk Port carries, shared by the devices on its segments.")
             .defineInRange("trunkPortLanes", 64, 1, 4096);
 
+    public static final ModConfigSpec.DoubleValue DIRECTORY_DRAIN = BUILDER
+            .comment("FE per tick a Directory Server (block or rack) drains while its network runs.")
+            .defineInRange("directoryDrain", 2.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue DIRECTORY_CACHE_SECONDS = BUILDER
+            .comment("How long a resolved SYSNAME/DEVICE name is kept (a route or network change clears it sooner).")
+            .defineInRange("directoryCacheSeconds", 30, 0, 3_600);
+
     public static final ModConfigSpec.IntValue EXCHANGE_PORTS = BUILDER
             .comment("Ports an Exchange Switch has (each member Router takes one; its owner can offer fewer).")
             .defineInRange("exchangePorts", 32, 1, 256);

@@ -12,12 +12,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.AccessPointBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
@@ -26,6 +29,9 @@ import net.zagdrath.encodedlogistics.blockentity.TerminalDeskBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.WirelessPortBlockEntity;
 import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.ElclMessage;
+import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
+import net.zagdrath.encodedlogistics.elcl.cmd.Invocation;
 import net.zagdrath.encodedlogistics.elcl.store.ElclStore;
 import net.zagdrath.encodedlogistics.elcl.store.SystemData;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
@@ -33,8 +39,11 @@ import net.zagdrath.encodedlogistics.machine.MachineBridges;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.network.routing.Directories;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
 // The devices scripts name (COMMANDS.md 5): CTLIF01 (Control Interfaces), ELDESK01 (Terminal Desks), rack devices by
@@ -113,6 +122,64 @@ public final class ElclDevices {
 
     private ElclDevices() {}
 
+    // The command running on this thread, for qualified names (Directories.resolve).
+    private record Caller(Invocation call, RackPermission permission) {}
+
+    private static final ThreadLocal<@Nullable Caller> CALLER = new ThreadLocal<>();
+
+    // A qualified name that didn't resolve: ELC2603 / ELC2604, thrown through find and turned into an escape by run.
+    static final class Unresolved extends RuntimeException {
+        private final Directories.Refusal refusal;
+
+        Unresolved(Directories.Refusal refusal) {
+            super(refusal.getMessage(), null, false, false);
+            this.refusal = refusal;
+        }
+    }
+
+    // Runs a command's executor (CommandRunner, the VM), letting its device names be qualified.
+    public static void run(CommandDefinition command, Invocation call) throws ElclException {
+        Caller previous = CALLER.get();
+        RackPermission permission = CommandRunner.permission(command.auth());
+        CALLER.set(new Caller(call, permission != null ? permission : RackPermission.VIEW));
+        try {
+            Objects.requireNonNull(command.executor()).run(call);
+        } catch (Unresolved e) {
+            throw new ElclException(e.refusal.id(), e.refusal.name());
+        } finally {
+            CALLER.set(previous);
+        }
+    }
+
+    private static @Nullable Device qualified(MinecraftServer server, @Nullable NetworkRef network, String name) {
+        Caller caller = CALLER.get();
+        if (caller == null) {
+            return null;
+        }
+        ElclContext context = caller.call().context(ElclContext.class);
+        Player player = context instanceof TerminalContext terminal ? terminal.player() : null;
+        UUID id;
+        try {
+            id = OsCommands.player(caller.call());
+        } catch (ElclException e) {
+            id = null;
+        }
+        try {
+            Directories.Resolution resolution = Directories.resolve(server, network, name, player, id, caller.permission());
+            if (resolution.cached()) {
+                caller.call().send(ElclMessage.of("ELC2608", name.toUpperCase(java.util.Locale.ROOT)));
+            }
+            for (Device device : list(server, resolution.network())) {
+                if (device.name().equalsIgnoreCase(resolution.device())) {
+                    return device;
+                }
+            }
+            return null;
+        } catch (Directories.Refusal refusal) {
+            throw new Unresolved(refusal);
+        }
+    }
+
     // A rack device kind's type code.
     public static String code(RackDevice device) {
         String id = device.type().id().getPath();
@@ -123,6 +190,7 @@ public final class ElclDevices {
             case "memory_server" -> "MEMSRV";
             case "fabrication_server" -> "FABSRV";
             case "monitoring_server" -> "MONSRV";
+            case "directory_server" -> "DIR";
             case "rack_console" -> "RACKCON";
             case "rack_fabrication_console" -> "RACKFAB";
             case "rack_schematic_console" -> "RACKSCH";
@@ -271,7 +339,12 @@ public final class ElclDevices {
         }
     }
 
+    // A device by its name on a network; SYSNAME/DEVICE (a device another network's Directory Servers publish) while a
+    // command runs (run: its caller's permissions decide).
     public static @Nullable Device find(MinecraftServer server, @Nullable NetworkRef network, String name) {
+        if (name.indexOf('/') > 0) {
+            return qualified(server, network, name);
+        }
         for (Device device : list(server, network)) {
             if (device.name().equalsIgnoreCase(name)) {
                 return device;

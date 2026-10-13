@@ -70,7 +70,7 @@ public final class CommandRunner {
         }
         Call call = new Call(command, statement, context);
         try {
-            command.executor().run(call);
+            ElclDevices.run(command, call);
             return new Result(statement, call.messages, call.returns, null);
         } catch (ElclException e) {
             return new Result(statement, call.messages, call.returns, e.elclMessage());

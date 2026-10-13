@@ -212,6 +212,9 @@ networks and neighbours by their system names (`ELNET02`), as the Router's route
 | `APVIXMBR` | `IX`(P1, Req: an Exchange Switch by device name, `XSW01`, or its own name) `NETWORK`(P2, Req): approve a join request | configure (and the exchange's owner) | ELC2610, ELC2611, ELC2612, ELC2613; ELC2614 on success |
 | `RMVIXMBR` | `IX`(P1, Req) `NETWORK`(P2, Req): remove a member or refuse a request | configure (and the exchange's owner) | ELC2610, ELC2611, ELC2612; ELC2615 on success |
 | `WRKIX` | `IX`(P1, Req): Work with Exchange: members and requests (port, status, peering, routes learned, traffic); 4=Remove member, 5=Display, 8=Approve request; F10=Sessions, F11=Requests; interactive only | view | ELC2610 |
+| `RTVDIRENT` | `NAME`(P1, Req: `SYSNAME/DEVICE`) `RTNTYPE`(*CHAR) `RTNNETWORK`(*CHAR) `RTNHOPS`(*INT) | view (and on the target network) | ELC2603, ELC2604; ELC2608 when answered from the cache |
+| `CHGDIRENT` **[EXT]** | `DEV`(P1, Req) `PUBLISH`(P2, Req: `*YES\|*NO`): publish a device of this network (or stop) on its Directory Servers | configure | ELC1301, ELC2616; ELC2617 / ELC2618 on success |
+| `WRKDIR` | `DIR(*FIRST\|name)`: Work with Directory: the network's devices by qualified name, published or private, lookups in the last hour, and the latest lookups made from here; 2=Publish, 3=Unpublish, 5=Display; F10=Lookups; interactive only | view | ELC2616 |
 
 *(Dynamic routing: a Router in Dynamic mode learns, from the other Dynamic Routers it neighbours (one links to the
 other's network with a Link Card, or both peer at an Exchange Switch), a path to every network beyond, and its routes
@@ -226,7 +229,14 @@ other Routers, each one's ACLs on the networks either side of its hop apply too.
 
 *(Exchange Switches: Routers join with a Cross-Connect; members peer through the route server (those who opt in) or
 bilaterally (both sides accept), and each side sets, per peer, whether it exchanges routes and allows transit. A peer's
-network is `*CONNECTED`, its next hop `IX:name`. Exchange Switches are devices of type `XSW`, Trunk Ports (VLAN trunking) of type `TRK`.)*
+network is `*CONNECTED`, its next hop `IX:name`. Exchange Switches are devices of type `XSW`, Trunk Ports (VLAN trunking) of type `TRK`., Directory Servers (block and rack) of type `DIR`.)*
+
+*(Qualified names: any command that takes a device takes `SYSNAME/DEVICE` for a device on another network. It
+resolves when a Router on the caller's network has a route to that network, a Directory Server there publishes the
+device, one of those Routers has a **Control** policy (a route mode beside Move and Share, its ACL matching
+`*CONTROL`) to it, and the caller has the command's Firewall permission on the target network (checked there). What
+resolved is kept `directoryCacheSeconds` (30) or until a route or the networks change; the Firewall is asked every
+time. A name on the caller's own network resolves as the plain name.)*
 
 ## 8. Messages, displays and output
 
