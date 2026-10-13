@@ -259,6 +259,23 @@ final class BuiltinCommands {
         add(CommandDefinition.of("RNMDEV", "Rename Device").auth(CONFIGURE).positional(2)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("NEWNAME", "New name", Kind.NAME).req()));
+        // [EXT] Dynamic routing (the routing handoff): RoutingCommands.
+        add(CommandDefinition.of("RTVRTE", "Retrieve Route").auth(VIEW).positional(2)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("NETWORK", "Network", Kind.NAME).req())
+                .p(rtn("RTNNEXT", "Return next hop", VarType.CHAR))
+                .p(rtn("RTNCOST", "Return cost", VarType.INT))
+                .p(rtn("RTNHOPS", "Return hops", VarType.INT)));
+        add(CommandDefinition.of("RTVNBRSTS", "Retrieve Neighbour Status").auth(VIEW).positional(2)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("NBR", "Neighbour", Kind.NAME).req())
+                .p(rtn("RTNSTS", "Return status", VarType.CHAR))
+                .p(rtn("RTNCOST", "Return cost", VarType.INT))
+                .p(rtn("RTNUPTIME", "Return uptime (s)", VarType.INT)));
+        add(CommandDefinition.of("CHGNBR", "Change Neighbour").auth(CONFIGURE).positional(3)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("NBR", "Neighbour", Kind.NAME).req())
+                .p(p("COST", "Cost override", Kind.INT).sv("*DFT").dft("*DFT").range(1, 1_000_000)));
         // [EXT] Machines with a Small Wireless Bridge on (Arcforge): MachineCommands.
         add(CommandDefinition.of("RTVMCHSTS", "Retrieve Machine Status").auth(VIEW).positional(1)
                 .p(p("MCH", "Machine", Kind.DEVICE).req())
@@ -510,7 +527,7 @@ final class BuiltinCommands {
                 .p(p("TRG", "Trigger", Kind.NAME).req())
                 .p(p("EVENT", "Event", Kind.SPECIAL).req().sv("*ITMBELOW", "*ITMABOVE", "*STGFULL", "*DEVFAULT", "*DEVONLINE", "*DEVOFFLINE",
                         "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*CRFSTALL", "*RSCHANGE", "*DSPTOUCH", "*MCHIDLE", "*MCHDONE", "*MCHFAULT",
-                        "*MCHNOPWR"))
+                        "*MCHNOPWR", "*NBRUP", "*NBRDOWN", "*RTECHG", "*ACLDENY"))
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ANY").dft("*ANY").len(64))
                 .p(p("DEV", "Device", Kind.DEVICE).sv("*ANY").dft("*ANY"))
@@ -544,6 +561,10 @@ final class BuiltinCommands {
         add(CommandDefinition.of("WRKSCH", "Work with Schematics").context(INTERACTIVE).positional(1)
                 .p(p("HOLDER", "Holder", Kind.NAME).sv("*ALL").dft("*ALL")));
         add(CommandDefinition.of("DSPNETSTS", "Display Network Status").context(INTERACTIVE));
+        add(CommandDefinition.of("DSPROUTE", "Display Route Table").context(INTERACTIVE).positional(1)
+                .p(p("RTR", "Router", Kind.DEVICE).req()));
+        add(CommandDefinition.of("DSPNBR", "Display Neighbours").context(INTERACTIVE).positional(1)
+                .p(p("RTR", "Router", Kind.DEVICE).req()));
         add(CommandDefinition.of("WRKSPLF", "Work with Spooled Files").context(INTERACTIVE).positional(1)
                 .p(p("JOB", "Job name", Kind.NAME).sv("*ALL").dft("*ALL").len(28)));
         add(CommandDefinition.of("SIGNOFF", "Sign Off").context(INTERACTIVE));

@@ -23,6 +23,24 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Added
+
+- **Dynamic routing.** A Router can now run in **Dynamic** mode (its panel's new Mode tab; every existing Router loads
+  as Static and works exactly as before). Dynamic Routers whose networks are linked (a Link Card) find each other,
+  share what they can reach, and work out the cheapest path to every network beyond (more Optical Transceivers make a
+  hop cheaper). A route can then go to any network in the Router's route table, not only one it links to: its items
+  travel Router to Router along the best path, each Router on the way carrying them with its own throughput, and never
+  land in a network in between. If a Router on the path goes down, the others find a new path within a few seconds
+  (`reconvergeSeconds`); until there is one, the route pauses and nothing is lost.
+  - **Transit:** a network lets other networks' traffic cross it only if its Routers allow it: None (the default),
+    Listed (click networks on the Table tab) or All.
+  - The Router's panel has tabs: **Routes** (as before), **Mode** (routing mode, transit, neighbours, routes, limits,
+    throughput) and **Table** (the route table: network, next hop, cost, hops; click the heading for the neighbours
+    and their costs, which can be overridden). Its popup shows its mode, neighbours and known networks.
+  - Config: `routingBaseCost`, `reconvergeSeconds`, `maxHops` (16).
+  - Terminal OS: `DSPROUTE` and `DSPNBR` screens, `RTVRTE`, `RTVNBRSTS` and `CHGNBR`, and the trigger events
+    `*NBRUP`, `*NBRDOWN` and `*RTECHG`.
+
 ## [1.2.1] - 2026-10-12
 
 ### Changed

@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "encodedlogistics:block/directory_server/directory_server",
+  "particle": "encodedlogistics:block/directory_server/directory_server"
+ },
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    2,
+    0,
+    2
+   ],
+   "to": [
+    14,
+    14,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      6.0,
+      7.0
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      0.0,
+      12.0,
+      7.0
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      0.0,
+      12.0,
+      7.0
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      6.0,
+      0.0,
+      12.0,
+      7.0
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      8.0,
+      6.0,
+      14.0
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      8.0,
+      6.0,
+      14.0
+     ]
+    }
+   }
+  }
+ ]
+}

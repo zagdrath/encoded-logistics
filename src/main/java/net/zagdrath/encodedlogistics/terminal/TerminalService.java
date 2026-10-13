@@ -120,6 +120,8 @@ public final class TerminalService {
             case "devices" -> devices(context, true);
             case "device" -> device(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "machine" -> machine(context, words.size() > 1 ? words.get(1) : "");
+            case "routes" -> RoutingScreens.routes(context, words.size() > 1 ? words.get(1) : "");
+            case "neighbours" -> RoutingScreens.neighbours(context, words.size() > 1 ? words.get(1) : "");
             case "locate" -> locate(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "status" -> status(context);
             case "detail" -> detail(context, words.size() > 1 ? words.get(1) : "");

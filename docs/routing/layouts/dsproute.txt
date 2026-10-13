@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  DSPROUTE                     Display Route Table              System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Router . . :  RTR01 (ELNET01)   Mode . . :  *DYNAMIC   Routes . :  14
+03 | 
+04 |  Destination   Next hop       Cost   Hops  Source     Age
+05 |  ELNET02       direct           10      1  *CONNECTED 2:14:06
+06 |  ELNET07       ELNET02          35      2  *DYNAMIC   0:41:10
+07 |  ELNET15       IX:MAIN          42      2  *DYNAMIC   0:12:55
+08 |  ELNET19       ELNET07          60      3  *DYNAMIC   0:09:31
+09 |  ELNET22       IX:MAIN          71      3  *DYNAMIC   0:12:55
+10 |  FARMNET       IX:MAIN          88      4  *DYNAMIC   0:00:04
+11 |  BASE          ELNET02           5      1  *STATIC    12:30:00
+12 | 
+13 |  *STATIC routes override *DYNAMIC ones.  FARMNET reconverged 4 s ago.
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 | 
+21 | 
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F11=Neighbours F12=Cancel

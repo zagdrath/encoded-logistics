@@ -1,0 +1,69 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "encodedlogistics:block/exchange_switch/exchange_switch",
+  "particle": "encodedlogistics:block/exchange_switch/exchange_switch"
+ },
+ "elements": [
+  {
+   "name": "chassis_upper",
+   "from": [
+    1,
+    0,
+    2
+   ],
+   "to": [
+    15,
+    15,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      3.5,
+      3.75
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      3.5,
+      11.0,
+      7.25
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      0.0,
+      7.0,
+      3.75
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      0.0,
+      7.0,
+      3.75
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      0.0,
+      11.0,
+      3.0
+     ]
+    }
+   }
+  }
+ ]
+}

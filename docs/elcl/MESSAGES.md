@@ -231,6 +231,20 @@ The commands on files:
 | ELC2503 | 10 | Job &1 has no steps (not planned yet). | *(`RTVCRFSTP`, WRKCRFJOB 8=Display steps)*
 | ELC2504 | 00 | Schematic &1 moved to the drawer. | *(WRKSCH 4=Remove)*
 
+## ELC26xx — Routing and interconnect *(added)*
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC2601 | 30 | Router &1 not found. | *(`RTR` names no Router on the network)*
+| ELC2602 | 30 | No route to &1. | *(`RTVRTE`: not in the Router's route table)*
+| ELC2603 | 30 | Name &1 not found or no route to its network. | *(a qualified name `SYSNAME/DEVICE`, `RTVDIRENT`)*
+| ELC2604 | 30 | Control of &1 is not permitted (policy or Firewall). | *(no CONTROL policy to its network, or no Firewall permission there)*
+| ELC2605 | 30 | &1 is not a neighbour of &2. | *(`RTVNBRSTS`, `CHGNBR`)*
+| ELC2606 | 30 | ACL &1 not found. | *(the ACL commands)*
+| ELC2607 | 30 | ACL &1 has no rule &2. | *(`RMVACLE`, `CHGACLE`)*
+| ELC2608 | 10 | &1 resolved from cache. | *(a qualified name answered from the Directory cache)*
+| ELC2609 | 00 | Neighbour &1 of &2 changed. | *(added: `CHGNBR`)*
+
 ## USRxxxx — User messages
 
 Raised with `SNDPGMMSG MSGTYPE(*ESCAPE)`; default `USR0001`.

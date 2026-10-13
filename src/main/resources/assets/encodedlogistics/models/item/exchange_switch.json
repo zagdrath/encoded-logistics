@@ -1,0 +1,201 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "encodedlogistics:block/exchange_switch/exchange_switch",
+  "particle": "encodedlogistics:block/exchange_switch/exchange_switch"
+ },
+ "elements": [
+  {
+   "name": "chassis_lower",
+   "from": [
+    1,
+    0,
+    2
+   ],
+   "to": [
+    15,
+    16,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      3.75,
+      3.5,
+      7.75
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      7.5,
+      11.0,
+      11.5
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      3.75,
+      7.0,
+      7.75
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      3.75,
+      7.0,
+      7.75
+     ]
+    },
+    "down": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      0.0,
+      11.0,
+      3.0
+     ]
+    }
+   }
+  },
+  {
+   "name": "chassis_upper",
+   "from": [
+    1,
+    16,
+    2
+   ],
+   "to": [
+    15,
+    31,
+    14
+   ],
+   "faces": {
+    "north": {
+     "texture": "#t",
+     "uv": [
+      0.0,
+      0.0,
+      3.5,
+      3.75
+     ]
+    },
+    "south": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      3.5,
+      11.0,
+      7.25
+     ]
+    },
+    "east": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      0.0,
+      7.0,
+      3.75
+     ]
+    },
+    "west": {
+     "texture": "#t",
+     "uv": [
+      4.0,
+      0.0,
+      7.0,
+      3.75
+     ]
+    },
+    "up": {
+     "texture": "#t",
+     "uv": [
+      7.5,
+      0.0,
+      11.0,
+      3.0
+     ]
+    }
+   }
+  }
+ ],
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0,
+    -4,
+    0
+   ],
+   "scale": [
+    0.38,
+    0.38,
+    0.38
+   ]
+  },
+  "ground": {
+   "translation": [
+    0,
+    3,
+    0
+   ],
+   "scale": [
+    0.2,
+    0.2,
+    0.2
+   ]
+  },
+  "fixed": {
+   "scale": [
+    0.35,
+    0.35,
+    0.35
+   ],
+   "translation": [
+    0,
+    -4,
+    0
+   ]
+  },
+  "thirdperson_righthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    0,
+    1,
+    1
+   ],
+   "scale": [
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    45,
+    0
+   ],
+   "scale": [
+    0.3,
+    0.3,
+    0.3
+   ]
+  }
+ }
+}

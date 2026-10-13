@@ -73,7 +73,7 @@ final class Rack2GameTests {
     }
 
     // A storage device with a drive in its first slot (and settings, if any).
-    private static <T extends StorageDevice> T storageDevice(GameTestHelper helper, BlockPos master, RackDeviceType type, int u, Class<T> kind,
+    static <T extends StorageDevice> T storageDevice(GameTestHelper helper, BlockPos master, RackDeviceType type, int u, Class<T> kind,
             int priority, int access) {
         T device = RackGameTests.install(helper, master, type, u, kind);
         TagValueOutput settings = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, helper.getLevel().registryAccess());

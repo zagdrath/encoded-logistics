@@ -39,6 +39,7 @@ public final class ElclSetup {
         DbCommands.bind();
         PlcCommands.bind();
         SignalCommands.bind();
+        RoutingCommands.bind();
         StoredFileService.setLive(new LiveFiles());
         Midranges.register();
         Displays.register(system -> {

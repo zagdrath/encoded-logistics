@@ -207,6 +207,16 @@ public final class ElclMessages {
         define("ELC2502", SEVERE, "Crafting job &1 not found.");
         define("ELC2503", WARNING, "Job &1 has no steps (not planned yet).");
         define("ELC2504", INFO, "Schematic &1 moved to the drawer.");
+        // Routing and interconnect (the routing handoff): RTVRTE, RTVNBRSTS, CHGNBR, the ACL commands, RTVDIRENT.
+        define("ELC2601", SEVERE, "Router &1 not found.");
+        define("ELC2602", SEVERE, "No route to &1.");
+        define("ELC2603", SEVERE, "Name &1 not found or no route to its network.");
+        define("ELC2604", SEVERE, "Control of &1 is not permitted (policy or Firewall).");
+        define("ELC2605", SEVERE, "&1 is not a neighbour of &2.");
+        define("ELC2606", SEVERE, "ACL &1 not found.");
+        define("ELC2607", SEVERE, "ACL &1 has no rule &2.");
+        define("ELC2608", WARNING, "&1 resolved from cache.");
+        define("ELC2609", INFO, "Neighbour &1 of &2 changed.");
     }
 
     public static Map<String, Definition> all() {

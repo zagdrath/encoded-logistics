@@ -16,6 +16,7 @@ import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.JobEvents;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Trigger events from the game (COMMANDS.md 9): what happened, on which network, its device or item and &DATA. Each
 // event is handed to the listeners; the trigger service (WRKTRGEVT's entries, debounced) is one of them.
@@ -86,6 +87,24 @@ public final class ElclEvents {
         String reason = job.stallReason != null ? net.minecraft.network.chat.Component.translatable("gui.encodedlogistics.jobs.reason." + job.stallReason)
                 .getString() : "";
         fire(server, new Event(network, "*CRFSTALL", "", ElclItems.text(job.target), (id + " " + step + " " + reason).trim()));
+    }
+
+    // *NBRUP, *NBRDOWN: a Router's dynamic-routing neighbour came up (FULL) or went down. &DATA = "RTR01 ELNET02" (the
+    // Router, then the neighbour's network).
+    public static void neighbour(MinecraftServer server, NetworkRef network, String router, String neighbour, boolean up) {
+        fire(server, new Event(network, up ? "*NBRUP" : "*NBRDOWN", router, router + " " + neighbour));
+    }
+
+    // *RTECHG: a Router's best path to a network changed (a new next hop or cost, found or lost). &DATA = "RTR01 ELNET07".
+    public static void routeChanged(MinecraftServer server, NetworkRef network, String router, String destination) {
+        fire(server, new Event(network, "*RTECHG", router, router + " " + destination));
+    }
+
+    // *ACLDENY: an ACL rule on a Router denied a resource. &DATA = "RTR01 NOFUEL 10 COAL" (the Router, the ACL, the rule's
+    // sequence number, the resource); that resource for ITEM().
+    public static void aclDenied(MinecraftServer server, NetworkRef network, String router, String acl, int seq, StorageKey key) {
+        String text = ElclItems.text(key);
+        fire(server, new Event(network, "*ACLDENY", router, text, router + " " + acl + " " + seq + " " + text));
     }
 
     // *MCHIDLE, *MCHFAULT, *MCHNOPWR: a machine with a Small Wireless Bridge on went idle, faulted or ran short of power.

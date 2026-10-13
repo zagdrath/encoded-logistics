@@ -68,6 +68,8 @@ final class ScreenCommands {
             case "WRKDEV" -> new DevicesPanel(screen);
             case "WRKMCH" -> new WrkMchPanel(screen);
             case "DSPNETSTS" -> new StatusPanel(screen);
+            case "DSPROUTE" -> new RoutingPanel(screen, value(statement, "RTR", ""), false);
+            case "DSPNBR" -> new RoutingPanel(screen, value(statement, "RTR", ""), true);
             case "WRKCRFJOB" -> new JobsPanel(screen);
             case "WRKSCH" -> new SchematicsPanel(screen, value(statement, "HOLDER", "*ALL"));
             case "WRKACTJOB" -> new WrkActJobPanel(screen);

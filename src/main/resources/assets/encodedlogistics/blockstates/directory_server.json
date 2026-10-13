@@ -1,0 +1,78 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server"
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server_on"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server_on",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server_on",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/directory_server/directory_server_on",
+    "y": 270
+   }
+  }
+ ]
+}

@@ -47,6 +47,8 @@ public final class EncodedLogisticsGameTests {
     private static final Map<String, Consumer<GameTestHelper>> TESTS = new LinkedHashMap<>();
     // Run only while the Arcforge integration is on (Arcforge in the run: -Parcforge_jar=...), with longer to finish.
     private static final Map<String, Consumer<GameTestHelper>> ARCFORGE_TESTS = new LinkedHashMap<>();
+    // Dynamic routing: Routers take a few seconds to find each other and converge, so these get longer.
+    private static final Map<String, Consumer<GameTestHelper>> ROUTING_TESTS = new LinkedHashMap<>();
 
     static {
         TESTS.put("frame_forms", EncodedLogisticsGameTests::frameForms);
@@ -267,7 +269,9 @@ public final class EncodedLogisticsGameTests {
         ARCFORGE_TESTS.put("arcforge_power_from_network", ArcforgeGameTests::powerFromNetwork);
         ARCFORGE_TESTS.put("arcforge_commands", ArcforgeGameTests::commands);
         ARCFORGE_TESTS.put("arcforge_triggers", ArcforgeGameTests::triggers);
+        ROUTING_TESTS.put("routing_multi_hop", RoutingGameTests::multiHop);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
+        ROUTING_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
     }
 
@@ -284,6 +288,10 @@ public final class EncodedLogisticsGameTests {
                 200, 0, true, Rotation.NONE, false, 1, 1, false, 10);
         TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
                 ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), data)));
+        TestData<Holder<TestEnvironmentDefinition<?>>> routing = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
+                600, 0, true, Rotation.NONE, false, 1, 1, false, 10);
+        ROUTING_TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
+                ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), routing)));
         if (MachineBridges.enabled()) {
             TestData<Holder<TestEnvironmentDefinition<?>>> longer = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
                     1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);

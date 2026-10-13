@@ -194,6 +194,23 @@ Server config (`signals`): `audioMaxBytes` (MB, 4), `audioMaxSeconds` (180), `mi
 single-player, off on dedicated servers), `webAudioHosts` (a listed host allows its subdomains; empty: none),
 `sirenMaxRange` (96), `speakerMaxRange` (64), `signalDeviceDrain` (FE/t). Client config: `allowWebAudio` (off: web audio plays only for a player who turns it on).
 
+## 7c. Routing and interconnect **[EXT]**
+
+The routing handoff (docs/routing/HANDOFF.txt). Routers are named as devices (`RTR`, on the caller's network);
+networks and neighbours by their system names (`ELNET02`), as the Router's route table shows them.
+
+| Command | Parameters | Auth | Errors |
+|---------|-----------|------|--------|
+| `RTVRTE` | `RTR`(P1, Req) `NETWORK`(P2, Req) `RTNNEXT`(*CHAR: `DIRECT`, a network, `IX:name`) `RTNCOST` `RTNHOPS`(*INT) | view | ELC2601, ELC2602 |
+| `RTVNBRSTS` | `RTR`(P1, Req) `NBR`(P2, Req) `RTNSTS`(*CHAR: `*FULL\|*INIT\|*DOWN`) `RTNCOST`(*INT) `RTNUPTIME`(*INT, seconds; 0 unless *FULL) | view | ELC2601, ELC2605 |
+| `CHGNBR` | `RTR`(P1, Req) `NBR`(P2, Req) `COST(*DFT\|1-1000000)`: the neighbour's cost override (`*DFT`: none) | configure | ELC2601, ELC2605; ELC2609 on success |
+| `DSPROUTE` / `DSPNBR` | `RTR`(P1, Req): the route table / the neighbours (F11 / F10 switch between them); interactive only | view | ELC2601 |
+
+*(Dynamic routing: a Router in Dynamic mode learns, from the other Dynamic Routers it neighbours (one links to the
+other's network with a Link Card, or both peer at an Exchange Switch), a path to every network beyond, and its routes
+can go to any of them. Its own links are `*STATIC` and always win; a neighbour's network is `*CONNECTED`, anything
+further `*DYNAMIC`. A Router in Static mode has only its own links and no neighbours.)*
+
 ## 8. Messages, displays and output
 
 | Command | Parameters | Context | Notes |
@@ -250,6 +267,9 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 | `*DSPTOUCH` **[EXT]** | `DEV` (or `*ANY`) | screen, region and canvas point, e.g. `DSP01 A 40 12` |
 | `*MCHIDLE` / `*MCHFAULT` / `*MCHNOPWR` **[EXT]** | `DEV` (or `*ANY`): an Arcforge machine goes idle, faults, runs short of power | machine name and the machine's words, e.g. `ARCCRU01 No power` |
 | `*MCHDONE` **[EXT]** | `DEV` (or `*ANY`), `ITEM` (or `*ANY`): an Arcforge machine finishes an operation | machine name, count and first thing made, e.g. `ARCCRU01 5 BONE_MEAL` |
+| `*NBRUP` / `*NBRDOWN` **[EXT]** | `DEV` (a Router, or `*ANY`): a dynamic-routing neighbour comes up (*FULL) or goes down | the Router and the neighbour's network, e.g. `RTR01 ELNET02` |
+| `*RTECHG` **[EXT]** | `DEV` (a Router, or `*ANY`): its best path to a network changes (found, lost, a new next hop or cost) | the Router and the network, e.g. `RTR01 ELNET07` |
+| `*ACLDENY` **[EXT]** | `DEV` (a Router, or `*ANY`): one of its ACL rules denies a resource | the Router, ACL, rule and resource, e.g. `RTR01 NOFUEL 10 COAL` |
 
 Triggers are edge-triggered (fire once per crossing) and debounced
 (minimum 1 second between firings of the same trigger).

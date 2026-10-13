@@ -1,0 +1,38 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "g": "encodedlogistics:block/exchange_switch/leds_online",
+  "particle": "encodedlogistics:block/exchange_switch/exchange_switch"
+ },
+ "elements": [
+  {
+   "name": "leds",
+   "from": [
+    1,
+    0,
+    1.99
+   ],
+   "to": [
+    15,
+    15,
+    1.99
+   ],
+   "faces": {
+    "north": {
+     "texture": "#g",
+     "uv": [
+      0,
+      0.0,
+      14.0,
+      7.5
+     ]
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

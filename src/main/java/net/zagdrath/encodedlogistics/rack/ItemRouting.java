@@ -47,9 +47,18 @@ public final class ItemRouting {
     // A Share route's options, as the panels number them (with the mode toggle first).
     public static final int SHARE_MODE = 0, SHARE_ACCESS = 1, SHARE_CRAFTING = 2, SHARE_BIDIRECTIONAL = 3, SHARE_OPTIONS = 4;
 
+    // A Router route's destination when it's a network beyond its endpoints, reached through dynamic routing (target).
+    public static final int REMOTE = -1;
+
     // The filter is the route's own (changed in place by the panel's actions). readWrite, crafting and bidirectional are
-    // a Share route's options.
-    public record Route(int source, int dest, PartFilter filter, Mode mode, boolean readWrite, boolean crafting, boolean bidirectional) {
+    // a Share route's options. target: a Router route's destination network (its network id), kept for every route to
+    // a network it can tell; dest is REMOTE when that network is none of its endpoints (it's reached through others).
+    public record Route(int source, int dest, PartFilter filter, Mode mode, boolean readWrite, boolean crafting, boolean bidirectional,
+            @Nullable NetworkRef target) {
+        public Route(int source, int dest, PartFilter filter, Mode mode, boolean readWrite, boolean crafting, boolean bidirectional) {
+            this(source, dest, filter, mode, readWrite, crafting, bidirectional, null);
+        }
+
         public Route(int source, int dest, PartFilter filter) {
             this(source, dest, filter, Mode.MOVE, true, true, false);
         }
@@ -62,6 +71,10 @@ public final class ItemRouting {
             return mode == Mode.SHARE;
         }
 
+        public boolean remote() {
+            return dest == REMOTE;
+        }
+
         // Whether it shares from endpoint from into endpoint to.
         public boolean sharesInto(int from, int to) {
             return shares() && (source == from && dest == to || bidirectional && source == to && dest == from);
@@ -72,20 +85,29 @@ public final class ItemRouting {
         }
 
         public Route withSource(int source) {
-            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional);
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target);
         }
 
         public Route withDest(int dest) {
-            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional);
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, null);
+        }
+
+        // To a network beyond the endpoints.
+        public Route toRemote(NetworkRef network) {
+            return new Route(source, REMOTE, filter, mode, readWrite, crafting, bidirectional, network);
+        }
+
+        public Route withTarget(@Nullable NetworkRef target) {
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target);
         }
 
         // The same with one Share option (SHARE_*) toggled.
         public Route toggled(int option) {
             return switch (option) {
-                case SHARE_MODE -> new Route(source, dest, filter, shares() ? Mode.MOVE : Mode.SHARE, readWrite, crafting, bidirectional);
-                case SHARE_ACCESS -> new Route(source, dest, filter, mode, !readWrite, crafting, bidirectional);
-                case SHARE_CRAFTING -> new Route(source, dest, filter, mode, readWrite, !crafting, bidirectional);
-                default -> new Route(source, dest, filter, mode, readWrite, crafting, !bidirectional);
+                case SHARE_MODE -> new Route(source, dest, filter, shares() ? Mode.MOVE : Mode.SHARE, readWrite, crafting, bidirectional, target);
+                case SHARE_ACCESS -> new Route(source, dest, filter, mode, !readWrite, crafting, bidirectional, target);
+                case SHARE_CRAFTING -> new Route(source, dest, filter, mode, readWrite, !crafting, bidirectional, target);
+                default -> new Route(source, dest, filter, mode, readWrite, crafting, !bidirectional, target);
             };
         }
 
@@ -243,6 +265,9 @@ public final class ItemRouting {
             ValueOutput child = list.addChild();
             child.putInt("source", route.source());
             child.putInt("dest", route.dest());
+            if (route.target() != null) {
+                child.store("target", NetworkRef.CODEC, route.target());
+            }
             child.putBoolean("lists", true);
             route.filter().save(child);
             if (route.shares()) {
@@ -254,14 +279,17 @@ public final class ItemRouting {
         }
     }
 
-    // Routes whose endpoints are below endpoints, up to max. Routes saved before filter lists had one item or none: they
-    // load as an allow list of that item, or a deny list of nothing (everything, as before). Routes saved before modes
-    // load as Move.
+    // Routes whose endpoints are below endpoints (or whose destination is a remote network), up to max. Routes saved
+    // before filter lists had one item or none: they load as an allow list of that item, or a deny list of nothing
+    // (everything, as before). Routes saved before modes load as Move; before network ids, without a target (the Router
+    // fills it in).
     public static List<Route> load(ValueInput input, String name, int endpoints, int max) {
         List<Route> routes = new ArrayList<>();
         for (ValueInput child : input.childrenListOrEmpty(name)) {
             int source = child.getIntOr("source", 0), dest = child.getIntOr("dest", 0);
-            if (source >= 0 && source < endpoints && dest >= 0 && dest < endpoints && routes.size() < max) {
+            NetworkRef target = child.read("target", NetworkRef.CODEC).orElse(null);
+            boolean destOk = dest >= 0 && dest < endpoints || dest == REMOTE && target != null;
+            if (source >= 0 && source < endpoints && destOk && routes.size() < max) {
                 PartFilter filter;
                 if (child.getBooleanOr("lists", false)) {
                     filter = new PartFilter();
@@ -272,19 +300,19 @@ public final class ItemRouting {
                 }
                 boolean share = child.getStringOr("mode", "move").equals("share");
                 routes.add(new Route(source, dest, filter, share ? Mode.SHARE : Mode.MOVE, child.getBooleanOr("read_write", true),
-                        child.getBooleanOr("crafting", true), child.getBooleanOr("bidirectional", false)));
+                        child.getBooleanOr("crafting", true), child.getBooleanOr("bidirectional", false), target));
             }
         }
         return routes;
     }
 
-    // After endpoint index is removed: routes through it go, later endpoints move down one.
+    // After endpoint index is removed: routes through it go, later endpoints move down one (remote destinations stay).
     public static List<Route> withoutEndpoint(List<Route> routes, int index) {
         List<Route> kept = new ArrayList<>();
         for (Route route : routes) {
             if (route.source() != index && route.dest() != index) {
                 kept.add(new Route(route.source() > index ? route.source() - 1 : route.source(), route.dest() > index ? route.dest() - 1 : route.dest(),
-                        route.filter(), route.mode(), route.readWrite(), route.crafting(), route.bidirectional()));
+                        route.filter(), route.mode(), route.readWrite(), route.crafting(), route.bidirectional(), route.target()));
             }
         }
         return kept;

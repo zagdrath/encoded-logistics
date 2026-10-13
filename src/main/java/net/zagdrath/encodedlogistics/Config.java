@@ -366,6 +366,20 @@ public class Config {
             .comment("Items per second each Optical Transceiver in a Router adds.")
             .defineInRange("routerRatePerTransceiver", 16, 0, 4096);
 
+    public static final ModConfigSpec.IntValue ROUTING_BASE_COST = BUILDER
+            .comment("Dynamic routing: a hop costs this x 1000 / (what it carries + 1), rounded, at least 1 (what it carries: the smaller of",
+                    "its link's lanes and its Router's items per second). Lower costs win.")
+            .defineInRange("routingBaseCost", 100, 1, 100_000);
+
+    public static final ModConfigSpec.IntValue ROUTING_RECONVERGE_SECONDS = BUILDER
+            .comment("Dynamic routing: at most how long Routers take to find new paths after a neighbour goes down (missed hellos, then the",
+                    "recompute).")
+            .defineInRange("reconvergeSeconds", 5, 2, 60);
+
+    public static final ModConfigSpec.IntValue ROUTING_MAX_HOPS = BUILDER
+            .comment("Dynamic routing: the most hops a path may take.")
+            .defineInRange("maxHops", 16, 1, 64);
+
     public static final ModConfigSpec.IntValue UPS_CAPACITY = BUILDER
             .comment("FE a UPS's battery holds.")
             .defineInRange("upsCapacity", 1_000_000, 1, Integer.MAX_VALUE);

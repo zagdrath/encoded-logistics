@@ -1,0 +1,185 @@
+ENCODED LOGISTICS - HANDOFF: ROUTING AND INTERCONNECT (dynamic routing, Internet Exchange, Router ACLs, VLAN trunking, Directory)
+================================================================================================================================
+TERMS
+  - Reachability: which networks a Router can get traffic to, and by which path. Today only directly linked networks; after
+    this, any network learned through routing.
+  - Policies: the existing Router routes (Move or Share rules between two networks). They stay as they are, but may now target
+    any reachable network, not only a neighbour.
+  - Traffic for a policy follows the best current path, possibly crossing other networks.
+
+=====================================================================================================
+0. REVIEW FINDINGS (repo HEAD a2ce4e2, release 1.2.1)
+=====================================================================================================
+  Router = a rack device: rack/device/RouterDevice.java (implements ItemRouting.ShareSource). Its neighbours are `Linked(GlobalPos
+    node, String name)` entries (linked with Link Cards); routes are rack/ItemRouting.Route(int source, int dest, PartFilter
+    filter, Mode mode (MOVE / SHARE), boolean readWrite, boolean crafting, boolean bidirectional) - source / dest are indexes
+    into the Linked list; actions ACTION_ADD_ROUTE .. ACTION_SHARE_OPTION; throughput Config.ROUTER_BASE_RATE +
+    ROUTER_RATE_PER_TRANSCEIVER x transceivers (Optical Transceivers in its cages); drain likewise. ItemRouting.Leg /
+    ShareLink carry routes into the insert path (local first, then Share routes). GUI: textures/gui/rack/router.png.
+  Switches: rack/device/SwitchDevice.java + L3SwitchDevice.java - segments are a per-rack list of names (rack.segmentCount() /
+    segmentName(i)), each device stores a segment INDEX; QoS and routing rules on the L3 switch; GUI gui/rack/switch.png,
+    l3_switch.png with the tab sprites gui/sprites/rack/switch/tab_active / tab_inactive. Segment Isolator:
+    block/SegmentIsolatorBlock.java. Bridges / P2P: network bridge, wireless bridge, point_to_point_link (models/part/p2p_*).
+  Cable parts: models/part/*.json (ingress_port, egress_port, p2p_*, threshold_sensor, ...) - the Trunk Port follows them.
+  Messages: ELC00-04, 12-15, 22, 24 AND 25 are used in docs/elcl/MESSAGES.md (ELC25xx was taken by the Schematic Terminal), so
+    this feature uses ELC26xx (the spec asked for 25xx - renumber here if you prefer another range).
+
+=====================================================================================================
+0a. TEXTURES - docs/TEXTURE_STYLE.md (Encoded Logistics), applied exactly
+=====================================================================================================
+Every new block / part / item texture is drawn by tools/el_kit.py, which implements the guide: the 11-step steel ramp only;
+FLAT fields (no grain, speckle or brushed noise); the recessed-bevel frame (outer rail 1 px - top / left step 9, bottom /
+right step 6, corners 10 / 7 / 7 / 5, a 2-px glint at positions 6-7 on every edge; inner lip step 2 under the lit rails,
+step 5 inside the shaded rails); recesses with a step-2 back wall (step 1 deepest), a step-0 shadow line under the overhang
+and a step-6 lit lower lip; raised detail at step 7 with step-8 ends and a step-0 shadow down-right; dividers step 4 with
+step-3 ends; mid-tone fields (step 5 casings). Glows: static two-tone overlays (no flicker) in the guide's status-light
+colours (green base #3CE05A, glint #B5FFB0; the member-count digits light blue #50C2EC / #A3FFFA). Items: 4-7 tones per
+material, top-left light, outlined in the material's darkest step (the Cross-Connect's coil uses the guide's orange dye
+ramp). tools/el_kit.py check() runs the guide's checklist (ramp-only colours, brightness band, mid tones dominant) - every
+new texture passes. previews/blocks_with_mod.png shows them next to the mod's Drive Bay.
+
+=====================================================================================================
+1. DYNAMIC ROUTING (RouterDevice + a new network/routing package)
+=====================================================================================================
+  - routingMode: STATIC (default; every existing Router loads as STATIC, and its routes behave exactly as today) | DYNAMIC.
+  - Adjacency: two DYNAMIC Routers whose networks are directly linked (Network Bridge, Wireless Bridge, Point-to-Point Link, a
+    Linked entry, or a shared Exchange Switch) exchange HELLO every 20 ticks; 3 missed -> neighbour down. State per neighbour:
+    INIT -> FULL (link-state databases synced) / DOWN.
+  - Link-state: each Router floods an LSA (its networks, its neighbours with costs, transit policy, sequence number) to its
+    neighbours; every Router runs Dijkstra over the LSAs it holds (on change, debounced 20 ticks).
+  - Cost of a hop = ROUTING_BASE_COST [100] x 1000 / (min(link lanes, router throughput) + 1), rounded, min 1 (Optical
+    Transceivers raise throughput -> lower cost). Per-neighbour cost override (Router GUI / CHGNBR - see 6).
+  - Route table entry: destination network, next hop (neighbour), total cost, hop count, source (*CONNECTED | *STATIC |
+    *DYNAMIC), age. STATIC (today's Linked routes and manual entries) overrides DYNAMIC for the same destination.
+  - Policies (existing routes) gain `dest` = any reachable network (a network id, not only a Linked index); legacy routes are
+    migrated to the network id of their Linked entry and keep working unchanged.
+  - Multi-hop: a policy to a non-adjacent network sends traffic hop by hop along the best path; each hop's Router forwards it
+    (it never lands in an intermediate network's storage).
+  - Transit (Router setting): NONE (default) | LISTED (networks) | ALL. A path may cross a network only if its Routers allow
+    transit for the source network; transit throughput counts against each crossed Router.
+  - Failover: on adjacency loss, recompute within reconvergeSeconds [config 5]; while a policy has no path its Move transfers
+    and Share views PAUSE (queued, nothing lost) and resume on the new path.
+  - Loops: maxHops [config 16]; split horizon (never advertise a route back to the neighbour it was learned from); LSA
+    sequence numbers + age-out (60 s).
+  - Throughput of a path = the minimum of every hop's Router throughput (and link lanes).
+  - HUD + Router GUI: routing mode, neighbour count, route count.
+
+=====================================================================================================
+2. INTERNET EXCHANGE
+=====================================================================================================
+  exchange_switch (block, 1 x 2 x 1; blockstate facing + half lower|upper + online): models/block/exchange_switch/{lower,
+    upper}.json at 1 texel per px (textures/block/exchange_switch/exchange_switch.png: guide frames, 32 recessed port sockets,
+    raised vent slats on the sides, bolts on the top, the recessed display window); the PORT LEDs and the member-count display
+    are the only finer parts: leds_online.png (4 texels per px, STATIC - one two-tone LED per occupied port; two-digit member
+    count) via {lower,upper}_leds_online.json; offline = no overlay (the display and LEDs are dark). Named (anvil-style rename or its GUI). Several may exist.
+  cross_connect (item, x4): used on the Router (records it, like a Link Card), then on an Exchange Switch -> join request
+    (or join, if open). Each member Router takes a port; ports [config exchangePorts 32].
+  Ownership: the placer owns it. Membership OPEN | APPROVAL (the owner approves in the GUI's Members tab); the owner can remove
+    members; the owner can't change members' Routers (each side's own Firewall governs its Router).
+  Peering: BILATERAL (both sides accept a peering request) or ROUTE SERVER (members who opt in peer with every other opted-in
+    member automatically). Per-peer policy (each member, own side): exchange routes yes/no, allow transit yes/no, ACL.
+  GUI (previews/gui_exchange.png; the L3-switch panel + tabs): Members (network, owner, port, up; join requests highlighted for
+    the owner), Peers (sessions: up/down, routes exchanged, traffic rate), Setup (name, membership, route server, ports).
+  HUD: members / ports, sessions up, owner.
+
+=====================================================================================================
+3. ROUTER ACLs
+=====================================================================================================
+  Named ACLs per Router: ordered rules {seq, match (item | #tag | *ITEM *FLUID *PRES *ENERGY | *ANY), dir (*IN *OUT *BOTH),
+  action (*PERMIT | *DENY), rate (per minute, optional), quota (per game day, optional), hits, lastMatched}. First match wins;
+  default action [config aclDefault *PERMIT] shown as the last line. Applied to a policy, a neighbour or an exchange peer, in
+  either / both directions. Applies to Move (denied items aren't moved) and Share (denied items are invisible to the other
+  side). Rate / quota exceeded = deny until the window resets. Hit counters + last matched.
+  GUI: the Router's ACLs tab (previews/gui_router_acls.png): ACL picker, rule list (#, match, action, hits - compact counts
+  1.2k), Add / Edit / Del / Up / Dn (common/button_wide).
+
+=====================================================================================================
+4. VLAN TRUNKING
+=====================================================================================================
+  Segment IDs 1-4094 alongside names; on first load existing segments get IDs in order (index 0 -> ID 1 = the default
+  segment). Ports on L2 / L3 switches and on the new Trunk Port get a mode: ACCESS (one segment - today) | TRUNK (allowed
+  segment list + a native segment for untagged traffic). A trunk's lanes are shared by its segments; QoS rules still apply.
+  Isolation holds: segments on a trunk still can't see each other unless an L3 Switch or Router routes between them.
+  trunk_port (cable part): models/part/trunk_port(_active).json = the ingress port's geometry with its own textures
+  (textures/part/trunk_port/{front, side, status}.png; status: a static two-tone LED + up to 3 light-blue segment-count bars).
+  Switch port GUI (previews/gui_switch_ports.png): port, mode, allowed, native (the switch panel's new Ports tab).
+
+=====================================================================================================
+5. DIRECTORY SERVER + THE CONTROL POLICY
+=====================================================================================================
+  directory_server (block, facing + online; models/block/directory_server/*, 1 texel per px, static two-tone glow; its item
+  shows the block model, like the Drive Bay's) and directory_server_rack (1U rack device) - BUILT ON THE SHIPPED RACK-DEVICE
+  CONVENTION: its sheets are the Monitoring Server's (textures/block/rack_device/monitoring_server*.png) with only the type
+  accent tab recoloured to the guide's lime ramp (no shipped device uses lime) and the display content changed (a directory
+  tree; the _on sheet's 4 frames walk a lookup down it) - ears, faceplate, window, LED sockets, status LED and rear are the
+  shipped ones; directory_server_fault.png (+ .mcmeta) is the shipped fault blink; models/block/rack_device/directory_server,
+  _on, _fault.json are the Monitoring Server's three models renamed; the item icon item/directory_server_rack.png is the
+  Monitoring Server's icon with the lime tab (rack devices have flat item icons). previews/in_rack_with_shipped.png shows it
+  between the shipped Firewall, Monitoring Server, Router and L3 Switch.
+  Devices get a `published` setting (default false). Qualified names SYSNAME/DEVICE (e.g. ELNET15/LGT01): any ELCL command
+  that takes a device accepts one; it resolves through reachable Directory Servers. Resolution needs a route to the target
+  network AND a CONTROL policy (a new Router policy type beside MOVE and SHARE, with ACL support - its ACL matches *CONTROL).
+  The caller needs the Firewall permission on the TARGET network; checks run on the target side. Cache 30 s [config],
+  invalidated on route or device changes. GUI (previews/gui_directory.png): Published, Remote, Lookups.
+
+=====================================================================================================
+6. TERMINAL OS / ELCL (grids layouts/*.txt, renders previews/crt_*.png)
+=====================================================================================================
+  DSPROUTE (route table), DSPNBR (neighbours), WRKACL (rules, counters; 2=Change 4=Remove 6/7=Move up/down; F6=Add),
+  WRKIX (members, sessions, requests; 4=Remove 5=Display 8=Approve), WRKDIR (published devices, lookups; 2/3 publish).
+| Command | Parameters | Context | Notes |
+| `RTVRTE` | `RTR`(Req) `NETWORK`(Req) `RTNNEXT`(*CHAR) `RTNCOST`(*INT) `RTNHOPS`(*INT) | all | ELC2601, ELC2602. |
+| `RTVNBRSTS` | `RTR`(Req) `NBR`(Req) `RTNSTS`(*CHAR: *FULL *INIT *DOWN) `RTNCOST`(*INT) `RTNUPTIME`(*INT s) | all | ELC2601, ELC2605. |
+| `ADDACLE` | `RTR`(Req) `ACL`(Req) `SEQ`(*LAST \| n) `MATCH`(Req) `DIR`(*BOTH) `ACTION`(Req) `RATE`(*NONE \| n) `QUOTA`(*NONE \| n) | I, B | build permission. ELC2606, ELC0401. |
+| `RMVACLE` | `RTR`(Req) `ACL`(Req) `SEQ`(Req) | I, B | ELC2606, ELC2607. |
+| `CHGACLE` | `RTR`(Req) `ACL`(Req) `SEQ`(Req) + the ADDACLE parameters (*SAME) | I, B | ELC2606, ELC2607. |
+| `RTVDIRENT` | `NAME`(Req, SYSNAME/DEVICE) `RTNTYPE`(*CHAR) `RTNNETWORK`(*CHAR) `RTNHOPS`(*INT) | all | ELC2603, ELC2604, ELC2608. |
+Messages (ELC26xx): ELC2601 30 "Router &1 not found."  ELC2602 30 "No route to &1."  ELC2603 30 "Name &1 not found or no
+route to its network."  ELC2604 30 "Control of &1 is not permitted (policy or Firewall)."  ELC2605 30 "&1 is not a neighbour
+of &2."  ELC2606 30 "ACL &1 not found."  ELC2607 30 "ACL &1 has no rule &2."  ELC2608 10 "&1 resolved from cache."
+Trigger events: *NBRUP, *NBRDOWN (DATA = router, neighbour), *RTECHG (best path to a network changed), *ACLDENY (debounced:
+DATA = router, ACL, rule, item). Work with Devices lists Exchange Switches (XSW), Trunk Ports (TRK), Directory Servers (DIR).
+
+=====================================================================================================
+7. PERMISSIONS (server)
+=====================================================================================================
+  Routing mode, transit, ACLs, trunk ports, publishing: BUILD on that network. Joining an exchange: BUILD on the Router's
+  network. Approving / removing members: the exchange owner.
+
+=====================================================================================================
+8. MIGRATION
+=====================================================================================================
+  Routers load as STATIC; every Route keeps source / mode / filter / options; its dest index is resolved once to the Linked
+  entry's network id (kept in sync). Segments get IDs 1..n in their current order; device segment indexes map to those IDs;
+  every switch port loads as ACCESS on its current segment. Devices load unpublished. No ACL = today's behaviour.
+
+=====================================================================================================
+9. RECIPES (adjust freely)
+=====================================================================================================
+  exchange_switch   L3 Switch x2 + Processor Die x2 + Optical Transceiver x4 + iron block
+  cross_connect x4  Fiber Cable x2 + Optical Transceiver + Copper Foil
+  trunk_port        Network Cable + Logic Die + Memory Die
+  directory_server (block and rack forms)  Circuit Substrate + Processor Die + Memory Die x2 + iron
+
+=====================================================================================================
+10. FILES
+=====================================================================================================
+assets/encodedlogistics/ blockstates/{exchange_switch, directory_server}.json; models/block/exchange_switch/*,
+  models/block/directory_server/*, models/block/rack_device/directory_server(_on).json, models/part/trunk_port(_active).json;
+  textures/block/exchange_switch/*, textures/block/directory_server/*, textures/block/rack_device/directory_server(_on).png,
+  textures/part/trunk_port/*; textures/item/{cross_connect, directory_server_rack}.png; models/item/{exchange_switch,
+  trunk_port, cross_connect, directory_server_rack}.json, items/*; textures/block/rack_device/directory_server_fault.png (+ .mcmeta); lang/en_us.routing.json -> MERGE
+data/encodedlogistics/recipe/*.json
+previews/ blocks_with_mod, in_game_scene, in_rack_with_shipped, routing_all_textures, gui_router_{routing,table,acls}, gui_switch_ports, gui_exchange, gui_directory, hud_popups,
+  crt_{dsproute,dspnbr,wrkacl,wrkix,wrkdir}; layouts/*.txt; tools/el_kit.py (the guide's texture kit + checklist), tools/rix_gui.py (GUI mockups + text-fit checker: exit 1 on any
+  overflow, overlap or text closer than 3 px; content bounded by the panel's measured inset x 12-153, y 34-139)
+GUI notes: the Router's new tabs (Routes | Mode | Table | ACLs) and the other panels use the rack switch tab sprite widened to
+each label; values right-aligned at x 152 (clear of the inset's scrollbar).
+
+=====================================================================================================
+11. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+  1. Reconvergence 5 s, max hops 16 (config).
+  2. Transit cost: proposal - the transit network's Routers spend their own drain on transit traffic (no extra charge).
+  3. Exchange ports 32; exchanges keep their chunk loaded while they have members (a ticket) - proposal: yes, config.
+  4. Default ACL action: *PERMIT (config).

@@ -1,0 +1,91 @@
+/*
+ * Copyright (c) 2026 Zagdrath
+ * SPDX-License-Identifier: MIT
+ */
+
+package net.zagdrath.encodedlogistics.gametest;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.network.routing.RoutingDomain;
+import net.zagdrath.encodedlogistics.rack.ItemRouting;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.device.NasDevice;
+import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
+
+// Dynamic routing between networks: Routers finding each other, learning paths beyond their own links, and moving items
+// along them only where transit is allowed.
+final class RoutingGameTests {
+    private static final StorageKey COBBLESTONE = StorageKey.of(new ItemStack(Items.COBBLESTONE));
+
+    private RoutingGameTests() {}
+
+    // A powered controller and a rack cabled to it as RackGameTests.networkedRack builds them, dx blocks east. Returns
+    // the rack's master.
+    static BlockPos networkedRackAt(GameTestHelper helper, int dx) {
+        RackGameTests.controller(helper, new BlockPos(dx, 1, 0), 20_000);
+        BlockPos master = RackGameTests.rack(helper, new BlockPos(dx + 3, 1, 0), Direction.NORTH);
+        for (BlockPos pos : new BlockPos[] { new BlockPos(dx + 1, 1, 0), new BlockPos(dx + 1, 1, 1), new BlockPos(dx + 1, 1, 2),
+                new BlockPos(dx + 2, 1, 2), new BlockPos(dx + 3, 1, 2) }) {
+            RackGameTests.cable(helper, pos);
+        }
+        return master;
+    }
+
+    private static GlobalPos at(GameTestHelper helper, BlockPos pos) {
+        return GlobalPos.of(helper.getLevel().dimension(), helper.absolutePos(pos));
+    }
+
+    // Three networks: A's Router links B, B's links C, both Dynamic. A route on A's Router to C (two hops away) waits
+    // while B lets no transit through, then moves A's items straight into C once it does, none landing in B.
+    static void multiHop(GameTestHelper helper) {
+        BlockPos masterA = networkedRackAt(helper, 0), masterB = networkedRackAt(helper, 9);
+        BlockPos controllerB = new BlockPos(9, 1, 0), controllerC = new BlockPos(6, 1, 6), bayC = new BlockPos(6, 1, 7);
+        RackGameTests.controller(helper, controllerC, 20_000);
+        RackGameTests.driveBay(helper, bayC);
+        Rack2GameTests.storageDevice(helper, masterA, RackDeviceType.NAS, 1, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        Rack2GameTests.storageDevice(helper, masterB, RackDeviceType.NAS, 1, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        RouterDevice routerA = RackGameTests.install(helper, masterA, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        RouterDevice routerB = RackGameTests.install(helper, masterB, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        NetworkRef[] networkC = new NetworkRef[1];
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(routerA.link(at(helper, controllerB)) == RouterDevice.LinkResult.LINKED, "A didn't link B");
+                    helper.assertTrue(routerB.link(at(helper, controllerC)) == RouterDevice.LinkResult.LINKED, "B didn't link C");
+                    routerA.setMode(RouterDevice.Mode.DYNAMIC);
+                    routerB.setMode(RouterDevice.Mode.DYNAMIC);
+                    networkC[0] = RouterDevice.networkAt(helper.getLevel().getServer(), at(helper, controllerC));
+                    helper.assertTrue(networkC[0] != null, "C isn't a network");
+                    RackGameTests.storage(helper, masterA).insert(COBBLESTONE, 10, false);
+                    helper.assertTrue(routerA.addRoute(0, 1, ItemRouting.everything()), "Route not added");
+                    routerA.routes().set(0, routerA.routes().getFirst().toRemote(networkC[0]));
+                })
+                .thenWaitUntil(() -> helper.assertTrue(routerA.upNeighbours() == 1 && routerA.neighbourTable().getFirst().state() == RoutingDomain.State.FULL,
+                        "A's neighbours: " + routerA.neighbourTable()))
+                .thenIdle(40)
+                .thenExecute(() -> {
+                    // B allows no transit: C isn't reachable from A, the route pauses and nothing moves.
+                    helper.assertTrue(routerA.routeTo(networkC[0]) == null, "C reachable without transit: " + routerA.table());
+                    helper.assertTrue(routerA.paused(0), "Route not paused");
+                    helper.assertTrue(RackGameTests.storage(helper, masterA).count(COBBLESTONE) == 10, "Items left A without a path");
+                    routerB.setTransit(RoutingDomain.Transit.ALL);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(RackGameTests.storage(helper, bayC).count(COBBLESTONE) == 10,
+                        "C has " + RackGameTests.storage(helper, bayC).count(COBBLESTONE)))
+                .thenExecute(() -> {
+                    RouterDevice.TableEntry entry = routerA.routeTo(networkC[0]);
+                    helper.assertTrue(entry != null && entry.hops() == 2 && entry.source() == RouterDevice.Source.DYNAMIC, "Route table: " + routerA.table());
+                    helper.assertTrue(RackGameTests.storage(helper, masterB).count(COBBLESTONE) == 0, "Items landed in B");
+                    helper.assertTrue(!routerA.paused(0), "Route still paused");
+                })
+                .thenSucceed();
+    }
+}

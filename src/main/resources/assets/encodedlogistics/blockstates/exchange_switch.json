@@ -1,0 +1,168 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north",
+    "half": "lower"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "half": "lower",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower_leds_online"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "half": "upper"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "half": "upper",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper_leds_online"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "half": "lower"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "half": "lower",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower_leds_online",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "half": "upper"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "half": "upper",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper_leds_online",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "half": "lower"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "half": "lower",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower_leds_online",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "half": "upper"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "half": "upper",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper_leds_online",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "half": "lower"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "half": "lower",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/lower_leds_online",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "half": "upper"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "half": "upper",
+    "online": "true"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/exchange_switch/upper_leds_online",
+    "y": 270
+   }
+  }
+ ]
+}
