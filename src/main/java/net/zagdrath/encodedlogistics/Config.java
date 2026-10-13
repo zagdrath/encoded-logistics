@@ -380,6 +380,10 @@ public class Config {
             .comment("Dynamic routing: the most hops a path may take.")
             .defineInRange("maxHops", 16, 1, 64);
 
+    public static final ModConfigSpec.BooleanValue ACL_DEFAULT_PERMIT = BUILDER
+            .comment("Router ACLs: whether what no rule matches is permitted (*PERMIT) or denied (*DENY).")
+            .define("aclDefaultPermit", true);
+
     public static final ModConfigSpec.IntValue UPS_CAPACITY = BUILDER
             .comment("FE a UPS's battery holds.")
             .defineInRange("upsCapacity", 1_000_000, 1, Integer.MAX_VALUE);

@@ -276,6 +276,29 @@ final class BuiltinCommands {
                 .p(p("RTR", "Router", Kind.DEVICE).req())
                 .p(p("NBR", "Neighbour", Kind.NAME).req())
                 .p(p("COST", "Cost override", Kind.INT).sv("*DFT").dft("*DFT").range(1, 1_000_000)));
+        add(CommandDefinition.of("ADDACLE", "Add ACL Entry").auth(CONFIGURE).positional(2)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("ACL", "ACL", Kind.NAME).req())
+                .p(p("SEQ", "Sequence number", Kind.INT).sv("*LAST").dft("*LAST").range(1, 9999))
+                .p(p("MATCH", "Match", Kind.CHAR).req().len(64))
+                .p(p("DIR", "Direction", Kind.SPECIAL).sv("*BOTH", "*IN", "*OUT").dft("*BOTH"))
+                .p(p("ACTION", "Action", Kind.SPECIAL).req().sv("*PERMIT", "*DENY"))
+                .p(p("RATE", "Rate per minute", Kind.INT).sv("*NONE").dft("*NONE").range(1, 1_000_000))
+                .p(p("QUOTA", "Quota per day", Kind.INT).sv("*NONE").dft("*NONE").range(1, 1_000_000_000)));
+        add(CommandDefinition.of("RMVACLE", "Remove ACL Entry").auth(CONFIGURE).positional(3)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("ACL", "ACL", Kind.NAME).req())
+                .p(p("SEQ", "Sequence number", Kind.INT).req().range(1, 9999)));
+        add(CommandDefinition.of("CHGACLE", "Change ACL Entry").auth(CONFIGURE).positional(3)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("ACL", "ACL", Kind.NAME).req())
+                .p(p("SEQ", "Sequence number", Kind.INT).req().range(1, 9999))
+                .p(p("MATCH", "Match", Kind.CHAR).sv("*SAME").dft("*SAME").len(64))
+                .p(p("DIR", "Direction", Kind.SPECIAL).sv("*SAME", "*BOTH", "*IN", "*OUT").dft("*SAME"))
+                .p(p("ACTION", "Action", Kind.SPECIAL).sv("*SAME", "*PERMIT", "*DENY").dft("*SAME"))
+                .p(p("RATE", "Rate per minute", Kind.INT).sv("*SAME", "*NONE").dft("*SAME").range(1, 1_000_000))
+                .p(p("QUOTA", "Quota per day", Kind.INT).sv("*SAME", "*NONE").dft("*SAME").range(1, 1_000_000_000))
+                .p(p("MOVE", "Move", Kind.SPECIAL).sv("*NONE", "*UP", "*DOWN").dft("*NONE")));
         // [EXT] Machines with a Small Wireless Bridge on (Arcforge): MachineCommands.
         add(CommandDefinition.of("RTVMCHSTS", "Retrieve Machine Status").auth(VIEW).positional(1)
                 .p(p("MCH", "Machine", Kind.DEVICE).req())
@@ -565,6 +588,9 @@ final class BuiltinCommands {
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
         add(CommandDefinition.of("DSPNBR", "Display Neighbours").context(INTERACTIVE).positional(1)
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
+        add(CommandDefinition.of("WRKACL", "Work with ACLs").context(INTERACTIVE).positional(2)
+                .p(p("RTR", "Router", Kind.DEVICE).req())
+                .p(p("ACL", "ACL", Kind.NAME).req()));
         add(CommandDefinition.of("WRKSPLF", "Work with Spooled Files").context(INTERACTIVE).positional(1)
                 .p(p("JOB", "Job name", Kind.NAME).sv("*ALL").dft("*ALL").len(28)));
         add(CommandDefinition.of("SIGNOFF", "Sign Off").context(INTERACTIVE));

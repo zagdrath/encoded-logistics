@@ -205,11 +205,21 @@ networks and neighbours by their system names (`ELNET02`), as the Router's route
 | `RTVNBRSTS` | `RTR`(P1, Req) `NBR`(P2, Req) `RTNSTS`(*CHAR: `*FULL\|*INIT\|*DOWN`) `RTNCOST`(*INT) `RTNUPTIME`(*INT, seconds; 0 unless *FULL) | view | ELC2601, ELC2605 |
 | `CHGNBR` | `RTR`(P1, Req) `NBR`(P2, Req) `COST(*DFT\|1-1000000)`: the neighbour's cost override (`*DFT`: none) | configure | ELC2601, ELC2605; ELC2609 on success |
 | `DSPROUTE` / `DSPNBR` | `RTR`(P1, Req): the route table / the neighbours (F11 / F10 switch between them); interactive only | view | ELC2601 |
+| `ADDACLE` | `RTR`(P1, Req) `ACL`(P2, Req; a new name makes the ACL) `SEQ(*LAST\|n)` `MATCH`(Req: an item, `#tag`, `*ITEM *FLUID *PRES *ENERGY *ANY`, `*CONTROL`) `DIR(*BOTH\|*IN\|*OUT)` `ACTION`(Req: `*PERMIT\|*DENY`) `RATE(*NONE\|n)` (a minute) `QUOTA(*NONE\|n)` (a game day) | configure | ELC2601, ELC2606 (no room for another ACL), ELC0103 (a match that names nothing, a sequence number taken), ELC0401 |
+| `RMVACLE` | `RTR`(P1, Req) `ACL`(P2, Req) `SEQ`(P3, Req) | configure | ELC2601, ELC2606, ELC2607 |
+| `CHGACLE` | `RTR`(P1, Req) `ACL`(P2, Req) `SEQ`(P3, Req) and the `ADDACLE` parameters (`*SAME`), `MOVE(*NONE\|*UP\|*DOWN)` **[EXT]** (swap with the rule before / after it) | configure | ELC2601, ELC2606, ELC2607 |
+| `WRKACL` | `RTR`(P1, Req) `ACL`(P2, Req): Work with ACLs: 2=Change (`CHGACLE`), 4=Remove (`RMVACLE`), 6=Move up, 7=Move down; F6=Add rule (`ADDACLE`); interactive only | view | ELC2601, ELC2606 |
 
 *(Dynamic routing: a Router in Dynamic mode learns, from the other Dynamic Routers it neighbours (one links to the
 other's network with a Link Card, or both peer at an Exchange Switch), a path to every network beyond, and its routes
 can go to any of them. Its own links are `*STATIC` and always win; a neighbour's network is `*CONNECTED`, anything
 further `*DYNAMIC`. A Router in Static mode has only its own links and no neighbours.)*
+
+*(ACLs: a Router's named rule lists, applied (in its panel's ACLs tab) to a route or to a network it reaches directly -
+a link, a neighbour, an exchange peer. The first rule matching a resource going its way (`*IN` into the Router's own
+network, `*OUT` out of it) decides; with none, the default (`aclDefaultPermit`). A Move moves only what they permit, a
+Share shows only that; past a rule's rate or quota it denies until the minute or game day turns. On a path through
+other Routers, each one's ACLs on the networks either side of its hop apply too.)*
 
 ## 8. Messages, displays and output
 

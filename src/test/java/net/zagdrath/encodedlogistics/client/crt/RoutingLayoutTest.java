@@ -74,4 +74,21 @@ class RoutingLayoutTest {
         terminal.functionKey(10);
         assertEquals("DSPROUTE", terminal.current().id());
     }
+
+    // Row 12 (the default) is left out: the layout's own sample puts it off the columns above it. So is row 20: the
+    // frame's "Bottom" marker, which every list shows (the other layouts have it).
+    @Test
+    void workWithAcls() throws IOException {
+        CrtTerminal terminal = LayoutTest.terminal();
+        terminal.runCommand("WRKACL RTR(RTR01) ACL(NOFUEL)");
+        assertEquals("WRKACL", terminal.current().id());
+        LayoutTest.answer(terminal, "acl", LayoutTest.cells("10", "COAL", "*BOTH", "*DENY", "", "1,204", "14:31:02", "COAL deny"),
+                LayoutTest.cells("20", "#c:fuels", "*OUT", "*DENY", "", "88", "14:02:10", "#c:fuels deny out"),
+                LayoutTest.cells("30", "*ENERGY", "*BOTH", "*PERMIT", "", "12,401", "14:32:00", "*ENERGY permit"),
+                LayoutTest.cells("40", "DIAMOND", "*OUT", "*PERMIT", "64/min", "310", "14:28:44", "DIAMOND permit out 64/m"),
+                LayoutTest.cells("50", "*FLUID", "*IN", "*PERMIT", "2000/day", "1,950", "13:55:00", "*FLUID permit in 2000/d"),
+                LayoutTest.cells("*DFT", "(default)", "", "*PERMIT", "", "4,102", "14:32:05", ""));
+        CrtGrid grid = terminal.compose();
+        LayoutTest.compare("25_wrkacl", grid, 0, 2, 3, 4, 6, 7, 8, 9, 10, 11, 21, 23);
+    }
 }

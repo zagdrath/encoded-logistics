@@ -18,6 +18,7 @@ import net.zagdrath.encodedlogistics.elcl.ElclException;
 import net.zagdrath.encodedlogistics.elcl.store.StoredMessageService;
 import net.zagdrath.encodedlogistics.elcl.ElclMessage;
 import net.zagdrath.encodedlogistics.elcl.SourceLine;
+import net.zagdrath.encodedlogistics.elcl.exec.RoutingCommands;
 import net.zagdrath.encodedlogistics.elcl.exec.ElclDevices;
 import net.zagdrath.encodedlogistics.elcl.exec.MachineCommands;
 import net.zagdrath.encodedlogistics.elcl.exec.OsCommands;
@@ -107,6 +108,11 @@ public final class ScreenQueries {
                 case "callstack" -> callStack(system, own(system, user, arg(words, 1)));
                 case "schedules" -> schedules(system);
                 case "triggers" -> triggers(system);
+                case "acl" -> {
+                    TerminalOutput out = new TerminalOutput();
+                    RoutingCommands.aclRows(context, arg(words, 1), arg(words, 2)).forEach(out::line);
+                    yield out;
+                }
                 case "messages" -> messages(system, queue(system, user, arg(words, 1)));
                 case "readmessages" -> {
                     ElclServices.messages().markRead(system, queue(system, user, arg(words, 1)));

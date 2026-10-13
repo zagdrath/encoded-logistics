@@ -270,6 +270,7 @@ public final class EncodedLogisticsGameTests {
         ARCFORGE_TESTS.put("arcforge_commands", ArcforgeGameTests::commands);
         ARCFORGE_TESTS.put("arcforge_triggers", ArcforgeGameTests::triggers);
         ROUTING_TESTS.put("routing_multi_hop", RoutingGameTests::multiHop);
+        ROUTING_TESTS.put("routing_acl_on_route", RoutingGameTests::aclOnRoute);
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ROUTING_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));

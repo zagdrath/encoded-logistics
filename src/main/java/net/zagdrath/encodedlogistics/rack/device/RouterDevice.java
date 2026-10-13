@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.jspecify.annotations.Nullable;
 
@@ -41,6 +42,9 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
+import net.zagdrath.encodedlogistics.rack.RouterAcl;
+import net.zagdrath.encodedlogistics.storage.StorageKey;
+import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
@@ -64,9 +68,12 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
     public static final int MAX_NETWORKS = 6, MAX_ROUTES = 6, CAGES = 3, MAX_TRANSIT = 16;
     // ACTION_SET_FILTER: value is route * PartFilter.SIZE + entry; ACTION_FILTER_OPTION: route * ItemRouting.OPTIONS + option.
     // ACTION_TRANSIT_NETWORK: value is a route table row; ACTION_NEIGHBOUR_COST: a neighbour row, text "+", "-" or "clear".
+    // The ACL actions: text is the ACL's name, then (ADD, EDIT) a rule as RouterAcl.parse reads it; value a rule's
+    // sequence number (ADD: the rule to add after, -1 the end), or (BIND) the target (toggleAcl).
     public static final int ACTION_ADD_ROUTE = 0, ACTION_REMOVE_ROUTE = 1, ACTION_CYCLE_SOURCE = 2, ACTION_CYCLE_DEST = 3, ACTION_SET_FILTER = 4,
             ACTION_RENAME = 5, ACTION_UNLINK = 6, ACTION_FILTER_OPTION = 7, ACTION_SHARE_OPTION = 14, ACTION_MODE = 20, ACTION_TRANSIT = 21,
-            ACTION_TRANSIT_NETWORK = 22, ACTION_NEIGHBOUR_COST = 23;
+            ACTION_TRANSIT_NETWORK = 22, ACTION_NEIGHBOUR_COST = 23, ACTION_ACL_NEW = 24, ACTION_ACL_DELETE = 25, ACTION_ACL_BIND = 26,
+            ACTION_ACL_ADD = 27, ACTION_ACL_EDIT = 28, ACTION_ACL_DEL = 29, ACTION_ACL_UP = 30, ACTION_ACL_DOWN = 31;
     // A neighbour's cost override steps by this in the panel.
     public static final int COST_STEP = 10;
     private static final int WINDOW = 5;
@@ -127,6 +134,10 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
     // The domain it takes part in, as which Router (to leave it when taken out).
     private @Nullable RoutingDomain joined;
     private RoutingDomain.@Nullable RouterId joinedAs;
+    // ACLs by name, and the ones applied to networks it reaches directly.
+    private final Map<String, RouterAcl> acls = new LinkedHashMap<>();
+    private final Map<NetworkRef, String> networkAcls = new LinkedHashMap<>();
+    private final Map<Object, Long> lastDenied = new HashMap<>();
     // Routes (bits) that have no path right now, and how many remote Shares are active (a change resets storage caches).
     private int paused, remoteShares = -1;
 
@@ -319,7 +330,7 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             }
             NetworkStorage from = ControllerStructures.storageOf(server, source), to = ControllerStructures.storageOf(server, dest);
             if (from != null && to != null) {
-                legs.add(new ItemRouting.Leg(route, from, to));
+                legs.add(new ItemRouting.Leg(route, from, to, gate(server, localChecks(route, network(server, 0), source, dest), now)));
             }
         }
         int active = legs.size() + remote.size();
@@ -371,7 +382,8 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         if (cap <= 0 || from == null || to == null) {
             return 0;
         }
-        int done = ItemRouting.move(List.of(new ItemRouting.Leg(route, from, to)), cap, 0, key -> ItemRouting.HIGH);
+        ItemRouting.Gate gate = gate(server, pathChecks(server, route, source, path), now);
+        int done = ItemRouting.move(List.of(new ItemRouting.Leg(route, from, to, gate)), cap, 0, key -> ItemRouting.HIGH);
         for (RoutingDomain.RouterId carrier : carriers) {
             domain.charge(carrier, done, now);
         }
@@ -692,19 +704,299 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         if (rack() == null || !isOnline()) {
             return List.of();
         }
-        List<ItemRouting.ShareLink> links = new ArrayList<>(ItemRouting.shareLinks(routes, index -> network(server, index), this::endpointName));
+        NetworkRef home = network(server, 0);
+        List<ItemRouting.ShareLink> links = new ArrayList<>();
+        for (ItemRouting.ShareLink link : ItemRouting.shareLinks(routes, index -> network(server, index), this::endpointName)) {
+            links.add(new ItemRouting.ShareLink(link.from(), link.into(), link.route(), link.fromName(),
+                    shown(link.route(), localChecks(link.route(), home, link.from(), link.into()), server)));
+        }
         // Shares with a remote network, while there's a path (each way of a bidirectional one needs its own).
         for (ItemRouting.Route route : routes) {
             if (!route.remote() || !route.shares() || route.idle() || path(server, route) == null) {
                 continue;
             }
             NetworkRef source = Objects.requireNonNull(network(server, route.source())), target = Objects.requireNonNull(route.target());
-            links.add(new ItemRouting.ShareLink(source, target, route, endpointName(route.source())));
-            if (route.bidirectional() && pathsFrom(target).containsKey(source)) {
-                links.add(new ItemRouting.ShareLink(target, source, route, destName(route)));
+            RoutingGraph.Path<NetworkRef, RoutingDomain.RouterId> there = Objects.requireNonNull(path(server, route));
+            links.add(new ItemRouting.ShareLink(source, target, route, endpointName(route.source()), shown(route, pathChecks(server, route, source, there), server)));
+            RoutingGraph.Path<NetworkRef, RoutingDomain.RouterId> back = pathsFrom(target).get(source);
+            if (route.bidirectional() && back != null) {
+                links.add(new ItemRouting.ShareLink(target, source, route, destName(route), shown(route, pathChecks(server, route, target, back), server)));
             }
         }
         return links;
+    }
+
+    // --- ACLs ---
+
+    public Map<String, RouterAcl> acls() {
+        return acls;
+    }
+
+    public @Nullable RouterAcl acl(String name) {
+        return acls.get(name.toUpperCase(Locale.ROOT));
+    }
+
+    // The ACL applied to a network it reaches directly (a link, a neighbour, an exchange peer), or "".
+    public Map<NetworkRef, String> networkAcls() {
+        return networkAcls;
+    }
+
+    // A new, empty ACL; false when it has as many as it can hold, or one by that name.
+    public boolean createAcl(String name) {
+        String upper = name.toUpperCase(Locale.ROOT);
+        if (acls.size() >= RouterAcl.MAX_ACLS || acls.containsKey(upper) || !RouterAcl.validName(upper)) {
+            return false;
+        }
+        acls.put(upper, new RouterAcl(upper));
+        changed(false);
+        return true;
+    }
+
+    // Drops an ACL and every use of it.
+    public boolean deleteAcl(String name) {
+        String upper = name.toUpperCase(Locale.ROOT);
+        if (acls.remove(upper) == null) {
+            return false;
+        }
+        for (int i = 0; i < routes.size(); i++) {
+            if (routes.get(i).acl().equals(upper)) {
+                routes.set(i, routes.get(i).withAcl(""));
+            }
+        }
+        networkAcls.values().removeIf(upper::equals);
+        changed(false);
+        return true;
+    }
+
+    // An ACL's rules changed (ELCL, the panel).
+    public void aclChanged() {
+        changed(false);
+    }
+
+    // What an ACL can be applied to, in the panel's order: its routes, then the networks it reaches directly (one hop).
+    public List<NetworkRef> directNetworks() {
+        List<NetworkRef> direct = new ArrayList<>();
+        for (TableEntry entry : table) {
+            if (entry.hops() == 1) {
+                direct.add(entry.dest());
+            }
+        }
+        return direct;
+    }
+
+    // Applies an ACL to target (a route, then a direct network: directNetworks) or takes it off; false when there's no
+    // such target or ACL.
+    public boolean toggleAcl(int target, String name) {
+        String upper = name.toUpperCase(Locale.ROOT);
+        if (!acls.containsKey(upper) || target < 0) {
+            return false;
+        }
+        if (target < routes.size()) {
+            ItemRouting.Route route = routes.get(target);
+            routes.set(target, route.withAcl(route.acl().equals(upper) ? "" : upper));
+        } else {
+            List<NetworkRef> direct = directNetworks();
+            if (target - routes.size() >= direct.size()) {
+                return false;
+            }
+            NetworkRef network = direct.get(target - routes.size());
+            if (upper.equals(networkAcls.get(network))) {
+                networkAcls.remove(network);
+            } else {
+                networkAcls.put(network, upper);
+            }
+        }
+        changed(false);
+        return true;
+    }
+
+    private static boolean permitByDefault() {
+        return Config.ACL_DEFAULT_PERMIT.getAsBoolean();
+    }
+
+    // An ACL a Router applies to some traffic, one way.
+    private record Check(RouterDevice router, RouterAcl acl, RouterAcl.Dir way) {}
+
+    private void check(List<Check> checks, String name, RouterAcl.Dir way) {
+        RouterAcl acl = name.isEmpty() ? null : acls.get(name);
+        if (acl != null) {
+            checks.add(new Check(this, acl, way));
+        }
+    }
+
+    // Which way traffic goes for this Router: out of its own network, into it, or neither (both apply).
+    private static RouterAcl.Dir way(@Nullable NetworkRef home, @Nullable NetworkRef from, @Nullable NetworkRef to) {
+        return home != null && home.equals(from) ? RouterAcl.Dir.OUT : home != null && home.equals(to) ? RouterAcl.Dir.IN : RouterAcl.Dir.BOTH;
+    }
+
+    // The ACLs on a route from one of its own networks to another: the route's, and the networks' at either end.
+    private List<Check> localChecks(ItemRouting.Route route, @Nullable NetworkRef home, NetworkRef from, NetworkRef to) {
+        List<Check> checks = new ArrayList<>();
+        check(checks, route.acl(), way(home, from, to));
+        if (!from.equals(home)) {
+            check(checks, networkAcls.getOrDefault(from, ""), RouterAcl.Dir.IN);
+        }
+        if (!to.equals(home)) {
+            check(checks, networkAcls.getOrDefault(to, ""), RouterAcl.Dir.OUT);
+        }
+        return checks;
+    }
+
+    // The ACLs on a remote route: the route's, then every Router on its path's on the networks either side of its hop.
+    private List<Check> pathChecks(MinecraftServer server, ItemRouting.Route route, NetworkRef from, RoutingGraph.Path<NetworkRef, RoutingDomain.RouterId> path) {
+        NetworkRef home = network(server, 0);
+        List<Check> checks = new ArrayList<>();
+        check(checks, route.acl(), way(home, from, route.target()));
+        for (RoutingGraph.Hop<NetworkRef, RoutingDomain.RouterId> hop : path.hops()) {
+            for (RoutingDomain.RouterId carrier : hop.carriers()) {
+                RouterDevice router = at(server, carrier);
+                NetworkRef theirs = router != null ? router.network(server, 0) : null;
+                if (theirs == null) {
+                    continue;
+                }
+                if (theirs.equals(hop.from())) {
+                    router.check(checks, router.networkAcls.getOrDefault(hop.to(), ""), RouterAcl.Dir.OUT);
+                } else if (theirs.equals(hop.to())) {
+                    router.check(checks, router.networkAcls.getOrDefault(hop.from(), ""), RouterAcl.Dir.IN);
+                }
+            }
+        }
+        return checks;
+    }
+
+    // The Router a domain id names, if it's loaded.
+    public static @Nullable RouterDevice at(MinecraftServer server, RoutingDomain.RouterId id) {
+        ServerLevel level = server.getLevel(id.dimension());
+        if (level == null || !level.isLoaded(id.rack())) {
+            return null;
+        }
+        return level.getBlockEntity(id.rack()) instanceof RackBlockEntity rack && rack.deviceAt(id.u()) instanceof RouterDevice router ? router : null;
+    }
+
+    // A move's gate over the checks: as much as every ACL lets through; denials fire *ACLDENY (once a second a rule).
+    private ItemRouting.@Nullable Gate gate(MinecraftServer server, List<Check> checks, long now) {
+        if (checks.isEmpty()) {
+            return null;
+        }
+        boolean byDefault = permitByDefault();
+        return new ItemRouting.Gate() {
+            @Override
+            public long allow(StorageKey key, long amount) {
+                long allowed = amount;
+                for (Check check : checks) {
+                    RouterAcl.Verdict verdict = check.acl().verdict(key, check.way(), byDefault);
+                    allowed = Math.min(allowed, check.acl().allow(verdict, amount, now));
+                    if (!verdict.permit()) {
+                        check.acl().count(verdict, amount, now);
+                        check.router().denied(server, check.acl(), verdict, key, now);
+                    }
+                    if (allowed <= 0) {
+                        return 0;
+                    }
+                }
+                return allowed;
+            }
+
+            @Override
+            public void moved(StorageKey key, long amount) {
+                for (Check check : checks) {
+                    check.acl().count(check.acl().verdict(key, check.way(), byDefault), amount, now);
+                }
+            }
+        };
+    }
+
+    // What a Share shows through the checks: what its filter passes and every ACL permits.
+    private static Predicate<StorageKey> shown(ItemRouting.Route route, List<Check> checks, MinecraftServer server) {
+        if (checks.isEmpty()) {
+            return route::matches;
+        }
+        boolean byDefault = permitByDefault();
+        return key -> {
+            if (!route.matches(key)) {
+                return false;
+            }
+            long now = server.overworld().getGameTime();
+            for (Check check : checks) {
+                if (!check.acl().permits(key, check.way(), byDefault, now)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+    }
+
+    // *ACLDENY, at most once a second for each rule.
+    private void denied(MinecraftServer server, RouterAcl acl, RouterAcl.Verdict verdict, StorageKey key, long now) {
+        Object rule = verdict.rule() != null ? verdict.rule() : acl;
+        Long last = lastDenied.get(rule);
+        if (last != null && now - last < 20) {
+            return;
+        }
+        lastDenied.put(rule, now);
+        NetworkRef home = rack() != null ? rack().network(this) : null;
+        if (home != null) {
+            ElclEvents.aclDenied(server, home, deviceName(), acl.name(), verdict.rule() != null ? verdict.rule().seq() : 0, key);
+        }
+    }
+
+    // Panel ACL actions (BUILD checked by the caller): text is "ACL" or "ACL rule-spec".
+    private boolean aclAction(int action, int value, String text) {
+        int space = text.indexOf(' ');
+        String name = (space < 0 ? text : text.substring(0, space)).trim().toUpperCase(Locale.ROOT), spec = space < 0 ? "" : text.substring(space + 1);
+        if (action == ACTION_ACL_NEW) {
+            for (int n = 1; n <= RouterAcl.MAX_ACLS * 2; n++) {
+                String candidate = String.format(Locale.ROOT, "ACL%02d", n);
+                if (!acls.containsKey(candidate)) {
+                    return createAcl(candidate);
+                }
+            }
+            return false;
+        }
+        if (action == ACTION_ACL_DELETE) {
+            return deleteAcl(name);
+        }
+        if (action == ACTION_ACL_BIND) {
+            return toggleAcl(value, name);
+        }
+        RouterAcl acl = acl(name);
+        if (acl == null) {
+            return false;
+        }
+        switch (action) {
+            case ACTION_ACL_ADD, ACTION_ACL_EDIT -> {
+                RouterAcl.Spec parsed = RouterAcl.parse(spec.isBlank() ? "*ANY" : spec);
+                if (parsed == null) {
+                    return false;
+                }
+                if (action == ACTION_ACL_ADD) {
+                    // After rule value (its seq), or at the end.
+                    RouterAcl.Rule after = acl.rule(value);
+                    int seq = -1;
+                    if (after != null) {
+                        int index = acl.rules().indexOf(after);
+                        int next = index + 1 < acl.rules().size() ? acl.rules().get(index + 1).seq() : after.seq() + 2 * RouterAcl.SEQ_STEP;
+                        seq = next - after.seq() > 1 ? after.seq() + (next - after.seq()) / 2 : -1;
+                    }
+                    return acl.add(seq, parsed.match(), parsed.dir(), parsed.permit(), parsed.rate(), parsed.quota());
+                }
+                RouterAcl.Rule rule = acl.rule(value);
+                if (rule == null) {
+                    return false;
+                }
+                rule.set(parsed.match(), parsed.dir(), parsed.permit(), parsed.rate(), parsed.quota());
+                return true;
+            }
+            case ACTION_ACL_DEL -> {
+                return acl.remove(value);
+            }
+            case ACTION_ACL_UP, ACTION_ACL_DOWN -> {
+                return acl.move(value, action == ACTION_ACL_UP);
+            }
+            default -> {
+                return false;
+            }
+        }
     }
 
     // --- Panel ---
@@ -734,6 +1026,12 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             }
             case ACTION_MODE, ACTION_TRANSIT, ACTION_TRANSIT_NETWORK, ACTION_NEIGHBOUR_COST -> {
                 if (!routingAction(player, action, value, text)) {
+                    return;
+                }
+            }
+            case ACTION_ACL_NEW, ACTION_ACL_DELETE, ACTION_ACL_BIND, ACTION_ACL_ADD, ACTION_ACL_EDIT, ACTION_ACL_DEL, ACTION_ACL_UP, ACTION_ACL_DOWN -> {
+                if (rack() == null || !NetworkAccess.check(player.level().getServer(), rack().network(this), player, RackPermission.BUILD)
+                        || !aclAction(action, value, text)) {
                     return;
                 }
             }
@@ -847,6 +1145,7 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         output.putInt("paused", paused);
         output.putInt("reconverge", Config.ROUTING_RECONVERGE_SECONDS.getAsInt());
         output.putInt("max_hops", Config.ROUTING_MAX_HOPS.getAsInt());
+        output.putBoolean("acl_default", permitByDefault());
         long now = viewer.level().getServer().overworld().getGameTime();
         ValueOutput.ValueOutputList rows = output.childrenList("table");
         for (TableEntry entry : table) {
@@ -858,9 +1157,7 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             row.putString("source", entry.source().name());
             row.putBoolean("transit", transitList.contains(entry.dest()));
             row.putLong("age", (now - entry.since()) / 20);
-            if (routes.stream().anyMatch(route -> entry.dest().equals(route.target()))) {
-                row.store("network", NetworkRef.CODEC, entry.dest());
-            }
+            row.store("network", NetworkRef.CODEC, entry.dest());
         }
         ValueOutput.ValueOutputList nbrs = output.childrenList("neighbour_rows");
         for (NeighbourEntry entry : neighbourTable) {
@@ -900,6 +1197,16 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
         if (!transitList.isEmpty()) {
             output.store("transit_list", NetworkRef.CODEC.listOf(), List.copyOf(transitList));
         }
+        ValueOutput.ValueOutputList aclList = output.childrenList("acls");
+        for (RouterAcl acl : acls.values()) {
+            acl.save(aclList.addChild());
+        }
+        ValueOutput.ValueOutputList bound = output.childrenList("network_acls");
+        for (Map.Entry<NetworkRef, String> entry : networkAcls.entrySet()) {
+            ValueOutput child = bound.addChild();
+            child.store("network", NetworkRef.CODEC, entry.getKey());
+            child.putString("acl", entry.getValue());
+        }
         ValueOutput.ValueOutputList overrides = output.childrenList("cost_overrides");
         for (Map.Entry<NetworkRef, Integer> entry : costOverrides.entrySet()) {
             ValueOutput child = overrides.addChild();
@@ -926,6 +1233,17 @@ public class RouterDevice extends RackDevice implements ItemRouting.ShareSource 
             case "all" -> RoutingDomain.Transit.ALL;
             default -> RoutingDomain.Transit.NONE;
         };
+        acls.clear();
+        for (ValueInput child : input.childrenListOrEmpty("acls")) {
+            RouterAcl acl = RouterAcl.load(child);
+            if (acls.size() < RouterAcl.MAX_ACLS) {
+                acls.put(acl.name(), acl);
+            }
+        }
+        networkAcls.clear();
+        for (ValueInput child : input.childrenListOrEmpty("network_acls")) {
+            child.read("network", NetworkRef.CODEC).ifPresent(network -> networkAcls.put(network, child.getStringOr("acl", "")));
+        }
         transitList.clear();
         input.read("transit_list", NetworkRef.CODEC.listOf()).ifPresent(transitList::addAll);
         costOverrides.clear();

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 
 import org.jspecify.annotations.Nullable;
@@ -53,8 +54,14 @@ public final class ItemRouting {
     // The filter is the route's own (changed in place by the panel's actions). readWrite, crafting and bidirectional are
     // a Share route's options. target: a Router route's destination network (its network id), kept for every route to
     // a network it can tell; dest is REMOTE when that network is none of its endpoints (it's reached through others).
+    // acl: the Router ACL applied to it ("" for none; RouterAcl).
     public record Route(int source, int dest, PartFilter filter, Mode mode, boolean readWrite, boolean crafting, boolean bidirectional,
-            @Nullable NetworkRef target) {
+            @Nullable NetworkRef target, String acl) {
+        public Route(int source, int dest, PartFilter filter, Mode mode, boolean readWrite, boolean crafting, boolean bidirectional,
+                @Nullable NetworkRef target) {
+            this(source, dest, filter, mode, readWrite, crafting, bidirectional, target, "");
+        }
+
         public Route(int source, int dest, PartFilter filter, Mode mode, boolean readWrite, boolean crafting, boolean bidirectional) {
             this(source, dest, filter, mode, readWrite, crafting, bidirectional, null);
         }
@@ -85,29 +92,33 @@ public final class ItemRouting {
         }
 
         public Route withSource(int source) {
-            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target);
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target, acl);
         }
 
         public Route withDest(int dest) {
-            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, null);
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, null, acl);
         }
 
         // To a network beyond the endpoints.
         public Route toRemote(NetworkRef network) {
-            return new Route(source, REMOTE, filter, mode, readWrite, crafting, bidirectional, network);
+            return new Route(source, REMOTE, filter, mode, readWrite, crafting, bidirectional, network, acl);
+        }
+
+        public Route withAcl(String acl) {
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target, acl);
         }
 
         public Route withTarget(@Nullable NetworkRef target) {
-            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target);
+            return new Route(source, dest, filter, mode, readWrite, crafting, bidirectional, target, acl);
         }
 
         // The same with one Share option (SHARE_*) toggled.
         public Route toggled(int option) {
             return switch (option) {
-                case SHARE_MODE -> new Route(source, dest, filter, shares() ? Mode.MOVE : Mode.SHARE, readWrite, crafting, bidirectional, target);
-                case SHARE_ACCESS -> new Route(source, dest, filter, mode, !readWrite, crafting, bidirectional, target);
-                case SHARE_CRAFTING -> new Route(source, dest, filter, mode, readWrite, !crafting, bidirectional, target);
-                default -> new Route(source, dest, filter, mode, readWrite, crafting, !bidirectional, target);
+                case SHARE_MODE -> new Route(source, dest, filter, shares() ? Mode.MOVE : Mode.SHARE, readWrite, crafting, bidirectional, target, acl);
+                case SHARE_ACCESS -> new Route(source, dest, filter, mode, !readWrite, crafting, bidirectional, target, acl);
+                case SHARE_CRAFTING -> new Route(source, dest, filter, mode, readWrite, !crafting, bidirectional, target, acl);
+                default -> new Route(source, dest, filter, mode, readWrite, crafting, !bidirectional, target, acl);
             };
         }
 
@@ -174,12 +185,27 @@ public final class ItemRouting {
         return true;
     }
 
-    // An active route this second: its storages at both ends.
-    public record Leg(Route route, NetworkStorage from, NetworkStorage to) {}
+    // What else a move must pass (a Router's ACLs): how much of amount of a resource may go, and what did.
+    public interface Gate {
+        long allow(StorageKey key, long amount);
 
-    // An active Share: from one network into another (each way of a bidirectional route is one), what passes, and the
-    // source endpoint's name.
-    public record ShareLink(NetworkRef from, NetworkRef into, Route route, Component fromName) {}
+        void moved(StorageKey key, long amount);
+    }
+
+    // An active route this second: its storages at both ends, and its gate (null: its filter alone).
+    public record Leg(Route route, NetworkStorage from, NetworkStorage to, @Nullable Gate gate) {
+        public Leg(Route route, NetworkStorage from, NetworkStorage to) {
+            this(route, from, to, null);
+        }
+    }
+
+    // An active Share: from one network into another (each way of a bidirectional route is one), what passes (its
+    // filter, and a Router's ACLs), and the source endpoint's name.
+    public record ShareLink(NetworkRef from, NetworkRef into, Route route, Component fromName, Predicate<StorageKey> passes) {
+        public ShareLink(NetworkRef from, NetworkRef into, Route route, Component fromName) {
+            this(from, into, route, fromName, route::matches);
+        }
+    }
 
     // A device whose routes can share (the L3 Switch, the Router): its active Shares, while it's online.
     public interface ShareSource {
@@ -243,7 +269,14 @@ public final class ItemRouting {
             if (!leg.route().matches(key) || level.applyAsInt(key) != priority) {
                 continue;
             }
-            long fits = leg.to().insert(key, Math.min(left, entry.getValue()), true);
+            long want = Math.min(left, entry.getValue());
+            if (leg.gate() != null) {
+                want = leg.gate().allow(key, want);
+                if (want <= 0) {
+                    continue;
+                }
+            }
+            long fits = leg.to().insert(key, want, true);
             if (fits <= 0) {
                 continue;
             }
@@ -253,6 +286,9 @@ public final class ItemRouting {
                 leg.from().insert(key, taken - put, false);
             }
             left -= (int) put;
+            if (leg.gate() != null && put > 0) {
+                leg.gate().moved(key, put);
+            }
         }
         return limit - left;
     }
@@ -275,6 +311,9 @@ public final class ItemRouting {
                 child.putBoolean("read_write", route.readWrite());
                 child.putBoolean("crafting", route.crafting());
                 child.putBoolean("bidirectional", route.bidirectional());
+            }
+            if (!route.acl().isEmpty()) {
+                child.putString("acl", route.acl());
             }
         }
     }
@@ -300,7 +339,7 @@ public final class ItemRouting {
                 }
                 boolean share = child.getStringOr("mode", "move").equals("share");
                 routes.add(new Route(source, dest, filter, share ? Mode.SHARE : Mode.MOVE, child.getBooleanOr("read_write", true),
-                        child.getBooleanOr("crafting", true), child.getBooleanOr("bidirectional", false), target));
+                        child.getBooleanOr("crafting", true), child.getBooleanOr("bidirectional", false), target, child.getStringOr("acl", "")));
             }
         }
         return routes;
@@ -312,7 +351,7 @@ public final class ItemRouting {
         for (Route route : routes) {
             if (route.source() != index && route.dest() != index) {
                 kept.add(new Route(route.source() > index ? route.source() - 1 : route.source(), route.dest() > index ? route.dest() - 1 : route.dest(),
-                        route.filter(), route.mode(), route.readWrite(), route.crafting(), route.bidirectional(), route.target()));
+                        route.filter(), route.mode(), route.readWrite(), route.crafting(), route.bidirectional(), route.target(), route.acl()));
             }
         }
         return kept;

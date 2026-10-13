@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKACL                          Work with ACLs                System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Router . . :  RTR01     ACL . . . :  NOFUEL     Default . :  *PERMIT
+03 |  Type options, press Enter.
+04 |    2=Change  4=Remove  6=Move up  7=Move down
+05 | 
+06 | Opt  Seq  Match          Dir    Action   Limit       Hits  Last matched
+07 |       10  COAL           *BOTH  *DENY               1,204  14:31:02
+08 |       20  #c:fuels       *OUT   *DENY                  88  14:02:10
+09 |       30  *ENERGY        *BOTH  *PERMIT            12,401  14:32:00
+10 |       40  DIAMOND        *OUT   *PERMIT  64/min       310  14:28:44
+11 |       50  *FLUID         *IN    *PERMIT  2000/day   1,950  13:55:00
+12 |      *DFT  (default)                *PERMIT              4,102  14:32:05
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command
+21 |  ===>
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F6=Add rule F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (9,0,3) input; (10,0,3) input; (11,0,3) input

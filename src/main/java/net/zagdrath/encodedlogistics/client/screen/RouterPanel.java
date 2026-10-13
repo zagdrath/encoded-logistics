@@ -37,6 +37,7 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 //  Table: the route table (network, next hop, cost, hops; *STATIC entries say "static"); in Listed transit, click a
 //   network to let its traffic through or not. Click the heading for its neighbours (state, cost: click +10,
 //   right-click -10, shift-click back to its own).
+//  ACLs: RouterAclTab.
 public class RouterPanel extends RackScreen.Panel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/router.png"),
             TABLE_BACKGROUND = EncodedLogistics.id("textures/gui/rack/l3_switch.png");
@@ -47,12 +48,13 @@ public class RouterPanel extends RackScreen.Panel {
     private static final int ADD_X = 68, ADD_Y = 116, ADD_W = 100, ADD_H = 12, RATE_Y = 132, BAR_X = 69, BAR_Y = 144, BAR_W = 98;
     // The other tabs: the L3 Switch's inset (x 12-153, y 34-139), values right-aligned at 152.
     static final int INSET_X = 12, INSET_RIGHT = 152, HEAD_Y = 36, TABLE_Y = 49, TABLE_ROW = 11, TABLE_ROWS = 8, MODE_ROW = 13;
-    private static final int TAB_ROUTES = 0, TAB_MODE = 1, TAB_TABLE = 2;
+    private static final int TAB_ROUTES = 0, TAB_MODE = 1, TAB_TABLE = 2, TAB_ACLS = 3;
     private static final int MODE_MODE = 0, MODE_TRANSIT = 1, MODE_NEIGHBOURS = 2, MODE_ROWS = 7;
     static final int BLUE = 0xFF50C2EC;
 
     private final PanelTabs tabs = new PanelTabs("gui.encodedlogistics.router.tab.routes", "gui.encodedlogistics.router.tab.mode",
-            "gui.encodedlogistics.router.tab.table");
+            "gui.encodedlogistics.router.tab.table", "gui.encodedlogistics.router.tab.acls");
+    private final RouterAclTab acls = new RouterAclTab(this);
     private int tab, scroll;
     private boolean showNeighbours;
     private @Nullable EditBox rename;
@@ -79,6 +81,7 @@ public class RouterPanel extends RackScreen.Panel {
     @Override
     protected void removed() {
         stopRenaming();
+        acls.close();
         screen.getMenu().resetSlotWindow();
     }
 
@@ -87,6 +90,7 @@ public class RouterPanel extends RackScreen.Panel {
         scroll = 0;
         stopRenaming();
         editor.close();
+        acls.close();
         // The transceiver cages are on the Routes tab only.
         screen.getMenu().setSlotWindow(tab == TAB_ROUTES, 0, Integer.MAX_VALUE);
     }
@@ -107,11 +111,11 @@ public class RouterPanel extends RackScreen.Panel {
 
     // --- What the server sent ---
 
-    private record TableRow(String name, String next, int cost, int hops, String source, boolean transit, long age, @Nullable NetworkRef network) {}
+    record TableRow(String name, String next, int cost, int hops, String source, boolean transit, long age, @Nullable NetworkRef network) {}
 
     private record NeighbourRow(String name, String via, String state, int cost, int override) {}
 
-    private List<TableRow> table() {
+    List<TableRow> table() {
         ValueInput data = data();
         List<TableRow> rows = new ArrayList<>();
         if (data != null) {
@@ -156,6 +160,9 @@ public class RouterPanel extends RackScreen.Panel {
         int x = screen.left(), y = screen.top();
         tabs.extractBackground(graphics, font(), x, y, tab);
         RouterDevice router = router();
+        if (router != null && tab == TAB_ACLS) {
+            acls.extractBackground(graphics, router, mouseX, mouseY);
+        }
         if (router == null || tab != TAB_ROUTES) {
             return;
         }
@@ -200,6 +207,10 @@ public class RouterPanel extends RackScreen.Panel {
         }
         switch (tab) {
             case TAB_MODE -> modeLabels(graphics, router);
+            case TAB_ACLS -> {
+                ValueInput data = data();
+                acls.extractLabels(graphics, router, table(), data == null || data.getBooleanOr("acl_default", true));
+            }
             case TAB_TABLE -> {
                 if (showNeighbours) {
                     neighbourLabels(graphics);
@@ -337,6 +348,10 @@ public class RouterPanel extends RackScreen.Panel {
             return;
         }
         double x = mouseX - screen.left(), y = mouseY - screen.top();
+        if (tab == TAB_ACLS) {
+            acls.extractTooltip(graphics, router, x, y, mouseX, mouseY);
+            return;
+        }
         if (tab == TAB_MODE) {
             int row = (int) Math.floor((y - HEAD_Y + 2) / MODE_ROW);
             if (x >= INSET_X && x < INSET_RIGHT && y >= HEAD_Y - 2 && row >= 0 && row <= MODE_NEIGHBOURS) {
@@ -438,6 +453,10 @@ public class RouterPanel extends RackScreen.Panel {
 
     @Override
     protected boolean mouseScrolled(double x, double y, double amount) {
+        RouterDevice router = router();
+        if (tab == TAB_ACLS && router != null) {
+            return acls.mouseScrolled(router, amount);
+        }
         if (tab != TAB_TABLE) {
             return false;
         }
@@ -461,6 +480,7 @@ public class RouterPanel extends RackScreen.Panel {
         return switch (tab) {
             case TAB_MODE -> left && modeClicked(x, y);
             case TAB_TABLE -> tableClicked(x, y, left, right, shift);
+            case TAB_ACLS -> acls.mouseClicked(router, table(), x, y, button, shift);
             default -> routesClicked(router, x, y, left, right, button);
         };
     }
@@ -584,6 +604,10 @@ public class RouterPanel extends RackScreen.Panel {
 
     @Override
     protected boolean keyPressed(KeyEvent event) {
+        RouterDevice router = router();
+        if (tab == TAB_ACLS && router != null) {
+            return acls.keyPressed(router, event);
+        }
         if (rename == null) {
             return false;
         }

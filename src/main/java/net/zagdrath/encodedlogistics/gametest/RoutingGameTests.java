@@ -13,8 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.routing.RoutingDomain;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclEvents;
 import net.zagdrath.encodedlogistics.rack.ItemRouting;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.RouterAcl;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
@@ -85,6 +87,48 @@ final class RoutingGameTests {
                     helper.assertTrue(entry != null && entry.hops() == 2 && entry.source() == RouterDevice.Source.DYNAMIC, "Route table: " + routerA.table());
                     helper.assertTrue(RackGameTests.storage(helper, masterB).count(COBBLESTONE) == 0, "Items landed in B");
                     helper.assertTrue(!routerA.paused(0), "Route still paused");
+                })
+                .thenSucceed();
+    }
+
+    // An ACL on a route: its deny rule keeps coal home (counted, *ACLDENY fired), its rate lets only so many dirt a
+    // minute through, and what no rule matches (cobblestone) goes by the default.
+    static void aclOnRoute(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        BlockPos controllerB = new BlockPos(7, 1, 4), bayB = new BlockPos(7, 1, 5);
+        RackGameTests.controller(helper, controllerB, 20_000);
+        RackGameTests.driveBay(helper, bayB);
+        Rack2GameTests.storageDevice(helper, master, RackDeviceType.NAS, 1, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        RouterDevice router = RackGameTests.install(helper, master, RackDeviceType.ROUTER, 3, RouterDevice.class);
+        StorageKey coal = StorageKey.of(new ItemStack(Items.COAL)), dirt = StorageKey.of(new ItemStack(Items.DIRT));
+        int events = ElclEvents.recent().size();
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(router.link(at(helper, controllerB)) == RouterDevice.LinkResult.LINKED, "Not linked");
+                    helper.assertTrue(router.createAcl("NOFUEL"), "ACL not made");
+                    RouterAcl acl = router.acl("NOFUEL");
+                    helper.assertTrue(acl.add(-1, "COAL", RouterAcl.Dir.BOTH, false, 0, 0), "Coal rule");
+                    helper.assertTrue(acl.add(-1, "DIRT", RouterAcl.Dir.OUT, true, 5, 0), "Dirt rule");
+                    helper.assertTrue(acl.rules().get(1).seq() == 20, "Seq " + acl.rules().get(1).seq());
+                    helper.assertTrue(router.addRoute(0, 1, ItemRouting.everything()), "Route not added");
+                    helper.assertTrue(router.toggleAcl(0, "NOFUEL"), "ACL not applied");
+                    RackGameTests.storage(helper, master).insert(coal, 10, false);
+                    RackGameTests.storage(helper, master).insert(dirt, 20, false);
+                    RackGameTests.storage(helper, master).insert(COBBLESTONE, 3, false);
+                })
+                .thenIdle(60)
+                .thenExecute(() -> {
+                    long coalB = RackGameTests.storage(helper, bayB).count(coal), dirtB = RackGameTests.storage(helper, bayB).count(dirt),
+                            cobbleB = RackGameTests.storage(helper, bayB).count(COBBLESTONE);
+                    helper.assertTrue(coalB == 0, "Coal crossed: " + coalB);
+                    helper.assertTrue(dirtB == 5, "Dirt over its rate: " + dirtB);
+                    helper.assertTrue(cobbleB == 3, "Default didn't permit: " + cobbleB);
+                    RouterAcl acl = router.acl("NOFUEL");
+                    helper.assertTrue(acl.rules().getFirst().hits() >= 10 && acl.rules().get(1).hits() == 5, "Hits " + acl.rules().getFirst().hits()
+                            + " / " + acl.rules().get(1).hits());
+                    helper.assertTrue(ElclEvents.recent().stream().skip(events).anyMatch(event -> event.event().equals("*ACLDENY")
+                            && event.data().endsWith("NOFUEL 10 COAL")), "No *ACLDENY");
                 })
                 .thenSucceed();
     }

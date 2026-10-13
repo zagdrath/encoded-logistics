@@ -1132,7 +1132,7 @@ public class ControllerStructures extends SavedData {
             }
             for (StorageView view : ownStorage(server, source).views()) {
                 if (view.driveId() == null || seen.add(view.driveId())) {
-                    views.add(new SharedView(view, link.route()::matches, link.route().readWrite(), link.fromName()));
+                    views.add(new SharedView(view, link.passes(), link.route().readWrite(), link.fromName()));
                 }
             }
         }

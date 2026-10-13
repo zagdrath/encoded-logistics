@@ -40,6 +40,11 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   - Config: `routingBaseCost`, `reconvergeSeconds`, `maxHops` (16).
   - Terminal OS: `DSPROUTE` and `DSPNBR` screens, `RTVRTE`, `RTVNBRSTS` and `CHGNBR`, and the trigger events
     `*NBRUP`, `*NBRDOWN` and `*RTECHG`.
+- **Router ACLs.** Each Router can hold named ACLs (its panel's new ACLs tab): ordered rules matching an item, a
+  #tag, a resource type or anything, going into or out of its network, that permit or deny, optionally only so many a
+  minute or a game day. Apply one to a route or to a network the Router reaches directly: a Move moves only what it
+  permits, a Share shows only that. Each rule counts its hits. What no rule matches is permitted (`aclDefaultPermit`).
+  Terminal OS: `ADDACLE`, `CHGACLE`, `RMVACLE`, the `WRKACL` screen, and the `*ACLDENY` trigger event.
 
 ## [1.2.1] - 2026-10-12
 
