@@ -120,6 +120,27 @@ public final class NetworkGraph {
         return link;
     }
 
+    // Lowers a link's capacity (span loss on a Fiber Cable run, optical.SpanLoss): the link is replaced, wherever it's
+    // kept, by one carrying at most capacity lanes. Returns the link as it now is.
+    public NetworkLink limit(NetworkLink link, int capacity) {
+        if (capacity >= link.capacity()) {
+            return link;
+        }
+        NetworkLink limited = new NetworkLink(link.from(), link.to(), capacity);
+        for (NodePos end : List.of(link.from(), link.to())) {
+            Map<Direction, NetworkLink> sides = links.get(end);
+            if (sides != null) {
+                sides.replaceAll((side, existing) -> existing.equals(link) ? limited : existing);
+            }
+            List<NetworkLink> far = remote.get(end);
+            if (far != null) {
+                far.replaceAll(existing -> existing.equals(link) ? limited : existing);
+            }
+        }
+        allLinks.replaceAll(existing -> existing.equals(link) ? limited : existing);
+        return limited;
+    }
+
     public @Nullable NetworkLink link(NodePos pos, Direction side) {
         Map<Direction, NetworkLink> sides = links.get(pos);
         return sides != null ? sides.get(side) : null;

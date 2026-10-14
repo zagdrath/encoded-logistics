@@ -18,6 +18,11 @@
   "encodedlogistics:tape_library_4u",
   "encodedlogistics:tape_library_6u",
   "encodedlogistics:network_controller_2u",
-  "encodedlogistics:network_controller_4u"
+  "encodedlogistics:network_controller_4u",
+  "encodedlogistics:optical_multiplexer_rack",
+  "encodedlogistics:optical_amplifier_rack",
+  "encodedlogistics:optical_transport_shelf",
+  "encodedlogistics:chassis_switch",
+  "encodedlogistics:blade_enclosure"
  ]
 }

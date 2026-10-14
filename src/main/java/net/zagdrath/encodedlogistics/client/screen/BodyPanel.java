@@ -17,7 +17,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.ValueInput;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 
-// A rack unit's panel that is a PanelBody (the same panel its block form shows): the Directory Server's.
+// A rack unit's panel that is a PanelBody (the same panel its block form shows): the Directory Server's, the Optical
+// Multiplexer's.
 public class BodyPanel extends RackScreen.Panel implements PanelBody.Context {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/l3_switch.png");
     private final PanelBody body;
@@ -29,6 +30,10 @@ public class BodyPanel extends RackScreen.Panel implements PanelBody.Context {
 
     public static BodyPanel directory(RackScreen screen) {
         return new BodyPanel(screen, DirectoryPanel::new);
+    }
+
+    public static BodyPanel opticalMux(RackScreen screen) {
+        return new BodyPanel(screen, OpticalMuxPanel::new);
     }
 
     @Override

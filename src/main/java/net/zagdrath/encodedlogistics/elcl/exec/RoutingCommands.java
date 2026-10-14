@@ -193,7 +193,7 @@ public final class RoutingCommands {
     }
 
     // A game time as the time of day it was then: "14:31:02" ("" for never).
-    static String clock(MinecraftServer server, long gameTime) {
+    public static String clock(MinecraftServer server, long gameTime) {
         if (gameTime < 0) {
             return "";
         }

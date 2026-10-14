@@ -1,0 +1,11 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:optical_amplifier"
+ ],
+ "result": {
+  "id": "encodedlogistics:optical_amplifier_rack",
+  "count": 1
+ }
+}

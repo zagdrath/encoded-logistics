@@ -1,0 +1,137 @@
+ENCODED LOGISTICS - HANDOFF: OPTICAL / CARRIER GEAR AND MODULAR CHASSIS
+=======================================================================
+Optical Multiplexer and Optical Amplifier (block + 1U rack forms), Optical Transport Shelf (6U), Chassis Switch (10U), Blade
+Enclosure (10U), with their cards, blades, power supplies and modules.
+
+=====================================================================================================
+0. REVIEW FINDINGS (repo HEAD a2ce4e2, release 1.2.1)
+=====================================================================================================
+  Rack: rack/RackDeviceType (sizes 1 / 2 / 4 / 6 U today), rack/RackDevice (saveItems / loadItems, saveSettings), rack/
+    RackGeometry, client/rack/RackRenderer + RackScreen (elevation), RackDeviceInfo (HUD per unit). 10U is NEW (section 7).
+  Rack-device art convention (no rack section in docs/TEXTURE_STYLE.md - the shipped sheets ARE the reference): 128 x 128
+    sheets (tall devices 128 x 256), front at (0,0) 104 x 8U, rear below (6U: v 4 on a 256 sheet -> 10U: rear at row 128);
+    full-height light-steel EARS with screws; 1U devices carry a coloured TYPE TAB inside the left ear; dark faceplate with
+    recessed panels, sockets and LED sockets; <device>_on (activity / status glow, usually 4 frames) and <device>_fault (2-frame
+    red blink) sheets; models <device>.json / _on / _fault with the chassis 1.55-14.45 x 1.75-29.25. Everything here is BUILT
+    FROM those sheets: ears from the Tape Library 6U, body tones sampled from it, the Router's RJ45 socket, the Monitoring
+    Server's sheet for the 1U forms (type tab recoloured: Multiplexer yellow, Amplifier orange - no shipped device uses them),
+    the Tape Library 6U / Monitoring Server models as the model templates.
+  Block forms follow docs/TEXTURE_STYLE.md exactly (tools/el_kit.py: steel ramp only, flat fields, the recessed-bevel frame,
+    recesses / raised detail, static two-tone glows) - both pass its checklist. Items: block forms show their block model;
+    rack devices, cards, blades, modules have flat icons (the shipped convention).
+  Exists?: Cable Certifier - only referenced by game tests here; if it ships, show span length / lanes after loss on it (sec. 1).
+    Work with Hardware - NOT in the repo (the Mainframe was never built): this drop CREATES WRKHW. Rack Elevation templates and
+    VLAN trunking - not in the repo (designed in earlier handoffs): the Trunk Card and template support apply only once they
+    land. Messages: ELC25xx is used; ELC26xx is reserved by the routing handoff, so this drop uses ELC27xx.
+
+=====================================================================================================
+1. FIBER SPAN LOSS
+=====================================================================================================
+  Only Fiber Cable runs: a continuous run longer than fiberSpanThreshold [config 256 cable blocks] loses 1 lane per further
+  fiberSpanLossStep [32], down to 1. An Optical Amplifier in the run (block inline, or a rack Amplifier patched in) resets the
+  count from that point. Config fiberSpanLoss [on]. Network / Dense Cables, Network / Wireless Bridges and P2P Links unchanged.
+  HUD on a Fiber Cable (and the Cable Certifier if present): length since the last amplifier, lanes after loss.
+  Computed per cable network on topology change (the run graph's longest unamplified path to each endpoint), cached.
+
+=====================================================================================================
+2. OPTICAL MULTIPLEXER - optical_multiplexer (block, 16 x 16 x 16) and optical_multiplexer_rack (1U)
+=====================================================================================================
+  8 channels; each assigned to a client network (a Link Card copied from any device on it) or a segment of its own network.
+  Line port: a Fiber Cable run to a matching multiplexer, paired with a Link Card. Each channel up to 32 lanes; the line carries
+  all channels (not one cable's 32); span loss applies per channel. Channels isolated like separate cables.
+  Art: block - the guide's frame, 8 recessed channel-LED windows, recessed line in / out ports, raised slats on the sides; glow
+  = 8 static two-tone channel LEDs in wavelength colours (dye bases: red, orange, yellow, lime, green, light blue, blue,
+  purple). Rack - the Monitoring Server sheet, yellow type tab, 8 channel LED sockets, two Router sockets (line in / out);
+  _on: the 8 channel LEDs (a down channel blinks), status LED; _fault: line down (red blink).
+  GUI (previews/gui_optical_mux.png): Channels (ch, network, lanes, up) / Line (far end, distance, loss, pairing).
+
+=====================================================================================================
+3. OPTICAL AMPLIFIER - optical_amplifier (block: an 8 x 8 x 16 inline housing along the fibre axis) and _rack (1U)
+=====================================================================================================
+  Resets span loss; small power draw; unpowered = pass-through (no reset). States off / amplifying / input loss of signal
+  (fault). HUD: input and output lanes, span length before and after. Art: block - recessed ports on both ends, a gain window
+  on the side (static green gain LED); rack - orange type tab, input / output sockets, the gain bar on _on.
+
+=====================================================================================================
+4. OPTICAL TRANSPORT SHELF - optical_transport_shelf (6U)
+=====================================================================================================
+  Slots (models/block/rack_card/slot_positions.json "shelf": 10 vertical slots, texels on the front): 0-1 controller cards
+  (redundant: the second takes over if the first fails), 2-9 line cards: transponder_card (1 client network -> 1 long-haul
+  channel, 32 lanes), mux_card (up to 8 transponder channels onto the line), amplifier_card (resets span loss on the line side),
+  protection_card (1+1: two separate paths - two fibre runs, or fibre + a Network Bridge pair; switch to protect within 1 tick
+  when working fails, back when restored if revertive [setting]). Up to 40 channels per shelf [config]. Performance monitoring
+  per span / channel: length, loss, lanes delivered, protection state, signal quality = 100 % - 4 % per lane lost (min 0 when
+  down). Shelves pair end to end with a Link Card. Art: 10 slot blanks, a fibre-management tray along the bottom; controller
+  cards carry the critical / major / minor alarm LED sockets. GUI: slot view (previews/gui_transport_shelf.png: the shelf's
+  front at 1:1 with its cards - click a card for its settings), Channels, Spans.
+
+=====================================================================================================
+5. CHASSIS SWITCH - chassis_switch (10U)
+=====================================================================================================
+  Slots ("switch"): 2 supervisor (half-width, top row), 8 line (1U rows), 4 PSU (bottom row, quarter width). Active supervisor
+  runs the switch; the standby takes over within 1 tick if it fails or is removed, without dropping traffic. Line cards:
+  access_card (48 rack-local lanes, like an L2 Switch pool), uplink_card (4 Optical Transceiver cages, aggregate with failover
+  like rack cable entries), routing_card (the L3 Switch's rules and QoS, higher limits; more cards add throughput), trunk_card
+  (VLAN trunk ports - only once VLAN trunking ships). Runs on any one PSU; degraded below two (the _degraded status sheet).
+  Everything an L3 Switch does is available through its cards; hot-swappable; removing a card affects only what it provided.
+  GUI (previews/gui_chassis_switch.png): slot view + supervisor state, lanes, uplinks, PSUs.
+
+=====================================================================================================
+6. BLADE ENCLOSURE - blade_enclosure (10U)
+=====================================================================================================
+  Front: 16 half-height blade slots ("blade_front": 2 rows of 8). compute_blade (crafting threads: 8 per blade, vs a Compute
+  Server's per-U rate - proposal 25 % more per rack unit), memory_blade (job buffer like a Memory Server), fabrication_blade
+  (schematics + crafting like a Fabrication Server), storage_blade (2 Storage Drive bays). Rear: 2 interconnect_module (the lanes
+  all blades use - blades don't take rack lanes; two = redundant), 6 blade_psu, 1-2 management_module (second = standby). Blades
+  count toward the Rack Scheduler like their servers; Storage Blades count as network storage.
+  GUI (previews/gui_blade_enclosure.png): Front / Rear slot views, per-blade status, Totals.
+
+=====================================================================================================
+7. RACK SUPPORT AND HUD
+=====================================================================================================
+  RackDeviceType: allow 10U (consecutive free U, no overlaps) and show it in RackScreen's elevation. Chassis model: the
+  device's chassis element (models/block/rack_device/<device>.json, front uv rows 0..8U, rear at 8) + its status overlay
+  (_on / _degraded / _fault). Cards / blades / PSUs / modules: models/block/rack_card/<part>.json - a thin faceplate element
+  (0.25 deep) the rack renderer draws at its slot: for slot (tx, ty, w, h) on a device of height U, translate to
+  x = 14.45 - (tx + w) / 8, y = U - (ty + h) / 8, z = 1.5 (in front of the chassis face), + its _on glow. Empty slots show the
+  chassis sheet's blanking plates. HUD: looking at a chassis -> the chassis popup; at a card / blade / PSU (its faceplate box)
+  -> that part's popup (name, slot, status, what it provides) - previews/hud_popups.png.
+  Rack Elevation templates (when they ship): record and apply cards and blades with the chassis.
+
+=====================================================================================================
+8. TERMINAL OS / ELCL (layouts/*.txt, previews/crt_*.png)
+=====================================================================================================
+  WRKHW (Work with Hardware, new): every chassis on the network with slots, cards, blades, PSUs and status; 5=Display 8=Locate.
+  DSPOPT (Display Optical Status): multiplexers, amplifiers, shelves; spans, channels, loss, quality, protection.
+| Command | Parameters | Context | Notes |
+| `RTVCHSSTS` | `DEV`(Req) `RTNLIST`(Req, *LIST of 'slot part status') `RTNSTS`(*CHAR: *ONLINE *DEGRADED *FAULT) | all | ELC2701, ELC2702. |
+| `RTVOPTSTS` | `DEV`(Req) `SPAN`(*FIRST \| name) `CHANNEL`(*ALL \| 1-40) `RTNLANES`(*INT) `RTNLOSS`(*INT) `RTNQUAL`(*INT %) `RTNPROT`(*CHAR) | all | ELC2701, ELC2703, ELC2704. |
+| `CHGPROT` | `DEV`(Req) `SPAN`(Req) `PATH(*WORKING\|*PROTECT)` | I, B | build permission; for testing. ELC2701, ELC2703, ELC2705, ELC0401. |
+Messages (ELC27xx): ELC2701 30 "Device &1 not found or not a chassis / optical device."  ELC2702 10 "Chassis &1 is degraded
+(&2)."  ELC2703 30 "Span &1 not found on &2."  ELC2704 30 "Channel &1 is not assigned."  ELC2705 30 "Span &1 has no protect path."
+Trigger events: *CARDFAULT, *SUPFAILOVER, *PROTSWITCH, *SPANLOSS (DATA = device, slot / span, detail).
+
+=====================================================================================================
+9. PERMISSIONS, RECIPES
+=====================================================================================================
+  Install / remove cards and blades: Rack access (RackPermission.RACK); settings: BUILD; viewing: VIEW. All on the server.
+  Recipes as proposed (data/encodedlogistics/recipe/*.json); the 1U rack forms are crafted from their block forms
+  (shapeless), so either form can be made.
+
+=====================================================================================================
+10. FILES
+=====================================================================================================
+assets/encodedlogistics/ blockstates/{optical_multiplexer, optical_amplifier}.json; models/block/optical_*/*;
+  models/block/rack_device/{optical_multiplexer, optical_amplifier, optical_transport_shelf, chassis_switch, blade_enclosure}
+  (+ _on / _fault / _degraded).json; models/block/rack_card/<part>(_on).json + slot_positions.json; textures/block/
+  optical_*/*, textures/block/rack_device/<device>(_state).png (+ .mcmeta), textures/block/rack_card/<part>(_on).png (+ .mcmeta);
+  textures/item/* (23 flat icons) + models/item/*, items/* (block forms point at their block models)
+data/encodedlogistics/recipe/*.json; blockbench/*.bbmodel (every device, part and block form)
+previews/ full_rack, chassis_switch_close, transport_shelf_close, blocks, gui_*, hud_popups, crt_wrkhw, crt_dspopt, item_icons
+tools/opt.py (art generator - builds from the shipped sheets), opt_render.py, opt_gui.py (GUIs + text-fit checker), el_kit.py
+
+=====================================================================================================
+11. OPEN QUESTIONS (proposals included)
+=====================================================================================================
+  1. Span loss 256 / 32, on by default (config).   2. Multiplexer 8 channels, shelf 40 (config).
+  3. Blades vs servers: +25 % per rack unit.        4. Power: 200 FE/t per card / blade, 1,000 per chassis base (config).

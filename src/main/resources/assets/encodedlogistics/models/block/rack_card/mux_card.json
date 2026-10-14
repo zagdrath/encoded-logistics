@@ -1,0 +1,69 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "encodedlogistics:block/rack_card/mux_card",
+  "particle": "encodedlogistics:block/rack_card/mux_card"
+ },
+ "elements": [
+  {
+   "name": "faceplate",
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    0.875,
+    4.5,
+    0.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      0.875,
+      9.0
+     ],
+     "texture": "#t"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      0.125,
+      9.0
+     ],
+     "texture": "#t"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      0.125,
+      9.0
+     ],
+     "texture": "#t"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      0.875,
+      0.25
+     ],
+     "texture": "#t"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      0.875,
+      0.25
+     ],
+     "texture": "#t"
+    }
+   }
+  }
+ ]
+}

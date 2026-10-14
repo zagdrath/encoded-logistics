@@ -1,0 +1,78 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier"
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_on"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_on",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_on",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_on",
+    "y": 270
+   }
+  }
+ ]
+}

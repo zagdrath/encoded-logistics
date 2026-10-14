@@ -7,12 +7,14 @@ package net.zagdrath.encodedlogistics.net;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -23,11 +25,14 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
+import net.zagdrath.encodedlogistics.block.cable.CableTier;
+import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
 import net.zagdrath.encodedlogistics.midrange.FootprintBlock;
 import net.zagdrath.encodedlogistics.midrange.MidrangeHud;
 import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.optical.SpanLoss;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
@@ -65,6 +70,11 @@ public final class WirelessInfoPayloads {
             BlockState state = level.getBlockState(query.pos());
             BlockPos master = state.getBlock() instanceof FootprintBlock footprint ? footprint.master(level, query.pos(), state)
                     : state.getBlock() instanceof ExchangeSwitchBlock ? ExchangeSwitchBlock.lower(query.pos(), state) : query.pos();
+            // A Fiber Cable: its span since the last amplifier and the lanes it carries after the span's loss.
+            if (state.getBlock() instanceof NetworkCableBlock cable && cable.getTier() == CableTier.FIBER) {
+                PacketDistributor.sendToPlayer(player, new Info(query.pos(), "", fiberInfo(state, NodePos.of(level.dimension(), query.pos()))));
+                return;
+            }
             if (master != null && level.getBlockEntity(master) instanceof MidrangeHud hud) {
                 PacketDistributor.sendToPlayer(player, new Info(query.pos(), hud.deviceName(), hud.hudInfo()));
                 return;
@@ -83,6 +93,21 @@ public final class WirelessInfoPayloads {
             }
             PacketDistributor.sendToPlayer(player, new Info(query.pos(), device.deviceName(), device.describe(level.getServer())));
         }
+    }
+
+    private static RackDeviceInfo fiberInfo(BlockState state, NodePos pos) {
+        SpanLoss.Span span = SpanLoss.at(pos);
+        if (span == null) {
+            return new RackDeviceInfo(state.getBlock().getName(), RackDeviceInfo.Status.OFFLINE, Component.translatable("hud.encodedlogistics.fiber.no_network"),
+                    List.of());
+        }
+        int full = SpanLoss.fiberLanes();
+        return new RackDeviceInfo(state.getBlock().getName(), span.lost() > 0 ? RackDeviceInfo.Status.WARNING : RackDeviceInfo.Status.ONLINE,
+                Component.translatable(span.lost() > 0 ? "hud.encodedlogistics.fiber.loss" : "hud.encodedlogistics.fiber.ok", span.lost()), List.of(
+                        new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.fiber.span"), Component.literal(span.length() + " m")),
+                        new RackDeviceInfo.InfoLine(Component.translatable("hud.encodedlogistics.fiber.lanes"), Component.literal(span.lanes() + " / " + full),
+                                new RackDeviceInfo.Bar((float) span.lanes() / full, span.lost() > 0 ? RackDeviceInfo.BarStyle.WARN
+                                        : RackDeviceInfo.BarStyle.NORMAL))));
     }
 
     public record Info(BlockPos pos, String name, RackDeviceInfo info) implements CustomPacketPayload {

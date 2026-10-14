@@ -6,10 +6,12 @@
 package net.zagdrath.encodedlogistics.network;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,6 +26,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.machine.MachineBridges;
+import net.zagdrath.encodedlogistics.optical.OpticalChannels;
+import net.zagdrath.encodedlogistics.optical.SpanLoss;
 
 // Builds a controller structure's network graph from the world: its controller blocks, then everything reachable
 // from them through NetworkNodeBlocks (cables) and NetworkNodeHosts (devices) that connect toward each other, and
@@ -120,7 +124,13 @@ public final class NetworkDiscovery {
                     }
                 }
             }
-            for (RemoteLink remote : node.remoteLinks()) {
+            List<RemoteLink> remotes = node.remoteLinks();
+            List<RemoteLink> optical = OpticalChannels.links(server, at);
+            if (!optical.isEmpty()) {
+                remotes = new ArrayList<>(remotes);
+                remotes.addAll(optical);
+            }
+            for (RemoteLink remote : remotes) {
                 NodePos target = remote.target();
                 boolean crossDimension = remote.wireless() ? Config.WIRELESS_CROSS_DIMENSION.getAsBoolean() : Config.BRIDGE_CROSS_DIMENSION.getAsBoolean();
                 if (target.equals(at) || !target.dimension().equals(at.dimension()) && !crossDimension) {
@@ -140,6 +150,9 @@ public final class NetworkDiscovery {
                     added = true;
                 }
                 RemoteLink back = linkTo(other, at);
+                if (back == null) {
+                    back = OpticalChannels.link(server, target, at);
+                }
                 if (back == null || other.isController()) {
                     continue;
                 }
@@ -153,6 +166,7 @@ public final class NetworkDiscovery {
                 graph.connectRemote(at, target, Math.min(remote.capacity(), back.capacity()));
             }
         }
+        SpanLoss.apply(graph);
         return new Discovered(graph, items);
     }
 

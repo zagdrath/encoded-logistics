@@ -39,6 +39,8 @@ import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.plc.PlcModule;
 import net.zagdrath.encodedlogistics.plc.PlcModuleItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceItem;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPartItem;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.signal.SirenBlock;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
@@ -236,6 +238,31 @@ public final class ModItems {
     public static final DeferredItem<RackDeviceItem> TAPE_LIBRARY_6U = ITEMS.registerItem("tape_library_6u",
             p -> new RackDeviceItem(p, RackDeviceType.TAPE_LIBRARY_6U), p -> p.stacksTo(1));
     public static final DeferredItem<Item> LTO_TAPE_DRIVE = ITEMS.registerSimpleItem("lto_tape_drive", p -> p.stacksTo(16));
+
+    // Optical gear and the modular chassis (docs/optical): the blocks, their 1U rack forms, the chassis and their parts.
+    public static final DeferredItem<BlockItem> OPTICAL_MULTIPLEXER = ITEMS.registerSimpleBlockItem(ModBlocks.OPTICAL_MULTIPLEXER);
+    public static final DeferredItem<BlockItem> OPTICAL_AMPLIFIER = ITEMS.registerSimpleBlockItem(ModBlocks.OPTICAL_AMPLIFIER);
+    public static final DeferredItem<RackDeviceItem> OPTICAL_MULTIPLEXER_RACK = ITEMS.registerItem("optical_multiplexer_rack",
+            p -> new RackDeviceItem(p, RackDeviceType.OPTICAL_MULTIPLEXER), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> OPTICAL_AMPLIFIER_RACK = ITEMS.registerItem("optical_amplifier_rack",
+            p -> new RackDeviceItem(p, RackDeviceType.OPTICAL_AMPLIFIER), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> OPTICAL_TRANSPORT_SHELF = ITEMS.registerItem("optical_transport_shelf",
+            p -> new RackDeviceItem(p, RackDeviceType.OPTICAL_TRANSPORT_SHELF), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> CHASSIS_SWITCH = ITEMS.registerItem("chassis_switch",
+            p -> new RackDeviceItem(p, RackDeviceType.CHASSIS_SWITCH), p -> p.stacksTo(1));
+    public static final DeferredItem<RackDeviceItem> BLADE_ENCLOSURE = ITEMS.registerItem("blade_enclosure",
+            p -> new RackDeviceItem(p, RackDeviceType.BLADE_ENCLOSURE), p -> p.stacksTo(1));
+    private static final Map<ChassisPart, DeferredItem<ChassisPartItem>> CHASSIS_PARTS = new EnumMap<>(ChassisPart.class);
+
+    static {
+        for (ChassisPart part : ChassisPart.values()) {
+            CHASSIS_PARTS.put(part, ITEMS.registerItem(part.id(), p -> new ChassisPartItem(p, part), p -> p.stacksTo(16)));
+        }
+    }
+
+    public static DeferredItem<ChassisPartItem> chassisPart(ChassisPart part) {
+        return CHASSIS_PARTS.get(part);
+    }
 
     // LTO tapes, one per generation (TapeGeneration). New ones stack to 64, as Storage Drives do; one with an id stacks
     // to 1 (LtoTapeItem).

@@ -1,0 +1,6 @@
+{
+ "model": {
+  "type": "minecraft:model",
+  "model": "encodedlogistics:block/optical_amplifier/optical_amplifier"
+ }
+}

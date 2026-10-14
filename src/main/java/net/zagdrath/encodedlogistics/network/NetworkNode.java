@@ -79,4 +79,14 @@ public interface NetworkNode {
     default List<RemoteLink> remoteLinks() {
         return List.of();
     }
+
+    // What it is to a Fiber Cable run's span loss (optical.SpanLoss): a run is the Fiber Cables (and unpowered
+    // amplifiers) between its ends; anything else, a powered Optical Amplifier included, ends a span.
+    enum Optical {
+        NONE, FIBER, AMPLIFIER
+    }
+
+    default Optical optical() {
+        return Optical.NONE;
+    }
 }

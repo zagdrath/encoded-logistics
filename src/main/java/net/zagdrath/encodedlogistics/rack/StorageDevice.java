@@ -64,6 +64,11 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
         return isOnline();
     }
 
+    // Whether a drive slot is in use (a Blade Enclosure's only with a Storage Blade in front of it).
+    protected boolean bayUsable(int slot) {
+        return true;
+    }
+
     // Added to its priority (a SAN's extra uplinks).
     protected int priorityBonus() {
         return 0;
@@ -108,7 +113,7 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
         DriveStorage data = DriveStorage.get(server);
         for (int slot = 0; slot < drives(); slot++) {
             ItemStack stack = items().get(slot);
-            if (stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY) {
+            if (stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY && bayUsable(slot)) {
                 UUID id = assignId(server, stack, slot);
                 if (seen.add(id)) {
                     views.add(new DriveView(data, slot, id, drive.getTier(), drive.getType()));
@@ -126,7 +131,7 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
         }
         for (int slot = 0; slot < drives(); slot++) {
             ItemStack stack = items().get(slot);
-            if (EnergyDrives.is(stack) && seen.add(assignId(server, stack, slot))) {
+            if (EnergyDrives.is(stack) && bayUsable(slot) && seen.add(assignId(server, stack, slot))) {
                 int changed = slot;
                 cells.add(new EnergyDrives.Cell(stack, () -> driveChanged(changed)));
             }

@@ -217,6 +217,19 @@ public abstract class RackDevice {
         return Priority.NORMAL;
     }
 
+    // What it gives its network's rack Scheduler (RackScheduler) while it's online: crafting threads and job memory
+    // (a Compute or Memory Server, a Blade Enclosure's blades).
+    public int schedulerThreads() {
+        return 0;
+    }
+
+    public long schedulerMemory() {
+        return 0;
+    }
+
+    // The pool is using what it gives this tick (running jobs, jobs holding memory), for its lights.
+    public void markPoolBusy(long gameTime, boolean computing, boolean holding) {}
+
     // --- Behaviour ---
 
     // Every server tick while it's in a loaded rack.

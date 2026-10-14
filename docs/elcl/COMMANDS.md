@@ -238,6 +238,25 @@ device, one of those Routers has a **Control** policy (a route mode beside Move 
 resolved is kept `directoryCacheSeconds` (30) or until a route or the networks change; the Firewall is asked every
 time. A name on the caller's own network resolves as the plain name.)*
 
+## 7d. Hardware: chassis and optical gear **[EXT]**
+
+The optical handoff (docs/optical/HANDOFF.txt). Devices are named as devices on the caller's network: the modular
+chassis `CSW01` (Chassis Switch), `BLD01` (Blade Enclosure), `OTS01` (Optical Transport Shelf); the optical gear
+`MUX01` (Optical Multiplexer, block or rack), `AMP01` (Optical Amplifier, block or rack). A span is named by its two
+ends (`OTS01-OTS02`, `MUX01-MUX02`).
+
+| Command | Parameters | Auth | Errors |
+|---------|-----------|------|--------|
+| `RTVCHSSTS` | `DEV`(P1, Req: a chassis) `RTNLIST`(Req, *LIST: `'slot part status'` each bay, e.g. `'A SUPERVISOR_CARD *ACTIVE'`, `'P4 *NONE *EMPTY'`) `RTNSTS`(*CHAR: `*ONLINE\|*DEGRADED\|*FAULT`) | view | ELC2701; ELC2702 (a warning) when it's degraded |
+| `RTVOPTSTS` | `DEV`(P1, Req) `SPAN(*FIRST\|name)` `CHANNEL(*ALL\|1-40)` `RTNLANES`(*INT: lanes delivered - the channel's, given one) `RTNLOSS`(*INT: lanes lost) `RTNQUAL`(*INT, %) `RTNPROT`(*CHAR: `*ACTIVE\|*STANDBY\|*FAILED\|*NONE`) | view | ELC2701, ELC2703, ELC2704 |
+| `CHGPROT` | `DEV`(P1, Req: a Transport Shelf) `SPAN`(P2, Req) `PATH`(P3, Req: `*WORKING\|*PROTECT`): switch the span's path by hand (for testing; it holds while that path is up) | configure | ELC2701, ELC2703, ELC2705, ELC0401 |
+| `WRKHW` | `DEV(*ALL\|name)`: Work with Hardware: every chassis on the network, a row per bay with a part - device, slot, part, status (`*ONLINE *ACTIVE *STANDBY *FAILED *EMPTY *OFFLINE *PROTECT`), detail; 5=Display, 8=Locate; F11=every bay (empty ones too); interactive only | view | - |
+| `DSPOPT` | Display Optical Status: the network's multiplexers, amplifiers and shelves, each span's path, length, lanes, loss, quality and protection, and the last protection switch; F10=Channels; interactive only | view | - |
+
+*(Span loss: a Fiber Cable run longer than `fiberSpanThreshold` (256) blocks since its last powered amplifier loses a
+lane for every further `fiberSpanLossStep` (32), down to 1 (`fiberSpanLoss` turns it off). Signal quality is 100%
+less 4% a lane lost, 0 when down. A Transport Shelf's Amplifier Cards add a threshold's reach each.)*
+
 ## 8. Messages, displays and output
 
 | Command | Parameters | Context | Notes |
@@ -297,6 +316,10 @@ two parameters: `&EVENT` (*CHAR 10) and `&DATA` (*CHAR 256).
 | `*NBRUP` / `*NBRDOWN` **[EXT]** | `DEV` (a Router, or `*ANY`): a dynamic-routing neighbour comes up (*FULL) or goes down | the Router and the neighbour's network, e.g. `RTR01 ELNET02` |
 | `*RTECHG` **[EXT]** | `DEV` (a Router, or `*ANY`): its best path to a network changes (found, lost, a new next hop or cost) | the Router and the network, e.g. `RTR01 ELNET07` |
 | `*ACLDENY` **[EXT]** | `DEV` (a Router, or `*ANY`): one of its ACL rules denies a resource | the Router, ACL, rule and resource, e.g. `RTR01 NOFUEL 10 COAL` |
+| `*CARDFAULT` **[EXT]** | `DEV` (a chassis, or `*ANY`): one of its parts fails or goes missing (a supervisor with no standby, a power supply, a controller, a module) | the chassis, slot and what happened, e.g. `CSW01 PSU 3/4 power supplies` |
+| `*SUPFAILOVER` **[EXT]** | `DEV` (a Chassis Switch, or `*ANY`): its standby supervisor takes over | the switch, the failed slot and the takeover, e.g. `CSW01 A failover to B` |
+| `*PROTSWITCH` **[EXT]** | `DEV` (a Transport Shelf, or `*ANY`): it switches path (1+1) | the shelf, span, new path and why, e.g. `OTS01 OTS01-OTS02 *PROTECT working path down` |
+| `*SPANLOSS` **[EXT]** | `DEV` (a Transport Shelf, or `*ANY`): its line's lost lanes change | the shelf, span and lanes lost, e.g. `OTS01 OTS01-OTS02 2` |
 
 Triggers are edge-triggered (fire once per crossing) and debounced
 (minimum 1 second between firings of the same trigger).

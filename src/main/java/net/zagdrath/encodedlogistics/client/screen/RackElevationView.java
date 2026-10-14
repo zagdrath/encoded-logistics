@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.client.screen;
 
+import java.util.List;
 import java.util.function.IntPredicate;
 
 import net.minecraft.client.Minecraft;
@@ -23,6 +24,9 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.chassis.Chassis;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
 import net.zagdrath.encodedlogistics.rack.device.SanDevice;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
 
@@ -237,9 +241,33 @@ public final class RackElevationView {
         if (lit != null) {
             litFront(graphics, device, lit, x, y, shown, height, sheet);
         }
-        if (device instanceof StorageDevice storage) {
+        if (device instanceof StorageDevice storage && !(device instanceof Chassis)) {
             bays(graphics, storage, x, y, shown, height, sheet, color);
         }
+        if (device instanceof Chassis chassis) {
+            parts(graphics, chassis, x, y, shown, height, color);
+        }
+    }
+
+    // A modular chassis's parts on its front, in their bays (as ChassisRender draws them), scaled as the front is.
+    private static void parts(GuiGraphicsExtractor graphics, Chassis chassis, int x, int y, int shown, int height, int color) {
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(x, y);
+        graphics.pose().scale(1.0F, (float) shown / height);
+        List<ChassisLayout.Bay> layout = chassis.layout().bays();
+        for (int i = 0; i < layout.size(); i++) {
+            ChassisLayout.Bay bay = layout.get(i);
+            ChassisPart part = Chassis.shownPart(chassis, i);
+            if (bay.rear() || part == null) {
+                continue;
+            }
+            graphics.blit(RenderPipelines.GUI_TEXTURED, part.texture(), bay.x(), bay.y(), 0, 0, bay.w(), bay.h(), bay.w(), bay.h(), 128, 64, color);
+            if (Chassis.shownLit(chassis, i)) {
+                graphics.blit(RenderPipelines.GUI_TEXTURED, EncodedLogistics.id("textures/block/rack_card/" + part.id() + "_on.png"), bay.x(), bay.y(), 0, 0,
+                        bay.w(), bay.h(), bay.w(), bay.h(), 128, 256, color);
+            }
+        }
+        graphics.pose().popMatrix();
     }
 
     // A NAS's or SAN's drives in their bays, as the rack in the world shows them (RackClientDevices.DriveBays): each

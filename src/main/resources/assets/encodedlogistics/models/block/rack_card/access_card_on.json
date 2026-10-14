@@ -1,0 +1,38 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "g": "encodedlogistics:block/rack_card/access_card_on",
+  "particle": "encodedlogistics:block/rack_card/access_card"
+ },
+ "elements": [
+  {
+   "name": "glow",
+   "from": [
+    0,
+    0,
+    -0.01
+   ],
+   "to": [
+    10.0,
+    0.875,
+    -0.01
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      10.0,
+      1.75
+     ],
+     "texture": "#g"
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

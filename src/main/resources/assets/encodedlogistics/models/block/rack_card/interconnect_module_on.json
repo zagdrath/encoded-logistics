@@ -1,0 +1,38 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "g": "encodedlogistics:block/rack_card/interconnect_module_on",
+  "particle": "encodedlogistics:block/rack_card/interconnect_module"
+ },
+ "elements": [
+  {
+   "name": "glow",
+   "from": [
+    0,
+    0,
+    -0.01
+   ],
+   "to": [
+    1.125,
+    4.625,
+    -0.01
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      1.125,
+      9.25
+     ],
+     "texture": "#g"
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

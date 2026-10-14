@@ -25,6 +25,8 @@ import net.zagdrath.encodedlogistics.blockentity.FabricatorBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.GatewayBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.LithographyPressBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.OpticalAmplifierBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.OpticalMultiplexerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.PowerInletBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
@@ -97,6 +99,12 @@ public final class ModBlockEntityTypes {
 
     public static final Supplier<BlockEntityType<ExchangeSwitchBlockEntity>> EXCHANGE_SWITCH = BLOCK_ENTITY_TYPES.register(
             "exchange_switch", () -> new BlockEntityType<>(ExchangeSwitchBlockEntity::new, ModBlocks.EXCHANGE_SWITCH.get()));
+
+    public static final Supplier<BlockEntityType<OpticalMultiplexerBlockEntity>> OPTICAL_MULTIPLEXER = BLOCK_ENTITY_TYPES.register(
+            "optical_multiplexer", () -> new BlockEntityType<>(OpticalMultiplexerBlockEntity::new, ModBlocks.OPTICAL_MULTIPLEXER.get()));
+
+    public static final Supplier<BlockEntityType<OpticalAmplifierBlockEntity>> OPTICAL_AMPLIFIER = BLOCK_ENTITY_TYPES.register(
+            "optical_amplifier", () -> new BlockEntityType<>(OpticalAmplifierBlockEntity::new, ModBlocks.OPTICAL_AMPLIFIER.get()));
 
     public static final Supplier<BlockEntityType<RelayAntennaBlockEntity>> RELAY_ANTENNA = BLOCK_ENTITY_TYPES.register(
             "relay_antenna", () -> new BlockEntityType<>(RelayAntennaBlockEntity::new, ModBlocks.RELAY_ANTENNA.get()));

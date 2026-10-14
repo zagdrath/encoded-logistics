@@ -57,6 +57,8 @@
     "encodedlogistics:siren_green",
     "encodedlogistics:siren_amber",
     "encodedlogistics:siren_red",
-    "encodedlogistics:speaker"
+    "encodedlogistics:speaker",
+    "encodedlogistics:optical_multiplexer",
+    "encodedlogistics:optical_amplifier"
   ]
 }

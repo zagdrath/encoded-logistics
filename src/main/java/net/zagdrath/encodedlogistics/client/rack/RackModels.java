@@ -20,9 +20,11 @@ import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
 
 // The models the rack's renderer draws on top of its static frame, baked as standalone models: the three door leaves,
-// every device's off, on and fault looks, and the moving parts of devices that have them (the Rack Console's).
+// every device's off, on and fault looks, the moving parts of devices that have them (the Rack Console's), and the
+// modular chassis's cards, blades and modules.
 public final class RackModels {
     public static final Identifier DOOR_FRONT = EncodedLogistics.id("block/rack/rack_door_front");
     public static final Identifier DOOR_REAR_LEFT = EncodedLogistics.id("block/rack/rack_door_rear_left");
@@ -48,6 +50,11 @@ public final class RackModels {
                     register(event, consolePart(type, part));
                 }
             }
+        }
+        // The modular chassis's parts, dark and lit (drawn in their bays: ChassisRender).
+        for (ChassisPart part : ChassisPart.values()) {
+            register(event, part.model(false));
+            register(event, part.model(true));
         }
         for (RackDeviceType type : RackDeviceType.all()) {
             for (RackDeviceInfo.Status status : RackDeviceInfo.Status.values()) {

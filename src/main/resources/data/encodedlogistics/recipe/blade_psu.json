@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:tantalum_capacitor",
+  "encodedlogistics:tantalum_capacitor",
+  "encodedlogistics:tantalum_capacitor",
+  "encodedlogistics:tantalum_capacitor",
+  "encodedlogistics:copper_foil",
+  "encodedlogistics:copper_foil",
+  "minecraft:iron_ingot"
+ ],
+ "result": {
+  "id": "encodedlogistics:blade_psu",
+  "count": 1
+ }
+}

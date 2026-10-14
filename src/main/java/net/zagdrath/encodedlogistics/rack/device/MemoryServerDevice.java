@@ -23,6 +23,11 @@ public class MemoryServerDevice extends ServerDevice {
     }
 
     @Override
+    public long schedulerMemory() {
+        return Config.MEMORY_SERVER_MEMORY.getAsInt();
+    }
+
+    @Override
     public double drain() {
         return Config.MEMORY_SERVER_DRAIN.getAsDouble();
     }

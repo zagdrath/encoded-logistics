@@ -130,12 +130,21 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
 
     // --- Moving items ---
 
+    // Whether it routes at all (a Chassis Switch only with a Routing Card), and how many items a second it moves.
+    protected boolean routing() {
+        return true;
+    }
+
+    protected int rate() {
+        return Config.L3_SWITCH_RATE.getAsInt();
+    }
+
     @Override
     public void tick(ServerLevel level) {
         if (level.getGameTime() % 20 != 0) {
             return;
         }
-        moved[movedIndex] = isOnline() ? route(level.getServer()) : 0;
+        moved[movedIndex] = isOnline() && routing() ? route(level.getServer()) : 0;
         movedIndex = (movedIndex + 1) % WINDOW;
         saveOnly();
     }
@@ -164,7 +173,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
             activeShares = shares;
             changed(false);
         }
-        int total = ItemRouting.move(legs, Config.L3_SWITCH_RATE.getAsInt(), cursor, this::level);
+        int total = ItemRouting.move(legs, rate(), cursor, this::level);
         cursor = legs.isEmpty() ? 0 : (cursor + 1) % legs.size();
         return total;
     }
@@ -186,7 +195,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
     @Override
     public List<ItemRouting.ShareLink> shareLinks(MinecraftServer server) {
         RackBlockEntity rack = rack();
-        if (rack == null || !isOnline()) {
+        if (rack == null || !isOnline() || !routing()) {
             return List.of();
         }
         return ItemRouting.shareLinks(routes, rack::segmentNetworkById, id -> rack.segmentName(segmentIds().indexOf(id)));
@@ -196,7 +205,8 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
 
     @Override
     public void handleAction(ServerPlayer player, int action, int value, String text) {
-        if (action == ACTION_CYCLE_SEGMENT) {
+        // The L2 switch's own: segments, and its ports' modes and allowed segments.
+        if (action == ACTION_CYCLE_SEGMENT || action == ACTION_PORT_MODE || action == ACTION_PORT_ALLOWED) {
             super.handleAction(player, action, value, text);
             return;
         }
@@ -273,7 +283,7 @@ public class L3SwitchDevice extends SwitchDevice implements ItemRouting.ShareSou
     @Override
     public void writePanel(ValueOutput output, ServerPlayer viewer) {
         super.writePanel(output, viewer);
-        output.putInt("rate", Config.L3_SWITCH_RATE.getAsInt());
+        output.putInt("rate", rate());
         output.putDouble("throughput", throughput());
         output.putString("throughput_text", String.format(Locale.ROOT, "%.1f", throughput()));
     }

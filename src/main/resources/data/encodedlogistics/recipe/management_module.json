@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:processor_die",
+  "encodedlogistics:memory_die",
+  "encodedlogistics:circuit_substrate"
+ ],
+ "result": {
+  "id": "encodedlogistics:management_module",
+  "count": 1
+ }
+}

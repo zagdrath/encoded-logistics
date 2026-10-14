@@ -43,6 +43,13 @@ public abstract class ServerDevice extends RackDevice {
         busyUntil = gameTime + LINGER;
     }
 
+    @Override
+    public void markPoolBusy(long gameTime, boolean computing, boolean holding) {
+        if (computing && schedulerThreads() > 0 || holding && schedulerMemory() > 0) {
+            markBusy(gameTime);
+        }
+    }
+
     // Shown busy: blinking.
     public boolean busy() {
         return busy;

@@ -28,6 +28,10 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.block.DirectoryServerBlock;
 import net.zagdrath.encodedlogistics.block.ExchangeSwitchBlock;
+import net.zagdrath.encodedlogistics.block.OpticalAmplifierBlock;
+import net.zagdrath.encodedlogistics.block.OpticalMultiplexerBlock;
+import net.zagdrath.encodedlogistics.block.cable.CableTier;
+import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.AccessPointBlock;
 import net.zagdrath.encodedlogistics.block.WirelessBridgeBlock;
@@ -45,7 +49,8 @@ import net.zagdrath.encodedlogistics.signal.SignalBlock;
 import net.zagdrath.encodedlogistics.signal.SpeakerBlockEntity;
 
 // The wireless blocks' popup by the crosshair (Access Points, Wireless Bridges, Wireless Ports, and Small Wireless
-// Bridges - not the machines they're on - the Midrange Disk and Tape Drives, and the Cage Lights, Alarm Strobes and Speakers): the rack's popup (RackHud.popup) with the block's icon, its name and device name
+// Bridges - not the machines they're on - the Midrange Disk and Tape Drives, and the Cage Lights, Alarm Strobes and Speakers;
+// the optical blocks, and a Fiber Cable's span and lanes after loss): the rack's popup (RackHud.popup) with the block's icon, its name and device name
 // (AP01), its status and lines - Clients and Uplink, or Controller and Devices / Lanes, or Controller, Inventory and
 // Moved, or a bridge's Controller, Machine, Lanes and Power - asked of the server as soon as the crosshair
 // lands on it, then every QUERY_INTERVAL ticks. Until its answer is in, nothing shows. Hidden with F1 and while a screen
@@ -79,7 +84,8 @@ public final class WirelessHud {
             var block = state.getBlock();
             if (block instanceof AccessPointBlock || block instanceof WirelessBridgeBlock || block instanceof WirelessPortBlock
                     || block instanceof DiskDriveBlock || block instanceof TapeDriveBlock || block instanceof SignalBlock
-                    || block instanceof ExchangeSwitchBlock || block instanceof DirectoryServerBlock) {
+                    || block instanceof ExchangeSwitchBlock || block instanceof DirectoryServerBlock || block instanceof OpticalMultiplexerBlock
+                    || block instanceof OpticalAmplifierBlock || block instanceof NetworkCableBlock cable && cable.getTier() == CableTier.FIBER) {
                 now = hit.getBlockPos().immutable();
                 answer = now;
             } else if (block instanceof SmallWirelessBridgeBlock && MachineBridgesPayload.has(hit.getBlockPos().relative(state.getValue(SmallWirelessBridgeBlock.FACING)))) {

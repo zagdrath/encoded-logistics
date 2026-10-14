@@ -48,7 +48,7 @@ import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 
 // The devices scripts name (COMMANDS.md 5): CTLIF01 (Control Interfaces), ELDESK01 (Terminal Desks), rack devices by
 // kind - FIREWALL01, ROUTER01, UPS01, SWITCH01, L3SWITCH01, CMPSRV01, MEMSRV01, FABSRV01, MONSRV01, NAS01, SAN01,
-// RACKCON01, RACKFAB01, RACKSCH01, WLC01, TAPELIB01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
+// RACKCON01, RACKFAB01, RACKSCH01, WLC01, TAPELIB01, MUX01, AMP01, OTS01, CSW01, BLD01 - the parts on cables: INGRESS01, EGRESS01, TAP01, SENSOR01, COLLECTOR01,
 // DEPLOYER01, P2P01, TERM01, FABTERM01, ENCODER01, SCHTERM01 - and wireless: AP01 (Access Points), WBRIDGE01 (Wireless Bridges),
 // WINGRESS01 / WEGRESS01 (Wireless Ports: a port in every other way) - and the Midrange line: MIDRANGE01, KEYPUNCH01,
 // CARDRDR01, PRT01; Display Panel screens: DSP01; Gateways: GATEWAY01; PLCs: PLC01; Cage Lights, Alarm Strobes and Speakers: LGT01, SRN01, SPK01; and machines with a Small Wireless Bridge on, by their type
@@ -196,6 +196,11 @@ public final class ElclDevices {
             case "rack_schematic_console" -> "RACKSCH";
             case "wireless_controller" -> "WLC";
             case "tape_library_4u", "tape_library_6u" -> "TAPELIB";
+            case "optical_multiplexer" -> "MUX";
+            case "optical_amplifier" -> "AMP";
+            case "optical_transport_shelf" -> "OTS";
+            case "chassis_switch" -> "CSW";
+            case "blade_enclosure" -> "BLD";
             default -> id.toUpperCase(Locale.ROOT);
         };
     }

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.jspecify.annotations.Nullable;
+
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
@@ -105,6 +107,15 @@ public final class ElclEvents {
     public static void aclDenied(MinecraftServer server, NetworkRef network, String router, String acl, int seq, StorageKey key) {
         String text = ElclItems.text(key);
         fire(server, new Event(network, "*ACLDENY", router, text, router + " " + acl + " " + seq + " " + text));
+    }
+
+    // *CARDFAULT, *SUPFAILOVER, *PROTSWITCH, *SPANLOSS (the optical handoff 8): a chassis's part failed or went missing,
+    // a Chassis Switch's standby supervisor took over, a Transport Shelf switched path, or an optical span lost lanes.
+    // &DATA = "CSW01 A failover to B" (the device, its slot or span, what happened).
+    public static void hardware(MinecraftServer server, @Nullable NetworkRef network, String event, String device, String where, String detail) {
+        if (network != null) {
+            fire(server, new Event(network, event, device, (device + " " + where + " " + detail).trim()));
+        }
     }
 
     // *MCHIDLE, *MCHFAULT, *MCHNOPWR: a machine with a Small Wireless Bridge on went idle, faulted or ran short of power.

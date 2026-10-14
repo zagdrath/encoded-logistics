@@ -31,6 +31,8 @@ import net.zagdrath.encodedlogistics.block.FabricatorBlock;
 import net.zagdrath.encodedlogistics.block.GatewayBlock;
 import net.zagdrath.encodedlogistics.block.LithographyPressBlock;
 import net.zagdrath.encodedlogistics.block.NetworkBridgeBlock;
+import net.zagdrath.encodedlogistics.block.OpticalAmplifierBlock;
+import net.zagdrath.encodedlogistics.block.OpticalMultiplexerBlock;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.block.PartHostBlock;
 import net.zagdrath.encodedlogistics.block.PowerInletBlock;
@@ -119,6 +121,11 @@ public final class ModBlocks {
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
     public static final DeferredBlock<ExchangeSwitchBlock> EXCHANGE_SWITCH = BLOCKS.registerBlock("exchange_switch", ExchangeSwitchBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
+    // Optical gear (docs/optical): the inline amplifier housing and the multiplexer.
+    public static final DeferredBlock<OpticalMultiplexerBlock> OPTICAL_MULTIPLEXER = BLOCKS.registerBlock("optical_multiplexer",
+            OpticalMultiplexerBlock::new, p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL));
+    public static final DeferredBlock<OpticalAmplifierBlock> OPTICAL_AMPLIFIER = BLOCKS.registerBlock("optical_amplifier",
+            OpticalAmplifierBlock::new, p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
     public static final DeferredBlock<RelayAntennaBlock> RELAY_ANTENNA = BLOCKS.registerBlock("relay_antenna", RelayAntennaBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL).noOcclusion());
 

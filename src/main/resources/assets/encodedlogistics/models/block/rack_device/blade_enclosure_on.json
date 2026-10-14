@@ -1,0 +1,39 @@
+{
+ "parent": "minecraft:block/block",
+ "render_type": "minecraft:cutout",
+ "textures": {
+  "g": "encodedlogistics:block/rack_device/blade_enclosure_on",
+  "particle": "encodedlogistics:block/rack_device/blade_enclosure"
+ },
+ "elements": [
+  {
+   "name": "status",
+   "from": [
+    1.55,
+    0,
+    1.74
+   ],
+   "to": [
+    14.45,
+    10,
+    1.74
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      13,
+      5.0
+     ],
+     "texture": "#g"
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

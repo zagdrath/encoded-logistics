@@ -46,10 +46,15 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
+import net.zagdrath.encodedlogistics.rack.chassis.Chassis;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
+import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // The rack's unit popup and outline (screens/rack/hud.json). While the crosshair is on a rack's front or back with
 // that side's door open, it points at a unit (RackTargeting: followed in to the devices, not the outer face): the
-// device there, or the empty unit, is outlined (instead of the block outline, which a rack never shows), and the
+// device there, or the empty unit, is outlined (instead of the block outline, which a rack never shows) - on a modular
+// chassis, the card, blade or module looked at, which then has a popup of its own (name, chassis and bay, status) - and the
 // popup by the crosshair shows the device's icon, name, units, status and its own lines (RackDeviceInfo, asked of the
 // server as soon as the crosshair lands on it, then every QUERY_INTERVAL ticks; answers are kept per unit, so going back
 // to one shows it at once). Until a device's answer is in, only its outline shows: the popup is always the whole thing.
@@ -74,10 +79,17 @@ public final class RackHud {
     private static final Identifier BADGE_SPRITE = EncodedLogistics.id("hud/badge_scheduler");
     private static final int BADGE = 9, SCHEDULER = 0xFFE8C24A;
 
-    // What the crosshair points at in a rack: its master, the unit, and the device there (if any).
-    public record Target(BlockPos master, Direction facing, int u, @Nullable RackDevice device) {
+    // What the crosshair points at in a rack: its master, the unit, the device there (if any), and on a modular chassis
+    // the bay looked at (its item slot; -1 for none) and which face it's on.
+    public record Target(BlockPos master, Direction facing, int u, @Nullable RackDevice device, int bay, boolean rear) {
         boolean sameUnit(@Nullable Target other) {
-            return other != null && master.equals(other.master) && (device != null ? other.device == device : other.device == null && u == other.u);
+            return other != null && master.equals(other.master) && bay == other.bay
+                    && (device != null ? other.device == device : other.device == null && u == other.u);
+        }
+
+        // The unit asked about: the device's, with its bay when a part is looked at.
+        int query() {
+            return bay >= 0 && device != null ? RackUnitPayloads.part(device.u(), bay) : device != null ? device.u() : u;
         }
     }
 
@@ -101,7 +113,14 @@ public final class RackHud {
         }
         float partialTick = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         RackTargeting.Target at = RackTargeting.pick(rack, hit.getDirection(), viewer.getEyePosition(partialTick), viewer.getViewVector(partialTick));
-        return at == null ? null : new Target(rack.getBlockPos(), rack.facing(), at.u(), at.device());
+        if (at == null) {
+            return null;
+        }
+        // A modular chassis's part: the bay under the crosshair, on the face looked at.
+        boolean rear = RackGeometry.face(hit.getDirection(), rack.facing()) == RackGeometry.Face.REAR;
+        ChassisLayout.Bay bay = at.device() instanceof Chassis chassis
+                ? Chassis.pick(chassis, viewer.getEyePosition(partialTick), viewer.getViewVector(partialTick), rear) : null;
+        return new Target(rack.getBlockPos(), rack.facing(), at.u(), at.device(), bay != null ? bay.slot() : -1, rear);
     }
 
     // --- Following the crosshair ---
@@ -113,7 +132,7 @@ public final class RackHud {
         steadyTicks = now != null && now.sameUnit(target) ? steadyTicks + 1 : 0;
         target = now;
         if (now != null && now.device() != null && steadyTicks % QUERY_INTERVAL == 0) {
-            ClientPacketDistributor.sendToServer(new RackUnitPayloads.Query(now.master(), now.device().u()));
+            ClientPacketDistributor.sendToServer(new RackUnitPayloads.Query(now.master(), now.query()));
         }
     }
 
@@ -128,7 +147,8 @@ public final class RackHud {
         VoxelShape box = null;
         BlockPos master = at != null ? at.master() : event.getBlockPos();
         if (at != null) {
-            AABB local = (at.device() != null ? RackGeometry.deviceBox(at.device().u(), at.device().size()) : RackGeometry.deviceBox(at.u(), 1))
+            AABB local = (at.bay() >= 0 && at.device() instanceof Chassis chassis ? partBox(chassis, at.bay())
+                    : at.device() != null ? RackGeometry.deviceBox(at.device().u(), at.device().size()) : RackGeometry.deviceBox(at.u(), 1))
                     .inflate(OUTLINE_INFLATE);
             AABB world = RackGeometry.toWorld(local, master, at.facing()).move(-master.getX(), -master.getY(), -master.getZ());
             box = Shapes.create(world);
@@ -144,6 +164,21 @@ public final class RackHud {
             }
             return true;
         });
+    }
+
+    // A chassis part's faceplate, in the rack's local pixels (as ChassisRender draws it).
+    private static AABB partBox(Chassis chassis, int slot) {
+        ChassisLayout.Bay bay = chassis.layout().bay(slot);
+        RackDevice device = chassis.device();
+        if (bay == null) {
+            return RackGeometry.deviceBox(device.u(), device.size());
+        }
+        double top = RackGeometry.unitBottom(device.u()) + device.size();
+        double y0 = top - (bay.y() + bay.h()) / 8.0, y1 = top - bay.y() / 8.0;
+        if (bay.rear()) {
+            return new AABB(1.55 + bay.x() / 8.0, y0, 29.25, 1.55 + (bay.x() + bay.w()) / 8.0, y1, 29.5);
+        }
+        return new AABB(14.45 - (bay.x() + bay.w()) / 8.0, y0, 1.5, 14.45 - bay.x() / 8.0, y1, 1.75);
     }
 
     // --- The popup ---
@@ -166,12 +201,33 @@ public final class RackHud {
             graphics.text(font, text, x + PAD_X, y + PAD_Y, RackScreen.TEXT_MUTED, false);
             return;
         }
+        if (at.bay() >= 0 && device instanceof Chassis chassis) {
+            // A part's own popup: its icon, name, chassis and bay.
+            RackUnitPayloads.Info answer = RackUnitPayloads.Info.answer(at.master(), at.query(), device.type());
+            if (answer != null) {
+                popup(graphics, font, partIcon(chassis, at.bay()), Component.literal(answer.subtitle()), answer.info(), centerX + OFFSET_X,
+                        centerY + OFFSET_Y, null);
+            }
+            return;
+        }
         RackDeviceInfo info = RackUnitPayloads.Info.forUnit(at.master(), device.u(), device.type());
         if (info == null) {
             // Not in yet (a moment at most): no half popup.
             return;
         }
         popup(graphics, font, device, info, centerX + OFFSET_X, centerY + OFFSET_Y, null);
+    }
+
+    // The part in a chassis's bay as the client last saw it (empty for none).
+    private static ItemStack partIcon(Chassis chassis, int slot) {
+        List<ChassisLayout.Bay> bays = chassis.layout().bays();
+        for (int i = 0; i < bays.size(); i++) {
+            if (bays.get(i).slot() == slot) {
+                ChassisPart part = Chassis.shownPart(chassis, i);
+                return part != null ? new ItemStack(ModItems.chassisPart(part).get()) : ItemStack.EMPTY;
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     // A device's popup (the rack's strip above it), its top left at (anchorX, anchorY) or as near as the window allows,

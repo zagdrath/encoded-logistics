@@ -42,6 +42,7 @@ public final class ElclSetup {
         RoutingCommands.bind();
         ExchangeCommands.bind();
         DirectoryCommands.bind();
+        HardwareCommands.bind();
         StoredFileService.setLive(new LiveFiles());
         Midranges.register();
         Displays.register(system -> {

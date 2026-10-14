@@ -17,6 +17,7 @@ import net.minecraft.world.item.DyeColor;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.part.PartType;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
 import net.zagdrath.encodedlogistics.signal.SirenBlock;
 import net.zagdrath.encodedlogistics.storage.ResourceType;
 import net.zagdrath.encodedlogistics.storage.StorageTier;
@@ -38,7 +39,8 @@ public final class ModCreativeTabs {
                 for (var block : List.of(ModItems.NETWORK_CONTROLLER, ModItems.POWER_INLET, ModItems.CAPACITOR_BANK, ModItems.CREATIVE_CAPACITOR_BANK,
                         ModItems.SEGMENT_ISOLATOR,
                         ModItems.LITHOGRAPHY_PRESS, ModItems.DRIVE_BAY, ModItems.FABRICATOR, ModItems.GATEWAY, ModItems.SCHEDULER_CORE,
-                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.EXCHANGE_SWITCH, ModItems.DIRECTORY_SERVER, ModItems.ACCESS_POINT,
+                        ModItems.JOB_BUFFER, ModItems.THREAD_UNIT, ModItems.RELAY_ANTENNA, ModItems.NETWORK_BRIDGE, ModItems.EXCHANGE_SWITCH, ModItems.DIRECTORY_SERVER,
+                        ModItems.OPTICAL_MULTIPLEXER, ModItems.OPTICAL_AMPLIFIER, ModItems.ACCESS_POINT,
                         ModItems.WIRELESS_BRIDGE, ModItems.WIRELESS_INGRESS_PORT, ModItems.WIRELESS_EGRESS_PORT, ModItems.SMALL_WIRELESS_BRIDGE,
                         ModItems.DISPLAY_PANEL, ModItems.MIDRANGE_SYSTEM,
                         ModItems.EXPANSION_CABINET, ModItems.INTEGRATED_MIDRANGE, ModItems.KEYPUNCH, ModItems.CARD_READER, ModItems.LINE_PRINTER,
@@ -87,8 +89,13 @@ public final class ModCreativeTabs {
                         ModItems.L3_SWITCH, ModItems.COMPUTE_SERVER, ModItems.MEMORY_SERVER, ModItems.FABRICATION_SERVER, ModItems.MONITORING_SERVER, ModItems.DIRECTORY_SERVER_RACK,
                         ModItems.NAS, ModItems.SAN, ModItems.RACK_CONSOLE, ModItems.RACK_FABRICATION_CONSOLE,
                         ModItems.RACK_SCHEMATIC_CONSOLE, ModItems.WIRELESS_CONTROLLER, ModItems.TAPE_LIBRARY_4U,
-                        ModItems.TAPE_LIBRARY_6U, ModItems.NETWORK_CONTROLLER_2U, ModItems.NETWORK_CONTROLLER_4U)) {
+                        ModItems.TAPE_LIBRARY_6U, ModItems.NETWORK_CONTROLLER_2U, ModItems.NETWORK_CONTROLLER_4U, ModItems.OPTICAL_MULTIPLEXER_RACK,
+                        ModItems.OPTICAL_AMPLIFIER_RACK, ModItems.OPTICAL_TRANSPORT_SHELF, ModItems.CHASSIS_SWITCH, ModItems.BLADE_ENCLOSURE)) {
                     output.accept(device.get());
+                }
+                // The chassis's cards, blades, power supplies and modules.
+                for (ChassisPart part : ChassisPart.values()) {
+                    output.accept(ModItems.chassisPart(part).get());
                 }
                 output.accept(ModItems.LTO_TAPE_DRIVE.get());
                 for (TapeGeneration generation : TapeGeneration.values()) {

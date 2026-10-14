@@ -1,0 +1,69 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "encodedlogistics:block/rack_card/chassis_psu",
+  "particle": "encodedlogistics:block/rack_card/chassis_psu"
+ },
+ "elements": [
+  {
+   "name": "faceplate",
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    2.5,
+    0.75,
+    0.25
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      2.5,
+      1.5
+     ],
+     "texture": "#t"
+    },
+    "east": {
+     "uv": [
+      0,
+      0,
+      0.125,
+      1.5
+     ],
+     "texture": "#t"
+    },
+    "west": {
+     "uv": [
+      0,
+      0,
+      0.125,
+      1.5
+     ],
+     "texture": "#t"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      2.5,
+      0.25
+     ],
+     "texture": "#t"
+    },
+    "down": {
+     "uv": [
+      0,
+      0,
+      2.5,
+      0.25
+     ],
+     "texture": "#t"
+    }
+   }
+  }
+ ]
+}

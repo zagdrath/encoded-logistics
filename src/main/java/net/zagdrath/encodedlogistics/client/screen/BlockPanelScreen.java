@@ -40,6 +40,7 @@ public class BlockPanelScreen extends AbstractContainerScreen<BlockPanelMenu> im
             case "exchange" -> new ExchangePanel(this);
             case "trunk" -> new TrunkPortPanel(this);
             case "directory" -> new DirectoryPanel(this);
+            case "optical_mux" -> new OpticalMuxPanel(this);
             default -> null;
         };
     }

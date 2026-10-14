@@ -225,10 +225,15 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
 
     // --- Network ---
 
-    public record CableNode(BlockPos pos, Set<Direction> connections, int laneCapacity, double passiveDrain) implements NetworkNode {
+    public record CableNode(BlockPos pos, Set<Direction> connections, int laneCapacity, double passiveDrain, boolean fiber) implements NetworkNode {
         @Override
         public int laneCost() {
             return 0;
+        }
+
+        @Override
+        public Optical optical() {
+            return fiber ? Optical.FIBER : Optical.NONE;
         }
     }
 
@@ -242,18 +247,23 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         }
         CableAttachments attachments = attachments(level, pos);
         if (!attachments.hasParts()) {
-            return new CableNode(pos.immutable(), connections, tier.lanes(), tier.passiveDrain());
+            return new CableNode(pos.immutable(), connections, tier.lanes(), tier.passiveDrain(), tier == CableTier.FIBER);
         }
         // With parts on it the cable is a device: it needs their lanes, and drains for them too.
         List<RemoteLink> links = level.getBlockEntity(pos) instanceof CableBlockEntity cable ? cable.remoteLinks() : List.of();
         return new CableDeviceNode(pos.immutable(), connections, tier.lanes(), PartHosting.lanes(attachments),
-                tier.passiveDrain() + PartHosting.drain(attachments), PartHosting.networkParts(attachments), links);
+                tier.passiveDrain() + PartHosting.drain(attachments), PartHosting.networkParts(attachments), links, tier == CableTier.FIBER);
     }
 
     // A cable carrying parts: still a link of its tier's lanes, and a device needing the parts' lanes; remoteLinks:
     // those of its lanes Point-to-Point Links.
     public record CableDeviceNode(BlockPos pos, Set<Direction> connections, int laneCapacity, int laneCost, double passiveDrain,
-            List<NetworkPart> parts, List<RemoteLink> remoteLinks) implements NetworkNode {}
+            List<NetworkPart> parts, List<RemoteLink> remoteLinks, boolean fiber) implements NetworkNode {
+        @Override
+        public Optical optical() {
+            return fiber ? Optical.FIBER : Optical.NONE;
+        }
+    }
 
     // --- Using items: attachments, dyeing and washing ---
 

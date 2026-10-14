@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "minecraft:iron_block",
+  "minecraft:iron_block",
+  "minecraft:iron_block",
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:circuit_substrate",
+  "encodedlogistics:processor_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:blade_enclosure",
+  "count": 1
+ }
+}

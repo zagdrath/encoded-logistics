@@ -1,0 +1,18 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:fiber_cable",
+  "encodedlogistics:fiber_cable",
+  "encodedlogistics:processor_die",
+  "encodedlogistics:circuit_substrate"
+ ],
+ "result": {
+  "id": "encodedlogistics:optical_multiplexer",
+  "count": 1
+ }
+}

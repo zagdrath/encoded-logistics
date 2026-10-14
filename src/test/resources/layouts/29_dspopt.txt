@@ -1,0 +1,26 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  DSPOPT                      Display Optical Status            System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Network . :  ELNET01   Shelves :  1   Muxes :  2   Amplifiers :  3
+03 | 
+04 |  Span          Path      Length   Lanes  Loss  Quality  Protection
+05 |  OTS01-OTS02   working      612       -     -       0%  *FAILED
+06 |  OTS01-OTS02   protect      488      32     2      92%  *ACTIVE
+07 |  MUX01-MUX02   line         301      32     0     100%  -
+08 |  MUX02-AMP01   line         290      31     1      96%  -
+09 | 
+10 |  Protection switch at 14:31:05 (working fibre cut), revertive: yes
+11 | 
+12 | 
+13 | 
+14 | 
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 | 
+21 | 
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F10=Channels F12=Cancel

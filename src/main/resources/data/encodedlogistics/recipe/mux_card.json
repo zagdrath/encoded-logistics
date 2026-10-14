@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:optical_multiplexer",
+  "encodedlogistics:memory_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:mux_card",
+  "count": 1
+ }
+}

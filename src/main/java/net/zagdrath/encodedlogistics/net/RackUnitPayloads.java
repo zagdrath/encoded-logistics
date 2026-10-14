@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -25,15 +26,31 @@ import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
+import net.zagdrath.encodedlogistics.rack.chassis.Chassis;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
 
 // The rack popup's numbers. The client asks for the unit its crosshair settles on (Query, then every few ticks while it
 // stays there); the server answers with the device's description (Info), so the popup can show server-side figures
-// without every device's state being synced all the time.
+// without every device's state being synced all the time. Looking at a modular chassis's part, the unit carries the
+// part's bay (part(u, slot)) and the answer is the part's popup.
 public final class RackUnitPayloads {
     // How far from the rack a player may be to ask.
     private static final double REACH_SQR = 16 * 16;
 
     private RackUnitPayloads() {}
+
+    // A query's unit, and (for a modular chassis's part) the part's bay - its item slot: u + (slot + 1) << 8.
+    public static int part(int u, int slot) {
+        return u | slot + 1 << 8;
+    }
+
+    public static int unit(int encoded) {
+        return encoded & 255;
+    }
+
+    public static int bay(int encoded) {
+        return (encoded >> 8) - 1;
+    }
 
     public record Query(BlockPos rack, int u) implements CustomPacketPayload {
         public static final Type<Query> TYPE = new Type<>(EncodedLogistics.id("rack_unit_query"));
@@ -53,15 +70,27 @@ public final class RackUnitPayloads {
                     || !player.level().isLoaded(query.rack()) || !(player.level().getBlockEntity(query.rack()) instanceof RackBlockEntity rack)) {
                 return;
             }
-            RackDevice device = rack.deviceAt(query.u());
-            if (device != null) {
-                PacketDistributor.sendToPlayer(player, new Info(query.rack(), device.u(), device.type().id().toString(),
-                        device.describe(player).withHeader(rack.header())));
+            RackDevice device = rack.deviceAt(unit(query.u()));
+            if (device == null) {
+                return;
             }
+            // A modular chassis's part: its own popup.
+            int bay = bay(query.u());
+            if (bay >= 0 && device instanceof Chassis chassis) {
+                ChassisLayout.Bay at = chassis.layout().bay(bay);
+                if (at != null) {
+                    PacketDistributor.sendToPlayer(player, new Info(query.rack(), query.u(), device.type().id().toString(), Chassis.describe(chassis, at),
+                            Component.translatable("hud.encodedlogistics.chassis.bay", device.deviceName(), at.label()).getString()));
+                }
+                return;
+            }
+            PacketDistributor.sendToPlayer(player, new Info(query.rack(), device.u(), device.type().id().toString(),
+                    device.describe(player).withHeader(rack.header()), ""));
         }
     }
 
-    public record Info(BlockPos rack, int u, String deviceType, RackDeviceInfo info) implements CustomPacketPayload {
+    // subtitle: the line under a part's name ("CSW01 slot A"); empty for a device (its units show).
+    public record Info(BlockPos rack, int u, String deviceType, RackDeviceInfo info, String subtitle) implements CustomPacketPayload {
         public static final Type<Info> TYPE = new Type<>(EncodedLogistics.id("rack_unit_info"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, Info> STREAM_CODEC = StreamCodec.composite(
@@ -69,6 +98,7 @@ public final class RackUnitPayloads {
                 ByteBufCodecs.VAR_INT, Info::u,
                 ByteBufCodecs.STRING_UTF8, Info::deviceType,
                 RackDeviceInfo.STREAM_CODEC, Info::info,
+                ByteBufCodecs.STRING_UTF8, Info::subtitle,
                 Info::new);
 
         // Client side: the answers so far, by rack and unit (the most recently seen kept), with the device type each was
@@ -92,8 +122,14 @@ public final class RackUnitPayloads {
 
         // The latest answer about the device at u in the rack at pos (still the same kind of device), or null.
         public static @Nullable RackDeviceInfo forUnit(BlockPos rack, int u, RackDeviceType type) {
+            Info answer = answer(rack, u, type);
+            return answer != null ? answer.info() : null;
+        }
+
+        // The whole answer (a part's subtitle too); u may carry a bay (part).
+        public static @Nullable Info answer(BlockPos rack, int u, RackDeviceType type) {
             Info answer = ANSWERS.get(key(rack, u));
-            return answer != null && answer.deviceType().equals(type.id().toString()) ? answer.info() : null;
+            return answer != null && answer.deviceType().equals(type.id().toString()) ? answer : null;
         }
 
         static void handle(Info info, IPayloadContext context) {

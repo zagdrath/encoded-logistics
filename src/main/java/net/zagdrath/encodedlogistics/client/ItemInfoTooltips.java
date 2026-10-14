@@ -48,6 +48,7 @@ import net.zagdrath.encodedlogistics.midrange.DisketteMagazineItem;
 import net.zagdrath.encodedlogistics.midrange.Printout;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.device.BladeEnclosureDevice;
 import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 import net.zagdrath.encodedlogistics.plc.PlcProgram;
@@ -136,6 +137,7 @@ public final class ItemInfoTooltips {
                     case SEGMENT -> "tooltip.encodedlogistics.link_card.segment";
                     case NETWORK -> "tooltip.encodedlogistics.link_card.network";
                     case WIRELESS -> "item.encodedlogistics.wireless_controller";
+                    case OPTICAL -> "tooltip.encodedlogistics.link_card.optical";
                 });
                 tooltip.add(at++, Component.translatable("tooltip.encodedlogistics.link_card.address", kind, address.pos().pos().getX(),
                         address.pos().pos().getY(), address.pos().pos().getZ()).withStyle(ChatFormatting.GRAY));
@@ -267,6 +269,12 @@ public final class ItemInfoTooltips {
             case "network_bridge" -> new Object[] { Config.BRIDGE_LANES.getAsInt() };
             case "access_point" -> new Object[] { Config.WIRELESS_AP_CLIENTS.getAsInt() };
             case "wireless_bridge" -> new Object[] { Config.WIRELESS_BRIDGE_LANES.getAsInt() };
+            case "optical_multiplexer", "optical_multiplexer_rack" -> new Object[] { Config.MULTIPLEXER_CHANNELS.getAsInt() };
+            case "access_card" -> new Object[] { Config.ACCESS_CARD_LANES.getAsInt() };
+            case "routing_card" -> new Object[] { Config.ROUTING_CARD_RATE.getAsInt() };
+            case "interconnect_module" -> new Object[] { Config.INTERCONNECT_LANES.getAsInt() };
+            case "compute_blade" -> new Object[] { String.format(Locale.ROOT, "%.2f", BladeEnclosureDevice.threadsPerBlade()) };
+            case "memory_blade" -> new Object[] { MemoryServerDevice.memory(BladeEnclosureDevice.memoryPerBlade()) };
             default -> new Object[0];
         };
     }

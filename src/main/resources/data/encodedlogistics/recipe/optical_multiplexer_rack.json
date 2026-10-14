@@ -1,0 +1,11 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:optical_multiplexer"
+ ],
+ "result": {
+  "id": "encodedlogistics:optical_multiplexer_rack",
+  "count": 1
+ }
+}

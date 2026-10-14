@@ -1,0 +1,78 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "t": "encodedlogistics:block/optical_multiplexer/optical_multiplexer",
+  "particle": "encodedlogistics:block/optical_multiplexer/optical_multiplexer"
+ },
+ "elements": [
+  {
+   "name": "body",
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    16,
+    16
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      8.0
+     ],
+     "texture": "#t"
+    },
+    "south": {
+     "uv": [
+      8.0,
+      0.0,
+      16.0,
+      8.0
+     ],
+     "texture": "#t"
+    },
+    "east": {
+     "uv": [
+      8.0,
+      0.0,
+      16.0,
+      8.0
+     ],
+     "texture": "#t"
+    },
+    "west": {
+     "uv": [
+      8.0,
+      0.0,
+      16.0,
+      8.0
+     ],
+     "texture": "#t"
+    },
+    "up": {
+     "uv": [
+      8.0,
+      0.0,
+      16.0,
+      8.0
+     ],
+     "texture": "#t"
+    },
+    "down": {
+     "uv": [
+      8.0,
+      0.0,
+      16.0,
+      8.0
+     ],
+     "texture": "#t"
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,78 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer"
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer_on"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer_on",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer_on",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "on"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_multiplexer/optical_multiplexer_on",
+    "y": 270
+   }
+  }
+ ]
+}

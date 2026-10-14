@@ -226,6 +226,12 @@ public final class ElclMessages {
         define("ELC2616", SEVERE, "No Directory Server on the network.");
         define("ELC2617", INFO, "&1 published.");
         define("ELC2618", INFO, "&1 no longer published.");
+        // ELC27xx: hardware - chassis and optical gear (the optical handoff 8).
+        define("ELC2701", SEVERE, "Device &1 not found or not a chassis / optical device.");
+        define("ELC2702", WARNING, "Chassis &1 is degraded (&2).");
+        define("ELC2703", SEVERE, "Span &1 not found on &2.");
+        define("ELC2704", SEVERE, "Channel &1 is not assigned.");
+        define("ELC2705", SEVERE, "Span &1 has no protect path.");
     }
 
     public static Map<String, Definition> all() {

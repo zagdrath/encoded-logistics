@@ -276,6 +276,23 @@ final class BuiltinCommands {
                 .p(p("RTR", "Router", Kind.DEVICE).req())
                 .p(p("NBR", "Neighbour", Kind.NAME).req())
                 .p(p("COST", "Cost override", Kind.INT).sv("*DFT").dft("*DFT").range(1, 1_000_000)));
+        // [EXT] Hardware: chassis and optical gear (the optical handoff 8): HardwareCommands.
+        add(CommandDefinition.of("RTVCHSSTS", "Retrieve Chassis Status").auth(VIEW).positional(1)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(rtn("RTNLIST", "Return list", VarType.LIST).req())
+                .p(rtn("RTNSTS", "Return status", VarType.CHAR)));
+        add(CommandDefinition.of("RTVOPTSTS", "Retrieve Optical Status").auth(VIEW).positional(1)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("SPAN", "Span", Kind.CHAR).sv("*FIRST").dft("*FIRST").len(24))
+                .p(p("CHANNEL", "Channel", Kind.INT).sv("*ALL").dft("*ALL").range(1, 40))
+                .p(rtn("RTNLANES", "Return lanes", VarType.INT))
+                .p(rtn("RTNLOSS", "Return lanes lost", VarType.INT))
+                .p(rtn("RTNQUAL", "Return quality (%)", VarType.INT))
+                .p(rtn("RTNPROT", "Return protection", VarType.CHAR)));
+        add(CommandDefinition.of("CHGPROT", "Change Protection").auth(CONFIGURE).positional(3)
+                .p(p("DEV", "Device", Kind.DEVICE).req())
+                .p(p("SPAN", "Span", Kind.CHAR).req().len(24))
+                .p(p("PATH", "Path", Kind.SPECIAL).req().sv("*WORKING", "*PROTECT")));
         add(CommandDefinition.of("ADDACLE", "Add ACL Entry").auth(CONFIGURE).positional(2)
                 .p(p("RTR", "Router", Kind.DEVICE).req())
                 .p(p("ACL", "ACL", Kind.NAME).req())
@@ -566,7 +583,7 @@ final class BuiltinCommands {
                 .p(p("TRG", "Trigger", Kind.NAME).req())
                 .p(p("EVENT", "Event", Kind.SPECIAL).req().sv("*ITMBELOW", "*ITMABOVE", "*STGFULL", "*DEVFAULT", "*DEVONLINE", "*DEVOFFLINE",
                         "*PWRUPS", "*PWRRESTORED", "*CRAFTEND", "*CRFSTALL", "*RSCHANGE", "*DSPTOUCH", "*MCHIDLE", "*MCHDONE", "*MCHFAULT",
-                        "*MCHNOPWR", "*NBRUP", "*NBRDOWN", "*RTECHG", "*ACLDENY"))
+                        "*MCHNOPWR", "*NBRUP", "*NBRDOWN", "*RTECHG", "*ACLDENY", "*CARDFAULT", "*SUPFAILOVER", "*PROTSWITCH", "*SPANLOSS"))
                 .p(p("PGM", "Program", Kind.QUALIFIED).req().values(ValueList.PROGRAMS))
                 .p(p("ITEM", "Item", Kind.ITEM).sv("*ANY").dft("*ANY").len(64))
                 .p(p("DEV", "Device", Kind.DEVICE).sv("*ANY").dft("*ANY"))
@@ -606,6 +623,9 @@ final class BuiltinCommands {
                 .p(p("RTR", "Router", Kind.DEVICE).req()));
         add(CommandDefinition.of("WRKDIR", "Work with Directory").context(INTERACTIVE).positional(1)
                 .p(p("DIR", "Directory Server", Kind.DEVICE).sv("*FIRST").dft("*FIRST")));
+        add(CommandDefinition.of("WRKHW", "Work with Hardware").context(INTERACTIVE).positional(1)
+                .p(p("DEV", "Device", Kind.DEVICE).sv("*ALL").dft("*ALL")));
+        add(CommandDefinition.of("DSPOPT", "Display Optical Status").context(INTERACTIVE));
         add(CommandDefinition.of("WRKIX", "Work with Exchange").context(INTERACTIVE).positional(1)
                 .p(p("IX", "Exchange", Kind.NAME).req()));
         add(CommandDefinition.of("WRKACL", "Work with ACLs").context(INTERACTIVE).positional(2)

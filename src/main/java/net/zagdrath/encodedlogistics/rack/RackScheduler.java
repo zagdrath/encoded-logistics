@@ -17,7 +17,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.crafting.CraftingJob;
 import net.zagdrath.encodedlogistics.crafting.CraftingProvider;
@@ -26,14 +25,11 @@ import net.zagdrath.encodedlogistics.crafting.JobHost;
 import net.zagdrath.encodedlogistics.crafting.JobRunner;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
-import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
-import net.zagdrath.encodedlogistics.rack.device.FabricationServerDevice;
-import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
-import net.zagdrath.encodedlogistics.rack.device.ServerDevice;
 
 // A network's rack Scheduler, a cluster: every online Compute and Memory Server serving a network, in whichever of its
 // racks, pools into one Scheduler with computeServerThreads threads per Compute Server and memoryServerMemory job
-// memory per Memory Server. It runs crafting jobs like a Scheduler once it has at least one of each.
+// memory per Memory Server - and a Blade Enclosure's Compute and Memory Blades likewise (RackDevice#schedulerThreads,
+// #schedulerMemory). It runs crafting jobs like a Scheduler once it has threads and memory.
 //
 // Each rack has a RackScheduler, but a network's pool is headed by one rack: the first (in ControllerStructures.allRacks
 // order) whose lowest online Compute Server serves that network (ownNetwork). Only the head's is active; it keeps the
@@ -42,7 +38,8 @@ import net.zagdrath.encodedlogistics.rack.device.ServerDevice;
 // new one, and anything in flight finds them there (pool, through JobHost.at). A rack serving several networks heads
 // at most one: its lowest online Compute Server's. Breaking the head rack fails its jobs, as breaking a Core does.
 //
-// It offers crafting steps to the pool's Fabrication Servers first, then the rest of the network's providers.
+// It offers crafting steps to the pool's Fabrication Servers (and Fabrication Blades) first, then the rest of the
+// network's providers.
 public final class RackScheduler implements JobHost {
     private final RackBlockEntity rack;
     private final JobRunner runner = new JobRunner();
@@ -67,7 +64,7 @@ public final class RackScheduler implements JobHost {
     // The network of the rack's lowest online Compute Server, from its devices as they are now; null without one.
     public @Nullable NetworkRef ownNetwork() {
         for (RackDevice device : rack.devices()) {
-            if (device instanceof ComputeServerDevice && device.isOnline()) {
+            if (device.schedulerThreads() > 0 && device.isOnline()) {
                 return rack.network(device);
             }
         }
@@ -103,7 +100,7 @@ public final class RackScheduler implements JobHost {
             return own;
         }
         for (RackDevice device : rack.devices()) {
-            if (device instanceof ComputeServerDevice) {
+            if (device.schedulerThreads() > 0) {
                 return rack.network(device);
             }
         }
@@ -130,11 +127,8 @@ public final class RackScheduler implements JobHost {
             if (!device.isOnline()) {
                 continue;
             }
-            if (device instanceof ComputeServerDevice) {
-                threads += Config.COMPUTE_SERVER_THREADS.getAsInt();
-            } else if (device instanceof MemoryServerDevice) {
-                memory += Config.MEMORY_SERVER_MEMORY.getAsInt();
-            }
+            threads += device.schedulerThreads();
+            memory += device.schedulerMemory();
         }
     }
 
@@ -144,8 +138,8 @@ public final class RackScheduler implements JobHost {
         if (computing || holding) {
             long now = level.getGameTime();
             for (RackDevice device : ControllerStructures.rackDevicesServing(level.getServer(), network)) {
-                if (device.isOnline() && (computing && device instanceof ComputeServerDevice || holding && device instanceof MemoryServerDevice)) {
-                    ((ServerDevice) device).markBusy(now);
+                if (device.isOnline()) {
+                    device.markPoolBusy(now, computing, holding);
                 }
             }
         }
@@ -162,8 +156,7 @@ public final class RackScheduler implements JobHost {
 
     // Whether a device in its rack shows the Scheduler badge: an online server whose network's pool is active.
     public boolean badges(RackDevice device) {
-        if (!(device instanceof ComputeServerDevice || device instanceof MemoryServerDevice || device instanceof FabricationServerDevice)
-                || !device.isOnline()) {
+        if (!(device.schedulerThreads() > 0 || device.schedulerMemory() > 0 || device instanceof CraftingProvider) || !device.isOnline()) {
             return false;
         }
         RackScheduler pool = forDevice(device);
@@ -217,7 +210,7 @@ public final class RackScheduler implements JobHost {
     private List<CraftingProvider> providers(MinecraftServer server) {
         List<CraftingProvider> providers = new ArrayList<>();
         for (RackDevice device : ControllerStructures.rackDevicesServing(server, network)) {
-            if (device instanceof FabricationServerDevice fabrication && device.isOnline()) {
+            if (device instanceof CraftingProvider fabrication && device.isOnline()) {
                 providers.add(fabrication);
             }
         }

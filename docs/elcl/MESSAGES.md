@@ -254,6 +254,16 @@ The commands on files:
 | ELC2617 | 00 | &1 published. | *(added: `CHGDIRENT`)*
 | ELC2618 | 00 | &1 no longer published. | *(added: `CHGDIRENT`)*
 
+## ELC27xx — Hardware: chassis and optical gear *(added)*
+
+| ID | Sev | Text |
+|----|-----|------|
+| ELC2701 | 30 | Device &1 not found or not a chassis / optical device. | *(`RTVCHSSTS`, `RTVOPTSTS`, `CHGPROT`)*
+| ELC2702 | 10 | Chassis &1 is degraded (&2). | *(`RTVCHSSTS`: one power supply, one supervisor or controller, one interconnect)*
+| ELC2703 | 30 | Span &1 not found on &2. | *(`RTVOPTSTS SPAN`, `CHGPROT`)*
+| ELC2704 | 30 | Channel &1 is not assigned. | *(`RTVOPTSTS CHANNEL`)*
+| ELC2705 | 30 | Span &1 has no protect path. | *(`CHGPROT`: no Protection Card, or that path is down)*
+
 ## USRxxxx — User messages
 
 Raised with `SNDPGMMSG MSGTYPE(*ESCAPE)`; default `USR0001`.

@@ -22,6 +22,7 @@ import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.zagdrath.encodedlogistics.client.screen.BodyPanel;
+import net.zagdrath.encodedlogistics.client.screen.ChassisPanel;
 import net.zagdrath.encodedlogistics.client.screen.FabricationServerPanel;
 import net.zagdrath.encodedlogistics.client.screen.FirewallPanel;
 import net.zagdrath.encodedlogistics.client.screen.L3SwitchPanel;
@@ -49,7 +50,8 @@ import net.zagdrath.encodedlogistics.storage.ResourceType;
 // shows its name and status) and anything its renderer draws over its model.
 //
 // Render extras draw on the device's front or back, given in texels of its texture (8 texels a pixel, 128 across and
-// RackDeviceType#sheetHeight() tall: the front from (0,0) and the back from (0,32) - (0,64) for 5U and 6U - each 104
+// RackDeviceType#sheetHeight() tall: the front from (0,0) and the back from (0,32) - (0,64) for 5U and 6U, (0,128) for
+// 10U - each 104
 // texels across, x running right to left across the model on both faces, as their u does).
 public final class RackClientDevices {
     // What a renderer draws besides the device's model: capture() takes what it needs from the device (on the client
@@ -96,6 +98,14 @@ public final class RackClientDevices {
         PANELS.put(RackDeviceType.WIRELESS_CONTROLLER, WirelessControllerPanel::new);
         PANELS.put(RackDeviceType.TAPE_LIBRARY_4U, TapeLibraryPanel::new);
         PANELS.put(RackDeviceType.TAPE_LIBRARY_6U, TapeLibraryPanel::new);
+        // Optical gear and the modular chassis.
+        PANELS.put(RackDeviceType.OPTICAL_MULTIPLEXER, BodyPanel::opticalMux);
+        PANELS.put(RackDeviceType.OPTICAL_TRANSPORT_SHELF, ChassisPanel::new);
+        PANELS.put(RackDeviceType.CHASSIS_SWITCH, ChassisPanel::new);
+        PANELS.put(RackDeviceType.BLADE_ENCLOSURE, ChassisPanel::new);
+        EXTRAS.put(RackDeviceType.OPTICAL_TRANSPORT_SHELF, new ChassisRender());
+        EXTRAS.put(RackDeviceType.CHASSIS_SWITCH, new ChassisRender());
+        EXTRAS.put(RackDeviceType.BLADE_ENCLOSURE, new ChassisRender());
     }
 
     private RackClientDevices() {}
@@ -161,11 +171,11 @@ public final class RackClientDevices {
 
     // A device's texture height and where its back face starts on it (RackDeviceType#sheetHeight, #backOrigin).
     static float sheetHeight(int size) {
-        return size > 4 ? 256 : 128;
+        return RackDeviceType.sheetHeight(size);
     }
 
     static float backOrigin(int size) {
-        return size > 4 ? 64 : 32;
+        return RackDeviceType.backOrigin(size);
     }
 
     // The same on the back face (y in the texture's texels, the back from backOrigin; the face just behind the chassis's

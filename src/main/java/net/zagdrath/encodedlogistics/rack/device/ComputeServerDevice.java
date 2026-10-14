@@ -22,6 +22,11 @@ public class ComputeServerDevice extends ServerDevice {
     }
 
     @Override
+    public int schedulerThreads() {
+        return Config.COMPUTE_SERVER_THREADS.getAsInt();
+    }
+
+    @Override
     public double drain() {
         return Config.COMPUTE_SERVER_DRAIN.getAsDouble();
     }

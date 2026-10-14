@@ -1,0 +1,27 @@
+     0         1         2         3         4         5         6         7         
+     01234567890123456789012345678901234567890123456789012345678901234567890123456789
+00 |  WRKHW                         Work with Hardware              System:  ELNET01
+01 |                                                                 Day 2  07:14:22
+02 |  Network . :  ELNET01   Chassis :  3   Cards :  31   Faults :  2
+03 |  Type options, press Enter.
+04 |    5=Display  8=Locate
+05 | 
+06 | Opt  Device    Slot   Part              Status      Detail
+07 |      CSW01     A      Supervisor        *FAILED     failover to B 14:28
+08 |      CSW01     B      Supervisor        *ACTIVE     standby lost
+09 |      CSW01     L1     Uplink Card       *ONLINE     4/4 cages
+10 |      CSW01     P4     Power Supply      *EMPTY      3/4 PSUs
+11 |      BLD01     F3     Compute Blade     *ONLINE     8 threads
+12 |      BLD01     R1     Interconnect      *ONLINE     64 lanes
+13 |      OTS01     C1     Controller        *ACTIVE
+14 |      OTS01     L5     Protection        *PROTECT    working path down
+15 | 
+16 | 
+17 | 
+18 | 
+19 | 
+20 |  Parameters or command
+21 |  ===>
+22 | 
+23 |  F1=Help F3=Exit F5=Refresh F11=Cards F12=Cancel
+   fields (row, col, length): (21,5,72) command line (CrtScreen.command); (7,0,3) input; (8,0,3) input; (9,0,3) input; (10,0,3) input; (11,0,3) input; (12,0,3) input; (13,0,3) input; (14,0,3) input

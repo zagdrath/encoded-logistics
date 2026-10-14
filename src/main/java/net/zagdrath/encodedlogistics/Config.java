@@ -742,6 +742,64 @@ public class Config {
 
     static {
         BUILDER.pop();
+        BUILDER.push("optical");
+    }
+
+    // Optical and carrier gear, and the modular chassis (docs/optical).
+    public static final ModConfigSpec.BooleanValue FIBER_SPAN_LOSS = BUILDER
+            .comment("Whether long Fiber Cable runs lose lanes (span loss); an Optical Amplifier in the run starts the count again.")
+            .define("fiberSpanLoss", true);
+
+    public static final ModConfigSpec.IntValue FIBER_SPAN_THRESHOLD = BUILDER
+            .comment("Fiber Cable blocks a run (since the last amplifier) can be before it loses lanes.")
+            .defineInRange("fiberSpanThreshold", 256, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue FIBER_SPAN_LOSS_STEP = BUILDER
+            .comment("Blocks beyond fiberSpanThreshold for each lane lost (a run never drops below 1 lane).")
+            .defineInRange("fiberSpanLossStep", 32, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue MULTIPLEXER_CHANNELS = BUILDER
+            .comment("Channels an Optical Multiplexer carries over its line, each a client network of up to a Fiber Cable's lanes.")
+            .defineInRange("multiplexerChannels", 8, 1, 16);
+
+    public static final ModConfigSpec.DoubleValue MULTIPLEXER_DRAIN = BUILDER
+            .comment("FE per tick an Optical Multiplexer (block or rack) drains while its network runs.")
+            .defineInRange("multiplexerDrain", 4.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.DoubleValue AMPLIFIER_DRAIN = BUILDER
+            .comment("FE per tick an Optical Amplifier (block or rack) drains while its network runs.")
+            .defineInRange("amplifierDrain", 1.0, 0.0, 1_000.0);
+
+    public static final ModConfigSpec.IntValue SHELF_CHANNELS = BUILDER
+            .comment("Channels an Optical Transport Shelf carries at most.")
+            .defineInRange("shelfChannels", 40, 1, 40);
+
+    public static final ModConfigSpec.DoubleValue CHASSIS_DRAIN = BUILDER
+            .comment("FE per tick a modular chassis (Optical Transport Shelf, Chassis Switch, Blade Enclosure) drains on its own.")
+            .defineInRange("chassisDrain", 10.0, 0.0, 100_000.0);
+
+    public static final ModConfigSpec.DoubleValue CHASSIS_CARD_DRAIN = BUILDER
+            .comment("FE per tick each card, blade, power supply or module in a chassis drains on top of it.")
+            .defineInRange("chassisCardDrain", 2.0, 0.0, 100_000.0);
+
+    public static final ModConfigSpec.IntValue ACCESS_CARD_LANES = BUILDER
+            .comment("Rack-local lanes each Access Card in a Chassis Switch gives the other devices in its rack.")
+            .defineInRange("accessCardLanes", 48, 0, 1024);
+
+    public static final ModConfigSpec.IntValue ROUTING_CARD_RATE = BUILDER
+            .comment("Items a second each Routing Card in a Chassis Switch moves between segments (the cards add up).")
+            .defineInRange("routingCardRate", 128, 1, 1_000_000);
+
+    public static final ModConfigSpec.IntValue BLADE_BONUS_PERCENT = BUILDER
+            .comment("How much more a blade gives per rack unit than its server (Compute, Memory): % on top of the server's rate per U.")
+            .defineInRange("bladeBonusPercent", 25, 0, 1_000);
+
+    public static final ModConfigSpec.IntValue INTERCONNECT_LANES = BUILDER
+            .comment("Lanes a Blade Enclosure's Interconnect Module gives its blades (the blades take none of the rack's).")
+            .defineInRange("interconnectLanes", 64, 1, 1024);
+
+    static {
+        BUILDER.pop();
         BUILDER.push("elcl");
     }
 

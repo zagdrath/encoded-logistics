@@ -39,6 +39,7 @@ import net.zagdrath.encodedlogistics.multiblock.SchedulerStructures;
 import net.zagdrath.encodedlogistics.net.AudioPayloads;
 import net.zagdrath.encodedlogistics.net.ModNetwork;
 import net.zagdrath.encodedlogistics.net.RackElevationPayloads;
+import net.zagdrath.encodedlogistics.optical.OpticalChannels;
 import net.zagdrath.encodedlogistics.rack.FirewallEvents;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
@@ -127,6 +128,7 @@ public class EncodedLogistics {
         }
         JobManager.of(event.getServer()).tick(event.getServer());
         AudioPayloads.tick(event.getServer());
+        OpticalChannels.tick(event.getServer());
     }
 
     // A creative player's copied Storage Drives (a middle-click) get ids and contents of their own (DriveCopies).

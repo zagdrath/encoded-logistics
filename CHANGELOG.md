@@ -64,12 +64,45 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   and Share; ACLs match it with `*CONTROL`) and the caller has the Firewall's permission on that network. Lookups are
   cached for `directoryCacheSeconds` (30). Its screen has Published, Remote and Lookups tabs. Terminal OS: the
   `WRKDIR` screen, `RTVDIRENT` and `CHGDIRENT`.
+- **Fiber span loss.** A Fiber Cable run longer than `fiberSpanThreshold` (256) blocks loses a lane for every further
+  `fiberSpanLossStep` (32), down to 1 (`fiberSpanLoss` to turn it off). Network and Dense Cable, bridges and links are
+  unchanged. Looking at a Fiber Cable shows its span and the lanes it carries.
+- **Optical Amplifier** (an inline housing on a fibre run, or a 1U rack device): powered, it starts the span count
+  again; unpowered it just passes the light. The rack form lets optical lines pass through its rack. Its popup shows
+  its input and output lanes and the spans either side.
+- **Optical Multiplexer** (a block, or a 1U rack device): carries `multiplexerChannels` (8) client networks over one
+  Fiber Cable line to its partner (paired with a Link Card). Give a channel a network with a Link Card from any block on
+  it; channel n at one end joins its network with channel n's at the other, each up to a Fiber Cable's lanes less the
+  line's loss, and channels never mix. The block's line port is its front, and the networks on the line itself stay
+  apart. Its screen has Channels and Line tabs.
+- **Modular chassis**, rack devices built from cards that are hot-swappable: put parts in through the rack's open door
+  or the chassis's panel (its face at 1:1), sneak-click to take them out. Each part is drawn in its bay, lit while it
+  works, and has a popup of its own. Rack Elevations record and apply them with their chassis (with contents).
+  - **Optical Transport Shelf** (6U): two Controller Cards and eight line cards - Transponder (a client network onto a
+    channel, 1-40), Mux (eight channels on the line), Amplifier (more reach) and Protection (1+1 over two separate
+    paths, fibre or fibre and a Network Bridge pair, switching within a tick, revertive or not). Paired end to end with
+    a Link Card. Its panel shows its slots, channels and spans (length, loss, lanes, quality).
+  - **Chassis Switch** (10U): an L3 Switch made of cards. Two supervisors (the standby takes over at once), eight line
+    cards - Access (48 rack-local lanes), Uplink (four Optical Transceiver cages), Routing (routes and QoS, each card
+    adding throughput), Trunk (VLAN trunk ports) - and four power supplies (it runs on one; degraded below two).
+  - **Blade Enclosure** (10U): sixteen blades - Compute and Memory (threads and job memory for the rack Scheduler, a
+    quarter more per rack unit than their servers: `bladeBonusPercent`), Fabrication (crafts from its schematic slots),
+    Storage (two drive bays each, as network storage) - and behind, two Interconnect Modules (its blades' lanes; they
+    take none of the rack's), two Management Modules and six power supplies.
+  - The rack takes devices up to 10U tall.
+- Terminal OS: the `WRKHW` (Work with Hardware) and `DSPOPT` (Display Optical Status) screens, `RTVCHSSTS`,
+  `RTVOPTSTS` and `CHGPROT`, messages ELC27xx, and the trigger events `*CARDFAULT`, `*SUPFAILOVER`, `*PROTSWITCH` and
+  `*SPANLOSS`. Config (section `optical`): `fiberSpanLoss`, `fiberSpanThreshold`, `fiberSpanLossStep`,
+  `multiplexerChannels`, `shelfChannels`, `accessCardLanes`, `routingCardRate`, `bladeBonusPercent`,
+  `interconnectLanes`, and the drains.
 
 ### Upgrading
 
 - Routers load in Static mode with their routes unchanged; racks' linked segments get IDs in order (2, 3, ...) and
   every pooled device loads as an access port on the segment it was on; L3 Switch routes keep the segments they
   had (now by ID). Nothing needs redoing.
+- Fiber Cable runs longer than 256 blocks now lose lanes (span loss). A network that relied on a longer run at full
+  width needs an Optical Amplifier in it, or `fiberSpanLoss = false`.
 
 ## [1.2.1] - 2026-10-12
 

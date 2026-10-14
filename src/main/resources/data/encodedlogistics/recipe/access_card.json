@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:l2_switch_48",
+  "encodedlogistics:circuit_substrate"
+ ],
+ "result": {
+  "id": "encodedlogistics:access_card",
+  "count": 1
+ }
+}

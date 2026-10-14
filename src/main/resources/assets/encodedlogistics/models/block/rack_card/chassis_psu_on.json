@@ -1,0 +1,38 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "g": "encodedlogistics:block/rack_card/chassis_psu_on",
+  "particle": "encodedlogistics:block/rack_card/chassis_psu"
+ },
+ "elements": [
+  {
+   "name": "glow",
+   "from": [
+    0,
+    0,
+    -0.01
+   ],
+   "to": [
+    2.5,
+    0.75,
+    -0.01
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0,
+      0,
+      2.5,
+      1.5
+     ],
+     "texture": "#g"
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

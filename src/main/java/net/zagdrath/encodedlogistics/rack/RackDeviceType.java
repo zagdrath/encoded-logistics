@@ -21,9 +21,12 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.zagdrath.encodedlogistics.rack.device.DirectoryServerDevice;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
+import net.zagdrath.encodedlogistics.rack.device.BladeEnclosureDevice;
+import net.zagdrath.encodedlogistics.rack.device.ChassisSwitchDevice;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
+import net.zagdrath.encodedlogistics.rack.device.DirectoryServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FabricationServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
 import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
@@ -31,6 +34,9 @@ import net.zagdrath.encodedlogistics.rack.device.MemoryServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.MonitoringServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
+import net.zagdrath.encodedlogistics.rack.device.OpticalAmplifierDevice;
+import net.zagdrath.encodedlogistics.rack.device.OpticalMultiplexerDevice;
+import net.zagdrath.encodedlogistics.rack.device.OpticalTransportShelfDevice;
 import net.zagdrath.encodedlogistics.rack.device.RackConsoleDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.SanDevice;
@@ -40,12 +46,13 @@ import net.zagdrath.encodedlogistics.rack.device.UpsDevice;
 import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
-// A kind of device that mounts in a Server Rack: its id, height in U (1 to 6), the item it is and comes back as, a
+// A kind of device that mounts in a Server Rack: its id, height in U (1 to 10), the item it is and comes back as, a
 // factory for its behaviour, its item slots (as its settings panel shows them) and how many frames its lit overlay
 // animates through. Its models are models/block/rack_device/<id>.json, <id>_on.json and <id>_fault.json, and its front
 // in the rack's screen is (0,0)-(104,8 * size) of textures/block/rack_device/<id>.png. That texture is 128 texels
 // across and sheetHeight() tall: 128 up to 4U (the back from (0,32), render extras' sprites from (0,64)), 256 for 5U and
-// 6U (the back from (0,64), extras from (0,128)); lit overlays stack frames of that height. The client side (its
+// 6U (the back from (0,64), extras from (0,128)) and for 10U (the back from (0,128)); lit overlays stack frames of that
+// height. The client side (its
 // settings panel and any render extras) is registered by id in client.rack.RackClientDevices.
 //
 // Adding a device: a RackDeviceItem for it, an entry here, a RackDevice subclass, its assets, and (for a settings
@@ -55,7 +62,9 @@ public final class RackDeviceType {
     // The Storage Drives a NAS or SAN takes, the tapes a Tape Library takes.
     public static final TagKey<Item> STORAGE_DRIVES = TagKey.create(Registries.ITEM, EncodedLogistics.id("storage_drives"));
     public static final TagKey<Item> LTO_TAPES = TagKey.create(Registries.ITEM, EncodedLogistics.id("lto_tapes"));
-    public static final int MAX_SIZE = 6;
+    // A modular chassis's look while it runs short of redundancy (one power supply, one supervisor or controller).
+    public static final String DEGRADED = "_degraded";
+    public static final int MAX_SIZE = 10;
 
     public static final RackDeviceType FIREWALL = register("firewall", 1, () -> ModItems.FIREWALL.get(), FirewallDevice::new);
     public static final RackDeviceType ROUTER = register("router", 1, () -> ModItems.ROUTER.get(), RouterDevice::new)
@@ -102,6 +111,19 @@ public final class RackDeviceType {
             NetworkControllerDevice::new).frames(16).variants(Map.of("_standby", 1, "_failover", 4, "_conflict", 2));
     public static final RackDeviceType NETWORK_CONTROLLER_4U = register("network_controller_4u", 4, () -> ModItems.NETWORK_CONTROLLER_4U.get(),
             NetworkControllerDevice::new).frames(16).variants(Map.of("_standby", 1, "_failover", 4, "_conflict", 2));
+
+    // The optical handoff: optical gear (1U forms of the blocks) and the modular chassis (ChassisLayout: their parts in
+    // their bays, the banks of slots their panels page through). The chassis show _degraded while short of redundancy.
+    public static final RackDeviceType OPTICAL_MULTIPLEXER = register("optical_multiplexer", 1, () -> ModItems.OPTICAL_MULTIPLEXER_RACK.get(),
+            OpticalMultiplexerDevice::new).frames(4);
+    public static final RackDeviceType OPTICAL_AMPLIFIER = register("optical_amplifier", 1, () -> ModItems.OPTICAL_AMPLIFIER_RACK.get(),
+            OpticalAmplifierDevice::new).frames(4);
+    public static final RackDeviceType OPTICAL_TRANSPORT_SHELF = register("optical_transport_shelf", 6, () -> ModItems.OPTICAL_TRANSPORT_SHELF.get(),
+            OpticalTransportShelfDevice::new).variants(Map.of(DEGRADED, 1)).slots(ChassisLayout.shelfSlots());
+    public static final RackDeviceType CHASSIS_SWITCH = register("chassis_switch", 10, () -> ModItems.CHASSIS_SWITCH.get(), ChassisSwitchDevice::new)
+            .variants(Map.of(DEGRADED, 1)).slots(ChassisLayout.switchSlots());
+    public static final RackDeviceType BLADE_ENCLOSURE = register("blade_enclosure", 10, () -> ModItems.BLADE_ENCLOSURE.get(), BladeEnclosureDevice::new)
+            .variants(Map.of(DEGRADED, 1)).slots(ChassisLayout.bladeSlots());
 
     private final Identifier id;
     private final int size;
@@ -229,15 +251,23 @@ public final class RackDeviceType {
 
     // Its texture's height in texels: 128 up to 4U, 256 above.
     public int sheetHeight() {
+        return sheetHeight(size);
+    }
+
+    public static int sheetHeight(int size) {
         return size > 4 ? 256 : 128;
     }
 
-    // Where its back face starts on its texture.
+    // Where its back face starts on its texture: 32 up to 4U, 64 for 5U and 6U, 128 above (10U).
     public int backOrigin() {
-        return size > 4 ? 64 : 32;
+        return backOrigin(size);
     }
 
-    // Where its render extras' sprites start on its texture.
+    public static int backOrigin(int size) {
+        return size > 6 ? 128 : size > 4 ? 64 : 32;
+    }
+
+    // Where its render extras' sprites start on its texture (devices above 6U have no room for any).
     public int extrasOrigin() {
         return size > 4 ? 128 : 64;
     }

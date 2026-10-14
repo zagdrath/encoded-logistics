@@ -22,15 +22,16 @@ import net.zagdrath.encodedlogistics.part.LinkType;
 
 // What a Link Card remembers: a Network Bridge, a Point-to-Point Link endpoint (the side of the cable it's on, and
 // what it carries), a network segment for a rack's switch (the node at one end of a Segment Isolator, and that end), or a
-// network for a Router (any block on it), or a Wireless Controller (its rack's master, and the controller's id), and
-// where it is.
+// network for a Router (any block on it), or a Wireless Controller (its rack's master, and the controller's id), or an
+// Optical Multiplexer or Transport Shelf (where it is, and its id in controller), and where it is.
 public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Optional<LinkType> type, Optional<UUID> controller) {
     public enum Kind implements StringRepresentable {
         BRIDGE("bridge"),
         P2P("p2p"),
         SEGMENT("segment"),
         NETWORK("network"),
-        WIRELESS("wireless");
+        WIRELESS("wireless"),
+        OPTICAL("optical");
 
         public static final Codec<Kind> CODEC = StringRepresentable.fromEnum(Kind::values);
         public static final StreamCodec<ByteBuf, Kind> STREAM_CODEC = ByteBufCodecs.idMapper(id -> values()[Math.clamp(id, 0, values().length - 1)], Kind::ordinal);
@@ -70,6 +71,11 @@ public record LinkAddress(Kind kind, GlobalPos pos, Optional<Direction> side, Op
     // A Wireless Controller: its rack's master and its id.
     public static LinkAddress wireless(GlobalPos rack, UUID controller) {
         return new LinkAddress(Kind.WIRELESS, rack, Optional.empty(), Optional.empty(), Optional.of(controller));
+    }
+
+    // An Optical Multiplexer (its block, or its rack's master) or a Transport Shelf (its rack's master), and its id.
+    public static LinkAddress optical(GlobalPos at, UUID id) {
+        return new LinkAddress(Kind.OPTICAL, at, Optional.empty(), Optional.empty(), Optional.of(id));
     }
 
     public static LinkAddress bridge(GlobalPos pos) {

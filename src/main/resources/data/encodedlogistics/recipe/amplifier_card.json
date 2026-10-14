@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:optical_amplifier",
+  "encodedlogistics:circuit_substrate"
+ ],
+ "result": {
+  "id": "encodedlogistics:amplifier_card",
+  "count": 1
+ }
+}

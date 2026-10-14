@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:fabrication_server",
+  "encodedlogistics:copper_foil"
+ ],
+ "result": {
+  "id": "encodedlogistics:fabrication_blade",
+  "count": 1
+ }
+}

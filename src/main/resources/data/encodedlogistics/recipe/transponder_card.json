@@ -1,0 +1,13 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:optical_transceiver",
+  "encodedlogistics:processor_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:transponder_card",
+  "count": 1
+ }
+}

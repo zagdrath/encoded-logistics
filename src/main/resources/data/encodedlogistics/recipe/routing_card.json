@@ -1,0 +1,12 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "redstone",
+ "ingredients": [
+  "encodedlogistics:l3_switch",
+  "encodedlogistics:processor_die"
+ ],
+ "result": {
+  "id": "encodedlogistics:routing_card",
+  "count": 1
+ }
+}

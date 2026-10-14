@@ -17,6 +17,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
@@ -36,6 +37,7 @@ import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkBridgeBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
+import net.zagdrath.encodedlogistics.blockentity.OpticalMultiplexerBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.machine.MachineBridge;
@@ -44,6 +46,7 @@ import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
+import net.zagdrath.encodedlogistics.optical.Multiplexer;
 import net.zagdrath.encodedlogistics.part.PointToPointPart;
 import net.zagdrath.encodedlogistics.part.TrunkPortPart;
 import net.zagdrath.encodedlogistics.rack.NetworkAccess;
@@ -51,6 +54,8 @@ import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.rack.RackTargeting;
+import net.zagdrath.encodedlogistics.rack.device.OpticalMultiplexerDevice;
+import net.zagdrath.encodedlogistics.rack.device.OpticalTransportShelfDevice;
 import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 import net.zagdrath.encodedlogistics.rack.device.SwitchDevice;
 import net.zagdrath.encodedlogistics.rack.device.WirelessControllerDevice;
@@ -69,6 +74,10 @@ import net.zagdrath.encodedlogistics.wireless.WirelessClient;
 //
 // Wireless: use it on a Wireless Controller's unit in an open rack to take the controller, then on a Wireless Bridge or
 // Wireless Port to link it to that controller. A card from another controller relinks it there.
+//
+// Optical: sneak-use it on an Optical Multiplexer (block, or its unit in an open rack) or a Transport Shelf's unit to
+// store it, then use it on another of the same kind to pair the two. A stored network used on a multiplexer gives it a
+// channel; on a shelf, to the Transponder Card looked at.
 //
 // Permissions: the Firewall's build permission (rack access, for a device in a Server Rack) on the network at each end -
 // checked when the card is written (the end clicked) and when it's applied (both ends; adopting a Wireless Bridge or Port
@@ -108,6 +117,10 @@ public class LinkCardItem extends Item {
         InteractionResult wireless = wireless(stack, context);
         if (wireless != null) {
             return wireless;
+        }
+        InteractionResult optical = optical(stack, context);
+        if (optical != null) {
+            return optical;
         }
         InteractionResult segment = segment(stack, context);
         if (segment != null) {
@@ -220,6 +233,99 @@ public class LinkCardItem extends Item {
             store(stack, player, context.getHand(), LinkAddress.wireless(GlobalPos.of(level.dimension(), rack.getBlockPos()), controller.id()));
             player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.wireless_stored"));
             level.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    // An Optical Multiplexer (its block, or its unit in an open rack) or an Optical Transport Shelf's unit: sneak-use stores
+    // it; used with a stored one of the same kind, the two are paired; used with a stored network (or segment), a
+    // multiplexer gives it a channel (the one selected in its panel, else the first free), a shelf gives it to the
+    // Transponder Card looked at. Null when the use is about neither.
+    private static @Nullable InteractionResult optical(ItemStack stack, UseOnContext context) {
+        Level level = context.getLevel();
+        Player player = context.getPlayer();
+        BlockPos pos = context.getClickedPos();
+        if (player == null) {
+            return null;
+        }
+        Multiplexer mux = null;
+        OpticalTransportShelfDevice shelf = null;
+        BlockPos guarded;
+        RackPermission permission;
+        if (level.getBlockEntity(pos) instanceof OpticalMultiplexerBlockEntity block) {
+            mux = block.multiplexer();
+            guarded = pos;
+            permission = RackPermission.BUILD;
+        } else {
+            BlockState state = level.getBlockState(pos);
+            RackBlockEntity rack = state.getBlock() instanceof ServerRackBlock ? ServerRackBlock.rack(level, pos, state) : null;
+            if (rack == null || RackGeometry.face(context.getClickedFace(), state.getValue(ServerRackBlock.FACING)) != RackGeometry.Face.FRONT) {
+                return null;
+            }
+            RackTargeting.Target target = RackTargeting.pick(rack, context.getClickedFace(), player.getEyePosition(), player.getViewVector(1.0F));
+            if (target != null && target.device() instanceof OpticalMultiplexerDevice device) {
+                mux = device.multiplexer();
+            } else if (target != null && target.device() instanceof OpticalTransportShelfDevice device) {
+                shelf = device;
+            } else {
+                return null;
+            }
+            pos = rack.getBlockPos();
+            guarded = pos;
+            permission = RackPermission.RACK;
+        }
+        if (!(level instanceof ServerLevel serverLevel) || !NetworkAccess.guard(serverLevel, guarded, player, permission)) {
+            return InteractionResult.SUCCESS;
+        }
+        UUID id = mux != null ? mux.id() : shelf.id();
+        if (player.isSecondaryUseActive()) {
+            store(stack, player, context.getHand(), LinkAddress.optical(GlobalPos.of(level.dimension(), pos), id));
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.optical_stored"));
+            level.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.4F);
+            return InteractionResult.SUCCESS;
+        }
+        LinkAddress stored = address(stack);
+        if (stored == null || stored.kind() != LinkAddress.Kind.OPTICAL && stored.kind() != LinkAddress.Kind.NETWORK
+                && stored.kind() != LinkAddress.Kind.SEGMENT) {
+            player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.optical_hint"));
+            return InteractionResult.SUCCESS;
+        }
+        MinecraftServer server = serverLevel.getServer();
+        if (!NetworkAccess.guard(server, stored.pos(), player, RackPermission.BUILD)) {
+            return InteractionResult.SUCCESS;
+        }
+        String result;
+        if (stored.kind() == LinkAddress.Kind.OPTICAL) {
+            UUID other = stored.controller().orElse(null);
+            if (other == null) {
+                result = "gone";
+            } else if (other.equals(id)) {
+                result = "same";
+            } else if (mux != null) {
+                Multiplexer partner = Multiplexer.find(server, stored.pos(), other);
+                result = partner == null ? OpticalTransportShelfDevice.find(server, stored.pos(), other) != null ? "optical_mismatch" : "gone"
+                        : Multiplexer.pair(server, mux, partner) ? "paired" : "same";
+            } else {
+                OpticalTransportShelfDevice partner = OpticalTransportShelfDevice.find(server, stored.pos(), other);
+                result = partner == null ? Multiplexer.find(server, stored.pos(), other) != null ? "optical_mismatch" : "gone"
+                        : OpticalTransportShelfDevice.pair(shelf, partner) ? "paired" : "optical_same_rack";
+            }
+        } else if (mux != null) {
+            int channel = mux.assign(stored.pos());
+            if (channel < 0) {
+                result = "optical_full";
+            } else {
+                player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card.optical_channel", channel + 1,
+                        Multiplexer.networkName(server, stored.pos())));
+                level.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.8F);
+                return InteractionResult.SUCCESS;
+            }
+        } else {
+            result = shelf.setNetwork((ServerPlayer) player, stored.pos()) ? "optical_transponder" : "optical_not_transponder";
+        }
+        player.sendOverlayMessage(Component.translatable("message.encodedlogistics.link_card." + result));
+        if (result.equals("paired") || result.equals("optical_transponder")) {
+            level.playSound(null, context.getClickedPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 0.4F, 1.8F);
         }
         return InteractionResult.SUCCESS;
     }

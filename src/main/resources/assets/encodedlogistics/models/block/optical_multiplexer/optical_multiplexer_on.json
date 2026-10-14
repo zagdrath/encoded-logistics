@@ -1,0 +1,38 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "g": "encodedlogistics:block/optical_multiplexer/glow",
+  "particle": "encodedlogistics:block/optical_multiplexer/optical_multiplexer"
+ },
+ "elements": [
+  {
+   "name": "glow",
+   "from": [
+    0,
+    0,
+    -0.01
+   ],
+   "to": [
+    16,
+    16,
+    -0.01
+   ],
+   "faces": {
+    "north": {
+     "uv": [
+      0.0,
+      0.0,
+      8.0,
+      8.0
+     ],
+     "texture": "#g"
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

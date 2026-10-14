@@ -52,6 +52,10 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 //  *NBRUP / *NBRDOWN      a dynamic-routing neighbour of Router DEV comes up / goes down &DATA: RTR01 ELNET02
 //  *RTECHG                Router DEV's best path to a network changes                    &DATA: RTR01 ELNET07
 //  *ACLDENY               an ACL rule on Router DEV denies items (debounced)             &DATA: RTR01 NOFUEL 10 COAL
+//  *CARDFAULT             a part in chassis DEV fails or goes missing                   &DATA: CSW01 P2 power supply removed
+//  *SUPFAILOVER           Chassis Switch DEV's standby supervisor takes over             &DATA: CSW01 A failover to B
+//  *PROTSWITCH            Transport Shelf DEV switches path (1+1 protection)             &DATA: OTS01 OTS01-OTS02 *PROTECT
+//  *SPANLOSS              an optical span of DEV loses lanes (or gets them back)         &DATA: MUX01 MUX01-MUX02 2
 // The first four are looked at every half second; device changes, ended crafts and redstone come as events
 // (ElclEvents). Held triggers don't fire. A job that can't be submitted (no job host: ELC0301) is reported to the
 // trigger's user's message queue.
@@ -222,7 +226,8 @@ public final class Triggers {
             case "*RSCHANGE" -> (device.isEmpty() || device.equals("*ANY") || device.equals(event.device()))
                     && (trigger.value().isBlank() || trigger.value().equalsIgnoreCase("*NONE") || event.data().startsWith(trigger.value().trim().toUpperCase(Locale.ROOT) + " "));
             case "*CRAFTEND", "*CRFSTALL" -> item.isEmpty() || item.equalsIgnoreCase("*ANY") || sameItem(item, event.item());
-            case "*DSPTOUCH", "*MCHIDLE", "*MCHFAULT", "*MCHNOPWR", "*NBRUP", "*NBRDOWN", "*RTECHG", "*ACLDENY" -> device.isEmpty() || device.equals("*ANY") || device.equals(event.device());
+            case "*DSPTOUCH", "*MCHIDLE", "*MCHFAULT", "*MCHNOPWR", "*NBRUP", "*NBRDOWN", "*RTECHG", "*ACLDENY", "*CARDFAULT", "*SUPFAILOVER",
+                    "*PROTSWITCH", "*SPANLOSS" -> device.isEmpty() || device.equals("*ANY") || device.equals(event.device());
             case "*MCHDONE" -> (device.isEmpty() || device.equals("*ANY") || device.equals(event.device()))
                     && (item.isEmpty() || item.equalsIgnoreCase("*ANY") || sameItem(item, event.item()));
             default -> false;

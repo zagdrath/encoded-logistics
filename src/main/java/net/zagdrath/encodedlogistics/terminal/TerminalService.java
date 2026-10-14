@@ -67,6 +67,11 @@ import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
 //  jobs / job <n>       Work with Jobs' rows / one job's details
 //  devices / device <i> Work with Devices' rows / one device's details
 //  locate <i>           where a device is (the screen highlights it)
+//  hardware <dev> [all]  WRKHW: every chassis's bays (all: the empty ones too)
+//  hwpart <dev> <slot>   WRKHW 5=Display: a bay's part
+//  locatehw <dev> <slot> WRKHW 8=Locate: where a part is
+//  optical               DSPOPT: the optical devices' spans
+//  opticalchannels       DSPOPT F10: their channels
 //  status               Display Network Status' body
 //  detail <item>        an item's details (Work with Inventory, option 5)
 //  plan <item> <n>      a craft's plan in a line (the CRAFT prompt)
@@ -123,6 +128,11 @@ public final class TerminalService {
             case "routes" -> RoutingScreens.routes(context, words.size() > 1 ? words.get(1) : "");
             case "ixmember" -> RoutingScreens.ixMember(context, words.size() > 1 ? words.get(1) : "", words.size() > 2 ? words.get(2) : "");
             case "neighbours" -> RoutingScreens.neighbours(context, words.size() > 1 ? words.get(1) : "");
+            case "hardware" -> HardwareScreens.hardware(context, words.size() > 1 ? words.get(1) : "*ALL", words.size() > 2 && words.get(2).equals("all"));
+            case "hwpart" -> HardwareScreens.part(context, words.size() > 1 ? words.get(1) : "", words.size() > 2 ? words.get(2) : "");
+            case "locatehw" -> HardwareScreens.locate(context, words.size() > 1 ? words.get(1) : "", words.size() > 2 ? words.get(2) : "");
+            case "optical" -> HardwareScreens.optical(context, false);
+            case "opticalchannels" -> HardwareScreens.optical(context, true);
             case "locate" -> locate(context, words.size() > 1 ? (int) TerminalItems.amount(words.get(1)) : -1);
             case "status" -> status(context);
             case "detail" -> detail(context, words.size() > 1 ? words.get(1) : "");
