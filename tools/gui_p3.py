@@ -155,7 +155,7 @@ def screens(A):
     json.dump({**pal,'background':{'texture':'gui/job_status.png','width':220,'height':150},
       'widgets':{'item':{'left':9,'top':21},'progress':{'left':33,'top':32,'width':178,'height':6,'sprite':'common/bar_fill_mint'},
                  'list':{'left':10,'top':50,'rows':3,'row_height':22,'columns':2,'cell':[100,22],'progress_sprite':'common/bar_fill_gold'},
-                 'cancel':{'left':166,'top':124,'width':46,'height':18,'button':wide,'text':'gui.encodedlogistics.scheduler.cancel'}},
+                 'cancel':{'left':148,'top':124,'width':64,'height':18,'button':wide,'text':'gui.encodedlogistics.scheduler.cancel'}},
       'text':{'title':{'key':'gui.encodedlogistics.craft.status','left':8,'top':5,'color':'TEXT'},'item':{'left':32,'top':20,'color':'TEXT'}}},open(S+'job_status.json','w',newline='\n'),indent=1)
 if __name__=='__main__':
     A=sys.argv[1]; T=A+'textures/'; os.makedirs(T+'gui/terminal',exist_ok=True)

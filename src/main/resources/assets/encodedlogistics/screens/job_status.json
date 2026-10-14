@@ -32,9 +32,9 @@
    "progress_sprite": "common/bar_fill_gold"
   },
   "cancel": {
-   "left": 166,
+   "left": 148,
    "top": 124,
-   "width": 46,
+   "width": 64,
    "height": 18,
    "button": {
     "sprite": "common/button_wide",

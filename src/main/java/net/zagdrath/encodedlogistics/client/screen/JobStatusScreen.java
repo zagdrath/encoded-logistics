@@ -38,7 +38,7 @@ public class JobStatusScreen extends Screen {
     private static final int WIDTH = 220, HEIGHT = 150, POLL = 10;
     private static final int ITEM_X = 9, ITEM_Y = 21, NAME_X = 32, NAME_Y = 20, BAR_X = 33, BAR_Y = 32, BAR_W = 178;
     private static final int LIST_X = 10, LIST_Y = 50, ROWS = 3, COLUMNS = 2, CELL_W = 100, CELL_H = 22, CELL_BAR_W = 76;
-    private static final int CANCEL_X = 166, CANCEL_Y = 124, CANCEL_W = 46, CANCEL_H = 18;
+    private static final int CANCEL_X = 148, CANCEL_Y = 124, CANCEL_W = 64, CANCEL_H = 18;
 
     private final Screen parent;
     private final BlockPos core;
