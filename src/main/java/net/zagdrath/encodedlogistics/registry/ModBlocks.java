@@ -102,6 +102,12 @@ public final class ModBlocks {
     // Gallium (Phase 3): deepslate only.
     public static final DeferredBlock<Block> DEEPSLATE_GALLIUM_ORE = BLOCKS.registerSimpleBlock("deepslate_gallium_ore", ModBlocks::deepslateOre);
 
+    // Storage blocks: nine ingots (or nine Ferrite) packed for storage and shipping, as Arcforge's metal blocks.
+    public static final DeferredBlock<Block> NEODYMIUM_BLOCK = BLOCKS.registerSimpleBlock("neodymium_block", p -> storage(p, MapColor.METAL));
+    public static final DeferredBlock<Block> TANTALUM_BLOCK = BLOCKS.registerSimpleBlock("tantalum_block", p -> storage(p, MapColor.METAL));
+    public static final DeferredBlock<Block> GALLIUM_BLOCK = BLOCKS.registerSimpleBlock("gallium_block", p -> storage(p, MapColor.METAL));
+    public static final DeferredBlock<Block> FERRITE_BLOCK = BLOCKS.registerSimpleBlock("ferrite_block", p -> storage(p, MapColor.COLOR_BLACK));
+
     // Autocrafting (Phase 3): the Fabricator and Gateway carry out schematics; the Scheduler multiblock runs the jobs.
     public static final DeferredBlock<FabricatorBlock> FABRICATOR = BLOCKS.registerBlock("fabricator", FabricatorBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL)
@@ -232,6 +238,10 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties stoneOre(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 3.0F);
+    }
+
+    private static BlockBehaviour.Properties storage(BlockBehaviour.Properties properties, MapColor color) {
+        return properties.mapColor(color).strength(5.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);
     }
 
     private static BlockBehaviour.Properties deepslateOre(BlockBehaviour.Properties properties) {

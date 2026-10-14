@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "###",
+  "###",
+  "###"
+ ],
+ "key": {
+  "#": "#c:ingots/neodymium"
+ },
+ "result": {
+  "id": "encodedlogistics:neodymium_block",
+  "count": 1
+ }
+}

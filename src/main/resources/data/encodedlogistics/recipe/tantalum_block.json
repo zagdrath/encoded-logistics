@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "###",
+  "###",
+  "###"
+ ],
+ "key": {
+  "#": "#c:ingots/tantalum"
+ },
+ "result": {
+  "id": "encodedlogistics:tantalum_block",
+  "count": 1
+ }
+}

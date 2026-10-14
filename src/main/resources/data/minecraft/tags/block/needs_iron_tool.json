@@ -4,6 +4,10 @@
   "encodedlogistics:deepslate_neodymium_ore",
   "encodedlogistics:tantalum_ore",
   "encodedlogistics:deepslate_tantalum_ore",
-  "encodedlogistics:deepslate_gallium_ore"
+  "encodedlogistics:deepslate_gallium_ore",
+  "encodedlogistics:neodymium_block",
+  "encodedlogistics:tantalum_block",
+  "encodedlogistics:gallium_block",
+  "encodedlogistics:ferrite_block"
  ]
 }

@@ -106,6 +106,10 @@ public final class ModItems {
     public static final DeferredItem<Item> RAW_GALLIUM = ITEMS.registerSimpleItem("raw_gallium");
     public static final DeferredItem<Item> GALLIUM_INGOT = ITEMS.registerSimpleItem("gallium_ingot");
     public static final DeferredItem<Item> GALLIUM_DUST = ITEMS.registerSimpleItem("gallium_dust");
+    public static final DeferredItem<BlockItem> NEODYMIUM_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.NEODYMIUM_BLOCK);
+    public static final DeferredItem<BlockItem> TANTALUM_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.TANTALUM_BLOCK);
+    public static final DeferredItem<BlockItem> GALLIUM_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.GALLIUM_BLOCK);
+    public static final DeferredItem<BlockItem> FERRITE_BLOCK = ITEMS.registerSimpleBlockItem(ModBlocks.FERRITE_BLOCK);
     public static final DeferredItem<Item> PROCESSOR_DIE = ITEMS.registerSimpleItem("processor_die");
     public static final DeferredItem<Item> PROCESSOR_PHOTOMASK = ITEMS.registerSimpleItem("processor_photomask", p -> p.stacksTo(1));
     public static final DeferredItem<Item> HEATSINK = ITEMS.registerSimpleItem("heatsink");

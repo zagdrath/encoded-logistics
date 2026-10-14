@@ -119,15 +119,15 @@ public final class ModCreativeTabs {
             .withTabsBefore(key("2_parts"))
             .icon(() -> ModItems.SILICON_WAFER.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                // Ores, then each metal's raw, dust and ingot.
+                // Ores, then each metal's raw, dust, ingot and block.
                 for (var item : List.of(ModItems.NEODYMIUM_ORE, ModItems.DEEPSLATE_NEODYMIUM_ORE, ModItems.TANTALUM_ORE,
                         ModItems.DEEPSLATE_TANTALUM_ORE, ModItems.DEEPSLATE_GALLIUM_ORE, ModItems.RAW_NEODYMIUM, ModItems.NEODYMIUM_DUST,
-                        ModItems.NEODYMIUM_INGOT, ModItems.RAW_TANTALUM, ModItems.TANTALUM_DUST, ModItems.TANTALUM_INGOT, ModItems.RAW_GALLIUM,
-                        ModItems.GALLIUM_DUST, ModItems.GALLIUM_INGOT)) {
+                        ModItems.NEODYMIUM_INGOT, ModItems.NEODYMIUM_BLOCK, ModItems.RAW_TANTALUM, ModItems.TANTALUM_DUST, ModItems.TANTALUM_INGOT,
+                        ModItems.TANTALUM_BLOCK, ModItems.RAW_GALLIUM, ModItems.GALLIUM_DUST, ModItems.GALLIUM_INGOT, ModItems.GALLIUM_BLOCK)) {
                     output.accept(item.get());
                 }
                 for (var material : List.of(ModItems.SILICA, ModItems.SILICA_BLEND, ModItems.SILICON_BOULE, ModItems.SILICON_WAFER,
-                        ModItems.DOPED_SILICON, ModItems.FERRITE, ModItems.COPPER_FOIL, ModItems.FIBERGLASS, ModItems.SOLDER_PASTE,
+                        ModItems.DOPED_SILICON, ModItems.FERRITE, ModItems.FERRITE_BLOCK, ModItems.COPPER_FOIL, ModItems.FIBERGLASS, ModItems.SOLDER_PASTE,
                         ModItems.CIRCUIT_SUBSTRATE, ModItems.TANTALUM_CAPACITOR, ModItems.HEATSINK, ModItems.OPTICAL_TRANSCEIVER, ModItems.RADIO_MODULE,
                         ModItems.LOGIC_PHOTOMASK, ModItems.STORAGE_PHOTOMASK, ModItems.MEMORY_PHOTOMASK, ModItems.PROCESSOR_PHOTOMASK,
                         ModItems.LOGIC_DIE, ModItems.MEMORY_DIE, ModItems.PROCESSOR_DIE)) {

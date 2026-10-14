@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "###",
+  "###",
+  "###"
+ ],
+ "key": {
+  "#": "#c:ingots/gallium"
+ },
+ "result": {
+  "id": "encodedlogistics:gallium_block",
+  "count": 1
+ }
+}

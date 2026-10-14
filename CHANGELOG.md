@@ -25,6 +25,9 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ### Added
 
+- **Storage blocks** for Neodymium, Tantalum, Gallium and Ferrite, for compact storage and shipping, as Arcforge's
+  metal blocks: nine ingots (or nine Ferrite) craft a block, and a block crafts back into nine. They need an iron
+  pickaxe, are in `#c:storage_blocks/<name>`, and the three metal blocks can build a beacon's base.
 - **Dynamic routing.** A Router can now run in **Dynamic** mode (its panel's new Mode tab; every existing Router loads
   as Static and works exactly as before). Dynamic Routers whose networks are linked (a Link Card) find each other,
   share what they can reach, and work out the cheapest path to every network beyond (more Optical Transceivers make a

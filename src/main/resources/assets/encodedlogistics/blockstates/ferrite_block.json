@@ -1,0 +1,7 @@
+{
+ "variants": {
+  "": {
+   "model": "encodedlogistics:block/ferrite_block"
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "###",
+  "###",
+  "###"
+ ],
+ "key": {
+  "#": "encodedlogistics:ferrite"
+ },
+ "result": {
+  "id": "encodedlogistics:ferrite_block",
+  "count": 1
+ }
+}
