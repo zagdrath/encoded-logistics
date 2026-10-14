@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Networking - Encoded Logistics</title>
+<meta name="description" content="Joining, splitting and connecting networks - switches and VLANs, Routers, exchanges and directories, bridges and links, optical fibre and wireless.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="index.html" aria-current="true" class="current">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="index.html" aria-current="true" class="current">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Networking">
+<p class="toc-title">Networking</p><nav aria-label="Networking pages"><ol><li><a href="index.html" aria-current="page" class="current">Networking</a></li><li><a href="switches.html">Switches and VLANs</a></li><li><a href="routers.html">Routers</a></li><li><a href="exchange-and-directory.html">Exchange and Directory</a></li><li><a href="bridges-and-links.html">Bridges and links</a></li><li><a href="optical.html">Optical</a></li><li><a href="wireless.html">Wireless</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Networking</span></nav>
+<details class="mobile-toc"><summary>Networking: pages</summary><p class="toc-title">Networking</p><nav aria-label="Networking pages"><ol><li><a href="index.html" aria-current="page" class="current">Networking</a></li><li><a href="switches.html">Switches and VLANs</a></li><li><a href="routers.html">Routers</a></li><li><a href="exchange-and-directory.html">Exchange and Directory</a></li><li><a href="bridges-and-links.html">Bridges and links</a></li><li><a href="optical.html">Optical</a></li><li><a href="wireless.html">Wireless</a></li></ol></nav></details>
+<h1>Networking</h1>
+<p class="lead">Joining, splitting and connecting networks - switches and VLANs, Routers, exchanges and directories, bridges and links, optical fibre and wireless.</p>
+
+<div class="page-body">
+<p>A single network, one controller structure and everything cabled to it, gets you a long way (see <a href="../networks/index.html">Networks</a>). This section is about what comes next: sharing lanes inside a rack, carrying several segments down one cable, moving items between separate networks, and reaching far-off places by fibre, bridge or radio.</p>
+<h2 id="join-or-route">Joining versus routing<a class="anchor" href="#join-or-route" aria-label="Link to this section">#</a></h2>
+<p>Most of the hardware here does one of two quite different things, and it helps to keep them apart.</p>
+<p><strong>Joining</strong> makes two places one network: the same storage, the same lanes, the same controller. A Network Bridge pair, a Point-to-Point Link carrying lanes, an optical channel or a Wireless Bridge all join: whatever is cabled at the far end becomes part of the network at the near end. A network has exactly one controller structure, so only one of the places you join should have one.</p>
+<p><strong>Routing</strong> keeps networks separate and moves items between them by rule. Each network keeps its own controller, storage and Firewall. The L3 Switch routes between the segments a rack knows; the Router routes between whole networks, any distance apart, and can learn routes from other Routers.</p>
+<div class="table-wrap"><table><thead><tr><th>You want to</th><th>Use</th><th>Page</th></tr></thead><tbody><tr><td>Give a rack's devices lanes without loading the network</td><td>An L2 Switch</td><td><a href="switches.html">Switches and VLANs</a></td></tr><tr><td>Carry several Segment Isolator segments to your racks over one network</td><td>A Trunk Port and switch VLAN ports</td><td><a href="switches.html">Switches and VLANs</a></td></tr><tr><td>Move items between segments of one installation</td><td>An L3 Switch</td><td><a href="switches.html">Switches and VLANs</a></td></tr><tr><td>Move or share items between separate networks</td><td>A Router</td><td><a href="routers.html">Routers</a></td></tr><tr><td>Let many networks' Routers meet and exchange routes</td><td>An Exchange Switch</td><td><a href="exchange-and-directory.html">Exchange Switch and Directory Server</a></td></tr><tr><td>Reach another network's devices from the Terminal OS</td><td>A Directory Server</td><td><a href="exchange-and-directory.html">Exchange Switch and Directory Server</a></td></tr><tr><td>Join two distant places, even in another dimension</td><td>A Network Bridge pair</td><td><a href="bridges-and-links.html">Bridges and links</a></td></tr><tr><td>Pass items, fluids, energy, redstone or lanes straight across</td><td>A Point-to-Point Link</td><td><a href="bridges-and-links.html">Bridges and links</a></td></tr><tr><td>Carry several networks over one long fibre line</td><td>Optical Multiplexers, or Optical Transport Shelves</td><td><a href="optical.html">Optical networking</a></td></tr><tr><td>Reach devices without cables</td><td>A Wireless Controller with Access Points</td><td><a href="wireless.html">Wireless</a></td></tr><tr><td>Use a terminal away from your base</td><td>A Handheld Terminal and Relay Antennas</td><td><a href="../terminals/handheld.html">Handheld Terminal</a></td></tr></tbody></table></div>
+<h2 id="link-card">The Link Card<a class="anchor" href="#link-card" aria-label="Link to this section">#</a></h2>
+<p>Almost everything here is set up with a <a class="item-link" href="../reference/items/link_card.html"><img class="icon" src="../assets/icons/encodedlogistics/link_card.png" alt="" width="20" height="20" loading="lazy">Link Card</a>: you sneak-use it on one end to store that end, then use it on the other end to pair, link or assign. The card's uses are collected on <a href="bridges-and-links.html#link-card">Bridges and links</a>.</p>
+<h2 id="reading-order">Reading order<a class="anchor" href="#reading-order" aria-label="Link to this section">#</a></h2>
+<ol><li><a href="switches.html">Switches and VLANs</a>: lane pools, segments and VLANs inside a rack.</li><li><a href="routers.html">Routers</a>: moving items between networks.</li><li><a href="exchange-and-directory.html">Exchange Switch and Directory Server</a>: many networks meeting, and reaching devices by name.</li><li><a href="bridges-and-links.html">Bridges and links</a>: joining places, and the Link Card.</li><li><a href="optical.html">Optical networking</a>: fibre, span loss, multiplexers and transport shelves.</li><li><a href="wireless.html">Wireless</a>: Access Points, Wireless Bridges and Ports, the Wireless Controller.</li></ol>
+<p>Segments themselves (the Segment Isolator) are on <a href="../networks/segments.html">Segments</a>, and lanes on <a href="../networks/lanes.html">Lanes</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="next" href="switches.html" rel="next"><span>Next</span>Switches and VLANs</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

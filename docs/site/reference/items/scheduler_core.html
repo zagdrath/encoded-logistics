@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scheduler Core - Encoded Logistics</title>
+<meta name="description" content="Scheduler Core">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../../elcl/index.html">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../index.html" aria-current="true" class="current">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../../elcl/index.html">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../index.html" aria-current="true" class="current">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Reference">
+<p class="toc-title">Reference</p><nav aria-label="Reference pages"><ol><li><a href="../index.html">Reference</a></li><li><a href="index.html">Blocks and items</a></li><li><a href="../recipes.html">Recipes</a></li><li><a href="../tags.html">Tags</a></li><li><a href="../config.html">Config options</a></li><li><a href="../device-types.html">Device types</a></li><li><a href="../sounds.html">Sounds</a></li><li><a href="../screens.html">Screens and menus</a></li><li><a href="../data-components.html">Data components</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Reference</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Blocks and items</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Scheduler Core</span></nav>
+<details class="mobile-toc"><summary>Reference: pages</summary><p class="toc-title">Reference</p><nav aria-label="Reference pages"><ol><li><a href="../index.html">Reference</a></li><li><a href="index.html">Blocks and items</a></li><li><a href="../recipes.html">Recipes</a></li><li><a href="../tags.html">Tags</a></li><li><a href="../config.html">Config options</a></li><li><a href="../device-types.html">Device types</a></li><li><a href="../sounds.html">Sounds</a></li><li><a href="../screens.html">Screens and menus</a></li><li><a href="../data-components.html">Data components</a></li></ol></nav></details>
+<h1>Scheduler Core</h1>
+
+
+<div class="page-body">
+<div class="entry-head"><img class="entry-icon pixel" src="../../assets/icons/encodedlogistics/scheduler_core.png" alt="Scheduler Core" width="64" height="64"><div><p class="entry-facts"><code>encodedlogistics:scheduler_core</code> &middot; Block &middot; Stacks to 64 &middot; Creative tab: Encoded Logistics</p>
+<p class="entry-desc">The heart of a Scheduler: it plans and runs the network's crafting jobs. Build a solid cuboid of Scheduler blocks (no side longer than <a class="cfg" href="../config.html#cfg-autocrafting-schedulerMaxSize"><code>autocrafting.schedulerMaxSize</code></a> (default 7)) with exactly one Core; Thread Units add threads and Job Buffers add job memory. The whole structure uses one lane.</p>
+</div></div>
+<div class="tooltip-box" role="group" aria-label="In-game tooltip"><p class="tt-name">Scheduler Core</p><p class="tt-shift"><span class="tt-key">Shift:</span> The heart of a Scheduler: plans and runs crafting jobs. Build a solid cuboid of Scheduler blocks with one Core.</p></div>
+<h2 id="works-with">Works with</h2><ul class="item-list"><li><a class="item-link" href="job_buffer.html"><img class="icon" src="../../assets/icons/encodedlogistics/job_buffer.png" alt="" width="20" height="20" loading="lazy">Job Buffer</a></li><li><a class="item-link" href="thread_unit.html"><img class="icon" src="../../assets/icons/encodedlogistics/thread_unit.png" alt="" width="20" height="20" loading="lazy">Thread Unit</a></li><li><a class="item-link" href="fabricator.html"><img class="icon" src="../../assets/icons/encodedlogistics/fabricator.png" alt="" width="20" height="20" loading="lazy">Fabricator</a></li><li><a class="item-link" href="gateway.html"><img class="icon" src="../../assets/icons/encodedlogistics/gateway.png" alt="" width="20" height="20" loading="lazy">Gateway</a></li></ul>
+<h2 id="recipe">How to get it</h2>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-scheduler_core"><figcaption>Crafting Table</figcaption><div class="recipe-body"><span class="grid g3" role="group" aria-label="Ingredients"><a class="slot" href="ferrite.html" title="Ferrite"><img src="../../assets/icons/encodedlogistics/ferrite.png" alt="Ferrite" width="32" height="32" loading="lazy"></a><a class="slot" href="processor_die.html" title="Processor Die"><img src="../../assets/icons/encodedlogistics/processor_die.png" alt="Processor Die" width="32" height="32" loading="lazy"></a><a class="slot" href="ferrite.html" title="Ferrite"><img src="../../assets/icons/encodedlogistics/ferrite.png" alt="Ferrite" width="32" height="32" loading="lazy"></a><a class="slot" href="circuit_substrate.html" title="Circuit Substrate"><img src="../../assets/icons/encodedlogistics/circuit_substrate.png" alt="Circuit Substrate" width="32" height="32" loading="lazy"></a><a class="slot" href="heatsink.html" title="Heatsink"><img src="../../assets/icons/encodedlogistics/heatsink.png" alt="Heatsink" width="32" height="32" loading="lazy"></a><a class="slot" href="circuit_substrate.html" title="Circuit Substrate"><img src="../../assets/icons/encodedlogistics/circuit_substrate.png" alt="Circuit Substrate" width="32" height="32" loading="lazy"></a><a class="slot" href="ferrite.html" title="Ferrite"><img src="../../assets/icons/encodedlogistics/ferrite.png" alt="Ferrite" width="32" height="32" loading="lazy"></a><a class="slot" href="processor_die.html" title="Processor Die"><img src="../../assets/icons/encodedlogistics/processor_die.png" alt="Processor Die" width="32" height="32" loading="lazy"></a><a class="slot" href="ferrite.html" title="Ferrite"><img src="../../assets/icons/encodedlogistics/ferrite.png" alt="Ferrite" width="32" height="32" loading="lazy"></a></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="scheduler_core.html" title="Scheduler Core"><img src="../../assets/icons/encodedlogistics/scheduler_core.png" alt="Scheduler Core" width="32" height="32" loading="lazy"></a></div><p class="recipe-id">encodedlogistics:scheduler_core</p></figure></div>
+<h2 id="used-in">Used to make</h2>
+<p>Nothing.</p>
+<h2 id="block">As a block</h2><div class="table-wrap"><table class="facts"><tr><th scope="row">Hardness</th><td>3</td></tr><tr><th scope="row">Blast resistance</th><td>6</td></tr><tr><th scope="row">Tool</th><td>any pickaxe (needed for it to drop)</td></tr><tr><th scope="row">Light level</th><td>0 in its default state</td></tr></table></div>
+<h2 id="related">Where it's documented</h2><ul><li><a href="../../crafting/schedulers.html">Schedulers</a> <span class="muted">(Crafting and automation)</span></li><li><a href="../../getting-started/progression.html">Progression</a> <span class="muted">(Getting started)</span></li></ul>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1446 @@
+{
+  "encodedlogistics:network_controller": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "The heart of a network. Forms hollow frames up to 7x7x7."
+  },
+  "encodedlogistics:power_inlet": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Feeds FE into the network through its port. Cables attach to the other five faces."
+  },
+  "encodedlogistics:capacitor_bank": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Buffers network energy. Holds 2,000,000 FE."
+  },
+  "encodedlogistics:creative_capacitor_bank": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Creative only. Endless network energy: always full, gives any FE asked and takes any offered, on its network and every face."
+  },
+  "encodedlogistics:segment_isolator": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Splits a network: lanes and storage do not pass through."
+  },
+  "encodedlogistics:cable_anchor": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Mount on a cable face to stop it connecting that way."
+  },
+  "encodedlogistics:cable_facade": {
+    "lines": [
+      "Blank",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Covers any face of a cable. Use a block on a placed facade to give it that block's look; sneak-use it with an empty hand to take the block back off."
+  },
+  "encodedlogistics:lithography_press": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Etches dies from silicon wafers with a reusable photomask. Runs on FE; no network needed."
+  },
+  "encodedlogistics:drive_bay": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Holds ten Storage Drives and makes them the network's storage. Uses one lane."
+  },
+  "encodedlogistics:silica": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:silica_blend": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:silicon_boule": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:silicon_wafer": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:ferrite": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:copper_foil": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:fiberglass": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:solder_paste": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:circuit_substrate": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:logic_die": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:logic_photomask": {
+    "lines": [
+      "Reusable - not consumed by the Lithography Press"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:storage_photomask": {
+    "lines": [
+      "Reusable - not consumed by the Lithography Press"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:neodymium_ore": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:deepslate_neodymium_ore": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:tantalum_ore": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:deepslate_tantalum_ore": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:raw_neodymium": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:raw_tantalum": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:neodymium_ingot": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:tantalum_ingot": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:neodymium_dust": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:tantalum_dust": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:doped_silicon": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:memory_die": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:memory_photomask": {
+    "lines": [
+      "Reusable - not consumed by the Lithography Press"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:tantalum_capacitor": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:filter_module": {
+    "lines": [
+      "Adds filter options to a port"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:throughput_module": {
+    "lines": [
+      "Faster transfers (up to 3 per port)"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:fuzzy_match_module": {
+    "lines": [
+      "Match by tag or damage range",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Port and Collector Plane filters match by tag or damage: right-click a filter entry to pick."
+  },
+  "encodedlogistics:redstone_control_module": {
+    "lines": [
+      "Ports respond to redstone: high, low or pulse",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Unlocks a port's redstone modes: active with signal, without signal, or once per pulse."
+  },
+  "encodedlogistics:deepslate_gallium_ore": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:raw_gallium": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:gallium_ingot": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:gallium_dust": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:neodymium_block": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:tantalum_block": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:gallium_block": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:ferrite_block": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:processor_die": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:processor_photomask": {
+    "lines": [
+      "Reusable - not consumed by the Lithography Press"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:heatsink": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:schematic_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A blank card for the Schematic Encoder to write a recipe onto."
+  },
+  "encodedlogistics:encoded_schematic_crafting": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A crafting recipe. Put it in a Fabricator so the network can craft it."
+  },
+  "encodedlogistics:encoded_schematic_processing": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Inputs and outputs for a machine. Put it in a Gateway next to the machine."
+  },
+  "encodedlogistics:fabricator": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Crafts the recipes on its Crafting Schematics for the network's Schedulers. Uses one lane."
+  },
+  "encodedlogistics:gateway": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Runs Processing Schematics through the machines next to it, and keeps items stocked for them. Uses one lane."
+  },
+  "encodedlogistics:scheduler_core": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "The heart of a Scheduler: plans and runs crafting jobs. Build a solid cuboid of Scheduler blocks with one Core."
+  },
+  "encodedlogistics:job_buffer": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Scheduler block: adds job memory for bigger jobs."
+  },
+  "encodedlogistics:thread_unit": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Scheduler block: one more thread. Another job at a time, or more crafts at once for a large job."
+  },
+  "encodedlogistics:optical_transceiver": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An optical module for wireless and long-range links. Each one in a Relay Antenna adds 32 blocks of range; in a Router, 16 items/s."
+  },
+  "encodedlogistics:link_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Pairs Network Bridges and Point-to-Point Links, and links segments and networks to rack devices. Sneak-use on one to store it, then use on its partner (a segment - a Segment Isolator - on a rack's switch; a network - any block of it - on a Router). Sneak-use in the air to clear."
+  },
+  "encodedlogistics:cross_connect": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Use on a Router's unit in an open rack, then on an Exchange Switch: the Router joins the exchange (or asks to)."
+  },
+  "encodedlogistics:rack_elevation": {
+    "lines": [
+      "Blank - sneak-use on a rack to copy it, or use to plan"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:handheld_terminal": {
+    "lines": [
+      "Use on a Relay Antenna or Network Controller to link",
+      "0 / 200,000 FE",
+      "Hold [Shift] for info"
+    ],
+    "shift": "A terminal that works in range of its network's Relay Antennas. Charges in FE chargers, or held against a Capacitor Bank."
+  },
+  "encodedlogistics:relay_antenna": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Wireless coverage for Handheld Terminals linked to its network: 32 blocks, more with Optical Transceivers. Uses one lane."
+  },
+  "encodedlogistics:exchange_switch": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Internet Exchange, two blocks tall: Routers on any networks join it with a Cross-Connect and peer there, through its route server or with each other. Uses one lane; its owner approves members. Keeps its chunk loaded while it has members."
+  },
+  "encodedlogistics:directory_server": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Publishes devices of its network so other networks' Terminal OS can reach them as SYSNAME/DEVICE (through a Router's Control policy, with the Firewall's say there). Uses one lane."
+  },
+  "encodedlogistics:network_bridge": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Joins two networks, any distance apart, with a 32-lane link. Pair two with a Link Card; both ends must be loaded."
+  },
+  "encodedlogistics:radio_module": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "The radio in Access Points, Wireless Bridges and Wireless Ports."
+  },
+  "encodedlogistics:midrange_system": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Runs its network and the Terminal OS from one cabinet, with crafting threads and diskette recipes. An Expansion Cabinet beside it adds more."
+  },
+  "encodedlogistics:expansion_cabinet": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stands beside a Midrange System, facing the same way: one more crafting thread, diskette slot and batch job."
+  },
+  "encodedlogistics:integrated_midrange": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A bigger Midrange System with its own console and a diskette magazine unit: runs its network, the Terminal OS and crafting."
+  },
+  "encodedlogistics:keypunch": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Punches a crafting recipe, typed in by item name, onto blank Punch Cards. Needs a Midrange System online on its network."
+  },
+  "encodedlogistics:card_reader": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Reads the punched cards in its hopper onto the 8\" Diskette in its slot, a recipe a card. Needs a Midrange System online on its network."
+  },
+  "encodedlogistics:line_printer": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Prints reports and spooled files onto Printouts, a page per paper. Load paper by using it on the printer. Works on any running network: cable it to a Terminal Desk's, a server rack's or a Midrange System's."
+  },
+  "encodedlogistics:disk_drive": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "One Storage Drive as hot storage, like a Drive Bay slot. Uses a lane."
+  },
+  "encodedlogistics:tape_drive": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "One Tape Reel as cold storage, beside the Tape Libraries. Uses a lane."
+  },
+  "encodedlogistics:printout": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Line printer output. Use it to read it; hold it to see its page."
+  },
+  "encodedlogistics:tape_reel": {
+    "lines": [
+      "0 / 65,536 items",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Cold storage for a Tape Drive."
+  },
+  "encodedlogistics:punch_card": {
+    "lines": [
+      "Blank - punch a recipe on a Card Punch"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:diskette_8in": {
+    "lines": [
+      "Blank - write it on a Card Reader"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:diskette_magazine": {
+    "lines": [
+      "0 of 4 diskettes"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:access_point": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "The radio for its network's Wireless Controller. Mount it on a cable (or any network block); each one online lets the controller serve 8 Wireless Bridges and Ports."
+  },
+  "encodedlogistics:wireless_bridge": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Brings what's cabled to it onto its Wireless Controller's network, anywhere, with up to 32 lanes. Link it with a Link Card from the controller."
+  },
+  "encodedlogistics:wireless_ingress_port": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Ingress Port with no cable: mount it on an inventory and link it to a Wireless Controller with a Link Card."
+  },
+  "encodedlogistics:wireless_egress_port": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Egress Port with no cable: mount it on an inventory and link it to a Wireless Controller with a Link Card."
+  },
+  "encodedlogistics:display_panel": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Shows text, gauges, graphs and tables that ELCL scripts send it. Panels side by side or stacked join into one screen. Uses a lane."
+  },
+  "encodedlogistics:small_wireless_bridge": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Goes on a face of an Arcforge machine. Linked with a Link Card from a Wireless Controller, it puts the machine on that network: Work with Machines, ELCL, Gateways and graphs can see and work it. Sneak-use with an empty hand to take it off."
+  },
+  "encodedlogistics:server_rack": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 42U rack, 1 wide, 3 tall and 2 deep, for Firewalls, Routers and UPSes. Cables join it at the back and on top. Right-click the front or back to open its doors; sneak-right-click the front for its screen."
+  },
+  "encodedlogistics:terminal_desk": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A green-screen terminal on a desk: the network's items, jobs and devices in text mode, and a command line. Its drawer takes withdrawals."
+  },
+  "encodedlogistics:control_interface": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Redstone in and out for ELCL scripts, a channel on each face: RTVRSIN reads one, CHGRSOUT sets one. Set up from the terminal. Uses a lane."
+  },
+  "encodedlogistics:cage_light_white": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_orange": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_magenta": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_light_blue": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_yellow": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_lime": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_pink": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_gray": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_light_gray": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_cyan": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_purple": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_blue": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_brown": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_green": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_red": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:cage_light_black": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:siren_green": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:siren_amber": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:siren_red": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:speaker": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:plc": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Programmable Logic Controller: runs one ELCL program over and over, like a PLC scan. Each face reads and drives redstone. Four slots for sensor modules. Runs on FE, or on its network when cabled to one. Right-click for its screens."
+  },
+  "encodedlogistics:presence_sensor": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "PLC module: counts players, mobs or both within a radius (1-16). RTVSNSVAL reads it."
+  },
+  "encodedlogistics:inventory_sensor": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "PLC module: how full the container on a face is (percent) and its item count."
+  },
+  "encodedlogistics:fluid_sensor": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "PLC module: how full the tank on a face is (percent) and its amount in mB."
+  },
+  "encodedlogistics:light_sensor": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "PLC module: the light level at the PLC (0-15), and whether it's day or night."
+  },
+  "encodedlogistics:timer_module": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "PLC module: the game clock - ticks, and the day and time."
+  },
+  "encodedlogistics:eeprom_cartridge": {
+    "lines": [
+      "Blank",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Holds a PLC program. Hold it and pick 4 (save) or 5 (load) on a PLC's status screen."
+  },
+  "encodedlogistics:swivel_chair": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Sit on it; it turns with you. Dye it in a crafting grid."
+  },
+  "encodedlogistics:firewall": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: decides who may view, insert, extract, craft and build on its network. Uses one lane."
+  },
+  "encodedlogistics:router": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: moves items between separate networks, any distance apart, 16 items/s and 16 more for each Optical Transceiver. Uses one lane."
+  },
+  "encodedlogistics:ups": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 2U rack device: a 1,000,000 FE battery that covers its network when supply falls short, and recharges from the surplus. Uses one lane."
+  },
+  "encodedlogistics:network_controller_2u": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:network_controller_4u": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:l2_switch_24": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: 16 rack-local lanes for the other devices in its rack, which then take no network lanes; it uses one."
+  },
+  "encodedlogistics:l2_switch_48": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: 32 rack-local lanes for the other devices in its rack, which then take no network lanes; it uses one."
+  },
+  "encodedlogistics:l3_switch": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: an L2 Switch with 32 lanes that also routes items between segments, with QoS priorities."
+  },
+  "encodedlogistics:compute_server": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 2U rack device: 2 crafting threads. With a Memory Server on the same network, in any rack, the network's racks pool into one Scheduler."
+  },
+  "encodedlogistics:memory_server": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: 32K job memory. With a Compute Server on the same network, in any rack, the network's racks pool into one Scheduler."
+  },
+  "encodedlogistics:fabrication_server": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 2U rack device: a Fabricator for nine Crafting Schematics, offered the rack Scheduler's crafts first."
+  },
+  "encodedlogistics:directory_server_rack": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: a Directory Server. Publishes devices of its network so other networks can reach them as SYSNAME/DEVICE. Uses one lane."
+  },
+  "encodedlogistics:monitoring_server": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: graphs its network's item flow, energy use, lanes and crafting over the last minute to the last day."
+  },
+  "encodedlogistics:nas": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 2U rack device: six Storage Drives as network storage, with a priority and access mode."
+  },
+  "encodedlogistics:san": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 4U rack device: 24 Storage Drives as network storage; needs an Optical Transceiver in its rear cages."
+  },
+  "encodedlogistics:rack_console": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: an Access Terminal in a drawer. Right-click it through the open front to slide it out, again for the terminal."
+  },
+  "encodedlogistics:rack_fabrication_console": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: a Fabrication Terminal in a drawer, its crafting grid kept in the console. Right-click it through the open front to slide it out, again for the terminal."
+  },
+  "encodedlogistics:rack_schematic_console": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: a Schematic Terminal in a drawer. Right-click it through the open front to slide it out, again for the terminal."
+  },
+  "encodedlogistics:wireless_controller": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: Handheld Terminals linked to it (use one on its rack) work anywhere, in any dimension. Use a Link Card on its unit, then on a Wireless Bridge or Port, to link those; they need Access Points on the network. Uses one lane."
+  },
+  "encodedlogistics:tape_library_4u": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 4U rack device: 24 LTO tapes as cold storage, 2 drive bays. Archives items left untouched, and recalls them when they're asked for."
+  },
+  "encodedlogistics:tape_library_6u": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 6U rack device: 48 LTO tapes as cold storage, 4 drive bays. Archives items left untouched, and recalls them when they're asked for."
+  },
+  "encodedlogistics:lto_tape_drive": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Reads and writes LTO tapes in a Tape Library's drive bay."
+  },
+  "encodedlogistics:optical_multiplexer": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 8 client networks as channels over one Fiber Cable line to a matching multiplexer (paired with a Link Card): each channel joins the network given to it here (a Link Card from any of its blocks) with the one on the same channel at the far end, up to a Fiber Cable's lanes less the line's span loss. Its line port is its front; the networks on the line itself stay apart. Uses one lane."
+  },
+  "encodedlogistics:optical_amplifier": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Placed inline on a Fiber Cable run (light in at the back, out at the front), it ends the span it's on while powered, so span loss counts again from it. Unpowered it just passes the light through. Powered by its network, or by an online multiplexer or shelf whose line runs through it."
+  },
+  "encodedlogistics:optical_multiplexer_rack": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: an Optical Multiplexer (8 channels). Its line leaves the rack at any connection point. Crafted from the block."
+  },
+  "encodedlogistics:optical_amplifier_rack": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 1U rack device: patched in, it lets optical lines pass through its rack (in at one connection point, out at another), starting their span count again. Crafted from the block."
+  },
+  "encodedlogistics:optical_transport_shelf": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 6U rack chassis for long-haul links between two shelves (paired with a Link Card): two Controller Cards and eight line cards - Transponders (a client network each), Mux, Amplifier and Protection Cards (1+1: working and protect paths)."
+  },
+  "encodedlogistics:chassis_switch": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 10U rack chassis: an L3 Switch built from cards. Two supervisors (a standby takes over at once), eight line cards (Access, Uplink, Routing, Trunk) and four power supplies (it runs on one; degraded below two)."
+  },
+  "encodedlogistics:blade_enclosure": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A 10U rack chassis with sixteen blade slots (Compute, Memory, Fabrication, Storage) and, behind, two Interconnect Modules, two Management Modules and six power supplies. Blades take no rack lanes."
+  },
+  "encodedlogistics:supervisor_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Runs a Chassis Switch. Put two in: the standby takes over the moment the active one fails or is taken out."
+  },
+  "encodedlogistics:access_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Chassis Switch line card: 48 rack-local lanes for the other devices in its rack, as an L2 Switch gives."
+  },
+  "encodedlogistics:uplink_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Chassis Switch line card: four Optical Transceiver cages (the Cages tab) for the switch's uplinks; any one keeps it up."
+  },
+  "encodedlogistics:routing_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Chassis Switch line card: the L3 Switch's routes and QoS; each one adds 128 items a second."
+  },
+  "encodedlogistics:trunk_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Chassis Switch line card: lets the switch's ports be VLAN trunks."
+  },
+  "encodedlogistics:chassis_psu": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Powers a Chassis Switch. It runs on one; with fewer than two it's degraded."
+  },
+  "encodedlogistics:controller_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Runs an Optical Transport Shelf. With two, the second takes over if the first fails."
+  },
+  "encodedlogistics:transponder_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Optical Transport Shelf line card: one client network (use a Link Card holding it on the card) onto one long-haul channel (1-40; set in the shelf's panel)."
+  },
+  "encodedlogistics:mux_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Optical Transport Shelf line card: puts eight transponder channels onto the line (without one, the line carries a single channel)."
+  },
+  "encodedlogistics:amplifier_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Optical Transport Shelf line card: launches the line amplified, giving it a span's more reach before it loses lanes."
+  },
+  "encodedlogistics:protection_card": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Optical Transport Shelf line card: 1+1 protection over two separate paths (two fibre runs, or fibre and a Network Bridge pair), switching within a tick. Revertive by default (set in the shelf's panel)."
+  },
+  "encodedlogistics:compute_blade": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Blade Enclosure blade: 0.78 crafting threads for its network's rack Scheduler (its share, a quarter more per rack unit than a Compute Server)."
+  },
+  "encodedlogistics:memory_blade": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Blade Enclosure blade: 25K job memory for its network's rack Scheduler."
+  },
+  "encodedlogistics:fabrication_blade": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Blade Enclosure blade: crafts from the enclosure's nine schematic slots, as a Fabrication Server does. More blades craft quicker."
+  },
+  "encodedlogistics:storage_blade": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Blade Enclosure blade: opens two Storage Drive bays (the Drives tab) as network storage."
+  },
+  "encodedlogistics:interconnect_module": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A Blade Enclosure's rear module: the 64 lanes its blades use. A second one is redundant."
+  },
+  "encodedlogistics:blade_psu": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Powers a Blade Enclosure. It runs on one; with fewer than two it's degraded."
+  },
+  "encodedlogistics:management_module": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Runs a Blade Enclosure. A second one is a standby."
+  },
+  "encodedlogistics:lto_tape_6": {
+    "lines": [
+      "Capacity: 8M",
+      "Used: 0 / 8M",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Cold storage for a Tape Library. Keeps what's on it when taken out."
+  },
+  "encodedlogistics:lto_tape_7": {
+    "lines": [
+      "Capacity: 32M",
+      "Used: 0 / 32M",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Cold storage for a Tape Library. Keeps what's on it when taken out; upgrading keeps it too."
+  },
+  "encodedlogistics:lto_tape_8": {
+    "lines": [
+      "Capacity: 128M",
+      "Used: 0 / 128M",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Cold storage for a Tape Library. Keeps what's on it when taken out; upgrading keeps it too."
+  },
+  "encodedlogistics:lto_tape_9": {
+    "lines": [
+      "Capacity: 512M",
+      "Used: 0 / 512M",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Cold storage for a Tape Library. Keeps what's on it when taken out; upgrading keeps it too."
+  },
+  "encodedlogistics:lto_tape_10": {
+    "lines": [
+      "Capacity: 2048M",
+      "Used: 0 / 2048M",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Cold storage for a Tape Library. Keeps what's on it when taken out; upgrading keeps it too."
+  },
+  "encodedlogistics:access_terminal": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Browse the network's storage. Mounts on a cable face, or on the face of a network block. Uses one lane."
+  },
+  "encodedlogistics:fabrication_terminal": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "An Access Terminal with a crafting grid fed from the network."
+  },
+  "encodedlogistics:schematic_encoder": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A terminal that writes crafting and processing recipes onto Schematic Cards. Uses one lane."
+  },
+  "encodedlogistics:ingress_port": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Pulls items from the inventory it faces into the network."
+  },
+  "encodedlogistics:egress_port": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Pushes the filtered items from the network into the inventory it faces."
+  },
+  "encodedlogistics:inventory_tap": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Makes the inventory it faces part of the network's storage."
+  },
+  "encodedlogistics:threshold_sensor": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Emits redstone when the network's count of an item crosses a value."
+  },
+  "encodedlogistics:point_to_point_link": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Passes items, energy, redstone or lanes straight between paired endpoints. Pick the type and direction, then pair with a Link Card."
+  },
+  "encodedlogistics:collector_plane": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Breaks the block in front (as an iron pickaxe) and collects dropped items into the network. Joins neighbouring planes. Uses one lane."
+  },
+  "encodedlogistics:deployer_plane": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Places blocks or drops items from the network, from its list. Joins neighbouring planes. Uses one lane."
+  },
+  "encodedlogistics:schematic_terminal": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "A terminal for the network's schematics and crafting jobs: every Fabricator, Gateway, Fabrication Server and Midrange System with its schematics, and each job's progress and steps. Uses one lane."
+  },
+  "encodedlogistics:trunk_port": {
+    "lines": [
+      "Uses 1 lane",
+      "Hold [Shift] for info"
+    ],
+    "shift": "A cable part: VLAN trunking. Carries segments (networks beyond Segment Isolators, added with a Link Card) into the network it's on, so every rack there can put its pooled devices on them. Access or Trunk, with a native segment."
+  },
+  "encodedlogistics:storage_die_8k": {
+    "lines": [
+      "Storage tier: 8K"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:storage_die_32k": {
+    "lines": [
+      "Storage tier: 32K"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:storage_die_128k": {
+    "lines": [
+      "Storage tier: 128K"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:storage_die_512k": {
+    "lines": [
+      "Storage tier: 512K"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:storage_die_2m": {
+    "lines": [
+      "Storage tier: 2M"
+    ],
+    "shift": null
+  },
+  "encodedlogistics:storage_drive_8k": {
+    "lines": [
+      "0 / 8,192 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores items for the network once it's in a Drive Bay."
+  },
+  "encodedlogistics:storage_drive_32k": {
+    "lines": [
+      "0 / 32,768 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores items for the network once it's in a Drive Bay."
+  },
+  "encodedlogistics:storage_drive_128k": {
+    "lines": [
+      "0 / 131,072 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores items for the network once it's in a Drive Bay."
+  },
+  "encodedlogistics:storage_drive_512k": {
+    "lines": [
+      "0 / 524,288 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores items for the network once it's in a Drive Bay."
+  },
+  "encodedlogistics:storage_drive_2m": {
+    "lines": [
+      "0 / 2,097,152 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores items for the network once it's in a Drive Bay."
+  },
+  "encodedlogistics:fluid_storage_drive_8k": {
+    "lines": [
+      "Holds: 8,192 B",
+      "0 / 8,192 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores fluids for the network once it's in a drive holder: a bucket a byte, up to 63 kinds."
+  },
+  "encodedlogistics:fluid_storage_drive_32k": {
+    "lines": [
+      "Holds: 32,768 B",
+      "0 / 32,768 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores fluids for the network once it's in a drive holder: a bucket a byte, up to 63 kinds."
+  },
+  "encodedlogistics:fluid_storage_drive_128k": {
+    "lines": [
+      "Holds: 131,072 B",
+      "0 / 131,072 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores fluids for the network once it's in a drive holder: a bucket a byte, up to 63 kinds."
+  },
+  "encodedlogistics:fluid_storage_drive_512k": {
+    "lines": [
+      "Holds: 524,288 B",
+      "0 / 524,288 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores fluids for the network once it's in a drive holder: a bucket a byte, up to 63 kinds."
+  },
+  "encodedlogistics:fluid_storage_drive_2m": {
+    "lines": [
+      "Holds: 2,097,152 B",
+      "0 / 2,097,152 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores fluids for the network once it's in a drive holder: a bucket a byte, up to 63 kinds."
+  },
+  "encodedlogistics:pressurized_storage_drive_8k": {
+    "lines": [
+      "Holds: 8,192 B",
+      "0 / 8,192 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores gases and chemicals from other mods (Arcforge's gases) once it's in a drive holder, each in its own mod's unit."
+  },
+  "encodedlogistics:pressurized_storage_drive_32k": {
+    "lines": [
+      "Holds: 32,768 B",
+      "0 / 32,768 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores gases and chemicals from other mods (Arcforge's gases) once it's in a drive holder, each in its own mod's unit."
+  },
+  "encodedlogistics:pressurized_storage_drive_128k": {
+    "lines": [
+      "Holds: 131,072 B",
+      "0 / 131,072 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores gases and chemicals from other mods (Arcforge's gases) once it's in a drive holder, each in its own mod's unit."
+  },
+  "encodedlogistics:pressurized_storage_drive_512k": {
+    "lines": [
+      "Holds: 524,288 B",
+      "0 / 524,288 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores gases and chemicals from other mods (Arcforge's gases) once it's in a drive holder, each in its own mod's unit."
+  },
+  "encodedlogistics:pressurized_storage_drive_2m": {
+    "lines": [
+      "Holds: 2,097,152 B",
+      "0 / 2,097,152 bytes used",
+      "0 / 63 types",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Stores gases and chemicals from other mods (Arcforge's gases) once it's in a drive holder, each in its own mod's unit."
+  },
+  "encodedlogistics:energy_storage_drive_8k": {
+    "lines": [
+      "0 / 8,192,000 FE",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Adds its FE to the network's energy pool in any drive holder, like a Capacitor Bank. Keeps its charge when taken out, and charges or powers other things as a battery."
+  },
+  "encodedlogistics:energy_storage_drive_32k": {
+    "lines": [
+      "0 / 32,768,000 FE",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Adds its FE to the network's energy pool in any drive holder, like a Capacitor Bank. Keeps its charge when taken out, and charges or powers other things as a battery."
+  },
+  "encodedlogistics:energy_storage_drive_128k": {
+    "lines": [
+      "0 / 131,072,000 FE",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Adds its FE to the network's energy pool in any drive holder, like a Capacitor Bank. Keeps its charge when taken out, and charges or powers other things as a battery."
+  },
+  "encodedlogistics:energy_storage_drive_512k": {
+    "lines": [
+      "0 / 524,288,000 FE",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Adds its FE to the network's energy pool in any drive holder, like a Capacitor Bank. Keeps its charge when taken out, and charges or powers other things as a battery."
+  },
+  "encodedlogistics:energy_storage_drive_2m": {
+    "lines": [
+      "0 / 2,097,152,000 FE",
+      "Hold [Shift] for info"
+    ],
+    "shift": "Adds its FE to the network's energy pool in any drive holder, like a Capacitor Bank. Keeps its charge when taken out, and charges or powers other things as a battery."
+  },
+  "encodedlogistics:resource_entry": {
+    "lines": [],
+    "shift": null
+  },
+  "encodedlogistics:network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:white_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:orange_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:magenta_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:light_blue_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:yellow_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:lime_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:pink_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:cyan_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:purple_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:blue_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:green_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:red_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together."
+  },
+  "encodedlogistics:dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:white_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:orange_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:magenta_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:light_blue_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:yellow_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:lime_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:pink_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:cyan_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:purple_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:blue_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:green_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:red_dense_network_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Links network blocks together, with four times the lanes."
+  },
+  "encodedlogistics:fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:white_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:orange_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:magenta_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:light_blue_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:yellow_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:lime_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:pink_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:cyan_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:purple_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:blue_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:green_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  },
+  "encodedlogistics:red_fiber_cable": {
+    "lines": [
+      "Hold [Shift] for info"
+    ],
+    "shift": "Carries 32 lanes in a slim cable."
+  }
+}

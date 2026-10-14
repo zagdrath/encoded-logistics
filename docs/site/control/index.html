@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control and facility - Encoded Logistics</title>
+<meta name="description" content="The blocks that connect a network to the world around it - redstone in and out, PLCs, screens, lights, alarms and sound.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="index.html" aria-current="true" class="current">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="index.html" aria-current="true" class="current">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Control and facility">
+<p class="toc-title">Control and facility</p><nav aria-label="Control and facility pages"><ol><li><a href="index.html" aria-current="page" class="current">Control and facility</a></li><li><a href="control-interface.html">Control Interface</a></li><li><a href="plc.html">PLC</a></li><li><a href="display-panels.html">Display Panels</a></li><li><a href="lights-and-sirens.html">Lights and strobes</a></li><li><a href="speakers.html">Speakers</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Control and facility</span></nav>
+<details class="mobile-toc"><summary>Control and facility: pages</summary><p class="toc-title">Control and facility</p><nav aria-label="Control and facility pages"><ol><li><a href="index.html" aria-current="page" class="current">Control and facility</a></li><li><a href="control-interface.html">Control Interface</a></li><li><a href="plc.html">PLC</a></li><li><a href="display-panels.html">Display Panels</a></li><li><a href="lights-and-sirens.html">Lights and strobes</a></li><li><a href="speakers.html">Speakers</a></li></ol></nav></details>
+<h1>Control and facility</h1>
+<p class="lead">The blocks that connect a network to the world around it - redstone in and out, PLCs, screens, lights, alarms and sound.</p>
+
+<div class="page-body">
+<p>The blocks in this section let a network do things in the world and react to it. Most of them are devices on a network that you drive from the <a href="../elcl/index.html">Terminal OS</a> with ELCL, but several also work on their own from plain redstone.</p>
+<div class="table-wrap"><table><thead><tr><th>Block</th><th>What it does</th><th>Needs a network?</th></tr></thead><tbody><tr><td><a class="item-link" href="../reference/items/control_interface.html"><img class="icon" src="../assets/icons/encodedlogistics/control_interface.png" alt="" width="20" height="20" loading="lazy">Control Interface</a></td><td>Six redstone channels, one per face, that ELCL reads and drives</td><td>Yes</td></tr><tr><td><a class="item-link" href="../reference/items/plc.html"><img class="icon" src="../assets/icons/encodedlogistics/plc.png" alt="" width="20" height="20" loading="lazy">Programmable Logic Controller</a></td><td>Runs one ELCL program over and over, with its own redstone faces, sensor modules and green screens</td><td>No (it can join one)</td></tr><tr><td><a class="item-link" href="../reference/items/display_panel.html"><img class="icon" src="../assets/icons/encodedlogistics/display_panel.png" alt="" width="20" height="20" loading="lazy">Display Panel</a></td><td>Merges into wall screens that show text, gauges, graphs, tables and images; touching one fires an event</td><td>Yes</td></tr><tr><td><a href="lights-and-sirens.html#cage-lights">Cage Lights</a></td><td>Lamps in 16 colours, switched by redstone or the network</td><td>No</td></tr><tr><td><a href="lights-and-sirens.html#alarm-strobes">Alarm Strobes</a></td><td>Flashing beacons with six siren tones</td><td>No</td></tr><tr><td><a class="item-link" href="../reference/items/speaker.html"><img class="icon" src="../assets/icons/encodedlogistics/speaker.png" alt="" width="20" height="20" loading="lazy">Speaker</a></td><td>Plays audio files, notes and MIDI files (and, if the server allows it, web audio)</td><td>No</td></tr></tbody></table></div>
+<h2 id="reading-order">Reading order<a class="anchor" href="#reading-order" aria-label="Link to this section">#</a></h2>
+<ol><li><a href="control-interface.html">Control Interface</a>: the simplest way to get redstone into and out of ELCL.</li><li><a href="plc.html">Programmable Logic Controller</a>: a small controller that runs a program on its own, with or without a network.</li><li><a href="display-panels.html">Display Panels</a>: building screens and filling them.</li><li><a href="lights-and-sirens.html">Cage Lights and Alarm Strobes</a>: Cage Lights and Alarm Strobes.</li><li><a href="speakers.html">Speakers</a>: Speakers and where their audio comes from.</li></ol>
+<p>The ELCL side of all of these (the commands, triggers and example programs) is on <a href="../elcl/control-and-plcs.html">Redstone, PLCs and signals from ELCL</a> and the <a href="../elcl/commands/index.html">command reference</a>. Server owners will want <a href="../admin/folders.html">Folders on disk</a> (where audio and image files go) and <a href="../admin/performance.html">Performance and limits</a> (the limits on PLCs, screens and audio).</p>
+<h2 id="permissions-in-short">Permissions in short<a class="anchor" href="#permissions-in-short" aria-label="Link to this section">#</a></h2>
+<p>On a network with a <a href="../racks/security.html">Firewall</a>, opening these blocks' settings screens needs the Firewall's <strong>BUILD</strong> permission. So do the ELCL commands that drive redstone outputs, PLCs, lights, strobes and speakers; reading (<code>RTVRSIN</code>, a PLC's sensors) needs <strong>VIEW</strong>. The Display Panel commands need no permission (a screen's own configuration screen does). A block on no network is open to everyone, except a PLC when <a class="cfg" href="../reference/config.html#cfg-plc-plcOpenToAnyone"><code>plc.plcOpenToAnyone</code></a> is off.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="next" href="control-interface.html" rel="next"><span>Next</span>Control Interface</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

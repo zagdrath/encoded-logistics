@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hot and cold storage - Encoded Logistics</title>
+<meta name="description" content="What counts as a network&#x27;s storage, the order it fills and empties it in, priorities and access modes, and how items move to tape and back.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="index.html" aria-current="true" class="current">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="index.html" aria-current="true" class="current">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Storage">
+<p class="toc-title">Storage</p><nav aria-label="Storage pages"><ol><li><a href="index.html">Storage</a></li><li><a href="drives.html">Dies and drives</a></li><li><a href="drive-bay.html">Drive Bay</a></li><li><a href="hot-and-cold.html" aria-current="page" class="current">Hot and cold storage</a></li><li><a href="nas-san.html">NAS and SAN</a></li><li><a href="tapes.html">Tapes</a></li><li><a href="midrange-storage.html">Midrange storage</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Storage</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Hot and cold storage</span></nav>
+<details class="mobile-toc"><summary>Storage: pages</summary><p class="toc-title">Storage</p><nav aria-label="Storage pages"><ol><li><a href="index.html">Storage</a></li><li><a href="drives.html">Dies and drives</a></li><li><a href="drive-bay.html">Drive Bay</a></li><li><a href="hot-and-cold.html" aria-current="page" class="current">Hot and cold storage</a></li><li><a href="nas-san.html">NAS and SAN</a></li><li><a href="tapes.html">Tapes</a></li><li><a href="midrange-storage.html">Midrange storage</a></li></ol></nav></details>
+<h1>Hot and cold storage</h1>
+<p class="lead">What counts as a network's storage, the order it fills and empties it in, priorities and access modes, and how items move to tape and back.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#tiers">What's in each tier</a></li><li class="toc-l2"><a href="#priority">Priorities</a></li><li class="toc-l2"><a href="#access">Access modes</a></li><li class="toc-l2"><a href="#claims">Crafting jobs claim incoming items</a></li><li class="toc-l2"><a href="#archive">Cold storage: archive and recall</a></li><li class="toc-l2"><a href="#seeing-it-from-the-terminal-os">Seeing it from the Terminal OS</a></li></ol></nav></details>
+<div class="page-body">
+<p>Everything a network stores is in one of two tiers. <strong>Hot storage</strong> is what it can hand out at once. <strong>Cold storage</strong> is tape: cheap and huge, but an item on tape has to be brought back (recalled) before you can have it. Terminals show both together, so day to day you only notice the tiers when a recall takes a moment.</p>
+<h2 id="tiers">What's in each tier<a class="anchor" href="#tiers" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Tier</th><th>What it is</th><th>Holds</th></tr></thead><tbody><tr><td>Hot</td><td>Drives in online <a href="drive-bay.html">Drive Bays</a>, <a href="midrange-storage.html#disk-drive">Disk Drives</a>, <a href="nas-san.html">NAS and SAN</a> devices and Blade Enclosure Storage Blades; inventories faced by online Inventory Taps</td><td>Items, fluids and gases, each on drives (and taps) that take it</td></tr><tr><td>Cold</td><td><a href="tapes.html">LTO tapes</a> in online Tape Libraries; the Tape Reel on a <a href="midrange-storage.html#tape-drive">Tape Drive</a></td><td>Items only</td></tr></tbody></table></div>
+<p>Energy isn't storage: Energy Storage Drives are part of the network's energy pool (see <a href="../networks/power.html">Power</a>).</p>
+<p>An Inventory Tap (a cable part on a chest, tank or any other inventory) makes that inventory part of hot storage, with its own priority, access mode and filter. It's covered on <a href="../networks/cable-parts.html">Cable parts</a>.</p>
+<h2 id="priority">Priorities<a class="anchor" href="#priority" aria-label="Link to this section">#</a></h2>
+<p>Every place in hot storage has a <strong>priority</strong>. Higher priority is filled first and emptied last:</p>
+<ul><li><strong>Putting in:</strong> highest priority first. On a tie, drives before Inventory Taps, and within a priority the places that already hold that item before the rest. So a stack goes onto the drive that already has some, rather than adding a new type to another drive.</li><li><strong>Taking out:</strong> lowest priority first. On a tie, taps before drives.</li><li><strong>Shared storage</strong>, another segment's storage reached through a router's Share route, comes after all of the network's own, both ways (see <a href="../networking/routers.html">Routers</a>).</li></ul>
+<p>Where you set it:</p>
+<div class="table-wrap"><table><thead><tr><th>Holder</th><th>Priority</th></tr></thead><tbody><tr><td>Drive Bay, Disk Drive</td><td>Always 0</td></tr><tr><td>NAS, SAN, Blade Enclosure storage</td><td>-999 to 999, in the device's panel (Shift steps by 10). A SAN adds +1 for each uplink transceiver beyond the first</td></tr><tr><td>Inventory Tap</td><td>-999 to 999, in its screen</td></tr></tbody></table></div>
+<p>A typical use: give a NAS of big drives priority 10 so bulk goes there first, and an Inventory Tap on a furnace's output chest priority -10 so it's emptied first and filled only when everything else is full.</p>
+<h2 id="access">Access modes<a class="anchor" href="#access" aria-label="Link to this section">#</a></h2>
+<p>NAS, SAN and Blade Enclosure storage, and Inventory Taps, also have an <strong>access mode</strong>:</p>
+<div class="table-wrap"><table><thead><tr><th>Mode</th><th>The network may</th></tr></thead><tbody><tr><td>Read-write (default)</td><td>Put in and take out</td></tr><tr><td>Read-only</td><td>Only take out: nothing new goes in</td></tr><tr><td>Write-only</td><td>Only put in: nothing comes out (a drop-off)</td></tr></tbody></table></div>
+<p>Drive Bays and Disk Drives are always read-write.</p>
+<h2 id="claims">Crafting jobs claim incoming items<a class="anchor" href="#claims" aria-label="Link to this section">#</a></h2>
+<p>While a crafting job waits for an output (a Gateway's machine finishing, say), whatever arrives that it's waiting for goes to the job instead of into storage, by whatever path it comes in: the Gateway, an Ingress Port, an Inventory Tap, a terminal. See <a href="../crafting/jobs.html">Crafting jobs</a>.</p>
+<h2 id="archive">Cold storage: archive and recall<a class="anchor" href="#archive" aria-label="Link to this section">#</a></h2>
+<p>The network keeps track of when each item type on its item drives was last put in or taken out. A Tape Library (or a Midrange Tape Drive) on the network uses that to <strong>archive</strong>: it moves item types nobody has touched for a while from the drives onto tape, freeing the drives for what's in use. By default it does so only while the item drives are more than <a class="cfg" href="../reference/config.html#cfg-rack-tapeDefaultHotPercent"><code>rack.tapeDefaultHotPercent</code></a> (default 80) % full, and only for types untouched for <a class="cfg" href="../reference/config.html#cfg-rack-tapeDefaultAgeHours"><code>rack.tapeDefaultAgeHours</code></a> (default 2) hours. Only item drives are archived: taps' inventories, fluids and gases stay where they are.</p>
+<p>A <strong>recall</strong> brings items back. It starts when:</p>
+<ul><li>you take more of an item than is hot, from a terminal, the Terminal Desk or a script: you get what's hot now, and the rest is recalled and can be taken once it's back. The terminal shows the item as on tape, with the time a recall will take;</li><li>a crafting job needs it: the planner counts what's on tape as stored, and starting the job starts the recalls (see <a href="../crafting/jobs.html#plan">the plan screen</a>);</li><li>the item is pinned to stay hot, or <a class="cmd" href="../elcl/commands/CHGITMTIER.html"><code>CHGITMTIER</code></a> sets it to <code>*HOT</code>.</li></ul>
+<p>If hot storage fills up during a recall, what didn't fit stays on tape and the item is marked "hot storage full".</p>
+<p>The archive policy (age, trigger, keep-hot and pinned lists), timings and <a class="cmd" href="../elcl/commands/CHGITMTIER.html"><code>CHGITMTIER</code></a> are on <a href="tapes.html">LTO tapes and Tape Libraries</a>.</p>
+<h2 id="seeing-it-from-the-terminal-os">Seeing it from the Terminal OS<a class="anchor" href="#seeing-it-from-the-terminal-os" aria-label="Link to this section">#</a></h2>
+<p><a class="cmd" href="../elcl/commands/WRKINV.html"><code>WRKINV</code></a> lists the network's items, fluids and gases with a Location column (Hot, Cold, or Hot+Cold), and <a class="cmd" href="../elcl/commands/RTVSTGSTS.html"><code>RTVSTGSTS</code></a> gives a script how full the hot or cold tier is (<code>TIER(*HOT)</code>, <code>TIER(*COLD)</code> or <code>*ALL</code>). See <a href="../elcl/screens.html">Screens</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="drive-bay.html" rel="prev"><span>Previous</span>Drive Bay</a><a class="next" href="nas-san.html" rel="next"><span>Next</span>NAS and SAN</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

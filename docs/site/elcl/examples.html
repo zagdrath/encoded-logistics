@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Worked examples - Encoded Logistics</title>
+<meta name="description" content="The sample programs shipped in ELSYS, explained line by line, and short programs for common jobs you can copy.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html" aria-current="page" class="current">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Worked examples</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html" aria-current="page" class="current">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav></details>
+<h1>Worked examples</h1>
+<p class="lead">The sample programs shipped in ELSYS, explained line by line, and short programs for common jobs you can copy.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#ex-restock">RESTOCK: keep an item stocked</a></li><li class="toc-l2"><a href="#ex-sortdemo">SORTDEMO: a language tour</a></li><li class="toc-l2"><a href="#ex-upsalert">UPSALERT: a trigger program</a></li><li class="toc-l2"><a href="#ex-nocwall">NOCWALL: a long-running batch job</a></li><li class="toc-l2"><a href="#ex-archive">ARCHIVE: move items to tape</a></li><li class="toc-l2"><a href="#ex-stockall">Keep several items stocked</a></li><li class="toc-l2"><a href="#ex-stgalarm">Storage alarm on a Cage Light and an Alarm Strobe</a></li><li class="toc-l2"><a href="#ex-nightly">A nightly report on the Line Printer</a></li><li class="toc-l2"><a href="#ex-devwatch">React to a device going offline</a></li><li class="toc-l2"><a href="#ex-dashboard">A Display Panel dashboard</a></li><li class="toc-l2"><a href="#ex-plc">A PLC reading its sensors</a></li><li class="toc-l2"><a href="#ex-stall">Report stalled crafting jobs</a></li></ol></nav></details>
+<div class="page-body">
+<p>The first five programs here ship with the mod: they are in the <code>ELSYS</code> library of every system, already compiled, so you can run them straight away or copy them into your own library to change them (WRKMBR option 3). The rest are short programs for common tasks; type them into a member of your own and compile it with <a class="cmd" href="commands/CRTELPGM.html"><code>CRTELPGM</code></a>. Every program on this page is compiled by the mod's own compiler when the documentation is built.</p>
+<p>Each one uses the language described in <a href="language.html">The ELCL language</a>, and the commands linked from it. For the sixth shipped example, which logs item counts to a database file (<code>ITEMSETUP</code>, <code>LOGITEMS</code> and the file <code>ITEMHIST</code>), see <a href="database-files.html#db-example">Database files</a>.</p>
+<h2 id="ex-restock">RESTOCK: keep an item stocked<a class="anchor" href="#ex-restock" aria-label="Link to this section">#</a></h2>
+<p>Crafts more of an item when the network holds fewer than you want.</p>
+<div class="code-block"><div class="code-title">RESTOCK.elclp</div><pre class="code elcl"><code><span class="c">/* RESTOCK - keep an item stocked by crafting more when low      */</span>
+<span class="c">/* Usage: CALL ELSYS/RESTOCK PARM(&#x27;IRON_INGOT&#x27; 500)              */</span>
+PGM PARM(&amp;ITEM &amp;MIN)
+  DCL VAR(&amp;ITEM)  TYPE(*CHAR) LEN(64)
+  DCL VAR(&amp;MIN)   TYPE(*INT)
+  DCL VAR(&amp;COUNT) TYPE(*INT)
+  DCL VAR(&amp;JOB)   TYPE(*CHAR) LEN(10)
+
+  RTVITMCNT ITEM(&amp;ITEM) RTNCOUNT(&amp;COUNT) NOTFND(*ZERO)
+
+  IF COND(&amp;COUNT *LT &amp;MIN) THEN(DO)
+    STRCRAFT ITEM(&amp;ITEM) QTY(&amp;MIN - &amp;COUNT) RTNCRFJOB(&amp;JOB)
+    MONMSG MSGID(ELC1400) EXEC(DO)
+      SNDMSG MSG(<span class="s">&#x27;RESTOCK: cannot craft&#x27;</span> *BCAT &amp;ITEM) TOUSR(*SYSOPR)
+      RETURN
+    ENDDO
+    SNDMSG MSG(<span class="s">&#x27;Restocking&#x27;</span> *BCAT &amp;ITEM *BCAT <span class="s">&#x27;job&#x27;</span> *BCAT &amp;JOB) +
+           TOUSR(*SYSOPR)
+  ENDDO
+ENDPGM</code></pre></div>
+<ul><li>Two parameters, both declared: <code>CALL ELSYS/RESTOCK PARM('IRON_INGOT' 500)</code>.</li><li><code>NOTFND(*ZERO)</code> makes <a class="cmd" href="commands/RTVITMCNT.html"><code>RTVITMCNT</code></a> return 0 instead of raising <a class="msg" href="messages.html#ELC1201"><code>ELC1201</code></a> for an item the network doesn't hold.</li><li><code>QTY(&amp;MIN - &amp;COUNT)</code>: parameters take expressions.</li><li>The command-level <code>MONMSG MSGID(ELC1400)</code> straight after <a class="cmd" href="commands/STRCRAFT.html"><code>STRCRAFT</code></a> catches every crafting error (<code>ELC1401</code> to <code>ELC1499</code>) from that command.</li><li><code>*BCAT</code> joins with one blank; the last <a class="cmd" href="commands/SNDMSG.html"><code>SNDMSG</code></a> is continued onto a second line with <code>+</code>.</li></ul>
+<p>Run it every five minutes with a <a href="jobs-and-scheduling.html#schedules">schedule entry</a>:</p>
+<div class="code-block"><pre class="code elcl"><code>ADDJOBSCDE JOB(RESTOCK) CMD(CALL PGM(ELSYS/RESTOCK) PARM(<span class="s">&#x27;IRON_INGOT&#x27;</span> 500)) +
+           FRQ(*INTERVAL) INTERVAL(300)</code></pre></div>
+<h2 id="ex-sortdemo">SORTDEMO: a language tour<a class="anchor" href="#ex-sortdemo" aria-label="Link to this section">#</a></h2>
+<p>Goes through every named device and prints the ones that aren't online.</p>
+<div class="code-block"><div class="code-title">SORTDEMO.elclp</div><pre class="code elcl"><code><span class="c">/* SORTDEMO - language tour: SELECT, DOFOR, SUBR, list ops       */</span>
+PGM
+  DCL VAR(&amp;DEVS) TYPE(*LIST)
+  DCL VAR(&amp;DEV)  TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;STS)  TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;TYP)  TYPE(*CHAR) LEN(16)
+  DCL VAR(&amp;I)    TYPE(*INT)
+  DCL VAR(&amp;BAD)  TYPE(*INT)  VALUE(0)
+
+  RTVDEVLST RTNLST(&amp;DEVS)
+  DOFOR VAR(&amp;I) FROM(1) TO(%SIZE(&amp;DEVS))
+    CHGVAR VAR(&amp;DEV) VALUE(%ELEM(&amp;DEVS &amp;I))
+    RTVDEVSTS DEV(&amp;DEV) RTNSTS(&amp;STS) RTNTYPE(&amp;TYP)
+    SELECT
+      WHEN COND(&amp;STS *EQ <span class="s">&#x27;*ONLINE&#x27;</span>)  THEN(ITERATE)
+      WHEN COND(&amp;STS *EQ <span class="s">&#x27;*FAULT&#x27;</span>)   THEN(CALLSUBR SUBR(REPORT))
+      OTHERWISE CMD(PRTTXT TEXT(&amp;DEV *BCAT <span class="s">&#x27;is&#x27;</span> *BCAT &amp;STS))
+    ENDSELECT
+  ENDDO
+
+  PRTTXT TEXT(%CHAR(&amp;BAD) *BCAT <span class="s">&#x27;device(s) in fault&#x27;</span>)
+  PRTRPT RPT(*SPLF)
+  RETURN
+
+  SUBR SUBR(REPORT)
+    CHGVAR VAR(&amp;BAD) VALUE(&amp;BAD + 1)
+    PRTTXT TEXT(<span class="s">&#x27;FAULT:&#x27;</span> *BCAT &amp;DEV *BCAT <span class="s">&#x27;(&#x27;</span> *TCAT %TRIM(&amp;TYP) *TCAT <span class="s">&#x27;)&#x27;</span>)
+  ENDSUBR
+ENDPGM</code></pre></div>
+<ul><li><code>DOFOR</code> runs to <code>%SIZE(&amp;DEVS)</code>, and <code>%ELEM</code> picks each element in turn.</li><li><code>THEN(ITERATE)</code> inside the <code>SELECT</code> goes on to the next pass of the <code>DOFOR</code> around it.</li><li>The subroutine shares <code>&amp;BAD</code> and <code>&amp;DEV</code> with the main body. The main body ends where the first <code>SUBR</code> begins, so the <code>RETURN</code> before it only makes that plain.</li><li><a class="cmd" href="commands/PRTTXT.html"><code>PRTTXT</code></a> writes lines to the job's spooled file, and <code>PRTRPT RPT(*SPLF)</code> prints it on the <a class="item-link" href="../reference/items/line_printer.html"><img class="icon" src="../assets/icons/encodedlogistics/line_printer.png" alt="" width="20" height="20" loading="lazy">Line Printer</a>. With no printer on the network that last step fails with <a class="msg" href="messages.html#ELC1301"><code>ELC1301</code></a> (not monitored, so the program ends there); the spooled file is still in Work with Output.</li></ul>
+<h2 id="ex-upsalert">UPSALERT: a trigger program<a class="anchor" href="#ex-upsalert" aria-label="Link to this section">#</a></h2>
+<p>Sheds load when the network goes onto UPS power.</p>
+<div class="code-block"><div class="code-title">UPSALERT.elclp</div><pre class="code elcl"><code><span class="c">/* UPSALERT - on switch to UPS power, shed non-essential load    */</span>
+<span class="c">/* Install: ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) +             */</span>
+<span class="c">/*            PGM(ELSYS/UPSALERT)                                 */</span>
+PGM PARM(&amp;EVENT &amp;DATA)
+  DCL VAR(&amp;EVENT) TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;DATA)  TYPE(*CHAR) LEN(256)
+  DCL VAR(&amp;DEVS)  TYPE(*LIST)
+  DCL VAR(&amp;DEV)   TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;CHG)   TYPE(*DEC)  LEN(5 1)
+
+  MONMSG MSGID(ELC1300)    <span class="c">/* ignore device errors, keep going */</span>
+
+  RTVPWRSTS RTNCHG(&amp;CHG)
+  SNDMSG MSG(<span class="s">&#x27;Running on UPS, charge&#x27;</span> *BCAT %CHAR(&amp;CHG) *TCAT <span class="s">&#x27;%&#x27;</span>) +
+         TOUSR(*ALL)
+
+  <span class="c">/* Disable every Deployer and Collector Plane */</span>
+  RTVDEVLST TYPE(DEPLOYER) RTNLST(&amp;DEVS)
+  FOREACH VAR(&amp;DEV) IN(&amp;DEVS)
+    CHGDEVSTS DEV(&amp;DEV) STATUS(*DISABLE)
+  ENDFOR
+  RTVDEVLST TYPE(COLLECTOR) RTNLST(&amp;DEVS)
+  FOREACH VAR(&amp;DEV) IN(&amp;DEVS)
+    CHGDEVSTS DEV(&amp;DEV) STATUS(*DISABLE)
+  ENDFOR
+
+  CHGRSOUT DEV(CTLIF01) SIDE(*ALL) LVL(15)   <span class="c">/* alarm lamp on */</span>
+ENDPGM</code></pre></div>
+<ul><li>A trigger program takes two parameters, <code>&amp;EVENT</code> and <code>&amp;DATA</code>; see <a href="jobs-and-scheduling.html#triggers">trigger events</a>. Install it with <code>ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) PGM(ELSYS/UPSALERT)</code>.</li><li><code>&amp;EVENT</code> is declared <code>LEN(10)</code> here, which holds <code>*PWRUPS</code>. For a program that handles any event, declare it <code>LEN(12)</code>: the longest event name, <code>*SUPFAILOVER</code>, has 12 characters, and a shorter variable cuts it.</li><li>The program-level <code>MONMSG MSGID(ELC1300)</code> (straight after the <code>DCL</code>s) ignores every device error for the whole program, so one device it can't switch off doesn't stop the rest.</li><li><code>FOREACH</code> ... <code>ENDFOR</code> walks a list. <code>CHGRSOUT SIDE(*ALL) LVL(15)</code> powers every face of the <a class="item-link" href="../reference/items/control_interface.html"><img class="icon" src="../assets/icons/encodedlogistics/control_interface.png" alt="" width="20" height="20" loading="lazy">Control Interface</a> named <code>CTLIF01</code>: put a lamp or an Alarm Strobe on it.</li></ul>
+<h2 id="ex-nocwall">NOCWALL: a long-running batch job<a class="anchor" href="#ex-nocwall" aria-label="Link to this section">#</a></h2>
+<p>Keeps three lines of status on a Display Panel screen, refreshed every 30 seconds.</p>
+<div class="code-block"><div class="code-title">NOCWALL.elclp</div><pre class="code elcl"><code><span class="c">/* NOCWALL - refresh a status display every 30 seconds           */</span>
+<span class="c">/* Submit: SBMJOB CMD(CALL PGM(ELSYS/NOCWALL)) JOB(NOCWALL)      */</span>
+PGM
+  DCL VAR(&amp;USED)  TYPE(*INT)
+  DCL VAR(&amp;TOTAL) TYPE(*INT)
+  DCL VAR(&amp;PCT)   TYPE(*DEC) LEN(5 1)
+  DCL VAR(&amp;LUSED) TYPE(*INT)
+  DCL VAR(&amp;LTOT)  TYPE(*INT)
+  DCL VAR(&amp;SRC)   TYPE(*CHAR) LEN(10)
+
+  MONMSG MSGID(ELC1301) EXEC(RETURN)   <span class="c">/* display removed: stop */</span>
+
+  DOWHILE COND(*TRUE)
+    RTVSTGSTS RTNUSED(&amp;USED) RTNTOTAL(&amp;TOTAL) RTNPCT(&amp;PCT)
+    RTVLANES  RTNUSED(&amp;LUSED) RTNTOTAL(&amp;LTOT)
+    RTVPWRSTS RTNSRC(&amp;SRC)
+
+    SNDDSPTXT DEV(NOCDSP01) TEXT(<span class="s">&#x27;STORAGE&#x27;</span> *BCAT %CHAR(&amp;PCT) *TCAT <span class="s">&#x27;%&#x27;</span>) +
+              LINE(1) CLEAR(*YES)
+    SNDDSPTXT DEV(NOCDSP01) TEXT(<span class="s">&#x27;LANES  &#x27;</span> *BCAT %CHAR(&amp;LUSED) *TCAT <span class="s">&#x27;/&#x27;</span> +
+              *TCAT %CHAR(&amp;LTOT)) LINE(2)
+    SNDDSPTXT DEV(NOCDSP01) TEXT(<span class="s">&#x27;POWER  &#x27;</span> *BCAT &amp;SRC) LINE(3)
+
+    DLYJOB DLY(30)
+  ENDDO
+ENDPGM</code></pre></div>
+<ul><li><code>DOWHILE COND(*TRUE)</code> loops for ever; <code>DLYJOB DLY(30)</code> waits 30 seconds without using the job's budget. The job shows <code>*WAIT</code> on Work with Active Jobs for most of its life.</li><li>The program-level <code>MONMSG ... EXEC(RETURN)</code> ends the job cleanly when the display is removed.</li><li>Run it as a batch job: <code>SBMJOB CMD(CALL PGM(ELSYS/NOCWALL)) JOB(NOCWALL)</code> (<a class="cmd" href="commands/SBMJOB.html"><code>SBMJOB</code></a>'s <code>CMD</code> takes a nested command). It runs until you end it with <code>ENDJOB JOB(NOCWALL)</code> or its job host goes down.</li><li>Name a <a class="item-link" href="../reference/items/display_panel.html"><img class="icon" src="../assets/icons/encodedlogistics/display_panel.png" alt="" width="20" height="20" loading="lazy">Display Panel</a> screen <code>NOCDSP01</code> first (<code>RNMDEV DEV(DSP01) NEWNAME(NOCDSP01)</code>, or its configuration screen). With no display of that name the first <a class="cmd" href="commands/SNDDSPTXT.html"><code>SNDDSPTXT</code></a> raises <a class="msg" href="messages.html#ELC1301"><code>ELC1301</code></a> and the monitor ends the job at once.</li></ul>
+<h2 id="ex-archive">ARCHIVE: move items to tape<a class="anchor" href="#ex-archive" aria-label="Link to this section">#</a></h2>
+<p>Sends every hot item that matches a filter to tape.</p>
+<div class="code-block"><div class="code-title">ARCHIVE.elclp</div><pre class="code elcl"><code><span class="c">/* ARCHIVE - push every matching item to tape and report         */</span>
+<span class="c">/* Usage: CALL ELSYS/ARCHIVE PARM(&#x27;*_ORE&#x27;)                       */</span>
+PGM PARM(&amp;FILTER)
+  DCL VAR(&amp;FILTER) TYPE(*CHAR) LEN(64)
+  DCL VAR(&amp;ITEMS)  TYPE(*LIST)
+  DCL VAR(&amp;ITEM)   TYPE(*CHAR) LEN(64)
+  DCL VAR(&amp;N)      TYPE(*INT)  VALUE(0)
+
+  RTVDEVLST TYPE(TAPELIB) RTNLST(&amp;ITEMS)
+  IF COND(%SIZE(&amp;ITEMS) *EQ 0) THEN( +
+    SNDPGMMSG MSG(<span class="s">&#x27;ARCHIVE needs a Tape Library&#x27;</span>) MSGTYPE(*ESCAPE))
+
+  RTVITMLST FILTER(&amp;FILTER) TIER(*HOT) RTNLST(&amp;ITEMS)
+  FOREACH VAR(&amp;ITEM) IN(&amp;ITEMS)
+    CHGITMTIER ITEM(&amp;ITEM) TIER(*COLD)
+    CHGVAR VAR(&amp;N) VALUE(&amp;N + 1)
+  ENDFOR
+
+  PRTTXT TEXT(<span class="s">&#x27;Archived&#x27;</span> *BCAT %CHAR(&amp;N) *BCAT <span class="s">&#x27;item types matching&#x27;</span> +
+         *BCAT &amp;FILTER)
+  SNDMSG MSG(<span class="s">&#x27;ARCHIVE complete:&#x27;</span> *BCAT %CHAR(&amp;N) *BCAT <span class="s">&#x27;types&#x27;</span>) +
+         TOUSR(*REQUESTER)
+ENDPGM</code></pre></div>
+<ul><li><code>CALL ELSYS/ARCHIVE PARM('*_ORE')</code>. <a class="cmd" href="commands/RTVITMLST.html"><code>RTVITMLST</code></a>'s <code>FILTER()</code> takes text with <code>*</code> wildcards, or a <code>#tag</code>.</li><li><code>SNDPGMMSG ... MSGTYPE(*ESCAPE)</code> ends the program with an escape message of its own (<code>USR0001</code>) when the network has no Tape Library.</li><li>The nested command in <code>THEN( + ...)</code> is continued onto the next line.</li><li><a class="cmd" href="commands/CHGITMTIER.html"><code>CHGITMTIER</code></a> <code>TIER(*COLD)</code> puts the item on the Tape Libraries' archive list; see <a href="../storage/hot-and-cold.html">Hot and cold storage</a>.</li></ul>
+<h2 id="ex-stockall">Keep several items stocked<a class="anchor" href="#ex-stockall" aria-label="Link to this section">#</a></h2>
+<p>RESTOCK for a whole list. Each entry is an item and the count to keep, separated by a blank.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* STOCKALL - keep every item on the list stocked                  */</span>
+<span class="c">/* Run it every 10 minutes:                                         */</span>
+<span class="c">/*   ADDJOBSCDE JOB(STOCKALL) CMD(CALL PGM(ZAGLIB/STOCKALL)) +      */</span>
+<span class="c">/*              FRQ(*INTERVAL) INTERVAL(600)                        */</span>
+PGM
+  DCL VAR(&amp;WANT)  TYPE(*LIST)
+  DCL VAR(&amp;LINE)  TYPE(*CHAR) LEN(80)
+  DCL VAR(&amp;ITEM)  TYPE(*CHAR) LEN(64)
+  DCL VAR(&amp;AT)    TYPE(*INT)
+  DCL VAR(&amp;MIN)   TYPE(*INT)
+  DCL VAR(&amp;COUNT) TYPE(*INT)
+  DCL VAR(&amp;JOB)   TYPE(*CHAR) LEN(10)
+
+  ADDLSTE LIST(&amp;WANT) VALUE(<span class="s">&#x27;IRON_INGOT 512&#x27;</span>)
+  ADDLSTE LIST(&amp;WANT) VALUE(<span class="s">&#x27;COPPER_INGOT 256&#x27;</span>)
+  ADDLSTE LIST(&amp;WANT) VALUE(<span class="s">&#x27;encodedlogistics:logic_die 64&#x27;</span>)
+
+  FOREACH VAR(&amp;LINE) IN(&amp;WANT)
+    CHGVAR VAR(&amp;AT)   VALUE(%SCAN(<span class="s">&#x27; &#x27;</span> &amp;LINE))
+    CHGVAR VAR(&amp;ITEM) VALUE(%SST(&amp;LINE 1 &amp;AT - 1))
+    CHGVAR VAR(&amp;MIN)  VALUE(%INT(%SST(&amp;LINE &amp;AT + 1 %LEN(&amp;LINE) - &amp;AT)))
+
+    RTVITMCNT ITEM(&amp;ITEM) RTNCOUNT(&amp;COUNT) NOTFND(*ZERO)
+    IF COND(&amp;COUNT *GE &amp;MIN) THEN(ITERATE)
+
+    STRCRAFT ITEM(&amp;ITEM) QTY(&amp;MIN - &amp;COUNT) WAIT(*YES) RTNCRFJOB(&amp;JOB)
+    MONMSG MSGID(ELC1400) EXEC(DO)
+      SNDMSG MSG(<span class="s">&#x27;STOCKALL: cannot craft&#x27;</span> *BCAT &amp;ITEM) TOUSR(*SYSOPR)
+      ITERATE
+    ENDDO
+    PRTTXT TEXT(<span class="s">&#x27;Crafted&#x27;</span> *BCAT %CHAR(&amp;MIN - &amp;COUNT) *BCAT %TRIM(&amp;ITEM) +
+           *BCAT <span class="s">&#x27;in job&#x27;</span> *BCAT &amp;JOB)
+  ENDFOR
+ENDPGM</code></pre></div>
+<ul><li><code>%SCAN</code> finds the blank, <code>%SST</code> cuts the line in two and <code>%INT</code> turns the count into a number.</li><li><code>WAIT(*YES)</code> makes each craft finish before the next item is looked at, so a run never starts a second job for an item whose first is still crafting. Waiting costs the job no budget.</li><li><code>ITERATE</code> inside the <code>MONMSG</code>'s <code>DO</code> group goes on to the next item.</li></ul>
+<h2 id="ex-stgalarm">Storage alarm on a Cage Light and an Alarm Strobe<a class="anchor" href="#ex-stgalarm" aria-label="Link to this section">#</a></h2>
+<p>Turns on a red light above 80% storage use and the strobe above 95%, and turns them off again once there's room.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* STGALARM - storage alarms: LGT01 above 80%, SRN01 above 95%       */</span>
+<span class="c">/* Submit: SBMJOB CMD(CALL PGM(ZAGLIB/STGALARM)) JOB(STGALARM)        */</span>
+PGM
+  DCL VAR(&amp;PCT)   TYPE(*DEC) LEN(5 1)
+  DCL VAR(&amp;LIGHT) TYPE(*LGL)
+  DCL VAR(&amp;SIREN) TYPE(*LGL)
+
+  DOWHILE COND(*TRUE)
+    RTVSTGSTS RTNPCT(&amp;PCT)
+
+    IF COND(&amp;PCT *GE 80 *AND *NOT &amp;LIGHT) THEN(DO)
+      CHGLGT DEV(LGT01) STATUS(*ON) LVL(15)
+      CHGVAR &amp;LIGHT <span class="s">&#x27;1&#x27;</span>
+    ENDDO
+    ELSE CMD(IF COND(&amp;PCT *LT 75 *AND &amp;LIGHT) THEN(DO))
+      CHGLGT DEV(LGT01) STATUS(*OFF)
+      CHGVAR &amp;LIGHT <span class="s">&#x27;0&#x27;</span>
+    ENDDO
+
+    IF COND(&amp;PCT *GE 95 *AND *NOT &amp;SIREN) THEN(DO)
+      STRSRN DEV(SRN01) SOUND(*KLAXON) MODE(*FAST)
+      SNDMSG MSG(<span class="s">&#x27;Storage&#x27;</span> *BCAT %CHAR(&amp;PCT) *TCAT <span class="s">&#x27;% full&#x27;</span>) TOUSR(*SYSOPR)
+      CHGVAR &amp;SIREN <span class="s">&#x27;1&#x27;</span>
+    ENDDO
+    ELSE CMD(IF COND(&amp;PCT *LT 90 *AND &amp;SIREN) THEN(DO))
+      ENDSRN DEV(SRN01)
+      CHGVAR &amp;SIREN <span class="s">&#x27;0&#x27;</span>
+    ENDDO
+
+    DLYJOB DLY(60)
+  ENDDO
+ENDPGM</code></pre></div>
+<ul><li><code>&amp;LIGHT</code> and <code>&amp;SIREN</code> remember what the program last did, so it only sends a command when something changes, and the gap between the on and off levels (80 / 75, 95 / 90) stops the alarm flickering at the edge.</li><li><code>ELSE CMD(IF ... THEN(DO))</code> is an "else if": the <code>DO</code> group belongs to the nested <code>IF</code>.</li><li>Set the <a class="item-link" href="../reference/items/cage_light_red.html"><img class="icon" src="../assets/icons/encodedlogistics/cage_light_red.png" alt="" width="20" height="20" loading="lazy">Red Cage Light</a>'s Control to <em>Network only</em> (or <em>Redstone</em>, where the network's state adds to the signal), and the <a class="item-link" href="../reference/items/siren_red.html"><img class="icon" src="../assets/icons/encodedlogistics/siren_red.png" alt="" width="20" height="20" loading="lazy">Red Alarm Strobe</a>'s trigger to <em>Network</em> or <em>Both</em>: an Alarm Strobe on <em>Redstone</em> takes no network commands (<a class="msg" href="messages.html#ELC2408"><code>ELC2408</code></a>). See <a href="../control/lights-and-sirens.html">Cage Lights and Alarm Strobes</a>.</li></ul>
+<h2 id="ex-nightly">A nightly report on the Line Printer<a class="anchor" href="#ex-nightly" aria-label="Link to this section">#</a></h2>
+<p>Writes a short report to a spooled file every night and prints it, with the inventory report after it.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* NIGHTRPT - the night&#x27;s report, printed on the Line Printer       */</span>
+PGM
+  DCL VAR(&amp;PCT)    TYPE(*DEC) LEN(5 1)
+  DCL VAR(&amp;USED)   TYPE(*INT)
+  DCL VAR(&amp;TOTAL)  TYPE(*INT)
+  DCL VAR(&amp;DEVS)   TYPE(*LIST)
+  DCL VAR(&amp;DEV)    TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;FAILED) TYPE(*LIST)
+
+  RTVSTGSTS RTNPCT(&amp;PCT)
+  RTVLANES RTNUSED(&amp;USED) RTNTOTAL(&amp;TOTAL)
+  PRTTXT TEXT(<span class="s">&#x27;NIGHTLY REPORT&#x27;</span>) SPLF(NIGHTLY)
+  PRTTXT TEXT(<span class="s">&#x27;Storage used &#x27;</span> *BCAT %CHAR(&amp;PCT) *TCAT <span class="s">&#x27;%&#x27;</span>) SPLF(NIGHTLY)
+  PRTTXT TEXT(<span class="s">&#x27;Lanes in use &#x27;</span> *BCAT %CHAR(&amp;USED) *TCAT <span class="s">&#x27;/&#x27;</span> *TCAT %CHAR(&amp;TOTAL)) +
+         SPLF(NIGHTLY)
+
+  RTVDEVLST STATUS(*FAULT) RTNLST(&amp;DEVS)
+  PRTTXT TEXT(<span class="s">&#x27;Devices in fault:&#x27;</span> *BCAT %CHAR(%SIZE(&amp;DEVS))) SPLF(NIGHTLY)
+  FOREACH VAR(&amp;DEV) IN(&amp;DEVS)
+    PRTTXT TEXT(<span class="s">&#x27;  &#x27;</span> *CAT &amp;DEV) SPLF(NIGHTLY)
+  ENDFOR
+
+  RTVCRFLOG STATUS(*FAILED) RTNLST(&amp;FAILED)
+  PRTTXT TEXT(<span class="s">&#x27;Failed crafting jobs kept:&#x27;</span> *BCAT %CHAR(%SIZE(&amp;FAILED))) SPLF(NIGHTLY)
+
+  PRTRPT RPT(*SPLF) SPLF(NIGHTLY)
+  MONMSG MSGID(ELC1300) EXEC(DO)      <span class="c">/* no printer, offline, out of paper */</span>
+    SNDMSG MSG(<span class="s">&#x27;NIGHTRPT: not printed, see Work with Output&#x27;</span>) TOUSR(*SYSOPR)
+    RETURN
+  ENDDO
+  PRTRPT RPT(*INV)
+ENDPGM</code></pre></div>
+<p>Schedule it for two in the morning on the game clock:</p>
+<div class="code-block"><pre class="code elcl"><code>ADDJOBSCDE JOB(NIGHTRPT) CMD(CALL PGM(ZAGLIB/NIGHTRPT)) FRQ(*DAILY) TIME(0200)</code></pre></div>
+<ul><li><code>SPLF(NIGHTLY)</code> collects the lines in one spooled file of the job, which <code>PRTRPT RPT(*SPLF) SPLF(NIGHTLY)</code> prints. The spooled file stays in Work with Output whether it printed or not.</li><li><code>PRTRPT RPT(*INV)</code> prints every item with its hot and cold counts. Both go to the first online <a class="item-link" href="../reference/items/line_printer.html"><img class="icon" src="../assets/icons/encodedlogistics/line_printer.png" alt="" width="20" height="20" loading="lazy">Line Printer</a> (<code>DEV(*DFT)</code>); see <a href="jobs-and-scheduling.html#printing">Printing</a>.</li></ul>
+<h2 id="ex-devwatch">React to a device going offline<a class="anchor" href="#ex-devwatch" aria-label="Link to this section">#</a></h2>
+<p>One trigger program for three events: it reports a device that goes offline or into fault, sounds the strobe, and stops it once every device is back.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* DEVWATCH - devices going offline or into fault                   */</span>
+<span class="c">/* Install:                                                          */</span>
+<span class="c">/*   ADDTRGEVT TRG(DEVOFF) EVENT(*DEVOFFLINE) PGM(ZAGLIB/DEVWATCH)   */</span>
+<span class="c">/*   ADDTRGEVT TRG(DEVFLT) EVENT(*DEVFAULT)   PGM(ZAGLIB/DEVWATCH)   */</span>
+<span class="c">/*   ADDTRGEVT TRG(DEVON)  EVENT(*DEVONLINE)  PGM(ZAGLIB/DEVWATCH)   */</span>
+PGM PARM(&amp;EVENT &amp;DATA)
+  DCL VAR(&amp;EVENT) TYPE(*CHAR) LEN(12)
+  DCL VAR(&amp;DATA)  TYPE(*CHAR) LEN(256)
+  DCL VAR(&amp;DEV)   TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;TYPE)  TYPE(*CHAR) LEN(16)
+  DCL VAR(&amp;DOWN)  TYPE(*LIST)
+  DCL VAR(&amp;FAULT) TYPE(*LIST)
+
+  MONMSG MSGID(ELC1300 ELC2400)    <span class="c">/* the strobe missing or busy: carry on */</span>
+
+  CHGVAR VAR(&amp;DEV) VALUE(%TRIM(&amp;DATA))
+
+  IF COND(&amp;EVENT *EQ <span class="s">&#x27;*DEVONLINE&#x27;</span>) THEN(DO)
+    RTVDEVLST STATUS(*OFFLINE) RTNLST(&amp;DOWN)
+    RTVDEVLST STATUS(*FAULT) RTNLST(&amp;FAULT)
+    IF COND(%SIZE(&amp;DOWN) + %SIZE(&amp;FAULT) *EQ 0) THEN(ENDSRN DEV(SRN01))
+    RETURN
+  ENDDO
+
+  RTVDEVSTS DEV(&amp;DEV) RTNTYPE(&amp;TYPE)
+  SNDMSG MSG(&amp;DEV *BCAT <span class="s">&#x27;(&#x27;</span> *TCAT %TRIM(&amp;TYPE) *TCAT <span class="s">&#x27;) is&#x27;</span> +
+         *BCAT %SST(&amp;EVENT 5 8)) TOUSR(*SYSOPR)
+  STRSRN DEV(SRN01) SOUND(*BELL) MODE(*SLOW)
+ENDPGM</code></pre></div>
+<ul><li><code>&amp;EVENT</code> is <code>LEN(12)</code> so that every event name fits whole; <code>%SST(&amp;EVENT 5 8)</code> turns <code>*DEVOFFLINE</code> into <code>OFFLINE</code>.</li><li><code>&amp;DATA</code> is the device's name for these three events. The other events' <code>&amp;DATA</code> is in the <a href="jobs-and-scheduling.html#triggers">trigger table</a>.</li><li>Each firing is a batch job, so the network needs a job host (a <a class="item-link" href="../reference/items/compute_server.html"><img class="icon" src="../assets/icons/encodedlogistics/compute_server.png" alt="" width="20" height="20" loading="lazy">Compute Server</a> or a Midrange System).</li><li>Triggers are edge-triggered and debounced: a device that flaps fires at most once a second for each trigger.</li></ul>
+<h2 id="ex-dashboard">A Display Panel dashboard<a class="anchor" href="#ex-dashboard" aria-label="Link to this section">#</a></h2>
+<p>Sets up a dashboard of three regions on a Display Panel screen and keeps its text up to date.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* DSPDASH - a dashboard on DSP01: storage gauge, energy graph, text */</span>
+<span class="c">/* Submit: SBMJOB CMD(CALL PGM(ZAGLIB/DSPDASH)) JOB(DSPDASH)          */</span>
+PGM
+  DCL VAR(&amp;W)     TYPE(*INT)
+  DCL VAR(&amp;H)     TYPE(*INT)
+  DCL VAR(&amp;HALF)  TYPE(*INT)
+  DCL VAR(&amp;USED)  TYPE(*INT)
+  DCL VAR(&amp;TOTAL) TYPE(*INT)
+  DCL VAR(&amp;SRC)   TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;BAD)   TYPE(*LIST)
+
+  MONMSG MSGID(ELC1301 ELC1302) EXEC(RETURN)   <span class="c">/* screen gone or off: stop */</span>
+
+  <span class="c">/* The layout: A the left half, B top right, C bottom right        */</span>
+  RTVDSPSIZ DEV(DSP01) RTNPXW(&amp;W) RTNPXH(&amp;H)
+  CHGVAR VAR(&amp;HALF) VALUE(&amp;W / 2)
+  CLRDSP DEV(DSP01)
+  CHGDSPRGN DEV(DSP01) RGN(A) X(0) Y(0) W(&amp;HALF) H(&amp;H)
+  CHGDSPRGN DEV(DSP01) RGN(B) X(&amp;HALF) Y(0) W(&amp;W - &amp;HALF) H(&amp;H / 2)
+  CHGDSPRGN DEV(DSP01) RGN(C) X(&amp;HALF) Y(&amp;H / 2) W(&amp;W - &amp;HALF) H(&amp;H - &amp;H / 2)
+  SNDDSPWDG DEV(DSP01) RGN(A) WDG(*STORAGE) COLOR(*GREEN)
+  SNDDSPGPH DEV(DSP01) RGN(B) STAT(*ENERGY) RANGE(*10M)
+  SNDDSPWDG DEV(DSP01) RGN(C) WDG(*TEXT)
+
+  <span class="c">/* The text lines, every 10 seconds                                 */</span>
+  DOWHILE COND(*TRUE)
+    RTVLANES RTNUSED(&amp;USED) RTNTOTAL(&amp;TOTAL)
+    RTVPWRSTS RTNSRC(&amp;SRC)
+    RTVDEVLST STATUS(*FAULT) RTNLST(&amp;BAD)
+    SNDDSPTXT DEV(DSP01) TEXT(<span class="s">&#x27;LANES&#x27;</span> *BCAT %CHAR(&amp;USED) *TCAT <span class="s">&#x27;/&#x27;</span> *TCAT +
+              %CHAR(&amp;TOTAL)) LINE(1) CLEAR(*YES)
+    SNDDSPTXT DEV(DSP01) TEXT(<span class="s">&#x27;POWER&#x27;</span> *BCAT &amp;SRC) LINE(2)
+    IF COND(%SIZE(&amp;BAD) *GT 0) THEN( +
+      SNDDSPTXT DEV(DSP01) TEXT(<span class="s">&#x27;FAULTS&#x27;</span> *BCAT %CHAR(%SIZE(&amp;BAD))) LINE(3) COLOR(*RED))
+    ELSE CMD(SNDDSPTXT DEV(DSP01) TEXT(<span class="s">&#x27;NO FAULTS&#x27;</span>) LINE(3) COLOR(*GREEN))
+    DLYJOB DLY(10)
+  ENDDO
+ENDPGM</code></pre></div>
+<figure class="shot placeholder" role="img" aria-label="Screenshot needed: A 4 by 2 Display Panel screen showing the DSPDASH dashboard"><div class="ph-box"><p class="ph-title">Screenshot needed</p><p class="ph-show">A 4 x 2 Display Panel screen on a wall running DSPDASH: the storage gauge on the left half, the energy graph top right, the three text lines (LANES, POWER, NO FAULTS in green) bottom right</p><p class="ph-file"><code>docs/site-src/images/elcl/dspdash-dashboard.png</code> &middot; 1600x900</p></div></figure>
+<ul><li><a class="cmd" href="commands/RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> gives the screen's canvas in pixels (32 a panel), so the layout fits any size of screen.</li><li><code>CLRDSP DEV(DSP01)</code> clears the lines and the regions first; with no regions, region <code>A</code> is the whole screen, so <code>A</code> is set up first and the others fit beside it. Regions that overlap or leave the screen are <a class="msg" href="messages.html#ELC1314"><code>ELC1314</code></a>.</li><li>The storage gauge and the graph keep themselves up to date; only the text needs the loop. The <code>*TEXT</code> widget in <code>C</code> shows the screen's text lines.</li><li>Display commands need no Firewall permission. See <a href="../control/display-panels.html">Display Panels</a> for the widgets, graphs and colours.</li></ul>
+<h2 id="ex-plc">A PLC reading its sensors<a class="anchor" href="#ex-plc" aria-label="Link to this section">#</a></h2>
+<p>A program for a <a class="item-link" href="../reference/items/plc.html"><img class="icon" src="../assets/icons/encodedlogistics/plc.png" alt="" width="20" height="20" loading="lazy">Programmable Logic Controller</a> that isn't on a network: a Presence Sensor in slot 1 opens a door, a Light Sensor in slot 2 turns a lamp on at night, and a retained counter counts visitors.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* DOORPLC - door on the east face, lamp on top, visitors counted    */</span>
+<span class="c">/* Slot 1: Presence Sensor (players, radius 4); slot 2: Light Sensor */</span>
+PGM
+  DCL VAR(&amp;NEAR)   TYPE(*DEC) LEN(5 0)
+  DCL VAR(&amp;STS)    TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;WHO)    TYPE(*CHAR) LEN(32)
+  DCL VAR(&amp;LUX)    TYPE(*DEC) LEN(5 0)
+  DCL VAR(&amp;TIME)   TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;OPEN)   TYPE(*LGL)
+  DCL VAR(&amp;VISITS) TYPE(*INT) RETAIN(*YES)   <span class="c">/* kept through STOP, power loss, reloads */</span>
+
+  RTVSNSVAL MODULE(1) TYPE(*PRESENCE) RTNVAL(&amp;NEAR) RTNSTS(&amp;STS) RTNAUX(&amp;WHO)
+  IF COND(&amp;STS *NE <span class="s">&#x27;*OK&#x27;</span>) THEN(CHGVAR &amp;NEAR 0)
+
+  IF COND(&amp;NEAR *GT 0 *AND *NOT &amp;OPEN) THEN(DO)
+    CHGVAR &amp;VISITS (&amp;VISITS + 1)
+    SNDPGMMSG MSG(<span class="s">&#x27;Visitor&#x27;</span> *BCAT %CHAR(&amp;VISITS) *TCAT <span class="s">&#x27;:&#x27;</span> *BCAT &amp;WHO)
+  ENDDO
+  CHGVAR VAR(&amp;OPEN) VALUE(&amp;NEAR *GT 0)
+
+  IF COND(&amp;OPEN) THEN(CHGRSOUT DEV(*SELF) SIDE(*EAST) LVL(15))
+  ELSE CMD(CHGRSOUT DEV(*SELF) SIDE(*EAST) LVL(0))
+
+  RTVSNSVAL MODULE(2) RTNVAL(&amp;LUX) RTNAUX(&amp;TIME)
+  IF COND(&amp;TIME *EQ <span class="s">&#x27;*NIGHT&#x27;</span>) THEN(CHGRSOUT DEV(*SELF) SIDE(*UP) LVL(15))
+  ELSE CMD(CHGRSOUT DEV(*SELF) SIDE(*UP) LVL(0))
+ENDPGM</code></pre></div>
+<ul><li>The PLC runs the program over and over, a scan at a time. Variables keep their values from one scan to the next (a <code>VALUE</code> is set only when the program starts), so <code>&amp;OPEN</code> remembers whether the door was open on the last scan.</li><li><code>RETAIN(*YES)</code> keeps <code>&amp;VISITS</code> through STOP and RUN, power loss and world reloads (PLCSTS option 6 shows it).</li><li>With <code>RTNSTS</code> given, a missing module or one with nothing to watch comes back as <code>*NOMODULE</code> or <code>*NOTARGET</code> instead of an escape message.</li><li>Off a network a PLC runs only the language, its own faces (<code>DEV(*SELF)</code>), its modules and the delays: anything else is <a class="msg" href="messages.html#ELC1502"><code>ELC1502</code></a>. <code>SNDPGMMSG</code> goes to the PLC's own log. See <a href="control-and-plcs.html">Redstone, PLCs and signals from ELCL</a>.</li></ul>
+<h2 id="ex-stall">Report stalled crafting jobs<a class="anchor" href="#ex-stall" aria-label="Link to this section">#</a></h2>
+<p>A trigger program for <code>*CRFSTALL</code>, which fires when a crafting job makes no progress for a while. It tells the operator what the job is stuck on.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* STALLMSG - a crafting job has stalled                              */</span>
+<span class="c">/* Install: ADDTRGEVT TRG(STALL) EVENT(*CRFSTALL) PGM(ZAGLIB/STALLMSG) */</span>
+PGM PARM(&amp;EVENT &amp;DATA)
+  DCL VAR(&amp;EVENT) TYPE(*CHAR) LEN(12)
+  DCL VAR(&amp;DATA)  TYPE(*CHAR) LEN(256)
+  DCL VAR(&amp;JOB)   TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;REST)  TYPE(*CHAR) LEN(256)
+  DCL VAR(&amp;AT)    TYPE(*INT)
+  DCL VAR(&amp;PCT)   TYPE(*DEC) LEN(5 1)
+
+  <span class="c">/* &amp;DATA: C0042 IRON_INGOT machine output full                      */</span>
+  CHGVAR VAR(&amp;AT)   VALUE(%SCAN(<span class="s">&#x27; &#x27;</span> &amp;DATA))
+  CHGVAR VAR(&amp;JOB)  VALUE(%SST(&amp;DATA 1 &amp;AT - 1))
+  CHGVAR VAR(&amp;REST) VALUE(%SST(&amp;DATA &amp;AT + 1 %LEN(&amp;DATA) - &amp;AT))
+
+  RTVCRFSTS CRFJOB(&amp;JOB) RTNPCT(&amp;PCT)
+  MONMSG MSGID(ELC1400)              <span class="c">/* ended meanwhile */</span>
+  SNDMSG MSG(<span class="s">&#x27;Crafting job&#x27;</span> *BCAT &amp;JOB *BCAT <span class="s">&#x27;stalled at&#x27;</span> *BCAT %CHAR(&amp;PCT) +
+         *TCAT <span class="s">&#x27;%:&#x27;</span> *BCAT &amp;REST) TOUSR(*SYSOPR)
+ENDPGM</code></pre></div>
+<ul><li><code>ITEM()</code> on <a class="cmd" href="commands/ADDTRGEVT.html"><code>ADDTRGEVT</code></a> limits it to jobs crafting one item: <code>ITEM(LOGIC_DIE)</code>.</li><li>How long a job must go without progress is the server's <a class="cfg" href="../reference/config.html#cfg-autocrafting-jobStallSeconds"><code>autocrafting.jobStallSeconds</code></a> (default 30) seconds.</li><li>See <a href="../crafting/jobs.html">Crafting jobs</a> for what the reasons mean.</li></ul>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="language.html" rel="prev"><span>Previous</span>The ELCL language</a><a class="next" href="jobs-and-scheduling.html" rel="next"><span>Next</span>Jobs, scheduling and triggers</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

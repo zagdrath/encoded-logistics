@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redstone, PLCs and signals from ELCL - Encoded Logistics</title>
+<meta name="description" content="Programming the Control Interface&#x27;s redstone, writing programs for PLCs, and switching Cage Lights, Alarm Strobes and Speakers from ELCL.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html" aria-current="page" class="current">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Redstone, PLCs and signals from ELCL</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html" aria-current="page" class="current">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav></details>
+<h1>Redstone, PLCs and signals from ELCL</h1>
+<p class="lead">Programming the Control Interface's redstone, writing programs for PLCs, and switching Cage Lights, Alarm Strobes and Speakers from ELCL.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#control-interface">The Control Interface</a></li><li class="toc-l2"><a href="#plc">Programmable Logic Controllers</a></li><li class="toc-l3"><a href="#plc-scan">How a PLC runs a program</a></li><li class="toc-l3"><a href="#plc-targets">Compiling for a PLC</a></li><li class="toc-l3"><a href="#plc-commands">The PLC commands</a></li><li class="toc-l3"><a href="#plc-examples">Examples</a></li><li class="toc-l2"><a href="#signals">Cage Lights, Alarm Strobes and Speakers</a></li></ol></nav></details>
+<div class="page-body">
+<p>ELCL reaches into the world through three kinds of device: the <a class="item-link" href="../reference/items/control_interface.html"><img class="icon" src="../assets/icons/encodedlogistics/control_interface.png" alt="" width="20" height="20" loading="lazy">Control Interface</a> (redstone in and out on a network), the <a class="item-link" href="../reference/items/plc.html"><img class="icon" src="../assets/icons/encodedlogistics/plc.png" alt="" width="20" height="20" loading="lazy">Programmable Logic Controller</a> (a controller that runs one ELCL program by itself) and the signal devices (Cage Lights, Alarm Strobes and Speakers). This page is about programming them. The blocks themselves, how to place, power and configure them, are in <a href="../control/index.html">Control and facility</a>.</p>
+<h2 id="control-interface">The Control Interface<a class="anchor" href="#control-interface" aria-label="Link to this section">#</a></h2>
+<p>A Control Interface is a network device with six redstone channels, one for each face (<code>*NORTH</code>, <code>*SOUTH</code>, <code>*EAST</code>, <code>*WEST</code>, <code>*UP</code>, <code>*DOWN</code>), each with its own input and output level from 0 to 15. It has no screen of its own: you drive it with two commands. It takes the first free name <code>CTLIF01</code>, <code>CTLIF02</code>... and keeps it; <a class="cmd" href="commands/RNMDEV.html"><code>RNMDEV</code></a> renames it. See <a href="../control/control-interface.html">the Control Interface</a> for the block.</p>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>Does</th><th>Firewall permission</th></tr></thead><tbody><tr><td><a class="cmd" href="commands/RTVRSIN.html"><code>RTVRSIN</code></a> <code>DEV() SIDE() RTNLVL(&amp;L)</code></td><td>Reads the level arriving on a face; <code>SIDE(*MAX)</code> gives the highest of the six.</td><td>View</td></tr><tr><td><a class="cmd" href="commands/CHGRSOUT.html"><code>CHGRSOUT</code></a> <code>DEV() SIDE() LVL()</code></td><td>Sets what a face gives out; <code>SIDE(*ALL)</code> sets all six.</td><td>Build</td></tr></tbody></table></div>
+<ul><li>A face never reads the block's own output back.</li><li>The output is weak power: it powers what is right next to the face (a lamp, dust, a repeater) but not through a solid block.</li><li>A level outside 0 to 15 is <a class="msg" href="messages.html#ELC0004"><code>ELC0004</code></a>. A name no device has is <a class="msg" href="messages.html#ELC1301"><code>ELC1301</code></a>; a device that isn't a Control Interface or PLC is <a class="msg" href="messages.html#ELC1303"><code>ELC1303</code></a>; an offline one is <a class="msg" href="messages.html#ELC1302"><code>ELC1302</code></a> (and <code>CHGRSOUT</code> then stores nothing).</li><li>While it is offline it gives out nothing but keeps its output levels, and gives them out again when it comes back.</li><li>When the level arriving on a face changes, it fires the <code>*RSCHANGE</code> <a href="jobs-and-scheduling.html#triggers">trigger event</a> once for each change, with <code>&amp;DATA</code> such as <code>*NORTH 7</code>. <code>ADDTRGEVT ... EVENT(*RSCHANGE) DEV(CTLIF01) VALUE('*NORTH')</code> reacts to one face only.</li></ul>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;LVL) TYPE(*INT)
+RTVRSIN DEV(CTLIF01) SIDE(*MAX) RTNLVL(&amp;LVL)
+IF COND(&amp;LVL *GE 8) THEN(CHGRSOUT DEV(CTLIF01) SIDE(*ALL) LVL(15))
+ELSE CMD(CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0))</code></pre></div>
+<p>Typed on a command line, the return parameter is left out and Command Entry shows the value:</p>
+<div class="code-block"><pre class="code elcl"><code>RTVRSIN CTLIF01 *MAX
+CHGRSOUT CTLIF01 *ALL 15</code></pre></div>
+<p>A trigger program for a button wired to the Control Interface's west face, which pulses the east face for two seconds:</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* BUTTON - ADDTRGEVT TRG(BUTTON) EVENT(*RSCHANGE) DEV(CTLIF01) +  */</span>
+<span class="c">/*          VALUE(&#x27;*WEST&#x27;) PGM(ZAGLIB/BUTTON)                        */</span>
+PGM PARM(&amp;EVENT &amp;DATA)
+  DCL VAR(&amp;EVENT) TYPE(*CHAR) LEN(12)
+  DCL VAR(&amp;DATA)  TYPE(*CHAR) LEN(256)
+  DCL VAR(&amp;LVL)   TYPE(*INT)
+
+  <span class="c">/* &amp;DATA is &quot;*WEST 15&quot;: the level after the blank */</span>
+  CHGVAR VAR(&amp;LVL) VALUE(%INT(%SST(&amp;DATA %SCAN(<span class="s">&#x27; &#x27;</span> &amp;DATA) + 1 3)))
+  IF COND(&amp;LVL *EQ 0) THEN(RETURN)              <span class="c">/* released: nothing to do */</span>
+  CHGRSOUT DEV(CTLIF01) SIDE(*EAST) LVL(15)
+  DLYJOB DLY(2)
+  CHGRSOUT DEV(CTLIF01) SIDE(*EAST) LVL(0)
+ENDPGM</code></pre></div>
+<h2 id="plc">Programmable Logic Controllers<a class="anchor" href="#plc" aria-label="Link to this section">#</a></h2>
+<p>A PLC runs one compiled ELCL program over and over, like an industrial controller's scan, with the six redstone faces of a Control Interface and four slots for sensor modules. It works on its own, powered from any face, or as a device on a network (<code>PLC01</code>, <code>PLC02</code>...). The block, its modes, screens and modules are on <a href="../control/plc.html">the PLC page</a>.</p>
+<h3 id="plc-scan">How a PLC runs a program<a class="anchor" href="#plc-scan" aria-label="Link to this section">#</a></h3>
+<ul><li><strong>The scan.</strong> The PLC runs <a class="cfg" href="../reference/config.html#cfg-plc-plcInstructionsPerTick"><code>plc.plcInstructionsPerTick</code></a> (default 50) instructions a tick; a pass that needs more carries on next tick. At <code>ENDPGM</code> the next pass starts from the top on the next tick. Variables keep their values from one pass to the next: a <code>VALUE</code> is set only when the program starts (STOP to RUN, and power-up, which a world reload counts as).</li><li><strong>Retained variables.</strong> <code>DCL ... RETAIN(*YES)</code> keeps a variable's value through STOP and RUN, power loss and reloads, and it goes with the program onto the PLC's item and onto EEPROM Cartridges. PLCSTS option 6 shows them. <code>RETAIN</code> in a program compiled for a job is a warning, <a class="msg" href="messages.html#ELC1506"><code>ELC1506</code></a>, and does nothing.</li><li><strong>Delays.</strong> <a class="cmd" href="commands/DLYTICK.html"><code>DLYTICK</code></a> <code>TICKS(n)</code> waits <em>n</em> game ticks (1 to 1,200), <a class="cmd" href="commands/DLYJOB.html"><code>DLYJOB</code></a> <code>DLY(n)</code> <em>n</em> seconds. The scan doesn't go on while it waits.</li><li><strong>Messages.</strong> <a class="cmd" href="commands/SNDPGMMSG.html"><code>SNDPGMMSG</code></a> writes to the PLC's own log, which PLCSTS option 6 shows with its escapes.</li><li><strong>Faults.</strong> An escape message nothing catches puts the PLC in FAULT, with the message and its line on the status screen, and its outputs hold their last levels (or drop to 0: <a class="cfg" href="../reference/config.html#cfg-plc-plcFaultOutputs"><code>plc.plcFaultOutputs</code></a> (default HOLD)). F9 or <a class="cmd" href="commands/STRPLC.html"><code>STRPLC</code></a> clears it and runs from the top. Use <code>MONMSG</code> for errors you expect.</li></ul>
+<h3 id="plc-targets">Compiling for a PLC<a class="anchor" href="#plc-targets" aria-label="Link to this section">#</a></h3>
+<p>A PLC's program is compiled for one of two targets, and the target decides what it may use:</p>
+<div class="table-wrap"><table><thead><tr><th>Target</th><th>When</th><th>What it can use</th></tr></thead><tbody><tr><td>PLC (on a network)</td><td>The PLC is cabled to a network; or <code>CRTELPGM TGT(*PLC)</code> in a library</td><td>Every command, with the Firewall authority of the player who last loaded the program. <code>CALL</code> finds programs on their library list; database files are the network's.</td></tr><tr><td>PLC on its own</td><td>The PLC isn't on a network</td><td>Only the language statements (<code>PGM</code>, <code>DCL</code>, <code>CHGVAR</code>, <code>IF</code>, <code>ELSE</code>, <code>DO</code>, the loops, <code>LEAVE</code>, <code>ITERATE</code>, <code>SELECT</code>, <code>GOTO</code>, <code>RETURN</code>, subroutines, <code>MONMSG</code>, <code>RCVMSG</code>, <code>SNDPGMMSG</code>), the list commands (<a class="cmd" href="commands/ADDLSTE.html"><code>ADDLSTE</code></a>, <a class="cmd" href="commands/RMVLSTE.html"><code>RMVLSTE</code></a>, <a class="cmd" href="commands/CLRLST.html"><code>CLRLST</code></a>), <a class="cmd" href="commands/DLYJOB.html"><code>DLYJOB</code></a>, <a class="cmd" href="commands/DLYTICK.html"><code>DLYTICK</code></a>, its modules (<a class="cmd" href="commands/RTVSNSVAL.html"><code>RTVSNSVAL</code></a>) and its own faces (<a class="cmd" href="commands/RTVRSIN.html"><code>RTVRSIN</code></a> and <a class="cmd" href="commands/CHGRSOUT.html"><code>CHGRSOUT</code></a> with <code>DEV(*SELF)</code>). Anything else, <code>CALL</code> and the file commands included, is <a class="msg" href="messages.html#ELC1502"><code>ELC1502</code></a>.</td></tr></tbody></table></div>
+<p>The PLC's editor (PLCSTS option 1) checks the program for the target that fits the PLC as it is now, and flags a command that needs a network on its line. The PLC checks again when it runs: a program written on a network that is later run without one stops at the first command that needs the network, with <a class="msg" href="messages.html#ELC1502"><code>ELC1502</code></a>.</p>
+<p>In a PLC program, <code>DEV(*SELF)</code> names the PLC itself. On a network, other programs reach a PLC by its name, as they would a Control Interface: <code>RTVRSIN DEV(PLC01) ...</code>, <code>RTVSNSVAL DEV(PLC01) MODULE(1) ...</code>.</p>
+<h3 id="plc-commands">The PLC commands<a class="anchor" href="#plc-commands" aria-label="Link to this section">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>Does</th><th>Firewall permission</th></tr></thead><tbody><tr><td><a class="cmd" href="commands/RTVSNSVAL.html"><code>RTVSNSVAL</code></a> <code>MODULE(1-4) TYPE() DEV(*SELF) RTNVAL() RTNSTS() RTNAUX()</code></td><td>Reads a sensor module: its value, its status and an extra value (below).</td><td>View</td></tr><tr><td><a class="cmd" href="commands/SNDPLCPGM.html"><code>SNDPLCPGM</code></a> <code>PGM(lib/name) DEV(PLC01) RUN(*YES)</code></td><td>Loads a program compiled with <code>CRTELPGM TGT(*PLC)</code> into a PLC on the network (<a class="msg" href="messages.html#ELC1504"><code>ELC1504</code></a> for any other). The PLC stops first, then runs from the top unless <code>RUN(*NO)</code>. The same program loaded again keeps its retained variables.</td><td>Build</td></tr><tr><td><a class="cmd" href="commands/STRPLC.html"><code>STRPLC</code></a> <code>DEV()</code></td><td>RUN, clearing a fault (<a class="msg" href="messages.html#ELC1505"><code>ELC1505</code></a> with no program loaded).</td><td>Build</td></tr><tr><td><a class="cmd" href="commands/ENDPLC.html"><code>ENDPLC</code></a> <code>DEV()</code></td><td>STOP: the program halts and the outputs go off; retained variables are kept.</td><td>Build</td></tr></tbody></table></div>
+<p>What <a class="cmd" href="commands/RTVSNSVAL.html"><code>RTVSNSVAL</code></a> gives for each module (<code>RTNVAL</code> is a <code>*DEC</code>, the others <code>*CHAR</code>):</p>
+<div class="table-wrap"><table><thead><tr><th>Module</th><th><code>RTNVAL</code></th><th><code>RTNAUX</code></th></tr></thead><tbody><tr><td><a class="item-link" href="../reference/items/presence_sensor.html"><img class="icon" src="../assets/icons/encodedlogistics/presence_sensor.png" alt="" width="20" height="20" loading="lazy">Presence Sensor</a> (<code>*PRESENCE</code>)</td><td>Players, mobs or both within its radius (1 to 16 blocks)</td><td>The nearest one's name</td></tr><tr><td><a class="item-link" href="../reference/items/inventory_sensor.html"><img class="icon" src="../assets/icons/encodedlogistics/inventory_sensor.png" alt="" width="20" height="20" loading="lazy">Inventory Sensor</a> (<code>*INVENTORY</code>)</td><td>How full the container on its face is, in percent</td><td>The item count</td></tr><tr><td><a class="item-link" href="../reference/items/fluid_sensor.html"><img class="icon" src="../assets/icons/encodedlogistics/fluid_sensor.png" alt="" width="20" height="20" loading="lazy">Fluid Sensor</a> (<code>*FLUID</code>)</td><td>How full the tank on its face is, in percent</td><td>The amount in mB</td></tr><tr><td><a class="item-link" href="../reference/items/light_sensor.html"><img class="icon" src="../assets/icons/encodedlogistics/light_sensor.png" alt="" width="20" height="20" loading="lazy">Light Sensor</a> (<code>*LIGHT</code>)</td><td>The light at the PLC, 0 to 15</td><td><code>*DAY</code> or <code>*NIGHT</code></td></tr><tr><td><a class="item-link" href="../reference/items/timer_module.html"><img class="icon" src="../assets/icons/encodedlogistics/timer_module.png" alt="" width="20" height="20" loading="lazy">Timer Module</a> (<code>*TIMER</code>)</td><td>The game time in ticks</td><td>The day and time, <code>Day 2 14:32</code></td></tr></tbody></table></div>
+<p><code>RTNSTS</code> is <code>*OK</code>, or <code>*NOMODULE</code> / <code>*NOTARGET</code> when the slot is empty or the module has nothing to watch. Without <code>RTNSTS</code> those are escape messages instead: <a class="msg" href="messages.html#ELC1501"><code>ELC1501</code></a> and <a class="msg" href="messages.html#ELC1503"><code>ELC1503</code></a>. A <code>TYPE()</code> other than <code>*ANY</code> must match the module in the slot (<a class="msg" href="messages.html#ELC1501"><code>ELC1501</code></a>).</p>
+<h3 id="plc-examples">Examples<a class="anchor" href="#plc-examples" aria-label="Link to this section">#</a></h3>
+<p>A latch: a button on the west face toggles the east face, and a retained counter counts the presses.</p>
+<div class="code-block"><pre class="code elcl"><code>PGM
+  DCL VAR(&amp;IN)     TYPE(*INT)
+  DCL VAR(&amp;WAS)    TYPE(*INT)
+  DCL VAR(&amp;ON)     TYPE(*LGL)
+  DCL VAR(&amp;PRESSES) TYPE(*INT) RETAIN(*YES)
+
+  RTVRSIN DEV(*SELF) SIDE(*WEST) RTNLVL(&amp;IN)
+  IF COND(&amp;IN *GT 0 *AND &amp;WAS *EQ 0) THEN(DO)     <span class="c">/* a rising edge */</span>
+    CHGVAR &amp;ON (*NOT &amp;ON)
+    CHGVAR &amp;PRESSES (&amp;PRESSES + 1)
+  ENDDO
+  CHGVAR &amp;WAS &amp;IN
+  IF COND(&amp;ON) THEN(CHGRSOUT DEV(*SELF) SIDE(*EAST) LVL(15))
+  ELSE CMD(CHGRSOUT DEV(*SELF) SIDE(*EAST) LVL(0))
+ENDPGM</code></pre></div>
+<p>A fuel feeder: an Inventory Sensor watches a furnace's fuel chest; when it is under a quarter full, the PLC (on a network) moves coal into it from the network through a Deployer Plane facing the chest, and lights a lamp on its bottom face while it does.</p>
+<div class="code-block"><pre class="code elcl"><code>PGM
+  DCL VAR(&amp;PCT)  TYPE(*DEC) LEN(5 1)
+  DCL VAR(&amp;STS)  TYPE(*CHAR) LEN(10)
+  DCL VAR(&amp;MOVED) TYPE(*INT)
+
+  RTVSNSVAL MODULE(1) TYPE(*INVENTORY) RTNVAL(&amp;PCT) RTNSTS(&amp;STS)
+  IF COND(&amp;STS *EQ <span class="s">&#x27;*OK&#x27;</span> *AND &amp;PCT *LT 25) THEN(DO)
+    CHGRSOUT DEV(*SELF) SIDE(*DOWN) LVL(15)
+    MOVITM ITEM(COAL) QTY(64) TODEV(DEPLOYER01) RTNMOVED(&amp;MOVED)
+    MONMSG MSGID(ELC1200 ELC1300)          <span class="c">/* none left, or the Deployer is off */</span>
+    DLYTICK TICKS(20)
+    CHGRSOUT DEV(*SELF) SIDE(*DOWN) LVL(0)
+  ENDDO
+  DLYJOB DLY(5)                             <span class="c">/* look again in five seconds */</span>
+ENDPGM</code></pre></div>
+<p>Loading a program from a library into a PLC on the network:</p>
+<div class="code-block"><pre class="code elcl"><code>CRTELPGM PGM(ZAGLIB/FEEDER) TGT(*PLC)
+SNDPLCPGM PGM(ZAGLIB/FEEDER) DEV(PLC01)
+ENDPLC DEV(PLC01)
+STRPLC DEV(PLC01)</code></pre></div>
+<p>The <a href="examples.html#ex-plc">Worked examples</a> have one more, reading a Presence Sensor and a Light Sensor.</p>
+<h2 id="signals">Cage Lights, Alarm Strobes and Speakers<a class="anchor" href="#signals" aria-label="Link to this section">#</a></h2>
+<p>On a network, each signal device is a device with a name: <code>LGT01</code> for a Cage Light, <code>SRN01</code> for an Alarm Strobe, <code>SPK01</code> for a Speaker. Their commands take <code>DEV()</code> as a list of names (<code>DEV(LGT01 LGT02)</code>) or <code>*ALL</code> for every device of that kind on the network. Every name is checked before any device changes: not found is <a class="msg" href="messages.html#ELC1301"><code>ELC1301</code></a>, offline <a class="msg" href="messages.html#ELC1302"><code>ELC1302</code></a>, another kind of device <a class="msg" href="messages.html#ELC1303"><code>ELC1303</code></a>. They all need the Firewall's build permission.</p>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>Does</th></tr></thead><tbody><tr><td><a class="cmd" href="commands/CHGLGT.html"><code>CHGLGT</code></a> <code>DEV() STATUS(*ON|*OFF|*TOGGLE) LVL(1-15)</code></td><td>A Cage Light's network state and light level (<a class="msg" href="messages.html#ELC2401"><code>ELC2401</code></a> outside 1 to 15). The network's state adds to the light's redstone.</td></tr><tr><td><a class="cmd" href="commands/STRSRN.html"><code>STRSRN</code></a> <code>DEV() SOUND() MODE()</code></td><td>Starts an Alarm Strobe, with its tone (<code>*WAIL</code>, <code>*YELP</code>, <code>*KLAXON</code>, <code>*BELL</code>, <code>*HORN</code>, <code>*BEEP</code> or <code>*NONE</code>) and light mode (<code>*SOLID</code>, <code>*SLOW</code>, <code>*MEDIUM</code>, <code>*FAST</code>); <code>*SAME</code> keeps its own setting.</td></tr><tr><td><a class="cmd" href="commands/ENDSRN.html"><code>ENDSRN</code></a> <code>DEV()</code></td><td>Stops an Alarm Strobe.</td></tr><tr><td><a class="cmd" href="commands/PLYAUD.html"><code>PLYAUD</code></a> <code>DEV() SRC() VOL() LOOP()</code></td><td>A Speaker plays a file from the system's audio folder or a web URL.</td></tr><tr><td><a class="cmd" href="commands/PLYNOTE.html"><code>PLYNOTE</code></a> <code>DEV() INST() NOTE(0-24)</code></td><td>A Speaker plays a note block note; several notes make a sequence, the rest played one per rising redstone edge (<a class="msg" href="messages.html#ELC2407"><code>ELC2407</code></a> outside 0 to 24).</td></tr><tr><td><a class="cmd" href="commands/PLYMID.html"><code>PLYMID</code></a> <code>DEV() FILE() MAP() MAPBY()</code></td><td>A Speaker plays a MIDI file, its parts on the speakers <code>MAP</code> names, all in time.</td></tr><tr><td><a class="cmd" href="commands/STPAUD.html"><code>STPAUD</code></a> <code>DEV()</code></td><td>Stops a Speaker (and every speaker in its MIDI play).</td></tr></tbody></table></div>
+<p>An Alarm Strobe or Speaker whose trigger is set to <em>Redstone</em> takes no network commands (<a class="msg" href="messages.html#ELC2408"><code>ELC2408</code></a>): set it to <em>Network</em> or <em>Both</em> on its settings screen. A Cage Light set to <em>Network only</em> follows the network alone. The <a href="../control/lights-and-sirens.html">Cage Lights and Alarm Strobes</a> and <a href="../control/speakers.html">Speakers</a> pages have the settings, the audio folders and the file limits.</p>
+<p>An evacuation alarm:</p>
+<div class="code-block"><pre class="code elcl"><code>STRSRN DEV(*ALL) SOUND(*WAIL) MODE(*FAST)        <span class="c">/* every strobe on the network */</span>
+CHGLGT DEV(LGT01 LGT02) STATUS(*ON) LVL(15)
+PLYAUD DEV(SPK01) SRC(<span class="s">&#x27;evacuate.ogg&#x27;</span>) LOOP(*YES)
+DLYJOB DLY(30)
+ENDSRN DEV(*ALL)
+CHGLGT DEV(LGT01 LGT02) STATUS(*OFF)
+STPAUD DEV(SPK01)
+PLYMID DEV(SPK01) FILE(<span class="s">&#x27;all-clear.mid&#x27;</span>) VOL(60) +
+       MAP((1 SPK01) (2 SPK02) (10 SPK04)) MAPBY(*CHANNEL)   <span class="c">/* melody, bass, drums */</span>
+MONMSG MSGID(ELC2400)                             <span class="c">/* a missing file isn&#x27;t fatal  */</span></code></pre></div>
+<p>A doorbell as a trigger program: three notes on a Speaker when a button on <code>CTLIF01</code>'s north face is pressed.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* DOORBELL - ADDTRGEVT TRG(BELL) EVENT(*RSCHANGE) DEV(CTLIF01) +  */</span>
+<span class="c">/*            VALUE(&#x27;*NORTH&#x27;) PGM(ZAGLIB/DOORBELL)                    */</span>
+PGM PARM(&amp;EVENT &amp;DATA)
+  DCL VAR(&amp;EVENT) TYPE(*CHAR) LEN(12)
+  DCL VAR(&amp;DATA)  TYPE(*CHAR) LEN(256)
+  IF COND(%TRIM(&amp;DATA) *EQ <span class="s">&#x27;*NORTH 0&#x27;</span>) THEN(RETURN)     <span class="c">/* released */</span>
+  PLYNOTE DEV(SPK01) INST(*CHIME) NOTE(18)
+  DLYTICK TICKS(5)
+  PLYNOTE DEV(SPK01) INST(*CHIME) NOTE(14)
+  DLYTICK TICKS(5)
+  PLYNOTE DEV(SPK01) INST(*CHIME) NOTE(11)
+ENDPGM</code></pre></div>
+<p>Signal commands work from a PLC on a network too, so a PLC can sound an alarm from its own sensors without a job host.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="jobs-and-scheduling.html" rel="prev"><span>Previous</span>Jobs, scheduling and triggers</a><a class="next" href="status-and-limits.html" rel="next"><span>Next</span>Limits and behaviour to know</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

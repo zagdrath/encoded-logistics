@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control Interface - Encoded Logistics</title>
+<meta name="description" content="A network device with six redstone channels, one per face, that ELCL reads with RTVRSIN and drives with CHGRSOUT.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="index.html" aria-current="true" class="current">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="index.html" aria-current="true" class="current">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Control and facility">
+<p class="toc-title">Control and facility</p><nav aria-label="Control and facility pages"><ol><li><a href="index.html">Control and facility</a></li><li><a href="control-interface.html" aria-current="page" class="current">Control Interface</a></li><li><a href="plc.html">PLC</a></li><li><a href="display-panels.html">Display Panels</a></li><li><a href="lights-and-sirens.html">Lights and strobes</a></li><li><a href="speakers.html">Speakers</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Control and facility</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Control Interface</span></nav>
+<details class="mobile-toc"><summary>Control and facility: pages</summary><p class="toc-title">Control and facility</p><nav aria-label="Control and facility pages"><ol><li><a href="index.html">Control and facility</a></li><li><a href="control-interface.html" aria-current="page" class="current">Control Interface</a></li><li><a href="plc.html">PLC</a></li><li><a href="display-panels.html">Display Panels</a></li><li><a href="lights-and-sirens.html">Lights and strobes</a></li><li><a href="speakers.html">Speakers</a></li></ol></nav></details>
+<h1>Control Interface</h1>
+<p class="lead">A network device with six redstone channels, one per face, that ELCL reads with RTVRSIN and drives with CHGRSOUT.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#network">Putting one on a network</a></li><li class="toc-l2"><a href="#channels">The six channels</a></li><li class="toc-l3"><a href="#output">How the output behaves</a></li><li class="toc-l3"><a href="#errors">Errors</a></li><li class="toc-l2"><a href="#leds">LEDs</a></li><li class="toc-l2"><a href="#events">Reacting to changes</a></li><li class="toc-l2"><a href="#permissions">Permissions</a></li></ol></nav></details>
+<div class="page-body">
+<p>The <a class="item-link" href="../reference/items/control_interface.html"><img class="icon" src="../assets/icons/encodedlogistics/control_interface.png" alt="" width="20" height="20" loading="lazy">Control Interface</a> gives ELCL redstone input and output. Each of its six faces is a channel of its own: it reads the redstone level arriving on that face and can give out a level of its own there. It has no screen; you drive it from a terminal or a program.</p>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-control_interface"><figcaption>Crafting Table</figcaption><div class="recipe-body"><span class="grid g3" role="group" aria-label="Ingredients"><span class="slot empty" aria-hidden="true"></span><span class="slot" title="Redstone Comparator"><img src="../assets/icons/minecraft/comparator.png" alt="Redstone Comparator" width="32" height="32" loading="lazy"></span><span class="slot empty" aria-hidden="true"></span><span class="slot" title="Redstone Dust"><img src="../assets/icons/minecraft/redstone.png" alt="Redstone Dust" width="32" height="32" loading="lazy"></span><a class="slot" href="../reference/items/logic_die.html" title="Logic Die"><img src="../assets/icons/encodedlogistics/logic_die.png" alt="Logic Die" width="32" height="32" loading="lazy"></a><span class="slot" title="Redstone Dust"><img src="../assets/icons/minecraft/redstone.png" alt="Redstone Dust" width="32" height="32" loading="lazy"></span><span class="slot" title="Iron Ingot"><img src="../assets/icons/minecraft/iron_ingot.png" alt="Iron Ingot" width="32" height="32" loading="lazy"></span><a class="slot" href="../reference/items/circuit_substrate.html" title="Circuit Substrate"><img src="../assets/icons/encodedlogistics/circuit_substrate.png" alt="Circuit Substrate" width="32" height="32" loading="lazy"></a><span class="slot" title="Iron Ingot"><img src="../assets/icons/minecraft/iron_ingot.png" alt="Iron Ingot" width="32" height="32" loading="lazy"></span></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="../reference/items/control_interface.html" title="Control Interface"><img src="../assets/icons/encodedlogistics/control_interface.png" alt="Control Interface" width="32" height="32" loading="lazy"></a></div><p class="recipe-id">encodedlogistics:control_interface</p></figure></div>
+<h2 id="network">Putting one on a network<a class="anchor" href="#network" aria-label="Link to this section">#</a></h2>
+<p>Cable it to a network like any other device. It takes one lane and drains <a class="cfg" href="../reference/config.html#cfg-reach-controlInterfaceDrain"><code>reach.controlInterfaceDrain</code></a> (default 1) FE/t while its network runs, and it is online while its network is.</p>
+<p>The first time it is on a network it takes the lowest free name of the form <code>CTLIFnn</code> (<code>CTLIF01</code>, <code>CTLIF02</code>, ...) and keeps it, on its item too when you break it. <a class="cmd" href="../elcl/commands/RNMDEV.html"><code>RNMDEV</code></a> or Work with Devices (<a class="cmd" href="../elcl/commands/WRKDEV.html"><code>WRKDEV</code></a>) option 2 renames it. It appears under that name in Work with Devices and in the prompter's device list.</p>
+<h2 id="channels">The six channels<a class="anchor" href="#channels" aria-label="Link to this section">#</a></h2>
+<p>The faces are <code>*NORTH</code>, <code>*SOUTH</code>, <code>*EAST</code>, <code>*WEST</code>, <code>*UP</code> and <code>*DOWN</code>, and each has an input and an output level from 0 to 15.</p>
+<div class="table-wrap"><table><thead><tr><th>To</th><th>Command</th><th>Notes</th></tr></thead><tbody><tr><td>Read a face</td><td><a class="cmd" href="../elcl/commands/RTVRSIN.html"><code>RTVRSIN</code></a> <code>DEV(CTLIF01) SIDE(*NORTH) RTNLVL(&amp;L)</code></td><td><code>SIDE(*MAX)</code> gives the highest of the six</td></tr><tr><td>Drive a face</td><td><a class="cmd" href="../elcl/commands/CHGRSOUT.html"><code>CHGRSOUT</code></a> <code>DEV(CTLIF01) SIDE(*UP) LVL(15)</code></td><td><code>SIDE(*ALL)</code> sets all six; a level outside 0-15 is <a class="msg" href="../elcl/messages.html#ELC0004"><code>ELC0004</code></a></td></tr></tbody></table></div>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;L) TYPE(*INT)
+RTVRSIN DEV(CTLIF01) SIDE(*MAX) RTNLVL(&amp;L)       <span class="c">/* the strongest signal coming in */</span>
+IF COND(&amp;L *GE 8) THEN(CHGRSOUT DEV(CTLIF01) SIDE(*ALL) LVL(15))
+ELSE CMD(CHGRSOUT DEV(CTLIF01) SIDE(*UP) LVL(0)) <span class="c">/* top face off                   */</span></code></pre></div>
+<p>At the <code>===&gt;</code> prompt you can leave the keywords out: <code>RTVRSIN CTLIF01 *MAX</code> shows <code>RTNLVL = 9</code> on Command Entry, and <code>CHGRSOUT CTLIF01 *ALL 15</code> turns every face on at full strength.</p>
+<h3 id="output">How the output behaves<a class="anchor" href="#output" aria-label="Link to this section">#</a></h3>
+<ul><li><strong>Weak power only.</strong> A face powers what is directly next to it (a lamp, dust, a repeater), but it never strongly powers a solid block there, so it doesn't reach through that block to things beyond it.</li><li><strong>It never reads itself.</strong> A face's input is only what something else gives it. Redstone dust that the interface powers itself only counts when something else drives that dust higher.</li><li><strong>Offline.</strong> While its network is down it gives out nothing, but it keeps its output levels (they are saved with the block) and gives them out again when it is back online. While it is offline both commands answer <a class="msg" href="../elcl/messages.html#ELC1302"><code>ELC1302</code></a>, and <code>CHGRSOUT</code> stores nothing.</li></ul>
+<h3 id="errors">Errors<a class="anchor" href="#errors" aria-label="Link to this section">#</a></h3>
+<p>A name no device has is <a class="msg" href="../elcl/messages.html#ELC1301"><code>ELC1301</code></a>; a device that isn't a Control Interface (or a PLC, which has the same faces) is <a class="msg" href="../elcl/messages.html#ELC1303"><code>ELC1303</code></a>.</p>
+<h2 id="leds">LEDs<a class="anchor" href="#leds" aria-label="Link to this section">#</a></h2>
+<p>Each face has an LED showing the higher of what comes in and what goes out there: off (0), dim (1-7) or bright (8-15).</p>
+<figure class="shot placeholder" role="img" aria-label="Screenshot needed: A Control Interface with lit face LEDs, wired to a lamp and a lever"><div class="ph-box"><p class="ph-title">Screenshot needed</p><p class="ph-show">A Control Interface on a cable, a lever on one face (on, bright LED) and a redstone lamp lit by another face; a third face dim from a weak signal</p><p class="ph-file"><code>docs/site-src/images/control/control-interface-leds.png</code> &middot; 1600x900</p></div></figure>
+<h2 id="events">Reacting to changes<a class="anchor" href="#events" aria-label="Link to this section">#</a></h2>
+<p>When the level arriving on a face changes, the interface fires a <code>*RSCHANGE</code> trigger event, once per change, with its device name and <code>&amp;DATA</code> such as <code>*NORTH 7</code> (the face and the new level). A trigger added with <a class="cmd" href="../elcl/commands/ADDTRGEVT.html"><code>ADDTRGEVT</code></a> <code>EVENT(*RSCHANGE)</code> on it (for one face only: <code>VALUE(*NORTH)</code>) runs its program then, so you don't have to poll. See <a href="../elcl/jobs-and-scheduling.html">Jobs, scheduling and triggers</a> for triggers.</p>
+<h2 id="permissions">Permissions<a class="anchor" href="#permissions" aria-label="Link to this section">#</a></h2>
+<p>On a network with a Firewall, <code>RTVRSIN</code> needs the <strong>VIEW</strong> permission and <code>CHGRSOUT</code> needs <strong>BUILD</strong> (the commands' CONFIGURE authority). See <a href="../racks/security.html">Firewall and security</a>.</p>
+<p>For a block that runs its own program next to the redstone, with no terminal involved, use a <a href="plc.html">Programmable Logic Controller</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="index.html" rel="prev"><span>Previous</span>Control and facility</a><a class="next" href="plc.html" rel="next"><span>Next</span>Programmable Logic Controller</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,2498 @@
+{
+  "configuredFeatures": {
+    "encodedlogistics:ore_gallium": {
+      "type": "minecraft:ore",
+      "discard_chance_on_air_exposure": 0.6,
+      "size": 4,
+      "targets": [
+        {
+          "state": "encodedlogistics:deepslate_gallium_ore",
+          "target": {
+            "predicate_type": "minecraft:tag_match",
+            "tag": "minecraft:deepslate_ore_replaceables"
+          }
+        }
+      ]
+    },
+    "encodedlogistics:ore_neodymium": {
+      "type": "minecraft:ore",
+      "discard_chance_on_air_exposure": 0.0,
+      "size": 8,
+      "targets": [
+        {
+          "state": "encodedlogistics:neodymium_ore",
+          "target": {
+            "predicate_type": "minecraft:tag_match",
+            "tag": "minecraft:stone_ore_replaceables"
+          }
+        },
+        {
+          "state": "encodedlogistics:deepslate_neodymium_ore",
+          "target": {
+            "predicate_type": "minecraft:tag_match",
+            "tag": "minecraft:deepslate_ore_replaceables"
+          }
+        }
+      ]
+    },
+    "encodedlogistics:ore_tantalum": {
+      "type": "minecraft:ore",
+      "discard_chance_on_air_exposure": 0.4,
+      "size": 6,
+      "targets": [
+        {
+          "state": "encodedlogistics:tantalum_ore",
+          "target": {
+            "predicate_type": "minecraft:tag_match",
+            "tag": "minecraft:stone_ore_replaceables"
+          }
+        },
+        {
+          "state": "encodedlogistics:deepslate_tantalum_ore",
+          "target": {
+            "predicate_type": "minecraft:tag_match",
+            "tag": "minecraft:deepslate_ore_replaceables"
+          }
+        }
+      ]
+    }
+  },
+  "placedFeatures": {
+    "encodedlogistics:ore_gallium": {
+      "feature": "encodedlogistics:ore_gallium",
+      "placement": [
+        {
+          "type": "minecraft:count",
+          "count": 2
+        },
+        {
+          "type": "minecraft:in_square"
+        },
+        {
+          "type": "minecraft:height_range",
+          "height": {
+            "type": "minecraft:trapezoid",
+            "min_inclusive": {
+              "above_bottom": 0
+            },
+            "max_inclusive": {
+              "absolute": -32
+            }
+          }
+        },
+        {
+          "type": "minecraft:biome"
+        }
+      ]
+    },
+    "encodedlogistics:ore_neodymium": {
+      "feature": "encodedlogistics:ore_neodymium",
+      "placement": [
+        {
+          "type": "minecraft:count",
+          "count": 8
+        },
+        {
+          "type": "minecraft:in_square"
+        },
+        {
+          "type": "minecraft:height_range",
+          "height": {
+            "type": "minecraft:trapezoid",
+            "min_inclusive": {
+              "absolute": -32
+            },
+            "max_inclusive": {
+              "absolute": 48
+            }
+          }
+        },
+        {
+          "type": "minecraft:biome"
+        }
+      ]
+    },
+    "encodedlogistics:ore_tantalum": {
+      "feature": "encodedlogistics:ore_tantalum",
+      "placement": [
+        {
+          "type": "minecraft:count",
+          "count": 4
+        },
+        {
+          "type": "minecraft:in_square"
+        },
+        {
+          "type": "minecraft:height_range",
+          "height": {
+            "type": "minecraft:uniform",
+            "min_inclusive": {
+              "above_bottom": 0
+            },
+            "max_inclusive": {
+              "absolute": -8
+            }
+          }
+        },
+        {
+          "type": "minecraft:biome"
+        }
+      ]
+    }
+  },
+  "biomeModifiers": {
+    "encodedlogistics:add_ore_gallium": {
+      "type": "neoforge:add_features",
+      "biomes": "#minecraft:is_overworld",
+      "features": "encodedlogistics:ore_gallium",
+      "step": "underground_ores"
+    },
+    "encodedlogistics:add_ore_neodymium": {
+      "type": "neoforge:add_features",
+      "biomes": "#minecraft:is_overworld",
+      "features": "encodedlogistics:ore_neodymium",
+      "step": "underground_ores"
+    },
+    "encodedlogistics:add_ore_tantalum": {
+      "type": "neoforge:add_features",
+      "biomes": "#minecraft:is_overworld",
+      "features": "encodedlogistics:ore_tantalum",
+      "step": "underground_ores"
+    }
+  },
+  "blockLoot": {
+    "encodedlogistics:access_point": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:access_point"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/access_point"
+    },
+    "encodedlogistics:blue_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:blue_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/blue_dense_network_cable"
+    },
+    "encodedlogistics:blue_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:blue_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/blue_fiber_cable"
+    },
+    "encodedlogistics:blue_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:blue_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/blue_network_cable"
+    },
+    "encodedlogistics:cage_light_black": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_black",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_blue": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_blue",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_brown": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_brown",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_cyan": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_cyan",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_gray": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_gray",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_green": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_green",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_light_blue": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_light_blue",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_light_gray": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_light_gray",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_lime": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_lime",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_magenta": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_magenta",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_orange": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_orange",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_pink": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_pink",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_purple": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_purple",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_red": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_red",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_white": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_white",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cage_light_yellow": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cage_light_yellow",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:capacitor_bank": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:capacitor_bank"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/capacitor_bank"
+    },
+    "encodedlogistics:card_reader": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:card_reader",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:control_interface": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:control_interface",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:cyan_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cyan_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/cyan_dense_network_cable"
+    },
+    "encodedlogistics:cyan_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cyan_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/cyan_fiber_cable"
+    },
+    "encodedlogistics:cyan_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:cyan_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/cyan_network_cable"
+    },
+    "encodedlogistics:deepslate_gallium_ore": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:item",
+                  "condition": "minecraft:tool/can_silk_touch",
+                  "name": "encodedlogistics:deepslate_gallium_ore"
+                },
+                {
+                  "type": "minecraft:item",
+                  "modifier": [
+                    {
+                      "type": "minecraft:apply_bonus",
+                      "enchantment": "minecraft:fortune",
+                      "formula": "minecraft:ore_drops"
+                    },
+                    {
+                      "type": "minecraft:explosion_decay"
+                    }
+                  ],
+                  "name": "encodedlogistics:raw_gallium"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/deepslate_gallium_ore"
+    },
+    "encodedlogistics:deepslate_neodymium_ore": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:item",
+                  "condition": "minecraft:tool/can_silk_touch",
+                  "name": "encodedlogistics:deepslate_neodymium_ore"
+                },
+                {
+                  "type": "minecraft:item",
+                  "modifier": [
+                    {
+                      "type": "minecraft:apply_bonus",
+                      "enchantment": "minecraft:fortune",
+                      "formula": "minecraft:ore_drops"
+                    },
+                    {
+                      "type": "minecraft:explosion_decay"
+                    }
+                  ],
+                  "name": "encodedlogistics:raw_neodymium"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/deepslate_neodymium_ore"
+    },
+    "encodedlogistics:deepslate_tantalum_ore": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:item",
+                  "condition": "minecraft:tool/can_silk_touch",
+                  "name": "encodedlogistics:deepslate_tantalum_ore"
+                },
+                {
+                  "type": "minecraft:item",
+                  "modifier": [
+                    {
+                      "type": "minecraft:apply_bonus",
+                      "enchantment": "minecraft:fortune",
+                      "formula": "minecraft:ore_drops"
+                    },
+                    {
+                      "type": "minecraft:explosion_decay"
+                    }
+                  ],
+                  "name": "encodedlogistics:raw_tantalum"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/deepslate_tantalum_ore"
+    },
+    "encodedlogistics:dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/dense_network_cable"
+    },
+    "encodedlogistics:directory_server": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ],
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:directory_server",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/directory_server"
+    },
+    "encodedlogistics:disk_drive": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:disk_drive",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:display_panel": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:display_panel",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:drive_bay": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:drive_bay"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/drive_bay"
+    },
+    "encodedlogistics:exchange_switch": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "conditions": [
+            {
+              "condition": "minecraft:block_state_property",
+              "block": "encodedlogistics:exchange_switch",
+              "properties": {
+                "half": "lower"
+              }
+            },
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ],
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:exchange_switch",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/exchange_switch"
+    },
+    "encodedlogistics:expansion_cabinet": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:expansion_cabinet"
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:fabricator": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:fabricator"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/fabricator"
+    },
+    "encodedlogistics:ferrite_block": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:ferrite_block"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/ferrite_block"
+    },
+    "encodedlogistics:fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/fiber_cable"
+    },
+    "encodedlogistics:gallium_block": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:gallium_block"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/gallium_block"
+    },
+    "encodedlogistics:gateway": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:gateway"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/gateway"
+    },
+    "encodedlogistics:green_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:green_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/green_dense_network_cable"
+    },
+    "encodedlogistics:green_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:green_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/green_fiber_cable"
+    },
+    "encodedlogistics:green_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:green_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/green_network_cable"
+    },
+    "encodedlogistics:integrated_midrange": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:integrated_midrange",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:job_buffer": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:job_buffer"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/job_buffer"
+    },
+    "encodedlogistics:keypunch": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:keypunch",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:light_blue_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:light_blue_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/light_blue_dense_network_cable"
+    },
+    "encodedlogistics:light_blue_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:light_blue_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/light_blue_fiber_cable"
+    },
+    "encodedlogistics:light_blue_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:light_blue_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/light_blue_network_cable"
+    },
+    "encodedlogistics:lime_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:lime_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/lime_dense_network_cable"
+    },
+    "encodedlogistics:lime_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:lime_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/lime_fiber_cable"
+    },
+    "encodedlogistics:lime_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:lime_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/lime_network_cable"
+    },
+    "encodedlogistics:line_printer": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:line_printer",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:lithography_press": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:lithography_press"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/lithography_press"
+    },
+    "encodedlogistics:magenta_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:magenta_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/magenta_dense_network_cable"
+    },
+    "encodedlogistics:magenta_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:magenta_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/magenta_fiber_cable"
+    },
+    "encodedlogistics:magenta_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:magenta_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/magenta_network_cable"
+    },
+    "encodedlogistics:midrange_system": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:midrange_system",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:neodymium_block": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:neodymium_block"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/neodymium_block"
+    },
+    "encodedlogistics:neodymium_ore": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:item",
+                  "condition": "minecraft:tool/can_silk_touch",
+                  "name": "encodedlogistics:neodymium_ore"
+                },
+                {
+                  "type": "minecraft:item",
+                  "modifier": [
+                    {
+                      "type": "minecraft:apply_bonus",
+                      "enchantment": "minecraft:fortune",
+                      "formula": "minecraft:ore_drops"
+                    },
+                    {
+                      "type": "minecraft:explosion_decay"
+                    }
+                  ],
+                  "name": "encodedlogistics:raw_neodymium"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/neodymium_ore"
+    },
+    "encodedlogistics:network_bridge": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:network_bridge"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/network_bridge"
+    },
+    "encodedlogistics:network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/network_cable"
+    },
+    "encodedlogistics:network_controller": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:network_controller"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/network_controller"
+    },
+    "encodedlogistics:optical_amplifier": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ],
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:optical_amplifier",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/optical_amplifier"
+    },
+    "encodedlogistics:optical_multiplexer": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ],
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:optical_multiplexer",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/optical_multiplexer"
+    },
+    "encodedlogistics:orange_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:orange_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/orange_dense_network_cable"
+    },
+    "encodedlogistics:orange_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:orange_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/orange_fiber_cable"
+    },
+    "encodedlogistics:orange_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:orange_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/orange_network_cable"
+    },
+    "encodedlogistics:pink_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:pink_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/pink_dense_network_cable"
+    },
+    "encodedlogistics:pink_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:pink_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/pink_fiber_cable"
+    },
+    "encodedlogistics:pink_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:pink_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/pink_network_cable"
+    },
+    "encodedlogistics:plc": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:plc",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:plc_program",
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:power_inlet": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:power_inlet"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/power_inlet"
+    },
+    "encodedlogistics:purple_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:purple_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/purple_dense_network_cable"
+    },
+    "encodedlogistics:purple_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:purple_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/purple_fiber_cable"
+    },
+    "encodedlogistics:purple_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:purple_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/purple_network_cable"
+    },
+    "encodedlogistics:red_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:red_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/red_dense_network_cable"
+    },
+    "encodedlogistics:red_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:red_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/red_fiber_cable"
+    },
+    "encodedlogistics:red_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:red_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/red_network_cable"
+    },
+    "encodedlogistics:relay_antenna": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:relay_antenna"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/relay_antenna"
+    },
+    "encodedlogistics:scheduler_core": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:scheduler_core"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/scheduler_core"
+    },
+    "encodedlogistics:segment_isolator": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:segment_isolator"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/segment_isolator"
+    },
+    "encodedlogistics:server_rack": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:server_rack"
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/server_rack"
+    },
+    "encodedlogistics:siren_amber": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:siren_amber",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:siren_green": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:siren_green",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:siren_red": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:siren_red",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:small_wireless_bridge": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:small_wireless_bridge"
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:speaker": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:speaker",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:swivel_chair": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:swivel_chair",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "minecraft:dyed_color"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:tantalum_block": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:tantalum_block"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/tantalum_block"
+    },
+    "encodedlogistics:tantalum_ore": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "entries": [
+            {
+              "type": "minecraft:alternatives",
+              "children": [
+                {
+                  "type": "minecraft:item",
+                  "condition": "minecraft:tool/can_silk_touch",
+                  "name": "encodedlogistics:tantalum_ore"
+                },
+                {
+                  "type": "minecraft:item",
+                  "modifier": [
+                    {
+                      "type": "minecraft:apply_bonus",
+                      "enchantment": "minecraft:fortune",
+                      "formula": "minecraft:ore_drops"
+                    },
+                    {
+                      "type": "minecraft:explosion_decay"
+                    }
+                  ],
+                  "name": "encodedlogistics:raw_tantalum"
+                }
+              ]
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/tantalum_ore"
+    },
+    "encodedlogistics:tape_drive": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:tape_drive",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:terminal_desk": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "rolls": 1,
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:terminal_desk",
+              "functions": [
+                {
+                  "function": "minecraft:copy_components",
+                  "source": "block_entity",
+                  "include": [
+                    "encodedlogistics:device_name"
+                  ]
+                }
+              ]
+            }
+          ],
+          "conditions": [
+            {
+              "condition": "minecraft:survives_explosion"
+            }
+          ]
+        }
+      ]
+    },
+    "encodedlogistics:thread_unit": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:thread_unit"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/thread_unit"
+    },
+    "encodedlogistics:white_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:white_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/white_dense_network_cable"
+    },
+    "encodedlogistics:white_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:white_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/white_fiber_cable"
+    },
+    "encodedlogistics:white_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:white_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/white_network_cable"
+    },
+    "encodedlogistics:wireless_bridge": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:wireless_bridge"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/wireless_bridge"
+    },
+    "encodedlogistics:wireless_egress_port": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:wireless_egress_port"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/wireless_egress_port"
+    },
+    "encodedlogistics:wireless_ingress_port": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:wireless_ingress_port"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/wireless_ingress_port"
+    },
+    "encodedlogistics:yellow_dense_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:yellow_dense_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/yellow_dense_network_cable"
+    },
+    "encodedlogistics:yellow_fiber_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:yellow_fiber_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/yellow_fiber_cable"
+    },
+    "encodedlogistics:yellow_network_cable": {
+      "type": "minecraft:block",
+      "pools": [
+        {
+          "condition": {
+            "type": "minecraft:survives_explosion"
+          },
+          "entries": [
+            {
+              "type": "minecraft:item",
+              "name": "encodedlogistics:yellow_network_cable"
+            }
+          ],
+          "rolls": 1
+        }
+      ],
+      "random_sequence": "encodedlogistics:blocks/yellow_network_cable"
+    }
+  }
+}

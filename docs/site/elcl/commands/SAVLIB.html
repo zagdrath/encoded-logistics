@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAVLIB - Encoded Logistics</title>
+<meta name="description" content="Save Library">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">SAVLIB</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>SAVLIB</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Save Library</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>SAVLIB LIB(name (up to 10 characters)) DEV(device name)</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>LIB</code>, <code>DEV</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>LIB</code></td><td>Library</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long; F4 lists libraries</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>DEV</code></td><td>Device</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td></td></tr></tbody></table></div>
+<p><code>SAVLIB</code> writes a whole library onto an <a class="item-link" href="../../reference/items/diskette_8in.html"><img class="icon" src="../../assets/icons/encodedlogistics/diskette_8in.png" alt="" width="20" height="20" loading="lazy">8&quot; Diskette</a>: its source members (with their types, texts, sequence numbers and change dates), its programs, and its database files with their records. The diskette is an item, so you can carry the library to another network, keep it as a backup, or hand it to another player, and bring it back with <a class="cmd" href="RSTLIB.html"><code>RSTLIB</code></a>.</p>
+<p><code>DEV</code> is the diskette drive, by device name:</p>
+<div class="table-wrap"><table><thead><tr><th>Drive</th><th>Diskettes</th><th><code>SAVLIB</code> writes to</th></tr></thead><tbody><tr><td><a class="item-link" href="../../reference/items/midrange_system.html"><img class="icon" src="../../assets/icons/encodedlogistics/midrange_system.png" alt="" width="20" height="20" loading="lazy">Midrange System</a> (<code>MIDRANGE01</code>...)</td><td>Its diskette slot, and a second with an <a class="item-link" href="../../reference/items/expansion_cabinet.html"><img class="icon" src="../../assets/icons/encodedlogistics/expansion_cabinet.png" alt="" width="20" height="20" loading="lazy">Expansion Cabinet</a></td><td>The diskette in its default drive, else the first one in it</td></tr><tr><td><a class="item-link" href="../../reference/items/integrated_midrange.html"><img class="icon" src="../../assets/icons/encodedlogistics/integrated_midrange.png" alt="" width="20" height="20" loading="lazy">Integrated Midrange System</a></td><td>Every diskette in the <a class="item-link" href="../../reference/items/diskette_magazine.html"><img class="icon" src="../../assets/icons/encodedlogistics/diskette_magazine.png" alt="" width="20" height="20" loading="lazy">Diskette Magazine</a> in it</td><td>The same: its default drive's diskette first</td></tr><tr><td><a class="item-link" href="../../reference/items/card_reader.html"><img class="icon" src="../../assets/icons/encodedlogistics/card_reader.png" alt="" width="20" height="20" loading="lazy">Card Reader</a> (<code>CARDRDR01</code>...)</td><td>One</td><td>That one</td></tr></tbody></table></div>
+<p>A Midrange System's drives are online only while it's running. No device of that name is <a class="msg" href="../messages.html#ELC1301"><code>ELC1301</code></a>, an offline one <a class="msg" href="../messages.html#ELC1302"><code>ELC1302</code></a>, a drive with no diskette <a class="msg" href="../messages.html#ELC1310"><code>ELC1310</code></a>. The device is checked first, so these come before any problem with the library (<a class="msg" href="../messages.html#ELC0201"><code>ELC0201</code></a> when there's no such library).</p>
+<h2 id="what-fits">What fits<a class="anchor" href="#what-fits" aria-label="Link to this section">#</a></h2>
+<p>A diskette holds <a class="cfg" href="../../reference/config.html#cfg-elcl-disketteBytes"><code>elcl.disketteBytes</code></a> (default 65,536) bytes, and can hold several libraries. A library of the same name already on it is replaced, so its space counts as free. What a library takes: each member's characters plus one a line, each program's saved source counted the same way again, and each file's records. A library that won't fit in what's free is <a class="msg" href="../messages.html#ELC1311"><code>ELC1311</code></a>, which gives both numbers; nothing is written.</p>
+<p>Anyone may save any library, <code>ELSYS</code> included (its system files aren't saved: they're the network's own data). Done: <a class="msg" href="../messages.html#ELC0220"><code>ELC0220</code></a>, naming the device and the diskette's label.</p>
+<div class="code-block"><pre class="code elcl"><code>SAVLIB LIB(ZAGLIB) DEV(MIDRANGE01)</code></pre></div>
+<p>See <a href="../libraries-and-editor.html#savlib">Saving to diskette</a> and <a href="../../crafting/midrange.html">The Midrange line</a>.</p>
+<h2 id="see-also">System values, save and restore</h2><p><a class="cmd" href="WRKSYSVAL.html"><code>WRKSYSVAL</code></a> <a class="cmd" href="RTVSYSVAL.html"><code>RTVSYSVAL</code></a> <a class="cmd" href="CHGSYSVAL.html"><code>CHGSYSVAL</code></a> <a class="cmd" href="RSTLIB.html"><code>RSTLIB</code></a></p>
+<p><a href="index.html#os-sysvals">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

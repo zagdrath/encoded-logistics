@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database files - Encoded Logistics</title>
+<meta name="description" content="Physical files of typed records in your libraries, the network&#x27;s own data as system files, and the commands, screens and queries that work with them.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html" aria-current="page" class="current">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Database files</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html" aria-current="page" class="current">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav></details>
+<h1>Database files</h1>
+<p class="lead">Physical files of typed records in your libraries, the network's own data as system files, and the commands, screens and queries that work with them.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#db-objects">Files, records and system files</a></li><li class="toc-l2"><a href="#db-define">Defining a file</a></li><li class="toc-l2"><a href="#db-create">Creating, changing and deleting files</a></li><li class="toc-l2"><a href="#db-programs">Files in programs</a></li><li class="toc-l2"><a href="#db-screens">The screens</a></li><li class="toc-l2"><a href="#db-query">Queries (RUNQRY)</a></li><li class="toc-l2"><a href="#db-copy">Copying, export and import</a></li><li class="toc-l2"><a href="#db-limits">Storage, limits and authority</a></li><li class="toc-l2"><a href="#db-example">Example: logging item counts (ITEMSETUP, LOGITEMS)</a></li></ol></nav></details>
+<div class="page-body">
+<p>A library can hold <strong>physical files</strong> as well as members and programs: tables of records, each record a row of named, typed fields. Programs read and write them with <a class="cmd" href="commands/DCLF.html"><code>DCLF</code></a> and <a class="cmd" href="commands/RCVF.html"><code>RCVF</code></a>, as CL programs do; <a class="cmd" href="commands/RUNQRY.html"><code>RUNQRY</code></a> selects and sorts them; screens show and change them a record at a time; and four files in <code>ELSYS</code> are the network itself (its items, devices, crafting history and jobs), live, so a program or a query can work on them like any other file.</p>
+<pre class="term" aria-label="Terminal screen">ITEMHIST (a PF member)  --CRTPF--&gt;  ELGPL/ITEMHIST (a *FILE)  &lt;--WRTRCD--  a program (DCLF FILE(ELGPL/ITEMHIST))
+                                         |
+                                         +--RUNQRY / DSPPFM / UPDDTA / CPYTOIMPF ...</pre>
+<h2 id="db-objects">Files, records and system files<a class="anchor" href="#db-objects" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>A file</strong> (<code>*FILE</code>, attribute <code>PF</code>) has a <strong>record format</strong> (up to 50 fields), an optional <strong>key</strong> (up to 4 fields, optionally <code>UNIQUE</code>) and one data member of records. A keyed file is read in key order; one without a key in the order its records were written. Each record has a relative record number, given when it's written and never reused.</li><li><strong>Its definition</strong> is a source member of type <code>PF</code>, edited in the <a href="libraries-and-editor.html#editor">source editor</a> like a program's; <a class="cmd" href="commands/CRTPF.html"><code>CRTPF</code></a> compiles it into the file. A file and a member (or a program) may share a name: they are different objects.</li><li><strong>Records are saved with the system</strong>, cost network storage as source does (see <a href="#db-limits">limits</a>) and go to a diskette with <a class="cmd" href="commands/SAVLIB.html"><code>SAVLIB</code></a>.</li></ul>
+<p>The <strong>system files</strong> in <code>ELSYS</code> have no records of their own: they're made from the network each time they're read (a read from the top sees the network as it is now; a program reading on sees the same picture for the rest of that tick). They're read-only, and need the Firewall's <strong>view</strong> permission, however they're read (a program, <a class="cmd" href="commands/RUNQRY.html"><code>RUNQRY</code></a>, <a class="cmd" href="commands/CPYF.html"><code>CPYF</code></a>, <a class="cmd" href="commands/CPYTOIMPF.html"><code>CPYTOIMPF</code></a> or a screen). <code>INVITEMS</code> lists only what's actually stored (fluids and gases always have <code>COLD</code> 0), and <code>DEVICES</code>' <code>LOCATION</code> gives the dimension by its path (<code>overworld</code>).</p>
+<div class="table-wrap"><table><thead><tr><th>File</th><th>Fields (the key first)</th><th>What's in it</th></tr></thead><tbody><tr><td><code>ELSYS/INVITEMS</code></td><td><code>ITEM</code> 64A, <code>NAME</code> 48A, <code>HOT</code> 18S, <code>COLD</code> 18S, <code>MOD</code> 32A, <code>TYPE</code> 5A</td><td>Every item, fluid and gas in storage: its ID as scripts write it (<code>IRON_INGOT</code>, <code>encodedlogistics:logic_die</code>, <code>minecraft:water</code>), display name, amount on the drives (mB for fluids and gases) and on tape, mod (a gas's source mod), and type (<code>ITEM</code>, <code>FLUID</code>, <code>PRES</code>).</td></tr><tr><td><code>ELSYS/DEVICES</code></td><td><code>NAME</code> 10A, <code>TYPE</code> 10A, <code>LOCATION</code> 40A, <code>LANES</code> 9S, <code>STATUS</code> 10A</td><td>Every named device: type, <code>x,y,z dimension</code>, lanes it uses, <code>*ONLINE</code> / <code>*OFFLINE</code> / <code>*FAULT</code> / <code>*DISABLED</code>.</td></tr><tr><td><code>ELSYS/CRFHIST</code></td><td><code>NUMBER</code> 9S, <code>JOBID</code> 8A, <code>ITEM</code> 64A, <code>REQUESTED</code> 18S, <code>PRODUCED</code> 18S, <code>STATUS</code> 10A, <code>USER</code> 10A, <code>STARTED</code> T, <code>ENDED</code> T</td><td>The <a href="../crafting/jobs.html">crafting job history</a>.</td></tr><tr><td><code>ELSYS/JOBS</code></td><td><code>NUMBER</code> 6A, <code>JOB</code> 10A, <code>USER</code> 10A, <code>TYPE</code> 3A, <code>HOST</code> 10A, <code>STATUS</code> 7A, <code>PRIORITY</code> 1S, <code>BUDGET</code> 3S</td><td>The script jobs, as <a href="screens.html#scr-wrkactjob">Work with Active Jobs</a> shows them.</td></tr></tbody></table></div>
+<h2 id="db-define">Defining a file<a class="anchor" href="#db-define" aria-label="Link to this section">#</a></h2>
+<p>Make a definition member with <code>CRTMBR MBR(ZAGLIB/STOCK) SRCTYPE(PF)</code> (or F6 on Work with Members), then edit it. Lines start with <code>A</code>, as in a midrange definition (a line without one is read the same); type in the midrange editor's columns or anywhere on the line. <code>A*</code> (or <code>*</code>) starts a comment; a line with only keywords goes with the line before it. The member's text comes from a first comment of the form <code>A* NAME - text</code>.</p>
+<div class="code-block"><pre class="code elcl"><code>     A* STOCK - stock levels
+     A                                      UNIQUE
+     A          R STOCKREC                  TEXT(&#x27;Stock record&#x27;)
+     A            ITEM          20A         COLHDG(&#x27;Item&#x27;)
+     A            QTY            9S 0       COLHDG(&#x27;Quantity&#x27;)
+     A            COST           7P 2       TEXT(&#x27;Unit cost&#x27;)
+     A            HOT            1L
+     A            SEEN            T         TEXT(&#x27;Last counted&#x27;)
+     A          K ITEM</code></pre></div>
+<p><code>R</code> names the record format (one to a file). <code>K</code> names a key field, in order. Every other line is a field: its name (a letter, then up to 9 letters, digits, <code>_</code>, <code>@</code>, <code>#</code> or <code>$</code>), its length and type, then keywords. A definition needs at least one field.</p>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Meaning</th><th>Length</th><th>Its variable in a program</th></tr></thead><tbody><tr><td><code>A</code></td><td>Character</td><td>1–1,024 (<code>64A</code>)</td><td><code>*CHAR</code> of that length</td></tr><tr><td><code>S</code></td><td>Integer</td><td>1–18 digits, 0 decimals (<code>11S 0</code>)</td><td><code>*INT</code></td></tr><tr><td><code>P</code></td><td>Decimal</td><td>1–31 digits and its decimals (<code>9P 2</code> or <code>9P2</code>)</td><td><code>*DEC</code> of that length and decimals</td></tr><tr><td><code>L</code></td><td>Logical</td><td>1 (or blank)</td><td><code>*LGL</code></td></tr><tr><td><code>T</code></td><td>Game timestamp: the day and the time on the game clock, <code>00012 06:30:15</code>; it sorts and compares as text</td><td>any (ignored)</td><td><code>*CHAR</code> 14</td></tr></tbody></table></div>
+<ul><li><strong>Keywords.</strong> <code>UNIQUE</code> on a line of its own before the <code>R</code> (or on the <code>R</code> line): no two records may have the same key (<a class="msg" href="messages.html#ELC2203"><code>ELC2203</code></a>); it needs a <code>K</code> field. <code>TEXT('...')</code> on the <code>R</code> (the file's text when its member has none) or on a field. <code>COLHDG('...' ['...' ['...']])</code> on a field: its column heading on screens and reports, up to three lines (otherwise the field's name). Anything else, or a keyword on a <code>K</code> line, is <a class="msg" href="messages.html#ELC2226"><code>ELC2226</code></a>.</li><li><strong>Timestamps.</strong> Typed, imported or assigned, a <code>T</code> value may be <code>Day 12 06:30</code>, <code>12 06:30:15</code> or <code>00012 06:30:15</code>. Written blank (or <code>*NOW</code>) it takes the moment it's written; a program's variable gets that time back after <a class="cmd" href="commands/WRTRCD.html"><code>WRTRCD</code></a> or <a class="cmd" href="commands/UPDRCD.html"><code>UPDRCD</code></a>.</li><li><strong>Checking.</strong> The editor checks a definition on Enter as it does a program: the bad line reversed, its message on the message line (<a class="msg" href="messages.html#ELC2220"><code>ELC2220</code></a> to <a class="msg" href="messages.html#ELC2228"><code>ELC2228</code></a>). There's no prompter for definition lines.</li></ul>
+<h2 id="db-create">Creating, changing and deleting files<a class="anchor" href="#db-create" aria-label="Link to this section">#</a></h2>
+<ul><li><code>CRTPF FILE(ZAGLIB/STOCK)</code> compiles the member of the same name in the same library (<code>SRCMBR(LIB/NAME)</code> for another) and makes the file: <a class="msg" href="messages.html#ELC2230"><code>ELC2230</code></a>. The listing goes to Work with Output (a spooled file of the file's name): the source with sequence numbers, the record format (fields, record length, key), and each message with the sequence number of its line. With errors there's no file: <a class="msg" href="messages.html#ELC2239"><code>ELC2239</code></a>. Option <strong>14=Compile</strong> on a <code>PF</code> member in Work with Members does the same. <code>TEXT()</code> gives the file a text of its own (the default, <code>*SRCMBRTXT</code>, takes the member's).</li><li><code>CHGPF FILE(ZAGLIB/STOCK)</code> makes the file again from its (changed) definition, <strong>keeping its records</strong>: each keeps its value in every field whose name and type are still there, and the other fields' values are dropped, with a warning for each (<a class="msg" href="messages.html#ELC2232"><code>ELC2232</code></a>). A text field that's shorter now is cut; a number that no longer fits stops it (<a class="msg" href="messages.html#ELC2209"><code>ELC2209</code></a>), as does a key made <code>UNIQUE</code> over duplicates (<a class="msg" href="messages.html#ELC2203"><code>ELC2203</code></a>): then nothing changes. Done, it's <a class="msg" href="messages.html#ELC2231"><code>ELC2231</code></a>; a definition with errors changes nothing (<a class="msg" href="messages.html#ELC2246"><code>ELC2246</code></a>), and a bigger format that no longer fits the network's storage is <a class="msg" href="messages.html#ELC0207"><code>ELC0207</code></a>. 14=Compile on a <code>PF</code> member whose file is there already runs <a class="cmd" href="commands/CHGPF.html"><code>CHGPF</code></a>. A file made by a query or a copy has no definition, so it can't be changed (<a class="msg" href="messages.html#ELC2247"><code>ELC2247</code></a>). Work with Members and Work with Files mark a file whose definition changed since with <code>*</code> in Chg.</li><li><a class="cmd" href="commands/DLTF.html"><code>DLTF</code></a> deletes a file and its records (<a class="msg" href="messages.html#ELC2233"><code>ELC2233</code></a>); <a class="cmd" href="commands/CLRPFM.html"><code>CLRPFM</code></a> deletes every record (<a class="msg" href="messages.html#ELC2234"><code>ELC2234</code></a>).</li></ul>
+<h2 id="db-programs">Files in programs<a class="anchor" href="#db-programs" aria-label="Link to this section">#</a></h2>
+<p><a class="cmd" href="commands/DCLF.html"><code>DCLF</code></a> goes with the <code>DCL</code>s and declares a variable for every field: <code>&amp;ITEM</code>, <code>&amp;QTY</code>..., or with an open ID <code>&amp;STK_ITEM</code>, <code>&amp;STK_QTY</code>... (<code>DCLF FILE(ZAGLIB/STOCK) OPNID(STK)</code>). A program may declare up to five files, each open ID once. The file operations name the file by its open ID (none: the file declared without one).</p>
+<p>This program reads every item on the network, adds up how many there are, and writes the ones with fewer than 64 into a file of its own, <code>ZAGLIB/LOW</code> (which has to exist before the program is compiled):</p>
+<div class="code-block"><pre class="code elcl"><code>     A* LOW - items running low
+     A                                      UNIQUE
+     A          R LOWREC
+     A            ITEM          64A         COLHDG(&#x27;Item&#x27;)
+     A            QTY           18S 0       COLHDG(&#x27;Quantity&#x27;)
+     A          K ITEM</code></pre></div>
+<div class="code-block"><pre class="code elcl"><code>PGM
+  DCLF FILE(ELSYS/INVITEMS)                   <span class="c">/* &amp;ITEM &amp;NAME &amp;HOT &amp;COLD &amp;MOD &amp;TYPE */</span>
+  DCLF FILE(ZAGLIB/LOW) OPNID(LOW)            <span class="c">/* &amp;LOW_ITEM &amp;LOW_QTY                */</span>
+  DCL  VAR(&amp;TOTAL) TYPE(*INT)
+READ:
+  RCVF
+  MONMSG MSGID(ELC2201) EXEC(GOTO CMDLBL(DONE))  <span class="c">/* end of file */</span>
+  CHGVAR VAR(&amp;TOTAL) VALUE(&amp;TOTAL + &amp;HOT + &amp;COLD)
+  IF COND(&amp;HOT + &amp;COLD *LT 64) THEN(DO)
+    CHGVAR VAR(&amp;LOW_ITEM) VALUE(&amp;ITEM)
+    CHGVAR VAR(&amp;LOW_QTY)  VALUE(&amp;HOT + &amp;COLD)
+    WRTRCD OPNID(LOW)
+    MONMSG MSGID(ELC2203)                     <span class="c">/* already listed */</span>
+  ENDDO
+  GOTO CMDLBL(READ)
+DONE:
+  SNDPGMMSG MSG(<span class="s">&#x27;Items stored:&#x27;</span> *BCAT %CHAR(&amp;TOTAL))
+ENDPGM</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody><tr><td><a class="cmd" href="commands/RCVF.html"><code>RCVF</code></a></td><td>Reads the next record into the variables (key order; arrival order without a key). At the end: <a class="msg" href="messages.html#ELC2201"><code>ELC2201</code></a>, which you can monitor, and again on every <code>RCVF</code> until the file is repositioned, chained or closed.</td></tr><tr><td><a class="cmd" href="commands/POSDBF.html"><code>POSDBF</code></a></td><td><code>POSITION(*START)</code> goes back to the start (the next <code>RCVF</code> reads the first record); <code>*END</code> goes on to the end. Give <code>OPNID()</code> and <code>POSITION()</code> by keyword: the first positional value is the open ID.</td></tr><tr><td><a class="cmd" href="commands/CLOF.html"><code>CLOF</code></a></td><td>Closes the file: the next <code>RCVF</code> reads it again from the top.</td></tr><tr><td><a class="cmd" href="commands/CHNRCD.html"><code>CHNRCD</code></a></td><td><code>KEY(value ...)</code> reads the first record whose leading key fields are these values (all of the key, or its first fields): <a class="msg" href="messages.html#ELC2202"><code>ELC2202</code></a> when there's none. <code>RCVF</code> carries on after it. A file without a key, or more values than it has key fields, is <a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a>.</td></tr><tr><td><a class="cmd" href="commands/WRTRCD.html"><code>WRTRCD</code></a></td><td>Writes a new record from the variables (fields the program doesn't declare are blank): <a class="msg" href="messages.html#ELC2203"><code>ELC2203</code></a> for a duplicate unique key, <a class="msg" href="messages.html#ELC2208"><code>ELC2208</code></a> when the file is full, <a class="msg" href="messages.html#ELC0207"><code>ELC0207</code></a> when storage is.</td></tr><tr><td><a class="cmd" href="commands/UPDRCD.html"><code>UPDRCD</code></a></td><td>Changes the record last read (<code>RCVF</code> or <code>CHNRCD</code>) to the variables' values: <a class="msg" href="messages.html#ELC2204"><code>ELC2204</code></a> when none has been read.</td></tr><tr><td><a class="cmd" href="commands/DLTRCD.html"><code>DLTRCD</code></a></td><td>Deletes the record last read (<a class="msg" href="messages.html#ELC2204"><code>ELC2204</code></a> with none); after it there's no record last read until the next read.</td></tr></tbody></table></div>
+<ul><li><strong>The file must exist when the program is compiled</strong> (<a class="msg" href="messages.html#ELC2205"><code>ELC2205</code></a>); an unqualified name is looked for down the compiling user's library list. The program keeps the record formats it was compiled with, so it compiles again the same after a restart. The variables a <code>DCLF</code> makes mustn't clash with your own or another file's (<a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a>): give one of the files an open ID.</li><li><strong>Level check.</strong> Each operation opens the file as it is now (an unqualified name: down the job user's library list). If a field the program declares has gone or changed type since it was compiled (<a class="cmd" href="commands/CHGPF.html"><code>CHGPF</code></a>), that's <a class="msg" href="messages.html#ELC2207"><code>ELC2207</code></a>: compile it again. Fields added since don't matter.</li><li>A value that doesn't fit its field (a number too big for <code>9S 0</code>) is <a class="msg" href="messages.html#ELC2209"><code>ELC2209</code></a>; text too long for an <code>A</code> field is cut, as a <code>*CHAR</code> assignment is.</li><li>A file operation naming an open ID no <code>DCLF</code> declares is a compile error, <a class="msg" href="messages.html#ELC2206"><code>ELC2206</code></a>. The file commands are program-only: typed on a command line they're <a class="msg" href="messages.html#ELC0106"><code>ELC0106</code></a>.</li><li>The editor checks <code>DCLF</code> against the file's real format, which it asks the server for when it meets one; until the answer comes, that file's variables aren't checked.</li></ul>
+<h2 id="db-screens">The screens<a class="anchor" href="#db-screens" aria-label="Link to this section">#</a></h2>
+<p><code>WRKF LIB(ZAGLIB)</code> (Main Menu option 10; with no library, your current library) works with a library's files. Work with Members lists them too, after the library's members, with Type <code>*FILE</code>.</p>
+<pre class="term" aria-label="Terminal screen"> WRKF                           Work with Files                System:  ELNET01
+                                                                Day 2  07:14:22
+ Library . . . . :   ZAGLIB
+ Type options, press Enter.
+   2=Change data  4=Delete  5=Display data  8=Display description
+
+Opt  File        Attr  Chg   Records  Text
+     ITEMHIST    PF            1,240  Item count history
+5    STOCK       PF    *           3  Stock levels
+     LOWSTOCK    PF                2  Query of ZAGLIB/STOCK
+
+                                      Chg * = definition changed since made
+
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F12=Cancel</pre>
+<p>Options: <strong>2=Change data</strong> (Update Data), <strong>4=Delete</strong> (asks first; <a class="cmd" href="commands/DLTF.html"><code>DLTF</code></a>), <strong>5=Display data</strong>, <strong>8=Display description</strong>. F6 prompts <a class="cmd" href="commands/CRTPF.html"><code>CRTPF</code></a>. ELSYS's files can be shown (5 and 8), not changed (<a class="msg" href="messages.html#ELC0205"><code>ELC0205</code></a>).</p>
+<p><code>DSPPFM FILE(ZAGLIB/STOCK)</code>, <strong>Display Physical File Member</strong>, shows the records in columns under their headings. PageUp / PageDown roll it; <strong>Position to</strong> takes a key on a keyed file (its fields' values, separated by blanks; the first fields alone will do: the first record at or after it comes to the top), or on a file without a key a line number in the list; <strong>F19 / F20</strong> shift 40 columns for records wider than the screen.</p>
+<pre class="term" aria-label="Terminal screen"> DSPPFM                   Display Physical File Member         System:  ELNET01
+                                                                Day 2  07:14:22
+ File  . . . . . :   ZAGLIB/STOCK               Records . . :   3
+ Position to key . . .                                  Columns . . :  1 - 78
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+Item                   Quantity        COST  HOT  SEEN
+COAL                        900        0.25  0    00002 07:00:00
+GOLD_INGOT                    3        9.99  1    00003 07:00:00
+IRON_INGOT                   40        1.50  1    00002 07:00:00
+
+
+
+
+
+
+
+
+
+
+
+                                                                         Bottom
+
+
+ F1=Help  F3=Exit  F5=Refresh  F12=Cancel  F19=Left  F20=Right</pre>
+<p><code>DSPFD FILE()</code>, <strong>Display File Description</strong>: the file's text, record format, source member (and whether it changed since), when it was made, records and the limit, record length, storage, key, and each field's type, length, decimals, place in the key and text.</p>
+<pre class="term" aria-label="Terminal screen"> DSPFD                      Display File Description           System:  ELNET01
+                                                                Day 2  07:14:22
+ File  . . . . . . . . . . . :  ZAGLIB/STOCK
+ Attribute . . . . . . . . . :  PF
+ Text  . . . . . . . . . . . :  Stock levels
+ Record format . . . . . . . :  STOCKREC   Stock record
+ Source member . . . . . . . :  ZAGLIB/STOCK   (changed since the file was made)
+ Created . . . . . . . . . . :  Day 2  07:20
+ Records . . . . . . . . . . :  3   Limit  10,000
+ Record length . . . . . . . :  51
+ Storage, bytes  . . . . . . :  3
+ Key . . . . . . . . . . . . :  ITEM   Unique
+
+ Field       Type  Length  Dec  Key  Text
+ ITEM        A         20         1  Item
+ QTY         S          9    0       Quantity
+ COST        P          7    2       Unit cost
+ HOT         L          1
+ SEEN        T         14            Last counted
+
+ Press Enter to continue.
+
+
+ F1=Help  F3=Exit  F5=Refresh  F12=Cancel</pre>
+<p><code>UPDDTA FILE()</code>, <strong>Update Data</strong>, changes records one at a time, as a midrange data file utility does:</p>
+<pre class="term" aria-label="Terminal screen"> UPDDTA                           Update Data                  System:  ELNET01
+                                                                Day 2  07:14:22
+ File  . . . . . :   ZAGLIB/STOCK               Mode  . . . :   CHANGE
+ Format  . . . . :   STOCKREC                   Record  . . :   2 of 3
+ Position to key . . .
+
+ Type changes, press Enter.
+
+ ITEM       Item . . . . . . . . . . : GOLD_INGOT           20A
+ QTY        Quantity . . . . . . . . : 3          9S 0
+ COST       Unit cost  . . . . . . . : 9.99      7P 2
+ HOT         . . . . . . . . . . . . : 1 1L
+ SEEN       Last counted . . . . . . : 00003 07:00:00 T
+
+
+
+
+
+
+
+
+
+
+ F1=Help F3=Exit F5=Refresh F6=Add F7=Previous F8=Next F11=Delete F12=Cancel</pre>
+<ul><li><strong>Change mode</strong> shows a record. Change its values and press Enter to change it; Enter with nothing changed goes on to the next record. <strong>F7 / F8</strong> show the record before or after (PageUp / PageDown too, when the fields fit one page); <strong>F11</strong> deletes it (asks first); on a keyed file, a key in Position to and Enter shows the first record at or after it.</li><li><strong>Entry mode</strong> (F6; an empty file opens in it): type a new record's values and press Enter to add it; the fields clear for the next. <strong>F5</strong> clears them, <strong>F10</strong> goes back to change mode.</li><li>Values are checked by type before anything is sent (a whole number for <code>S</code>, a number for <code>P</code>, <code>1</code> or <code>0</code> for <code>L</code>, a timestamp or blank for <code>T</code>), and again on the server: an error that names a field (<a class="msg" href="messages.html#ELC2209"><code>ELC2209</code></a>) puts the cursor on it; a duplicate key (<a class="msg" href="messages.html#ELC2203"><code>ELC2203</code></a>) is shown on the message line. A file with more than 12 fields has more pages of them. A record too long to send from the screen has to be changed with a program; <code>ELSYS</code>'s files can't be changed at all (<a class="msg" href="messages.html#ELC0205"><code>ELC0205</code></a>).</li></ul>
+<h2 id="db-query">Queries (RUNQRY)<a class="anchor" href="#db-query" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>RUNQRY FILE(ZAGLIB/STOCK) QRYSLT(<span class="s">&#x27;QTY *LT 100 *AND HOT&#x27;</span>) SORT(QTY *DESCEND)
+RUNQRY FILE(ELSYS/INVITEMS) QRYSLT(<span class="s">&#x27;%SST(ITEM 1 4) *EQ &quot;IRON&quot;&#x27;</span>) SORT(ITEM) OUTPUT(*PRINT)
+RUNQRY FILE(ELSYS/DEVICES) QRYSLT(<span class="s">&#x27;STATUS *NE &quot;*ONLINE&quot;&#x27;</span>) OUTPUT(*OUTFILE) OUTFILE(ZAGLIB/DOWN)</code></pre></div>
+<ul><li><strong><code>QRYSLT</code></strong> is an ELCL expression over the file's field names: every operator and built-in function of the <a href="language.html">language</a>; a field written bare or as <code>&amp;FIELD</code>; a literal in double quotes (or doubled single quotes, as in any quoted value). A name that isn't a field is <a class="msg" href="messages.html#ELC2242"><code>ELC2242</code></a>. <code>*ALL</code> (the default) takes every record.</li><li><strong><code>SORT</code></strong> names up to four fields (<a class="msg" href="messages.html#ELC2224"><code>ELC2224</code></a> past that), each optionally followed by <code>*DESCEND</code> to go highest first (or <code>*ASCEND</code>, the default); records it can't tell apart keep the file's order. <code>*NONE</code> (the default): the file's order.</li><li><strong><code>OUTPUT(*DISPLAY)</code></strong> (the default) shows the result on the terminal, laid out as Display Physical File Member (titled <strong>Display Report</strong>; Position to takes a line number). In a program or a batch job, where there's no screen, it's printed instead. <strong><code>*PRINT</code></strong> writes the report (title, selection, headings, records, the count) to the spooled file <code>QPQUPRFIL</code> in Work with Output. <strong><code>*OUTFILE</code></strong> makes or replaces <code>OUTFILE()</code> (needed with it; a bare name goes in your current library) with the records selected, in the query's order: a file without a key, with the text <em>Query of LIB/FILE</em>. It replaces any file of that name, so choose the name with care.</li><li>Each run in a program says <a class="msg" href="messages.html#ELC2238"><code>ELC2238</code></a> (<code>Query selected &amp;1 of &amp;2 records.</code>); typed at a terminal, the Display Report screen shows <em>Selected n of m</em> instead.</li></ul>
+<pre class="term" aria-label="Terminal screen"> RUNQRY                          Display Report                System:  ELNET01
+                                                                Day 2  07:14:22
+ Query . . . . . :   ZAGLIB/STOCK               Selected  . :   2 of 3
+ Position to record .                                   Columns . . :  1 - 78
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+Item                   Quantity        COST  HOT  SEEN
+IRON_INGOT                   40        1.50  1    00002 07:00:00
+GOLD_INGOT                    3        9.99  1    00003 07:00:00
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                         Bottom
+
+
+ F1=Help  F3=Exit  F5=Refresh  F12=Cancel  F19=Left  F20=Right</pre>
+<h2 id="db-copy">Copying, export and import<a class="anchor" href="#db-copy" aria-label="Link to this section">#</a></h2>
+<ul><li><a class="cmd" href="commands/CPYF.html"><code>CPYF</code></a> <code>FROMFILE() TOFILE() MBROPT(*ADD|*REPLACE) CRTFILE(*NO|*YES)</code> copies records, each field of the file copied to from the field of the same name (<a class="msg" href="messages.html#ELC2244"><code>ELC2244</code></a> when they share none; others left blank). <code>CRTFILE(*YES)</code> makes a file that isn't there with the copied file's format and key. It's all or nothing: a value that doesn't fit (<a class="msg" href="messages.html#ELC2243"><code>ELC2243</code></a>, with its row) or a duplicate key (<a class="msg" href="messages.html#ELC2203"><code>ELC2203</code></a>) copies nothing. Done: <a class="msg" href="messages.html#ELC2235"><code>ELC2235</code></a>.</li><li><a class="cmd" href="commands/CPYTOIMPF.html"><code>CPYTOIMPF</code></a> <code>FILE() TOSTMF('stock.csv')</code> writes the records as CSV (a heading row of field names, then a row a record; numbers plain, logicals <code>1</code>/<code>0</code>, timestamps as text) to the system's folder: <code>&lt;world&gt;/encodedlogistics/libraries/&lt;SYSNAME&gt;/stock.csv</code>. <a class="msg" href="messages.html#ELC2236"><code>ELC2236</code></a>.</li><li><a class="cmd" href="commands/CPYFRMIMPF.html"><code>CPYFRMIMPF</code></a> <code>FROMSTMF('stock.csv') FILE() MBROPT(*ADD|*REPLACE)</code> reads one back. A heading row naming the fields maps columns by name (any order; fields left out are blank); without one the columns are the fields in order. All or nothing: a cell that doesn't fit its field is <a class="msg" href="messages.html#ELC2243"><code>ELC2243</code></a>. Done: <a class="msg" href="messages.html#ELC2237"><code>ELC2237</code></a>; <a class="msg" href="messages.html#ELC2240"><code>ELC2240</code></a> when there's no such file.</li><li>Both need <a href="libraries-and-editor.html#folder-sync">folder sync</a> on (<a class="cfg" href="../reference/config.html#cfg-elcl-allowFolderSync"><code>elcl.allowFolderSync</code></a>), else <a class="msg" href="messages.html#ELC2241"><code>ELC2241</code></a>; the name must be a plain name ending <code>.csv</code> (<a class="msg" href="messages.html#ELC2245"><code>ELC2245</code></a>). See also <a href="../admin/folders.html">Folders on disk</a>.</li></ul>
+<h2 id="db-limits">Storage, limits and authority<a class="anchor" href="#db-limits" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>Storage.</strong> A file's records cost network storage as source does: each record its record length in characters (A its length, S and P their digits, L 1, T 14), a byte of drive space per 64 characters (<a class="cfg" href="../reference/config.html#cfg-elcl-charsPerStorageByte"><code>elcl.charsPerStorageByte</code></a>), rounded up per file. Writing records past the drives' room is <a class="msg" href="messages.html#ELC0207"><code>ELC0207</code></a>. ELSYS's files cost nothing.</li><li><strong>Records per file.</strong> At most <a class="cfg" href="../reference/config.html#cfg-elcl-maxRecordsPerFile"><code>elcl.maxRecordsPerFile</code></a> (default 10,000): past it, <a class="msg" href="messages.html#ELC2208"><code>ELC2208</code></a>. The limit and the storage check apply to every way records go in: <a class="cmd" href="commands/WRTRCD.html"><code>WRTRCD</code></a>, <a class="cmd" href="commands/CPYF.html"><code>CPYF</code></a>, <a class="cmd" href="commands/CPYFRMIMPF.html"><code>CPYFRMIMPF</code></a> and <code>RUNQRY OUTPUT(*OUTFILE)</code>.</li><li><strong>Authority.</strong> Reading a file needs its library (every library gives <code>*USE</code>); writing it (records, <a class="cmd" href="commands/CRTPF.html"><code>CRTPF</code></a>, <a class="cmd" href="commands/CHGPF.html"><code>CHGPF</code></a>, <a class="cmd" href="commands/DLTF.html"><code>DLTF</code></a>, <a class="cmd" href="commands/CLRPFM.html"><code>CLRPFM</code></a>, copies and imports into it) needs <code>*CHANGE</code> on the library: its owner, <code>*SECOFR</code>, or a <code>*CHANGE</code> library (<a class="msg" href="messages.html#ELC0401"><code>ELC0401</code></a>); ELSYS never (<a class="msg" href="messages.html#ELC0205"><code>ELC0205</code></a>). ELSYS's system files need the Firewall's view permission (<a class="msg" href="messages.html#ELC0401"><code>ELC0401</code></a>).</li><li><strong>Saving.</strong> Files and their records are saved with the system. <a class="cmd" href="commands/SAVLIB.html"><code>SAVLIB</code></a> writes a library's files and records to the diskette with its members (their types kept) and programs, and <a class="cmd" href="commands/RSTLIB.html"><code>RSTLIB</code></a> puts them back; each record counts its record length plus one against the diskette's <a class="cfg" href="../reference/config.html#cfg-elcl-disketteBytes"><code>elcl.disketteBytes</code></a>. <a href="libraries-and-editor.html#folder-sync">Folder sync</a> writes <code>PF</code> members as <code>&lt;MEMBER&gt;.pf</code>; records don't sync (use <a class="cmd" href="commands/CPYTOIMPF.html"><code>CPYTOIMPF</code></a>).</li><li><strong>Display Panels</strong> can show a file as a table: <code>SNDDSPWDG WDG(*TABLE) FILE() QRYSLT() SORT()</code> (see <a href="../control/display-panels.html">Display Panels</a> and <a class="cmd" href="commands/SNDDSPWDG.html"><code>SNDDSPWDG</code></a>).</li></ul>
+<h2 id="db-example">Example: logging item counts (ITEMSETUP, LOGITEMS)<a class="anchor" href="#db-example" aria-label="Link to this section">#</a></h2>
+<p><code>ELSYS</code> ships a worked example: <code>CALL ELSYS/ITEMSETUP</code> sets it all up. It makes <code>ELGPL/ITEMHIST</code> from the definition <code>ELSYS/ITEMHIST</code> (keeping its records if it's there already), compiles <code>ELSYS/LOGITEMS</code> into <code>ELGPL</code>, and adds a schedule entry that runs it every 10 minutes as a batch job (which needs a <a href="jobs-and-scheduling.html">job host</a>). Copy the members to a library of your own to change them. If <code>ELGPL/ITEMHIST</code> is there already, running <code>ITEMSETUP</code> again leaves it as it is: use <a class="cmd" href="commands/CHGPF.html"><code>CHGPF</code></a> to bring in a changed definition.</p>
+<div class="code-block"><div class="code-title">ITEMHIST.pf</div><pre class="code elcl"><code>     A* ITEMHIST - Item counts logged by LOGITEMS
+     A* Each run of LOGITEMS writes a record an item, all with the
+     A* same LOGGED time; the key keeps one record an item a run.
+     A                                      UNIQUE
+     A          R ITEMREC                   TEXT(&#x27;Item count history&#x27;)
+     A            LOGGED          14T       COLHDG(&#x27;Logged&#x27;)
+     A                                      TEXT(&#x27;When the count was taken&#x27;)
+     A            ITEM           64A        COLHDG(&#x27;Item&#x27;)
+     A            COUNT          18S 0      COLHDG(&#x27;Count&#x27;)
+     A                                      TEXT(&#x27;Hot and cold together&#x27;)
+     A          K LOGGED
+     A          K ITEM</code></pre></div>
+<div class="code-block"><div class="code-title">ITEMSETUP.elclp</div><pre class="code elcl"><code><span class="c">/* ITEMSETUP - set up item count logging every 10 minutes            */</span>
+<span class="c">/* CALL ELSYS/ITEMSETUP makes the file ELGPL/ITEMHIST (its records    */</span>
+<span class="c">/* kept when it&#x27;s there already), compiles ELGPL/LOGITEMS and runs it */</span>
+<span class="c">/* every 10 minutes as a batch job (that needs a job host: a Compute  */</span>
+<span class="c">/* Server or a Midrange System). Then: RUNQRY FILE(ELGPL/ITEMHIST)    */</span>
+PGM
+  CRTPF FILE(ELGPL/ITEMHIST) SRCMBR(ELSYS/ITEMHIST)
+  MONMSG MSGID(ELC0204) <span class="c">/* there already: its records stay */</span>
+  CRTELPGM PGM(ELGPL/LOGITEMS) SRCMBR(ELSYS/LOGITEMS)
+  ADDJOBSCDE JOB(LOGITEMS) CMD(CALL PGM(ELGPL/LOGITEMS)) FRQ(*INTERVAL) +
+             INTERVAL(600)
+  MONMSG MSGID(ELC0305) <span class="c">/* scheduled already */</span>
+  SNDPGMMSG MSG(<span class="s">&#x27;Item logging set up: ELGPL/LOGITEMS every 10 minutes&#x27;</span>)
+ENDPGM</code></pre></div>
+<div class="code-block"><div class="code-title">LOGITEMS.elclp</div><pre class="code elcl"><code><span class="c">/* LOGITEMS - log every item&#x27;s count to ITEMHIST, report the low ones */</span>
+<span class="c">/* ITEMSETUP makes ELGPL/ITEMHIST, compiles this into ELGPL and runs  */</span>
+<span class="c">/* it every 10 minutes. Each run&#x27;s records share one LOGGED time.     */</span>
+PGM
+  DCLF FILE(ELSYS/INVITEMS) OPNID(INV)
+  DCLF FILE(ELGPL/ITEMHIST) OPNID(HIST)
+  DCL  VAR(&amp;N)     TYPE(*INT) VALUE(0)
+  DCL  VAR(&amp;STAMP) TYPE(*CHAR) LEN(14)
+
+  <span class="c">/* Every item on the network, in item order, into the history      */</span>
+  DOWHILE COND(<span class="s">&#x27;1&#x27;</span>)
+    RCVF OPNID(INV)
+    MONMSG MSGID(ELC2201) EXEC(LEAVE)
+    CHGVAR VAR(&amp;HIST_LOGGED) VALUE(&amp;STAMP)
+    CHGVAR VAR(&amp;HIST_ITEM)   VALUE(&amp;INV_ITEM)
+    CHGVAR VAR(&amp;HIST_COUNT)  VALUE(&amp;INV_HOT + &amp;INV_COLD)
+    WRTRCD OPNID(HIST)
+    <span class="c">/* Written blank, LOGGED took the time: the rest of the run too  */</span>
+    CHGVAR VAR(&amp;STAMP) VALUE(&amp;HIST_LOGGED)
+    CHGVAR VAR(&amp;N) VALUE(&amp;N + 1)
+  ENDDO
+
+  <span class="c">/* This run&#x27;s items under a stack, fewest first, to a spooled file */</span>
+  RUNQRY FILE(ELGPL/ITEMHIST) +
+         QRYSLT(<span class="s">&#x27;LOGGED *EQ &quot;&#x27;</span> *TCAT &amp;STAMP *TCAT <span class="s">&#x27;&quot; *AND COUNT *LT 64&#x27;</span>) +
+         SORT(COUNT ITEM) OUTPUT(*PRINT)
+  SNDPGMMSG MSG(<span class="s">&#x27;LOGITEMS logged&#x27;</span> *BCAT %CHAR(&amp;N) *BCAT <span class="s">&#x27;items&#x27;</span>)
+ENDPGM</code></pre></div>
+<p>Each run writes one record an item, all with the same <code>LOGGED</code> time (the key keeps them apart), then prints that run's items under a stack, fewest first, to Work with Output. To see the history: <code>RUNQRY FILE(ELGPL/ITEMHIST)</code>, or for one item <code>RUNQRY ELGPL/ITEMHIST QRYSLT('ITEM *EQ "IRON_INGOT"')</code>; <code>CPYTOIMPF FILE(ELGPL/ITEMHIST) TOSTMF('itemhist.csv')</code> takes it to a spreadsheet. <code>RMVJOBSCDE JOB(LOGITEMS)</code> stops the logging.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="libraries-and-editor.html" rel="prev"><span>Previous</span>Libraries and the editor</a><a class="next" href="language.html" rel="next"><span>Next</span>The ELCL language</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

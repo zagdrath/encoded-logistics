@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNDDSPTXT - Encoded Logistics</title>
+<meta name="description" content="Send Display Text">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">SNDDSPTXT</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>SNDDSPTXT</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Send Display Text</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>SNDDSPTXT DEV(device name) TEXT(text) [LINE(*NEXT | whole number)] [CLEAR(*NO | *YES)] [SIZE(*SAME | *SMALL | *NORMAL | *LARGE | *HUGE)] [COLOR(*SAME | *DFT | *BLUE | *BROWN | *CYAN | *DARK | *FOREST | *GREEN | *GREY | *LIGHT | *MINT | *NAVY | *ORANGE | *RED | *RUST | *SILVER | *STEEL | *WHITE | *YELLOW | text)] [ALIGN(*SAME | *LEFT | *CENTER | *RIGHT)]</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>DEV</code>, <code>TEXT</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>DEV</code></td><td>Device</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>TEXT</code></td><td>Text</td><td>Text<br><span class="muted">prompter field 64 long</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>LINE</code></td><td>Line</td><td>Whole number<br><span class="muted">1 to 64</span></td><td>No</td><td><code>*NEXT</code></td><td><code>*NEXT</code></td></tr><tr><td><code>CLEAR</code></td><td>Clear first</td><td>Special value</td><td>No</td><td><code>*NO</code></td><td><code>*NO</code>, <code>*YES</code></td></tr><tr><td><code>SIZE</code></td><td>Text size</td><td>Special value</td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*SMALL</code>, <code>*NORMAL</code>, <code>*LARGE</code>, <code>*HUGE</code></td></tr><tr><td><code>COLOR</code></td><td>Colour</td><td>Text<br><span class="muted">prompter field 8 long</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*DFT</code>, <code>*BLUE</code>, <code>*BROWN</code>, <code>*CYAN</code>, <code>*DARK</code>, <code>*FOREST</code>, <code>*GREEN</code>, <code>*GREY</code>, <code>*LIGHT</code>, <code>*MINT</code>, <code>*NAVY</code>, <code>*ORANGE</code>, <code>*RED</code>, <code>*RUST</code>, <code>*SILVER</code>, <code>*STEEL</code>, <code>*WHITE</code>, <code>*YELLOW</code></td></tr><tr><td><code>ALIGN</code></td><td>Alignment</td><td>Special value</td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*LEFT</code>, <code>*CENTER</code>, <code>*RIGHT</code></td></tr></tbody></table></div>
+<p><code>SNDDSPTXT</code> writes a line of text on a Display Panel screen, named by its device name (<code>DSP01</code>). In Text mode the lines fill the whole screen; in Dashboard mode they show in any region whose widget is <code>*TEXT</code> (see <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a>). Writing text doesn't change the screen's mode.</p>
+<p>The screen must be online: offline (no running network, or no lane) is <a class="msg" href="../messages.html#ELC1302"><code>ELC1302</code></a>. A device that isn't a Display Panel screen is <a class="msg" href="../messages.html#ELC1303"><code>ELC1303</code></a>.</p>
+<h2 id="where-the-line-goes">Where the line goes<a class="anchor" href="#where-the-line-goes" aria-label="Link to this section">#</a></h2>
+<ul><li><code>LINE(n)</code> writes line <em>n</em>, 1 being the top, replacing what was there; empty lines are added above it if needed. The highest line is the number of <code>*SMALL</code> lines the screen holds, its canvas height over 6 pixels (5 on a screen one panel high, 10 on two, 32 on six). Past that is <a class="msg" href="../messages.html#ELC0004"><code>ELC0004</code></a>.</li><li><code>LINE(*NEXT)</code> (the default) writes the line after the last one written: the top line on a new or cleared screen, line 4 after a <code>LINE(3)</code>. When the lines no longer fit down the screen, the top ones roll off, so a run of <code>*NEXT</code> writes scrolls like a log.</li><li><code>CLEAR(*YES)</code> removes every text line first, and <code>*NEXT</code> starts at the top again. Regions and widgets are left alone; <a class="cmd" href="CLRDSP.html"><code>CLRDSP</code></a> clears those.</li></ul>
+<p>Text longer than fits across the screen at the line's size is cut. A line holds the screen's canvas width less 8 pixels of margin, over the character width: 4 pixels at <code>*SMALL</code>, 6 at <code>*NORMAL</code>, 12 at <code>*LARGE</code>, 18 at <code>*HUGE</code>. A screen four panels wide (128 pixels) holds 30, 20, 10 or 6 characters; one panel wide, only 4 at <code>*NORMAL</code>.</p>
+<h2 id="size-colour-and-alignment">Size, colour and alignment<a class="anchor" href="#size-colour-and-alignment" aria-label="Link to this section">#</a></h2>
+<p>Each line keeps its own size, colour and alignment. <code>*SAME</code>, the default for all three, keeps what the line had; a new line starts at <code>*NORMAL</code>, the default text colour and <code>*LEFT</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Parameter</th><th>Values</th></tr></thead><tbody><tr><td><code>SIZE</code></td><td><code>*SMALL</code> (a 4 x 6 font), <code>*NORMAL</code> (the 6 x 10 terminal font), <code>*LARGE</code> (twice that), <code>*HUGE</code> (three times)</td></tr><tr><td><code>COLOR</code></td><td><code>*DFT</code> (the default text colour), a palette name such as <code>*MINT</code>, <code>*RED</code> or <code>*YELLOW</code>, or <code>'#RRGGBB'</code> in quotes. Anything else is <a class="msg" href="../messages.html#ELC0003"><code>ELC0003</code></a></td></tr><tr><td><code>ALIGN</code></td><td><code>*LEFT</code>, <code>*CENTER</code>, <code>*RIGHT</code></td></tr></tbody></table></div>
+<p>The palette's names are listed on <a href="../../control/display-panels.html#text-sizes">Display Panels</a>. <code>SNDDSPTXT</code> sends no completion message.</p>
+<h2 id="examples">Examples<a class="anchor" href="#examples" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>SNDDSPTXT DEV(DSP01) TEXT(<span class="s">&#x27;PLANT STATUS&#x27;</span>) LINE(1) CLEAR(*YES) +
+          SIZE(*LARGE) COLOR(*MINT) ALIGN(*CENTER)
+SNDDSPTXT DEV(DSP01) TEXT(<span class="s">&#x27;Power: mains&#x27;</span>) LINE(2) COLOR(*GREEN)
+SNDDSPTXT DSP01 <span class="s">&#x27;Restock started&#x27;</span>                   <span class="c">/* the next line */</span>
+SNDDSPTXT DSP02 <span class="s">&#x27;ALARM&#x27;</span> LINE(1) COLOR(<span class="s">&#x27;#FF4040&#x27;</span>) SIZE(*HUGE)</code></pre></div>
+<p><a class="cmd" href="RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> tells a program how big the screen is. See <a href="../../control/display-panels.html">Display Panels</a>.</p>
+<h2 id="see-also">Messages, displays and output</h2><p><a class="cmd" href="SNDMSG.html"><code>SNDMSG</code></a> <a class="cmd" href="DSPMSG.html"><code>DSPMSG</code></a> <a class="cmd" href="CLRDSP.html"><code>CLRDSP</code></a> <a class="cmd" href="CHGDSPRGN.html"><code>CHGDSPRGN</code></a> <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a> <a class="cmd" href="SNDDSPGPH.html"><code>SNDDSPGPH</code></a> <a class="cmd" href="SNDDSPIMG.html"><code>SNDDSPIMG</code></a> <a class="cmd" href="RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> <a class="cmd" href="PRTTXT.html"><code>PRTTXT</code></a> <a class="cmd" href="PRTRPT.html"><code>PRTRPT</code></a></p>
+<p><a href="index.html#messages">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

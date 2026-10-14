@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RTVITMCNT - Encoded Logistics</title>
+<meta name="description" content="Retrieve Item Count">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">RTVITMCNT</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>RTVITMCNT</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: VIEW</span></p>
+<p class="lead">Retrieve Item Count</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>RTVITMCNT ITEM(item id) [TIER(*ALL | *HOT | *COLD)] RTNCOUNT(*INT variable) [NOTFND(*ERROR | *ZERO)] [TYPE(*ITEM | *FLUID | *PRES | *ALL)]</code></pre>
+<p>The first parameter can be given without its keyword, in that order: <code>ITEM</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>ITEM</code></td><td>Item</td><td>Item ID<br><span class="muted">prompter field 64 long; F4 lists items</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>TIER</code></td><td>Storage tier</td><td>Special value</td><td>No</td><td><code>*ALL</code></td><td><code>*ALL</code>, <code>*HOT</code>, <code>*COLD</code></td></tr><tr><td><code>RTNCOUNT</code></td><td>Return count</td><td>A *INT variable the command sets</td><td>Yes</td><td></td><td></td></tr><tr><td><code>NOTFND</code></td><td>If not found</td><td>Special value</td><td>No</td><td><code>*ERROR</code></td><td><code>*ERROR</code>, <code>*ZERO</code></td></tr><tr><td><code>TYPE</code></td><td>Resource type</td><td>Special value</td><td>No</td><td><code>*ITEM</code></td><td><code>*ITEM</code>, <code>*FLUID</code>, <code>*PRES</code>, <code>*ALL</code></td></tr></tbody></table></div>
+<p>Counts one item, fluid or gas in the network's storage and puts the total in <code>RTNCOUNT</code>. Every stored kind of an item is counted together (the same item with different components, such as damage or enchantments, is stored as separate kinds), and so are both tiers unless you say otherwise: <code>TIER(*HOT)</code> counts only what's on the drives, <code>TIER(*COLD)</code> only what the Tape Libraries hold on tape. See <a href="../../storage/hot-and-cold.html">Hot and cold storage</a>.</p>
+<h2 id="naming-the-item">Naming the item<a class="anchor" href="#naming-the-item" aria-label="Link to this section">#</a></h2>
+<p><code>ITEM</code> takes an item ID in either form:</p>
+<ul><li><strong>Qualified</strong>: <code>'minecraft:iron_ingot'</code>, <code>'encodedlogistics:logic_die'</code>. Exactly that item (quote it: a name can't hold the colon).</li><li><strong>Bare</strong>: <code>IRON_INGOT</code> (case doesn't matter). It's looked up as a <code>minecraft:</code> item first, then as an <code>encodedlogistics:</code> one, then in every other mod. If two other mods both have an item by that name, the command fails with <a class="msg" href="../messages.html#ELC1205"><code>ELC1205</code></a>: use the qualified ID. A name no item has is <a class="msg" href="../messages.html#ELC1201"><code>ELC1201</code></a>.</li></ul>
+<p>Commands that return IDs (<a class="cmd" href="RTVITMLST.html"><code>RTVITMLST</code></a>, <a class="cmd" href="RTVSCHLST.html"><code>RTVSCHLST</code></a>, <a class="cmd" href="RTVCRFSTP.html"><code>RTVCRFSTP</code></a>) give vanilla items as their bare name in upper case (<code>IRON_INGOT</code>) and other mods' items in full (<code>encodedlogistics:logic_die</code>), so a returned ID always works here as it is.</p>
+<h2 id="resource-types">Resource types<a class="anchor" href="#resource-types" aria-label="Link to this section">#</a></h2>
+<p><code>TYPE</code> picks what the ID names:</p>
+<div class="table-wrap"><table><thead><tr><th><code>TYPE</code></th><th>Counts</th><th>Unit</th></tr></thead><tbody><tr><td><code>*ITEM</code> (default)</td><td>items</td><td>one each</td></tr><tr><td><code>*FLUID</code></td><td>fluids, by full registry ID (<code>'minecraft:water'</code>; a bare ID is taken as <code>minecraft:</code>)</td><td>mB</td></tr><tr><td><code>*PRES</code></td><td>pressurized gases and chemicals from another mod (<code>'arcforge:hydrogen'</code>)</td><td>that mod's unit (Arcforge's is mB)</td></tr><tr><td><code>*ALL</code></td><td>whichever of the three the ID names, added together</td><td>as above</td></tr></tbody></table></div>
+<p>Naming a gas with <code>TYPE(*FLUID)</code> (or a fluid with <code>TYPE(*PRES)</code>) is <a class="msg" href="../messages.html#ELC1207"><code>ELC1207</code></a>. Fluids and gases never go to tape, so <code>TIER(*COLD)</code> counts none of them. Energy isn't counted here: use <a class="cmd" href="RTVPWRSTS.html"><code>RTVPWRSTS</code></a>.</p>
+<h2 id="when-there-s-none">When there's none<a class="anchor" href="#when-there-s-none" aria-label="Link to this section">#</a></h2>
+<p>With <code>NOTFND(*ERROR)</code> (the default) the command fails with <a class="msg" href="../messages.html#ELC1201"><code>ELC1201</code></a> when the ID names nothing, and also when the network holds none of it at all, hot or cold. That second check always looks at both tiers: an item that's only on tape gives <code>0</code> with <code>TIER(*HOT)</code>, not an error. With <code>NOTFND(*ZERO)</code> both cases set <code>RTNCOUNT</code> to <code>0</code> instead, which is usually what a stock-keeping program wants. <a class="msg" href="../messages.html#ELC1205"><code>ELC1205</code></a> and <a class="msg" href="../messages.html#ELC1207"><code>ELC1207</code></a> still fail the command with <code>*ZERO</code>.</p>
+<p>The command sends no completion message. Typed at the <code>===&gt;</code> prompt, <code>RTNCOUNT</code> can be left out: the count is listed under the command (<code>RTNCOUNT = 1234</code>).</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;IRON) TYPE(*INT)
+DCL VAR(&amp;WATER) TYPE(*INT)
+RTVITMCNT ITEM(IRON_INGOT) RTNCOUNT(&amp;IRON) NOTFND(*ZERO)
+RTVITMCNT ITEM(<span class="s">&#x27;minecraft:water&#x27;</span>) TYPE(*FLUID) RTNCOUNT(&amp;WATER) NOTFND(*ZERO)
+IF COND(&amp;IRON *LT 64) THEN(SNDPGMMSG MSG(<span class="s">&#x27;Iron is low&#x27;</span>))
+IF COND(&amp;WATER *LT 8000) THEN(SNDPGMMSG MSG(<span class="s">&#x27;Under 8 buckets of water&#x27;</span>))</code></pre></div>
+<h2 id="see-also">Inventory</h2><p><a class="cmd" href="RTVITMLST.html"><code>RTVITMLST</code></a> <a class="cmd" href="MOVITM.html"><code>MOVITM</code></a> <a class="cmd" href="IMPITM.html"><code>IMPITM</code></a> <a class="cmd" href="CHGITMTIER.html"><code>CHGITMTIER</code></a> <a class="cmd" href="RTVSTGSTS.html"><code>RTVSTGSTS</code></a></p>
+<p><a href="index.html#inventory">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Server admins - Encoded Logistics</title>
+<meta name="description" content="Running Encoded Logistics on a server - its config files, who may do what, the folders it reads and writes, the limits that keep it cheap, and its one chat command.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="index.html" aria-current="true" class="current">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="index.html" aria-current="true" class="current">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Server admins">
+<p class="toc-title">Server admins</p><nav aria-label="Server admins pages"><ol><li><a href="index.html" aria-current="page" class="current">Server admins</a></li><li><a href="config.html">Configuration</a></li><li><a href="permissions.html">Permissions</a></li><li><a href="folders.html">Folders on disk</a></li><li><a href="performance.html">Performance and limits</a></li><li><a href="commands.html">Server commands</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Server admins</span></nav>
+<details class="mobile-toc"><summary>Server admins: pages</summary><p class="toc-title">Server admins</p><nav aria-label="Server admins pages"><ol><li><a href="index.html" aria-current="page" class="current">Server admins</a></li><li><a href="config.html">Configuration</a></li><li><a href="permissions.html">Permissions</a></li><li><a href="folders.html">Folders on disk</a></li><li><a href="performance.html">Performance and limits</a></li><li><a href="commands.html">Server commands</a></li></ol></nav></details>
+<h1>Server admins</h1>
+<p class="lead">Running Encoded Logistics on a server - its config files, who may do what, the folders it reads and writes, the limits that keep it cheap, and its one chat command.</p>
+
+<div class="page-body">
+<p>Encoded Logistics runs on a dedicated server with no setup beyond installing it on both the server and the players' games (it needs NeoForge for Minecraft 26.3). A few features that read files from the server's disk or reach out to the web are off on dedicated servers until you turn them on. This section is for the people who run the server.</p>
+<ol><li><a href="config.html">Configuration</a>: where the two config files are and the options you are most likely to change.</li><li><a href="permissions.html">Permissions</a>: the Firewall from an admin's view, what operators can always do, and the Terminal OS's security levels.</li><li><a href="folders.html">Folders on disk</a>: the world's <code>encodedlogistics</code> folder - library sync, CSV files, Speaker audio and Display Panel images.</li><li><a href="performance.html">Performance and limits</a>: every budget and limit, and the options that set them.</li><li><a href="commands.html">Server commands</a>: <code>/encodedlogistics caches</code>.</li></ol>
+<h2 id="off-by-default">Off on a dedicated server until you turn it on<a class="anchor" href="#off-by-default" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Feature</th><th>Option</th><th>Default</th></tr></thead><tbody><tr><td>Library folder sync and CSV import and export</td><td><a class="cfg" href="../reference/config.html#cfg-elcl-allowFolderSync"><code>elcl.allowFolderSync</code></a></td><td>AUTO</td></tr><tr><td>Images on Display Panels</td><td><a class="cfg" href="../reference/config.html#cfg-rack-allowImages"><code>rack.allowImages</code></a></td><td>AUTO</td></tr><tr><td>Web audio on Speakers (and only from the hosts you list)</td><td><a class="cfg" href="../reference/config.html#cfg-signals-allowWebAudio"><code>signals.allowWebAudio</code></a>, <a class="cfg" href="../reference/config.html#cfg-signals-webAudioHosts"><code>signals.webAudioHosts</code></a></td><td>AUTO</td></tr></tbody></table></div>
+<p><code>AUTO</code> is on in single-player and off on a dedicated server. Each player must also opt in to web audio on their own game (<a class="cfg" href="../reference/config.html#cfg-audio-allowWebAudio"><code>audio.allowWebAudio</code></a>).</p>
+<h2 id="notes">Things worth knowing<a class="anchor" href="#notes" aria-label="Link to this section">#</a></h2>
+<ul><li>The main config file is per installation and isn't sent to players: see <a href="config.html">Configuration</a>.</li><li>Operators (permission level 2) are never stopped by a network's Firewall, and are security officers in the Terminal OS.</li><li>Nothing loads chunks except a linked Network Bridge (off by default) and an Exchange Switch with members (on by default): see <a href="performance.html#chunk-loading">Chunk loading</a>.</li><li>Arcforge, JEI and Jade are optional; see <a href="../integrations/index.html">Integrations</a>.</li></ul>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="next" href="config.html" rel="next"><span>Next</span>Configuration</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

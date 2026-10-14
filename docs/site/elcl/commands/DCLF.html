@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DCLF - Encoded Logistics</title>
+<meta name="description" content="Declare File">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">DCLF</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>DCLF</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-pgm">Programs only</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Declare File</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>DCLF FILE(library/name) [OPNID(*NONE | name (up to 10 characters))]</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>FILE</code>, <code>OPNID</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>FILE</code></td><td>File</td><td>Library/name<br><span class="muted">prompter field 21 long; F4 lists files</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>OPNID</code></td><td>Open file identifier</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long</span></td><td>No</td><td><code>*NONE</code></td><td><code>*NONE</code></td></tr></tbody></table></div>
+<p><code>DCLF</code> tells a program which database file it works with, and gives it a variable for every field of the file's record format. It's a declaration: it goes with the <code>DCL</code>s, before any other command (<a class="msg" href="../messages.html#ELC0016"><code>ELC0016</code></a>), and does nothing when the program runs. The file operations (<a class="cmd" href="RCVF.html"><code>RCVF</code></a>, <a class="cmd" href="CHNRCD.html"><code>CHNRCD</code></a>, <a class="cmd" href="WRTRCD.html"><code>WRTRCD</code></a>, <a class="cmd" href="UPDRCD.html"><code>UPDRCD</code></a>, <a class="cmd" href="DLTRCD.html"><code>DLTRCD</code></a>, <a class="cmd" href="POSDBF.html"><code>POSDBF</code></a>, <a class="cmd" href="CLOF.html"><code>CLOF</code></a>) then name it by its open ID.</p>
+<h2 id="the-variables">The variables<a class="anchor" href="#the-variables" aria-label="Link to this section">#</a></h2>
+<p>Each field becomes a variable of the same name: <code>&amp;ITEM</code>, <code>&amp;HOT</code>, <code>&amp;COLD</code>... With an open ID, the ID and an underscore go in front: <code>DCLF FILE(ELSYS/INVITEMS) OPNID(INV)</code> gives <code>&amp;INV_ITEM</code>, <code>&amp;INV_HOT</code>, <code>&amp;INV_COLD</code>. Don't <code>DCL</code> them yourself: a variable already declared with one of those names is <a class="msg" href="../messages.html#ELC0103"><code>ELC0103</code></a>.</p>
+<div class="table-wrap"><table><thead><tr><th>Field type</th><th>Its variable</th></tr></thead><tbody><tr><td><code>A</code> (character)</td><td><code>*CHAR</code> of the field's length</td></tr><tr><td><code>S</code> (integer)</td><td><code>*INT</code></td></tr><tr><td><code>P</code> (decimal)</td><td><code>*DEC</code> of the field's digits and decimals</td></tr><tr><td><code>L</code> (logical)</td><td><code>*LGL</code></td></tr><tr><td><code>T</code> (game timestamp)</td><td><code>*CHAR</code> 14, such as <code>00012 06:30:15</code></td></tr></tbody></table></div>
+<h2 id="rules">Rules<a class="anchor" href="#rules" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>The file must exist when the program is compiled</strong>, so the compiler can read its record format: otherwise <a class="msg" href="../messages.html#ELC2205"><code>ELC2205</code></a>. The shipped files you can always declare are <code>ELSYS/INVITEMS</code>, <code>ELSYS/DEVICES</code>, <code>ELSYS/CRFHIST</code> and <code>ELSYS/JOBS</code> (see <a href="../database-files.html#db-objects">system files</a>).</li><li><strong>Up to five files</strong> a program (<a class="msg" href="../messages.html#ELC2224"><code>ELC2224</code></a> past that), each open ID once (<a class="msg" href="../messages.html#ELC0103"><code>ELC0103</code></a>). <code>OPNID(*NONE)</code>, the default, is an ID too, so only one file can be declared without one.</li><li><strong>An unqualified name</strong> (<code>FILE(STOCK)</code>) is looked for down the job user's library list each time the program uses the file. Qualify it when the same name could be in more than one library.</li><li><strong>Level check.</strong> The program keeps the record format it was compiled with. Each file operation opens the file as it is at that moment: if a field the program declares has gone or changed type since (<a class="cmd" href="CHGPF.html"><code>CHGPF</code></a>), the operation fails with <a class="msg" href="../messages.html#ELC2207"><code>ELC2207</code></a> and you compile the program again. Fields added since don't matter (they're written blank).</li></ul>
+<p><code>ELGPL/ITEMHIST</code> in the example below is the file <code>CALL ELSYS/ITEMSETUP</code> makes (<a href="../database-files.html#db-example">the worked example</a>). <code>DCLF</code> runs only in programs. See <a href="../database-files.html#db-programs">Files in programs</a> for more.</p>
+<div class="code-block"><pre class="code elcl"><code>PGM
+  DCLF FILE(ELSYS/DEVICES)                  <span class="c">/* &amp;NAME &amp;TYPE &amp;LOCATION &amp;LANES &amp;STATUS */</span>
+  DCLF FILE(ELGPL/ITEMHIST) OPNID(HIST)     <span class="c">/* &amp;HIST_LOGGED &amp;HIST_ITEM &amp;HIST_COUNT  */</span>
+  DCL  VAR(&amp;DOWN) TYPE(*INT)
+  DOWHILE COND(<span class="s">&#x27;1&#x27;</span>)
+    RCVF
+    MONMSG MSGID(ELC2201) EXEC(LEAVE)
+    IF COND(&amp;STATUS *NE <span class="s">&#x27;*ONLINE&#x27;</span>) THEN(CHGVAR VAR(&amp;DOWN) VALUE(&amp;DOWN + 1))
+  ENDDO
+  SNDPGMMSG MSG(%CHAR(&amp;DOWN) *BCAT <span class="s">&#x27;devices not online&#x27;</span>)
+ENDPGM</code></pre></div>
+<h2 id="see-also">Database files</h2><p><a class="cmd" href="RCVF.html"><code>RCVF</code></a> <a class="cmd" href="POSDBF.html"><code>POSDBF</code></a> <a class="cmd" href="CLOF.html"><code>CLOF</code></a> <a class="cmd" href="CHNRCD.html"><code>CHNRCD</code></a> <a class="cmd" href="WRTRCD.html"><code>WRTRCD</code></a> <a class="cmd" href="UPDRCD.html"><code>UPDRCD</code></a> <a class="cmd" href="DLTRCD.html"><code>DLTRCD</code></a> <a class="cmd" href="CRTPF.html"><code>CRTPF</code></a> <a class="cmd" href="CHGPF.html"><code>CHGPF</code></a> <a class="cmd" href="DLTF.html"><code>DLTF</code></a> <a class="cmd" href="CLRPFM.html"><code>CLRPFM</code></a> <a class="cmd" href="CPYF.html"><code>CPYF</code></a> <a class="cmd" href="CPYTOIMPF.html"><code>CPYTOIMPF</code></a> <a class="cmd" href="CPYFRMIMPF.html"><code>CPYFRMIMPF</code></a> <a class="cmd" href="RUNQRY.html"><code>RUNQRY</code></a> <a class="cmd" href="WRKF.html"><code>WRKF</code></a> <a class="cmd" href="DSPPFM.html"><code>DSPPFM</code></a> <a class="cmd" href="DSPFD.html"><code>DSPFD</code></a> <a class="cmd" href="UPDDTA.html"><code>UPDDTA</code></a></p>
+<p><a href="index.html#db">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

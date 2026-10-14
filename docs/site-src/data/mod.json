@@ -1,0 +1,8 @@
+{
+  "id": "encodedlogistics",
+  "name": "Encoded Logistics",
+  "version": "1.2.1+26.3",
+  "minecraft": "26.3",
+  "neoforge": "26.3.0.40-beta",
+  "arcforgeLoaded": false
+}

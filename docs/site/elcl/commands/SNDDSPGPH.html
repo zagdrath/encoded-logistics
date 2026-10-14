@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNDDSPGPH - Encoded Logistics</title>
+<meta name="description" content="Send Display Graph">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">SNDDSPGPH</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>SNDDSPGPH</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Send Display Graph</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>SNDDSPGPH DEV(device name) RGN(name (up to 10 characters)) STAT(*ITEMFLOW | *ENERGY | *LANES | *STORAGE | *CRAFTING | *ITEM | *MCHOPS | *MCHFE) [ITEM(*NONE | item id)] [RANGE(*1M | *10M | *1H | *1D)] [TYPE(*LINE | *BAR)] [COLOR(*DFT | *BLUE | *BROWN | *CYAN | *DARK | *FOREST | *GREEN | *GREY | *LIGHT | *MINT | *NAVY | *ORANGE | *RED | *RUST | *SILVER | *STEEL | *WHITE | *YELLOW | text)]</code></pre>
+<p>The first 3 parameters can be given without their keyword, in that order: <code>DEV</code>, <code>RGN</code>, <code>STAT</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>DEV</code></td><td>Device</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>RGN</code></td><td>Region</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>STAT</code></td><td>Statistic</td><td>Special value</td><td>Yes</td><td></td><td><code>*ITEMFLOW</code>, <code>*ENERGY</code>, <code>*LANES</code>, <code>*STORAGE</code>, <code>*CRAFTING</code>, <code>*ITEM</code>, <code>*MCHOPS</code>, <code>*MCHFE</code></td></tr><tr><td><code>ITEM</code></td><td>Item (a machine&#x27;s name for *MCHOPS / *MCHFE)</td><td>Item ID<br><span class="muted">prompter field 64 long; F4 lists items</span></td><td>No</td><td><code>*NONE</code></td><td><code>*NONE</code></td></tr><tr><td><code>RANGE</code></td><td>Range</td><td>Special value</td><td>No</td><td><code>*10M</code></td><td><code>*1M</code>, <code>*10M</code>, <code>*1H</code>, <code>*1D</code></td></tr><tr><td><code>TYPE</code></td><td>Graph type</td><td>Special value</td><td>No</td><td><code>*LINE</code></td><td><code>*LINE</code>, <code>*BAR</code></td></tr><tr><td><code>COLOR</code></td><td>Colour</td><td>Text<br><span class="muted">prompter field 8 long</span></td><td>No</td><td><code>*DFT</code></td><td><code>*DFT</code>, <code>*BLUE</code>, <code>*BROWN</code>, <code>*CYAN</code>, <code>*DARK</code>, <code>*FOREST</code>, <code>*GREEN</code>, <code>*GREY</code>, <code>*LIGHT</code>, <code>*MINT</code>, <code>*NAVY</code>, <code>*ORANGE</code>, <code>*RED</code>, <code>*RUST</code>, <code>*SILVER</code>, <code>*STEEL</code>, <code>*WHITE</code>, <code>*YELLOW</code></td></tr></tbody></table></div>
+<p><code>SNDDSPGPH</code> puts a graph in a region of a Display Panel screen: one statistic over a time range, as a line or bar chart. It replaces whatever the region showed. A Text screen given a graph becomes a Dashboard. The region must exist (<a class="cmd" href="CHGDSPRGN.html"><code>CHGDSPRGN</code></a>; on a screen with none set up, <code>A</code> is the whole screen), or it's <a class="msg" href="../messages.html#ELC1314"><code>ELC1314</code></a>.</p>
+<div class="table-wrap"><table><thead><tr><th><code>STAT</code></th><th>Graphs</th><th>Labelled</th></tr></thead><tbody><tr><td><code>*ITEMFLOW</code></td><td>Items the network moves a minute</td><td><code>ITEM FLOW /MIN</code></td></tr><tr><td><code>*ENERGY</code></td><td>The network's energy draw, FE/t</td><td><code>ENERGY DRAW FE/T</code></td></tr><tr><td><code>*LANES</code></td><td>Lanes in use</td><td><code>LANES USED</code></td></tr><tr><td><code>*STORAGE</code></td><td>Hot storage used, %</td><td><code>STORAGE %</code></td></tr><tr><td><code>*CRAFTING</code></td><td>Crafts finished a minute</td><td><code>CRAFTS /MIN</code></td></tr><tr><td><code>*ITEM</code></td><td>One item's count; name it in <code>ITEM()</code></td><td>The item</td></tr><tr><td><code>*MCHOPS</code></td><td>A machine's operations a minute</td><td>The machine and <code>OPS /MIN</code></td></tr><tr><td><code>*MCHFE</code></td><td>A machine's stored FE</td><td>The machine and <code>FE</code></td></tr></tbody></table></div>
+<p><code>*MCHOPS</code> and <code>*MCHFE</code> graph a machine bridged through <a href="../../integrations/arcforge.html">Arcforge</a>: give the machine's device name in <code>ITEM</code>, for example <code>ITEM(FURN01)</code>. A name that isn't on the network is <a class="msg" href="../messages.html#ELC1301"><code>ELC1301</code></a>, and a device that isn't such a machine <a class="msg" href="../messages.html#ELC1318"><code>ELC1318</code></a>. <code>*ITEM</code>, <code>*MCHOPS</code> and <code>*MCHFE</code> without an <code>ITEM</code> are <a class="msg" href="../messages.html#ELC1316"><code>ELC1316</code></a>, and so is an <code>ITEM</code> given to any other statistic.</p>
+<h2 id="where-the-numbers-come-from">Where the numbers come from<a class="anchor" href="#where-the-numbers-come-from" aria-label="Link to this section">#</a></h2>
+<ul><li>With a <a href="../../racks/devices.html">Monitoring Server</a> online on the network, <code>*ITEMFLOW</code>, <code>*ENERGY</code>, <code>*LANES</code>, <code>*CRAFTING</code>, <code>*MCHOPS</code> and <code>*MCHFE</code> come from its records, over the whole <code>RANGE</code>.</li><li>Otherwise, and always for <code>*STORAGE</code> and <code>*ITEM</code>, the screen keeps its own history: one sample a second while it's loaded, for the last <a class="cfg" href="../../reference/config.html#cfg-rack-displayHistorySeconds"><code>rack.displayHistorySeconds</code></a> (default 600) seconds. <code>RANGE(*1M)</code> shows the last minute of it; the longer ranges show all of it there is so far.</li></ul>
+<p><code>RANGE</code> is <code>*1M</code>, <code>*10M</code> (the default), <code>*1H</code> or <code>*1D</code>, and <code>TYPE</code> is <code>*LINE</code> (the default) or <code>*BAR</code>. A graph has at most 256 points; a longer series is averaged down to fit. <code>COLOR</code> is the line or bar colour: <code>*DFT</code>, a palette name such as <code>*CYAN</code>, or <code>'#RRGGBB'</code> in quotes.</p>
+<p>The screen doesn't have to be online. A <code>DEV</code> that isn't on the network is <a class="msg" href="../messages.html#ELC1301"><code>ELC1301</code></a>, and a device that isn't a Display Panel screen <a class="msg" href="../messages.html#ELC1303"><code>ELC1303</code></a>. <code>SNDDSPGPH</code> sends no completion message.</p>
+<h2 id="examples">Examples<a class="anchor" href="#examples" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>SNDDSPGPH DEV(DSP01) RGN(A) STAT(*ENERGY) RANGE(*1H)
+SNDDSPGPH DEV(DSP01) RGN(B) STAT(*ITEM) ITEM(minecraft:iron_ingot) TYPE(*BAR) COLOR(*ORANGE)
+SNDDSPGPH DEV(DSP01) RGN(C) STAT(*MCHOPS) ITEM(FURN01) RANGE(*10M)</code></pre></div>
+<p>See <a href="../../control/display-panels.html#graphs">Graphs</a>.</p>
+<h2 id="see-also">Messages, displays and output</h2><p><a class="cmd" href="SNDMSG.html"><code>SNDMSG</code></a> <a class="cmd" href="DSPMSG.html"><code>DSPMSG</code></a> <a class="cmd" href="SNDDSPTXT.html"><code>SNDDSPTXT</code></a> <a class="cmd" href="CLRDSP.html"><code>CLRDSP</code></a> <a class="cmd" href="CHGDSPRGN.html"><code>CHGDSPRGN</code></a> <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a> <a class="cmd" href="SNDDSPIMG.html"><code>SNDDSPIMG</code></a> <a class="cmd" href="RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> <a class="cmd" href="PRTTXT.html"><code>PRTTXT</code></a> <a class="cmd" href="PRTRPT.html"><code>PRTRPT</code></a></p>
+<p><a href="index.html#messages">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

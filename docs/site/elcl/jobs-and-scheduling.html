@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jobs, scheduling and triggers - Encoded Logistics</title>
+<meta name="description" content="Interactive and batch jobs and their hosts, job logs, schedule entries, trigger events, message queues, spooled output, printing and system values.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html" aria-current="page" class="current">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Jobs, scheduling and triggers</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html" aria-current="page" class="current">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav></details>
+<h1>Jobs, scheduling and triggers</h1>
+<p class="lead">Interactive and batch jobs and their hosts, job logs, schedule entries, trigger events, message queues, spooled output, printing and system values.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#job-basics">Jobs</a></li><li class="toc-l3"><a href="#hosts">Job hosts</a></li><li class="toc-l3"><a href="#job-ids">Job IDs and statuses</a></li><li class="toc-l2"><a href="#job-logs">Job logs</a></li><li class="toc-l2"><a href="#schedules">Job schedule entries</a></li><li class="toc-l2"><a href="#triggers">Trigger events</a></li><li class="toc-l2"><a href="#msgqueues">Message queues</a></li><li class="toc-l2"><a href="#spooled">Spooled output</a></li><li class="toc-l2"><a href="#printing">Printing</a></li><li class="toc-l2"><a href="#devices">The Midrange line, Display Panels and Arcforge machines</a></li><li class="toc-l2"><a href="#sysvals">System values</a></li></ol></nav></details>
+<div class="page-body">
+<p>All ELCL work runs in <em>jobs</em>. They are script jobs, separate from the network's crafting jobs (which <a class="cmd" href="commands/WRKCRFJOB.html"><code>WRKCRFJOB</code></a> shows; see <a href="../crafting/jobs.html">Crafting jobs</a>). This page covers how jobs run and where, how to run them on a timer or when something happens, and where their messages and printed output go.</p>
+<h2 id="job-basics">Jobs<a class="anchor" href="#job-basics" aria-label="Link to this section">#</a></h2>
+<p>There are two kinds of job.</p>
+<ul><li><strong>Interactive job.</strong> One for each open Terminal OS session (a <a class="item-link" href="../reference/items/terminal_desk.html"><img class="icon" src="../assets/icons/encodedlogistics/terminal_desk.png" alt="" width="20" height="20" loading="lazy">Terminal Desk</a> or an Integrated Midrange System's console), started by the session's first request. It is named <code>QINTER</code>, has type <code>INT</code>, runs on the desk's device name (<code>ELDESK01</code>), has priority 5 and always logs its commands. The commands you type run in it, and so does a program you start there with <a class="cmd" href="commands/CALL.html"><code>CALL</code></a>: one at a time, <a class="cfg" href="../reference/config.html#cfg-elcl-interactiveBudget"><code>elcl.interactiveBudget</code></a> (default 200) instructions a tick. It ends when the terminal closes (<a class="msg" href="messages.html#ELC0307"><code>ELC0307</code></a> in its log), ending any program it is running, and its log joins the kept logs of ended jobs. Interactive jobs last only as long as their session and aren't saved.</li><li><strong>Batch job.</strong> Submitted with <code>SBMJOB CMD(command) JOB(name) HOST(*ANY|host) LOG(*NO|*YES)</code> (<a class="cmd" href="commands/SBMJOB.html"><code>SBMJOB</code></a>), by a schedule entry or by a trigger. It runs on a job host, <a class="cfg" href="../reference/config.html#cfg-elcl-batchBudget"><code>elcl.batchBudget</code></a> (default 100) instructions a tick, as the user who submitted it, with that player's Firewall permissions, whether they are online or not. Its command can be any command that works in batch; usually it is <code>CALL PGM(...)</code>. <code>SBMJOB</code> answers <a class="msg" href="messages.html#ELC0304"><code>ELC0304</code></a> and the job waits on the job queue (<code>*JOBQ</code>) until a host has room. With no <code>JOB()</code> the job is named <code>QDFTJOBD</code>.</li></ul>
+<h3 id="hosts">Job hosts<a class="anchor" href="#hosts" aria-label="Link to this section">#</a></h3>
+<p>Batch jobs need a <em>job host</em> on the network. Each tick, queued jobs go to an online host with a free slot (any host for <code>HOST(*ANY)</code>, else the one named), in priority order (1 first, 5 unless changed with <code>CHGJOB JOBPTY()</code>) and then oldest first, as long as fewer than <code>QMAXJOB</code> batch jobs are running on the system (see <a href="#sysvals">system values</a>). A system with no job host at all refuses the job at once with <a class="msg" href="messages.html#ELC0301"><code>ELC0301</code></a>, and so does a <code>HOST()</code> it doesn't have.</p>
+<div class="table-wrap"><table><thead><tr><th>Host</th><th>Batch jobs at once</th><th>Name</th></tr></thead><tbody><tr><td><a class="item-link" href="../reference/items/compute_server.html"><img class="icon" src="../assets/icons/encodedlogistics/compute_server.png" alt="" width="20" height="20" loading="lazy">Compute Server</a> (in a Server Rack)</td><td><a class="cfg" href="../reference/config.html#cfg-elcl-computeServerJobs"><code>elcl.computeServerJobs</code></a> (default 4) each; 0 means Compute Servers aren't hosts</td><td>Its device name: <code>CMPSRV01</code></td></tr><tr><td><a class="item-link" href="../reference/items/midrange_system.html"><img class="icon" src="../assets/icons/encodedlogistics/midrange_system.png" alt="" width="20" height="20" loading="lazy">Midrange System</a></td><td>1, or 2 with an <a class="item-link" href="../reference/items/expansion_cabinet.html"><img class="icon" src="../assets/icons/encodedlogistics/expansion_cabinet.png" alt="" width="20" height="20" loading="lazy">Expansion Cabinet</a> beside it</td><td><code>MIDRANGE01</code></td></tr><tr><td><a class="item-link" href="../reference/items/integrated_midrange.html"><img class="icon" src="../assets/icons/encodedlogistics/integrated_midrange.png" alt="" width="20" height="20" loading="lazy">Integrated Midrange System</a></td><td>4</td><td><code>MIDRANGE01</code></td></tr></tbody></table></div>
+<p>A host counts only while it is online: a Compute Server while it is powered in its rack, a Midrange System while it is running (not during its IPL). See <a href="../crafting/midrange.html">the Midrange line</a> for the Midrange Systems.</p>
+<p><strong>When a host goes down.</strong> A running batch job's state is saved with the system, but no host carries a job on after it stops: when a job's host goes offline (unloaded, removed, out of power, or a Midrange System's IPL) or the server restarts, the job ends with <a class="msg" href="messages.html#ELC0310"><code>ELC0310</code></a>, which is logged and sent to the job's user. Jobs still on the job queue, and held jobs that hadn't started, wait through a restart and start once a host has room. For work that must survive a restart, use a <a href="#schedules">schedule entry</a> or a <a href="#triggers">trigger</a>: they submit a new job each time.</p>
+<h3 id="job-ids">Job IDs and statuses<a class="anchor" href="#job-ids" aria-label="Link to this section">#</a></h3>
+<ul><li><strong>Job IDs</strong> are <code>nnnnnn/USER/JOBNAME</code>, for example <code>000123/ZAGDRATH/RESTOCK</code>. Commands take the number, the full ID, or the job name alone if only one job that hasn't ended has it (<a class="msg" href="messages.html#ELC0302"><code>ELC0302</code></a> otherwise). Numbers start at <code>000001</code> on each system, are shared by interactive and batch jobs, are saved, and wrap round after <code>999999</code>.</li><li><strong>Statuses:</strong> <code>*JOBQ</code> (waiting for a host), <code>*ACTIVE</code>, <code>*WAIT</code> (in a <code>DLYJOB</code> or <code>DLYTICK</code>, a tape recall or a craft it waits for), <code>*HELD</code>, and <code>*ENDED</code> (an ended job whose log is kept).</li><li><strong>Holding, releasing, ending.</strong> <a class="cmd" href="commands/HLDJOB.html"><code>HLDJOB</code></a> holds a queued job (it won't start) or pauses a running one where it is; <a class="cmd" href="commands/RLSJOB.html"><code>RLSJOB</code></a> lets it go on (back to <code>*JOBQ</code> if it hadn't started). <a class="cmd" href="commands/ENDJOB.html"><code>ENDJOB</code></a> takes a queued job off the queue or stops a running program: <code>OPTION(*CNTRLD)</code> lets the command it is running finish, <code>*IMMED</code> stops it at once. The batch job then ends with <a class="msg" href="messages.html#ELC0303"><code>ELC0303</code></a> in its log and in its user's messages.</li><li><strong>Other users' jobs.</strong> You can hold, release, change and end your own jobs. Doing it to another user's job takes <code>*SECOFR</code> (the Firewall's owner or a server operator), or a network with no Firewall or at <code>SECLVL</code> 10; otherwise it is <a class="msg" href="messages.html#ELC0401"><code>ELC0401</code></a> naming <code>*JOBCTL</code>.</li><li><strong>Unmonitored errors.</strong> A program ended by an escape message it didn't catch puts that message in the job log and in the job user's message queue, then the job ends.</li><li><strong>Budget.</strong> Work with Active Jobs shows how much of its per-tick budget each job used on the last tick; see <a href="language.html#limits">the runtime model</a>.</li></ul>
+<p>Commands on jobs: <a class="cmd" href="commands/WRKACTJOB.html"><code>WRKACTJOB</code></a>, <a class="cmd" href="commands/WRKJOB.html"><code>WRKJOB</code></a>, <a class="cmd" href="commands/DSPJOBLOG.html"><code>DSPJOBLOG</code></a>, <a class="cmd" href="commands/CHGJOB.html"><code>CHGJOB</code></a> (priority 1 to 9, command logging), <a class="cmd" href="commands/HLDJOB.html"><code>HLDJOB</code></a>, <a class="cmd" href="commands/RLSJOB.html"><code>RLSJOB</code></a>, <a class="cmd" href="commands/ENDJOB.html"><code>ENDJOB</code></a>, <a class="cmd" href="commands/SBMJOB.html"><code>SBMJOB</code></a> and <a class="cmd" href="commands/RTVJOBA.html"><code>RTVJOBA</code></a> (a program's own job: its user, name, type and host).</p>
+<div class="code-block"><pre class="code elcl"><code>SBMJOB CMD(CALL PGM(ELSYS/NOCWALL)) JOB(NOCWALL)    <span class="c">/* ELC0304, then *ACTIVE on CMPSRV01 */</span>
+SBMJOB CMD(CALL PGM(ZAGLIB/RESTOCK) PARM(<span class="s">&#x27;IRON_INGOT&#x27;</span> 500)) JOB(RESTOCK) LOG(*YES)
+CHGJOB JOB(RESTOCK) JOBPTY(1)                      <span class="c">/* to the front of the queue          */</span>
+ENDJOB JOB(NOCWALL)                                <span class="c">/* ELC0311, then ELC0303 in its log    */</span></code></pre></div>
+<pre class="term" aria-label="Terminal screen"> WRKACTJOB                   Work with Active Jobs             System:  ELNET01
+                                                                Day 2  07:14:22
+ Budget used:   37%    Elapsed:  00:05:12    Active jobs:   5    Hosts:  2/2
+ Type options, press Enter.
+   2=Change  3=Hold  4=End  5=Work with  6=Release  8=Spooled files
+
+Opt  Job         User        Type   Host          Status     Budget
+     QINTER      ZAGDRATH    INT    ELDESK01      *ACTIVE      12%
+5    RESTOCK     ZAGDRATH    BCH    MIDRANGE01    *ACTIVE      31%
+     NOCWALL     ZAGDRATH    BCH    CMPSRV01      *WAIT         0%
+     ARCHIVE     OPERATOR    BCH    CMPSRV01      *JOBQ
+     UPSALERT    ZAGDRATH    BCH    CMPSRV01      *HELD
+
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help F3=Exit F5=Refresh F9=Command Entry F11=Sort F12=Cancel F24=More keys</pre>
+<h2 id="job-logs">Job logs<a class="anchor" href="#job-logs" aria-label="Link to this section">#</a></h2>
+<p>Every job keeps a log of the commands it ran (when it logs commands: always for the interactive job, and for a batch job with <code>LOG(*YES)</code> on <code>SBMJOB</code> or <code>CHGJOB LOG(*YES)</code>) and every message it got, with its ID, severity, sender and time. A batch job's log starts with <a class="msg" href="messages.html#ELC0304"><code>ELC0304</code></a> and ends with how it ended: <a class="msg" href="messages.html#ELC0307"><code>ELC0307</code></a>, the escape message that ended it, <a class="msg" href="messages.html#ELC0303"><code>ELC0303</code></a> or <a class="msg" href="messages.html#ELC0310"><code>ELC0310</code></a>.</p>
+<p>View a log with <a class="cmd" href="commands/DSPJOBLOG.html"><code>DSPJOBLOG</code></a> or WRKJOB option 10, or print it with <code>PRTRPT RPT(*JOBLOG)</code> from inside the job. When a job ends its log is kept with the system's ended jobs: the last <code>LOGRTN</code> of them, saved with the system. Name an ended job by its number or full ID to see its log.</p>
+<pre class="term" aria-label="Terminal screen"> DSPJOBLOG                      Display Job Log                System:  ELNET01
+                                                                Day 2  07:14:22
+ Job . . :   RESTOCK      User  . . :   ZAGDRATH      Number  . . :   000123
+
+ &gt;&gt; CALL PGM(ZAGLIB/RESTOCK) PARM(LOGIC_DIE 64)
+    ELC1203  Item LOGIC_DIE is being recalled from tape.
+ &gt;&gt; STRCRAFT ITEM(&amp;ITEM) QTY(64) RTNCRFJOB(&amp;JOB)
+    ELC1403  Missing ingredients for LOGIC_DIE.
+    (monitored: MONMSG MSGID(ELC1400))
+ &gt;&gt; SNDMSG MSG(RESTOCK: cannot craft LOGIC_DIE) TOUSR(*SYSOPR)
+ &gt;&gt; RETURN
+    ELC0307  Job 000123/ZAGDRATH/RESTOCK ended normally.
+
+
+
+
+
+
+
+
+                                                                         Bottom
+
+
+ F1=Help  F3=Exit  F5=Refresh  F10=Display detailed messages  F12=Cancel</pre>
+<h2 id="schedules">Job schedule entries<a class="anchor" href="#schedules" aria-label="Link to this section">#</a></h2>
+<p><a class="cmd" href="commands/ADDJOBSCDE.html"><code>ADDJOBSCDE</code></a> <code>JOB(name) CMD(command) FRQ(*ONCE|*DAILY|*INTERVAL) TIME(HHMM) INTERVAL(seconds)</code> adds an entry that submits <code>CMD</code> as a batch job, named after the entry, when it is due.</p>
+<ul><li><strong><code>*ONCE</code></strong> (the default): the next time the game clock reaches <code>TIME</code> (<code>HHMM</code> or <code>HHMMSS</code>; the game day starts at 06:00). <code>*CURRENT</code>, the default <code>TIME</code>, means now. The entry is removed once it has run.</li><li><strong><code>*DAILY</code></strong>: every day at <code>TIME</code> on the game clock. If its network was unloaded through one or more of its times, it runs once when the network is loaded again, not once for each day missed.</li><li><strong><code>*INTERVAL</code></strong>: every <code>INTERVAL</code> real seconds (1 to 604,800; needed with <code>FRQ(*INTERVAL)</code>), the first run that long after the entry is added. It is real time, so it keeps its pace whatever the game clock or the server's tick rate does.</li></ul>
+<p>How entries behave:</p>
+<ul><li>They fire only while their network is loaded, whether or not anyone is signed on.</li><li>The job runs as the user who added the entry, with their Firewall permissions. If it can't be submitted (no job host: <a class="msg" href="messages.html#ELC0301"><code>ELC0301</code></a>), the message goes to that user's message queue as "Schedule entry NAME: ...".</li><li>Work with Job Schedule Entries (<a class="cmd" href="commands/WRKJOBSCDE.html"><code>WRKJOBSCDE</code></a>) shows each entry's next run on the game clock (an <code>*INTERVAL</code> entry's as near as real seconds go). Option 10 submits it now without changing its next run.</li><li><a class="cmd" href="commands/HLDJOBSCDE.html"><code>HLDJOBSCDE</code></a> holds an entry (status <code>*HLD</code>; it doesn't fire) and <a class="cmd" href="commands/RLSJOBSCDE.html"><code>RLSJOBSCDE</code></a> releases it (<code>*SCD</code>); both answer with no message. <a class="cmd" href="commands/RMVJOBSCDE.html"><code>RMVJOBSCDE</code></a> removes one. An entry name that is taken is <a class="msg" href="messages.html#ELC0305"><code>ELC0305</code></a>, and one that doesn't exist is <a class="msg" href="messages.html#ELC0302"><code>ELC0302</code></a>.</li><li>Entries are saved with the system.</li></ul>
+<div class="code-block"><pre class="code elcl"><code>ADDJOBSCDE JOB(ARCHIVE) CMD(CALL PGM(ELSYS/ARCHIVE) PARM(<span class="s">&#x27;*_ORE&#x27;</span>)) FRQ(*DAILY) TIME(0200)
+ADDJOBSCDE JOB(RESTOCK) CMD(CALL PGM(ZAGLIB/RESTOCK) PARM(<span class="s">&#x27;IRON_INGOT&#x27;</span> 500)) +
+           FRQ(*INTERVAL) INTERVAL(300)
+ADDJOBSCDE JOB(WAKEUP) CMD(SNDMSG MSG(<span class="s">&#x27;Morning&#x27;</span>) TOUSR(*ALL)) TIME(0600)</code></pre></div>
+<pre class="term" aria-label="Terminal screen"> WRKJOBSCDE              Work with Job Schedule Entries        System:  ELNET01
+                                                                Day 2  07:14:22
+
+ Type options, press Enter.
+   2=Change   3=Hold   4=Remove   10=Submit now
+
+Opt  Job         Status    Frequency   Next run         Command
+     NOCWALL     *SCD      *INTERVAL   Day 2  07:15:00  CALL PGM(ZAGLIB/NOCWALL
+     ARCHIVE     *SCD      *DAILY      Day 3  02:00:00  CALL PGM(ZAGLIB/ARCHIVE
+     RESTOCK     *HLD      *ONCE       Day 2  12:00:00  CALL PGM(ZAGLIB/RESTOCK
+
+
+
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F6=Add  F9=Command Entry  F12=Cancel</pre>
+<h2 id="triggers">Trigger events<a class="anchor" href="#triggers" aria-label="Link to this section">#</a></h2>
+<p><a class="cmd" href="commands/ADDTRGEVT.html"><code>ADDTRGEVT</code></a> <code>TRG(name) EVENT(event) PGM(lib/program) ITEM() DEV() VALUE() TYPE()</code> runs a program as a batch job, named after the trigger, whenever something happens on the network. It runs as the user who added the trigger, as <code>CALL PGM(program) PARM('event' 'data')</code>, so the program must take exactly two parameters:</p>
+<div class="code-block"><pre class="code elcl"><code>PGM PARM(&amp;EVENT &amp;DATA)
+  DCL VAR(&amp;EVENT) TYPE(*CHAR) LEN(12)    <span class="c">/* the event&#x27;s name, *SUPFAILOVER the longest */</span>
+  DCL VAR(&amp;DATA)  TYPE(*CHAR) LEN(256)   <span class="c">/* what happened: see the table               */</span>
+  SNDMSG MSG(%TRIM(&amp;EVENT) *BCAT %TRIM(&amp;DATA)) TOUSR(*SYSOPR)
+ENDPGM</code></pre></div>
+<p>The event name arrives whole; a variable shorter than the name cuts it (a <code>LEN(10)</code> <code>&amp;EVENT</code> gets <code>*DEVOFFLIN</code> for <code>*DEVOFFLINE</code>), so declare <code>&amp;EVENT</code> <code>LEN(12)</code>. <code>ITEM()</code>, <code>DEV()</code> and <code>VALUE()</code> narrow what fires the trigger, as the table says; <code>*ANY</code> (the default) takes any. <code>VALUE()</code> takes text, so quote a side: <code>VALUE('*NORTH')</code>. <code>TYPE(*FLUID)</code> or <code>TYPE(*PRES)</code> makes <code>*ITMBELOW</code> and <code>*ITMABOVE</code> watch a fluid or a gas.</p>
+<div class="table-wrap"><table><thead><tr><th>Event</th><th>When it fires</th><th>&amp;DATA</th></tr></thead><tbody><tr><td><code>*ITMBELOW</code></td><td><code>ITEM</code>'s count (hot and cold together) drops below <code>VALUE</code>. With <code>TYPE(*FLUID)</code> or <code>TYPE(*PRES)</code>, a fluid's or gas's amount in mB.</td><td>The item ID and its count: <code>IRON_INGOT 499</code> (a fluid: <code>minecraft:water 3000</code>)</td></tr><tr><td><code>*ITMABOVE</code></td><td><code>ITEM</code>'s count rises above <code>VALUE</code> (as <code>*ITMBELOW</code>, the other way).</td><td>The item ID and its count: <code>COBBLESTONE 10001</code></td></tr><tr><td><code>*STGFULL</code></td><td>The network's storage use (source members included) reaches <code>VALUE</code> percent, or 100 with no <code>VALUE</code>.</td><td>The percent used: <code>90</code></td></tr><tr><td><code>*DEVFAULT</code></td><td>The device <code>DEV</code> (or any named device, <code>*ANY</code>) goes into fault.</td><td>The device name: <code>CMPSRV01</code></td></tr><tr><td><code>*DEVONLINE</code></td><td><code>DEV</code> (or any named device) comes online.</td><td>The device name</td></tr><tr><td><code>*DEVOFFLINE</code></td><td><code>DEV</code> (or any named device) goes offline from online or fault. A device that is disabled counts as offline.</td><td>The device name</td></tr><tr><td><code>*PWRUPS</code></td><td>The network's UPSes go onto battery (the network has lost its power).</td><td>The UPSes' average charge, percent: <code>97</code></td></tr><tr><td><code>*PWRRESTORED</code></td><td>The network's UPSes come back off battery.</td><td>The UPSes' average charge, percent</td></tr><tr><td><code>*CRAFTEND</code></td><td>A crafting job of <code>ITEM</code> (or any, <code>*ANY</code>) ends, whether it finished, failed or was cancelled.</td><td>The crafting job and how it ended: <code>C0042 *DONE</code> (<code>*DONE</code>, <code>*FAILED</code> or <code>*CANCELLED</code>)</td></tr><tr><td><code>*CRFSTALL</code></td><td>A crafting job of <code>ITEM</code> (or any) makes no progress for <a class="cfg" href="../reference/config.html#cfg-autocrafting-jobStallSeconds"><code>autocrafting.jobStallSeconds</code></a> (default 30) seconds.</td><td>The job, the item of the step it is stuck on and the reason when one was found: <code>C0042 IRON_INGOT machine output full</code></td></tr><tr><td><code>*RSCHANGE</code></td><td>The redstone arriving on a face of the Control Interface or PLC <code>DEV</code> changes. <code>VALUE('*NORTH')</code> (or another side) fires for that face only.</td><td>The face and its new level: <code>*NORTH 7</code></td></tr><tr><td><code>*DSPTOUCH</code></td><td>A player right-clicks the face of the Display Panel screen <code>DEV</code> (or any).</td><td>The screen, the region under the point (<code>*NONE</code> outside all of them) and the point in canvas pixels from the top left: <code>DSP01 A 40 12</code></td></tr><tr><td><code>*MCHIDLE</code></td><td>An Arcforge machine <code>DEV</code> (or any) with a Small Wireless Bridge on it goes idle.</td><td>The machine's name, then the words Arcforge gives for its status</td></tr><tr><td><code>*MCHDONE</code></td><td>A bridged Arcforge machine <code>DEV</code> (or any) finishes an operation; <code>ITEM</code> can name what it must have made.</td><td>The machine, the count and the first thing it made: <code>ARCCRU01 5 BONE_MEAL</code></td></tr><tr><td><code>*MCHFAULT</code></td><td>A bridged Arcforge machine <code>DEV</code> (or any) faults.</td><td>The machine and the machine's words: <code>ARCCRU01 Too hot</code></td></tr><tr><td><code>*MCHNOPWR</code></td><td>A bridged Arcforge machine <code>DEV</code> (or any) runs short of power.</td><td>The machine and the machine's words: <code>ARCCRU01 No power</code></td></tr><tr><td><code>*NBRUP</code></td><td>A dynamic-routing neighbour of the Router <code>DEV</code> (or any) comes up.</td><td>The Router and the neighbour's network: <code>RTR01 ELNET02</code></td></tr><tr><td><code>*NBRDOWN</code></td><td>A dynamic-routing neighbour of the Router <code>DEV</code> (or any) goes down.</td><td>The Router and the neighbour's network</td></tr><tr><td><code>*RTECHG</code></td><td>The Router <code>DEV</code>'s (or any Router's) best path to a network changes: a new next hop or cost, or a route found or lost.</td><td>The Router and the network: <code>RTR01 ELNET07</code></td></tr><tr><td><code>*ACLDENY</code></td><td>An ACL rule on the Router <code>DEV</code> (or any) denies a resource. At most once a second for each rule.</td><td>The Router, the ACL, the rule's sequence number and the resource: <code>RTR01 NOFUEL 10 COAL</code></td></tr><tr><td><code>*CARDFAULT</code></td><td>A part in the chassis <code>DEV</code> (or any) fails or is taken out: a Chassis Switch's power supply or its last supervisor, a Blade Enclosure's interconnect, management or power modules, a Transport Shelf's controller.</td><td>The device, the bay and what happened: <code>CSW01 PSU 3/4 power supplies</code>, <code>CSW01 A no supervisor</code>, <code>OTS01 C controller failover</code></td></tr><tr><td><code>*SUPFAILOVER</code></td><td>The standby supervisor of the Chassis Switch <code>DEV</code> (or any) takes over from the active one.</td><td>The switch, the bay that failed and the takeover: <code>CSW01 A failover to B</code></td></tr><tr><td><code>*PROTSWITCH</code></td><td>The Transport Shelf <code>DEV</code> (or any) switches between its working and protect paths (1+1 protection).</td><td>The shelf, the span, the path now in use and why: <code>OTS01 OTS01-OTS02 *PROTECT working path down</code></td></tr><tr><td><code>*SPANLOSS</code></td><td>The lanes lost on the active span of the Transport Shelf <code>DEV</code> (or any) change, up or down.</td><td>The shelf, the span and the lanes now lost: <code>OTS01 OTS01-OTS02 2</code></td></tr></tbody></table></div>
+<p>How triggers behave:</p>
+<ul><li><strong>Edge-triggered.</strong> A trigger fires once each time its condition becomes true, not for as long as it holds. Item counts, storage use, UPS power and device statuses are looked at every half second. The first look after a trigger is added (or after a restart) only records what holds, so a condition that is already true doesn't fire. The other events arrive as they happen: ended and stalled crafts, redstone changes, touches, Router, chassis and optical events, and Arcforge machine events (the machine ones only while the machine's Small Wireless Bridge is online on the network).</li><li><strong>Debounced.</strong> At least one second (real time) passes between two firings of the same trigger. A crossing during that second fires when it's over, if it still holds; events during it fire once then, with the last <code>&amp;DATA</code>.</li><li><strong>Needs a job host.</strong> Each firing is a batch job. With no host, <a class="msg" href="messages.html#ELC0301"><code>ELC0301</code></a> goes to the trigger's user's message queue as "Trigger NAME: ...".</li><li><strong>Only while the network is loaded.</strong> Held triggers (<a class="cmd" href="commands/HLDTRGEVT.html"><code>HLDTRGEVT</code></a>, status <code>*HELD</code>) don't fire, and a firing waiting out its debounce when the trigger is held is dropped; <a class="cmd" href="commands/RLSTRGEVT.html"><code>RLSTRGEVT</code></a> makes it <code>*ACTIVE</code> again. Both answer with no message. <a class="cmd" href="commands/RMVTRGEVT.html"><code>RMVTRGEVT</code></a> removes one. Removing, holding or releasing a trigger that doesn't exist is <a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a>, and a name that is taken is <a class="msg" href="messages.html#ELC0306"><code>ELC0306</code></a>.</li><li>Triggers are saved with the system. Device statuses aren't: a device that changed while the server was down doesn't fire.</li></ul>
+<div class="code-block"><pre class="code elcl"><code>ADDTRGEVT TRG(LOWIRON) EVENT(*ITMBELOW) ITEM(IRON_INGOT) VALUE(500) PGM(ZAGLIB/IRONLOW)
+ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) PGM(ELSYS/UPSALERT)
+ADDTRGEVT TRG(BUTTON) EVENT(*RSCHANGE) DEV(CTLIF01) VALUE(<span class="s">&#x27;*WEST&#x27;</span>) PGM(ZAGLIB/BUTTON)
+ADDTRGEVT TRG(LOWWATER) EVENT(*ITMBELOW) ITEM(minecraft:water) TYPE(*FLUID) VALUE(8000) +
+          PGM(ZAGLIB/PUMP)</code></pre></div>
+<pre class="term" aria-label="Terminal screen"> WRKTRGEVT                  Work with Trigger Events           System:  ELNET01
+                                                                Day 2  07:14:22
+
+ Type options, press Enter.
+   2=Change   3=Hold   4=Remove
+
+Opt  Trigger     Event       Item/Device      Value  Program            Status
+     LOWDIES     *ITMBELOW   LOGIC_DIE        64     ZAGLIB/RESTOCK     *ACTIVE
+     UPSPWR      *PWRUPS     UPS01                   ZAGLIB/UPSALERT    *ACTIVE
+     LEVER       *RSCHANGE   CTLIF01          *UP    ZAGLIB/DOORS       *HELD
+
+
+
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F6=Add  F9=Command Entry  F12=Cancel</pre>
+<p><a href="examples.html">Worked examples</a> has complete trigger programs: UPSALERT, DEVWATCH and STALLMSG.</p>
+<h2 id="msgqueues">Message queues<a class="anchor" href="#msgqueues" aria-label="Link to this section">#</a></h2>
+<p>Each user has a message queue, shown newest first by <a class="cmd" href="commands/DSPMSG.html"><code>DSPMSG</code></a> (Main Menu option 7). While it holds unread messages, <code>MW</code> shows at the end of the message line on every screen.</p>
+<p><a class="cmd" href="commands/SNDMSG.html"><code>SNDMSG</code></a> <code>MSG('text') TOUSR(...)</code> puts a message in a queue:</p>
+<ul><li><code>*REQUESTER</code> (the default): your own queue.</li><li>a user's name: that user's queue.</li><li><code>*SYSOPR</code>: the system operator's queue, <code>QSYSOPR</code>. Its chat notice goes to the network's owner (the Firewall's owner).</li><li><code>*ALL</code>: every queue that already exists on the system, plus <code>QSYSOPR</code>.</li></ul>
+<p><code>DSPMSG</code> shows your own queue. <code>DSPMSG USR(*SYSOPR)</code> shows <code>QSYSOPR</code>, and <code>DSPMSG USR(name)</code> another user's queue, to a <code>*SECOFR</code> (or anyone, on a network with no Firewall or at <code>SECLVL</code> 10); anyone else gets <a class="msg" href="messages.html#ELC0401"><code>ELC0401</code></a>.</p>
+<ul><li>Online recipients get a chat notice that a message is waiting (<a class="cfg" href="../reference/config.html#cfg-elcl-messageChatNotice"><code>elcl.messageChatNotice</code></a> (default true)).</li><li>The system puts messages in queues too: a job's unmonitored escape message goes to its user's queue (sent by the program); a batch job ended by <code>ENDJOB</code> or a lost host (<a class="msg" href="messages.html#ELC0303"><code>ELC0303</code></a>, <a class="msg" href="messages.html#ELC0310"><code>ELC0310</code></a>) and a schedule entry or trigger that couldn't submit its job are sent by <code>QSYS</code>.</li><li>Queues are saved with the system and keep at most <a class="cfg" href="../reference/config.html#cfg-elcl-messageCap"><code>elcl.messageCap</code></a> (default 500) messages each; past that the oldest go. No message needs a reply.</li><li><code>SNDMSG</code>'s <code>TOTRM()</code> is accepted and ignored.</li></ul>
+<pre class="term" aria-label="Terminal screen"> DSPMSG                         Display Messages               System:  ELNET01
+                                                                Day 2  07:14:22
+ Queue . . . . :   ZAGDRATH                 Program . . . . :   *DSPMSG
+ Type options, press Enter.
+   4=Remove   5=Display details
+
+Opt  Sev  From        Sent             Message
+     30   RESTOCK     Day 2  07:10:44  Called program ZAGLIB/RESTOCK ended abno
+     00   UPSALERT    Day 2  06:58:02  Utility power restored. UPS charge 82%.
+     10   QSYSOPR     Day 2  06:40:15  Storage 91% used (hot tier).
+
+                                       Newest first; unread messages are bright.
+
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F11=Remove all  F12=Cancel  F24=More keys</pre>
+<h2 id="spooled">Spooled output<a class="anchor" href="#spooled" aria-label="Link to this section">#</a></h2>
+<p>Spooled files are printed output kept on the system, listed by Work with Output (<a class="cmd" href="commands/WRKSPLF.html"><code>WRKSPLF</code></a>, Main Menu option 8) and shown with Display Spooled File (option 5). You see your own files. Each belongs to a job and has a name, a page count (60 lines a page), a status (<code>*RDY</code> when made) and the time it was made. They are saved with the system, at most <a class="cfg" href="../reference/config.html#cfg-elcl-spooledFileCap"><code>elcl.spooledFileCap</code></a> (default 200) on each system; past that the oldest go.</p>
+<div class="table-wrap"><table><thead><tr><th>Where it comes from</th><th>File name</th></tr></thead><tbody><tr><td>A program's compile listing (<a class="cmd" href="commands/CRTELPGM.html"><code>CRTELPGM</code></a>, WRKMBR option 14)</td><td>The program's name</td></tr><tr><td>A physical file's compile listing (<a class="cmd" href="commands/CRTPF.html"><code>CRTPF</code></a>, <a class="cmd" href="commands/CHGPF.html"><code>CHGPF</code></a>)</td><td>The file's name</td></tr><tr><td>A printed member (WRKMBR option 6)</td><td>The member's name</td></tr><tr><td><a class="cmd" href="commands/PRTTXT.html"><code>PRTTXT</code></a> <code>TEXT()</code></td><td><code>QPRINT</code> (<code>SPLF(*JOB)</code>, the default) or the name given; each line is added to the job's file of that name</td></tr><tr><td><code>RUNQRY OUTPUT(*PRINT)</code> (<a class="cmd" href="commands/RUNQRY.html"><code>RUNQRY</code></a>; also <code>*DISPLAY</code> where there is no screen, as in a batch job)</td><td><code>QPQUPRFIL</code></td></tr></tbody></table></div>
+<p>Listings from a terminal go with your interactive job. Job logs aren't spooled: <code>PRTRPT RPT(*JOBLOG)</code> prints one straight on paper.</p>
+<pre class="term" aria-label="Terminal screen"> WRKSPLF                        Work with Output               System:  ELNET01
+                                                                Day 2  07:14:22
+
+ Type options, press Enter.
+   4=Delete   5=Display   6=Print
+
+Opt  File        Job                   User        Pages  Status  Created
+     NOCWALL     000118/NOCWALL        ZAGDRATH        1  *RDY    Day 2  07:13
+     QPJOBLOG    000123/RESTOCK        ZAGDRATH        2  *RDY    Day 2  07:10
+     INVLIST     000099/QPRTRPT        OPERATOR        6  *PRT    Day 1  18:44
+
+
+
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F9=Command Entry  F11=Sort  F12=Cancel</pre>
+<h2 id="printing">Printing<a class="anchor" href="#printing" aria-label="Link to this section">#</a></h2>
+<p>Printing on paper goes to a printer on the network, the <a class="item-link" href="../reference/items/line_printer.html"><img class="icon" src="../assets/icons/encodedlogistics/line_printer.png" alt="" width="20" height="20" loading="lazy">Line Printer</a>: Work with Output option 6 (to the first online printer) and <a class="cmd" href="commands/PRTRPT.html"><code>PRTRPT</code></a>.</p>
+<div class="table-wrap"><table><thead><tr><th><code>PRTRPT RPT()</code></th><th>Prints</th></tr></thead><tbody><tr><td><code>*INV</code></td><td>Every item in the network with its hot and cold counts, sorted by ID, then the total.</td></tr><tr><td><code>*DEV</code></td><td>Every named device with its type, status, lanes and location.</td></tr><tr><td><code>*JOBLOG</code></td><td>The log of the job it runs in.</td></tr><tr><td><code>*SPLF</code></td><td>One of the job's spooled files: <code>SPLF(name)</code>, or <code>*LAST</code> (the default) for its newest; <a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a> if it has none.</td></tr></tbody></table></div>
+<ul><li>Each report starts with a heading line (its title, the date and <code>SYSNAME</code>).</li><li><code>DEV(*DFT)</code> is the first online printer; or name one (<code>PRT01</code>).</li><li>Printed: <a class="msg" href="messages.html#ELC1307"><code>ELC1307</code></a>. No printer: <a class="msg" href="messages.html#ELC1301"><code>ELC1301</code></a> (naming <code>PRT01</code> for <code>*DFT</code>); offline: <a class="msg" href="messages.html#ELC1302"><code>ELC1302</code></a>; out of paper: <a class="msg" href="messages.html#ELC1306"><code>ELC1306</code></a>.</li><li>The Line Printer prints a Printout, one paper a page. A report that runs out of paper part-way puts out the pages printed so far, and the rest waits until paper goes in. See <a href="../crafting/midrange.html">the Midrange line</a> for the printer itself and its own screen.</li></ul>
+<div class="code-block"><pre class="code elcl"><code>PRTTXT TEXT(<span class="s">&#x27;Shift report&#x27;</span>)
+PRTTXT TEXT(<span class="s">&#x27;All Fabricators idle at 06:00&#x27;</span>)
+PRTRPT RPT(*SPLF)                   <span class="c">/* the job&#x27;s QPRINT, on the first printer */</span>
+MONMSG MSGID(ELC1301 ELC1302 ELC1306)
+PRTRPT RPT(*DEV) DEV(PRT01)</code></pre></div>
+<h2 id="devices">The Midrange line, Display Panels and Arcforge machines<a class="anchor" href="#devices" aria-label="Link to this section">#</a></h2>
+<p>These devices have their own pages; here is what ELCL does with them.</p>
+<ul><li><strong>The Midrange line.</strong> A <a class="item-link" href="../reference/items/midrange_system.html"><img class="icon" src="../assets/icons/encodedlogistics/midrange_system.png" alt="" width="20" height="20" loading="lazy">Midrange System</a> or <a class="item-link" href="../reference/items/integrated_midrange.html"><img class="icon" src="../assets/icons/encodedlogistics/integrated_midrange.png" alt="" width="20" height="20" loading="lazy">Integrated Midrange System</a> is a job host (above) and a diskette drive for <a class="cmd" href="commands/SAVLIB.html"><code>SAVLIB</code></a> and <a class="cmd" href="commands/RSTLIB.html"><code>RSTLIB</code></a>; its batch jobs end when it does an IPL. Its control panel's command line, and the Disk and Tape Drives' screens, run commands as a Terminal Desk's does. See <a href="../crafting/midrange.html">the Midrange line</a>.</li><li><strong>Display Panels.</strong> A <a class="item-link" href="../reference/items/display_panel.html"><img class="icon" src="../assets/icons/encodedlogistics/display_panel.png" alt="" width="20" height="20" loading="lazy">Display Panel</a> screen is a device named <code>DSP01</code>, <code>DSP02</code>... <a class="cmd" href="commands/SNDDSPTXT.html"><code>SNDDSPTXT</code></a> writes its text lines, <a class="cmd" href="commands/CHGDSPRGN.html"><code>CHGDSPRGN</code></a>, <a class="cmd" href="commands/SNDDSPWDG.html"><code>SNDDSPWDG</code></a>, <a class="cmd" href="commands/SNDDSPGPH.html"><code>SNDDSPGPH</code></a> and <a class="cmd" href="commands/SNDDSPIMG.html"><code>SNDDSPIMG</code></a> set up a dashboard, <a class="cmd" href="commands/CLRDSP.html"><code>CLRDSP</code></a> clears it and <a class="cmd" href="commands/RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> gives its size. A screen has two modes, Text and Dashboard; one that a program sets up regions or widgets on becomes a Dashboard. Touching a screen fires <code>*DSPTOUCH</code>. These commands need no Firewall permission. See <a href="../control/display-panels.html#elcl">Display Panels</a> and the DSPDASH example in <a href="examples.html#ex-dashboard">Worked examples</a>.</li><li><strong>Arcforge machines.</strong> With Arcforge installed, a <a class="item-link" href="../reference/items/small_wireless_bridge.html"><img class="icon" src="../assets/icons/encodedlogistics/small_wireless_bridge.png" alt="" width="20" height="20" loading="lazy">Small Wireless Bridge</a> puts a machine on the network as a device (<code>ARCCRU01</code>, by type). <a class="cmd" href="commands/WRKMCH.html"><code>WRKMCH</code></a>, <a class="cmd" href="commands/RTVMCHSTS.html"><code>RTVMCHSTS</code></a>, <a class="cmd" href="commands/RTVMCHSTAT.html"><code>RTVMCHSTAT</code></a> and <a class="cmd" href="commands/RTVMCHLST.html"><code>RTVMCHLST</code></a> read them (the Firewall's view permission); <a class="cmd" href="commands/CHGMCHSTS.html"><code>CHGMCHSTS</code></a> and <a class="cmd" href="commands/CHGMCHCFG.html"><code>CHGMCHCFG</code></a> switch them and change their settings (build permission). The <code>*MCH...</code> trigger events report them. Without Arcforge the machine commands answer <a class="msg" href="messages.html#ELC1318"><code>ELC1318</code></a>. See <a href="../integrations/arcforge.html">Arcforge</a>.</li></ul>
+<h2 id="sysvals">System values<a class="anchor" href="#sysvals" aria-label="Link to this section">#</a></h2>
+<p>System values are settings for the whole system (the network). Work with them on <a class="cmd" href="commands/WRKSYSVAL.html"><code>WRKSYSVAL</code></a>, or with <a class="cmd" href="commands/RTVSYSVAL.html"><code>RTVSYSVAL</code></a> and <a class="cmd" href="commands/CHGSYSVAL.html"><code>CHGSYSVAL</code></a>. Changing one takes <code>*SECOFR</code> (the Firewall's owner or a server operator), or a network with no Firewall (<a class="msg" href="messages.html#ELC0401"><code>ELC0401</code></a> otherwise); a value outside its allowed ones is <a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a>, and a change answers <a class="msg" href="messages.html#ELC0222"><code>ELC0222</code></a>. Values are folded to upper case and saved with the system (only those changed from their defaults).</p>
+<div class="table-wrap"><table><thead><tr><th>System value</th><th>What it is</th><th>Default</th><th>Allowed</th></tr></thead><tbody><tr><td><code>SYSNAME</code></td><td>System name</td><td>ELNET<i>nn</i> (the network's number)</td><td>Name, 1-8 characters</td></tr><tr><td><code>DATFMT</code></td><td>Date display format</td><td><code>*DAY</code></td><td>*DAY, *MDY, *DMY, *YMD</td></tr><tr><td><code>SECLVL</code></td><td>Security level (10 / 30)</td><td><code>30</code></td><td>10, 30</td></tr><tr><td><code>QMAXJOB</code></td><td>Maximum batch jobs</td><td><code>16</code></td><td>1-999</td></tr><tr><td><code>LOGRTN</code></td><td>Job logs retained</td><td><code>50</code></td><td>0-999</td></tr><tr><td><code>CRFLOGRTN</code></td><td>Crafting jobs retained</td><td><code>200</code></td><td>0-999</td></tr><tr><td><code>PHOSPHOR</code></td><td>Default screen colour</td><td><code>*GREEN</code></td><td>*GREEN, *AMBER, *WHITE</td></tr></tbody></table></div>
+<p>What each one does:</p>
+<div class="table-wrap"><table><thead><tr><th>Value</th><th>Effect</th></tr></thead><tbody><tr><td><code>SYSNAME</code></td><td>The system's name: in the screen header ("System: ..."), compile listings, printed members and reports, saved diskette images, the chat notice, and the names of the folders for <a href="libraries-and-editor.html#folder-sync">folder sync</a>, Display Panel images and Speaker audio.</td></tr><tr><td><code>DATFMT</code></td><td>How the system writes dates: messages' sent times, spooled files, job logs, listings and reports. <code>*DAY</code> writes "Day 2"; <code>*MDY</code>, <code>*DMY</code> and <code>*YMD</code> write the game day as a date on a calendar of 30-day months from year 1 (day 2 is <code>01/02/01</code> in <code>*MDY</code>). The clock in each screen's header always shows "Day n".</td></tr><tr><td><code>SECLVL</code></td><td>10 skips the Sign On screen and gives everyone full authority in the OS; 30 signs on and checks the Firewall's authority. See <a href="index.html#seclvl">SECLVL</a>.</td></tr><tr><td><code>QMAXJOB</code></td><td>At most this many batch jobs run at once on the system; the rest wait on the job queue.</td></tr><tr><td><code>LOGRTN</code></td><td>The logs of this many ended jobs are kept (0: none).</td></tr><tr><td><code>CRFLOGRTN</code></td><td>The crafting job history keeps this many ended jobs, the oldest removed first (0: none). Lowering it trims the history at once. Its default comes from <a class="cfg" href="../reference/config.html#cfg-elcl-craftLogRetention"><code>elcl.craftLogRetention</code></a>.</td></tr><tr><td><code>PHOSPHOR</code></td><td>The screen colour of every desk whose player chose <code>*SYSVAL</code>.</td></tr></tbody></table></div>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;NAME) TYPE(*CHAR) LEN(10)
+RTVSYSVAL SYSVAL(SYSNAME) RTNVAR(&amp;NAME)
+CHGSYSVAL SYSVAL(QMAXJOB) VALUE(32)
+CHGSYSVAL SYSVAL(DATFMT) VALUE(*YMD)</code></pre></div>
+<pre class="term" aria-label="Terminal screen"> WRKSYSVAL                  Work with System Values            System:  ELNET01
+                                                                Day 2  07:14:22
+
+ Type options, press Enter.
+   2=Change   5=Display
+
+Opt  System value  Value                     Description
+     SYSNAME       ELNET01                   System name
+     DATFMT        *DAY                      Date display format
+     SECLVL        30                        Security level (10 / 30)
+     QMAXJOB       16                        Maximum batch jobs
+     LOGRTN        50                        Job logs retained
+     PHOSPHOR      *GREEN                    Default screen colour
+
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F9=Command Entry  F12=Cancel</pre>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="examples.html" rel="prev"><span>Previous</span>Worked examples</a><a class="next" href="control-and-plcs.html" rel="next"><span>Next</span>Redstone, PLCs and signals from ELCL</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

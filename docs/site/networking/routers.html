@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Routers - Encoded Logistics</title>
+<meta name="description" content="The Router - linking separate networks with a Link Card, Move and Share routes with filters, static and dynamic routing, transit, the route table and neighbours, and ACLs.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="index.html" aria-current="true" class="current">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="index.html" aria-current="true" class="current">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Networking">
+<p class="toc-title">Networking</p><nav aria-label="Networking pages"><ol><li><a href="index.html">Networking</a></li><li><a href="switches.html">Switches and VLANs</a></li><li><a href="routers.html" aria-current="page" class="current">Routers</a></li><li><a href="exchange-and-directory.html">Exchange and Directory</a></li><li><a href="bridges-and-links.html">Bridges and links</a></li><li><a href="optical.html">Optical</a></li><li><a href="wireless.html">Wireless</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Networking</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Routers</span></nav>
+<details class="mobile-toc"><summary>Networking: pages</summary><p class="toc-title">Networking</p><nav aria-label="Networking pages"><ol><li><a href="index.html">Networking</a></li><li><a href="switches.html">Switches and VLANs</a></li><li><a href="routers.html" aria-current="page" class="current">Routers</a></li><li><a href="exchange-and-directory.html">Exchange and Directory</a></li><li><a href="bridges-and-links.html">Bridges and links</a></li><li><a href="optical.html">Optical</a></li><li><a href="wireless.html">Wireless</a></li></ol></nav></details>
+<h1>Routers</h1>
+<p class="lead">The Router - linking separate networks with a Link Card, Move and Share routes with filters, static and dynamic routing, transit, the route table and neighbours, and ACLs.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#linking">Linking networks</a></li><li class="toc-l2"><a href="#routes">Routes</a></li><li class="toc-l2"><a href="#dynamic">Static and dynamic routing</a></li><li class="toc-l3"><a href="#transit">Transit</a></li><li class="toc-l2"><a href="#table">The route table and neighbours</a></li><li class="toc-l2"><a href="#acls">ACLs</a></li><li class="toc-l3"><a href="#acl-syntax">Rule syntax</a></li><li class="toc-l3"><a href="#acl-elcl">ACLs from the Terminal OS</a></li><li class="toc-l2"><a href="#exchanges">Exchanges</a></li></ol></nav></details>
+<div class="page-body">
+<p>A <a class="item-link" href="../reference/items/router.html"><img class="icon" src="../assets/icons/encodedlogistics/router.png" alt="" width="20" height="20" loading="lazy">Router</a> is a 1U <a href="../racks/devices.html">rack device</a> at the edge of your network. It moves items between <strong>separate networks</strong>: networks that each keep their own controller, storage and Firewall, however far apart and in whichever dimension. Your mining outpost, a friend's base, the nether factory: link each to a Router, and set up routes for what should flow where.</p>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-router"><figcaption>Crafting Table</figcaption><div class="recipe-body"><span class="grid g3" role="group" aria-label="Ingredients"><a class="slot" href="../reference/items/copper_foil.html" title="Copper Foil"><img src="../assets/icons/encodedlogistics/copper_foil.png" alt="Copper Foil" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/memory_die.html" title="Memory Die"><img src="../assets/icons/encodedlogistics/memory_die.png" alt="Memory Die" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/copper_foil.html" title="Copper Foil"><img src="../assets/icons/encodedlogistics/copper_foil.png" alt="Copper Foil" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/circuit_substrate.html" title="Circuit Substrate"><img src="../assets/icons/encodedlogistics/circuit_substrate.png" alt="Circuit Substrate" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/processor_die.html" title="Processor Die"><img src="../assets/icons/encodedlogistics/processor_die.png" alt="Processor Die" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/circuit_substrate.html" title="Circuit Substrate"><img src="../assets/icons/encodedlogistics/circuit_substrate.png" alt="Circuit Substrate" width="32" height="32" loading="lazy"></a><span class="slot empty" aria-hidden="true"></span><span class="slot empty" aria-hidden="true"></span><span class="slot empty" aria-hidden="true"></span></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="../reference/items/router.html" title="Router"><img src="../assets/icons/encodedlogistics/router.png" alt="Router" width="32" height="32" loading="lazy"></a></div><p class="recipe-id">encodedlogistics:router</p></figure></div>
+<p>A Router is not how you join places into one network (that's a <a href="bridges-and-links.html">Network Bridge</a> or an <a href="optical.html">optical channel</a>), and it doesn't route between the segments of one rack (that's the <a href="switches.html#l3-switch">L3 Switch</a>). It routes between whole networks.</p>
+<h2 id="linking">Linking networks<a class="anchor" href="#linking" aria-label="Link to this section">#</a></h2>
+<p>A Router's <strong>endpoints</strong> are its own network (the one its rack is on) plus up to five networks you link to it, six in all.</p>
+<ol><li>Sneak-use a <a class="item-link" href="../reference/items/link_card.html"><img class="icon" src="../assets/icons/encodedlogistics/link_card.png" alt="" width="20" height="20" loading="lazy">Link Card</a> on any block of the other network: a cable, a device, a Drive Bay. The card stores that network. (A Segment Isolator half stores a segment instead, which a Router also accepts.)</li><li>Open the front door of the Router's rack and use the card on the Router's unit. The action bar says it's linked, that the Router already knows it, or that the Router is full.</li></ol>
+<p>Linking needs <strong>Rack access</strong> at the Router's rack and <strong>Build</strong> on the other network. The Router finds a linked network through the block you stored on the card, so a route only works while that block is loaded and on a running network.</p>
+<p>In the panel's <strong>Routes</strong> tab you can rename endpoints (up to 24 characters) and unlink a network, which removes the routes that use it.</p>
+<h2 id="routes">Routes<a class="anchor" href="#routes" aria-label="Link to this section">#</a></h2>
+<p>A Router holds up to 6 routes. A route goes from one endpoint to another (click its source or destination to step through them) and has a mode. Click the mode to step Move, Share, Control.</p>
+<div class="table-wrap"><table><thead><tr><th>Mode</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Move</strong></td><td>Once a second, moves the items its filter passes from the source network's storage into the destination's</td></tr><tr><td><strong>Share</strong></td><td>Moves nothing. The source's items that pass the filter become part of the destination's storage, as its terminals and crafting see them</td></tr><tr><td><strong>Control</strong></td><td>Moves nothing and shows nothing. Lets the source network's Terminal OS reach devices the destination's Directory Servers publish (see <a href="exchange-and-directory.html#directory">Exchange Switch and Directory Server</a>)</td></tr></tbody></table></div>
+<p><strong>Share options:</strong> <strong>Read</strong> (see and take out) or <strong>Read/Write</strong> (put in too, once the destination's own storage is full); whether crafting may use the shared items; and one way or both ways (bidirectional).</p>
+<p><strong>Filters.</strong> Each route has a 9-entry filter with deny, tag and component options, as a port's has. An empty allow list passes nothing, so a new route moves nothing until you set it up; an empty deny list passes everything. You can drag items from JEI onto a route's filter box.</p>
+<p><strong>Throughput.</strong> A Router moves up to <a class="cfg" href="../reference/config.html#cfg-rack-routerBaseRate"><code>rack.routerBaseRate</code></a> (default 16) items a second, plus <a class="cfg" href="../reference/config.html#cfg-rack-routerRatePerTransceiver"><code>rack.routerRatePerTransceiver</code></a> (default 16) for each <a class="item-link" href="../reference/items/optical_transceiver.html"><img class="icon" src="../assets/icons/encodedlogistics/optical_transceiver.png" alt="" width="20" height="20" loading="lazy">Optical Transceiver</a> in its three cages, shared between its active Move routes in turn. Each transceiver also adds <a class="cfg" href="../reference/config.html#cfg-rack-routerDrainPerTransceiver"><code>rack.routerDrainPerTransceiver</code></a> (default 1) FE/t to its drain of <a class="cfg" href="../reference/config.html#cfg-rack-routerDrain"><code>rack.routerDrain</code></a> (default 4). The Routes tab shows the rate, the items actually moved per second, and which endpoints are reachable now.</p>
+<p><strong>Permissions.</strong> Rack access is enough to add and edit routes. Removing or retargeting a route that has an ACL, and stepping a route into or out of Control (or out of Share), need <strong>Build</strong> as well, so nobody with only rack access can get round an ACL.</p>
+<figure class="shot placeholder" role="img" aria-label="Screenshot needed: The Router panel&#x27;s Routes tab with linked networks and routes"><div class="ph-box"><p class="ph-title">Screenshot needed</p><p class="ph-show">The rack screen with a Router picked, Routes tab: three linked networks with names, three routes (two Move with filters set, one Share), two transceivers in the cages, the throughput figure</p><p class="ph-file"><code>docs/site-src/images/networking/router-routes.png</code> &middot; 1280x720</p></div></figure>
+<h2 id="dynamic">Static and dynamic routing<a class="anchor" href="#dynamic" aria-label="Link to this section">#</a></h2>
+<p>Every Router starts in <strong>Static</strong> mode: it routes between its own endpoints and nothing more. Switch it to <strong>Dynamic</strong> in the <strong>Mode</strong> tab (needs <strong>Build</strong>) and it takes part in dynamic routing with every other Dynamic Router on the server.</p>
+<ul><li><strong>Neighbours.</strong> Two Dynamic Routers are neighbours when one is linked to the other's network, or both are members peering at an <a href="exchange-and-directory.html#exchange">Exchange Switch</a>.</li><li><strong>Hellos.</strong> Each Dynamic Router says hello once a second. A neighbour heard from goes <strong>Init</strong>, then <strong>Full</strong> once each has seen the other. One that misses about three hellos goes <strong>Down</strong> (sooner if needed to reconverge within <a class="cfg" href="../reference/config.html#cfg-rack-reconvergeSeconds"><code>rack.reconvergeSeconds</code></a> (default 5) seconds).</li><li><strong>What it learns.</strong> Each Router advertises its network, the networks it links to, and its transit policy. Through its Full neighbours it learns every network beyond them, and works out the cheapest path to each, at most <a class="cfg" href="../reference/config.html#cfg-rack-maxHops"><code>rack.maxHops</code></a> (default 16) hops long (fewer hops break ties). An advertisement not refreshed for a minute ages out, so an unloaded Router drops off.</li><li><strong>Cost.</strong> Each hop costs more the slower the Routers on it: <a class="cfg" href="../reference/config.html#cfg-rack-routingBaseCost"><code>rack.routingBaseCost</code></a> (default 100) scaled down by the hop's throughput, so Routers with more transceivers make cheaper paths. In the Mode tab you can raise or lower the cost to a neighbour in steps of 10 to steer traffic, or clear it; <a class="cmd" href="../elcl/commands/CHGNBR.html"><code>CHGNBR</code></a> does the same.</li></ul>
+<p>With dynamic routing a route's destination can be <strong>any network in the route table</strong>, not just an endpoint: click the destination to step past the endpoints into the table. Items on such a remote route travel hop by hop along the best path, each Router on the way carrying them and spending its own throughput, and never land in a network on the way. A remote route with no path right now pauses (nothing moves, a Share shows nothing) until there's one again.</p>
+<p>A Router's own links always win over paths it learns. Its whole throughput, for its own routes and for traffic passing through it, is the one rate above.</p>
+<h3 id="transit">Transit<a class="anchor" href="#transit" aria-label="Link to this section">#</a></h3>
+<p>Whether other networks' traffic may pass <em>through</em> a Router's network is its <strong>transit</strong> setting, in the Mode tab:</p>
+<div class="table-wrap"><table><thead><tr><th>Transit</th><th>Lets through</th></tr></thead><tbody><tr><td><strong>None</strong> (the default)</td><td>Nothing: its network is only ever the start or end of a path</td></tr><tr><td><strong>Listed</strong></td><td>Traffic from the networks you tick in its route table, up to 16</td></tr><tr><td><strong>All</strong></td><td>Everyone's traffic</td></tr></tbody></table></div>
+<p>A path crosses a network only where its Routers allow transit for the traffic's source. At an exchange, each member can also allow or refuse transit to each peer.</p>
+<h2 id="table">The route table and neighbours<a class="anchor" href="#table" aria-label="Link to this section">#</a></h2>
+<p>The <strong>Table</strong> tab lists every network the Router can reach:</p>
+<div class="table-wrap"><table><thead><tr><th>Column</th><th>Shows</th></tr></thead><tbody><tr><td>Network</td><td>The destination network's name</td></tr><tr><td>Next</td><td>Where the path goes first: <code>direct</code>, a network, or <code>IX:name</code> for an exchange</td></tr><tr><td>Cost, hops</td><td>The path's cost and length</td></tr><tr><td>Source</td><td><code>*STATIC</code> (its own Link Card links, always listed first), <code>*CONNECTED</code> (one hop away, through a neighbour), <code>*DYNAMIC</code> (learned, further away)</td></tr><tr><td>Age</td><td>How long the entry has been the same</td></tr></tbody></table></div>
+<p>The <strong>Mode</strong> tab lists the neighbours: their network, how they're reached (a link, or an exchange), their state, and their cost and any override.</p>
+<p>In the Terminal OS, <a class="cmd" href="../elcl/commands/DSPROUTE.html"><code>DSPROUTE</code></a> and <a class="cmd" href="../elcl/commands/DSPNBR.html"><code>DSPNBR</code></a> show the same tables, <a class="cmd" href="../elcl/commands/RTVRTE.html"><code>RTVRTE</code></a> and <a class="cmd" href="../elcl/commands/RTVNBRSTS.html"><code>RTVNBRSTS</code></a> read them into a program, and the trigger events <code>*RTECHG</code>, <code>*NBRUP</code> and <code>*NBRDOWN</code> fire when a best path changes or a neighbour comes up or goes down.</p>
+<pre class="term" aria-label="Terminal screen"> DSPROUTE                     Display Route Table              System:  ELNET01
+                                                                Day 2  07:14:22
+ Router . . :  RTR01 (ELNET01)   Mode . . :  *DYNAMIC   Routes . :  14
+
+ Destination   Next hop       Cost   Hops  Source     Age
+ ELNET02       direct           10      1  *CONNECTED 2:14:06
+ ELNET07       ELNET02          35      2  *DYNAMIC   0:41:10
+ ELNET15       IX:MAIN          42      2  *DYNAMIC   0:12:55
+ ELNET19       ELNET07          60      3  *DYNAMIC   0:09:31
+ ELNET22       IX:MAIN          71      3  *DYNAMIC   0:12:55
+ FARMNET       IX:MAIN          88      4  *DYNAMIC   0:00:04
+ BASE          ELNET02           5      1  *STATIC    12:30:00
+
+ *STATIC routes override *DYNAMIC ones.  FARMNET reconverged 4 s ago.
+
+
+
+
+
+
+
+
+
+ F1=Help F3=Exit F5=Refresh F11=Neighbours F12=Cancel</pre>
+<h2 id="acls">ACLs<a class="anchor" href="#acls" aria-label="Link to this section">#</a></h2>
+<p>An ACL (access control list) limits what a Router lets through. Each Router holds up to 8 named ACLs (names up to 10 letters and digits, starting with a letter) of up to 16 rules each.</p>
+<p><strong>Applying an ACL.</strong> In the <strong>ACLs</strong> tab, apply an ACL to a <strong>route</strong>, or to a <strong>network the Router reaches directly</strong> (a linked network, a neighbour's, or an exchange peer's). A Move then moves only what the ACLs on its way permit, and a Share shows only what they permit. Creating, editing and applying ACLs needs <strong>Build</strong>.</p>
+<p><strong>How a rule is chosen.</strong> The rules are checked in order; the first that matches the resource and its direction decides. If none matches, the default applies: permit while <a class="cfg" href="../reference/config.html#cfg-rack-aclDefaultPermit"><code>rack.aclDefaultPermit</code></a> (default true), deny otherwise. Each rule counts its hits and when it last matched.</p>
+<h3 id="acl-syntax">Rule syntax<a class="anchor" href="#acl-syntax" aria-label="Link to this section">#</a></h3>
+<p>The panel's rule editor takes a rule as one line:</p>
+<pre class="code"><code>MATCH [permit|deny] [in|out|both] [N/m] [N/d]</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Part</th><th>Means</th></tr></thead><tbody><tr><td><code>MATCH</code></td><td>What it matches: an item (<code>COAL</code>, <code>minecraft:coal</code>), a tag (<code>#minecraft:logs</code>), a fluid or gas (<code>FLUID minecraft:water</code>), <code>*ITEM</code>, <code>*FLUID</code>, <code>*PRES</code> (gases), <code>*ENERGY</code>, <code>*ANY</code>, or <code>*CONTROL</code> (Directory control requests)</td></tr><tr><td><code>permit</code> / <code>deny</code></td><td>Whether it lets the match through. Permit if left out</td></tr><tr><td><code>in</code> / <code>out</code> / <code>both</code></td><td>Which way: <code>in</code> is into the Router's own network, <code>out</code> is out of it. Both if left out</td></tr><tr><td><code>N/m</code></td><td>A rate: at most N a minute. Past it the rule denies until the minute turns</td></tr><tr><td><code>N/d</code></td><td>A quota: at most N a game day. Past it the rule denies until the day turns</td></tr></tbody></table></div>
+<p>For example, <code>COAL deny out</code> keeps your coal at home, and <code>*ANY permit out 64/m 2000/d</code> lets anything out but only 64 a minute and 2,000 a day. A rule's rate and quota count what Move routes move; a Share honours them once Moves have used them up.</p>
+<p>When a rule denies something, the Terminal OS's <code>*ACLDENY</code> trigger event fires (at most once a second for each rule).</p>
+<h3 id="acl-elcl">ACLs from the Terminal OS<a class="anchor" href="#acl-elcl" aria-label="Link to this section">#</a></h3>
+<p><a class="cmd" href="../elcl/commands/WRKACL.html"><code>WRKACL</code></a> works with a Router's ACL on screen. <a class="cmd" href="../elcl/commands/ADDACLE.html"><code>ADDACLE</code></a>, <a class="cmd" href="../elcl/commands/CHGACLE.html"><code>CHGACLE</code></a> and <a class="cmd" href="../elcl/commands/RMVACLE.html"><code>RMVACLE</code></a> add, change and remove rules from a program; <a class="cmd" href="../elcl/commands/ADDACLE.html"><code>ADDACLE</code></a> makes the ACL if it doesn't exist yet. Rules are numbered in tens, so you can insert between them.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* Keep coal at home, and limit logs leaving to 64 a minute. */</span>
+ADDACLE RTR(ROUTER01) ACL(EXPORT) MATCH(COAL) DIR(*OUT) ACTION(*DENY)
+ADDACLE RTR(ROUTER01) ACL(EXPORT) MATCH(<span class="s">&#x27;#minecraft:logs&#x27;</span>) DIR(*OUT) ACTION(*PERMIT) RATE(64)</code></pre></div>
+<p>You still apply the ACL to a route or network in the Router's ACLs tab.</p>
+<pre class="term" aria-label="Terminal screen"> WRKACL                          Work with ACLs                System:  ELNET01
+                                                                Day 2  07:14:22
+ Router . . :  RTR01     ACL . . . :  NOFUEL     Default . :  *PERMIT
+ Type options, press Enter.
+   2=Change  4=Remove  6=Move up  7=Move down
+
+Opt  Seq  Match          Dir    Action   Limit       Hits  Last matched
+      10  COAL           *BOTH  *DENY               1,204  14:31:02
+      20  #c:fuels       *OUT   *DENY                  88  14:02:10
+      30  *ENERGY        *BOTH  *PERMIT            12,401  14:32:00
+      40  DIAMOND        *OUT   *PERMIT  64/min       310  14:28:44
+      50  *FLUID         *IN    *PERMIT  2000/day   1,950  13:55:00
+     *DFT  (default)                *PERMIT              4,102  14:32:05
+
+
+
+
+
+
+
+ Parameters or command
+ ===&gt;
+
+ F1=Help F3=Exit F5=Refresh F6=Add rule F12=Cancel</pre>
+<h2 id="exchanges">Exchanges<a class="anchor" href="#exchanges" aria-label="Link to this section">#</a></h2>
+<p>A Dynamic Router can join an <a href="exchange-and-directory.html#exchange">Exchange Switch</a> with a <a class="item-link" href="../reference/items/cross_connect.html"><img class="icon" src="../assets/icons/encodedlogistics/cross_connect.png" alt="" width="20" height="20" loading="lazy">Cross-Connect</a>: use the Cross-Connect on the Router's unit (needs <strong>Build</strong> on its network), then on the Exchange Switch. At the exchange it peers with other members' Routers. Exchange peerings show in its route table with <code>IX:name</code> as the next hop.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="switches.html" rel="prev"><span>Previous</span>Switches and VLANs</a><a class="next" href="exchange-and-directory.html" rel="next"><span>Next</span>Exchange Switch and Directory Server</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

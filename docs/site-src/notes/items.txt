@@ -1,0 +1,873 @@
+# One description per block and item, shown at the top of its reference page (reference/items/<id>).
+# [id or glob]: the first section that matches an entry wins, so specific ids come before broader globs.
+# {name} in the text is the entry's display name. 'works:' lists what it's used with (globs allowed); 'page:' is the
+# guide page that covers it. Checked against the code at the version in the site footer.
+
+# ---------------------------------------------------------------- Networks: controller, power, cables
+
+[encodedlogistics:network_controller]
+The heart of a network: it hands out the lanes and holds the network's energy buffer. Touching controller blocks join into one structure, which must be a single block, a line or a hollow frame (only the edges of its box) no bigger than {{config controller.maxSize default}} blocks on any side; each controller face with a cable or device on it adds lanes. A network has one controller structure.
+works: encodedlogistics:power_inlet, encodedlogistics:capacitor_bank, encodedlogistics:network_cable, encodedlogistics:handheld_terminal
+page: networks/controllers
+
+[encodedlogistics:power_inlet]
+Brings FE from another mod into a network's energy pool. Energy goes in through its front face only (it faces you when placed); cables attach on the other five faces. It uses no lanes.
+works: encodedlogistics:network_controller, encodedlogistics:capacitor_bank
+page: networks/power
+
+[encodedlogistics:capacitor_bank]
+Extra energy storage for a network: on a controller's network it becomes part of the energy pool, holding {{config power.capacitorCapacity default}} FE. It uses no lanes, and its faces can also take and give FE directly. Hold a Handheld Terminal against it (use and hold) to charge the terminal.
+works: encodedlogistics:network_controller, encodedlogistics:power_inlet, encodedlogistics:handheld_terminal
+page: networks/power
+
+[encodedlogistics:creative_capacitor_bank]
+Creative only: an endless energy source and sink. It is always full, gives any FE asked of it and takes any offered, on its network and on every face. It has no recipe and can't be broken in survival.
+works: encodedlogistics:network_controller
+page: networks/power
+
+[encodedlogistics:segment_isolator]
+An inline housing that splits a cable run into two separate networks (segments): lanes, storage, devices and energy don't cross it. Sneak-use a Link Card on one half to store that segment, so a rack switch, Router, Trunk Port or Optical Multiplexer can serve it.
+works: encodedlogistics:link_card, encodedlogistics:trunk_port, encodedlogistics:l3_switch, encodedlogistics:router
+page: networks/segments
+
+[encodedlogistics:cable_anchor]
+A small plug you put on a cable face to stop the cable connecting that way, for example to keep two parallel cables from joining. A wrench, or sneak-use with an empty hand, takes it off.
+works: encodedlogistics:network_cable, encodedlogistics:dense_network_cable, encodedlogistics:fiber_cable
+page: networks/cables
+
+[encodedlogistics:cable_facade]
+A panel that covers one face of a cable. Mount it on a cable, then use a full block on it to give it that block's look; sneak-use with an empty hand takes the block back off, and again removes the facade. A facade doesn't stop the cable connecting on that side.
+works: encodedlogistics:network_cable, encodedlogistics:dense_network_cable, encodedlogistics:fiber_cable
+page: networks/cables
+
+[encodedlogistics:part_host]
+Internal block, with no item: it holds a cable part mounted straight onto the face of a block that isn't a cable, when there's no cable in front of that face. You never place it yourself: use a part on a block face and the mod places it. The part is on the network only when the block it's mounted on is a network block.
+works: encodedlogistics:access_terminal, encodedlogistics:fabrication_terminal, encodedlogistics:schematic_terminal, encodedlogistics:schematic_encoder, encodedlogistics:ingress_port, encodedlogistics:egress_port, encodedlogistics:inventory_tap, encodedlogistics:threshold_sensor, encodedlogistics:collector_plane, encodedlogistics:deployer_plane, encodedlogistics:point_to_point_link, encodedlogistics:trunk_port
+page: networks/cable-parts
+
+[encodedlogistics:network_cable]
+The basic cable, carrying {{config lanes.perCable default}} lanes. This neutral cable connects to cables of every colour; dye it to keep runs apart.
+works: encodedlogistics:cable_anchor, encodedlogistics:cable_facade
+page: networks/cables
+
+[encodedlogistics:dense_network_cable]
+A thick cable carrying {{config lanes.perDenseCable default}} lanes, for trunk runs that feed many devices. This neutral cable connects to cables of every colour.
+works: encodedlogistics:cable_anchor, encodedlogistics:cable_facade
+page: networks/cables
+
+[encodedlogistics:fiber_cable]
+A slim cable carrying {{config lanes.perFiberCable default}} lanes, and the only cable that carries optical lines. A very long unbroken run loses lanes to span loss. This neutral cable connects to cables of every colour.
+works: encodedlogistics:optical_multiplexer, encodedlogistics:optical_amplifier, encodedlogistics:optical_transport_shelf
+page: networks/cables
+
+[*_dense_network_cable]
+{name}: a Dense Network Cable ({{config lanes.perDenseCable default}} lanes) that connects only to cables of its own colour and to neutral ones. Use a dye on a placed cable to recolour it, or a water bucket to wash it back to neutral.
+works: encodedlogistics:dense_network_cable, encodedlogistics:cable_anchor, encodedlogistics:cable_facade
+page: networks/cables
+
+[*_network_cable]
+{name}: a Network Cable ({{config lanes.perCable default}} lanes) that connects only to cables of its own colour and to neutral ones. Use a dye on a placed cable to recolour it, or a water bucket to wash it back to neutral.
+works: encodedlogistics:network_cable, encodedlogistics:cable_anchor, encodedlogistics:cable_facade
+page: networks/cables
+
+[*_fiber_cable]
+{name}: a Fiber Cable ({{config lanes.perFiberCable default}} lanes, with span loss on long runs) that connects only to cables of its own colour and to neutral ones. Use a dye on a placed cable to recolour it, or a water bucket to wash it back to neutral.
+works: encodedlogistics:fiber_cable, encodedlogistics:cable_anchor, encodedlogistics:cable_facade
+page: networks/cables
+
+# ---------------------------------------------------------------- Cable parts and port modules
+
+[encodedlogistics:access_terminal]
+A screen for the network's storage: search, sort and take or put items, fluids, gases and energy, and request crafts. Mount it on a cable face or on the face of any network block. Uses one lane.
+works: encodedlogistics:drive_bay, encodedlogistics:fabrication_terminal
+page: terminals/block-terminals
+
+[encodedlogistics:fabrication_terminal]
+An Access Terminal with a 3x3 crafting grid that refills itself from the network as you craft. The grid's items stay in the part and drop with it. Uses one lane.
+works: encodedlogistics:access_terminal, encodedlogistics:schematic_encoder
+page: terminals/block-terminals
+
+[encodedlogistics:schematic_encoder]
+A terminal that writes recipes onto blank Schematic Cards: a crafting recipe for a Fabricator, or a machine's inputs and outputs (items, fluids and gases) for a Gateway. Mounts like any cable part and uses one lane.
+works: encodedlogistics:schematic_card, encodedlogistics:encoded_schematic_crafting, encodedlogistics:encoded_schematic_processing
+page: crafting/schematics
+
+[encodedlogistics:schematic_terminal]
+A terminal for the network's autocrafting: every Fabricator, Gateway, Fabrication Server and Midrange System with its schematics, and every crafting job with its progress and steps, which you can cancel, hold or release. Uses one lane.
+works: encodedlogistics:fabricator, encodedlogistics:gateway, encodedlogistics:fabrication_server, encodedlogistics:midrange_system, encodedlogistics:scheduler_core
+page: crafting/jobs
+
+[encodedlogistics:ingress_port]
+A cable part that pulls items (or fluids, gases or energy) from the inventory it faces into the network, as its filter allows. Takes up to four port modules. Uses one lane.
+works: encodedlogistics:filter_module, encodedlogistics:throughput_module, encodedlogistics:fuzzy_match_module, encodedlogistics:redstone_control_module
+page: networks/cable-parts
+
+[encodedlogistics:egress_port]
+A cable part that pushes the items (or fluids, gases or energy) on its filter from the network into the inventory it faces; with an empty filter it moves nothing. Takes up to four port modules. Uses one lane.
+works: encodedlogistics:filter_module, encodedlogistics:throughput_module, encodedlogistics:fuzzy_match_module, encodedlogistics:redstone_control_module
+page: networks/cable-parts
+
+[encodedlogistics:inventory_tap]
+A cable part that makes the inventory (and tanks) it faces part of the network's storage where it stands, with a priority, an access mode and a filter. Uses one lane.
+works: encodedlogistics:drive_bay
+page: networks/cable-parts
+
+[encodedlogistics:threshold_sensor]
+A cable part that gives a redstone signal while the network's count of an item is above, below or equal to a number you set. Uses one lane.
+works: encodedlogistics:control_interface, encodedlogistics:plc
+page: networks/cable-parts
+
+[encodedlogistics:point_to_point_link]
+A cable part that passes items, fluids, gases, energy, redstone or lanes straight from an input endpoint to its paired outputs, without going through storage. Pick the type and direction, then pair the ends with a Link Card. Uses no lanes.
+works: encodedlogistics:link_card
+page: networks/cable-parts
+
+[encodedlogistics:collector_plane]
+A cable part that breaks the block in front of it (as an iron pickaxe would) and vacuums up dropped items into the network. A Filter or Fuzzy Match Module limits what it takes. Planes side by side join up. Uses one lane.
+works: encodedlogistics:filter_module, encodedlogistics:fuzzy_match_module, encodedlogistics:deployer_plane
+page: networks/cable-parts
+
+[encodedlogistics:deployer_plane]
+A cable part that places blocks, or drops items, from the network into the space in front of it, taking the first entry on its list that the network has. Planes side by side join up. Uses one lane.
+works: encodedlogistics:collector_plane
+page: networks/cable-parts
+
+[encodedlogistics:trunk_port]
+A cable part for VLAN trunking: it carries segments (networks beyond Segment Isolators, added with a Link Card) into the network it's on, so every Server Rack there can put its pooled devices on them. Access or Trunk mode, with a native segment.
+works: encodedlogistics:segment_isolator, encodedlogistics:link_card, encodedlogistics:server_rack
+page: networking/switches
+
+[encodedlogistics:filter_module]
+A port module that adds filter options to a port: deny (move everything except the entries), match by shared tag, and match exact components. It also works in a Collector Plane.
+works: encodedlogistics:ingress_port, encodedlogistics:egress_port, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port, encodedlogistics:collector_plane
+page: networks/cable-parts
+
+[encodedlogistics:throughput_module]
+Makes a port move more per operation (up to three in one port). In a Fabricator or Fabrication Server, each one (up to two) makes crafts quicker.
+works: encodedlogistics:ingress_port, encodedlogistics:egress_port, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port, encodedlogistics:fabricator, encodedlogistics:fabrication_server
+page: networks/cable-parts
+
+[encodedlogistics:fuzzy_match_module]
+Lets a port's or Collector Plane's filter entries match by tag, or by damage range: right-click a filter entry to pick how it matches.
+works: encodedlogistics:ingress_port, encodedlogistics:egress_port, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port, encodedlogistics:collector_plane
+page: networks/cable-parts
+
+[encodedlogistics:redstone_control_module]
+Unlocks a port's redstone modes: work only with a signal, only without one, or once per pulse. Without it a port ignores redstone.
+works: encodedlogistics:ingress_port, encodedlogistics:egress_port, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port
+page: networks/cable-parts
+
+# ---------------------------------------------------------------- Storage
+
+[encodedlogistics:drive_bay]
+Holds ten Storage Drives of any type and makes them the network's storage (hot storage, priority 0). Each drive's sled and fill light show on its front. Uses one lane.
+works: storage_drive_*, fluid_storage_drive_*, pressurized_storage_drive_*, energy_storage_drive_*
+page: storage/drive-bay
+
+[encodedlogistics:storage_die_8k]
+The first storage chip, etched on the Lithography Press from a Silicon Wafer and Ferrite with the Storage Photomask. It goes into the 8K drives, and four of them make a 32K Storage Die.
+works: encodedlogistics:storage_drive_8k, encodedlogistics:fluid_storage_drive_8k, encodedlogistics:pressurized_storage_drive_8k, encodedlogistics:energy_storage_drive_8k
+page: storage/drives
+
+[encodedlogistics:storage_die_32k]
+A 32K storage chip, crafted from four 8K Storage Dies. It goes into the 32K drives, and four of them make a 128K Storage Die.
+works: encodedlogistics:storage_drive_32k, encodedlogistics:fluid_storage_drive_32k, encodedlogistics:pressurized_storage_drive_32k, encodedlogistics:energy_storage_drive_32k
+page: storage/drives
+
+[encodedlogistics:storage_die_128k]
+A 128K storage chip, crafted from four 32K Storage Dies. It goes into the 128K drives, and four of them make a 512K Storage Die.
+works: encodedlogistics:storage_drive_128k, encodedlogistics:fluid_storage_drive_128k, encodedlogistics:pressurized_storage_drive_128k, encodedlogistics:energy_storage_drive_128k
+page: storage/drives
+
+[encodedlogistics:storage_die_512k]
+A 512K storage chip, crafted from four 128K Storage Dies. It goes into the 512K drives, and four of them make a 2M Storage Die.
+works: encodedlogistics:storage_drive_512k, encodedlogistics:fluid_storage_drive_512k, encodedlogistics:pressurized_storage_drive_512k, encodedlogistics:energy_storage_drive_512k
+page: storage/drives
+
+[encodedlogistics:storage_die_2m]
+The largest storage chip, crafted from four 512K Storage Dies. It goes into the 2M drives.
+works: encodedlogistics:storage_drive_2m, encodedlogistics:fluid_storage_drive_2m, encodedlogistics:pressurized_storage_drive_2m, encodedlogistics:energy_storage_drive_2m
+page: storage/drives
+
+[storage_drive_*]
+{name}: stores items for the network once it's in a drive holder. Its tier sets its bytes (8K is 8,192 bytes, each tier four times the last); a byte holds 8 items, each kind it holds reserves 1/128 of the drive, and it holds at most {{config storage.driveTypeLimit default}} kinds.
+works: encodedlogistics:drive_bay, encodedlogistics:disk_drive, encodedlogistics:nas, encodedlogistics:san, encodedlogistics:storage_blade
+page: storage/drives
+
+[fluid_storage_drive_*]
+{name}: stores fluids for the network once it's in a drive holder, a bucket (1,000 mB) a byte. Its tier sets its bytes (8K is 8,192 bytes, each tier four times the last); each kind it holds reserves 1/128 of the drive, up to {{config storage.driveTypeLimit default}} kinds.
+works: encodedlogistics:drive_bay, encodedlogistics:disk_drive, encodedlogistics:nas, encodedlogistics:san, encodedlogistics:storage_blade
+page: storage/drives
+
+[pressurized_storage_drive_*]
+{name}: stores gases and chemicals from other mods (Arcforge's gases) once it's in a drive holder, 1,000 of the gas's own unit a byte. Without a mod that provides gases there is nothing for it to hold.
+works: encodedlogistics:drive_bay, encodedlogistics:disk_drive, encodedlogistics:nas, encodedlogistics:san, encodedlogistics:storage_blade
+page: storage/drives
+
+[energy_storage_drive_*]
+{name}: holds 1,000 FE per byte of its tier (an 8K drive holds 8,192,000 FE). In any drive holder its FE is part of the network's energy pool, like a Capacitor Bank; it keeps its charge when taken out, and charges or powers other things as a battery item.
+works: encodedlogistics:drive_bay, encodedlogistics:disk_drive, encodedlogistics:nas, encodedlogistics:san, encodedlogistics:storage_blade
+page: storage/drives
+
+[encodedlogistics:lto_tape_drive]
+The read/write head for a Tape Library's drive bay. A library needs at least one to archive items to its tapes and recall them.
+works: encodedlogistics:tape_library_4u, encodedlogistics:tape_library_6u, lto_tape_*
+page: storage/tapes
+
+[encodedlogistics:lto_tape_6]
+Cold storage for a Tape Library: 8M bytes (8 x 1,048,576), in the same byte model as Storage Drives. It keeps what's on it when taken out, and upgrades to LTO-7 in a crafting grid.
+works: encodedlogistics:tape_library_4u, encodedlogistics:tape_library_6u, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+[encodedlogistics:lto_tape_7]
+Cold storage for a Tape Library: 32M bytes, and reads and writes a little faster than LTO-6. Upgrading a tape in a crafting grid keeps what's on it.
+works: encodedlogistics:tape_library_4u, encodedlogistics:tape_library_6u, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+[encodedlogistics:lto_tape_8]
+Cold storage for a Tape Library: 128M bytes, faster again than LTO-7. Upgrading a tape in a crafting grid keeps what's on it.
+works: encodedlogistics:tape_library_4u, encodedlogistics:tape_library_6u, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+[encodedlogistics:lto_tape_9]
+Cold storage for a Tape Library: 512M bytes, faster again than LTO-8. Upgrading a tape in a crafting grid keeps what's on it.
+works: encodedlogistics:tape_library_4u, encodedlogistics:tape_library_6u, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+[encodedlogistics:lto_tape_10]
+The largest tape: 2G bytes of cold storage for a Tape Library, and the fastest to read and write. Upgrading a tape in a crafting grid keeps what's on it.
+works: encodedlogistics:tape_library_4u, encodedlogistics:tape_library_6u, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+# ---------------------------------------------------------------- Ores, metals and materials
+
+[encodedlogistics:neodymium_ore]
+Neodymium ore in stone, found in the Overworld. Mine it with an iron pickaxe for Raw Neodymium.
+page: crafting/ores-and-metals
+
+[encodedlogistics:deepslate_neodymium_ore]
+Neodymium ore in deepslate, found in the Overworld. Mine it with an iron pickaxe for Raw Neodymium.
+page: crafting/ores-and-metals
+
+[encodedlogistics:tantalum_ore]
+Tantalum ore in stone. Tantalum generates only deep down, so this stone form is rare next to the deepslate one. Mine it with an iron pickaxe for Raw Tantalum.
+page: crafting/ores-and-metals
+
+[encodedlogistics:deepslate_tantalum_ore]
+Tantalum ore in deepslate, found deep in the Overworld. Mine it with an iron pickaxe for Raw Tantalum.
+page: crafting/ores-and-metals
+
+[encodedlogistics:deepslate_gallium_ore]
+Gallium ore, the deepest and rarest of the mod's ores: it comes only in deepslate. Mine it with an iron pickaxe for Raw Gallium.
+page: crafting/ores-and-metals
+
+[raw_*]
+{name}, mined from its ore. Smelt or blast it into an ingot.
+page: crafting/ores-and-metals
+
+[*_dust]
+{name}, made only by Arcforge's Arc Crusher from ore, raw metal or ingots (without Arcforge there's no way to make it). Smelt or blast it into an ingot.
+page: crafting/ores-and-metals
+
+[encodedlogistics:neodymium_ingot]
+A metal for mid-tier parts: the 128K and 512K Storage Dies, the LTO-8 and LTO-9 tape upgrades and the LTO Tape Drive. Smelted from Raw Neodymium, its ore or its dust.
+page: crafting/ores-and-metals
+
+[encodedlogistics:tantalum_ingot]
+A metal for Tantalum Capacitors, the 128K and larger item drives, the Pressurized drives and the Network Bridge. Smelted from Raw Tantalum, its ore or its dust.
+page: crafting/ores-and-metals
+
+[encodedlogistics:gallium_ingot]
+The top-tier metal: it goes into the Processor Photomask, the 2M Storage Die, Fiber Cable, Optical Transceivers and Radio Modules. Smelted from Raw Gallium, its ore or its dust.
+page: crafting/ores-and-metals
+
+[encodedlogistics:ferrite_block]
+A storage block of nine Ferrite, crafted back into nine.
+page: crafting/ores-and-metals
+
+[*_block]
+{name}: a storage block of nine ingots, crafted back into nine. It works as a beacon base.
+page: crafting/ores-and-metals
+
+[encodedlogistics:silica]
+Sand blasted in a Blast Furnace. Four of it with coal make Silica Blend.
+page: crafting/materials
+
+[encodedlogistics:silica_blend]
+Silica mixed with coal, ready to smelt into a Silicon Boule.
+page: crafting/materials
+
+[encodedlogistics:silicon_boule]
+A crystal of silicon, smelted from Silica Blend. A Stonecutter slices it into four Silicon Wafers.
+page: crafting/materials
+
+[encodedlogistics:silicon_wafer]
+The base the Lithography Press etches dies on: the Logic Die and 8K Storage Die are made from it, and with redstone it becomes Doped Silicon.
+works: encodedlogistics:lithography_press
+page: crafting/materials
+
+[encodedlogistics:doped_silicon]
+A Silicon Wafer doped with redstone: the base for the Memory and Processor Dies, and part of the Memory Photomask.
+works: encodedlogistics:lithography_press
+page: crafting/materials
+
+[encodedlogistics:ferrite]
+Iron and redstone made into a magnetic material, used all through the mod: photomasks, drives, heatsinks and most devices.
+page: crafting/materials
+
+[encodedlogistics:copper_foil]
+Thin copper cut from an ingot in a Stonecutter (two a cut), for Circuit Substrate, capacitors and fluid drives.
+page: crafting/materials
+
+[encodedlogistics:fiberglass]
+Glass and string woven into fibre (two a craft), for Circuit Substrate, Fiber Cable and Optical Transceivers.
+page: crafting/materials
+
+[encodedlogistics:solder_paste]
+Copper and a slime ball made into paste (two a craft), for Circuit Substrate, capacitors and dies.
+page: crafting/materials
+
+[encodedlogistics:circuit_substrate]
+The board almost every device is built on, made from Fiberglass, Copper Foil and Solder Paste.
+page: crafting/materials
+
+[encodedlogistics:tantalum_capacitor]
+A capacitor made from tantalum, Copper Foil and Solder Paste (two a craft), for energy drives, Capacitor Banks, ports, the Gateway, the UPS and more.
+page: crafting/materials
+
+[encodedlogistics:heatsink]
+Copper fins on Ferrite, for the parts that run hot: the Scheduler Core, Thread Units, the Compute Server, the 4U Network Controller and the Wireless Controller.
+page: crafting/materials
+
+[encodedlogistics:optical_transceiver]
+An optical module, used in many recipes and as an upgrade: each one in a Relay Antenna adds range, in a Router more throughput, in a SAN's cages an uplink, and in an Uplink Card's cages a Chassis Switch uplink.
+works: encodedlogistics:relay_antenna, encodedlogistics:router, encodedlogistics:san, encodedlogistics:uplink_card
+page: networking/optical
+
+[encodedlogistics:radio_module]
+The radio inside Access Points, Wireless Bridges, Wireless Ports, the Wireless Controller and the Small Wireless Bridge. It's only a crafting ingredient.
+page: networking/wireless
+
+# ---------------------------------------------------------------- Lithography
+
+[encodedlogistics:lithography_press]
+Etches dies from Silicon Wafers or Doped Silicon with a photomask, which it never uses up. It runs on FE from any face and needs no network, so it's the first machine you build.
+works: *_photomask, encodedlogistics:silicon_wafer, encodedlogistics:doped_silicon
+page: crafting/lithography
+
+[*_photomask]
+{name}: the pattern the Lithography Press etches a die with. It sits in the press's photomask slot and is never used up.
+works: encodedlogistics:lithography_press
+page: crafting/lithography
+
+[encodedlogistics:logic_die]
+The first-tier chip, etched on the Lithography Press from a Silicon Wafer and redstone with the Logic Photomask. Nearly every device needs one.
+works: encodedlogistics:lithography_press
+page: crafting/lithography
+
+[encodedlogistics:memory_die]
+The second-tier chip, etched from Doped Silicon and Ferrite with the Memory Photomask. It goes into the 128K and 512K Storage Dies, the Fabrication and Schematic Terminals, Job Buffers, Gateways, Link Cards and much of the rack gear.
+works: encodedlogistics:lithography_press
+page: crafting/lithography
+
+[encodedlogistics:processor_die]
+The third-tier chip, etched from Doped Silicon and a Gallium Ingot with the Processor Photomask. It goes into autocrafting machines, servers and the 2M Storage Die.
+works: encodedlogistics:lithography_press
+page: crafting/lithography
+
+# ---------------------------------------------------------------- Autocrafting
+
+[encodedlogistics:schematic_card]
+A blank card for the Schematic Encoder to write a recipe onto. Also an ingredient of the Link Card and the schematic terminals.
+works: encodedlogistics:schematic_encoder
+page: crafting/schematics
+
+[encodedlogistics:encoded_schematic_crafting]
+A crafting recipe written by the Schematic Encoder: up to nine ingredients, one each, and the result. Put it in a Fabricator (or a Fabrication Server or Blade Enclosure) so the network can craft it.
+works: encodedlogistics:fabricator, encodedlogistics:fabrication_server, encodedlogistics:blade_enclosure, encodedlogistics:schematic_encoder
+page: crafting/schematics
+
+[encodedlogistics:encoded_schematic_processing]
+A machine's inputs (up to nine) and outputs (up to three), items, fluids or gases, written by the Schematic Encoder. Put it in a Gateway next to the machine.
+works: encodedlogistics:gateway, encodedlogistics:schematic_encoder
+page: crafting/schematics
+
+[encodedlogistics:resource_entry]
+Internal: a stand-in for a fluid or gas and an amount, used in ghost slots (filters, Processing Schematics, the Gateway's stock row). You can't obtain it, and storage never holds it; it shows the fluid's or gas's name and amount.
+works: encodedlogistics:schematic_encoder, encodedlogistics:gateway
+page: crafting/schematics
+
+[encodedlogistics:fabricator]
+Crafts the recipes on its Crafting Schematics (nine slots) for the network's crafting jobs, running crafts side by side. Up to two Throughput Modules make each craft quicker. Uses one lane.
+works: encodedlogistics:encoded_schematic_crafting, encodedlogistics:throughput_module, encodedlogistics:scheduler_core
+page: crafting/fabricators-and-gateways
+
+[encodedlogistics:gateway]
+Runs Processing Schematics (nine slots) through the machines next to it: it pushes a run's inputs into them and collects the outputs. It can also keep a row of items stocked for its neighbours. Uses one lane.
+works: encodedlogistics:encoded_schematic_processing, encodedlogistics:scheduler_core, encodedlogistics:small_wireless_bridge
+page: crafting/fabricators-and-gateways
+
+[encodedlogistics:scheduler_core]
+The heart of a Scheduler: it plans and runs the network's crafting jobs. Build a solid cuboid of Scheduler blocks (no side longer than {{config autocrafting.schedulerMaxSize default}}) with exactly one Core; Thread Units add threads and Job Buffers add job memory. The whole structure uses one lane.
+works: encodedlogistics:job_buffer, encodedlogistics:thread_unit, encodedlogistics:fabricator, encodedlogistics:gateway
+page: crafting/schedulers
+
+[encodedlogistics:job_buffer]
+A Scheduler block that adds {{config autocrafting.jobBufferMemory default}} job memory, so the Scheduler takes bigger jobs.
+works: encodedlogistics:scheduler_core, encodedlogistics:thread_unit
+page: crafting/schedulers
+
+[encodedlogistics:thread_unit]
+A Scheduler block that adds a thread: another job at a time, or more crafts at once for a large job. It glows while jobs run.
+works: encodedlogistics:scheduler_core, encodedlogistics:job_buffer
+page: crafting/schedulers
+
+# ---------------------------------------------------------------- The Midrange line
+
+[encodedlogistics:midrange_system]
+A cabinet computer that runs its network: it is the network's controller (so the network has no other), runs the Terminal OS, and crafts the recipes on the 8" Diskette in its slot itself. An Expansion Cabinet beside it adds more.
+works: encodedlogistics:diskette_8in, encodedlogistics:expansion_cabinet, encodedlogistics:keypunch, encodedlogistics:card_reader, encodedlogistics:line_printer, encodedlogistics:disk_drive, encodedlogistics:tape_drive
+page: crafting/midrange
+
+[encodedlogistics:expansion_cabinet]
+Stands directly beside a Midrange System, facing the same way: one more crafting thread, a second diskette slot and another batch job. Anywhere else it does nothing.
+works: encodedlogistics:midrange_system, encodedlogistics:diskette_8in
+page: crafting/midrange
+
+[encodedlogistics:integrated_midrange]
+A bigger, multi-block Midrange System with its own console (it opens the Terminal OS) and a Diskette Magazine unit: it runs its network as its controller, the Terminal OS and crafting, with more threads and lanes.
+works: encodedlogistics:diskette_magazine, encodedlogistics:diskette_8in, encodedlogistics:keypunch, encodedlogistics:card_reader, encodedlogistics:line_printer
+page: crafting/midrange
+
+[encodedlogistics:keypunch]
+Punches a crafting recipe, typed in by item name on its green screen, onto a blank Punch Card. Nothing is used up but the card. Needs a Midrange System online on its network.
+works: encodedlogistics:punch_card, encodedlogistics:card_reader, encodedlogistics:midrange_system
+page: crafting/midrange
+
+[encodedlogistics:card_reader]
+Reads the punched cards in its hopper onto the 8" Diskette in its slot, a recipe a card (up to eight on a diskette). It also serves as a diskette drive for saving and restoring libraries. Needs a Midrange System online on its network.
+works: encodedlogistics:punch_card, encodedlogistics:diskette_8in, encodedlogistics:keypunch, encodedlogistics:midrange_system
+page: crafting/midrange
+
+[encodedlogistics:line_printer]
+Prints reports and spooled files onto Printouts, one sheet of paper a page. Load paper by using it on the printer. Works on any running network; it doesn't need a Midrange System.
+works: encodedlogistics:printout
+page: crafting/midrange
+
+[encodedlogistics:disk_drive]
+Holds one Storage Drive of any tier and type as hot storage, just like a Drive Bay slot. The drive spins up before it can be read. Uses one lane.
+works: storage_drive_*, fluid_storage_drive_*, pressurized_storage_drive_*, energy_storage_drive_*
+page: storage/midrange-storage
+
+[encodedlogistics:tape_drive]
+Holds one Tape Reel as cold storage, in the same tier as the Tape Libraries: it archives items left untouched and recalls them when they're asked for. Uses one lane.
+works: encodedlogistics:tape_reel
+page: storage/midrange-storage
+
+[encodedlogistics:tape_reel]
+Cold storage for a Tape Drive: up to {{config rack.tapeReelItems default}} items of up to {{config rack.tapeReelTypes default}} kinds. It keeps what's on it when taken out. Tape Libraries don't take it.
+works: encodedlogistics:tape_drive
+page: storage/midrange-storage
+
+[encodedlogistics:punch_card]
+A card for the Card Punch: blank, or punched with one crafting recipe. The Card Reader copies punched cards onto a diskette.
+works: encodedlogistics:keypunch, encodedlogistics:card_reader
+page: crafting/midrange
+
+[encodedlogistics:diskette_8in]
+Holds up to eight crafting recipes (read from punched cards on the Card Reader) that a Midrange System crafts itself, and the ELCL libraries SAVLIB writes to it.
+works: encodedlogistics:card_reader, encodedlogistics:midrange_system, encodedlogistics:expansion_cabinet, encodedlogistics:diskette_magazine
+page: crafting/midrange
+
+[encodedlogistics:diskette_magazine]
+A case for four 8" Diskettes, put in and taken out like a bundle. It loads them all into an Integrated Midrange System at once.
+works: encodedlogistics:integrated_midrange, encodedlogistics:diskette_8in
+page: crafting/midrange
+
+[encodedlogistics:printout]
+Line Printer output: pages of a report or spooled file. Use it to read it; hold it to see its page, or put it in an item frame. Only the Line Printer makes it.
+works: encodedlogistics:line_printer
+page: crafting/midrange
+
+# ---------------------------------------------------------------- Terminals and access
+
+[encodedlogistics:terminal_desk]
+A green-screen terminal on a desk, two blocks wide: it opens the Terminal OS, where you work with the network's items, jobs and devices and run ELCL commands. Its drawer (the right half) takes withdrawals. Uses one lane.
+works: encodedlogistics:swivel_chair
+page: terminals/terminal-desk
+
+[encodedlogistics:swivel_chair]
+A chair to sit on at your desk: it turns with you, and you sneak to get up. Dye it in a crafting grid.
+works: encodedlogistics:terminal_desk
+page: terminals/terminal-desk
+
+[encodedlogistics:handheld_terminal]
+An Access Terminal you carry. Link it by using it on a Relay Antenna or Network Controller (it then works in an antenna's range), or on a Wireless Controller (it then works anywhere). It runs on its own FE battery: charge it in any FE charger or held against a Capacitor Bank.
+works: encodedlogistics:relay_antenna, encodedlogistics:network_controller, encodedlogistics:wireless_controller, encodedlogistics:capacitor_bank
+page: terminals/handheld
+
+[encodedlogistics:relay_antenna]
+Wireless coverage for Handheld Terminals linked to its network: {{config reach.relayBaseRange default}} blocks around it in its own dimension, plus {{config reach.relayRangePerTransceiver default}} for each Optical Transceiver in its four slots. Uses one lane.
+works: encodedlogistics:handheld_terminal, encodedlogistics:optical_transceiver
+page: terminals/handheld
+
+# ---------------------------------------------------------------- Networking: bridges, links, routing
+
+[encodedlogistics:link_card]
+Pairs and links things: sneak-use it on one end to store it, then use it on the partner. It pairs Network Bridges, Point-to-Point Links, Optical Multiplexers and Transport Shelves; carries a segment or network to a rack switch, Router, Trunk Port or multiplexer channel; and links Wireless Bridges and Ports to a Wireless Controller. Sneak-use in the air to clear it.
+works: encodedlogistics:network_bridge, encodedlogistics:point_to_point_link, encodedlogistics:segment_isolator, encodedlogistics:router, encodedlogistics:trunk_port, encodedlogistics:wireless_controller, encodedlogistics:wireless_bridge, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port, encodedlogistics:small_wireless_bridge, encodedlogistics:optical_multiplexer, encodedlogistics:optical_multiplexer_rack, encodedlogistics:optical_transport_shelf, encodedlogistics:transponder_card
+page: networking/bridges-and-links
+
+[encodedlogistics:network_bridge]
+Joins two networks as if a {{config reach.bridgeLanes default}}-lane cable ran between them, any distance apart (and across dimensions by default). Pair two with a Link Card; both ends must be loaded. Cables connect on every face but the front.
+works: encodedlogistics:link_card
+page: networking/bridges-and-links
+
+[encodedlogistics:cross_connect]
+Joins a Router to an Internet Exchange: use it on the Router's unit in an open rack, then on an Exchange Switch. The Router joins (or asks to, if the owner approves members) and the Cross-Connect is used up.
+works: encodedlogistics:router, encodedlogistics:exchange_switch
+page: networking/exchange-and-directory
+
+[encodedlogistics:exchange_switch]
+An Internet Exchange, two blocks tall: Routers on any networks join it with a Cross-Connect and peer there, through its route server or with each other. Its owner can require approval for members. Keeps its chunk loaded while it has members. Uses one lane.
+works: encodedlogistics:cross_connect, encodedlogistics:router
+page: networking/exchange-and-directory
+
+[encodedlogistics:directory_server]
+Publishes chosen devices of its network so other networks' Terminal OS can reach them as `SYSNAME/DEVICE`, through a Router's Control policy and with the Firewall's permission there. Uses one lane.
+works: encodedlogistics:router, encodedlogistics:directory_server_rack
+page: networking/exchange-and-directory
+
+# ---------------------------------------------------------------- Networking: optical
+
+[encodedlogistics:optical_multiplexer]
+Carries up to {{config optical.multiplexerChannels default}} separate client networks as channels over one Fiber Cable line to a paired multiplexer. Its front is the line port; give each channel a network or segment with a Link Card. Uses one lane.
+works: encodedlogistics:fiber_cable, encodedlogistics:optical_amplifier, encodedlogistics:link_card, encodedlogistics:optical_multiplexer_rack
+page: networking/optical
+
+[encodedlogistics:optical_amplifier]
+An inline housing for a Fiber Cable run (light in at the back, out at the front). While powered it ends the span it's on, so span loss counts again from it; unpowered it just passes the light through. Uses one lane.
+works: encodedlogistics:fiber_cable, encodedlogistics:optical_multiplexer, encodedlogistics:optical_amplifier_rack
+page: networking/optical
+
+# ---------------------------------------------------------------- Networking: wireless
+
+[encodedlogistics:access_point]
+The radio for its network's Wireless Controller. Mount it on a cable or network block (it connects only on the side it's mounted on); each one online lets the controller serve {{config rack.wirelessApClients default}} more Wireless Bridges and Ports. Uses one lane.
+works: encodedlogistics:wireless_controller, encodedlogistics:wireless_bridge, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port, encodedlogistics:small_wireless_bridge
+page: networking/wireless
+
+[encodedlogistics:wireless_bridge]
+Brings whatever is cabled to it (on its sides and bottom) onto its Wireless Controller's network, anywhere, with up to {{config rack.wirelessBridgeLanes default}} lanes. Link it with a Link Card from the controller; the network needs an Access Point online.
+works: encodedlogistics:wireless_controller, encodedlogistics:access_point, encodedlogistics:link_card
+page: networking/wireless
+
+[encodedlogistics:wireless_ingress_port]
+An Ingress Port with no cable: place it against an inventory and link it to a Wireless Controller with a Link Card. It takes the same modules and settings as the cabled port.
+works: encodedlogistics:wireless_controller, encodedlogistics:access_point, encodedlogistics:link_card, encodedlogistics:filter_module, encodedlogistics:throughput_module, encodedlogistics:fuzzy_match_module, encodedlogistics:redstone_control_module
+page: networking/wireless
+
+[encodedlogistics:wireless_egress_port]
+An Egress Port with no cable: place it against an inventory and link it to a Wireless Controller with a Link Card. It takes the same modules and settings as the cabled port.
+works: encodedlogistics:wireless_controller, encodedlogistics:access_point, encodedlogistics:link_card, encodedlogistics:filter_module, encodedlogistics:throughput_module, encodedlogistics:fuzzy_match_module, encodedlogistics:redstone_control_module
+page: networking/wireless
+
+[encodedlogistics:small_wireless_bridge]
+Goes on a face of an Arcforge machine. Linked with a Link Card from a Wireless Controller, it puts the machine on that network: Work with Machines, ELCL, Gateways and graphs can see and work it, and it can power the machine from the network. Needs Arcforge; sneak-use with an empty hand takes it off.
+works: encodedlogistics:wireless_controller, encodedlogistics:access_point, encodedlogistics:link_card, encodedlogistics:gateway
+page: integrations/arcforge
+
+# ---------------------------------------------------------------- Control and facility
+
+[encodedlogistics:control_interface]
+Redstone in and out for ELCL programs, a channel on each face: {{cmd RTVRSIN}} reads one, {{cmd CHGRSOUT}} sets one. It has no screen; you set it up from the Terminal OS. Uses one lane.
+works: encodedlogistics:terminal_desk
+page: control/control-interface
+
+[encodedlogistics:plc]
+A Programmable Logic Controller: it runs one ELCL program over and over, like a PLC scan, reading and driving redstone on each face, with four slots for sensor modules. It runs on its own FE, or on its network when cabled to one. Right-click for its screens.
+works: encodedlogistics:presence_sensor, encodedlogistics:inventory_sensor, encodedlogistics:fluid_sensor, encodedlogistics:light_sensor, encodedlogistics:timer_module, encodedlogistics:eeprom_cartridge
+page: control/plc
+
+[encodedlogistics:presence_sensor]
+A PLC sensor module that counts players, mobs or both within a radius you set (1 to 16 blocks). {{cmd RTVSNSVAL}} reads it.
+works: encodedlogistics:plc
+page: control/plc
+
+[encodedlogistics:inventory_sensor]
+A PLC sensor module that reads how full the container on one of the PLC's faces is (as a percentage) and how many items it holds. {{cmd RTVSNSVAL}} reads it.
+works: encodedlogistics:plc
+page: control/plc
+
+[encodedlogistics:fluid_sensor]
+A PLC sensor module that reads how full the tank on one of the PLC's faces is (as a percentage) and its amount in mB. {{cmd RTVSNSVAL}} reads it.
+works: encodedlogistics:plc
+page: control/plc
+
+[encodedlogistics:light_sensor]
+A PLC sensor module that reads the light level at the PLC (0 to 15) and whether it's day or night. {{cmd RTVSNSVAL}} reads it.
+works: encodedlogistics:plc
+page: control/plc
+
+[encodedlogistics:timer_module]
+A PLC sensor module that reads the game clock: the game time in ticks, and the day and time of day. {{cmd RTVSNSVAL}} reads it.
+works: encodedlogistics:plc
+page: control/plc
+
+[encodedlogistics:eeprom_cartridge]
+Holds a copy of a PLC program. Hold it and pick option 4 (save) or 5 (load) on a PLC's status screen.
+works: encodedlogistics:plc
+page: control/plc
+
+[encodedlogistics:display_panel]
+A screen for text, gauges, graphs, tables and images that ELCL programs send it. Panels side by side or stacked join into one larger screen; players can also touch it to fire an ELCL event. Each screen uses one lane.
+page: control/display-panels
+
+[cage_light_*]
+{name}: a caged lamp that mounts on any face, lit by redstone (or inverted, always on, or by its network with {{cmd CHGLGT}}), at a light level you set. On a network it is also a device ELCL can switch.
+works: encodedlogistics:control_interface, encodedlogistics:plc
+page: control/lights-and-sirens
+
+[siren_*]
+{name}: a warning light and siren that mounts on any face. It flashes in one of several patterns and sounds one of six tones (or none), set off by redstone, by its network with {{cmd STRSRN}}, or both. Sirens with the same tone on a network sound together.
+works: encodedlogistics:control_interface, encodedlogistics:plc
+page: control/lights-and-sirens
+
+[encodedlogistics:speaker]
+A flat speaker that mounts on any face and plays sound files, web audio, note-block notes or MIDI files, started by redstone or by ELCL ({{cmd PLYAUD}}, {{cmd PLYNOTE}}, {{cmd PLYMID}}).
+works: encodedlogistics:control_interface, encodedlogistics:plc
+page: control/speakers
+
+# ---------------------------------------------------------------- Server Racks
+
+[encodedlogistics:server_rack]
+A 42U rack, one block wide, three tall and two deep, for rack devices. Cables (and FE from any mod) join it at its connection points on the top, bottom and back. Right-click the front or back to open its doors; sneak-right-click the front for its screen.
+works: encodedlogistics:firewall, encodedlogistics:ups, encodedlogistics:network_controller_2u, encodedlogistics:rack_console, encodedlogistics:rack_elevation
+page: racks/server-rack
+
+[encodedlogistics:rack_elevation]
+A clipboard holding a rack plan. Sneak-use it on a Server Rack to copy that rack's layout (optionally with contents and settings), use it in the air to edit the plan, and use it on a rack to install the planned devices into free units from your inventory (or network storage).
+works: encodedlogistics:server_rack
+page: racks/rack-elevations
+
+[encodedlogistics:firewall]
+A 1U rack device that decides who may view, insert, extract, craft, build and use racks on its network, player by player, with a default policy for everyone else. One per network. Uses one lane.
+works: encodedlogistics:server_rack
+page: racks/security
+
+[encodedlogistics:router]
+A 1U rack device that moves items between separate networks, any distance apart, linked with a Link Card: up to six networks (its own included) and six routes, static or dynamic routing, and ACLs. Each Optical Transceiver in its cages adds throughput. Uses one lane.
+works: encodedlogistics:server_rack, encodedlogistics:link_card, encodedlogistics:optical_transceiver, encodedlogistics:cross_connect, encodedlogistics:exchange_switch
+page: networking/routers
+
+[encodedlogistics:ups]
+A 2U rack device: a {{config rack.upsCapacity default}} FE battery that covers its network when supply falls short and recharges from the surplus, with an alarm while it's on battery. Uses one lane.
+works: encodedlogistics:server_rack
+page: racks/devices
+
+[encodedlogistics:network_controller_2u]
+A 2U rack device: the network's controller in rack form, a lane source and the network's energy buffer. Two of the same size on one network are a redundant pair: the standby takes over if the active one fails. Uses no lanes.
+works: encodedlogistics:server_rack, encodedlogistics:network_controller_4u
+page: networks/controllers
+
+[encodedlogistics:network_controller_4u]
+A 4U rack device: twice a 2U Network Controller's lanes and energy. Two on one network are a redundant pair: the standby takes over if the active one fails. Uses no lanes.
+works: encodedlogistics:server_rack, encodedlogistics:network_controller_2u
+page: networks/controllers
+
+[encodedlogistics:l2_switch_24]
+A 1U rack device: a pool of {{config rack.l2Switch24Lanes default}} rack-local lanes for the other devices in its rack, which then take no network lanes; it uses one. Pooled devices can serve other segments.
+works: encodedlogistics:server_rack, encodedlogistics:link_card
+page: networking/switches
+
+[encodedlogistics:l2_switch_48]
+A 1U rack device: a pool of {{config rack.l2Switch48Lanes default}} rack-local lanes for the other devices in its rack, which then take no network lanes; it uses one. Pooled devices can serve other segments.
+works: encodedlogistics:server_rack, encodedlogistics:link_card
+page: networking/switches
+
+[encodedlogistics:l3_switch]
+A 1U rack device: an L2 Switch with {{config rack.l3SwitchLanes default}} lanes that also routes items between the segments its rack knows, with QoS priorities.
+works: encodedlogistics:server_rack, encodedlogistics:link_card, encodedlogistics:segment_isolator
+page: networking/switches
+
+[encodedlogistics:compute_server]
+A 2U rack device that gives {{config rack.computeServerThreads default}} crafting threads to its network's rack Scheduler, and also runs ELCL batch jobs. With a Memory Server on the same network, in any rack, the network's racks pool into one Scheduler.
+works: encodedlogistics:server_rack, encodedlogistics:memory_server, encodedlogistics:fabrication_server
+page: crafting/schedulers
+
+[encodedlogistics:memory_server]
+A 1U rack device that gives {{config rack.memoryServerMemory default}} job memory to its network's rack Scheduler. With a Compute Server on the same network, in any rack, the network's racks pool into one Scheduler.
+works: encodedlogistics:server_rack, encodedlogistics:compute_server
+page: crafting/schedulers
+
+[encodedlogistics:fabrication_server]
+A 2U rack device: a Fabricator in a rack, with nine Crafting Schematic slots and two Throughput Module slots. The rack Scheduler offers it crafts first.
+works: encodedlogistics:server_rack, encodedlogistics:encoded_schematic_crafting, encodedlogistics:throughput_module, encodedlogistics:compute_server
+page: crafting/fabricators-and-gateways
+
+[encodedlogistics:directory_server_rack]
+A 1U rack device: a Directory Server in a rack. It publishes chosen devices of its network so other networks can reach them as `SYSNAME/DEVICE`. Uses one lane.
+works: encodedlogistics:server_rack, encodedlogistics:directory_server, encodedlogistics:router
+page: networking/exchange-and-directory
+
+[encodedlogistics:monitoring_server]
+A 1U rack device that graphs its network's item flow, energy use, lanes and crafting, over the last minute up to the last day. Display Panels can show its graphs. Uses one lane.
+works: encodedlogistics:server_rack, encodedlogistics:display_panel
+page: racks/devices
+
+[encodedlogistics:nas]
+A 2U rack device: six Storage Drives as network storage, with a priority and an access mode (read and write, read only or write only). Uses one lane.
+works: encodedlogistics:server_rack, storage_drive_*, fluid_storage_drive_*, pressurized_storage_drive_*, energy_storage_drive_*
+page: storage/nas-san
+
+[encodedlogistics:san]
+A 4U rack device: 24 Storage Drives as network storage, with a priority and an access mode. It needs at least one Optical Transceiver in its rear cages; each one after the first adds 1 to its priority. Uses one lane.
+works: encodedlogistics:server_rack, encodedlogistics:optical_transceiver, storage_drive_*, fluid_storage_drive_*, pressurized_storage_drive_*, energy_storage_drive_*
+page: storage/nas-san
+
+[encodedlogistics:rack_console]
+A 1U rack device: an Access Terminal in a drawer. Right-click it through the open front door to slide it out, then again for the terminal. Consoles in one rack must be at least 8U apart.
+works: encodedlogistics:server_rack, encodedlogistics:access_terminal
+page: terminals/rack-consoles
+
+[encodedlogistics:rack_fabrication_console]
+A 1U rack device: a Fabrication Terminal in a drawer, its crafting grid kept in the console. Right-click it through the open front door to slide it out, then again for the terminal.
+works: encodedlogistics:server_rack, encodedlogistics:fabrication_terminal
+page: terminals/rack-consoles
+
+[encodedlogistics:rack_schematic_console]
+A 1U rack device: a Schematic Terminal in a drawer. Right-click it through the open front door to slide it out, then again for the terminal.
+works: encodedlogistics:server_rack, encodedlogistics:schematic_terminal
+page: terminals/rack-consoles
+
+[encodedlogistics:wireless_controller]
+A 1U rack device that runs its network's wireless. Handheld Terminals linked to it work anywhere, in any dimension by default; Wireless Bridges, Wireless Ports and Small Wireless Bridges linked to it with a Link Card join the network, as long as Access Points are online. Uses one lane.
+works: encodedlogistics:server_rack, encodedlogistics:access_point, encodedlogistics:handheld_terminal, encodedlogistics:wireless_bridge, encodedlogistics:wireless_ingress_port, encodedlogistics:wireless_egress_port, encodedlogistics:small_wireless_bridge, encodedlogistics:link_card
+page: networking/wireless
+
+[encodedlogistics:tape_library_4u]
+A 4U rack device: 24 LTO tapes as the network's cold storage, with two drive bays for LTO Tape Drives. It archives items left untouched and recalls them when they're asked for.
+works: encodedlogistics:server_rack, lto_tape_*, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+[encodedlogistics:tape_library_6u]
+A 6U rack device: 48 LTO tapes as the network's cold storage, with four drive bays for LTO Tape Drives. It archives items left untouched and recalls them when they're asked for.
+works: encodedlogistics:server_rack, lto_tape_*, encodedlogistics:lto_tape_drive
+page: storage/tapes
+
+[encodedlogistics:optical_multiplexer_rack]
+A 1U rack device: an Optical Multiplexer ({{config optical.multiplexerChannels default}} channels) in a rack. Its line leaves the rack at any connection point. Crafted from the block.
+works: encodedlogistics:server_rack, encodedlogistics:optical_multiplexer, encodedlogistics:fiber_cable, encodedlogistics:link_card
+page: networking/optical
+
+[encodedlogistics:optical_amplifier_rack]
+A 1U rack device: optical lines passing through its rack (in at one connection point, out at another) are regenerated, so their span count starts again. Crafted from the block.
+works: encodedlogistics:server_rack, encodedlogistics:optical_amplifier, encodedlogistics:fiber_cable
+page: networking/optical
+
+[encodedlogistics:optical_transport_shelf]
+A 6U rack chassis for long-haul optical links between two shelves paired with a Link Card: two Controller Card bays and eight line card bays for Transponder, Mux, Amplifier and Protection Cards.
+works: encodedlogistics:server_rack, encodedlogistics:controller_card, encodedlogistics:transponder_card, encodedlogistics:mux_card, encodedlogistics:amplifier_card, encodedlogistics:protection_card, encodedlogistics:fiber_cable
+page: racks/chassis
+
+[encodedlogistics:chassis_switch]
+A 10U rack chassis: an L3 Switch built from cards. Two Supervisor Cards (a standby takes over at once), eight line cards (Access, Uplink, Routing, Trunk) and four power supplies (it runs on one; degraded below two).
+works: encodedlogistics:server_rack, encodedlogistics:supervisor_card, encodedlogistics:access_card, encodedlogistics:uplink_card, encodedlogistics:routing_card, encodedlogistics:trunk_card, encodedlogistics:chassis_psu
+page: racks/chassis
+
+[encodedlogistics:blade_enclosure]
+A 10U rack chassis with sixteen blade bays (Compute, Memory, Fabrication and Storage Blades) and, at the back, two Interconnect Modules, two Management Modules and six power supplies. Blades take no rack lanes.
+works: encodedlogistics:server_rack, encodedlogistics:compute_blade, encodedlogistics:memory_blade, encodedlogistics:fabrication_blade, encodedlogistics:storage_blade, encodedlogistics:interconnect_module, encodedlogistics:management_module, encodedlogistics:blade_psu
+page: racks/chassis
+
+# ---------------------------------------------------------------- Chassis parts
+
+[encodedlogistics:supervisor_card]
+Runs a Chassis Switch. Put two in: the standby takes over the moment the active one fails or is taken out.
+works: encodedlogistics:chassis_switch
+page: racks/chassis
+
+[encodedlogistics:access_card]
+A Chassis Switch line card: {{config optical.accessCardLanes default}} rack-local lanes for the other devices in its rack, as an L2 Switch gives. The pool works only while an Uplink Card has a transceiver.
+works: encodedlogistics:chassis_switch, encodedlogistics:uplink_card
+page: racks/chassis
+
+[encodedlogistics:uplink_card]
+A Chassis Switch line card with four Optical Transceiver cages for the switch's uplinks; any one keeps its lane pool up.
+works: encodedlogistics:chassis_switch, encodedlogistics:optical_transceiver
+page: racks/chassis
+
+[encodedlogistics:routing_card]
+A Chassis Switch line card: enables the switch's L3 routes and QoS, and each one adds {{config optical.routingCardRate default}} items a second.
+works: encodedlogistics:chassis_switch
+page: racks/chassis
+
+[encodedlogistics:trunk_card]
+A Chassis Switch line card that lets the switch's ports be VLAN trunks.
+works: encodedlogistics:chassis_switch
+page: racks/chassis
+
+[encodedlogistics:chassis_psu]
+Powers a Chassis Switch. It runs on one; with fewer than two it's degraded.
+works: encodedlogistics:chassis_switch
+page: racks/chassis
+
+[encodedlogistics:controller_card]
+Runs an Optical Transport Shelf. With two, the second takes over if the first fails.
+works: encodedlogistics:optical_transport_shelf
+page: racks/chassis
+
+[encodedlogistics:transponder_card]
+An Optical Transport Shelf line card: puts one client network (use a Link Card holding it on the card) onto one long-haul channel, set in the shelf's panel.
+works: encodedlogistics:optical_transport_shelf, encodedlogistics:link_card
+page: racks/chassis
+
+[encodedlogistics:mux_card]
+An Optical Transport Shelf line card that puts eight transponder channels onto the line; without one, the line carries a single channel.
+works: encodedlogistics:optical_transport_shelf, encodedlogistics:transponder_card
+page: racks/chassis
+
+[encodedlogistics:amplifier_card]
+An Optical Transport Shelf line card that launches the line amplified, giving it {{config optical.fiberSpanThreshold default}} more blocks of reach before it starts losing lanes.
+works: encodedlogistics:optical_transport_shelf
+page: racks/chassis
+
+[encodedlogistics:protection_card]
+An Optical Transport Shelf line card for 1+1 protection: a working path and a protect path by different fibre (or fibre and a Network Bridge pair), switching within a tick. It switches back when the working path returns, unless you turn that off in the shelf's panel.
+works: encodedlogistics:optical_transport_shelf
+page: racks/chassis
+
+[encodedlogistics:compute_blade]
+A Blade Enclosure blade that adds crafting threads to its network's rack Scheduler: for the space it takes, a quarter more than a Compute Server gives.
+works: encodedlogistics:blade_enclosure, encodedlogistics:memory_blade
+page: racks/chassis
+
+[encodedlogistics:memory_blade]
+A Blade Enclosure blade that adds job memory to its network's rack Scheduler.
+works: encodedlogistics:blade_enclosure, encodedlogistics:compute_blade
+page: racks/chassis
+
+[encodedlogistics:fabrication_blade]
+A Blade Enclosure blade that crafts from the enclosure's nine schematic slots, as a Fabrication Server does. More blades craft quicker.
+works: encodedlogistics:blade_enclosure, encodedlogistics:encoded_schematic_crafting
+page: racks/chassis
+
+[encodedlogistics:storage_blade]
+A Blade Enclosure blade that opens two Storage Drive bays (the Drives tab) as network storage.
+works: encodedlogistics:blade_enclosure, storage_drive_*, fluid_storage_drive_*, pressurized_storage_drive_*, energy_storage_drive_*
+page: racks/chassis
+
+[encodedlogistics:interconnect_module]
+A Blade Enclosure's rear module: it gives the blades their {{config optical.interconnectLanes default}} lanes. A second one is redundant.
+works: encodedlogistics:blade_enclosure
+page: racks/chassis
+
+[encodedlogistics:blade_psu]
+Powers a Blade Enclosure. It runs on one; with fewer than two it's degraded.
+works: encodedlogistics:blade_enclosure
+page: racks/chassis
+
+[encodedlogistics:management_module]
+Runs a Blade Enclosure. A second one is a standby.
+works: encodedlogistics:blade_enclosure
+page: racks/chassis

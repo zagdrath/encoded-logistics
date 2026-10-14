@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WRKDIR - Encoded Logistics</title>
+<meta name="description" content="Work with Directory">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">WRKDIR</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>WRKDIR</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-scr">Command line only</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Work with Directory</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>WRKDIR [DIR(*FIRST | device name)]</code></pre>
+<p>The first parameter can be given without its keyword, in that order: <code>DIR</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>DIR</code></td><td>Directory Server</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>No</td><td><code>*FIRST</code></td><td><code>*FIRST</code></td></tr></tbody></table></div>
+<p><code>WRKDIR</code> opens <strong>Work with Directory</strong> on a <a class="item-link" href="../../reference/items/directory_server.html"><img class="icon" src="../../assets/icons/encodedlogistics/directory_server.png" alt="" width="20" height="20" loading="lazy">Directory Server</a>: its network's devices by their qualified names (<code>SYSNAME/DEVICE</code>), each with its type, whether it's <code>*PUBLISHED</code> or <code>*PRIVATE</code>, and how many lookups it had in the last hour. Under them come the latest lookups made from this network, and the top line names the server, its network, how many names are published and cached, and how long a lookup is cached. You type it at a command line; it doesn't run in a program.</p>
+<ul><li><strong><code>DIR(*FIRST)</code></strong>, the default, uses the first Directory Server on your network. Name one (its device name) when there are several. With none on the network, or none of that name, it's <a class="msg" href="../messages.html#ELC2616"><code>ELC2616</code></a>.</li><li>A published device can be reached from other networks: any command that takes a device takes its qualified name, when a Router on the caller's network has a Control policy to this network and the caller has the Firewall's permission here.</li></ul>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>What it does</th></tr></thead><tbody><tr><td>2=Publish</td><td>Runs <a class="cmd" href="CHGDIRENT.html"><code>CHGDIRENT</code></a> <code>PUBLISH(*YES)</code> for the device.</td></tr><tr><td>3=Unpublish</td><td>Runs <a class="cmd" href="CHGDIRENT.html"><code>CHGDIRENT</code></a> <code>PUBLISH(*NO)</code>.</td></tr><tr><td>5=Display</td><td>Looks the name up as <a class="cmd" href="RTVDIRENT.html"><code>RTVDIRENT</code></a> does; the answer shows on the message line.</td></tr></tbody></table></div>
+<p>Publishing needs the Firewall's build permission, as <a class="cmd" href="CHGDIRENT.html"><code>CHGDIRENT</code></a> does. <strong>F10</strong> shows only the lookups, a page of them; F10 again goes back. See <a href="../../networking/exchange-and-directory.html">Exchange Switch and Directory Server</a> and <a href="../screens.html">Screens</a>.</p>
+<pre class="term" aria-label="Terminal screen"> WRKDIR                       Work with Directory              System:  ELNET01
+                                                                Day 2  07:14:22
+ Directory  :  DIR01 (ELNET01)   Published :  8   Cache :  12 names, 30 s
+ Type options, press Enter.
+   2=Publish  3=Unpublish  5=Display
+
+Opt  Qualified name     Type   Status       Lookups (1h)
+     ELNET01/LGT01      LGT    *PUBLISHED      41
+     ELNET01/SRN01      SRN    *PUBLISHED      12
+     ELNET01/SPK01      SPK    *PUBLISHED       3
+     ELNET01/PLC02      PLC    *PRIVATE         0
+
+ Recent lookups:
+   ELNET15/LGT01      resolved, 2 hops
+   ELNET22/SRN03      resolved, 3 hops
+   FARMNET/SPK01      ELC2603 no route
+   ELNET07/PLC02      ELC2604 not permitted
+
+
+
+ Parameters or command
+ ===&gt;
+
+ F1=Help F3=Exit F5=Refresh F10=Lookups F12=Cancel</pre>
+<div class="code-block"><pre class="code elcl"><code>WRKDIR
+WRKDIR DIR(DIRSVR01)</code></pre></div>
+<h2 id="see-also">Screen and session commands</h2><p><a class="cmd" href="WRKDEV.html"><code>WRKDEV</code></a> <a class="cmd" href="WRKMCH.html"><code>WRKMCH</code></a> <a class="cmd" href="WRKINV.html"><code>WRKINV</code></a> <a class="cmd" href="WRKCRFJOB.html"><code>WRKCRFJOB</code></a> <a class="cmd" href="DSPNETSTS.html"><code>DSPNETSTS</code></a> <a class="cmd" href="WRKSPLF.html"><code>WRKSPLF</code></a> <a class="cmd" href="SIGNOFF.html"><code>SIGNOFF</code></a> <a class="cmd" href="GO.html"><code>GO</code></a> <a class="cmd" href="CLEAR.html"><code>CLEAR</code></a> <a class="cmd" href="WRKSCH.html"><code>WRKSCH</code></a> <a class="cmd" href="DSPROUTE.html"><code>DSPROUTE</code></a> <a class="cmd" href="DSPNBR.html"><code>DSPNBR</code></a> <a class="cmd" href="WRKHW.html"><code>WRKHW</code></a> <a class="cmd" href="DSPOPT.html"><code>DSPOPT</code></a> <a class="cmd" href="WRKIX.html"><code>WRKIX</code></a> <a class="cmd" href="WRKACL.html"><code>WRKACL</code></a></p>
+<p><a href="index.html#screens">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

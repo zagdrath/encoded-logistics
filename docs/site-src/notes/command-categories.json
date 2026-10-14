@@ -1,0 +1,297 @@
+{
+ "categories": [
+  {
+   "id": "program",
+   "title": "Program control",
+   "legacy": "cmd-program",
+   "commands": [
+    "PGM",
+    "ENDPGM",
+    "DCL",
+    "CHGVAR",
+    "IF",
+    "ELSE",
+    "DO",
+    "ENDDO",
+    "DOWHILE",
+    "DOUNTIL",
+    "DOFOR",
+    "FOREACH",
+    "ENDFOR",
+    "LEAVE",
+    "ITERATE",
+    "SELECT",
+    "WHEN",
+    "OTHERWISE",
+    "ENDSELECT",
+    "GOTO",
+    "RETURN",
+    "SUBR",
+    "ENDSUBR",
+    "CALLSUBR",
+    "MONMSG",
+    "RCVMSG",
+    "SNDPGMMSG",
+    "CALL",
+    "DLYJOB",
+    "DLYTICK",
+    "RTVJOBA"
+   ]
+  },
+  {
+   "id": "lists",
+   "title": "Lists",
+   "legacy": "cmd-lists",
+   "commands": [
+    "ADDLSTE",
+    "RMVLSTE",
+    "CLRLST"
+   ]
+  },
+  {
+   "id": "inventory",
+   "title": "Inventory",
+   "legacy": "cmd-inventory",
+   "commands": [
+    "RTVITMCNT",
+    "RTVITMLST",
+    "MOVITM",
+    "IMPITM",
+    "CHGITMTIER",
+    "RTVSTGSTS"
+   ]
+  },
+  {
+   "id": "crafting",
+   "title": "Crafting",
+   "legacy": "cmd-crafting",
+   "commands": [
+    "STRCRAFT",
+    "RTVCRFSTS",
+    "RTVCRFLOG",
+    "ENDCRAFT",
+    "RTVSCHLST",
+    "RTVCRFSTP"
+   ]
+  },
+  {
+   "id": "devices",
+   "title": "Devices",
+   "legacy": "cmd-devices",
+   "commands": [
+    "RTVDEVSTS",
+    "RTVDEVLST",
+    "CHGDEVSTS",
+    "CHGDEVFTR",
+    "RNMDEV",
+    "RTVLANES"
+   ]
+  },
+  {
+   "id": "routing",
+   "title": "Routing and interconnect",
+   "legacy": null,
+   "commands": [
+    "RTVRTE",
+    "RTVNBRSTS",
+    "CHGNBR",
+    "ADDACLE",
+    "RMVACLE",
+    "CHGACLE",
+    "RTVDIRENT",
+    "CHGDIRENT",
+    "APVIXMBR",
+    "RMVIXMBR"
+   ]
+  },
+  {
+   "id": "hardware",
+   "title": "Hardware (chassis and optical)",
+   "legacy": null,
+   "commands": [
+    "RTVCHSSTS",
+    "RTVOPTSTS",
+    "CHGPROT"
+   ]
+  },
+  {
+   "id": "machines",
+   "title": "Machines (Arcforge)",
+   "legacy": "cmd-machines",
+   "commands": [
+    "RTVMCHSTS",
+    "RTVMCHSTAT",
+    "RTVMCHLST",
+    "CHGMCHSTS",
+    "CHGMCHCFG"
+   ]
+  },
+  {
+   "id": "power",
+   "title": "Power",
+   "legacy": "cmd-power",
+   "commands": [
+    "RTVPWRSTS"
+   ]
+  },
+  {
+   "id": "redstone",
+   "title": "Redstone (Control Interface, PLC)",
+   "legacy": "cmd-redstone",
+   "commands": [
+    "RTVRSIN",
+    "CHGRSOUT"
+   ]
+  },
+  {
+   "id": "plc",
+   "title": "PLCs",
+   "legacy": "cmd-plc",
+   "commands": [
+    "RTVSNSVAL",
+    "SNDPLCPGM",
+    "STRPLC",
+    "ENDPLC"
+   ]
+  },
+  {
+   "id": "signals",
+   "title": "Cage Lights, Alarm Strobes and Speakers",
+   "legacy": "cmd-signals",
+   "commands": [
+    "CHGLGT",
+    "STRSRN",
+    "ENDSRN",
+    "PLYAUD",
+    "PLYNOTE",
+    "PLYMID",
+    "STPAUD"
+   ]
+  },
+  {
+   "id": "messages",
+   "title": "Messages, displays and output",
+   "legacy": "cmd-messages",
+   "commands": [
+    "SNDMSG",
+    "DSPMSG",
+    "SNDDSPTXT",
+    "CLRDSP",
+    "CHGDSPRGN",
+    "SNDDSPWDG",
+    "SNDDSPGPH",
+    "SNDDSPIMG",
+    "RTVDSPSIZ",
+    "PRTTXT",
+    "PRTRPT"
+   ]
+  },
+  {
+   "id": "os-libraries",
+   "title": "Libraries, members and programs",
+   "legacy": "cmd-os-libraries",
+   "commands": [
+    "WRKLIB",
+    "CRTLIB",
+    "CHGLIB",
+    "DLTLIB",
+    "WRKMBR",
+    "EDTMBR",
+    "CRTMBR",
+    "CPYMBR",
+    "RNMMBR",
+    "DLTMBR",
+    "CRTELPGM",
+    "DLTPGM"
+   ]
+  },
+  {
+   "id": "os-jobs",
+   "title": "Jobs, schedule entries and triggers",
+   "legacy": "cmd-os-jobs",
+   "commands": [
+    "SBMJOB",
+    "WRKACTJOB",
+    "WRKJOB",
+    "DSPJOBLOG",
+    "CHGJOB",
+    "HLDJOB",
+    "RLSJOB",
+    "ENDJOB",
+    "ADDJOBSCDE",
+    "RMVJOBSCDE",
+    "HLDJOBSCDE",
+    "RLSJOBSCDE",
+    "WRKJOBSCDE",
+    "ADDTRGEVT",
+    "RMVTRGEVT",
+    "HLDTRGEVT",
+    "RLSTRGEVT",
+    "WRKTRGEVT"
+   ]
+  },
+  {
+   "id": "os-sysvals",
+   "title": "System values, save and restore",
+   "legacy": "cmd-os-sysvals",
+   "commands": [
+    "WRKSYSVAL",
+    "RTVSYSVAL",
+    "CHGSYSVAL",
+    "SAVLIB",
+    "RSTLIB"
+   ]
+  },
+  {
+   "id": "db",
+   "title": "Database files",
+   "legacy": "cmd-db",
+   "commands": [
+    "DCLF",
+    "RCVF",
+    "POSDBF",
+    "CLOF",
+    "CHNRCD",
+    "WRTRCD",
+    "UPDRCD",
+    "DLTRCD",
+    "CRTPF",
+    "CHGPF",
+    "DLTF",
+    "CLRPFM",
+    "CPYF",
+    "CPYTOIMPF",
+    "CPYFRMIMPF",
+    "RUNQRY",
+    "WRKF",
+    "DSPPFM",
+    "DSPFD",
+    "UPDDTA"
+   ]
+  },
+  {
+   "id": "screens",
+   "title": "Screen and session commands",
+   "legacy": "cmd-screens",
+   "commands": [
+    "WRKDEV",
+    "WRKMCH",
+    "WRKINV",
+    "WRKCRFJOB",
+    "DSPNETSTS",
+    "WRKSPLF",
+    "SIGNOFF",
+    "GO",
+    "CLEAR",
+    "WRKSCH",
+    "DSPROUTE",
+    "DSPNBR",
+    "WRKDIR",
+    "WRKHW",
+    "DSPOPT",
+    "WRKIX",
+    "WRKACL"
+   ]
+  }
+ ]
+}

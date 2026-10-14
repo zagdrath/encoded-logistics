@@ -1,0 +1,5682 @@
+{
+  "encodedlogistics:access_card": {
+    "id": "encodedlogistics:access_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:l2_switch_48",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:access_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:access_point": {
+    "id": "encodedlogistics:access_point",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:radio_module",
+        "encodedlogistics:radio_module",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:quartz_block"
+      ],
+      "result": {
+        "id": "encodedlogistics:access_point",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:access_terminal": {
+    "id": "encodedlogistics:access_terminal",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:glass_pane",
+        "encodedlogistics:network_cable"
+      ],
+      "result": {
+        "id": "encodedlogistics:access_terminal",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:amplifier_card": {
+    "id": "encodedlogistics:amplifier_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_amplifier",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:amplifier_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:blade_enclosure": {
+    "id": "encodedlogistics:blade_enclosure",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:iron_block",
+        "minecraft:iron_block",
+        "minecraft:iron_block",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:blade_enclosure",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:blade_psu": {
+    "id": "encodedlogistics:blade_psu",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:copper_foil",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:blade_psu",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:blue_dense_network_cable": {
+    "id": "encodedlogistics:blue_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:blue_network_cable",
+        "encodedlogistics:blue_network_cable",
+        "encodedlogistics:blue_network_cable",
+        "encodedlogistics:blue_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:blue_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:blue_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:blue_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:blue_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:blue_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:blue_fiber_cable": {
+    "id": "encodedlogistics:blue_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:blue_dense_network_cable",
+        "encodedlogistics:blue_dense_network_cable",
+        "encodedlogistics:blue_dense_network_cable",
+        "encodedlogistics:blue_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:blue_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:blue_fiber_cable_from_dye": {
+    "id": "encodedlogistics:blue_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:blue_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:blue_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:blue_network_cable_from_dye": {
+    "id": "encodedlogistics:blue_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:blue_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:blue_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:cable_anchor": {
+    "id": "encodedlogistics:cable_anchor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:iron_ingot",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:cable_anchor"
+      }
+    }
+  },
+  "encodedlogistics:cable_facade": {
+    "id": "encodedlogistics:cable_facade",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget",
+        "encodedlogistics:network_cable"
+      ],
+      "result": {
+        "count": 6,
+        "id": "encodedlogistics:cable_facade"
+      }
+    }
+  },
+  "encodedlogistics:cage_light_black": {
+    "id": "encodedlogistics:cage_light_black",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:black_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_black",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_blue": {
+    "id": "encodedlogistics:cage_light_blue",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:blue_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_blue",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_brown": {
+    "id": "encodedlogistics:cage_light_brown",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:brown_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_brown",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_cyan": {
+    "id": "encodedlogistics:cage_light_cyan",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:cyan_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_cyan",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_gray": {
+    "id": "encodedlogistics:cage_light_gray",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:gray_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_gray",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_green": {
+    "id": "encodedlogistics:cage_light_green",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:green_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_green",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_light_blue": {
+    "id": "encodedlogistics:cage_light_light_blue",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:light_blue_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_light_blue",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_light_gray": {
+    "id": "encodedlogistics:cage_light_light_gray",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:light_gray_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_light_gray",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_lime": {
+    "id": "encodedlogistics:cage_light_lime",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:lime_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_lime",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_magenta": {
+    "id": "encodedlogistics:cage_light_magenta",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:magenta_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_magenta",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_orange": {
+    "id": "encodedlogistics:cage_light_orange",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:orange_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_orange",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_pink": {
+    "id": "encodedlogistics:cage_light_pink",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:pink_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_pink",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_purple": {
+    "id": "encodedlogistics:cage_light_purple",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:purple_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_purple",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_red": {
+    "id": "encodedlogistics:cage_light_red",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:red_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_red",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_white": {
+    "id": "encodedlogistics:cage_light_white",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:white_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_white",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:cage_light_yellow": {
+    "id": "encodedlogistics:cage_light_yellow",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "GLG",
+        "NDN"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "G": "minecraft:glass",
+        "L": "minecraft:glowstone_dust",
+        "N": "minecraft:iron_nugget",
+        "D": "minecraft:yellow_dye"
+      },
+      "result": {
+        "id": "encodedlogistics:cage_light_yellow",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:capacitor_bank": {
+    "id": "encodedlogistics:capacitor_bank",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "R": "minecraft:redstone_block",
+        "F": "encodedlogistics:copper_foil",
+        "T": "encodedlogistics:tantalum_capacitor"
+      },
+      "pattern": [
+        "ITI",
+        "FRF",
+        "ITI"
+      ],
+      "result": {
+        "id": "encodedlogistics:capacitor_bank"
+      }
+    }
+  },
+  "encodedlogistics:card_reader": {
+    "id": "encodedlogistics:card_reader",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:hopper",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:card_reader",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:chassis_psu": {
+    "id": "encodedlogistics:chassis_psu",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:copper_foil",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:chassis_psu",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:chassis_switch": {
+    "id": "encodedlogistics:chassis_switch",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:iron_block",
+        "minecraft:iron_block",
+        "minecraft:iron_block",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:chassis_switch",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:circuit_substrate": {
+    "id": "encodedlogistics:circuit_substrate",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:solder_paste"
+      ],
+      "result": {
+        "id": "encodedlogistics:circuit_substrate",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:collector_plane": {
+    "id": "encodedlogistics:collector_plane",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:logic_die",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:iron_pickaxe",
+        "minecraft:hopper",
+        "encodedlogistics:ferrite"
+      ],
+      "result": {
+        "id": "encodedlogistics:collector_plane",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:compute_blade": {
+    "id": "encodedlogistics:compute_blade",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:compute_server",
+        "encodedlogistics:copper_foil"
+      ],
+      "result": {
+        "id": "encodedlogistics:compute_blade",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:compute_server": {
+    "id": "encodedlogistics:compute_server",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "HPH",
+        "ISI",
+        "IPI"
+      ],
+      "key": {
+        "H": "encodedlogistics:heatsink",
+        "P": "encodedlogistics:processor_die",
+        "S": "encodedlogistics:circuit_substrate",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:compute_server",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:control_interface": {
+    "id": "encodedlogistics:control_interface",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " C ",
+        "RLR",
+        "ISI"
+      ],
+      "key": {
+        "C": "minecraft:comparator",
+        "R": "minecraft:redstone",
+        "L": "encodedlogistics:logic_die",
+        "I": "minecraft:iron_ingot",
+        "S": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:control_interface",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:controller_card": {
+    "id": "encodedlogistics:controller_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:controller_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:copper_foil_from_stonecutting": {
+    "id": "encodedlogistics:copper_foil_from_stonecutting",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:stonecutting",
+      "ingredient": "minecraft:copper_ingot",
+      "result": {
+        "id": "encodedlogistics:copper_foil",
+        "count": 2
+      }
+    }
+  },
+  "encodedlogistics:cross_connect": {
+    "id": "encodedlogistics:cross_connect",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:fiber_cable",
+        "encodedlogistics:fiber_cable",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:copper_foil"
+      ],
+      "result": {
+        "id": "encodedlogistics:cross_connect",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:crushing/gallium_dust_from_gallium_ingot": {
+    "id": "encodedlogistics:crushing/gallium_dust_from_gallium_ingot",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:ingots/gallium",
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:gallium_dust"
+      },
+      "time": 200,
+      "ore": false
+    }
+  },
+  "encodedlogistics:crushing/gallium_dust_from_gallium_ore": {
+    "id": "encodedlogistics:crushing/gallium_dust_from_gallium_ore",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:ores/gallium",
+      "result": {
+        "count": 2,
+        "id": "encodedlogistics:gallium_dust"
+      },
+      "bonus": {
+        "count": 1,
+        "id": "encodedlogistics:gallium_dust"
+      },
+      "bonus_chance": 0.25,
+      "time": 200,
+      "ore": true
+    }
+  },
+  "encodedlogistics:crushing/gallium_dust_from_raw_gallium": {
+    "id": "encodedlogistics:crushing/gallium_dust_from_raw_gallium",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:raw_materials/gallium",
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:gallium_dust"
+      },
+      "bonus": {
+        "count": 1,
+        "id": "encodedlogistics:gallium_dust"
+      },
+      "bonus_chance": 0.25,
+      "time": 200,
+      "ore": true
+    }
+  },
+  "encodedlogistics:crushing/neodymium_dust_from_neodymium_ingot": {
+    "id": "encodedlogistics:crushing/neodymium_dust_from_neodymium_ingot",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:ingots/neodymium",
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:neodymium_dust"
+      },
+      "time": 200,
+      "ore": false
+    }
+  },
+  "encodedlogistics:crushing/neodymium_dust_from_neodymium_ore": {
+    "id": "encodedlogistics:crushing/neodymium_dust_from_neodymium_ore",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:ores/neodymium",
+      "result": {
+        "count": 2,
+        "id": "encodedlogistics:neodymium_dust"
+      },
+      "bonus": {
+        "count": 1,
+        "id": "encodedlogistics:neodymium_dust"
+      },
+      "bonus_chance": 0.25,
+      "time": 200,
+      "ore": true
+    }
+  },
+  "encodedlogistics:crushing/neodymium_dust_from_raw_neodymium": {
+    "id": "encodedlogistics:crushing/neodymium_dust_from_raw_neodymium",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:raw_materials/neodymium",
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:neodymium_dust"
+      },
+      "bonus": {
+        "count": 1,
+        "id": "encodedlogistics:neodymium_dust"
+      },
+      "bonus_chance": 0.25,
+      "time": 200,
+      "ore": true
+    }
+  },
+  "encodedlogistics:crushing/tantalum_dust_from_raw_tantalum": {
+    "id": "encodedlogistics:crushing/tantalum_dust_from_raw_tantalum",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:raw_materials/tantalum",
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:tantalum_dust"
+      },
+      "bonus": {
+        "count": 1,
+        "id": "encodedlogistics:tantalum_dust"
+      },
+      "bonus_chance": 0.25,
+      "time": 200,
+      "ore": true
+    }
+  },
+  "encodedlogistics:crushing/tantalum_dust_from_tantalum_ingot": {
+    "id": "encodedlogistics:crushing/tantalum_dust_from_tantalum_ingot",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:ingots/tantalum",
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:tantalum_dust"
+      },
+      "time": 200,
+      "ore": false
+    }
+  },
+  "encodedlogistics:crushing/tantalum_dust_from_tantalum_ore": {
+    "id": "encodedlogistics:crushing/tantalum_dust_from_tantalum_ore",
+    "loaded": false,
+    "data": {
+      "neoforge:conditions": [
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "arcforge"
+        }
+      ],
+      "type": "arcforge:crushing",
+      "ingredient": "#c:ores/tantalum",
+      "result": {
+        "count": 2,
+        "id": "encodedlogistics:tantalum_dust"
+      },
+      "bonus": {
+        "count": 1,
+        "id": "encodedlogistics:tantalum_dust"
+      },
+      "bonus_chance": 0.25,
+      "time": 200,
+      "ore": true
+    }
+  },
+  "encodedlogistics:cyan_dense_network_cable": {
+    "id": "encodedlogistics:cyan_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:cyan_network_cable",
+        "encodedlogistics:cyan_network_cable",
+        "encodedlogistics:cyan_network_cable",
+        "encodedlogistics:cyan_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:cyan_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:cyan_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:cyan_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:cyan_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:cyan_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:cyan_fiber_cable": {
+    "id": "encodedlogistics:cyan_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:cyan_dense_network_cable",
+        "encodedlogistics:cyan_dense_network_cable",
+        "encodedlogistics:cyan_dense_network_cable",
+        "encodedlogistics:cyan_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:cyan_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:cyan_fiber_cable_from_dye": {
+    "id": "encodedlogistics:cyan_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:cyan_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:cyan_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:cyan_network_cable_from_dye": {
+    "id": "encodedlogistics:cyan_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:cyan_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:cyan_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:dense_network_cable": {
+    "id": "encodedlogistics:dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:network_cable",
+        "encodedlogistics:network_cable",
+        "encodedlogistics:network_cable",
+        "encodedlogistics:network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:deployer_plane": {
+    "id": "encodedlogistics:deployer_plane",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:logic_die",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:dispenser",
+        "encodedlogistics:ferrite"
+      ],
+      "result": {
+        "id": "encodedlogistics:deployer_plane",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:directory_server": {
+    "id": "encodedlogistics:directory_server",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:memory_die",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:directory_server",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:directory_server_rack": {
+    "id": "encodedlogistics:directory_server_rack",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:memory_die",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:directory_server_rack",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:disk_drive": {
+    "id": "encodedlogistics:disk_drive",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:ferrite",
+        "encodedlogistics:ferrite",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:blue_dye"
+      ],
+      "result": {
+        "id": "encodedlogistics:disk_drive",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:diskette_8in": {
+    "id": "encodedlogistics:diskette_8in",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:ferrite",
+        "minecraft:paper",
+        "encodedlogistics:copper_foil"
+      ],
+      "result": {
+        "id": "encodedlogistics:diskette_8in",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:diskette_magazine": {
+    "id": "encodedlogistics:diskette_magazine",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:paper"
+      ],
+      "result": {
+        "id": "encodedlogistics:diskette_magazine",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:display_panel": {
+    "id": "encodedlogistics:display_panel",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "pattern": [
+        "GSG",
+        "LDI",
+        "G G"
+      ],
+      "key": {
+        "G": "minecraft:glass_pane",
+        "S": "encodedlogistics:circuit_substrate",
+        "L": "encodedlogistics:logic_die",
+        "D": "minecraft:glowstone_dust",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:display_panel",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:doped_silicon": {
+    "id": "encodedlogistics:doped_silicon",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:silicon_wafer",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "id": "encodedlogistics:doped_silicon",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:drive_bay": {
+    "id": "encodedlogistics:drive_bay",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ISI",
+        "NCN",
+        "ILI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "S": "encodedlogistics:circuit_substrate",
+        "N": "encodedlogistics:network_cable",
+        "C": "minecraft:chest",
+        "L": "encodedlogistics:logic_die"
+      },
+      "result": {
+        "id": "encodedlogistics:drive_bay",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:eeprom_cartridge": {
+    "id": "encodedlogistics:eeprom_cartridge",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:logic_die",
+        "encodedlogistics:copper_foil",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget"
+      ],
+      "result": {
+        "id": "encodedlogistics:eeprom_cartridge",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:egress_port": {
+    "id": "encodedlogistics:egress_port",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:tantalum_capacitor",
+        "minecraft:iron_ingot",
+        "minecraft:dropper"
+      ],
+      "result": {
+        "id": "encodedlogistics:egress_port",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:energy_storage_drive_128k": {
+    "id": "encodedlogistics:energy_storage_drive_128k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ICI",
+        "CDC",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:tantalum_capacitor",
+        "D": "encodedlogistics:storage_die_128k"
+      },
+      "result": {
+        "id": "encodedlogistics:energy_storage_drive_128k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:energy_storage_drive_2m": {
+    "id": "encodedlogistics:energy_storage_drive_2m",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ICI",
+        "CDC",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:tantalum_capacitor",
+        "D": "encodedlogistics:storage_die_2m"
+      },
+      "result": {
+        "id": "encodedlogistics:energy_storage_drive_2m",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:energy_storage_drive_32k": {
+    "id": "encodedlogistics:energy_storage_drive_32k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ICI",
+        "CDC",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:tantalum_capacitor",
+        "D": "encodedlogistics:storage_die_32k"
+      },
+      "result": {
+        "id": "encodedlogistics:energy_storage_drive_32k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:energy_storage_drive_512k": {
+    "id": "encodedlogistics:energy_storage_drive_512k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ICI",
+        "CDC",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:tantalum_capacitor",
+        "D": "encodedlogistics:storage_die_512k"
+      },
+      "result": {
+        "id": "encodedlogistics:energy_storage_drive_512k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:energy_storage_drive_8k": {
+    "id": "encodedlogistics:energy_storage_drive_8k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ICI",
+        "CDC",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:tantalum_capacitor",
+        "D": "encodedlogistics:storage_die_8k"
+      },
+      "result": {
+        "id": "encodedlogistics:energy_storage_drive_8k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:exchange_switch": {
+    "id": "encodedlogistics:exchange_switch",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:l3_switch",
+        "encodedlogistics:l3_switch",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "minecraft:iron_block"
+      ],
+      "result": {
+        "id": "encodedlogistics:exchange_switch",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:expansion_cabinet": {
+    "id": "encodedlogistics:expansion_cabinet",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:iron_ingot",
+        "encodedlogistics:ferrite"
+      ],
+      "result": {
+        "id": "encodedlogistics:expansion_cabinet",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fabrication_blade": {
+    "id": "encodedlogistics:fabrication_blade",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:fabrication_server",
+        "encodedlogistics:copper_foil"
+      ],
+      "result": {
+        "id": "encodedlogistics:fabrication_blade",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fabrication_server": {
+    "id": "encodedlogistics:fabrication_server",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:fabricator",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:fabrication_server",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fabrication_terminal": {
+    "id": "encodedlogistics:fabrication_terminal",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:access_terminal",
+        "minecraft:crafting_table",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:fabrication_terminal",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fabricator": {
+    "id": "encodedlogistics:fabricator",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IPI",
+        "CTC",
+        "IKI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "P": "encodedlogistics:processor_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "T": "minecraft:crafting_table",
+        "K": "minecraft:piston"
+      },
+      "result": {
+        "id": "encodedlogistics:fabricator",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:ferrite": {
+    "id": "encodedlogistics:ferrite",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:iron_ingot",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "id": "encodedlogistics:ferrite",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:ferrite_block": {
+    "id": "encodedlogistics:ferrite_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "###",
+        "###",
+        "###"
+      ],
+      "key": {
+        "#": "encodedlogistics:ferrite"
+      },
+      "result": {
+        "id": "encodedlogistics:ferrite_block",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:ferrite_from_ferrite_block": {
+    "id": "encodedlogistics:ferrite_from_ferrite_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "#c:storage_blocks/ferrite"
+      ],
+      "result": {
+        "id": "encodedlogistics:ferrite",
+        "count": 9
+      }
+    }
+  },
+  "encodedlogistics:fiber_cable": {
+    "id": "encodedlogistics:fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:dense_network_cable",
+        "encodedlogistics:dense_network_cable",
+        "encodedlogistics:dense_network_cable",
+        "encodedlogistics:dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:fiberglass": {
+    "id": "encodedlogistics:fiberglass",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:glass",
+        "minecraft:string",
+        "minecraft:string"
+      ],
+      "result": {
+        "id": "encodedlogistics:fiberglass",
+        "count": 2
+      }
+    }
+  },
+  "encodedlogistics:filter_module": {
+    "id": "encodedlogistics:filter_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:paper"
+      ],
+      "result": {
+        "id": "encodedlogistics:filter_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:firewall": {
+    "id": "encodedlogistics:firewall",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "ILI",
+        "CPC"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "L": "encodedlogistics:logic_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "P": "encodedlogistics:processor_die"
+      },
+      "result": {
+        "id": "encodedlogistics:firewall",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fluid_sensor": {
+    "id": "encodedlogistics:fluid_sensor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:bucket"
+      ],
+      "result": {
+        "id": "encodedlogistics:fluid_sensor",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fluid_storage_drive_128k": {
+    "id": "encodedlogistics:fluid_storage_drive_128k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "FDF",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:copper_foil",
+        "D": "encodedlogistics:storage_die_128k"
+      },
+      "result": {
+        "id": "encodedlogistics:fluid_storage_drive_128k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fluid_storage_drive_2m": {
+    "id": "encodedlogistics:fluid_storage_drive_2m",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "FDF",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:copper_foil",
+        "D": "encodedlogistics:storage_die_2m"
+      },
+      "result": {
+        "id": "encodedlogistics:fluid_storage_drive_2m",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fluid_storage_drive_32k": {
+    "id": "encodedlogistics:fluid_storage_drive_32k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "FDF",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:copper_foil",
+        "D": "encodedlogistics:storage_die_32k"
+      },
+      "result": {
+        "id": "encodedlogistics:fluid_storage_drive_32k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fluid_storage_drive_512k": {
+    "id": "encodedlogistics:fluid_storage_drive_512k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "FDF",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:copper_foil",
+        "D": "encodedlogistics:storage_die_512k"
+      },
+      "result": {
+        "id": "encodedlogistics:fluid_storage_drive_512k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fluid_storage_drive_8k": {
+    "id": "encodedlogistics:fluid_storage_drive_8k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "FDF",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:copper_foil",
+        "D": "encodedlogistics:storage_die_8k"
+      },
+      "result": {
+        "id": "encodedlogistics:fluid_storage_drive_8k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:fuzzy_match_module": {
+    "id": "encodedlogistics:fuzzy_match_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:memory_die",
+        "minecraft:string"
+      ],
+      "result": {
+        "id": "encodedlogistics:fuzzy_match_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:gallium_block": {
+    "id": "encodedlogistics:gallium_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "###",
+        "###",
+        "###"
+      ],
+      "key": {
+        "#": "#c:ingots/gallium"
+      },
+      "result": {
+        "id": "encodedlogistics:gallium_block",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_blasting_dust": {
+    "id": "encodedlogistics:gallium_ingot_from_blasting_dust",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "#c:dusts/gallium",
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 1
+      },
+      "experience": 1.0,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_blasting_ore": {
+    "id": "encodedlogistics:gallium_ingot_from_blasting_ore",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "#c:ores/gallium",
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 1
+      },
+      "experience": 1.0,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_blasting_raw": {
+    "id": "encodedlogistics:gallium_ingot_from_blasting_raw",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:raw_gallium",
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 1
+      },
+      "experience": 1.0,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_gallium_block": {
+    "id": "encodedlogistics:gallium_ingot_from_gallium_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "#c:storage_blocks/gallium"
+      ],
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 9
+      }
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_smelting_dust": {
+    "id": "encodedlogistics:gallium_ingot_from_smelting_dust",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "#c:dusts/gallium",
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 1
+      },
+      "experience": 1.0,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_smelting_ore": {
+    "id": "encodedlogistics:gallium_ingot_from_smelting_ore",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "#c:ores/gallium",
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 1
+      },
+      "experience": 1.0,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:gallium_ingot_from_smelting_raw": {
+    "id": "encodedlogistics:gallium_ingot_from_smelting_raw",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:raw_gallium",
+      "result": {
+        "id": "encodedlogistics:gallium_ingot",
+        "count": 1
+      },
+      "experience": 1.0,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:gateway": {
+    "id": "encodedlogistics:gateway",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "HLH",
+        "CTC",
+        "IMI"
+      ],
+      "key": {
+        "H": "minecraft:hopper",
+        "L": "encodedlogistics:logic_die",
+        "M": "encodedlogistics:memory_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "T": "encodedlogistics:tantalum_capacitor",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:gateway",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:green_dense_network_cable": {
+    "id": "encodedlogistics:green_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:green_network_cable",
+        "encodedlogistics:green_network_cable",
+        "encodedlogistics:green_network_cable",
+        "encodedlogistics:green_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:green_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:green_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:green_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:green_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:green_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:green_fiber_cable": {
+    "id": "encodedlogistics:green_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:green_dense_network_cable",
+        "encodedlogistics:green_dense_network_cable",
+        "encodedlogistics:green_dense_network_cable",
+        "encodedlogistics:green_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:green_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:green_fiber_cable_from_dye": {
+    "id": "encodedlogistics:green_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:green_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:green_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:green_network_cable_from_dye": {
+    "id": "encodedlogistics:green_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:green_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:green_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:handheld_terminal": {
+    "id": "encodedlogistics:handheld_terminal",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:access_terminal",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:handheld_terminal",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:heatsink": {
+    "id": "encodedlogistics:heatsink",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "CCC",
+        "CFC"
+      ],
+      "key": {
+        "C": "minecraft:copper_ingot",
+        "F": "encodedlogistics:ferrite"
+      },
+      "result": {
+        "id": "encodedlogistics:heatsink",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:ingress_port": {
+    "id": "encodedlogistics:ingress_port",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:tantalum_capacitor",
+        "minecraft:iron_ingot",
+        "minecraft:hopper"
+      ],
+      "result": {
+        "id": "encodedlogistics:ingress_port",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:integrated_midrange": {
+    "id": "encodedlogistics:integrated_midrange",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:midrange_system",
+        "encodedlogistics:expansion_cabinet",
+        "encodedlogistics:terminal_desk",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:integrated_midrange",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:interconnect_module": {
+    "id": "encodedlogistics:interconnect_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:l2_switch_24",
+        "encodedlogistics:optical_transceiver"
+      ],
+      "result": {
+        "id": "encodedlogistics:interconnect_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:inventory_sensor": {
+    "id": "encodedlogistics:inventory_sensor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:comparator"
+      ],
+      "result": {
+        "id": "encodedlogistics:inventory_sensor",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:inventory_tap": {
+    "id": "encodedlogistics:inventory_tap",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:memory_die",
+        "minecraft:chest",
+        "encodedlogistics:ferrite"
+      ],
+      "result": {
+        "id": "encodedlogistics:inventory_tap",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:job_buffer": {
+    "id": "encodedlogistics:job_buffer",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "MFM",
+        "MCM"
+      ],
+      "key": {
+        "M": "encodedlogistics:memory_die",
+        "F": "encodedlogistics:ferrite",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:job_buffer",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:keypunch": {
+    "id": "encodedlogistics:keypunch",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:crafting_table",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:keypunch",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:l2_switch_24": {
+    "id": "encodedlogistics:l2_switch_24",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "LCL",
+        "NSN",
+        "NIN"
+      ],
+      "key": {
+        "L": "encodedlogistics:logic_die",
+        "C": "encodedlogistics:copper_foil",
+        "N": "encodedlogistics:network_cable",
+        "S": "encodedlogistics:circuit_substrate",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:l2_switch_24",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:l2_switch_48": {
+    "id": "encodedlogistics:l2_switch_48",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:l2_switch_24",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:dense_network_cable",
+        "encodedlogistics:dense_network_cable"
+      ],
+      "result": {
+        "id": "encodedlogistics:l2_switch_48",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:l3_switch": {
+    "id": "encodedlogistics:l3_switch",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:l2_switch_48",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:l3_switch",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:light_blue_dense_network_cable": {
+    "id": "encodedlogistics:light_blue_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:light_blue_network_cable",
+        "encodedlogistics:light_blue_network_cable",
+        "encodedlogistics:light_blue_network_cable",
+        "encodedlogistics:light_blue_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:light_blue_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:light_blue_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:light_blue_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:light_blue_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:light_blue_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:light_blue_fiber_cable": {
+    "id": "encodedlogistics:light_blue_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:light_blue_dense_network_cable",
+        "encodedlogistics:light_blue_dense_network_cable",
+        "encodedlogistics:light_blue_dense_network_cable",
+        "encodedlogistics:light_blue_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:light_blue_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:light_blue_fiber_cable_from_dye": {
+    "id": "encodedlogistics:light_blue_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:light_blue_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:light_blue_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:light_blue_network_cable_from_dye": {
+    "id": "encodedlogistics:light_blue_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:light_blue_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:light_blue_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:light_sensor": {
+    "id": "encodedlogistics:light_sensor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:daylight_detector"
+      ],
+      "result": {
+        "id": "encodedlogistics:light_sensor",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lime_dense_network_cable": {
+    "id": "encodedlogistics:lime_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:lime_network_cable",
+        "encodedlogistics:lime_network_cable",
+        "encodedlogistics:lime_network_cable",
+        "encodedlogistics:lime_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:lime_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:lime_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:lime_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:lime_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:lime_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:lime_fiber_cable": {
+    "id": "encodedlogistics:lime_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:lime_dense_network_cable",
+        "encodedlogistics:lime_dense_network_cable",
+        "encodedlogistics:lime_dense_network_cable",
+        "encodedlogistics:lime_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:lime_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:lime_fiber_cable_from_dye": {
+    "id": "encodedlogistics:lime_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:lime_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:lime_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:lime_network_cable_from_dye": {
+    "id": "encodedlogistics:lime_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:lime_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:lime_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:line_printer": {
+    "id": "encodedlogistics:line_printer",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:ink_sac",
+        "minecraft:iron_ingot",
+        "minecraft:paper"
+      ],
+      "result": {
+        "id": "encodedlogistics:line_printer",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:link_card": {
+    "id": "encodedlogistics:link_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:schematic_card",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:link_card",
+        "count": 2
+      }
+    }
+  },
+  "encodedlogistics:lithography_press": {
+    "id": "encodedlogistics:lithography_press",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "FRF",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:ferrite",
+        "R": "minecraft:redstone",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:lithography_press",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:logic_die": {
+    "id": "encodedlogistics:logic_die",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:lithography",
+      "wafer": "encodedlogistics:silicon_wafer",
+      "additive": "minecraft:redstone",
+      "photomask": "encodedlogistics:logic_photomask",
+      "result": {
+        "id": "encodedlogistics:logic_die",
+        "count": 1
+      },
+      "energy": 4000,
+      "time": 100
+    }
+  },
+  "encodedlogistics:logic_photomask": {
+    "id": "encodedlogistics:logic_photomask",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "GFG",
+        "FRF",
+        "GFG"
+      ],
+      "key": {
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:ferrite",
+        "R": "minecraft:redstone"
+      },
+      "result": {
+        "id": "encodedlogistics:logic_photomask",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lto_tape_10": {
+    "id": "encodedlogistics:lto_tape_10",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:tape_upgrade",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:lto_tape_9",
+        "encodedlogistics:gallium_ingot",
+        "encodedlogistics:gallium_ingot",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:lto_tape_10",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lto_tape_6": {
+    "id": "encodedlogistics:lto_tape_6",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:ferrite",
+        "encodedlogistics:ferrite",
+        "encodedlogistics:copper_foil",
+        "minecraft:string",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:lto_tape_6",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lto_tape_7": {
+    "id": "encodedlogistics:lto_tape_7",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:tape_upgrade",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:lto_tape_6",
+        "encodedlogistics:ferrite",
+        "encodedlogistics:ferrite",
+        "encodedlogistics:logic_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:lto_tape_7",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lto_tape_8": {
+    "id": "encodedlogistics:lto_tape_8",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:tape_upgrade",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:lto_tape_7",
+        "encodedlogistics:neodymium_ingot",
+        "encodedlogistics:neodymium_ingot",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:lto_tape_8",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lto_tape_9": {
+    "id": "encodedlogistics:lto_tape_9",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:tape_upgrade",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:lto_tape_8",
+        "encodedlogistics:neodymium_ingot",
+        "encodedlogistics:neodymium_ingot",
+        "encodedlogistics:tantalum_capacitor"
+      ],
+      "result": {
+        "id": "encodedlogistics:lto_tape_9",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:lto_tape_drive": {
+    "id": "encodedlogistics:lto_tape_drive",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:neodymium_ingot",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:lto_tape_drive",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:magenta_dense_network_cable": {
+    "id": "encodedlogistics:magenta_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:magenta_network_cable",
+        "encodedlogistics:magenta_network_cable",
+        "encodedlogistics:magenta_network_cable",
+        "encodedlogistics:magenta_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:magenta_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:magenta_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:magenta_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:magenta_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:magenta_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:magenta_fiber_cable": {
+    "id": "encodedlogistics:magenta_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:magenta_dense_network_cable",
+        "encodedlogistics:magenta_dense_network_cable",
+        "encodedlogistics:magenta_dense_network_cable",
+        "encodedlogistics:magenta_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:magenta_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:magenta_fiber_cable_from_dye": {
+    "id": "encodedlogistics:magenta_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:magenta_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:magenta_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:magenta_network_cable_from_dye": {
+    "id": "encodedlogistics:magenta_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:magenta_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:magenta_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:management_module": {
+    "id": "encodedlogistics:management_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:management_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:memory_blade": {
+    "id": "encodedlogistics:memory_blade",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:memory_server",
+        "encodedlogistics:copper_foil"
+      ],
+      "result": {
+        "id": "encodedlogistics:memory_blade",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:memory_die": {
+    "id": "encodedlogistics:memory_die",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:lithography",
+      "wafer": "encodedlogistics:doped_silicon",
+      "additive": "encodedlogistics:ferrite",
+      "photomask": "encodedlogistics:memory_photomask",
+      "result": {
+        "id": "encodedlogistics:memory_die",
+        "count": 1
+      },
+      "energy": 6000,
+      "time": 140
+    }
+  },
+  "encodedlogistics:memory_photomask": {
+    "id": "encodedlogistics:memory_photomask",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "GFG",
+        "FDF",
+        "GFG"
+      ],
+      "key": {
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:ferrite",
+        "D": "encodedlogistics:doped_silicon"
+      },
+      "result": {
+        "id": "encodedlogistics:memory_photomask",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:memory_server": {
+    "id": "encodedlogistics:memory_server",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "M M",
+        "MSM",
+        "III"
+      ],
+      "key": {
+        "M": "encodedlogistics:memory_die",
+        "S": "encodedlogistics:circuit_substrate",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:memory_server",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:midrange_system": {
+    "id": "encodedlogistics:midrange_system",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "SLS",
+        "FIC",
+        " L "
+      ],
+      "key": {
+        "S": "encodedlogistics:circuit_substrate",
+        "L": "encodedlogistics:logic_die",
+        "F": "encodedlogistics:ferrite",
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:copper_foil"
+      },
+      "result": {
+        "id": "encodedlogistics:midrange_system",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:monitoring_server": {
+    "id": "encodedlogistics:monitoring_server",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:threshold_sensor"
+      ],
+      "result": {
+        "id": "encodedlogistics:monitoring_server",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:mux_card": {
+    "id": "encodedlogistics:mux_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_multiplexer",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:mux_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:nas": {
+    "id": "encodedlogistics:nas",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "FLF",
+        "ISI",
+        "IMI"
+      ],
+      "key": {
+        "F": "encodedlogistics:ferrite",
+        "L": "encodedlogistics:logic_die",
+        "S": "encodedlogistics:circuit_substrate",
+        "M": "encodedlogistics:memory_die",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:nas",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:neodymium_block": {
+    "id": "encodedlogistics:neodymium_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "###",
+        "###",
+        "###"
+      ],
+      "key": {
+        "#": "#c:ingots/neodymium"
+      },
+      "result": {
+        "id": "encodedlogistics:neodymium_block",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_blasting_dust": {
+    "id": "encodedlogistics:neodymium_ingot_from_blasting_dust",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "#c:dusts/neodymium",
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_blasting_ore": {
+    "id": "encodedlogistics:neodymium_ingot_from_blasting_ore",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "#c:ores/neodymium",
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_blasting_raw": {
+    "id": "encodedlogistics:neodymium_ingot_from_blasting_raw",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:raw_neodymium",
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_neodymium_block": {
+    "id": "encodedlogistics:neodymium_ingot_from_neodymium_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "#c:storage_blocks/neodymium"
+      ],
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 9
+      }
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_smelting_dust": {
+    "id": "encodedlogistics:neodymium_ingot_from_smelting_dust",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "#c:dusts/neodymium",
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_smelting_ore": {
+    "id": "encodedlogistics:neodymium_ingot_from_smelting_ore",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "#c:ores/neodymium",
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:neodymium_ingot_from_smelting_raw": {
+    "id": "encodedlogistics:neodymium_ingot_from_smelting_raw",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:raw_neodymium",
+      "result": {
+        "id": "encodedlogistics:neodymium_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:network_bridge": {
+    "id": "encodedlogistics:network_bridge",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "TOT",
+        "PCM",
+        "EOE"
+      ],
+      "key": {
+        "T": "encodedlogistics:tantalum_ingot",
+        "E": "minecraft:ender_eye",
+        "O": "encodedlogistics:optical_transceiver",
+        "P": "encodedlogistics:processor_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "M": "encodedlogistics:memory_die"
+      },
+      "result": {
+        "id": "encodedlogistics:network_bridge",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:network_cable": {
+    "id": "encodedlogistics:network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "R": "minecraft:redstone",
+        "Q": "minecraft:quartz"
+      },
+      "pattern": [
+        "III",
+        "RQR",
+        "III"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:network_cable"
+      }
+    }
+  },
+  "encodedlogistics:network_controller": {
+    "id": "encodedlogistics:network_controller",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "key": {
+        "C": "encodedlogistics:circuit_substrate",
+        "D": "minecraft:diamond",
+        "I": "minecraft:iron_ingot",
+        "L": "encodedlogistics:logic_die"
+      },
+      "pattern": [
+        "ICI",
+        "LDL",
+        "ICI"
+      ],
+      "result": {
+        "id": "encodedlogistics:network_controller"
+      }
+    }
+  },
+  "encodedlogistics:network_controller_2u": {
+    "id": "encodedlogistics:network_controller_2u",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:diamond",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:network_controller_2u",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:network_controller_4u": {
+    "id": "encodedlogistics:network_controller_4u",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:network_controller_2u",
+        "encodedlogistics:network_controller_2u",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:heatsink",
+        "encodedlogistics:heatsink"
+      ],
+      "result": {
+        "id": "encodedlogistics:network_controller_4u",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:optical_amplifier": {
+    "id": "encodedlogistics:optical_amplifier",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:gallium_ingot",
+        "encodedlogistics:gallium_ingot",
+        "encodedlogistics:tantalum_capacitor",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:optical_amplifier",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:optical_amplifier_rack": {
+    "id": "encodedlogistics:optical_amplifier_rack",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_amplifier"
+      ],
+      "result": {
+        "id": "encodedlogistics:optical_amplifier_rack",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:optical_multiplexer": {
+    "id": "encodedlogistics:optical_multiplexer",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:fiber_cable",
+        "encodedlogistics:fiber_cable",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:optical_multiplexer",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:optical_multiplexer_rack": {
+    "id": "encodedlogistics:optical_multiplexer_rack",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_multiplexer"
+      ],
+      "result": {
+        "id": "encodedlogistics:optical_multiplexer_rack",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:optical_transceiver": {
+    "id": "encodedlogistics:optical_transceiver",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:logic_die",
+        "minecraft:glass",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:optical_transceiver",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:optical_transport_shelf": {
+    "id": "encodedlogistics:optical_transport_shelf",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:iron_block",
+        "minecraft:iron_block",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:optical_transport_shelf",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:orange_dense_network_cable": {
+    "id": "encodedlogistics:orange_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:orange_network_cable",
+        "encodedlogistics:orange_network_cable",
+        "encodedlogistics:orange_network_cable",
+        "encodedlogistics:orange_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:orange_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:orange_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:orange_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:orange_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:orange_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:orange_fiber_cable": {
+    "id": "encodedlogistics:orange_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:orange_dense_network_cable",
+        "encodedlogistics:orange_dense_network_cable",
+        "encodedlogistics:orange_dense_network_cable",
+        "encodedlogistics:orange_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:orange_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:orange_fiber_cable_from_dye": {
+    "id": "encodedlogistics:orange_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:orange_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:orange_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:orange_network_cable_from_dye": {
+    "id": "encodedlogistics:orange_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:orange_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:orange_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:pink_dense_network_cable": {
+    "id": "encodedlogistics:pink_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:pink_network_cable",
+        "encodedlogistics:pink_network_cable",
+        "encodedlogistics:pink_network_cable",
+        "encodedlogistics:pink_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:pink_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:pink_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:pink_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:pink_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:pink_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:pink_fiber_cable": {
+    "id": "encodedlogistics:pink_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:pink_dense_network_cable",
+        "encodedlogistics:pink_dense_network_cable",
+        "encodedlogistics:pink_dense_network_cable",
+        "encodedlogistics:pink_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:pink_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:pink_fiber_cable_from_dye": {
+    "id": "encodedlogistics:pink_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:pink_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:pink_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:pink_network_cable_from_dye": {
+    "id": "encodedlogistics:pink_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:pink_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:pink_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:plc": {
+    "id": "encodedlogistics:plc",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:logic_die",
+        "minecraft:redstone",
+        "minecraft:redstone",
+        "minecraft:iron_ingot",
+        "encodedlogistics:ferrite"
+      ],
+      "result": {
+        "id": "encodedlogistics:plc",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:point_to_point_link": {
+    "id": "encodedlogistics:point_to_point_link",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:network_cable"
+      ],
+      "result": {
+        "id": "encodedlogistics:point_to_point_link",
+        "count": 2
+      }
+    }
+  },
+  "encodedlogistics:power_inlet": {
+    "id": "encodedlogistics:power_inlet",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "R": "minecraft:redstone_block",
+        "F": "encodedlogistics:copper_foil",
+        "C": "encodedlogistics:circuit_substrate",
+        "N": "encodedlogistics:network_cable"
+      },
+      "pattern": [
+        "ICI",
+        "FRF",
+        "INI"
+      ],
+      "result": {
+        "id": "encodedlogistics:power_inlet"
+      }
+    }
+  },
+  "encodedlogistics:presence_sensor": {
+    "id": "encodedlogistics:presence_sensor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:stone_pressure_plate"
+      ],
+      "result": {
+        "id": "encodedlogistics:presence_sensor",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:pressurized_storage_drive_128k": {
+    "id": "encodedlogistics:pressurized_storage_drive_128k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "TDT",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "T": "encodedlogistics:tantalum_ingot",
+        "D": "encodedlogistics:storage_die_128k"
+      },
+      "result": {
+        "id": "encodedlogistics:pressurized_storage_drive_128k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:pressurized_storage_drive_2m": {
+    "id": "encodedlogistics:pressurized_storage_drive_2m",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "TDT",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "T": "encodedlogistics:tantalum_ingot",
+        "D": "encodedlogistics:storage_die_2m"
+      },
+      "result": {
+        "id": "encodedlogistics:pressurized_storage_drive_2m",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:pressurized_storage_drive_32k": {
+    "id": "encodedlogistics:pressurized_storage_drive_32k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "TDT",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "T": "encodedlogistics:tantalum_ingot",
+        "D": "encodedlogistics:storage_die_32k"
+      },
+      "result": {
+        "id": "encodedlogistics:pressurized_storage_drive_32k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:pressurized_storage_drive_512k": {
+    "id": "encodedlogistics:pressurized_storage_drive_512k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "TDT",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "T": "encodedlogistics:tantalum_ingot",
+        "D": "encodedlogistics:storage_die_512k"
+      },
+      "result": {
+        "id": "encodedlogistics:pressurized_storage_drive_512k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:pressurized_storage_drive_8k": {
+    "id": "encodedlogistics:pressurized_storage_drive_8k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IGI",
+        "TDT",
+        "III"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "G": "minecraft:glass",
+        "T": "encodedlogistics:tantalum_ingot",
+        "D": "encodedlogistics:storage_die_8k"
+      },
+      "result": {
+        "id": "encodedlogistics:pressurized_storage_drive_8k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:processor_die": {
+    "id": "encodedlogistics:processor_die",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:lithography",
+      "wafer": "encodedlogistics:doped_silicon",
+      "additive": "encodedlogistics:gallium_ingot",
+      "photomask": "encodedlogistics:processor_photomask",
+      "result": {
+        "id": "encodedlogistics:processor_die",
+        "count": 1
+      },
+      "energy": 8000,
+      "time": 180
+    }
+  },
+  "encodedlogistics:processor_photomask": {
+    "id": "encodedlogistics:processor_photomask",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "GFG",
+        "FAF",
+        "GFG"
+      ],
+      "key": {
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:ferrite",
+        "A": "encodedlogistics:gallium_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:processor_photomask",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:protection_card": {
+    "id": "encodedlogistics:protection_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:logic_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:protection_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:punch_card": {
+    "id": "encodedlogistics:punch_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:paper",
+        "minecraft:paper",
+        "minecraft:paper",
+        "minecraft:paper"
+      ],
+      "result": {
+        "id": "encodedlogistics:punch_card",
+        "count": 8
+      }
+    }
+  },
+  "encodedlogistics:purple_dense_network_cable": {
+    "id": "encodedlogistics:purple_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:purple_network_cable",
+        "encodedlogistics:purple_network_cable",
+        "encodedlogistics:purple_network_cable",
+        "encodedlogistics:purple_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:purple_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:purple_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:purple_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:purple_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:purple_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:purple_fiber_cable": {
+    "id": "encodedlogistics:purple_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:purple_dense_network_cable",
+        "encodedlogistics:purple_dense_network_cable",
+        "encodedlogistics:purple_dense_network_cable",
+        "encodedlogistics:purple_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:purple_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:purple_fiber_cable_from_dye": {
+    "id": "encodedlogistics:purple_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:purple_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:purple_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:purple_network_cable_from_dye": {
+    "id": "encodedlogistics:purple_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:purple_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:purple_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:rack_console": {
+    "id": "encodedlogistics:rack_console",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:access_terminal",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:rack_console",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:rack_elevation": {
+    "id": "encodedlogistics:rack_elevation",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "PLP",
+        " P ",
+        "S S"
+      ],
+      "key": {
+        "P": "minecraft:paper",
+        "L": "encodedlogistics:logic_die",
+        "S": "minecraft:stick"
+      },
+      "result": {
+        "id": "encodedlogistics:rack_elevation",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:rack_elevation_clear": {
+    "id": "encodedlogistics:rack_elevation_clear",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:rack_elevation_clear",
+      "category": "misc"
+    }
+  },
+  "encodedlogistics:rack_elevation_copy": {
+    "id": "encodedlogistics:rack_elevation_copy",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:rack_elevation_copy",
+      "category": "misc"
+    }
+  },
+  "encodedlogistics:rack_fabrication_console": {
+    "id": "encodedlogistics:rack_fabrication_console",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:fabrication_terminal",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:rack_fabrication_console",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:rack_schematic_console": {
+    "id": "encodedlogistics:rack_schematic_console",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:schematic_terminal",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:rack_schematic_console",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:radio_module": {
+    "id": "encodedlogistics:radio_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:gallium_ingot",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:circuit_substrate"
+      ],
+      "result": {
+        "id": "encodedlogistics:radio_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:red_dense_network_cable": {
+    "id": "encodedlogistics:red_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:red_network_cable",
+        "encodedlogistics:red_network_cable",
+        "encodedlogistics:red_network_cable",
+        "encodedlogistics:red_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:red_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:red_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:red_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:red_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:red_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:red_fiber_cable": {
+    "id": "encodedlogistics:red_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:red_dense_network_cable",
+        "encodedlogistics:red_dense_network_cable",
+        "encodedlogistics:red_dense_network_cable",
+        "encodedlogistics:red_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:red_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:red_fiber_cable_from_dye": {
+    "id": "encodedlogistics:red_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:red_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:red_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:red_network_cable_from_dye": {
+    "id": "encodedlogistics:red_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:red_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:red_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:redstone_control_module": {
+    "id": "encodedlogistics:redstone_control_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:redstone_torch"
+      ],
+      "result": {
+        "id": "encodedlogistics:redstone_control_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:relay_antenna": {
+    "id": "encodedlogistics:relay_antenna",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        " B ",
+        "POP",
+        "FBF"
+      ],
+      "key": {
+        "B": "minecraft:iron_bars",
+        "P": "encodedlogistics:processor_die",
+        "O": "encodedlogistics:optical_transceiver",
+        "F": "encodedlogistics:ferrite"
+      },
+      "result": {
+        "id": "encodedlogistics:relay_antenna",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:router": {
+    "id": "encodedlogistics:router",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "FMF",
+        "CPC"
+      ],
+      "key": {
+        "F": "encodedlogistics:copper_foil",
+        "M": "encodedlogistics:memory_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "P": "encodedlogistics:processor_die"
+      },
+      "result": {
+        "id": "encodedlogistics:router",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:routing_card": {
+    "id": "encodedlogistics:routing_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:l3_switch",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:routing_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:san": {
+    "id": "encodedlogistics:san",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:nas",
+        "encodedlogistics:nas",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:optical_transceiver"
+      ],
+      "result": {
+        "id": "encodedlogistics:san",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:scheduler_core": {
+    "id": "encodedlogistics:scheduler_core",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "FPF",
+        "CHC",
+        "FPF"
+      ],
+      "key": {
+        "F": "encodedlogistics:ferrite",
+        "P": "encodedlogistics:processor_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "H": "encodedlogistics:heatsink"
+      },
+      "result": {
+        "id": "encodedlogistics:scheduler_core",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:schematic_card": {
+    "id": "encodedlogistics:schematic_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:memory_die",
+        "minecraft:paper"
+      ],
+      "result": {
+        "id": "encodedlogistics:schematic_card",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:schematic_encoder": {
+    "id": "encodedlogistics:schematic_encoder",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:fabrication_terminal",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:schematic_card"
+      ],
+      "result": {
+        "id": "encodedlogistics:schematic_encoder",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:schematic_terminal": {
+    "id": "encodedlogistics:schematic_terminal",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:access_terminal",
+        "encodedlogistics:schematic_card",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:schematic_terminal",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:segment_isolator": {
+    "id": "encodedlogistics:segment_isolator",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "N": "encodedlogistics:network_cable",
+        "F": "encodedlogistics:ferrite"
+      },
+      "pattern": [
+        " I ",
+        "NFN",
+        " I "
+      ],
+      "result": {
+        "id": "encodedlogistics:segment_isolator"
+      }
+    }
+  },
+  "encodedlogistics:server_rack": {
+    "id": "encodedlogistics:server_rack",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IBI",
+        "FDF",
+        "IBI"
+      ],
+      "key": {
+        "I": "minecraft:iron_block",
+        "B": "minecraft:iron_bars",
+        "F": "encodedlogistics:ferrite",
+        "D": "minecraft:iron_door"
+      },
+      "result": {
+        "id": "encodedlogistics:server_rack",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:silica_blend": {
+    "id": "encodedlogistics:silica_blend",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:silica",
+        "encodedlogistics:silica",
+        "encodedlogistics:silica",
+        "encodedlogistics:silica",
+        "#minecraft:coals"
+      ],
+      "result": {
+        "id": "encodedlogistics:silica_blend",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:silica_from_blasting": {
+    "id": "encodedlogistics:silica_from_blasting",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "minecraft:sand",
+      "result": {
+        "id": "encodedlogistics:silica",
+        "count": 1
+      },
+      "experience": 0.1,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:silicon_boule_from_smelting": {
+    "id": "encodedlogistics:silicon_boule_from_smelting",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:silica_blend",
+      "result": {
+        "id": "encodedlogistics:silicon_boule",
+        "count": 1
+      },
+      "experience": 0.3,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:silicon_wafer_from_stonecutting": {
+    "id": "encodedlogistics:silicon_wafer_from_stonecutting",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:stonecutting",
+      "ingredient": "encodedlogistics:silicon_boule",
+      "result": {
+        "id": "encodedlogistics:silicon_wafer",
+        "count": 4
+      }
+    }
+  },
+  "encodedlogistics:siren_amber": {
+    "id": "encodedlogistics:siren_amber",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:redstone",
+        "minecraft:note_block",
+        "minecraft:iron_ingot",
+        "minecraft:glass",
+        "minecraft:orange_dye"
+      ],
+      "result": {
+        "id": "encodedlogistics:siren_amber",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:siren_green": {
+    "id": "encodedlogistics:siren_green",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:redstone",
+        "minecraft:note_block",
+        "minecraft:iron_ingot",
+        "minecraft:glass",
+        "minecraft:lime_dye"
+      ],
+      "result": {
+        "id": "encodedlogistics:siren_green",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:siren_red": {
+    "id": "encodedlogistics:siren_red",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:redstone",
+        "minecraft:note_block",
+        "minecraft:iron_ingot",
+        "minecraft:glass",
+        "minecraft:red_dye"
+      ],
+      "result": {
+        "id": "encodedlogistics:siren_red",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:small_wireless_bridge": {
+    "id": "encodedlogistics:small_wireless_bridge",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:radio_module",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:copper_foil",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget"
+      ],
+      "result": {
+        "id": "encodedlogistics:small_wireless_bridge",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:solder_paste": {
+    "id": "encodedlogistics:solder_paste",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "minecraft:copper_ingot",
+        "#c:slime_balls"
+      ],
+      "result": {
+        "id": "encodedlogistics:solder_paste",
+        "count": 2
+      }
+    }
+  },
+  "encodedlogistics:speaker": {
+    "id": "encodedlogistics:speaker",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "minecraft:note_block",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:circuit_substrate",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget"
+      ],
+      "result": {
+        "id": "encodedlogistics:speaker",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_blade": {
+    "id": "encodedlogistics:storage_blade",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:nas",
+        "encodedlogistics:copper_foil"
+      ],
+      "result": {
+        "id": "encodedlogistics:storage_blade",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_die_128k": {
+    "id": "encodedlogistics:storage_die_128k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "NDN",
+        "DMD",
+        "NSN"
+      ],
+      "key": {
+        "N": "encodedlogistics:neodymium_ingot",
+        "D": "encodedlogistics:storage_die_32k",
+        "M": "encodedlogistics:memory_die",
+        "S": "encodedlogistics:solder_paste"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_die_128k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_die_2m": {
+    "id": "encodedlogistics:storage_die_2m",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "GDG",
+        "DPD",
+        "GTG"
+      ],
+      "key": {
+        "G": "encodedlogistics:gallium_ingot",
+        "D": "encodedlogistics:storage_die_512k",
+        "P": "encodedlogistics:processor_die",
+        "T": "encodedlogistics:tantalum_capacitor"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_die_2m",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_die_32k": {
+    "id": "encodedlogistics:storage_die_32k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "RDR",
+        "DLD",
+        "RSR"
+      ],
+      "key": {
+        "R": "minecraft:redstone",
+        "D": "encodedlogistics:storage_die_8k",
+        "L": "encodedlogistics:logic_die",
+        "S": "encodedlogistics:solder_paste"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_die_32k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_die_512k": {
+    "id": "encodedlogistics:storage_die_512k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "NDN",
+        "DMD",
+        "NTN"
+      ],
+      "key": {
+        "N": "encodedlogistics:neodymium_ingot",
+        "D": "encodedlogistics:storage_die_128k",
+        "M": "encodedlogistics:memory_die",
+        "T": "encodedlogistics:tantalum_capacitor"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_die_512k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_die_8k": {
+    "id": "encodedlogistics:storage_die_8k",
+    "loaded": true,
+    "data": {
+      "type": "encodedlogistics:lithography",
+      "wafer": "encodedlogistics:silicon_wafer",
+      "additive": "encodedlogistics:ferrite",
+      "photomask": "encodedlogistics:storage_photomask",
+      "result": {
+        "id": "encodedlogistics:storage_die_8k",
+        "count": 1
+      },
+      "energy": 4000,
+      "time": 100
+    }
+  },
+  "encodedlogistics:storage_drive_128k": {
+    "id": "encodedlogistics:storage_drive_128k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "TFT",
+        "IDI",
+        "ICI"
+      ],
+      "key": {
+        "T": "encodedlogistics:tantalum_ingot",
+        "I": "minecraft:iron_ingot",
+        "F": "encodedlogistics:ferrite",
+        "D": "encodedlogistics:storage_die_128k",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_drive_128k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_drive_2m": {
+    "id": "encodedlogistics:storage_drive_2m",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "TFT",
+        "IDI",
+        "ICI"
+      ],
+      "key": {
+        "T": "encodedlogistics:tantalum_ingot",
+        "I": "minecraft:iron_ingot",
+        "F": "encodedlogistics:ferrite",
+        "D": "encodedlogistics:storage_die_2m",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_drive_2m",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_drive_32k": {
+    "id": "encodedlogistics:storage_drive_32k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IFI",
+        "IDI",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "F": "encodedlogistics:ferrite",
+        "D": "encodedlogistics:storage_die_32k",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_drive_32k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_drive_512k": {
+    "id": "encodedlogistics:storage_drive_512k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "TFT",
+        "IDI",
+        "ICI"
+      ],
+      "key": {
+        "T": "encodedlogistics:tantalum_ingot",
+        "I": "minecraft:iron_ingot",
+        "F": "encodedlogistics:ferrite",
+        "D": "encodedlogistics:storage_die_512k",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_drive_512k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_drive_8k": {
+    "id": "encodedlogistics:storage_drive_8k",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "IFI",
+        "IDI",
+        "ICI"
+      ],
+      "key": {
+        "I": "minecraft:iron_ingot",
+        "F": "encodedlogistics:ferrite",
+        "D": "encodedlogistics:storage_die_8k",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_drive_8k",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:storage_photomask": {
+    "id": "encodedlogistics:storage_photomask",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "GFG",
+        "FFF",
+        "GFG"
+      ],
+      "key": {
+        "G": "minecraft:glass",
+        "F": "encodedlogistics:ferrite"
+      },
+      "result": {
+        "id": "encodedlogistics:storage_photomask",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:supervisor_card": {
+    "id": "encodedlogistics:supervisor_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:processor_die",
+        "encodedlogistics:processor_die",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:supervisor_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:swivel_chair": {
+    "id": "encodedlogistics:swivel_chair",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "W  ",
+        "WWW",
+        "IBI"
+      ],
+      "key": {
+        "W": "#minecraft:wool",
+        "B": "minecraft:iron_bars",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:swivel_chair",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:swivel_chair_dyed": {
+    "id": "encodedlogistics:swivel_chair_dyed",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_dye",
+      "dye": "#minecraft:dyes",
+      "group": "dyed_swivel_chair",
+      "result": {
+        "id": "encodedlogistics:swivel_chair"
+      },
+      "target": "encodedlogistics:swivel_chair"
+    }
+  },
+  "encodedlogistics:tantalum_block": {
+    "id": "encodedlogistics:tantalum_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "###",
+        "###",
+        "###"
+      ],
+      "key": {
+        "#": "#c:ingots/tantalum"
+      },
+      "result": {
+        "id": "encodedlogistics:tantalum_block",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:tantalum_capacitor": {
+    "id": "encodedlogistics:tantalum_capacitor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:tantalum_ingot",
+        "encodedlogistics:copper_foil",
+        "encodedlogistics:solder_paste"
+      ],
+      "result": {
+        "id": "encodedlogistics:tantalum_capacitor",
+        "count": 2
+      }
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_blasting_dust": {
+    "id": "encodedlogistics:tantalum_ingot_from_blasting_dust",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "#c:dusts/tantalum",
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_blasting_ore": {
+    "id": "encodedlogistics:tantalum_ingot_from_blasting_ore",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "#c:ores/tantalum",
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_blasting_raw": {
+    "id": "encodedlogistics:tantalum_ingot_from_blasting_raw",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:blasting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:raw_tantalum",
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_smelting_dust": {
+    "id": "encodedlogistics:tantalum_ingot_from_smelting_dust",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "#c:dusts/tantalum",
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_smelting_ore": {
+    "id": "encodedlogistics:tantalum_ingot_from_smelting_ore",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "#c:ores/tantalum",
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_smelting_raw": {
+    "id": "encodedlogistics:tantalum_ingot_from_smelting_raw",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:smelting",
+      "category": "misc",
+      "ingredient": "encodedlogistics:raw_tantalum",
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 1
+      },
+      "experience": 0.7,
+      "cookingtime": 200
+    }
+  },
+  "encodedlogistics:tantalum_ingot_from_tantalum_block": {
+    "id": "encodedlogistics:tantalum_ingot_from_tantalum_block",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "#c:storage_blocks/tantalum"
+      ],
+      "result": {
+        "id": "encodedlogistics:tantalum_ingot",
+        "count": 9
+      }
+    }
+  },
+  "encodedlogistics:tape_drive": {
+    "id": "encodedlogistics:tape_drive",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:ferrite",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot",
+        "minecraft:glass_pane",
+        "minecraft:blue_dye"
+      ],
+      "result": {
+        "id": "encodedlogistics:tape_drive",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:tape_library_4u": {
+    "id": "encodedlogistics:tape_library_4u",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:processor_die",
+        "minecraft:piston",
+        "minecraft:piston",
+        "minecraft:glass",
+        "minecraft:iron_block"
+      ],
+      "result": {
+        "id": "encodedlogistics:tape_library_4u",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:tape_library_6u": {
+    "id": "encodedlogistics:tape_library_6u",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:tape_library_4u",
+        "encodedlogistics:processor_die",
+        "minecraft:iron_block",
+        "minecraft:piston",
+        "minecraft:piston"
+      ],
+      "result": {
+        "id": "encodedlogistics:tape_library_6u",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:tape_reel": {
+    "id": "encodedlogistics:tape_reel",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:ferrite",
+        "minecraft:paper",
+        "minecraft:paper",
+        "minecraft:iron_nugget",
+        "minecraft:iron_nugget"
+      ],
+      "result": {
+        "id": "encodedlogistics:tape_reel",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:terminal_desk": {
+    "id": "encodedlogistics:terminal_desk",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "GTC",
+        "SSS",
+        "I I"
+      ],
+      "key": {
+        "G": "minecraft:glass_pane",
+        "T": "encodedlogistics:access_terminal",
+        "S": "#minecraft:wooden_slabs",
+        "I": "minecraft:iron_ingot",
+        "C": "encodedlogistics:circuit_substrate"
+      },
+      "result": {
+        "id": "encodedlogistics:terminal_desk",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:thread_unit": {
+    "id": "encodedlogistics:thread_unit",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "FHF",
+        "FPF",
+        "FTF"
+      ],
+      "key": {
+        "F": "encodedlogistics:ferrite",
+        "H": "encodedlogistics:heatsink",
+        "P": "encodedlogistics:processor_die",
+        "T": "encodedlogistics:tantalum_capacitor"
+      },
+      "result": {
+        "id": "encodedlogistics:thread_unit",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:threshold_sensor": {
+    "id": "encodedlogistics:threshold_sensor",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:redstone_torch",
+        "minecraft:comparator"
+      ],
+      "result": {
+        "id": "encodedlogistics:threshold_sensor",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:throughput_module": {
+    "id": "encodedlogistics:throughput_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:memory_die",
+        "encodedlogistics:tantalum_capacitor"
+      ],
+      "result": {
+        "id": "encodedlogistics:throughput_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:timer_module": {
+    "id": "encodedlogistics:timer_module",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:circuit_substrate",
+        "encodedlogistics:logic_die",
+        "minecraft:clock"
+      ],
+      "result": {
+        "id": "encodedlogistics:timer_module",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:transponder_card": {
+    "id": "encodedlogistics:transponder_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:processor_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:transponder_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:trunk_card": {
+    "id": "encodedlogistics:trunk_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:trunk_port",
+        "encodedlogistics:trunk_port",
+        "encodedlogistics:trunk_port",
+        "encodedlogistics:trunk_port",
+        "encodedlogistics:logic_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:trunk_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:trunk_port": {
+    "id": "encodedlogistics:trunk_port",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:network_cable",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:memory_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:trunk_port",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:uplink_card": {
+    "id": "encodedlogistics:uplink_card",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "ingredients": [
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:logic_die",
+        "encodedlogistics:logic_die"
+      ],
+      "result": {
+        "id": "encodedlogistics:uplink_card",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:ups": {
+    "id": "encodedlogistics:ups",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "TLT",
+        "TCT",
+        "III"
+      ],
+      "key": {
+        "T": "encodedlogistics:tantalum_capacitor",
+        "L": "encodedlogistics:logic_die",
+        "C": "encodedlogistics:circuit_substrate",
+        "I": "minecraft:iron_ingot"
+      },
+      "result": {
+        "id": "encodedlogistics:ups",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:white_dense_network_cable": {
+    "id": "encodedlogistics:white_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:white_network_cable",
+        "encodedlogistics:white_network_cable",
+        "encodedlogistics:white_network_cable",
+        "encodedlogistics:white_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:white_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:white_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:white_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:white_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:white_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:white_fiber_cable": {
+    "id": "encodedlogistics:white_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:white_dense_network_cable",
+        "encodedlogistics:white_dense_network_cable",
+        "encodedlogistics:white_dense_network_cable",
+        "encodedlogistics:white_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:white_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:white_fiber_cable_from_dye": {
+    "id": "encodedlogistics:white_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:white_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:white_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:white_network_cable_from_dye": {
+    "id": "encodedlogistics:white_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:white_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:white_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:wireless_bridge": {
+    "id": "encodedlogistics:wireless_bridge",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:radio_module",
+        "encodedlogistics:radio_module",
+        "encodedlogistics:optical_transceiver",
+        "encodedlogistics:processor_die",
+        "minecraft:iron_ingot",
+        "minecraft:iron_ingot"
+      ],
+      "result": {
+        "id": "encodedlogistics:wireless_bridge",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:wireless_controller": {
+    "id": "encodedlogistics:wireless_controller",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "misc",
+      "pattern": [
+        "RPR",
+        "AMH",
+        "OPO"
+      ],
+      "key": {
+        "R": "encodedlogistics:radio_module",
+        "P": "encodedlogistics:processor_die",
+        "A": "encodedlogistics:relay_antenna",
+        "M": "encodedlogistics:memory_die",
+        "H": "encodedlogistics:heatsink",
+        "O": "encodedlogistics:optical_transceiver"
+      },
+      "result": {
+        "id": "encodedlogistics:wireless_controller",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:wireless_egress_port": {
+    "id": "encodedlogistics:wireless_egress_port",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:egress_port",
+        "encodedlogistics:radio_module"
+      ],
+      "result": {
+        "id": "encodedlogistics:wireless_egress_port",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:wireless_ingress_port": {
+    "id": "encodedlogistics:wireless_ingress_port",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "misc",
+      "ingredients": [
+        "encodedlogistics:ingress_port",
+        "encodedlogistics:radio_module"
+      ],
+      "result": {
+        "id": "encodedlogistics:wireless_ingress_port",
+        "count": 1
+      }
+    }
+  },
+  "encodedlogistics:yellow_dense_network_cable": {
+    "id": "encodedlogistics:yellow_dense_network_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "dense_network_cable",
+      "ingredients": [
+        "encodedlogistics:yellow_network_cable",
+        "encodedlogistics:yellow_network_cable",
+        "encodedlogistics:yellow_network_cable",
+        "encodedlogistics:yellow_network_cable",
+        "minecraft:redstone"
+      ],
+      "result": {
+        "count": 1,
+        "id": "encodedlogistics:yellow_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:yellow_dense_network_cable_from_dye": {
+    "id": "encodedlogistics:yellow_dense_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "dense_network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:dense_network_cables",
+        "D": "minecraft:yellow_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:yellow_dense_network_cable"
+      }
+    }
+  },
+  "encodedlogistics:yellow_fiber_cable": {
+    "id": "encodedlogistics:yellow_fiber_cable",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shapeless",
+      "category": "redstone",
+      "group": "fiber_cable",
+      "ingredients": [
+        "encodedlogistics:yellow_dense_network_cable",
+        "encodedlogistics:yellow_dense_network_cable",
+        "encodedlogistics:yellow_dense_network_cable",
+        "encodedlogistics:yellow_dense_network_cable",
+        "encodedlogistics:fiberglass",
+        "encodedlogistics:gallium_ingot"
+      ],
+      "result": {
+        "count": 4,
+        "id": "encodedlogistics:yellow_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:yellow_fiber_cable_from_dye": {
+    "id": "encodedlogistics:yellow_fiber_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "fiber_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:fiber_cables",
+        "D": "minecraft:yellow_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:yellow_fiber_cable"
+      }
+    }
+  },
+  "encodedlogistics:yellow_network_cable_from_dye": {
+    "id": "encodedlogistics:yellow_network_cable_from_dye",
+    "loaded": true,
+    "data": {
+      "type": "minecraft:crafting_shaped",
+      "category": "redstone",
+      "group": "network_cable_dyeing",
+      "key": {
+        "C": "#encodedlogistics:network_cables",
+        "D": "minecraft:yellow_dye"
+      },
+      "pattern": [
+        "CCC",
+        "CDC",
+        "CCC"
+      ],
+      "result": {
+        "count": 8,
+        "id": "encodedlogistics:yellow_network_cable"
+      }
+    }
+  }
+}

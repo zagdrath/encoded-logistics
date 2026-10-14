@@ -1,0 +1,21 @@
+{
+  "encodedlogistics:facade_target": "The block a {{item cable_facade}} copies the look of. A facade without it is blank.",
+  "encodedlogistics:device_name": "The name ELCL and Work with Devices know a block device by (`CTLIF01`, `ELDESK01`, `PLC01`, `DSP01`, `LGT01` and so on), kept on the item when the block is broken so it comes back when placed again. Used by the Terminal Desk, Control Interface, PLC, Display Panel, Cage Lights, Alarm Strobes, Speaker, Directory Server, Exchange Switch, the optical blocks and the Midrange line.",
+  "encodedlogistics:plc_program": "A PLC program: its name, source, file formats, who loaded it and with what authority, when it was saved, and its retained variables. Carried by a broken {{item plc}} and a written {{item eeprom_cartridge}}.",
+  "encodedlogistics:drive_id": "The id an item, fluid or pressurized Storage Drive, an LTO tape or a {{item tape_reel}} is known by; its contents are saved with the world under this id, not on the item. Given the first time it's mounted.",
+  "encodedlogistics:drive_stats": "A drive's or tape's bytes used, total bytes and kinds stored, cached on the item for its tooltip, the drive holders' fill bars and its status light.",
+  "encodedlogistics:schematic": "An Encoded Schematic's contents: a crafting recipe ({{item encoded_schematic_crafting}}) or a machine's inputs and outputs ({{item encoded_schematic_processing}}), written by the {{item schematic_encoder}}.",
+  "encodedlogistics:punched_recipe": "The crafting recipe punched onto a {{item punch_card}} by the {{item keypunch}}. A blank card has none.",
+  "encodedlogistics:diskette_recipes": "What's written on an {{item diskette_8in}}: its label, up to eight recipes read in by the {{item card_reader}}, and ELCL libraries saved with {{cmd SAVLIB}}. A blank diskette has none.",
+  "encodedlogistics:printout": "A {{item printout}}'s pages and where they came from (the printer and when), from the {{item line_printer}}.",
+  "encodedlogistics:magazine_contents": "The 8\" Diskettes in a {{item diskette_magazine}} (up to four).",
+  "encodedlogistics:link_address": "What a written {{item link_card}} holds: a Network Bridge, Point-to-Point Link, segment, network, Wireless Controller or optical device (multiplexer or Transport Shelf), with its position and dimension.",
+  "encodedlogistics:handheld_network": "The network a {{item handheld_terminal}} is linked to.",
+  "encodedlogistics:handheld_link_state": "Whether a {{item handheld_terminal}} is unlinked, linked, or out of range of its network, for its icon. Kept up to date while it's in an inventory.",
+  "encodedlogistics:wireless_link": "The Wireless Controller a {{item handheld_terminal}} was linked to, through which it works anywhere.",
+  "encodedlogistics:energy": "The FE in a {{item handheld_terminal}}'s battery.",
+  "encodedlogistics:resource_entry": "A {{item resource_entry}}'s fluid or gas and its amount (in mB, or the gas's own unit).",
+  "encodedlogistics:drive_energy": "The FE in an Energy Storage Drive, kept on the item so the drive keeps its charge out of a drive holder and works as a battery.",
+  "encodedlogistics:rack_device_state": "A rack device's settings while it's out of a rack: its configuration, its lane priority if not the default, and its device name. Written when you take the device out, read back when you install it.",
+  "encodedlogistics:rack_template": "A {{item rack_elevation}}'s plan of a Server Rack: its name, the devices by unit, and (if those toggles are on) their contents and settings. A blank elevation has none."
+}

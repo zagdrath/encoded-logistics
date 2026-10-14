@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STRSRN - Encoded Logistics</title>
+<meta name="description" content="Start Siren">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">STRSRN</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>STRSRN</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: BUILD</span></p>
+<p class="lead">Start Siren</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>STRSRN DEV(*ALL | device name) [SOUND(*SAME | *WAIL | *YELP | *KLAXON | *BELL | *HORN | *BEEP | *NONE)] [MODE(*SAME | *SOLID | *SLOW | *MEDIUM | *FAST)]</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>DEV</code>, <code>SOUND</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>DEV</code></td><td>Alarm Strobe</td><td>Device name<br><span class="muted">a list of up to 32 values; prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td><code>*ALL</code></td></tr><tr><td><code>SOUND</code></td><td>Sound</td><td>Special value</td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*WAIL</code>, <code>*YELP</code>, <code>*KLAXON</code>, <code>*BELL</code>, <code>*HORN</code>, <code>*BEEP</code>, <code>*NONE</code></td></tr><tr><td><code>MODE</code></td><td>Light mode</td><td>Special value</td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*SOLID</code>, <code>*SLOW</code>, <code>*MEDIUM</code>, <code>*FAST</code></td></tr></tbody></table></div>
+<p><code>STRSRN</code> turns on the network's half of an Alarm Strobe's trigger: the lens lights in its light mode and its tone plays, looping, until <a class="cmd" href="ENDSRN.html"><code>ENDSRN</code></a> turns it off again.</p>
+<ul><li><code>SOUND</code> changes the strobe's tone, and it stays changed: the strobe's settings screen shows the new one. <code>*WAIL</code>, <code>*YELP</code>, <code>*KLAXON</code>, <code>*BELL</code>, <code>*HORN</code> and <code>*BEEP</code> are the six siren tones; <code>*NONE</code> makes it a silent, light-only beacon. <code>*SAME</code> (the default) keeps the tone it has.</li><li><code>MODE</code> changes its light mode the same way: <code>*SOLID</code>, or flashing <code>*SLOW</code>, <code>*MEDIUM</code> or <code>*FAST</code>. <code>*SAME</code> keeps it.</li><li>Starting a strobe that's already on doesn't restart its tone, unless <code>SOUND</code> gives it a different one.</li></ul>
+<p>Strobes on one network that sound the same tone count their samples from the same moment, so a strobe you start joins the others in step. Its volume and range are set on its settings screen (the range at most <a class="cfg" href="../../reference/config.html#cfg-signals-sirenMaxRange"><code>signals.sirenMaxRange</code></a> (default 96) blocks).</p>
+<p>A strobe's <strong>Trigger</strong> setting decides whether it listens to the network:</p>
+<div class="table-wrap"><table><thead><tr><th>Trigger</th><th><code>STRSRN</code> / <code>ENDSRN</code></th></tr></thead><tbody><tr><td>Both (the default)</td><td>Work; redstone at its block sets it off too</td></tr><tr><td>Network</td><td>Work; redstone is ignored</td></tr><tr><td>Redstone</td><td>Named in <code>DEV</code>, the command stops with <a class="msg" href="../messages.html#ELC2408"><code>ELC2408</code></a>; <code>DEV(*ALL)</code> leaves it out</td></tr></tbody></table></div>
+<p><code>DEV</code> takes up to 32 names, or <code>*ALL</code> for every online strobe on the network that takes network commands. Every named strobe is checked before any changes: not there (<a class="msg" href="../messages.html#ELC1301"><code>ELC1301</code></a>), offline (<a class="msg" href="../messages.html#ELC1302"><code>ELC1302</code></a>), not an Alarm Strobe (<a class="msg" href="../messages.html#ELC1303"><code>ELC1303</code></a>) or Redstone-triggered (<a class="msg" href="../messages.html#ELC2408"><code>ELC2408</code></a>). It sends no completion message.</p>
+<div class="code-block"><pre class="code elcl"><code>STRSRN DEV(SRN01 SRN02) SOUND(*KLAXON) MODE(*FAST)
+STRSRN DEV(*ALL) SOUND(*NONE) MODE(*SLOW)   <span class="c">/* every strobe, light only */</span></code></pre></div>
+<p>See <a href="../../control/lights-and-sirens.html#alarm-strobes">Alarm Strobes</a> for the tones and settings.</p>
+<h2 id="see-also">Cage Lights, Alarm Strobes and Speakers</h2><p><a class="cmd" href="CHGLGT.html"><code>CHGLGT</code></a> <a class="cmd" href="ENDSRN.html"><code>ENDSRN</code></a> <a class="cmd" href="PLYAUD.html"><code>PLYAUD</code></a> <a class="cmd" href="PLYNOTE.html"><code>PLYNOTE</code></a> <a class="cmd" href="PLYMID.html"><code>PLYMID</code></a> <a class="cmd" href="STPAUD.html"><code>STPAUD</code></a></p>
+<p><a href="index.html#signals">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

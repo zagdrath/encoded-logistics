@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The ELCL language - Encoded Logistics</title>
+<meta name="description" content="ELCL&#x27;s syntax, types, expressions, built-in functions, control flow, error handling and how programs run.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html" aria-current="page" class="current">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">The ELCL language</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="index.html">Terminal OS and ELCL</a></li><li><a href="using-the-terminal.html">Using the terminal</a></li><li><a href="screens.html">Screens</a></li><li><a href="libraries-and-editor.html">Libraries and the editor</a></li><li><a href="database-files.html">Database files</a></li><li><a href="language.html" aria-current="page" class="current">Language</a></li><li><a href="examples.html">Examples</a></li><li><a href="jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="control-and-plcs.html">Control and PLCs</a></li><li><a href="status-and-limits.html">Limits</a></li><li><a href="commands/index.html">Command reference</a></li><li><a href="messages.html">Message reference</a></li></ol></nav></details>
+<h1>The ELCL language</h1>
+<p class="lead">ELCL's syntax, types, expressions, built-in functions, control flow, error handling and how programs run.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#lexical">Lexical rules</a></li><li class="toc-l2"><a href="#structure">Program structure</a></li><li class="toc-l2"><a href="#grammar">Grammar</a></li><li class="toc-l2"><a href="#types">Variables and types</a></li><li class="toc-l2"><a href="#expressions">Expressions and operators</a></li><li class="toc-l2"><a href="#builtins">Built-in functions</a></li><li class="toc-l2"><a href="#control-flow">Control flow</a></li><li class="toc-l2"><a href="#subroutines">Subroutines</a></li><li class="toc-l2"><a href="#errors">MONMSG and error handling</a></li><li class="toc-l2"><a href="#calling">CALL and parameters</a></li><li class="toc-l2"><a href="#running">Running a program</a></li><li class="toc-l2"><a href="#return-params">RTN* return parameters</a></li><li class="toc-l2"><a href="#limits">Limits and runtime model</a></li></ol></nav></details>
+<div class="page-body">
+<p>ELCL (Encoded Logistics Control Language) is a small, sandboxed control language modelled on midrange control languages. A program is a list of commands with keyword parameters, between <code>PGM</code> and <code>ENDPGM</code>. You write it in a source member of type <code>ELCLP</code> in the <a href="libraries-and-editor.html#editor">source editor</a>, compile it with <a class="cmd" href="commands/CRTELPGM.html"><code>CRTELPGM</code></a> (or WRKMBR option 14), and run it with <a class="cmd" href="commands/CALL.html"><code>CALL</code></a>, <a class="cmd" href="commands/SBMJOB.html"><code>SBMJOB</code></a>, a schedule entry or a trigger.</p>
+<p>Every command a program can use has its own page in the <a href="commands/index.html">command reference</a>, with its parameters, their defaults and the values they take. This page is about the language around them. For whole programs, see <a href="examples.html">Worked examples</a>.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* HELLO - the smallest useful program */</span>
+PGM
+  DCL VAR(&amp;COUNT) TYPE(*INT)
+  RTVITMCNT ITEM(IRON_INGOT) RTNCOUNT(&amp;COUNT) NOTFND(*ZERO)
+  SNDPGMMSG MSG(<span class="s">&#x27;Iron ingots:&#x27;</span> *BCAT %CHAR(&amp;COUNT))
+ENDPGM</code></pre></div>
+<h2 id="lexical">Lexical rules<a class="anchor" href="#lexical" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>Case</strong>: ELCL doesn't care about case. Command names, keywords, variable names, labels, special values and built-in names are all folded to upper case. Text inside quotes keeps its case.</li><li><strong>Comments</strong>: <code>/* ... */</code>. A comment can span lines; comments don't nest.</li><li><strong>Statements and continuation</strong>: A statement ends at the end of its line, unless the line's last token is <code>+</code> or <code>-</code> (a comment after it is allowed): then the statement goes on with the next line. Inside a quoted string, <code>+</code> as the last character of a line carries the string on with the next line exactly as it is; <code>-</code> carries it on with the next line's leading blanks dropped.</li><li><strong>Labels</strong>: <code>NAME:</code> at the start of a statement, up to 10 characters (longer is <a class="msg" href="messages.html#ELC0001"><code>ELC0001</code></a>). A label can stand on a line of its own; it then belongs to the next statement.</li><li><strong>Names</strong>: Letters, digits, <code>_</code>, <code>@</code>, <code>#</code> and <code>$</code>, starting with a letter. Command names, labels and library, member and program names have up to 10 characters. A variable is <code>&amp;</code> and a name, up to 32 characters in all.</li><li><strong>Strings</strong>: Single quotes, with <code>''</code> for a quote inside: <code>'Can''t find item'</code>. A string must close on its line (or be continued with <code>+</code> or <code>-</code>).</li><li><strong>Numbers</strong>: <code>42</code>, <code>-7</code>, <code>3.25</code>. A <code>-</code> straight before a digit, after a blank or <code>(</code> (or at the start of a statement), is a negative number: <code>PARM(&amp;A -5)</code> is two values, while <code>&amp;A - 5</code> and <code>&amp;A-5</code> both subtract.</li><li><strong>Special values</strong>: <code>*</code> and a name: <code>*YES</code>, <code>*ALL</code>, <code>*HOT</code>. Which ones a parameter takes is part of the command (its page lists them). Inside a value, <code>*</code> straight before a letter is a special value or an operator word; <code>*</code> before a blank or a digit is multiplication. <code>*</code> followed by digits and a letter is one special value too, so the ranges <code>*1M</code>, <code>*10M</code>, <code>*1H</code> and <code>*1D</code> work while <code>&amp;X*10</code> still multiplies.</li><li><strong>Qualified names</strong>: <code>LIB/NAME</code> for programs, members and files, for example <code>ELSYS/RESTOCK</code>. With no library (or <code>*LIBL</code>) the user's library list is searched.</li><li><strong>Item IDs</strong>: Quoted or not: <code>IRON_INGOT</code>, <code>minecraft:iron_ingot</code>, <code>'encodedlogistics:logic_die'</code>. An ID without a namespace is looked for in <code>minecraft:</code> first, then <code>encodedlogistics:</code>, then any mod that has it; if more than one mod does, it is <a class="msg" href="messages.html#ELC1205"><code>ELC1205</code></a>. Tags in filters start with <code>#</code>: <code>'#c:ingots'</code>. Commands that return items (such as <a class="cmd" href="commands/RTVITMLST.html"><code>RTVITMLST</code></a>) give a <code>minecraft:</code> item as its path in upper case (<code>IRON_INGOT</code>) and any other in full (<code>encodedlogistics:logic_die</code>).</li><li><strong>Keyword and positional parameters</strong>: A keyword is a name followed directly by <code>(</code>, with no blank: <code>LIB(ZAGLIB)</code>. Values without keywords go to the command's positional parameters in order, and only before the first keyword. The command pages list how many positional parameters each command has.</li><li><strong>Lists of values</strong>: A parameter that takes several values takes them separated by blanks: <code>DEV(LGT01 LGT02)</code>. Values that belong together can be grouped in brackets, as <a class="cmd" href="commands/PLYMID.html"><code>PLYMID</code></a>'s <code>MAP((1 SPK01) (10 SPK04))</code> does; the groups are read as if the brackets weren't there.</li><li><strong>Characters you can type</strong>: The terminal only takes printable ASCII, so the <code>¬</code> operator can't be typed in the editor; use <code>*NOT</code> (and <code>*NE</code> or <code>&lt;&gt;</code> for not-equal).</li></ul>
+<p>These two statements are the same command, written with keywords and positionally:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;L) TYPE(*INT)
+RTVRSIN DEV(CTLIF01) SIDE(*NORTH) RTNLVL(&amp;L)
+RTVRSIN CTLIF01 *NORTH RTNLVL(&amp;L)   <span class="c">/* positional values first, then keywords */</span></code></pre></div>
+<p>A long statement continued over lines, and a string continued with <code>-</code> (the second line's indent isn't part of it):</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;MSG) TYPE(*CHAR) LEN(80)
+CHGVAR VAR(&amp;MSG) +
+       VALUE(<span class="s">&#x27;Storage is nearly full: move items to tape -
+              or add a drive.&#x27;</span>)
+SNDMSG MSG(&amp;MSG) TOUSR(*SYSOPR)</code></pre></div>
+<h2 id="structure">Program structure<a class="anchor" href="#structure" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>PGM PARM(&amp;ITEM &amp;MIN)            <span class="c">/* the parameter list is optional   */</span>
+  DCL VAR(&amp;ITEM)  TYPE(*CHAR) LEN(64)
+  DCL VAR(&amp;MIN)   TYPE(*INT)
+  DCL VAR(&amp;COUNT) TYPE(*INT)    <span class="c">/* declarations come first          */</span>
+  MONMSG MSGID(ELC1201) EXEC(GOTO CMDLBL(NOITEM))  <span class="c">/* program-level */</span>
+
+  RTVITMCNT ITEM(&amp;ITEM) RTNCOUNT(&amp;COUNT)
+  IF COND(&amp;COUNT *LT &amp;MIN) THEN(SNDMSG MSG(<span class="s">&#x27;Low:&#x27;</span> *BCAT &amp;ITEM) TOUSR(*SYSOPR))
+  RETURN
+
+NOITEM:
+  SNDMSG MSG(<span class="s">&#x27;Item not found:&#x27;</span> *BCAT &amp;ITEM) TOUSR(*REQUESTER)
+ENDPGM</code></pre></div>
+<ul><li>Every program starts with <code>PGM</code> and ends with <code>ENDPGM</code>. Anything after <code>ENDPGM</code> is <a class="msg" href="messages.html#ELC0001"><code>ELC0001</code></a>.</li><li><code>DCL</code> (and <a class="cmd" href="commands/DCLF.html"><code>DCLF</code></a> for <a href="database-files.html">database files</a>) come before any other command (<a class="msg" href="messages.html#ELC0016"><code>ELC0016</code></a> otherwise). The parameters named on <code>PGM PARM()</code> must be declared too.</li><li>Program-level <code>MONMSG</code>s come straight after the declarations.</li><li>Subroutines (<code>SUBR</code> ... <code>ENDSUBR</code>) go after the main body, before <code>ENDPGM</code>; nothing else may follow them.</li><li>Source members have type <code>ELCLP</code> and compile to a <code>*PGM</code>.</li></ul>
+<h2 id="grammar">Grammar<a class="anchor" href="#grammar" aria-label="Link to this section">#</a></h2>
+<p>In EBNF:</p>
+<pre class="code"><code>program     = &quot;PGM&quot; [ &quot;PARM&quot; &quot;(&quot; { variable } &quot;)&quot; ] NL
+              { declaration NL }
+              { monmsg NL }
+              { statement NL }
+              [ { subroutine NL } ]
+              &quot;ENDPGM&quot; ;
+
+declaration = &quot;DCL&quot; &quot;VAR&quot; &quot;(&quot; variable &quot;)&quot; &quot;TYPE&quot; &quot;(&quot; type &quot;)&quot;
+              [ &quot;LEN&quot; &quot;(&quot; integer [ integer ] &quot;)&quot; ]
+              [ &quot;VALUE&quot; &quot;(&quot; value &quot;)&quot; ]
+              [ &quot;RETAIN&quot; &quot;(&quot; ( &quot;*YES&quot; | &quot;*NO&quot; ) &quot;)&quot; ]      (* PLC programs *)
+            | &quot;DCLF&quot; &quot;FILE&quot; &quot;(&quot; qualified &quot;)&quot; [ &quot;OPNID&quot; &quot;(&quot; name &quot;)&quot; ] ;
+
+type        = &quot;*CHAR&quot; | &quot;*INT&quot; | &quot;*DEC&quot; | &quot;*LGL&quot; | &quot;*LIST&quot; ;
+
+statement   = [ label &quot;:&quot; ] command [ NL monmsg { NL monmsg } ] ;
+
+command     = name { parameter } ;
+parameter   = keyword &quot;(&quot; value { value } &quot;)&quot;   (* keyword form    *)
+            | value ;                           (* positional form *)
+
+value       = expression
+            | special
+            | qualified
+            | &quot;(&quot; value { value } &quot;)&quot;           (* a group in a list parameter *)
+            | command ;                         (* nested command, inside the parameter&#x27;s
+                                                   own brackets: THEN, EXEC, CMD *)
+
+expression  = orExpr ;
+orExpr      = andExpr { (&quot;*OR&quot; | &quot;|&quot;) andExpr } ;
+andExpr     = notExpr { (&quot;*AND&quot; | &quot;&amp;&quot;) notExpr } ;
+notExpr     = ( &quot;*NOT&quot; | &quot;¬&quot; ) notExpr | relExpr ;
+relExpr     = catExpr [ relop catExpr ] ;
+relop       = &quot;*EQ&quot; | &quot;=&quot; | &quot;*NE&quot; | &quot;&lt;&gt;&quot; | &quot;¬=&quot; | &quot;*GT&quot; | &quot;&gt;&quot; | &quot;*LT&quot; | &quot;&lt;&quot;
+            | &quot;*GE&quot; | &quot;&gt;=&quot; | &quot;*NL&quot; | &quot;*LE&quot; | &quot;&lt;=&quot; | &quot;*NG&quot; ;
+catExpr     = addExpr { (&quot;*CAT&quot; | &quot;||&quot; | &quot;*BCAT&quot; | &quot;|&gt;&quot; | &quot;*TCAT&quot; | &quot;|&lt;&quot;) addExpr } ;
+addExpr     = mulExpr { (&quot;+&quot; | &quot;-&quot;) mulExpr } ;
+mulExpr     = unary { (&quot;*&quot; | &quot;/&quot; | &quot;//&quot;) unary } ;   (* // = integer remainder *)
+unary       = [ &quot;-&quot; ] primary ;
+primary     = literal | variable | builtin | &quot;(&quot; expression &quot;)&quot; ;
+builtin     = &quot;%&quot; name &quot;(&quot; [ expression { expression } ] &quot;)&quot; ;</code></pre>
+<ul><li>Whether a parameter takes an expression, a special value, a qualified name or a nested command is part of the command. The parser gives positional values to the command's positional parameters in order.</li><li>A nested command goes inside the parameter's own brackets: <code>THEN(CHGVAR &amp;Y 1)</code>, <code>EXEC(GOTO CMDLBL(DONE))</code>, <code>CMD(CALL PGM(ELSYS/RESTOCK))</code>. These can't be nested: <code>PGM</code>, <code>ENDPGM</code>, <code>DCL</code>, <code>DCLF</code>, <code>ENDDO</code>, <code>ENDFOR</code>, <code>SELECT</code>, <code>ENDSELECT</code>, <code>SUBR</code>, <code>ENDSUBR</code>, <code>ELSE</code>, <code>WHEN</code>, <code>OTHERWISE</code>, <code>MONMSG</code> (<a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a>).</li><li>The command that <a class="cmd" href="commands/SBMJOB.html"><code>SBMJOB</code></a> or <a class="cmd" href="commands/ADDJOBSCDE.html"><code>ADDJOBSCDE</code></a> runs (<code>CMD()</code>) runs on its own, so it can't be a statement that only works inside a program, such as <code>CHGVAR</code>. Any variables in it are replaced by their values when the job is submitted.</li><li>The compiler reports each statement's first problem and skips the rest of that statement: <a class="msg" href="messages.html#ELC0001"><code>ELC0001</code></a> (syntax), <a class="msg" href="messages.html#ELC0101"><code>ELC0101</code></a> (unknown command), <a class="msg" href="messages.html#ELC0104"><code>ELC0104</code></a> (a keyword given twice), then checks the rest of the program. Messages of severity 20 or more mean no program is made; a warning (severity 10, such as <a class="msg" href="messages.html#ELC0008"><code>ELC0008</code></a>) doesn't stop it.</li></ul>
+<h2 id="types">Variables and types<a class="anchor" href="#types" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;NAME)  TYPE(*CHAR) LEN(64) VALUE(<span class="s">&#x27;none&#x27;</span>)
+DCL VAR(&amp;COUNT) TYPE(*INT)  VALUE(0)
+DCL VAR(&amp;PCT)   TYPE(*DEC)  LEN(5 1)
+DCL VAR(&amp;DONE)  TYPE(*LGL)  VALUE(<span class="s">&#x27;0&#x27;</span>)
+DCL VAR(&amp;ITEMS) TYPE(*LIST)</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Holds</th><th>Notes</th></tr></thead><tbody><tr><td><code>*CHAR</code></td><td>Fixed-length text</td><td><code>LEN(n)</code>, 1 to 1,024, default 32. A value is padded with blanks or cut to the length. A literal that is too long is a compile warning (<a class="msg" href="messages.html#ELC0008"><code>ELC0008</code></a>); at run time cutting is never an error.</td></tr><tr><td><code>*INT</code></td><td>A 64-bit whole number</td><td>Item counts can be large (tapes hold billions). Past 64 bits is <a class="msg" href="messages.html#ELC0007"><code>ELC0007</code></a>.</td></tr><tr><td><code>*DEC</code></td><td>A fixed-point decimal</td><td><code>LEN(digits decimals)</code>, digits 1 to 31; with no <code>LEN</code> it is <code>LEN(15 5)</code>, and <code>LEN(7)</code> alone has no decimals. Values round half up to the decimals when assigned; too many digits is <a class="msg" href="messages.html#ELC0007"><code>ELC0007</code></a>.</td></tr><tr><td><code>*LGL</code></td><td>A logical</td><td><code>'1'</code> or <code>'0'</code>; <code>*TRUE</code> and <code>*FALSE</code> work too.</td></tr><tr><td><code>*LIST</code></td><td>An ordered list of strings</td><td>Grows as needed up to <a class="cfg" href="../reference/config.html#cfg-elcl-maxListSize"><code>elcl.maxListSize</code></a> (default 4096) elements (<a class="msg" href="messages.html#ELC0015"><code>ELC0015</code></a>). Changed with <a class="cmd" href="commands/ADDLSTE.html"><code>ADDLSTE</code></a>, <a class="cmd" href="commands/RMVLSTE.html"><code>RMVLSTE</code></a> and <a class="cmd" href="commands/CLRLST.html"><code>CLRLST</code></a>; read with <code>%SIZE</code>, <code>%ELEM</code> and <code>FOREACH</code>; filled by commands that return lists (<code>RTNLST</code>). A list can't have a <code>VALUE</code> or be assigned with <code>CHGVAR</code>.</td></tr></tbody></table></div>
+<p>A variable starts blank (<code>*CHAR</code>), zero (<code>*INT</code>, <code>*DEC</code>), <code>'0'</code> (<code>*LGL</code>) or empty (<code>*LIST</code>) unless its <code>DCL</code> gives a <code>VALUE</code>.</p>
+<p>Conversions:</p>
+<ul><li><code>*INT</code> and <code>*DEC</code> convert to each other by themselves (a <code>*DEC</code> going into an <code>*INT</code> loses its decimals).</li><li>A number becomes text only through <code>%CHAR</code>, a literal number too: <code>CHGVAR VAR(&amp;TEXT) VALUE(%CHAR(&amp;COUNT))</code>. (A parameter that takes text, such as <code>SNDMSG MSG(500)</code>, takes a literal number as it is.)</li><li>Text becomes a number only through <code>%INT</code> or <code>%DEC</code>: <code>CHGVAR VAR(&amp;COUNT) VALUE(%INT(&amp;TEXT))</code>. Assigning text to a numeric variable directly is <a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a> when it compiles, and text that isn't a number is <a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a> when <code>%INT</code> or <code>%DEC</code> runs.</li><li>Comparing text ignores trailing blanks.</li></ul>
+<p>Assign with <a class="cmd" href="commands/CHGVAR.html"><code>CHGVAR</code></a>, by keyword or positionally:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;X) TYPE(*INT)
+DCL VAR(&amp;TEXT) TYPE(*CHAR) LEN(20)
+CHGVAR VAR(&amp;X) VALUE(&amp;X + 1)
+CHGVAR &amp;X 10
+CHGVAR VAR(&amp;TEXT) VALUE(<span class="s">&#x27;X is&#x27;</span> *BCAT %CHAR(&amp;X))
+CHGVAR VAR(&amp;X) VALUE(%INT(<span class="s">&#x27;42&#x27;</span>) * 2)      <span class="c">/* text into a number goes through %INT */</span></code></pre></div>
+<h2 id="expressions">Expressions and operators<a class="anchor" href="#expressions" aria-label="Link to this section">#</a></h2>
+<p>Precedence, highest first: unary minus; <code>* / //</code>; <code>+ -</code>; <code>*CAT *BCAT *TCAT</code>; the relational operators; <code>*NOT</code>; <code>*AND</code>; <code>*OR</code>. Use brackets when in doubt.</p>
+<div class="table-wrap"><table><thead><tr><th>Word</th><th>Symbol</th><th>Meaning</th></tr></thead><tbody><tr><td></td><td><code>+ - * /</code></td><td>Arithmetic. <code>*INT / *INT</code> gives a whole number, cut towards zero; a <code>*DEC</code> on either side gives a <code>*DEC</code>. Dividing by zero is <a class="msg" href="messages.html#ELC0005"><code>ELC0005</code></a>.</td></tr><tr><td></td><td><code>//</code></td><td>Remainder of whole numbers: <code>17 // 5</code> is 2.</td></tr><tr><td><code>*CAT</code></td><td><code>||</code></td><td>Join as it is (trailing blanks kept).</td></tr><tr><td><code>*BCAT</code></td><td><code>|&gt;</code></td><td>Trim trailing blanks from the left side, add one blank, join.</td></tr><tr><td><code>*TCAT</code></td><td><code>|&lt;</code></td><td>Trim trailing blanks from the left side, join.</td></tr><tr><td><code>*EQ</code></td><td><code>=</code></td><td>Equal</td></tr><tr><td><code>*NE</code></td><td><code>&lt;&gt;</code> (also <code>¬=</code>)</td><td>Not equal</td></tr><tr><td><code>*GT</code></td><td><code>&gt;</code></td><td>Greater than</td></tr><tr><td><code>*LT</code></td><td><code>&lt;</code></td><td>Less than</td></tr><tr><td><code>*GE</code>, <code>*NL</code></td><td><code>&gt;=</code></td><td>Greater than or equal (not less)</td></tr><tr><td><code>*LE</code>, <code>*NG</code></td><td><code>&lt;=</code></td><td>Less than or equal (not greater)</td></tr><tr><td><code>*NOT</code></td><td><code>¬</code></td><td>Logical not</td></tr><tr><td><code>*AND</code></td><td><code>&amp;</code></td><td>Logical and (the <code>&amp;</code> needs a blank after it, or it starts a variable name)</td></tr><tr><td><code>*OR</code></td><td><code>|</code></td><td>Logical or</td></tr></tbody></table></div>
+<p>Relational operators compare numbers with numbers and text with text; a logical compares with a logical or with <code>'1'</code> / <code>'0'</code>. Mixing them (a number with text) is <a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a> when the compiler can see it. Joining a numeric or logical variable to text is <a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a> too: put it through <code>%CHAR</code> first.</p>
+<p>A <code>COND()</code> is a logical expression:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;COUNT) TYPE(*INT)
+DCL VAR(&amp;MIN)   TYPE(*INT) VALUE(64)
+DCL VAR(&amp;DONE)  TYPE(*LGL)
+DCL VAR(&amp;TYPE)  TYPE(*CHAR) LEN(10)
+IF COND(&amp;COUNT *LT &amp;MIN) THEN(CHGVAR &amp;DONE <span class="s">&#x27;1&#x27;</span>)
+IF COND(&amp;DONE) THEN(RETURN)
+IF COND(*NOT &amp;DONE *AND (&amp;TYPE *EQ <span class="s">&#x27;NAS&#x27;</span> *OR &amp;TYPE *EQ <span class="s">&#x27;SAN&#x27;</span>)) THEN(RETURN)
+IF COND(&amp;COUNT // 2 = 0) THEN(SNDPGMMSG MSG(<span class="s">&#x27;Even&#x27;</span>))</code></pre></div>
+<h2 id="builtins">Built-in functions<a class="anchor" href="#builtins" aria-label="Link to this section">#</a></h2>
+<p>Built-in functions start with <code>%</code>. Their arguments are separated by blanks, as everywhere in ELCL: <code>%SST(&amp;S 1 3)</code>. An argument can be any expression.</p>
+<div class="table-wrap"><table><thead><tr><th>Function</th><th>Arguments</th><th>Gives</th><th>What it does</th></tr></thead><tbody><tr><td><code>%ABS</code></td><td>1</td><td>as its arguments</td><td>The absolute value of a number: <code>%ABS(&amp;DIFF)</code>. An <code>*INT</code> stays <code>*INT</code>, a <code>*DEC</code> stays <code>*DEC</code>.</td></tr><tr><td><code>%CHAR</code></td><td>1</td><td>*CHAR</td><td>A number as text, with no padding: <code>%CHAR(&amp;COUNT)</code> gives <code>42</code>, a <code>*DEC</code> keeps its decimals (<code>12.50</code>). This is the only way to put a number into a <code>*CHAR</code> or join it to text.</td></tr><tr><td><code>%DEC</code></td><td>1 to 3</td><td>*DEC</td><td>A value as a <code>*DEC</code>: <code>%DEC(&amp;TEXT)</code>, or <code>%DEC(&amp;X 7 2)</code> for 7 digits with 2 decimals (half-up). With no length it is <code>LEN(15 5)</code>; a length alone has no decimals. Text that isn't a number is <a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a>; too many digits <a class="msg" href="messages.html#ELC0007"><code>ELC0007</code></a>.</td></tr><tr><td><code>%ELEM</code></td><td>2</td><td>*CHAR</td><td>Element <em>n</em> of a <code>*LIST</code>, counting from 1: <code>%ELEM(&amp;DEVS 3)</code>. Outside 1 to the list's size is <a class="msg" href="messages.html#ELC0006"><code>ELC0006</code></a>.</td></tr><tr><td><code>%INT</code></td><td>1</td><td>*INT</td><td>A value as an <code>*INT</code>, decimals dropped (towards zero): <code>%INT('500')</code>, <code>%INT(&amp;PCT)</code>. Text that isn't a number is <a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a>.</td></tr><tr><td><code>%LEN</code></td><td>1</td><td>*INT</td><td>The length of a string without its trailing blanks: a <code>*CHAR LEN(32)</code> holding <code>IRON</code> gives 4.</td></tr><tr><td><code>%LOWER</code></td><td>1</td><td>*CHAR</td><td>The string in lower case.</td></tr><tr><td><code>%MAX</code></td><td>2</td><td>as its arguments</td><td>The larger of two numbers: <code>%MAX(&amp;A 0)</code>.</td></tr><tr><td><code>%MIN</code></td><td>2</td><td>as its arguments</td><td>The smaller of two numbers: <code>%MIN(&amp;WANT 64)</code>.</td></tr><tr><td><code>%NAME</code></td><td>1</td><td>*CHAR</td><td>The display name of an item ID (<code>%NAME('LOGIC_DIE')</code> gives <code>Logic Die</code>), or the ID itself when there's no such item. Worked out on the server: see <a href="status-and-limits.html#known-limits">the limits</a>.</td></tr><tr><td><code>%SCAN</code></td><td>2 to 3</td><td>*INT</td><td>Where one string first appears in another, counting from 1, or 0 if it doesn't: <code>%SCAN('ORE' &amp;ITEM)</code>. A third argument starts the search there: <code>%SCAN(' ' &amp;DATA 7)</code>. The search string's trailing blanks are ignored.</td></tr><tr><td><code>%SIZE</code></td><td>1</td><td>*INT</td><td>The number of elements in a <code>*LIST</code> (0 for an empty one).</td></tr><tr><td><code>%SST</code></td><td>3</td><td>*CHAR</td><td>A substring: <code>%SST(&amp;S start length)</code>, counting from 1. <code>%SST(&amp;DATA 1 5)</code> is the first five characters. Past the end of the string is <a class="msg" href="messages.html#ELC0004"><code>ELC0004</code></a>.</td></tr><tr><td><code>%TRIM</code></td><td>1</td><td>*CHAR</td><td>The string with leading and trailing blanks removed.</td></tr><tr><td><code>%TRIML</code></td><td>1</td><td>*CHAR</td><td>The string with leading blanks removed.</td></tr><tr><td><code>%TRIMR</code></td><td>1</td><td>*CHAR</td><td>The string with trailing blanks removed.</td></tr><tr><td><code>%UPPER</code></td><td>1</td><td>*CHAR</td><td>The string in upper case.</td></tr></tbody></table></div>
+<p>An unknown built-in, or one with the wrong number of arguments, is <a class="msg" href="messages.html#ELC0001"><code>ELC0001</code></a>. On a command line, where there are no variables, the text and number built-ins work, but <code>%SIZE</code>, <code>%ELEM</code> and <code>%NAME</code> don't (<a class="msg" href="messages.html#ELC0001"><code>ELC0001</code></a>).</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;DATA) TYPE(*CHAR) LEN(256) VALUE(<span class="s">&#x27;RTR01 NOFUEL 10 COAL&#x27;</span>)
+DCL VAR(&amp;DEV)  TYPE(*CHAR) LEN(10)
+DCL VAR(&amp;REST) TYPE(*CHAR) LEN(256)
+DCL VAR(&amp;AT)   TYPE(*INT)
+CHGVAR VAR(&amp;AT)   VALUE(%SCAN(<span class="s">&#x27; &#x27;</span> &amp;DATA))               <span class="c">/* 6 */</span>
+CHGVAR VAR(&amp;DEV)  VALUE(%SST(&amp;DATA 1 &amp;AT - 1))           <span class="c">/* RTR01 */</span>
+CHGVAR VAR(&amp;REST) VALUE(%TRIM(%SST(&amp;DATA &amp;AT %LEN(&amp;DATA) - &amp;AT + 1)))
+SNDPGMMSG MSG(%UPPER(%NAME(<span class="s">&#x27;minecraft:coal&#x27;</span>)) *BCAT <span class="s">&#x27;denied on&#x27;</span> *BCAT &amp;DEV)</code></pre></div>
+<h2 id="control-flow">Control flow<a class="anchor" href="#control-flow" aria-label="Link to this section">#</a></h2>
+<p><code>IF</code> runs one command, or a <code>DO</code> group, when its condition holds; <code>ELSE</code> straight after it runs one otherwise:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;A) TYPE(*INT)
+DCL VAR(&amp;Y) TYPE(*INT)
+IF COND(&amp;A *GT 10) THEN(DO)
+  CHGVAR VAR(&amp;Y) VALUE(1)
+  SNDPGMMSG MSG(<span class="s">&#x27;Big&#x27;</span>)
+ENDDO
+ELSE CMD(DO)
+  CHGVAR VAR(&amp;Y) VALUE(2)
+ENDDO
+
+IF COND(&amp;A *EQ 0) THEN(CHGVAR &amp;Y 1)
+ELSE CMD(CHGVAR &amp;Y 2)</code></pre></div>
+<p>Loops:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;I)    TYPE(*INT)
+DCL VAR(&amp;DONE) TYPE(*LGL)
+DCL VAR(&amp;E)    TYPE(*CHAR) LEN(64)
+DCL VAR(&amp;LIST) TYPE(*LIST)
+
+DOWHILE COND(&amp;I *LT 10)          <span class="c">/* while it holds; maybe never       */</span>
+  CHGVAR &amp;I (&amp;I + 1)
+ENDDO
+
+DOUNTIL COND(&amp;DONE)              <span class="c">/* the body runs at least once       */</span>
+  CHGVAR &amp;DONE <span class="s">&#x27;1&#x27;</span>
+ENDDO
+
+DOFOR VAR(&amp;I) FROM(10) TO(1) BY(-1)
+  IF COND(&amp;I *EQ 5) THEN(ITERATE)       <span class="c">/* on to the next pass        */</span>
+  ADDLSTE LIST(&amp;LIST) VALUE(%CHAR(&amp;I))
+ENDDO
+
+FOREACH VAR(&amp;E) IN(&amp;LIST)        <span class="c">/* each element in turn              */</span>
+  IF COND(&amp;E *EQ <span class="s">&#x27;3&#x27;</span>) THEN(LEAVE)       <span class="c">/* out of the loop            */</span>
+ENDFOR</code></pre></div>
+<p><code>SELECT</code> picks the first <code>WHEN</code> that holds, or the <code>OTHERWISE</code>:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;T) TYPE(*CHAR) LEN(16) VALUE(<span class="s">&#x27;SAN&#x27;</span>)
+SELECT
+  WHEN COND(&amp;T *EQ <span class="s">&#x27;NAS&#x27;</span>) THEN(SNDPGMMSG MSG(<span class="s">&#x27;A NAS&#x27;</span>))
+  WHEN COND(&amp;T *EQ <span class="s">&#x27;SAN&#x27;</span>) THEN(DO)
+    SNDPGMMSG MSG(<span class="s">&#x27;A SAN&#x27;</span>)
+  ENDDO
+  OTHERWISE CMD(SNDPGMMSG MSG(<span class="s">&#x27;Something else&#x27;</span>))
+ENDSELECT</code></pre></div>
+<p><code>GOTO</code> jumps to a label, and <code>RETURN</code> ends the program (back to its caller):</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;N) TYPE(*INT)
+AGAIN:
+  CHGVAR &amp;N (&amp;N + 1)
+  IF COND(&amp;N *LT 3) THEN(GOTO CMDLBL(AGAIN))
+  RETURN</code></pre></div>
+<p>The rules:</p>
+<ul><li><code>ELSE</code> must follow straight after its <code>IF</code> (or that <code>IF</code>'s <code>ENDDO</code>); anywhere else it is <a class="msg" href="messages.html#ELC0009"><code>ELC0009</code></a>.</li><li><code>THEN(DO)</code>, <code>CMD(DO)</code> and <code>EXEC(DO)</code> open a <code>DO</code> group, closed by <code>ENDDO</code>. <code>DO</code>, <code>DOWHILE</code>, <code>DOUNTIL</code> and <code>DOFOR</code> close with <code>ENDDO</code>, <code>FOREACH</code> with <code>ENDFOR</code>, <code>SELECT</code> with <code>ENDSELECT</code>. A block left open, or a closer with no opener, is <a class="msg" href="messages.html#ELC0009"><code>ELC0009</code></a>.</li><li><code>DOFOR</code>: <code>VAR</code> is an <code>*INT</code> variable; <code>FROM</code> and <code>TO</code> are needed, <code>BY</code> is 1 unless given and can be negative; <code>BY(0)</code> is <a class="msg" href="messages.html#ELC0004"><code>ELC0004</code></a>. The loop ends when the variable passes <code>TO</code>.</li><li><code>FOREACH</code>: <code>VAR</code> is a <code>*CHAR</code> variable, <code>IN</code> a <code>*LIST</code>.</li><li><code>LEAVE</code> and <code>ITERATE</code> must be inside a loop (<a class="msg" href="messages.html#ELC0009"><code>ELC0009</code></a> otherwise). They act on the innermost loop; give <code>CMDLBL</code> the label of an enclosing loop to leave or continue that one instead: <code>OUTER: DOFOR VAR(&amp;I) FROM(1) TO(9)</code> ... <code>LEAVE CMDLBL(OUTER)</code>. A label that isn't an enclosing loop is <a class="msg" href="messages.html#ELC0010"><code>ELC0010</code></a>. A subroutine can't leave a loop of the main body.</li><li><code>WHEN</code> and <code>OTHERWISE</code> must be inside a <code>SELECT</code>, and only they may be: a <code>SELECT</code> holds <code>WHEN</code>s, then at most one <code>OTHERWISE</code>.</li><li>A <code>GOTO</code>'s label must exist (<a class="msg" href="messages.html#ELC0010"><code>ELC0010</code></a>) and must not be inside a loop or <code>DO</code> group the <code>GOTO</code> is outside of (<a class="msg" href="messages.html#ELC0014"><code>ELC0014</code></a>). Jumping out of a block is fine.</li></ul>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;I) TYPE(*INT)
+DCL VAR(&amp;J) TYPE(*INT)
+OUTER: DOFOR VAR(&amp;I) FROM(1) TO(9)
+  DOFOR VAR(&amp;J) FROM(1) TO(9)
+    IF COND(&amp;I * &amp;J *GT 20) THEN(LEAVE CMDLBL(OUTER))
+    IF COND(&amp;J *GT &amp;I) THEN(ITERATE CMDLBL(OUTER))
+  ENDDO
+ENDDO</code></pre></div>
+<h2 id="subroutines">Subroutines<a class="anchor" href="#subroutines" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>PGM
+  DCL VAR(&amp;RC)  TYPE(*INT)
+  DCL VAR(&amp;MSG) TYPE(*CHAR) LEN(64)
+
+  CHGVAR VAR(&amp;MSG) VALUE(<span class="s">&#x27;First&#x27;</span>)
+  CALLSUBR SUBR(REPORT) RTNVAL(&amp;RC)
+  CHGVAR VAR(&amp;MSG) VALUE(<span class="s">&#x27;Second&#x27;</span>)
+  CALLSUBR SUBR(REPORT)
+
+  SUBR SUBR(REPORT)
+    PRTTXT TEXT(&amp;MSG)
+  ENDSUBR RTNVAL(0)
+ENDPGM</code></pre></div>
+<ul><li><code>SUBR</code> blocks go after the main body, before <code>ENDPGM</code>. Two with the same name are <a class="msg" href="messages.html#ELC0103"><code>ELC0103</code></a>.</li><li>Subroutines share the program's variables. One can call another, up to 16 deep (<a class="msg" href="messages.html#ELC0011"><code>ELC0011</code></a>).</li><li><code>ENDSUBR RTNVAL()</code> takes a whole number or an expression (0 unless given); <code>CALLSUBR RTNVAL()</code> names an <code>*INT</code> variable that receives it.</li><li>A <code>CALLSUBR</code> to a subroutine that doesn't exist is <a class="msg" href="messages.html#ELC0010"><code>ELC0010</code></a>.</li><li>The main body ends where the first <code>SUBR</code> begins: the program ends there as if it reached a <code>RETURN</code>, so it never runs on into a subroutine.</li></ul>
+<h2 id="errors">MONMSG and error handling<a class="anchor" href="#errors" aria-label="Link to this section">#</a></h2>
+<p>Every command that fails raises an <em>escape message</em>, with an ID from the <a href="messages.html">message reference</a> (<code>ELCnnnn</code>) and its message data. <a class="cmd" href="commands/MONMSG.html"><code>MONMSG</code></a> catches them.</p>
+<ul><li><strong>Command level</strong>: A <code>MONMSG</code> straight after a command applies to that command only. Several can follow one command, also after another <code>MONMSG</code>'s <code>EXEC(DO)</code> ... <code>ENDDO</code>.</li><li><strong>Program level</strong>: <code>MONMSG</code>s straight after the declarations apply to every command in the program. A <code>MONMSG</code> anywhere else that doesn't follow a command is <a class="msg" href="messages.html#ELC0009"><code>ELC0009</code></a>.</li><li><strong><code>MONMSG MSGID(id ...) [CMPDTA('text')] [EXEC(command)]</code></strong>: Up to 50 IDs. An ID ending in <code>00</code> catches its whole range: <code>ELC1200</code> catches <code>ELC1201</code> to <code>ELC1299</code>, and <code>ELC0000</code> catches everything. With no <code>EXEC</code>, the program carries on with the next command. <code>EXEC</code> can be <code>GOTO</code>, <code>DO</code> ... <code>ENDDO</code>, <code>RETURN</code>, <code>LEAVE</code>, <code>ITERATE</code> or any single command. The command-level monitors are tried first (the innermost), then the program-level ones.</li><li><strong><a class="cmd" href="commands/RCVMSG.html"><code>RCVMSG</code></a></strong>: <code>RCVMSG MSGTYPE(*EXCP) RTNMSGID(&amp;ID) RTNMSG(&amp;TEXT) RTNMSGDTA(&amp;DATA)</code> reads the last escape message caught; <code>MSGTYPE(*LAST)</code> reads the last message of any kind.</li><li><strong><a class="cmd" href="commands/SNDPGMMSG.html"><code>SNDPGMMSG</code></a></strong>: <code>SNDPGMMSG MSG('text') MSGTYPE(*ESCAPE)</code> raises an escape message of your own, ID <code>USR0001</code>, or the one you give with <code>MSGID(USRnnnn)</code> (three letters and four digits). Without <code>MSGTYPE(*ESCAPE)</code> it is an informational message to the job log (and, at a terminal, Command Entry).</li></ul>
+<p>An escape message nothing catches ends the program: the message goes to the job log and to the job user's message queue, and an interactive job shows it on the message line. A program that called this one gets <a class="msg" href="messages.html#ELC0013"><code>ELC0013</code></a> (called program ended abnormally), which it can catch in turn.</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;ITEM)  TYPE(*CHAR) LEN(64) VALUE(<span class="s">&#x27;LOGIC_DIE&#x27;</span>)
+DCL VAR(&amp;JOB)   TYPE(*CHAR) LEN(10)
+DCL VAR(&amp;ID)    TYPE(*CHAR) LEN(7)
+DCL VAR(&amp;TEXT)  TYPE(*CHAR) LEN(132)
+
+STRCRAFT ITEM(&amp;ITEM) QTY(16) RTNCRFJOB(&amp;JOB)
+MONMSG MSGID(ELC1400) EXEC(DO)          <span class="c">/* any crafting error, ELC1401-ELC1499 */</span>
+  RCVMSG RTNMSGID(&amp;ID) RTNMSG(&amp;TEXT)
+  SNDMSG MSG(<span class="s">&#x27;Cannot craft&#x27;</span> *BCAT &amp;ITEM *BCAT <span class="s">&#x27;-&#x27;</span> *BCAT &amp;ID *BCAT &amp;TEXT) TOUSR(*SYSOPR)
+  RETURN
+ENDDO
+MONMSG MSGID(ELC1200)                   <span class="c">/* storage errors: carry on       */</span></code></pre></div>
+<p>Raising and catching your own:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;FREE) TYPE(*INT)
+DCL VAR(&amp;USED) TYPE(*INT)
+DCL VAR(&amp;TOT)  TYPE(*INT)
+MONMSG MSGID(USR0100) EXEC(GOTO CMDLBL(FULL))
+
+RTVSTGSTS RTNUSED(&amp;USED) RTNTOTAL(&amp;TOT)
+CHGVAR VAR(&amp;FREE) VALUE(&amp;TOT - &amp;USED)
+IF COND(&amp;FREE *LT 1000) THEN(SNDPGMMSG MSG(<span class="s">&#x27;Storage full&#x27;</span>) MSGID(USR0100) MSGTYPE(*ESCAPE))
+RETURN
+
+FULL:
+  SNDMSG MSG(<span class="s">&#x27;Less than 1000 items of room left&#x27;</span>) TOUSR(*SYSOPR)</code></pre></div>
+<h2 id="calling">CALL and parameters<a class="anchor" href="#calling" aria-label="Link to this section">#</a></h2>
+<p><code>CALL PGM(LIB/NAME) PARM(&amp;A 'text' 5)</code> runs another compiled program and carries on when it returns.</p>
+<ul><li>Variables are passed by reference: when the called program returns, the values of its parameters are copied back into the caller's variables. Literals and expressions are passed by value.</li><li>The called program's <code>PGM PARM(...)</code> must have the same number of parameters (<a class="msg" href="messages.html#ELC0012"><code>ELC0012</code></a> otherwise). Each value is converted to the type the called program declares.</li><li>A program with no library (or <code>*LIBL</code>) is looked for down the user's library list; none found is <a class="msg" href="messages.html#ELC0203"><code>ELC0203</code></a>.</li><li>Calls nest up to 16 deep (<a class="msg" href="messages.html#ELC0011"><code>ELC0011</code></a>).</li><li>A called program that ends on an escape message nothing caught gives the caller <a class="msg" href="messages.html#ELC0013"><code>ELC0013</code></a>.</li></ul>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;COUNT) TYPE(*INT)
+CALL PGM(ELSYS/RESTOCK) PARM(<span class="s">&#x27;IRON_INGOT&#x27;</span> 500)
+CALL PGM(COUNTER) PARM(&amp;COUNT)        <span class="c">/* COUNTER can change &amp;COUNT */</span>
+MONMSG MSGID(ELC0013 ELC0203)</code></pre></div>
+<h2 id="running">Running a program<a class="anchor" href="#running" aria-label="Link to this section">#</a></h2>
+<p>A program always runs in a <a href="jobs-and-scheduling.html#job-basics">job</a>, a budget of VM instructions each server tick at a time, so a long or endless program never holds up the server. There are three ways to start one:</p>
+<ul><li><strong>On a command line: <code>CALL PGM(LIB/NAME) PARM(...)</code></strong>: The program runs in your session's interactive job, <a class="cfg" href="../reference/config.html#cfg-elcl-interactiveBudget"><code>elcl.interactiveBudget</code></a> (default 200) instructions a tick. The command line answers at once with <a class="msg" href="messages.html#ELC0108"><code>ELC0108</code></a> and you can go on using the terminal. When the program ends, the messages it sent appear on Command Entry and the message line says how it ended: <a class="msg" href="messages.html#ELC0110"><code>ELC0110</code></a>, or the escape message that ended it. An interactive job runs one program at a time: a second <code>CALL</code> while one runs is <a class="msg" href="messages.html#ELC0109"><code>ELC0109</code></a>. Closing the terminal ends the program with its job, and so does <a class="cmd" href="commands/ENDJOB.html"><code>ENDJOB</code></a>. The Sign On screen's Program/procedure field starts a program the same way.</li><li><strong>As a batch job: <code>SBMJOB CMD(CALL PGM(LIB/NAME)) JOB(NAME)</code></strong>: The program runs on a job host, <a class="cfg" href="../reference/config.html#cfg-elcl-batchBudget"><code>elcl.batchBudget</code></a> (default 100) instructions a tick, with nobody at a terminal, as the user who submitted it. See <a href="jobs-and-scheduling.html#job-basics">jobs</a>.</li><li><strong>From a schedule entry or a trigger</strong>: Each submits a batch job when it fires, as the user who added it. See <a href="jobs-and-scheduling.html#schedules">schedule entries</a> and <a href="jobs-and-scheduling.html#triggers">triggers</a>.</li></ul>
+<p>Inside a program every command works as it does on a command line, with the same authority checks (the job user's Firewall permissions; see <a href="../admin/permissions.html">the permissions</a>), plus the language statements. The command pages say where each command runs:</p>
+<ul><li>Commands marked <em>Programs only</em> (<code>CHGVAR</code>, <code>MONMSG</code>, <code>RCVMSG</code>, the control flow, the list and file commands) are <a class="msg" href="messages.html#ELC0106"><code>ELC0106</code></a> typed on a command line.</li><li>Commands marked <em>Command line only</em> (the screen commands such as <a class="cmd" href="commands/WRKLIB.html"><code>WRKLIB</code></a>) are <a class="msg" href="messages.html#ELC0105"><code>ELC0105</code></a> in a batch job. In a program called from a terminal they don't open their screen and answer <a class="msg" href="messages.html#ELC0107"><code>ELC0107</code></a>.</li><li><code>MOVITM TODEV(*DESK)</code> needs the Terminal Desk of an interactive job; in a batch job it is <a class="msg" href="messages.html#ELC1301"><code>ELC1301</code></a> naming <code>*DESK</code>.</li></ul>
+<p>A program compiled for a <a href="control-and-plcs.html#plc">PLC</a> runs on the PLC itself instead, a scan at a time.</p>
+<h2 id="return-params">RTN* return parameters<a class="anchor" href="#return-params" aria-label="Link to this section">#</a></h2>
+<p>Parameters whose keyword starts with <code>RTN</code> return a value: you give them a variable, and the command sets it. The compiler checks the variable is declared and of the right type: an <code>*INT</code> or <code>*DEC</code> for a number, a <code>*CHAR</code> for text, a <code>*LIST</code> for a list.</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;LVL)  TYPE(*INT)
+DCL VAR(&amp;USER) TYPE(*CHAR) LEN(10)
+DCL VAR(&amp;TYPE) TYPE(*CHAR) LEN(10)
+DCL VAR(&amp;DEVS) TYPE(*LIST)
+RTVRSIN DEV(CTLIF01) SIDE(*NORTH) RTNLVL(&amp;LVL)
+RTVJOBA RTNUSR(&amp;USER) RTNTYPE(&amp;TYPE)
+RTVDEVLST TYPE(CMPSRV) RTNLST(&amp;DEVS)</code></pre></div>
+<p>On a command line there are no variables, so you leave the <code>RTN*</code> parameters out (even required ones), and Command Entry shows what they would have returned:</p>
+<div class="code-block"><pre class="code elcl"><code>RTVRSIN CTLIF01 *MAX</code></pre></div>
+<p>shows <code>RTNLVL = 9</code>.</p>
+<h2 id="limits">Limits and runtime model<a class="anchor" href="#limits" aria-label="Link to this section">#</a></h2>
+<ul><li>Programs are compiled before they run; source doesn't run directly. A program runs the source it was compiled from, whatever has happened to the member since.</li><li>Limits: <a class="cfg" href="../reference/config.html#cfg-elcl-maxSourceLines"><code>elcl.maxSourceLines</code></a> (default 5000) lines a source member; <a class="cfg" href="../reference/config.html#cfg-elcl-maxListSize"><code>elcl.maxListSize</code></a> (default 4096) list elements (<a class="msg" href="messages.html#ELC0015"><code>ELC0015</code></a>); <code>*CHAR</code> length 1,024; <code>*DEC</code> 31 digits; call depth 16 (<a class="msg" href="messages.html#ELC0011"><code>ELC0011</code></a>), and subroutine depth 16; 50 message IDs on one <code>MONMSG</code>; 5 files declared with <code>DCLF</code>.</li><li>Instruction budget: each tick, each running job runs at most its budget of VM instructions, then waits for the next tick: <a class="cfg" href="../reference/config.html#cfg-elcl-interactiveBudget"><code>elcl.interactiveBudget</code></a> (default 200) for an interactive job, <a class="cfg" href="../reference/config.html#cfg-elcl-batchBudget"><code>elcl.batchBudget</code></a> (default 100) for each batch job, and at most <a class="cfg" href="../reference/config.html#cfg-elcl-globalBudget"><code>elcl.globalBudget</code></a> (default 2000) a tick across every job on the server. Jobs take turns going first, so the global budget is shared out fairly. Work with Active Jobs shows what each job used.</li><li>Waits: some commands put the job into a wait (status <code>*WAIT</code>) that costs no budget, and the command carries on when the wait is over:<ul><li><code>DLYJOB DLY(n)</code>: <em>n</em> seconds of game time (20 ticks each, so it stretches if the server lags), 1 to 86,400.</li><li><code>DLYJOB RSMTIME(HHMMSS)</code>: until the game clock next comes round to that time (the game day starts at 06:00).</li><li><code>DLYTICK TICKS(n)</code>: <em>n</em> game ticks, 1 to 1,200.</li><li><a class="cmd" href="commands/MOVITM.html"><code>MOVITM</code></a> of items that are partly on tape: it recalls them, sends <a class="msg" href="messages.html#ELC1203"><code>ELC1203</code></a> and waits for them.</li><li><code>STRCRAFT WAIT(*YES)</code>: until its crafting job has ended.</li></ul></li><li>On a command line none of these waits: <code>DLYJOB</code> and <code>DLYTICK</code> complete at once, and <code>MOVITM</code> and <code>STRCRAFT</code> start the recall or the craft and say so.</li><li>Runtime errors are escape messages like any other and can be caught: a list index out of range (<a class="msg" href="messages.html#ELC0006"><code>ELC0006</code></a>), division by zero (<a class="msg" href="messages.html#ELC0005"><code>ELC0005</code></a>), overflow (<a class="msg" href="messages.html#ELC0007"><code>ELC0007</code></a>), a value of the wrong type (<a class="msg" href="messages.html#ELC0003"><code>ELC0003</code></a>), a value out of range (<a class="msg" href="messages.html#ELC0004"><code>ELC0004</code></a>, such as <code>%SST</code> past the end), the list limit (<a class="msg" href="messages.html#ELC0015"><code>ELC0015</code></a>), call depth (<a class="msg" href="messages.html#ELC0011"><code>ELC0011</code></a>), the parameter count (<a class="msg" href="messages.html#ELC0012"><code>ELC0012</code></a>) and a called program's failure (<a class="msg" href="messages.html#ELC0013"><code>ELC0013</code></a>).</li><li>What is saved: a batch job's whole VM state (each program's place, variables, subroutine stack, loop counters, monitors, last escape message, the call stack and the wait it is in) is saved with the system. A running batch job still ends when its host goes down or the server stops (see <a href="jobs-and-scheduling.html#job-basics">jobs</a>); interactive jobs aren't saved at all.</li></ul>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="database-files.html" rel="prev"><span>Previous</span>Database files</a><a class="next" href="examples.html" rel="next"><span>Next</span>Worked examples</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

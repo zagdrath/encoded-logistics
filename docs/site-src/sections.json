@@ -1,0 +1,18 @@
+[
+  {"id": "home", "title": "Home", "short": "Home", "index": "index"},
+  {"id": "getting-started", "title": "Getting started", "short": "Getting started"},
+  {"id": "networks", "title": "Networks", "short": "Networks"},
+  {"id": "storage", "title": "Storage", "short": "Storage"},
+  {"id": "crafting", "title": "Crafting and automation", "short": "Crafting"},
+  {"id": "terminals", "title": "Terminals and access", "short": "Terminals"},
+  {"id": "racks", "title": "Server racks", "short": "Racks"},
+  {"id": "networking", "title": "Networking", "short": "Networking"},
+  {"id": "control", "title": "Control and facility", "short": "Control"},
+  {"id": "elcl", "title": "Terminal OS and ELCL", "short": "Terminal OS"},
+  {"id": "integrations", "title": "Integrations", "short": "Integrations"},
+  {"id": "admin", "title": "Server admins", "short": "Admins"},
+  {"id": "developers", "title": "Developers and add-ons", "short": "Developers"},
+  {"id": "reference", "title": "Reference", "short": "Reference"},
+  {"id": "changelog", "title": "Changelog", "short": "Changelog", "index": "changelog"},
+  {"id": "search", "title": "Search", "nav": false, "index": "search"}
+]

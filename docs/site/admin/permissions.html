@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Permissions - Encoded Logistics</title>
+<meta name="description" content="Who may do what on a network - the Firewall&#x27;s six permissions as an admin sees them, what operators can always do, the Terminal OS&#x27;s SECLVL and *SECOFR, and firewallFailClosed.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="index.html" aria-current="true" class="current">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="index.html" aria-current="true" class="current">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Server admins">
+<p class="toc-title">Server admins</p><nav aria-label="Server admins pages"><ol><li><a href="index.html">Server admins</a></li><li><a href="config.html">Configuration</a></li><li><a href="permissions.html" aria-current="page" class="current">Permissions</a></li><li><a href="folders.html">Folders on disk</a></li><li><a href="performance.html">Performance and limits</a></li><li><a href="commands.html">Server commands</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Server admins</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Permissions</span></nav>
+<details class="mobile-toc"><summary>Server admins: pages</summary><p class="toc-title">Server admins</p><nav aria-label="Server admins pages"><ol><li><a href="index.html">Server admins</a></li><li><a href="config.html">Configuration</a></li><li><a href="permissions.html" aria-current="page" class="current">Permissions</a></li><li><a href="folders.html">Folders on disk</a></li><li><a href="performance.html">Performance and limits</a></li><li><a href="commands.html">Server commands</a></li></ol></nav></details>
+<h1>Permissions</h1>
+<p class="lead">Who may do what on a network - the Firewall's six permissions as an admin sees them, what operators can always do, the Terminal OS's SECLVL and *SECOFR, and firewallFailClosed.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#firewall">The Firewall</a></li><li class="toc-l2"><a href="#operators">Operators</a></li><li class="toc-l2"><a href="#fail-closed">When the Firewall is offline</a></li><li class="toc-l2"><a href="#terminal-os">In the Terminal OS</a></li><li class="toc-l2"><a href="#unguarded">What isn't guarded</a></li></ol></nav></details>
+<div class="page-body">
+<p>Encoded Logistics has no permission nodes and no permissions plugin hooks. Who may use a network is decided by the network itself, through its <strong>Firewall</strong>, and by whether the player is a server <strong>operator</strong>. This page is the admin's view; players set Firewalls up as described on <a href="../racks/security.html">Firewall and security</a>.</p>
+<h2 id="firewall">The Firewall<a class="anchor" href="#firewall" aria-label="Link to this section">#</a></h2>
+<p>A <a class="item-link" href="../reference/items/firewall.html"><img class="icon" src="../assets/icons/encodedlogistics/firewall.png" alt="" width="20" height="20" loading="lazy">Firewall</a> is a 1U rack device. A network uses one Firewall; a second one shows a fault and is ignored. Without a Firewall, everyone may do everything on that network. A block on no network is open to everyone.</p>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>Lets a player</th></tr></thead><tbody><tr><td>VIEW</td><td>See the network's items (terminals, popups, Terminal OS screens that read the network)</td></tr><tr><td>INSERT</td><td>Put items in</td></tr><tr><td>EXTRACT</td><td>Take items out</td></tr><tr><td>CRAFT</td><td>Ask for crafts</td></tr><tr><td>BUILD</td><td>Place, break and configure the network's blocks and parts (and change the Firewall's rules)</td></tr><tr><td>RACK</td><td>Open Server Racks and install, remove or set up their devices</td></tr></tbody></table></div>
+<ul><li>The Firewall's <strong>owner</strong> is whoever installed it, and always has every permission.</li><li>Its <strong>default policy</strong> is no access, view only, or full access (the default).</li><li>Up to 64 listed players each have every permission set to Inherit (the default policy), On or Off. RACK on Inherit follows that player's BUILD.</li><li>Placing or breaking a block on or next to a network, and mounting parts, anchors or facades on its cables, needs BUILD. Breaking a Server Rack also needs RACK while <a class="cfg" href="../reference/config.html#cfg-rack-rackBreakProtection"><code>rack.rackBreakProtection</code></a> (default true) is on.</li></ul>
+<p>In ELCL, a command's CONFIGURE authority is the Firewall's BUILD permission; the command reference gives each command's authority.</p>
+<h2 id="operators">Operators<a class="anchor" href="#operators" aria-label="Link to this section">#</a></h2>
+<p>Players with operator permission level 2 ("gamemaster", the level that may use <code>/gamemode</code> and <code>/give</code>) are never stopped by a Firewall: on any network they may do everything, so a network can't lock everyone out. In the Terminal OS they are <code>*SECOFR</code> (below) on every system while they are online. They may also put a Small Wireless Bridge on any Arcforge machine, open any PLC, and use <a href="commands.html">Server commands</a>.</p>
+<h2 id="fail-closed">When the Firewall is offline<a class="anchor" href="#fail-closed" aria-label="Link to this section">#</a></h2>
+<p>A Firewall with no lane or no power is offline. <a class="cfg" href="../reference/config.html#cfg-rack-firewallFailClosed"><code>rack.firewallFailClosed</code></a> (default true) decides what that means:</p>
+<div class="table-wrap"><table><thead><tr><th><code>firewallFailClosed</code></th><th>An offline Firewall</th></tr></thead><tbody><tr><td><code>true</code> (the default)</td><td>Still enforces its rules: players keep only what it grants them</td></tr><tr><td><code>false</code></td><td>Enforces nothing: everyone may do everything until it is back online</td></tr></tbody></table></div>
+<p>Leave it on unless you have a reason: with it off, cutting a network's power opens it to everyone.</p>
+<h2 id="terminal-os">In the Terminal OS<a class="anchor" href="#terminal-os" aria-label="Link to this section">#</a></h2>
+<p>The Terminal OS has its own users and security on top of the Firewall (see <a href="../elcl/index.html">Terminal OS and ELCL</a>):</p>
+<ul><li>Each player has a <strong>user profile</strong> on each system (network), made the first time they use it.</li><li><strong><code>*SECOFR</code></strong> (security officer) is the network's owner (its Firewall's owner) and any operator who is online. Every other user is <code>*USER</code>. Only <code>*SECOFR</code> may change system values (<a class="msg" href="../elcl/messages.html#ELC0401"><code>ELC0401</code></a> otherwise), manage other users' jobs, or read another user's message queue.</li><li>The system value <strong>SECLVL</strong> sets how much the OS checks:</li></ul>
+<div class="table-wrap"><table><thead><tr><th>SECLVL</th><th>Sign-on</th><th>Authority in the OS</th></tr></thead><tbody><tr><td><code>30</code> (the default)</td><td>Needed on a network with a Firewall: each player signs on as themselves</td><td>The Firewall's permissions apply to every command</td></tr><tr><td><code>10</code></td><td>None</td><td>Everyone has full authority in the OS; the Firewall still guards the blocks themselves</td></tr></tbody></table></div>
+<p>On a network without a Firewall there is nothing to sign on to, and everyone has full authority.</p>
+<p>Programs run with someone's authority: a batch job with its submitter's, and a PLC's program on a network with the authority of the player who last loaded it.</p>
+<h2 id="unguarded">What isn't guarded<a class="anchor" href="#unguarded" aria-label="Link to this section">#</a></h2>
+<ul><li>Display Panel commands, and touching a screen, need no permission (the screen's configuration screen needs BUILD).</li><li>Every library gives the public read access, so any user may read any library's files; only the system's own files in ELSYS are guarded (VIEW).</li><li>Display, print and OS commands need no Firewall permission; the OS checks its own library, job and system value authority.</li></ul>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="config.html" rel="prev"><span>Previous</span>Configuration</a><a class="next" href="folders.html" rel="next"><span>Next</span>Folders on disk</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

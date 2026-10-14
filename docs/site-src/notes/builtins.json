@@ -1,0 +1,19 @@
+{
+  "%ABS": {"text": "The absolute value of a number: `%ABS(&DIFF)`. An `*INT` stays `*INT`, a `*DEC` stays `*DEC`."},
+  "%CHAR": {"text": "A number as text, with no padding: `%CHAR(&COUNT)` gives `42`, a `*DEC` keeps its decimals (`12.50`). This is the only way to put a number into a `*CHAR` or join it to text."},
+  "%DEC": {"text": "A value as a `*DEC`: `%DEC(&TEXT)`, or `%DEC(&X 7 2)` for 7 digits with 2 decimals (half-up). With no length it is `LEN(15 5)`; a length alone has no decimals. Text that isn't a number is {{msg ELC0003}}; too many digits {{msg ELC0007}}."},
+  "%ELEM": {"text": "Element *n* of a `*LIST`, counting from 1: `%ELEM(&DEVS 3)`. Outside 1 to the list's size is {{msg ELC0006}}."},
+  "%INT": {"text": "A value as an `*INT`, decimals dropped (towards zero): `%INT('500')`, `%INT(&PCT)`. Text that isn't a number is {{msg ELC0003}}."},
+  "%LEN": {"text": "The length of a string without its trailing blanks: a `*CHAR LEN(32)` holding `IRON` gives 4."},
+  "%LOWER": {"text": "The string in lower case."},
+  "%MAX": {"text": "The larger of two numbers: `%MAX(&A 0)`."},
+  "%MIN": {"text": "The smaller of two numbers: `%MIN(&WANT 64)`."},
+  "%NAME": {"text": "The display name of an item ID (`%NAME('LOGIC_DIE')` gives `Logic Die`), or the ID itself when there's no such item. Worked out on the server: see [the limits](page:elcl/status-and-limits#known-limits)."},
+  "%SCAN": {"text": "Where one string first appears in another, counting from 1, or 0 if it doesn't: `%SCAN('ORE' &ITEM)`. A third argument starts the search there: `%SCAN(' ' &DATA 7)`. The search string's trailing blanks are ignored."},
+  "%SIZE": {"text": "The number of elements in a `*LIST` (0 for an empty one)."},
+  "%SST": {"text": "A substring: `%SST(&S start length)`, counting from 1. `%SST(&DATA 1 5)` is the first five characters. Past the end of the string is {{msg ELC0004}}."},
+  "%TRIM": {"text": "The string with leading and trailing blanks removed."},
+  "%TRIML": {"text": "The string with leading blanks removed."},
+  "%TRIMR": {"text": "The string with trailing blanks removed."},
+  "%UPPER": {"text": "The string in upper case."}
+}

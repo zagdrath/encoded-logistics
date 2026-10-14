@@ -1,0 +1,23 @@
+# Things older design docs describe that the mod doesn't have (docs/site-src/INVENTORY.md, "Left out"). A page that
+# names one fails the build: don't document them, not even as missing or planned.
+Cable Certifier
+Label Maker
+Mainframe
+CPC Drawer
+NOC Video Wall
+Wireless Remote
+Handheld Fabrication Terminal
+CRTPLCCTG
+ladder logic
+ladder-logic
+Script-controlled
+neverPlayWebAudio
+Never Play Web Audio
+WTHIT
+mail slot
+threadRuns
+PRINTER01
+*MSGW
+registerShowTopic
+TerminalCommand
+graphic item view

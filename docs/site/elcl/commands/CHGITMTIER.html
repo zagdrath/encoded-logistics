@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHGITMTIER - Encoded Logistics</title>
+<meta name="description" content="Change Item Tier">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">CHGITMTIER</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>CHGITMTIER</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: BUILD</span></p>
+<p class="lead">Change Item Tier</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>CHGITMTIER ITEM(item id) TIER(*HOT | *COLD | *PIN | *AUTO)</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>ITEM</code>, <code>TIER</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>ITEM</code></td><td>Item</td><td>Item ID<br><span class="muted">prompter field 64 long; F4 lists items</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>TIER</code></td><td>Storage tier</td><td>Special value</td><td>Yes</td><td></td><td><code>*HOT</code>, <code>*COLD</code>, <code>*PIN</code>, <code>*AUTO</code></td></tr></tbody></table></div>
+<p>Decides whether an item may be archived to tape. Storage has no per-item tier setting of its own, so the command works through the lists every Tape Library keeps (the ones its panel shows): a <strong>keep-hot</strong> filter and a <strong>pinned</strong> list, nine entries each. It needs at least one Tape Library serving the network (<a class="msg" href="../messages.html#ELC1206"><code>ELC1206</code></a> without one) and works on items only (fluids and gases never go to tape).</p>
+<p>First it takes the item off every library's keep-hot and pinned lists, then:</p>
+<div class="table-wrap"><table><thead><tr><th><code>TIER</code></th><th>What it does</th></tr></thead><tbody><tr><td><code>*HOT</code></td><td>Adds the item to the first library with a free keep-hot entry, and recalls all of it that's on tape now. Archiving leaves it alone from then on.</td></tr><tr><td><code>*PIN</code></td><td>Adds the item to the first free pinned entry. A pinned item is never archived, and a library that finds it on its tapes recalls it by itself.</td></tr><tr><td><code>*COLD</code></td><td>Queues what's hot of it to be archived by the first online library on its next archiving pass, whatever its age and however full hot storage is. The request isn't saved: a server restart before then forgets it.</td></tr><tr><td><code>*AUTO</code></td><td>Nothing more: the item is back under the library's normal archiving rules (age and hot-storage trigger).</td></tr></tbody></table></div>
+<p>After <code>*COLD</code> the item isn't on any list, so the normal rules apply again: taking it out (a withdrawal, <a class="cmd" href="MOVITM.html"><code>MOVITM</code></a>) recalls it. When every library's list is full, <code>*HOT</code> and <code>*PIN</code> fail with <a class="msg" href="../messages.html#ELC1305"><code>ELC1305</code></a> (it names the device type, <code>TAPELIB</code>). Because the item comes off every list first, a failed <code>*HOT</code> or <code>*PIN</code> leaves it on none.</p>
+<p>The command sends no completion message. See <a href="../../storage/tapes.html">LTO tapes and Tape Libraries</a> and <a href="../../storage/hot-and-cold.html">Hot and cold storage</a>.</p>
+<div class="code-block"><pre class="code elcl"><code>CHGITMTIER ITEM(DIAMOND) TIER(*PIN)
+CHGITMTIER ITEM(COBBLESTONE) TIER(*COLD)
+MONMSG MSGID(ELC1206) EXEC(SNDPGMMSG MSG(<span class="s">&#x27;No Tape Library on this network&#x27;</span>))</code></pre></div>
+<h2 id="see-also">Inventory</h2><p><a class="cmd" href="RTVITMCNT.html"><code>RTVITMCNT</code></a> <a class="cmd" href="RTVITMLST.html"><code>RTVITMLST</code></a> <a class="cmd" href="MOVITM.html"><code>MOVITM</code></a> <a class="cmd" href="IMPITM.html"><code>IMPITM</code></a> <a class="cmd" href="RTVSTGSTS.html"><code>RTVSTGSTS</code></a></p>
+<p><a href="index.html#inventory">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

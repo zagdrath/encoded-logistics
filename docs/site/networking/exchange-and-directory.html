@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exchange Switch and Directory Server - Encoded Logistics</title>
+<meta name="description" content="The Exchange Switch where many networks&#x27; Routers meet and peer, the Cross-Connect that joins them, and the Directory Server that lets other networks reach your devices by name.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="index.html" aria-current="true" class="current">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="index.html" aria-current="true" class="current">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Networking">
+<p class="toc-title">Networking</p><nav aria-label="Networking pages"><ol><li><a href="index.html">Networking</a></li><li><a href="switches.html">Switches and VLANs</a></li><li><a href="routers.html">Routers</a></li><li><a href="exchange-and-directory.html" aria-current="page" class="current">Exchange and Directory</a></li><li><a href="bridges-and-links.html">Bridges and links</a></li><li><a href="optical.html">Optical</a></li><li><a href="wireless.html">Wireless</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Networking</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Exchange Switch and Directory Server</span></nav>
+<details class="mobile-toc"><summary>Networking: pages</summary><p class="toc-title">Networking</p><nav aria-label="Networking pages"><ol><li><a href="index.html">Networking</a></li><li><a href="switches.html">Switches and VLANs</a></li><li><a href="routers.html">Routers</a></li><li><a href="exchange-and-directory.html" aria-current="page" class="current">Exchange and Directory</a></li><li><a href="bridges-and-links.html">Bridges and links</a></li><li><a href="optical.html">Optical</a></li><li><a href="wireless.html">Wireless</a></li></ol></nav></details>
+<h1>Exchange Switch and Directory Server</h1>
+<p class="lead">The Exchange Switch where many networks' Routers meet and peer, the Cross-Connect that joins them, and the Directory Server that lets other networks reach your devices by name.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#exchange">The Exchange Switch</a></li><li class="toc-l3"><a href="#cross-connect">Joining with a Cross-Connect</a></li><li class="toc-l3"><a href="#peering">Peering</a></li><li class="toc-l3"><a href="#exchange-panel">The panel and who may do what</a></li><li class="toc-l2"><a href="#directory">The Directory Server</a></li><li class="toc-l3"><a href="#publish">Publishing devices</a></li><li class="toc-l3"><a href="#resolve">How a name resolves</a></li></ol></nav></details>
+<div class="page-body">
+<p>Once several networks have <a href="routers.html">Routers</a>, two questions come up. How do lots of networks connect without every Router linking to every other? And how does one network's Terminal OS work a device on another? The Exchange Switch answers the first, the Directory Server the second.</p>
+<h2 id="exchange">The Exchange Switch<a class="anchor" href="#exchange" aria-label="Link to this section">#</a></h2>
+<p>The <a class="item-link" href="../reference/items/exchange_switch.html"><img class="icon" src="../assets/icons/encodedlogistics/exchange_switch.png" alt="" width="20" height="20" loading="lazy">Exchange Switch</a> is an Internet Exchange: a place where Routers from any number of networks meet and peer with each other. It is a block, two blocks tall.</p>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-exchange_switch"><figcaption>Crafting Table (shapeless)</figcaption><div class="recipe-body"><span class="grid g3" role="group" aria-label="Ingredients"><a class="slot" href="../reference/items/l3_switch.html" title="L3 Switch"><img src="../assets/icons/encodedlogistics/l3_switch.png" alt="L3 Switch" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/l3_switch.html" title="L3 Switch"><img src="../assets/icons/encodedlogistics/l3_switch.png" alt="L3 Switch" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/processor_die.html" title="Processor Die"><img src="../assets/icons/encodedlogistics/processor_die.png" alt="Processor Die" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/processor_die.html" title="Processor Die"><img src="../assets/icons/encodedlogistics/processor_die.png" alt="Processor Die" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/optical_transceiver.html" title="Optical Transceiver"><img src="../assets/icons/encodedlogistics/optical_transceiver.png" alt="Optical Transceiver" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/optical_transceiver.html" title="Optical Transceiver"><img src="../assets/icons/encodedlogistics/optical_transceiver.png" alt="Optical Transceiver" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/optical_transceiver.html" title="Optical Transceiver"><img src="../assets/icons/encodedlogistics/optical_transceiver.png" alt="Optical Transceiver" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/optical_transceiver.html" title="Optical Transceiver"><img src="../assets/icons/encodedlogistics/optical_transceiver.png" alt="Optical Transceiver" width="32" height="32" loading="lazy"></a><span class="slot" title="Block of Iron"><img src="../assets/icons/minecraft/iron_block.png" alt="Block of Iron" width="32" height="32" loading="lazy"></span></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="../reference/items/exchange_switch.html" title="Exchange Switch"><img src="../assets/icons/encodedlogistics/exchange_switch.png" alt="Exchange Switch" width="32" height="32" loading="lazy"></a></div><p class="recipe-id">encodedlogistics:exchange_switch</p></figure></div>
+<ul><li><strong>Placing:</strong> it needs the space above free, and faces you. Whoever places it <strong>owns</strong> it. Breaking either half breaks both.</li><li><strong>On the network:</strong> its lower block is a network device, cabled on any side except the top. It uses one lane and drains <a class="cfg" href="../reference/config.html#cfg-rack-exchangeDrain"><code>rack.exchangeDrain</code></a> (default 8) FE/t. Its LEDs and member count light up while it's online.</li><li><strong>Its name</strong> shows in route tables as <code>IX:name</code>. Rename it in an anvil, or in its panel's Setup tab: up to 8 letters and digits, starting with a letter. Without one it uses its device name (<code>XSW01</code> and so on).</li><li><strong>Chunk loading:</strong> while it has members it keeps its own chunk loaded, as long as <a class="cfg" href="../reference/config.html#cfg-rack-exchangeChunkLoading"><code>rack.exchangeChunkLoading</code></a> (default true).</li></ul>
+<figure class="shot placeholder" role="img" aria-label="Screenshot needed: An Exchange Switch block with its LEDs lit"><div class="ph-box"><p class="ph-title">Screenshot needed</p><p class="ph-show">An Exchange Switch standing on the floor next to a Server Rack, online with its LEDs and member count lit, a cable into its lower block</p><p class="ph-file"><code>docs/site-src/images/networking/exchange-switch.png</code> &middot; 1600x900</p></div></figure>
+<h3 id="cross-connect">Joining with a Cross-Connect<a class="anchor" href="#cross-connect" aria-label="Link to this section">#</a></h3>
+<p>A Router joins an exchange with a <a class="item-link" href="../reference/items/cross_connect.html"><img class="icon" src="../assets/icons/encodedlogistics/cross_connect.png" alt="" width="20" height="20" loading="lazy">Cross-Connect</a>, a patch lead from the Router to the exchange.</p>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-cross_connect"><figcaption>Crafting Table (shapeless)</figcaption><div class="recipe-body"><span class="grid g2" role="group" aria-label="Ingredients"><a class="slot" href="../reference/items/fiber_cable.html" title="Fiber Cable"><img src="../assets/icons/encodedlogistics/fiber_cable.png" alt="Fiber Cable" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/fiber_cable.html" title="Fiber Cable"><img src="../assets/icons/encodedlogistics/fiber_cable.png" alt="Fiber Cable" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/optical_transceiver.html" title="Optical Transceiver"><img src="../assets/icons/encodedlogistics/optical_transceiver.png" alt="Optical Transceiver" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/copper_foil.html" title="Copper Foil"><img src="../assets/icons/encodedlogistics/copper_foil.png" alt="Copper Foil" width="32" height="32" loading="lazy"></a></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="../reference/items/cross_connect.html" title="Cross-Connect"><img src="../assets/icons/encodedlogistics/cross_connect.png" alt="Cross-Connect" width="32" height="32" loading="lazy"><span class="count">4</span></a></div><p class="recipe-id">encodedlogistics:cross_connect</p></figure></div>
+<ol><li>Open the front door of the Router's rack and use the Cross-Connect on the Router's unit. It records that Router. This needs <strong>Build</strong> on the Router's network.</li><li>Use it on the Exchange Switch. The Router joins (or asks to), and one Cross-Connect is used up.</li></ol>
+<p>Sneak-use a Cross-Connect in the air to clear it.</p>
+<p><strong>Membership</strong> is <strong>Open</strong> (members join at once) or <strong>Approval</strong> (a join is a request the owner approves in the Members tab). Each member takes a <strong>port</strong>: at most <a class="cfg" href="../reference/config.html#cfg-rack-exchangePorts"><code>rack.exchangePorts</code></a> (default 32), and the owner can offer fewer (never fewer than it has members).</p>
+<h3 id="peering">Peering<a class="anchor" href="#peering" aria-label="Link to this section">#</a></h3>
+<p>Members exchange traffic in <strong>peering sessions</strong>, two ways:</p>
+<ul><li><strong>The route server:</strong> while it's on (the default), every member who has opted in (also the default) peers with every other such member.</li><li><strong>Bilateral peering:</strong> any two members can peer directly once each has accepted the other in the Peers tab.</li></ul>
+<p>A session is up while the exchange is online and both Routers are up: online and in <strong>Dynamic</strong> routing mode. A Static Router can join but never peers.</p>
+<p>Each member decides for its own side, per peer:</p>
+<ul><li>whether it <strong>exchanges routes</strong> with that peer. If not, the peering only carries traffic between their two networks, never on to others;</li><li>whether it allows that peer's traffic to <strong>transit</strong> its network: as its Router's transit setting says (the default), always, or never;</li><li>an <strong>ACL</strong> for the peer, applied in its Router's ACLs tab (see <a href="routers.html#acls">ACLs</a>).</li></ul>
+<p>A peering carries up to <a class="cfg" href="../reference/config.html#cfg-rack-exchangePortLanes"><code>rack.exchangePortLanes</code></a> (default 64) items a second, or less if the Routers at either end are slower. Peerings appear in the Routers' route tables with <code>IX:name</code> as the next hop.</p>
+<h3 id="exchange-panel">The panel and who may do what<a class="anchor" href="#exchange-panel" aria-label="Link to this section">#</a></h3>
+<p>Right-click the Exchange Switch for its panel, with three tabs: <strong>Members</strong>, <strong>Peers</strong> and <strong>Setup</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Who</th></tr></thead><tbody><tr><td>Approve requests, switch Open/Approval, turn the route server on or off, change the ports, rename</td><td>The owner (or a server operator)</td></tr><tr><td>Remove a member</td><td>The owner, or a player with Build on that member's network</td></tr><tr><td>Opt in or out of the route server, accept a bilateral peer, set peer routes and transit</td><td>A player with Build on that member's network</td></tr></tbody></table></div>
+<p>The owner can remove members but never touches their Routers: each network's own Firewall governs its Router.</p>
+<p>In the Terminal OS, <a class="cmd" href="../elcl/commands/WRKIX.html"><code>WRKIX</code></a> shows an exchange's members and peerings, and <a class="cmd" href="../elcl/commands/APVIXMBR.html"><code>APVIXMBR</code></a> and <a class="cmd" href="../elcl/commands/RMVIXMBR.html"><code>RMVIXMBR</code></a> approve and remove members.</p>
+<pre class="term" aria-label="Terminal screen"> WRKIX                         Work with Exchange              System:  ELNET01
+                                                                Day 2  07:14:22
+ Exchange . :  MAIN   Owner . :  Cody   Ports . :  5 / 32   Join . :  *APPROVAL
+ Type options, press Enter.
+   4=Remove member  5=Display  8=Approve request
+
+Opt  Network     Owner     Port  Status     Peering    Routes  Traffic/min
+     ELNET01     Cody         1  *UP        *RS            12        3,410
+     ELNET15     Alex         2  *UP        *RS             6        1,220
+     ELNET22     Sam          5  *UP        *BILAT          4          610
+     FARMNET     Rin          7  *DOWN      *RS             0            0
+     MINES       Jo           9  *UP        *BILAT          3           95
+     QUARRY      Kim          -  *REQUEST   -               -            -
+
+
+
+
+
+
+
+ Parameters or command
+ ===&gt;
+
+ F1=Help F3=Exit F5=Refresh F10=Sessions F11=Requests F12=Cancel</pre>
+<h2 id="directory">The Directory Server<a class="anchor" href="#directory" aria-label="Link to this section">#</a></h2>
+<p>A device's name, like <code>LGT01</code> or <code>PLC02</code>, normally means a device on your own network. A <a class="item-link" href="../reference/items/directory_server.html"><img class="icon" src="../assets/icons/encodedlogistics/directory_server.png" alt="" width="20" height="20" loading="lazy">Directory Server</a> lets <strong>other</strong> networks reach chosen devices of yours too, as <strong><code>SYSNAME/DEVICE</code></strong>: your system's name, a slash, and the device's name. Any Terminal OS command that takes a device accepts such a name.</p>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-directory_server"><figcaption>Crafting Table (shapeless)</figcaption><div class="recipe-body"><span class="grid g3" role="group" aria-label="Ingredients"><a class="slot" href="../reference/items/circuit_substrate.html" title="Circuit Substrate"><img src="../assets/icons/encodedlogistics/circuit_substrate.png" alt="Circuit Substrate" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/processor_die.html" title="Processor Die"><img src="../assets/icons/encodedlogistics/processor_die.png" alt="Processor Die" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/memory_die.html" title="Memory Die"><img src="../assets/icons/encodedlogistics/memory_die.png" alt="Memory Die" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/memory_die.html" title="Memory Die"><img src="../assets/icons/encodedlogistics/memory_die.png" alt="Memory Die" width="32" height="32" loading="lazy"></a><span class="slot" title="Iron Ingot"><img src="../assets/icons/minecraft/iron_ingot.png" alt="Iron Ingot" width="32" height="32" loading="lazy"></span><span class="slot empty" aria-hidden="true"></span><span class="slot empty" aria-hidden="true"></span><span class="slot empty" aria-hidden="true"></span><span class="slot empty" aria-hidden="true"></span></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="../reference/items/directory_server.html" title="Directory Server"><img src="../assets/icons/encodedlogistics/directory_server.png" alt="Directory Server" width="32" height="32" loading="lazy"></a></div><p class="recipe-id">encodedlogistics:directory_server</p></figure></div>
+<p>It comes in two forms that work the same: the block, and the 1U <a class="item-link" href="../reference/items/directory_server_rack.html"><img class="icon" src="../assets/icons/encodedlogistics/directory_server_rack.png" alt="" width="20" height="20" loading="lazy">Directory Server (Rack)</a> for a <a href="../racks/devices.html#directory-server">Server Rack</a>.</p>
+<ul><li><strong>The block</strong> connects to cables on every side, uses one lane and drains <a class="cfg" href="../reference/config.html#cfg-rack-directoryDrain"><code>rack.directoryDrain</code></a> (default 2) FE/t (the rack form the same). Its display glows while it's online.</li><li><strong>Its device name</strong> is <code>DIR01</code> and so on.</li></ul>
+<h3 id="publish">Publishing devices<a class="anchor" href="#publish" aria-label="Link to this section">#</a></h3>
+<p>Only devices you publish can be reached from elsewhere. Open the Directory Server's panel (right-click the block, or pick the rack form in the rack screen):</p>
+<ul><li><strong>Published:</strong> your network's devices. Click one to publish it, or to stop publishing it. Publishing needs <strong>Build</strong> on the network.</li><li><strong>Remote:</strong> the other networks your Routers reach that have a Directory Server, with their hop count and whether a Control policy goes there.</li><li><strong>Lookups:</strong> the last 16 lookups made from your network, and how each went.</li></ul>
+<p><a class="cmd" href="../elcl/commands/CHGDIRENT.html"><code>CHGDIRENT</code></a> publishes or unpublishes a device from a program, and <a class="cmd" href="../elcl/commands/WRKDIR.html"><code>WRKDIR</code></a> shows a directory on screen.</p>
+<h3 id="resolve">How a name resolves<a class="anchor" href="#resolve" aria-label="Link to this section">#</a></h3>
+<p>When a program on network A uses <code>ELNET02/LGT01</code>, the name resolves only when all of these hold:</p>
+<ol><li>a <a href="routers.html">Router</a> on network A has a route to ELNET02's network (in its route table);</li><li>an online Directory Server on ELNET02's network publishes <code>LGT01</code>;</li><li>one of those Routers has a <strong>Control</strong> route from network A to that network, with a path, and its ACLs permit <code>*CONTROL</code>;</li><li>the player running the command has the command's Firewall permission on <strong>ELNET02's</strong> network.</li></ol>
+<p>A name on your own network resolves as a plain name. If the name isn't published or there's no route to its network, the command fails with <a class="msg" href="../elcl/messages.html#ELC2603"><code>ELC2603</code></a>; if the Control policy, an ACL or the Firewall doesn't permit it, with <a class="msg" href="../elcl/messages.html#ELC2604"><code>ELC2604</code></a>.</p>
+<p>Where a name's network is gets remembered for <a class="cfg" href="../reference/config.html#cfg-rack-directoryCacheSeconds"><code>rack.directoryCacheSeconds</code></a> (default 30) seconds (or until a route or any network changes). Whether the device is still published, the Control policy, the ACL and the Firewall are checked every time.</p>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* Disable Cage Light LGT01 on the warehouse network (ELNET02), through its Directory Server. */</span>
+CHGDEVSTS DEV(ELNET02/LGT01) STATUS(*DISABLE)</code></pre></div>
+<p><a class="cmd" href="../elcl/commands/RTVDIRENT.html"><code>RTVDIRENT</code></a> looks a name up without using it: its device type, its network and how many hops away it is.</p>
+<pre class="term" aria-label="Terminal screen"> WRKDIR                       Work with Directory              System:  ELNET01
+                                                                Day 2  07:14:22
+ Directory  :  DIR01 (ELNET01)   Published :  8   Cache :  12 names, 30 s
+ Type options, press Enter.
+   2=Publish  3=Unpublish  5=Display
+
+Opt  Qualified name     Type   Status       Lookups (1h)
+     ELNET01/LGT01      LGT    *PUBLISHED      41
+     ELNET01/SRN01      SRN    *PUBLISHED      12
+     ELNET01/SPK01      SPK    *PUBLISHED       3
+     ELNET01/PLC02      PLC    *PRIVATE         0
+
+ Recent lookups:
+   ELNET15/LGT01      resolved, 2 hops
+   ELNET22/SRN03      resolved, 3 hops
+   FARMNET/SPK01      ELC2603 no route
+   ELNET07/PLC02      ELC2604 not permitted
+
+
+
+ Parameters or command
+ ===&gt;
+
+ F1=Help F3=Exit F5=Refresh F10=Lookups F12=Cancel</pre>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="routers.html" rel="prev"><span>Previous</span>Routers</a><a class="next" href="bridges-and-links.html" rel="next"><span>Next</span>Bridges and links</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

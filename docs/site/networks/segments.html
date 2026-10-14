@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Segments - Encoded Logistics</title>
+<meta name="description" content="Splitting a cable run into separate networks with the Segment Isolator, and using those segments from racks, Trunk Ports and routers.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="index.html" aria-current="true" class="current">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="index.html" aria-current="true" class="current">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Networks">
+<p class="toc-title">Networks</p><nav aria-label="Networks pages"><ol><li><a href="index.html">Networks</a></li><li><a href="controllers.html">Controllers</a></li><li><a href="cables.html">Cables</a></li><li><a href="lanes.html">Lanes</a></li><li><a href="power.html">Power</a></li><li><a href="segments.html" aria-current="page" class="current">Segments</a></li><li><a href="cable-parts.html">Cable parts</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Networks</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Segments</span></nav>
+<details class="mobile-toc"><summary>Networks: pages</summary><p class="toc-title">Networks</p><nav aria-label="Networks pages"><ol><li><a href="index.html">Networks</a></li><li><a href="controllers.html">Controllers</a></li><li><a href="cables.html">Cables</a></li><li><a href="lanes.html">Lanes</a></li><li><a href="power.html">Power</a></li><li><a href="segments.html" aria-current="page" class="current">Segments</a></li><li><a href="cable-parts.html">Cable parts</a></li></ol></nav></details>
+<h1>Segments</h1>
+<p class="lead">Splitting a cable run into separate networks with the Segment Isolator, and using those segments from racks, Trunk Ports and routers.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#isolator">Segment Isolator</a></li><li class="toc-l2"><a href="#link-card">Using a segment elsewhere</a></li><li class="toc-l2"><a href="#isolation">Segments stay apart</a></li><li class="toc-l2"><a href="#ids">Segment IDs</a></li></ol></nav></details>
+<div class="page-body">
+<p>A <a class="item-link" href="../reference/items/segment_isolator.html"><img class="icon" src="../assets/icons/encodedlogistics/segment_isolator.png" alt="" width="20" height="20" loading="lazy">Segment Isolator</a> cuts a cable run in two. The two sides become separate networks, called <strong>segments</strong>: lanes, storage, devices and energy don't cross it. Segments let you keep parts of a base apart (a public storage network beside a private one, say) while still letting racks and routers reach across in controlled ways.</p>
+<h2 id="isolator">Segment Isolator<a class="anchor" href="#isolator" aria-label="Link to this section">#</a></h2>
+<div class="recipes"><figure class="recipe" id="recipe-encodedlogistics-segment_isolator"><figcaption>Crafting Table</figcaption><div class="recipe-body"><span class="grid g3" role="group" aria-label="Ingredients"><span class="slot empty" aria-hidden="true"></span><span class="slot" title="Iron Ingot"><img src="../assets/icons/minecraft/iron_ingot.png" alt="Iron Ingot" width="32" height="32" loading="lazy"></span><span class="slot empty" aria-hidden="true"></span><a class="slot" href="../reference/items/network_cable.html" title="Network Cable"><img src="../assets/icons/encodedlogistics/network_cable.png" alt="Network Cable" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/ferrite.html" title="Ferrite"><img src="../assets/icons/encodedlogistics/ferrite.png" alt="Ferrite" width="32" height="32" loading="lazy"></a><a class="slot" href="../reference/items/network_cable.html" title="Network Cable"><img src="../assets/icons/encodedlogistics/network_cable.png" alt="Network Cable" width="32" height="32" loading="lazy"></a><span class="slot empty" aria-hidden="true"></span><span class="slot" title="Iron Ingot"><img src="../assets/icons/minecraft/iron_ingot.png" alt="Iron Ingot" width="32" height="32" loading="lazy"></span><span class="slot empty" aria-hidden="true"></span></span><span class="arrow" aria-hidden="true"><span class="arrow-glyph">&#10140;</span></span><a class="slot big" href="../reference/items/segment_isolator.html" title="Segment Isolator"><img src="../assets/icons/encodedlogistics/segment_isolator.png" alt="Segment Isolator" width="32" height="32" loading="lazy"></a></div><p class="recipe-id">encodedlogistics:segment_isolator</p></figure></div>
+<ul><li><strong>Placing.</strong> It's an inline housing, placed like a log: its axis follows the face you click. It connects <strong>only on its two ends</strong>, so put it in line with the cable you want to cut.</li><li><strong>What it does.</strong> The network on each side stops at the isolator. Each side is its own network, with its own lanes, storage, devices and energy.</li><li><strong>Cost.</strong> It uses no lanes. It drains <a class="cfg" href="../reference/config.html#cfg-power-isolatorDrain"><code>power.isolatorDrain</code></a> (default 0.5) FE per tick, and since it's on both networks, each side pays that.</li><li><strong>Its light.</strong> The amber light is on while both ends are attached to network blocks: it's actually separating two segments. Jade shows "Isolating two segments" or "Idle".</li></ul>
+<figure class="shot placeholder" role="img" aria-label="Screenshot needed: A Segment Isolator splitting a cable run between two controllers"><div class="ph-box"><p class="ph-title">Screenshot needed</p><p class="ph-show">A cable run with a Segment Isolator in line, its amber light on, a Network Controller on each side so both segments are online, and a Drive Bay on each side</p><p class="ph-file"><code>docs/site-src/images/networks/segment-isolator.png</code> &middot; 1600x900</p></div></figure>
+<div class="callout" role="note"><p class="callout-title">Each side needs its own controller</p><p>The side without a controller isn't a network on its own: its devices are offline. That's also what makes isolators useful for separating two controllers: two controllers on one network are a <a href="controllers.html#conflicts">conflict</a>, but with an isolator between them each runs its own segment.</p></div>
+<h2 id="link-card">Using a segment elsewhere<a class="anchor" href="#link-card" aria-label="Link to this section">#</a></h2>
+<p>A segment is named by a <a class="item-link" href="../reference/items/link_card.html"><img class="icon" src="../assets/icons/encodedlogistics/link_card.png" alt="" width="20" height="20" loading="lazy">Link Card</a>. <strong>Sneak-use the card on the isolator</strong> to store the segment on the half you clicked ("Segment on this side stored"). You can then use the card on:</p>
+<div class="table-wrap"><table><thead><tr><th>Use the card on</th><th>What it does</th><th>Guide</th></tr></thead><tbody><tr><td>A switch's unit in an open <a class="item-link" href="../reference/items/server_rack.html"><img class="icon" src="../assets/icons/encodedlogistics/server_rack.png" alt="" width="20" height="20" loading="lazy">Server Rack</a></td><td>The rack learns the segment, and its pooled devices can be set to serve it. A rack knows up to five segments besides its own network.</td><td><a href="../networking/switches.html">Switches and VLANs</a></td></tr><tr><td>A <a class="item-link" href="../reference/items/trunk_port.html"><img class="icon" src="../assets/icons/encodedlogistics/trunk_port.png" alt="" width="20" height="20" loading="lazy">Trunk Port</a></td><td>The Trunk Port carries the segment into the network it's on, for every rack on that network.</td><td><a href="cable-parts.html#trunk-port">Trunk Port</a>, <a href="../networking/switches.html">Switches and VLANs</a></td></tr><tr><td>A Router's unit</td><td>The Router links to that segment's network, to route between them.</td><td><a href="../networking/routers.html">Routers</a></td></tr><tr><td>An Optical Multiplexer</td><td>One of its channels carries the segment over a fibre line.</td><td><a href="../networking/optical.html">Optical networking</a></td></tr></tbody></table></div>
+<p>Using the card again on the same rack switch or Trunk Port unlinks the segment. Storing or using a segment needs the Firewall's BUILD permission on that network, if it has one.</p>
+<h2 id="isolation">Segments stay apart<a class="anchor" href="#isolation" aria-label="Link to this section">#</a></h2>
+<p>Segments never see each other's storage, even when a rack or a Trunk Port serves several of them. Only two things move items between segments:</p>
+<ul><li>an <strong>L3 Switch</strong>, with routes between the segments its rack knows;</li><li>a <strong>Router</strong>, with routes between the networks it's linked to.</li></ul>
+<p>Both are rack devices; see <a href="../networking/switches.html">Switches and VLANs</a> and <a href="../networking/routers.html">Routers</a>.</p>
+<h2 id="ids">Segment IDs<a class="anchor" href="#ids" aria-label="Link to this section">#</a></h2>
+<p>Racks and Trunk Ports give the segments they know a number, a VLAN-style segment ID, used in their panels, routes and port settings:</p>
+<ul><li>In a <strong>Server Rack</strong>, its own network is segment 1, and each segment you link gets the next free ID (up to 4094).</li><li>On a <strong>Trunk Port</strong>, linked segments get IDs 10, 20, 30 and so on, up to eight segments.</li></ul>
+<p>VLAN trunking itself (access and trunk ports, native segments, what each rack device serves) is explained on <a href="../networking/switches.html">Switches and VLANs</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="power.html" rel="prev"><span>Previous</span>Power</a><a class="next" href="cable-parts.html" rel="next"><span>Next</span>Cable parts</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

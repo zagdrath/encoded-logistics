@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="{{css}}">
+</head>
+<body data-root="{{root}}" data-index="{{index_js}}">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{home}}"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="{{search}}" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul>{{top_links}}</ul></details>
+    <ul class="sections-bar">{{top_links}}</ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="{{section_title}}">
+{{sidebar}}
+</aside>
+<main id="content">
+{{breadcrumbs}}
+<details class="mobile-toc"><summary>{{section_title}}: pages</summary>{{sidebar}}</details>
+<h1>{{h1}}</h1>
+{{summary}}
+{{toc}}
+<div class="page-body">
+{{body}}
+</div>
+{{prevnext}}
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics {{version}} for Minecraft {{minecraft}} (NeoForge {{neoforge}}). These pages were built from that version's code: <a href="{{repo}}">source on GitHub</a>.</p>
+</footer>
+<script src="{{js}}" defer></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MONMSG - Encoded Logistics</title>
+<meta name="description" content="Monitor Message">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">MONMSG</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>MONMSG</h1>
+
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#where-it-goes">Where it goes</a></li><li class="toc-l2"><a href="#which-messages">Which messages</a></li><li class="toc-l2"><a href="#what-happens-next">What happens next</a></li><li class="toc-l2"><a href="#examples">Examples</a></li></ol></nav></details>
+<div class="page-body">
+<p class="badges"><span class="badge b-pgm">Programs only</span> <span class="badge b-pgm">Firewall: None</span> <span class="badge b-ok">Runs on a PLC with no network</span></p>
+<p class="lead">Monitor Message</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>MONMSG MSGID(message id) [CMPDTA(*NONE | text)] [EXEC(command)]</code></pre>
+<p>The first 3 parameters can be given without their keyword, in that order: <code>MSGID</code>, <code>CMPDTA</code>, <code>EXEC</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>MSGID</code></td><td>Message identifier</td><td>Message ID<br><span class="muted">a list of up to 50 values</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>CMPDTA</code></td><td>Comparison data</td><td>Text<br><span class="muted">prompter field 32 long</span></td><td>No</td><td><code>*NONE</code></td><td><code>*NONE</code></td></tr><tr><td><code>EXEC</code></td><td>Command to execute</td><td>Command<br><span class="muted">F4 lists command</span></td><td>No</td><td></td><td></td></tr></tbody></table></div>
+<p><code>MONMSG</code> catches escape messages. When a command fails it raises an escape message (an ID such as <code>ELC1201</code>, with its message data); a <code>MONMSG</code> that covers that command and names that ID takes it, and the program goes on instead of ending. The general picture is on <a href="../language.html#errors">the language page</a>.</p>
+<h2 id="where-it-goes">Where it goes<a class="anchor" href="#where-it-goes" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Placed</th><th>Covers</th></tr></thead><tbody><tr><td>Straight after the <code>DCL</code>s, before the first command (program level)</td><td>every command in the program, subroutines included</td></tr><tr><td>Straight after a command (command level)</td><td>that command only. Several <code>MONMSG</code>s may follow one command, also after another one's <code>EXEC(DO)</code> ... <code>ENDDO</code>.</td></tr></tbody></table></div>
+<p>After an <code>IF</code> with a single-command <code>THEN</code> (or its <code>ELSE</code>), a command-level <code>MONMSG</code> covers what that <code>IF</code> runs. After the <code>ENDDO</code>, <code>ENDFOR</code> or <code>ENDSELECT</code> of a block there is no command to monitor, so a <code>MONMSG</code> there is <a class="msg" href="../messages.html#ELC0009"><code>ELC0009</code></a> ("MONMSG without matching command"), as is one in any other place. To monitor commands in a group, put a <code>MONMSG</code> after each one inside the group, or use a program-level one. In a <a class="cmd" href="SELECT.html"><code>SELECT</code></a>, put the command in a <code>THEN(DO)</code> group with its <code>MONMSG</code> inside the group, not straight after the <code>WHEN</code> line.</p>
+<p>When a message escapes, the command-level monitors around the failing command are tried first, innermost first, then the program-level ones, each in the order written; the first that takes the message wins.</p>
+<h2 id="which-messages">Which messages<a class="anchor" href="#which-messages" aria-label="Link to this section">#</a></h2>
+<p><code>MSGID</code> takes up to 50 IDs (three letters and four digits). An ID ending in <code>00</code> takes its whole range of a hundred: <code>ELC1200</code> takes <code>ELC1201</code> to <code>ELC1299</code>. <code>ELC0000</code> takes every message, your own <code>USR</code> ones included; another prefix ending in <code>0000</code> takes all of that prefix (<code>USR0000</code> takes every <code>USR</code> message).</p>
+<p><code>CMPDTA('text')</code> narrows it down: the monitor takes the message only if the message data (the values in the message text, joined by blanks, as <a class="cmd" href="RCVMSG.html"><code>RCVMSG</code></a> <code>RTNMSGDTA</code> returns them) start with that text, matched exactly, case included. For instance <code>MONMSG MSGID(ELC1302) CMPDTA('UPS01')</code> takes "Device UPS01 is offline" but not another device's. For a <a class="cmd" href="SNDPGMMSG.html"><code>SNDPGMMSG</code></a> message the data is its text. Give <code>CMPDTA</code> as a quoted literal: an unquoted value or a variable is accepted but compares nothing, so the monitor takes every message with that ID.</p>
+<h2 id="what-happens-next">What happens next<a class="anchor" href="#what-happens-next" aria-label="Link to this section">#</a></h2>
+<ul><li>Without <code>EXEC</code>, the program carries on with the statement after the one that failed.</li><li>With <code>EXEC</code>, it runs that command first (or the <code>EXEC(DO)</code> group), then carries on after the failed statement. Usual <code>EXEC</code>s are <code>GOTO</code> to error handling, <code>RETURN</code>, <code>LEAVE</code> or <code>ITERATE</code> in a loop, or a <code>DO</code> group that reports the problem with <a class="cmd" href="RCVMSG.html"><code>RCVMSG</code></a> and <a class="cmd" href="SNDMSG.html"><code>SNDMSG</code></a>.</li><li>A monitored message isn't written to the job log; one nothing takes ends the program (see <a class="cmd" href="SNDPGMMSG.html"><code>SNDPGMMSG</code></a> and <a class="cmd" href="CALL.html"><code>CALL</code></a> for where it goes).</li><li>A command that failed may have left its <code>RTN*</code> variables as they were before it ran; don't rely on them after a caught failure.</li></ul>
+<h2 id="examples">Examples<a class="anchor" href="#examples" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;N)  TYPE(*INT)
+DCL VAR(&amp;ID) TYPE(*CHAR) LEN(7)
+MONMSG MSGID(ELC1300) EXEC(GOTO CMDLBL(DEVICE))    <span class="c">/* any device error, anywhere */</span>
+
+RTVITMCNT ITEM(<span class="s">&#x27;minecraft:gold_ingot&#x27;</span>) RTNCOUNT(&amp;N)
+MONMSG MSGID(ELC1201) EXEC(CHGVAR VAR(&amp;N) VALUE(0))
+IF COND(&amp;N *GT 64) THEN(MOVITM ITEM(<span class="s">&#x27;minecraft:gold_ingot&#x27;</span>) QTY(64) TODEV(EGRESS01))
+RETURN
+
+DEVICE:
+  RCVMSG RTNMSGID(&amp;ID)
+  SNDMSG MSG(<span class="s">&#x27;Device problem:&#x27;</span> *BCAT &amp;ID) TOUSR(*SYSOPR)</code></pre></div>
+<p>One command, several monitors:</p>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;JOB) TYPE(*CHAR) LEN(10)
+STRCRAFT ITEM(<span class="s">&#x27;encodedlogistics:logic_die&#x27;</span>) QTY(8) RTNCRFJOB(&amp;JOB)
+MONMSG MSGID(ELC1401) EXEC(DO)
+  SNDMSG MSG(<span class="s">&#x27;No Scheduler for the Logic Dies&#x27;</span>) TOUSR(*SYSOPR)
+  RETURN
+ENDDO
+MONMSG MSGID(ELC1400 ELC1200) EXEC(RETURN)</code></pre></div>
+<h2 id="see-also">Program control</h2><p><a class="cmd" href="PGM.html"><code>PGM</code></a> <a class="cmd" href="ENDPGM.html"><code>ENDPGM</code></a> <a class="cmd" href="DCL.html"><code>DCL</code></a> <a class="cmd" href="CHGVAR.html"><code>CHGVAR</code></a> <a class="cmd" href="IF.html"><code>IF</code></a> <a class="cmd" href="ELSE.html"><code>ELSE</code></a> <a class="cmd" href="DO.html"><code>DO</code></a> <a class="cmd" href="ENDDO.html"><code>ENDDO</code></a> <a class="cmd" href="DOWHILE.html"><code>DOWHILE</code></a> <a class="cmd" href="DOUNTIL.html"><code>DOUNTIL</code></a> <a class="cmd" href="DOFOR.html"><code>DOFOR</code></a> <a class="cmd" href="FOREACH.html"><code>FOREACH</code></a> <a class="cmd" href="ENDFOR.html"><code>ENDFOR</code></a> <a class="cmd" href="LEAVE.html"><code>LEAVE</code></a> <a class="cmd" href="ITERATE.html"><code>ITERATE</code></a> <a class="cmd" href="SELECT.html"><code>SELECT</code></a> <a class="cmd" href="WHEN.html"><code>WHEN</code></a> <a class="cmd" href="OTHERWISE.html"><code>OTHERWISE</code></a> <a class="cmd" href="ENDSELECT.html"><code>ENDSELECT</code></a> <a class="cmd" href="GOTO.html"><code>GOTO</code></a> <a class="cmd" href="RETURN.html"><code>RETURN</code></a> <a class="cmd" href="SUBR.html"><code>SUBR</code></a> <a class="cmd" href="ENDSUBR.html"><code>ENDSUBR</code></a> <a class="cmd" href="CALLSUBR.html"><code>CALLSUBR</code></a> <a class="cmd" href="RCVMSG.html"><code>RCVMSG</code></a> <a class="cmd" href="SNDPGMMSG.html"><code>SNDPGMMSG</code></a> <a class="cmd" href="CALL.html"><code>CALL</code></a> <a class="cmd" href="DLYJOB.html"><code>DLYJOB</code></a> <a class="cmd" href="DLYTICK.html"><code>DLYTICK</code></a> <a class="cmd" href="RTVJOBA.html"><code>RTVJOBA</code></a></p>
+<p><a href="index.html#program">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENDDO - Encoded Logistics</title>
+<meta name="description" content="End Do Group">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">ENDDO</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>ENDDO</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-pgm">Programs only</span> <span class="badge b-pgm">Firewall: None</span> <span class="badge b-ok">Runs on a PLC with no network</span></p>
+<p class="lead">End Do Group</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>ENDDO</code></pre>
+<p>It takes no parameters.</p>
+<p><code>ENDDO</code> closes the innermost open <a class="cmd" href="DO.html"><code>DO</code></a> group or <code>DO</code> loop: <a class="cmd" href="DOWHILE.html"><code>DOWHILE</code></a>, <a class="cmd" href="DOUNTIL.html"><code>DOUNTIL</code></a> or <a class="cmd" href="DOFOR.html"><code>DOFOR</code></a>. At the end of a loop it sends the program back for the next pass; at the end of a plain <code>DO</code> group the program simply carries on after it. A <a class="cmd" href="FOREACH.html"><code>FOREACH</code></a> closes with <a class="cmd" href="ENDFOR.html"><code>ENDFOR</code></a> and a <a class="cmd" href="SELECT.html"><code>SELECT</code></a> with <a class="cmd" href="ENDSELECT.html"><code>ENDSELECT</code></a> instead.</p>
+<p>An <code>ENDDO</code> whose innermost open block isn't a <code>DO</code> or a <code>DO</code> loop (nothing open, or a <code>FOREACH</code>, <code>SELECT</code> or <code>SUBR</code>) is <a class="msg" href="../messages.html#ELC0009"><code>ELC0009</code></a> ("ENDDO without matching DO").</p>
+<ul><li>After the <code>ENDDO</code> of an <code>IF ... THEN(DO)</code> group, an <a class="cmd" href="ELSE.html"><code>ELSE</code></a> may follow.</li><li>After the <code>ENDDO</code> of a <code>MONMSG ... EXEC(DO)</code> group, another <a class="cmd" href="MONMSG.html"><code>MONMSG</code></a> for the same command may follow.</li><li>A <a class="cmd" href="MONMSG.html"><code>MONMSG</code></a> after any other <code>ENDDO</code> has no command to monitor (<a class="msg" href="../messages.html#ELC0009"><code>ELC0009</code></a>).</li></ul>
+<div class="code-block"><pre class="code elcl"><code>DCL VAR(&amp;I)   TYPE(*INT)
+DCL VAR(&amp;LVL) TYPE(*INT)
+DOFOR VAR(&amp;I) FROM(1) TO(4)
+  RTVRSIN DEV(CTLIF01) SIDE(*NORTH) RTNLVL(&amp;LVL)
+  IF COND(&amp;LVL *GT 0) THEN(DO)
+    SNDPGMMSG MSG(<span class="s">&#x27;Signal on pass&#x27;</span> *BCAT %CHAR(&amp;I))
+    LEAVE
+  ENDDO
+  DLYTICK TICKS(20)
+ENDDO</code></pre></div>
+<h2 id="see-also">Program control</h2><p><a class="cmd" href="PGM.html"><code>PGM</code></a> <a class="cmd" href="ENDPGM.html"><code>ENDPGM</code></a> <a class="cmd" href="DCL.html"><code>DCL</code></a> <a class="cmd" href="CHGVAR.html"><code>CHGVAR</code></a> <a class="cmd" href="IF.html"><code>IF</code></a> <a class="cmd" href="ELSE.html"><code>ELSE</code></a> <a class="cmd" href="DO.html"><code>DO</code></a> <a class="cmd" href="DOWHILE.html"><code>DOWHILE</code></a> <a class="cmd" href="DOUNTIL.html"><code>DOUNTIL</code></a> <a class="cmd" href="DOFOR.html"><code>DOFOR</code></a> <a class="cmd" href="FOREACH.html"><code>FOREACH</code></a> <a class="cmd" href="ENDFOR.html"><code>ENDFOR</code></a> <a class="cmd" href="LEAVE.html"><code>LEAVE</code></a> <a class="cmd" href="ITERATE.html"><code>ITERATE</code></a> <a class="cmd" href="SELECT.html"><code>SELECT</code></a> <a class="cmd" href="WHEN.html"><code>WHEN</code></a> <a class="cmd" href="OTHERWISE.html"><code>OTHERWISE</code></a> <a class="cmd" href="ENDSELECT.html"><code>ENDSELECT</code></a> <a class="cmd" href="GOTO.html"><code>GOTO</code></a> <a class="cmd" href="RETURN.html"><code>RETURN</code></a> <a class="cmd" href="SUBR.html"><code>SUBR</code></a> <a class="cmd" href="ENDSUBR.html"><code>ENDSUBR</code></a> <a class="cmd" href="CALLSUBR.html"><code>CALLSUBR</code></a> <a class="cmd" href="MONMSG.html"><code>MONMSG</code></a> <a class="cmd" href="RCVMSG.html"><code>RCVMSG</code></a> <a class="cmd" href="SNDPGMMSG.html"><code>SNDPGMMSG</code></a> <a class="cmd" href="CALL.html"><code>CALL</code></a> <a class="cmd" href="DLYJOB.html"><code>DLYJOB</code></a> <a class="cmd" href="DLYTICK.html"><code>DLYTICK</code></a> <a class="cmd" href="RTVJOBA.html"><code>RTVJOBA</code></a></p>
+<p><a href="index.html#program">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

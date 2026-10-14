@@ -1,0 +1,22 @@
+{
+  "encodedlogistics:rack_elevation_copy": {
+    "title": "Crafting Table (copy a Rack Elevation)",
+    "text": "A written Rack Elevation and a blank one make two written copies of the same plan. The original stays in the grid, as a written book's does when it's copied.",
+    "slots": ["encodedlogistics:rack_elevation", "encodedlogistics:rack_elevation", null, null],
+    "size": 2,
+    "result": {"id": "encodedlogistics:rack_elevation", "count": 2}
+  },
+  "encodedlogistics:rack_elevation_clear": {
+    "title": "Crafting Table (clear a Rack Elevation)",
+    "text": "A written Rack Elevation on its own in the grid goes back to a blank one.",
+    "slots": ["encodedlogistics:rack_elevation", null, null, null],
+    "size": 2,
+    "result": {"id": "encodedlogistics:rack_elevation", "count": 1}
+  },
+  "encodedlogistics:tape_upgrade": {
+    "text": "The new tape takes the old one's identity, so it keeps everything stored on it. Its fill is worked out again once it's back in a Tape Library."
+  },
+  "minecraft:crafting_dye": {
+    "text": "Dyes tint the Swivel Chair's fabric, and several dyes mix as they do on leather armour."
+  }
+}

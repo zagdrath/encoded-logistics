@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHGPF - Encoded Logistics</title>
+<meta name="description" content="Change Physical File">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">CHGPF</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>CHGPF</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Change Physical File</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>CHGPF FILE(library/name) [SRCMBR(*FILE | library/name)] [TEXT(*SAME | *BLANK | text)]</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>FILE</code>, <code>SRCMBR</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>FILE</code></td><td>File</td><td>Library/name<br><span class="muted">prompter field 21 long; F4 lists files</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>SRCMBR</code></td><td>Source member</td><td>Library/name<br><span class="muted">prompter field 21 long; F4 lists members</span></td><td>No</td><td><code>*FILE</code></td><td><code>*FILE</code></td></tr><tr><td><code>TEXT</code></td><td>Text &#x27;description&#x27;</td><td>Text<br><span class="muted">prompter field 50 long</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*BLANK</code></td></tr></tbody></table></div>
+<p><code>CHGPF</code> makes a physical file again from its definition, <strong>keeping its records</strong>. Change the file's <code>PF</code> member (add a field, lengthen one, change the key), then run <code>CHGPF</code>. Option 14=Compile on a <code>PF</code> member whose file exists already runs it for you; Work with Members and Work with Files show <code>*</code> in Chg while a file's definition has changed since it was made.</p>
+<ul><li><strong><code>FILE</code></strong> must exist. Without a library it's looked for down your library list.</li><li><strong><code>SRCMBR(*FILE)</code></strong>, the default, uses the member the file was made from. Name another (<code>LIB/MEMBER</code>) to make the file from that one instead; it becomes the file's member from then on. A file made by <a class="cmd" href="RUNQRY.html"><code>RUNQRY</code></a> <code>OUTPUT(*OUTFILE)</code> or <a class="cmd" href="CPYF.html"><code>CPYF</code></a> <code>CRTFILE(*YES)</code> has no member, so it needs <code>SRCMBR</code>, else <a class="msg" href="../messages.html#ELC2247"><code>ELC2247</code></a>.</li><li><strong><code>TEXT(*SAME)</code></strong>, the default, keeps the file's text; <code>*BLANK</code> clears it.</li></ul>
+<p><strong>What happens to the records.</strong> Each record keeps its relative record number and its value in every field whose name and type are both still there. A text field made shorter is cut. A field gone, or of another type now, loses its values: <code>CHGPF</code> sends <a class="msg" href="../messages.html#ELC2232"><code>ELC2232</code></a> (a warning) for each. New fields start blank. Then <a class="msg" href="../messages.html#ELC2231"><code>ELC2231</code></a> says how many records were kept.</p>
+<p><strong>When nothing changes:</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Message</th><th>Why</th></tr></thead><tbody><tr><td><a class="msg" href="../messages.html#ELC2246"><code>ELC2246</code></a></td><td>The definition has errors (see its listing in Work with Output).</td></tr><tr><td><a class="msg" href="../messages.html#ELC2209"><code>ELC2209</code></a></td><td>A record's value no longer fits its field (a number with more digits than the field takes now).</td></tr><tr><td><a class="msg" href="../messages.html#ELC2203"><code>ELC2203</code></a></td><td>The key is <code>UNIQUE</code> now, and two records have the same key.</td></tr><tr><td><a class="msg" href="../messages.html#ELC0207"><code>ELC0207</code></a></td><td>The records would take more storage than the drives have left.</td></tr></tbody></table></div>
+<p>The listing goes to Work with Output as <a class="cmd" href="CRTPF.html"><code>CRTPF</code></a>'s does, with a line for each field dropped. Changing a file needs <code>*CHANGE</code> on its library (<a class="msg" href="../messages.html#ELC0401"><code>ELC0401</code></a>); <code>ELSYS</code> files can't be changed (<a class="msg" href="../messages.html#ELC0205"><code>ELC0205</code></a>).</p>
+<div class="callout warn" role="note"><p class="callout-title">Compile the programs that use it again</p><p>A program keeps the record format it was compiled with. If <code>CHGPF</code> drops or retypes a field the program declares, its file operations fail with <a class="msg" href="../messages.html#ELC2207"><code>ELC2207</code></a> until you compile it again.</p></div>
+<div class="code-block"><pre class="code elcl"><code>CHGPF FILE(ELGPL/ITEMHIST)
+CHGPF FILE(ELGPL/ITEMHIST) SRCMBR(ZAGLIB/ITEMHIST2) TEXT(<span class="s">&#x27;Item counts, with mod&#x27;</span>)</code></pre></div>
+<h2 id="see-also">Database files</h2><p><a class="cmd" href="DCLF.html"><code>DCLF</code></a> <a class="cmd" href="RCVF.html"><code>RCVF</code></a> <a class="cmd" href="POSDBF.html"><code>POSDBF</code></a> <a class="cmd" href="CLOF.html"><code>CLOF</code></a> <a class="cmd" href="CHNRCD.html"><code>CHNRCD</code></a> <a class="cmd" href="WRTRCD.html"><code>WRTRCD</code></a> <a class="cmd" href="UPDRCD.html"><code>UPDRCD</code></a> <a class="cmd" href="DLTRCD.html"><code>DLTRCD</code></a> <a class="cmd" href="CRTPF.html"><code>CRTPF</code></a> <a class="cmd" href="DLTF.html"><code>DLTF</code></a> <a class="cmd" href="CLRPFM.html"><code>CLRPFM</code></a> <a class="cmd" href="CPYF.html"><code>CPYF</code></a> <a class="cmd" href="CPYTOIMPF.html"><code>CPYTOIMPF</code></a> <a class="cmd" href="CPYFRMIMPF.html"><code>CPYFRMIMPF</code></a> <a class="cmd" href="RUNQRY.html"><code>RUNQRY</code></a> <a class="cmd" href="WRKF.html"><code>WRKF</code></a> <a class="cmd" href="DSPPFM.html"><code>DSPPFM</code></a> <a class="cmd" href="DSPFD.html"><code>DSPFD</code></a> <a class="cmd" href="UPDDTA.html"><code>UPDDTA</code></a></p>
+<p><a href="index.html#db">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

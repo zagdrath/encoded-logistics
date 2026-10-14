@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encoded Logistics</title>
+<meta name="description" content="Storage networks and automation with server racks, autocrafting jobs and a green-screen terminal operating system. For Minecraft 26.3 on NeoForge.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body data-root="./" data-index="assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="index.html" aria-current="true" class="current">Home</a></li><li><a href="getting-started/index.html">Getting started</a></li><li><a href="networks/index.html">Networks</a></li><li><a href="storage/index.html">Storage</a></li><li><a href="crafting/index.html">Crafting</a></li><li><a href="terminals/index.html">Terminals</a></li><li><a href="racks/index.html">Racks</a></li><li><a href="networking/index.html">Networking</a></li><li><a href="control/index.html">Control</a></li><li><a href="elcl/index.html">Terminal OS</a></li><li><a href="integrations/index.html">Integrations</a></li><li><a href="admin/index.html">Admins</a></li><li><a href="developers/index.html">Developers</a></li><li><a href="reference/index.html">Reference</a></li><li><a href="changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="index.html" aria-current="true" class="current">Home</a></li><li><a href="getting-started/index.html">Getting started</a></li><li><a href="networks/index.html">Networks</a></li><li><a href="storage/index.html">Storage</a></li><li><a href="crafting/index.html">Crafting</a></li><li><a href="terminals/index.html">Terminals</a></li><li><a href="racks/index.html">Racks</a></li><li><a href="networking/index.html">Networking</a></li><li><a href="control/index.html">Control</a></li><li><a href="elcl/index.html">Terminal OS</a></li><li><a href="integrations/index.html">Integrations</a></li><li><a href="admin/index.html">Admins</a></li><li><a href="developers/index.html">Developers</a></li><li><a href="reference/index.html">Reference</a></li><li><a href="changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Home">
+<p class="toc-title">Home</p><nav aria-label="Home pages"><ol><li><a href="index.html" aria-current="page" class="current">Encoded Logistics</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="index.html">Home</a></nav>
+<details class="mobile-toc"><summary>Home: pages</summary><p class="toc-title">Home</p><nav aria-label="Home pages"><ol><li><a href="index.html" aria-current="page" class="current">Encoded Logistics</a></li></ol></nav></details>
+<h1>Encoded Logistics</h1>
+<p class="lead">Storage networks and automation with server racks, autocrafting jobs and a green-screen terminal operating system. For Minecraft 26.3 on NeoForge.</p>
+
+<div class="page-body">
+<p>Encoded Logistics builds your base's storage into a network you run like a data centre. Cables carry <strong>lanes</strong> from a <a class="item-link" href="reference/items/network_controller.html"><img class="icon" src="assets/icons/encodedlogistics/network_controller.png" alt="" width="20" height="20" loading="lazy">Network Controller</a> to drives, terminals, ports and server racks. Autocrafting runs as <strong>jobs</strong> on Fabricators, Gateways and Schedulers. A <a class="item-link" href="reference/items/terminal_desk.html"><img class="icon" src="assets/icons/encodedlogistics/terminal_desk.png" alt="" width="20" height="20" loading="lazy">Terminal Desk</a> gives you a whole green-screen operating system, the Terminal OS, with its own command language (ELCL) for programs, scheduled jobs and triggers.</p>
+<p>This site documents version 1.2.1+26.3 of the mod.</p>
+<h2 id="requirements">Requirements<a class="anchor" href="#requirements" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Needs</th><th>Version</th></tr></thead><tbody><tr><td>Minecraft</td><td>26.3</td></tr><tr><td>NeoForge</td><td>26.3.0.0-beta or later</td></tr><tr><td>Optional</td><td><a href="integrations/jei.html">JEI</a>, <a href="integrations/jade.html">Jade</a>, and <a href="integrations/arcforge.html">Arcforge</a> 2.5.0 or later</td></tr></tbody></table></div>
+<p>None of the optional mods is needed to play. JEI adds recipe lookups and search syncing, Jade adds tooltips (lanes, status), and Arcforge's machines can join a network through the <a class="item-link" href="reference/items/small_wireless_bridge.html"><img class="icon" src="assets/icons/encodedlogistics/small_wireless_bridge.png" alt="" width="20" height="20" loading="lazy">Small Wireless Bridge</a>.</p>
+<p>The mod has no generator of its own. Its machines and networks run on FE (Forge Energy), so you'll need another mod that makes FE.</p>
+<h2 id="where-to-start">Where to start<a class="anchor" href="#where-to-start" aria-label="Link to this section">#</a></h2>
+<ol><li><a href="getting-started/first-network.html">Your first network</a> takes you from vanilla materials to a working storage network with a terminal, step by step.</li><li><a href="getting-started/progression.html">Progression</a> maps the rest of the tech path, from the Lithography Press to a full rack of servers.</li><li><a href="networks/index.html">What a network is</a> explains the ideas everything else rests on: controllers, cables, lanes and power.</li></ol>
+<h2 id="the-sections">The sections<a class="anchor" href="#the-sections" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Section</th><th>What's in it</th></tr></thead><tbody><tr><td><a href="getting-started/index.html">Getting started</a></td><td>Your first network, then the tech path in order.</td></tr><tr><td><a href="networks/index.html">Networks</a></td><td>Network Controllers, cables and their colours, lanes, power, segments, and the parts that mount on cables.</td></tr><tr><td><a href="storage/index.html">Storage</a></td><td>Storage Drives and the Drive Bay, hot and cold storage, NAS and SAN, LTO tapes and Tape Libraries.</td></tr><tr><td><a href="crafting/index.html">Crafting and automation</a></td><td>Ores, the fabrication materials, the Lithography Press, schematics, Fabricators, Gateways, Schedulers, jobs, and the Midrange line.</td></tr><tr><td><a href="terminals/index.html">Terminals and access</a></td><td>The Access and Fabrication Terminals, rack consoles, the Handheld Terminal and the Terminal Desk.</td></tr><tr><td><a href="racks/index.html">Server racks</a></td><td>The Server Rack, every rack device and chassis part, the Firewall, and Rack Elevations.</td></tr><tr><td><a href="networking/index.html">Networking</a></td><td>Switches and VLANs, Routers, the Internet Exchange and Directory Servers, bridges, optical lines and wireless.</td></tr><tr><td><a href="control/index.html">Control and facility</a></td><td>The Control Interface, the PLC, Display Panels, Cage Lights and Alarm Strobes, and Speakers.</td></tr><tr><td><a href="elcl/index.html">Terminal OS and ELCL</a></td><td>The Terminal OS and its command language: screens, the editor, database files, jobs and scheduling, and every command and message.</td></tr><tr><td><a href="integrations/index.html">Integrations</a></td><td>What changes with Arcforge, JEI and Jade installed.</td></tr><tr><td><a href="admin/index.html">Server admins</a></td><td>For server admins: the config files, permissions, the world folders, performance limits and the server command.</td></tr><tr><td><a href="developers/index.html">Developers and add-ons</a></td><td>For add-on authors: the extension points, and how this site is built.</td></tr><tr><td><a href="reference/index.html">Reference</a></td><td>Generated reference: every block and item, every recipe, tags, config options, device types, sounds and data components.</td></tr><tr><td><a href="changelog.html">Changelog</a></td><td>What changed in each version.</td></tr></tbody></table></div>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="assets/site.js" defer></script>
+</body>
+</html>

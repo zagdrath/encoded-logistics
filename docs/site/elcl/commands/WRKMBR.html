@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WRKMBR - Encoded Logistics</title>
+<meta name="description" content="Work with Members">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">WRKMBR</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>WRKMBR</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-scr">Command line only</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Work with Members</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>WRKMBR [LIB(*CURLIB | name (up to 10 characters))]</code></pre>
+<p>The first parameter can be given without its keyword, in that order: <code>LIB</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>LIB</code></td><td>Library</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long; F4 lists libraries</span></td><td>No</td><td><code>*CURLIB</code></td><td><code>*CURLIB</code></td></tr></tbody></table></div>
+<p>Work with Members lists a library's source members (type <code>ELCLP</code> for a program's source, <code>PF</code> for a file's definition), then its database files (type <code>*FILE</code>). <code>LIB(*CURLIB)</code>, the default, is your current library. Work with Libraries option 12 opens it too. Type an option next to a member and press Enter:</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>What it does</th></tr></thead><tbody><tr><td><code>2</code></td><td>Edit it in the source editor (<a class="cmd" href="EDTMBR.html"><code>EDTMBR</code></a>).</td></tr><tr><td><code>3</code></td><td>Copy it to another library or name, in a window (<a class="cmd" href="CPYMBR.html"><code>CPYMBR</code></a>).</td></tr><tr><td><code>4</code></td><td>Delete it, after you confirm (<a class="cmd" href="DLTMBR.html"><code>DLTMBR</code></a>).</td></tr><tr><td><code>5</code></td><td>Display it: the editor, read-only.</td></tr><tr><td><code>6</code></td><td>Print the source to a spooled file (see <a class="cmd" href="WRKSPLF.html"><code>WRKSPLF</code></a>).</td></tr><tr><td><code>7</code></td><td>Rename it, in a window (<a class="cmd" href="RNMMBR.html"><code>RNMMBR</code></a>).</td></tr><tr><td><code>9</code></td><td>Submit its program as a batch job: <a class="cmd" href="SBMJOB.html"><code>SBMJOB</code></a>'s prompter with <code>CMD(CALL PGM(LIB/MEMBER))</code> and <code>JOB(MEMBER)</code> filled in, so you can add parameters or pick a host first.</td></tr><tr><td><code>14</code></td><td>Compile it. An <code>ELCLP</code> member: <a class="cmd" href="CRTELPGM.html"><code>CRTELPGM</code></a>. A <code>PF</code> member: <a class="cmd" href="CRTPF.html"><code>CRTPF</code></a>, or <a class="cmd" href="CHGPF.html"><code>CHGPF</code></a> when its file is there already (which keeps the records). The listing goes to Work with Output.</td></tr><tr><td><code>16</code></td><td>Call its program in your interactive job: <a class="cmd" href="CALL.html"><code>CALL</code></a>'s prompter with <code>PGM(LIB/MEMBER)</code> filled in.</td></tr></tbody></table></div>
+<p>Options 9 and 16 need the member compiled since it last changed. If it isn't, the message line says so, and Enter compiles it (as 14) and then goes on to the prompter. The <strong>Chg</strong> column shows <code>*</code> when the source changed after its program (or file) was made.</p>
+<p>On a file: 2=Change data (<a class="cmd" href="UPDDTA.html"><code>UPDDTA</code></a>), 4=Delete (<a class="cmd" href="DLTF.html"><code>DLTF</code></a>), 5=Display data (<a class="cmd" href="DSPPFM.html"><code>DSPPFM</code></a>), 8=Display description (<a class="cmd" href="DSPFD.html"><code>DSPFD</code></a>). In <code>ELSYS</code>, options 2, 4 and 7 are refused with <a class="msg" href="../messages.html#ELC0205"><code>ELC0205</code></a>: browse with 5 and copy with 3. F6 prompts <a class="cmd" href="CRTMBR.html"><code>CRTMBR</code></a> (<code>SRCTYPE(PF)</code> for a file's definition); F11 sorts the members by name, by changed or by text.</p>
+<pre class="term" aria-label="Terminal screen"> WRKMBR                        Work with Members               System:  ELNET01
+                                                                Day 2  07:14:22
+ Library . . . . :   ZAGLIB
+ Type options, press Enter.
+   2=Edit  3=Copy  4=Delete  5=Display  6=Print  7=Rename
+   9=Submit  14=Compile  16=Call
+Opt  Member      Type    Chg  Text
+     ARCHIVE     ELCLP        Move old items to tape
+14   NOCWALL     ELCLP    *   Refresh the NOC status display
+2    RESTOCK     ELCLP        Keep logic dies stocked
+     SORTDEMO    ELCLP        List and sort demo
+     UPSALERT    ELCLP    *   Alert operators on UPS power
+
+                              Chg * = changed since last compile
+
+
+
+
+
+
+ Parameters or command                                                   Bottom
+ ===&gt;
+
+ F1=Help  F3=Exit  F5=Refresh  F6=Create  F9=Command Entry  F11=Sort  F12=Cancel</pre>
+<div class="code-block"><pre class="code elcl"><code>WRKMBR LIB(ELSYS)</code></pre></div>
+<p>See <a href="../libraries-and-editor.html">Libraries and the editor</a> and <a href="../database-files.html">database files</a>.</p>
+<h2 id="see-also">Libraries, members and programs</h2><p><a class="cmd" href="WRKLIB.html"><code>WRKLIB</code></a> <a class="cmd" href="CRTLIB.html"><code>CRTLIB</code></a> <a class="cmd" href="CHGLIB.html"><code>CHGLIB</code></a> <a class="cmd" href="DLTLIB.html"><code>DLTLIB</code></a> <a class="cmd" href="EDTMBR.html"><code>EDTMBR</code></a> <a class="cmd" href="CRTMBR.html"><code>CRTMBR</code></a> <a class="cmd" href="CPYMBR.html"><code>CPYMBR</code></a> <a class="cmd" href="RNMMBR.html"><code>RNMMBR</code></a> <a class="cmd" href="DLTMBR.html"><code>DLTMBR</code></a> <a class="cmd" href="CRTELPGM.html"><code>CRTELPGM</code></a> <a class="cmd" href="DLTPGM.html"><code>DLTPGM</code></a></p>
+<p><a href="index.html#os-libraries">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

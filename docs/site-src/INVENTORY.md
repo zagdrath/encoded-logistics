@@ -19,8 +19,8 @@ exported data.
 
 | Thing | Count | Source |
 |---|---|---|
-| Blocks | 106 (104 with a block item; `part_host` and the block form of `small_wireless_bridge` have none) | `ModBlocks` |
-| Items | 249 (104 block items + 145 others; the exporter gives the authoritative count) | `ModItems` |
+| Blocks | 106 (104 with a block item; `part_host` has no item, and the Small Wireless Bridge's item isn't a block item) | `ModBlocks` |
+| Items | 247 (104 block items and 143 others) | `ModItems`, `docs/site-src/data/registry.json` |
 | Recipes | 286 files: shapeless 130, shaped 114, smelting 10, blasting 10, `arcforge:crushing` 9 (Arcforge only), `encodedlogistics:lithography` 4, `encodedlogistics:tape_upgrade` 4, stonecutting 2, `crafting_dye` 1, `rack_elevation_copy` 1, `rack_elevation_clear` 1 | `data/encodedlogistics/recipe` |
 | Recipe types | 1 custom (`lithography`); 3 custom special serializers (`tape_upgrade`, `rack_elevation_copy`, `rack_elevation_clear`) | `ModRecipeTypes`, `ModRecipeSerializers` |
 | Block entity types | 33 | `ModBlockEntityTypes` |
@@ -92,7 +92,7 @@ optional), where to start, and a map of the sections.
 | `fabricators-and-gateways.html` | `fabricator`, `gateway`, the Fabrication Server and Fabrication Blade |
 | `schedulers.html` | The Scheduler multiblock (`scheduler_core`, `job_buffer`, `thread_unit`: forming rules, threads, memory), the rack Scheduler (Compute and Memory Servers, Compute and Memory Blades, pooled across racks), least-busy spreading of scheduled runs |
 | `jobs.html` | Requesting crafts from any terminal, the plan screen, Job Status, the `schematic_terminal` part and Rack Schematic Console, crafting history, job toasts (client config) |
-| `midrange.html` | The Midrange line as early autocrafting: `midrange_system`, `expansion_cabinet`, `integrated_midrange`, `keypunch` (Card Punch), `card_reader`, `line_printer`, `punch_card`, `diskette_8in`, `diskette_magazine`, `printout`; their green screens (MRCTL, IMCTL, KEYPUNCH, CARDRDR, PRINTER) |
+| `midrange.html` | The Midrange line as early autocrafting: `midrange_system`, `expansion_cabinet`, `integrated_midrange`, `keypunch` (Card Punch), `card_reader`, `line_printer`, `punch_card`, `diskette_8in`, `diskette_magazine`, `printout`; their green screens (MRCTL, IMCTL, CARDPUNCH, CARDRDR, PRINTER) |
 
 ### Terminals and access: `terminals/`
 
@@ -231,7 +231,8 @@ Each was checked against the code. The review notes give the file or the grep th
 - The Tape Reel recipe making 2 (it makes 1); the Disk Drive limited to 8K–128K drives (it takes any); Tape Libraries
   taking Tape Reels (they take LTO tapes only).
 - Spinning disk packs and turning tape reels (no renderer).
-- "CARDPUNCH" as the Card Punch's screen and "PRINTER01" as the printer's name (the code uses KEYPUNCH and PRT01).
+- "PRINTER01" as the printer's name (the code numbers printers PRT01, PRT02, ...). (The Card Punch's screen is
+  CARDPUNCH, as the Midrange handoff says; its device type is KEYPUNCH.)
 - The CRT frame's glow and scanlines.
 - `threadRuns` (replaced by `autocrafting.threadCrafts`).
 

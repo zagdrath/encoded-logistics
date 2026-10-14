@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extension points - Encoded Logistics</title>
+<meta name="description" content="The capabilities Encoded Logistics exposes on its blocks and items, and the public registries another mod can use - ELCL commands, job hosts, displays, pressurized sources and machine access - with short examples.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Developers and add-ons">
+<p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html">Developers and add-ons</a></li><li><a href="extension-points.html" aria-current="page" class="current">Extension points</a></li><li><a href="arcforge-integration.html">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html">Building this site</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Developers and add-ons</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Extension points</span></nav>
+<details class="mobile-toc"><summary>Developers and add-ons: pages</summary><p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html">Developers and add-ons</a></li><li><a href="extension-points.html" aria-current="page" class="current">Extension points</a></li><li><a href="arcforge-integration.html">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html">Building this site</a></li></ol></nav></details>
+<h1>Extension points</h1>
+<p class="lead">The capabilities Encoded Logistics exposes on its blocks and items, and the public registries another mod can use - ELCL commands, job hosts, displays, pressurized sources and machine access - with short examples.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#capabilities">Capabilities</a></li><li class="toc-l2"><a href="#commands">ELCL commands:  CommandRegistry</a></li><li class="toc-l2"><a href="#job-hosts">Batch job hosts:  JobHosts</a></li><li class="toc-l2"><a href="#displays">Text displays:  Displays</a></li><li class="toc-l2"><a href="#pressurized">Gases and chemicals:  PressurizedSources</a></li><li class="toc-l2"><a href="#machines">Machines:  MachineBridges.setAccess</a></li><li class="toc-l2"><a href="#not">Things that are not extension points</a></li></ol></nav></details>
+<div class="page-body">
+<p>These are the places another mod can hook into Encoded Logistics. All of them are public Java, and the mod uses each one itself, but <strong>none of them is a stable API</strong>: names and signatures can change in any release. Add Encoded Logistics as a <code>compileOnly</code> dependency of the exact version you build against, and keep your integration optional (see <a href="arcforge-integration.html">The Arcforge integration</a> for one way to do that).</p>
+<p>All classes below are under <code>net.zagdrath.encodedlogistics</code>. Register everything once, during your mod's setup (your mod's constructor, or a setup event), and only when Encoded Logistics is loaded.</p>
+<h2 id="capabilities">Capabilities<a class="anchor" href="#capabilities" aria-label="Link to this section">#</a></h2>
+<p>The mod registers only NeoForge's standard capabilities (in <code>registry.ModCapabilities</code>). Other mods use them as they would anyone's:</p>
+<div class="table-wrap"><table><thead><tr><th>Capability</th><th>On</th></tr></thead><tbody><tr><td><code>Capabilities.Energy.BLOCK</code></td><td>The Network Controller (the whole structure's buffer), Power Inlet, Capacitor Bank, Lithography Press, PLC (its own buffer), and the Server Rack (FE into any connection point feeds its network)</td></tr><tr><td><code>Capabilities.Item.BLOCK</code></td><td>The Lithography Press, the Gateway, and the Terminal Desk's drawer (through its pedestal half)</td></tr><tr><td><code>Capabilities.Energy.ITEM</code></td><td>The Handheld Terminal (its battery) and the Energy Storage Drives (out of a holder, a drive is a battery item)</td></tr></tbody></table></div>
+<p>There are no capabilities for the network's storage itself: the way in and out for other mods' blocks is the cable parts (ports and the Inventory Tap), which use the standard capabilities of the block they face.</p>
+<h2 id="commands">ELCL commands: <code>CommandRegistry</code><a class="anchor" href="#commands" aria-label="Link to this section">#</a></h2>
+<p><code>elcl.cmd.CommandRegistry</code> holds every ELCL command by name. A command is registered once with its schema, and what runs it is bound to the name separately:</p>
+<pre class="code"><code>public static synchronized void register(CommandDefinition command)   // throws if the name is taken
+public static synchronized void bind(String name, CommandExecutor executor)   // throws if it isn&#x27;t registered</code></pre>
+<p>The schema drives everything else: the parser, the compiler's checks, the F4 prompter, F1 help, the command line and the VM all read it, and the same executor runs on the command line, in interactive programs and in batch jobs.</p>
+<pre class="code"><code>import net.zagdrath.encodedlogistics.elcl.ElclException;
+import net.zagdrath.encodedlogistics.elcl.ElclMessage;
+import net.zagdrath.encodedlogistics.elcl.ElclMessages;
+import net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition;
+import net.zagdrath.encodedlogistics.elcl.cmd.CommandRegistry;
+import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef;
+import net.zagdrath.encodedlogistics.elcl.exec.ElclContext;
+
+public final class MyElclCommands {
+    public static void register() {
+        CommandRegistry.register(CommandDefinition.of(&quot;RTVWIDGET&quot;, &quot;Retrieve Widget Count&quot;)
+                .auth(CommandDefinition.Auth.VIEW)              // the Firewall permission it needs (default NONE)
+                .positional(1)                                  // the first parameter may omit its keyword
+                .p(ParamDef.of(&quot;DEV&quot;, &quot;Device&quot;, ParamDef.Kind.DEVICE).req())
+                .p(ParamDef.of(&quot;MODE&quot;, &quot;Mode&quot;, ParamDef.Kind.SPECIAL).sv(&quot;*FAST&quot;, &quot;*SLOW&quot;).dft(&quot;*FAST&quot;))
+                .p(ParamDef.of(&quot;RTNVAL&quot;, &quot;Return value&quot;, ParamDef.Kind.VARIABLE).returns(ParamDef.VarType.INT))
+                .build());
+
+        CommandRegistry.bind(&quot;RTVWIDGET&quot;, call -&gt; {
+            ElclContext context = call.context(ElclContext.class);   // server, network, user; null off the server
+            String device = call.text(&quot;DEV&quot;);                        // names and special values come upper-cased
+            if (context == null || context.network() == null) {
+                throw new ElclException(&quot;ELC1302&quot;, device);          // a message the mod defines: &quot;Device &amp;1 is offline.&quot;
+            }
+            if (!device.startsWith(&quot;WDG&quot;)) {
+                // Your own message: an ID and text of your choosing, as SNDPGMMSG sends them.
+                throw new ElclException(ElclMessage.user(&quot;WDG0001&quot;, ElclMessages.SEVERE, &quot;No widget device &quot; + device));
+            }
+            call.returns(&quot;RTNVAL&quot;, 42L);                             // sets the RTN* variable, if one was given
+            call.send(ElclMessage.user(&quot;WDG0002&quot;, ElclMessages.INFO, &quot;Widgets counted.&quot;));
+        });
+    }
+}</code></pre>
+<p>What the pieces do:</p>
+<ul><li><strong><code>CommandDefinition.of(name, description)</code></strong> builds the schema. <code>.context(...)</code> says where it may run: <code>BOTH</code> (the default: command line and programs), <code>INTERACTIVE</code>, <code>BATCH</code> or <code>PROGRAM</code>. <code>.auth(...)</code> is one of <code>NONE</code>, <code>VIEW</code>, <code>INSERT</code>, <code>EXTRACT</code>, <code>CRAFT</code> or <code>CONFIGURE</code> (the Firewall's BUILD permission).</li><li><strong><code>ParamDef.of(keyword, label, kind)</code></strong> adds a parameter. The kinds are <code>CHAR</code>, <code>INT</code>, <code>DEC</code>, <code>LGL</code>, <code>NAME</code>, <code>QUALIFIED</code>, <code>ITEM</code>, <code>DEVICE</code>, <code>SPECIAL</code>, <code>MSGID</code>, <code>LABEL</code>, <code>VARIABLE</code>, <code>COMMAND</code>, <code>VALUE</code> and <code>TIME</code>. Builder calls: <code>.req()</code>, <code>.dft(value)</code>, <code>.sv(specials...)</code>, <code>.list(max)</code>, <code>.range(min, max)</code>, <code>.len(n)</code> (the prompter's field), <code>.returns(VarType)</code> (a <code>RTN*</code> parameter) and <code>.values(ValueList)</code> (what F4 lists).</li><li><strong>The <code>Invocation</code></strong> (<code>call</code>) gives the arguments: <code>text(...)</code>, <code>integer(...)</code> (raises <a class="msg" href="../elcl/messages.html#ELC0003"><code>ELC0003</code></a> or <a class="msg" href="../elcl/messages.html#ELC0004"><code>ELC0004</code></a> itself), <code>list(...)</code>, <code>given(...)</code> (given rather than defaulted), <code>returns(...)</code>, <code>send(...)</code>, <code>interactive()</code> and <code>context(type)</code>. An executor that has to wait can call <code>await(Wait)</code> when <code>canWait()</code> is true; the job then waits and the command runs again with <code>resumed()</code> set.</li><li><strong>Failing:</strong> throw an <code>ElclException</code>. <code>new ElclException(id, data...)</code> takes an ID the mod defines (its text comes from the mod's message list, see <a href="../elcl/messages.html">Message reference</a>); for your own text use <code>ElclMessage.user(id, severity, text)</code>.</li></ul>
+<p>Things to know:</p>
+<ul><li>A registered command with no executor bound answers <a class="msg" href="../elcl/messages.html#ELC0107"><code>ELC0107</code></a>.</li><li>A PLC that isn't on a network can't run your command (<a class="msg" href="../elcl/messages.html#ELC1502"><code>ELC1502</code></a>): only a fixed set of commands runs there.</li><li><code>CommandRegistry</code> registers the built-in commands when the class loads; registering a built-in's name throws.</li><li><code>bind</code> replaces an executor, so it can also replace a built-in command's. Don't.</li></ul>
+<h2 id="job-hosts">Batch job hosts: <code>JobHosts</code><a class="anchor" href="#job-hosts" aria-label="Link to this section">#</a></h2>
+<p><code>elcl.job.JobHosts.register(DeviceSources.Source&lt;JobHost&gt;)</code> adds a source of <strong>job hosts</strong>: devices that run batch jobs (<code>SBMJOB</code>). A source lists the hosts it has on a system (a network); the Compute Servers are a source registered by the mod itself, and the Midrange line adds another.</p>
+<pre class="code"><code>import java.util.List;
+
+import net.zagdrath.encodedlogistics.elcl.job.JobHost;
+import net.zagdrath.encodedlogistics.elcl.job.JobHosts;
+
+JobHosts.register(system -&gt; List.of(new JobHost() {
+    @Override public String name() { return &quot;WIDGET01&quot;; }    // its device name: SBMJOB HOST(), the screens
+    @Override public int capacity() { return 2; }            // batch jobs it runs at once
+    @Override public boolean resumes() { return false; }     // false: its jobs end (ELC0310) when it goes away
+    @Override public boolean online() { return true; }       // loaded and powered: it can run jobs now
+}));</code></pre>
+<p><code>system</code> is an <code>elcl.screen.ElclSystem</code> (<code>server()</code>, <code>network()</code>); return the hosts on that network. Every host the mod has returns <code>false</code> from <code>resumes()</code>.</p>
+<h2 id="displays">Text displays: <code>Displays</code><a class="anchor" href="#displays" aria-label="Link to this section">#</a></h2>
+<p><code>elcl.device.Displays.register(DeviceSources.Source&lt;DisplayDevice&gt;)</code> adds displays that <a class="cmd" href="../elcl/commands/SNDDSPTXT.html"><code>SNDDSPTXT</code></a> can write to. The mod registers the Display Panels this way. A <code>DisplayDevice</code> has a <code>name()</code>, <code>online()</code>, the number of <code>lines()</code> it shows, and <code>write(int line, String text, boolean clear)</code> (line 1-based; 0 is the line after the last one written). An overload of <code>write</code> with a size, colour and alignment has a default that ignores them.</p>
+<pre class="code"><code>import java.util.List;
+
+import net.zagdrath.encodedlogistics.elcl.device.DisplayDevice;
+import net.zagdrath.encodedlogistics.elcl.device.Displays;
+
+Displays.register(system -&gt; List.of(new DisplayDevice() {
+    private final String[] lines = new String[8];
+    @Override public String name() { return &quot;SIGN01&quot;; }
+    @Override public boolean online() { return true; }
+    @Override public int lines() { return lines.length; }
+    @Override public void write(int line, String text, boolean clear) {
+        if (clear) java.util.Arrays.fill(lines, &quot;&quot;);
+        lines[Math.max(1, Math.min(line, lines.length)) - 1] = text;   // show it on your block
+    }
+}));</code></pre>
+<p>Only <code>SNDDSPTXT</code> uses this interface; the other display commands (regions, widgets, graphs, images) work on Display Panels only.</p>
+<p>The same <code>DeviceSources</code> pattern is used for <code>elcl.device.Printers</code> (<code>PrinterDevice</code>), <code>elcl.device.Diskettes</code> (<code>DisketteDevice</code>) and <code>crafting.RecipeLibraries</code> (<code>RecipeLibrarySource</code>), which the Midrange line registers. The repository's <a href="https://github.com/zagdrath/encoded-logistics/blob/main/docs/elcl/INTERFACES.md">docs/elcl/INTERFACES.md</a> describes what each device interface expects. Each registry also has <code>unregister</code>.</p>
+<h2 id="pressurized">Gases and chemicals: <code>PressurizedSources</code><a class="anchor" href="#pressurized" aria-label="Link to this section">#</a></h2>
+<p><code>storage.PressurizedSources.register(PressurizedSource)</code> lets the network store another mod's gases (or chemicals) as <strong>pressurized</strong> resources, in Pressurized Storage Drives and the Pressurized tab of the terminals. Each source has its own id, which is also the namespace players filter by, and its own unit; there is no conversion between sources. Registering a second source with the same id replaces the first.</p>
+<pre class="code"><code>public interface PressurizedSource {
+    String id();                                   // &quot;arcforge&quot;
+    boolean isGas(Fluid fluid);                    // is this fluid one of your gases?
+    Optional&lt;Fluid&gt; fluid(Identifier gas);         // the fluid a gas is, for a mod whose gases are fluids
+    Component name(Identifier gas);
+    int color(Identifier gas);                     // 0xAARRGGBB, where the gas has no texture
+    List&lt;Identifier&gt; all();                        // every gas, sorted by id, for the filter picker
+    @Nullable Container container(ItemAccess access);   // a gas container item&#x27;s tank, or null
+}</code></pre>
+<p>A mod whose gases are NeoForge fluids (as Arcforge's are) gets them moved by every block that moves fluids, and the network keeps them under its id instead of as fluids. <code>Container</code> is a single gas tank in an item (<code>gas()</code>, <code>amount()</code>, <code>insert(...)</code>, <code>extract(...)</code>), so the terminals can fill and empty your gas items. The mod's own implementation is <code>compat.arcforge.ArcforgeGases</code>.</p>
+<h2 id="machines">Machines: <code>MachineBridges.setAccess</code><a class="anchor" href="#machines" aria-label="Link to this section">#</a></h2>
+<p><code>machine.MachineBridges.setAccess(MachineAccess)</code> sets how the <a class="item-link" href="../reference/items/small_wireless_bridge.html"><img class="icon" src="../assets/icons/encodedlogistics/small_wireless_bridge.png" alt="" width="20" height="20" loading="lazy">Small Wireless Bridge</a> reads and works the machine it is on: whether a block is a machine, its <code>MachineInfo</code> (status, progress, energy, heat, tanks, statistics, settings), switching it on and off, its redstone mode, side modes and auto-eject, its item and fluid handlers (for Gateways), and a listener for its status changes and finished operations.</p>
+<div class="callout warn" role="note"><p class="callout-title">One slot, and Arcforge has it</p><p><code>setAccess</code> holds a single <code>MachineAccess</code>, not a list. The Arcforge integration sets it at startup when Arcforge is installed. A second machine mod calling it would replace Arcforge's, and every bridge would then talk to that mod instead. In practice the Small Wireless Bridge works with Arcforge machines only.</p></div>
+<p>With nothing set (<code>MachineBridges.enabled()</code> is false), bridges are kept but do nothing.</p>
+<h2 id="not">Things that are not extension points<a class="anchor" href="#not" aria-label="Link to this section">#</a></h2>
+<ul><li>Audio: Speakers decode OGG and MP3 only, with no way to add a decoder or an audio source.</li><li>The ELCL trigger events are fired inside the Terminal OS (<code>elcl.exec.ElclEvents</code>), not as NeoForge events.</li><li>Other public classes (device interfaces such as <code>crafting.CraftingProvider</code> or <code>rack.TapeSource</code>) are the mod's own plumbing between its blocks, not meant for other mods.</li></ul>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="index.html" rel="prev"><span>Previous</span>Developers and add-ons</a><a class="next" href="arcforge-integration.html" rel="next"><span>Next</span>The Arcforge integration</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

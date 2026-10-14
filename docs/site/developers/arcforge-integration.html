@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Arcforge integration - Encoded Logistics</title>
+<meta name="description" content="How compat/arcforge uses Arcforge&#x27;s API - a compile-only dependency, a version check by reflection, and two classes loaded only when the check passes - as a worked example of an optional integration.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Developers and add-ons">
+<p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html">Developers and add-ons</a></li><li><a href="extension-points.html">Extension points</a></li><li><a href="arcforge-integration.html" aria-current="page" class="current">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html">Building this site</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Developers and add-ons</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">The Arcforge integration</span></nav>
+<details class="mobile-toc"><summary>Developers and add-ons: pages</summary><p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html">Developers and add-ons</a></li><li><a href="extension-points.html">Extension points</a></li><li><a href="arcforge-integration.html" aria-current="page" class="current">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html">Building this site</a></li></ol></nav></details>
+<h1>The Arcforge integration</h1>
+<p class="lead">How compat/arcforge uses Arcforge's API - a compile-only dependency, a version check by reflection, and two classes loaded only when the check passes - as a worked example of an optional integration.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#dependency">The dependency</a></li><li class="toc-l2"><a href="#classes">Three classes</a></li><li class="toc-l2"><a href="#version-check">The version check</a></li><li class="toc-l2"><a href="#machines">Machines:  ArcforgeMachines</a></li><li class="toc-l2"><a href="#gases">Gases:  ArcforgeGases</a></li><li class="toc-l2"><a href="#data">Data that needs Arcforge</a></li><li class="toc-l2"><a href="#tests">Tests</a></li><li class="toc-l2"><a href="#yours">Doing the same for your mod</a></li></ol></nav></details>
+<div class="page-body">
+<p>The mod's Arcforge support (<code>compat/arcforge</code>) is a small, complete example of an integration that stays optional: the mod loads and works without Arcforge, with an older Arcforge, or with an Arcforge whose API has moved on, and never touches a class that might not be there. What it does for players is on <a href="../integrations/arcforge.html">Arcforge</a>; this page is how it is built.</p>
+<h2 id="dependency">The dependency<a class="anchor" href="#dependency" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>Compile time only.</strong> <code>build.gradle</code> has <code>compileOnly "net.zagdrath.arcforge:arcforge-api:${arcforge_api_version}"</code> (<code>1.1.0+26.3</code> in <code>gradle.properties</code>). The API jar and its pom are kept in the repository under <code>libs/maven</code>, so local and CI builds resolve it the same way. Players install Arcforge itself, which contains the API; nothing of Arcforge's ships in Encoded Logistics.</li><li><strong>Optional in the mod metadata.</strong> <code>neoforge.mods.toml</code> lists <code>arcforge</code> as <code>type="optional"</code> with any version, so every Arcforge loads alongside, and the version question is settled at startup (below).</li><li><strong>Running with Arcforge in development:</strong> <code>-Parcforge_jar=&lt;path to an Arcforge 2.5.0+ jar&gt;</code> adds it to the dev runs and game tests (<code>localRuntime</code>).</li></ul>
+<h2 id="classes">Three classes<a class="anchor" href="#classes" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Class</th><th>Touches Arcforge's classes?</th><th>Does</th></tr></thead><tbody><tr><td><code>ArcforgeCompat</code></td><td>No</td><td>Checks Arcforge is there and its API version is one this was built for, then loads the other two by name</td></tr><tr><td><code>ArcforgeMachines</code></td><td>Yes</td><td>Implements the mod's <code>MachineAccess</code> with Arcforge's machine control API, for the Small Wireless Bridge</td></tr><tr><td><code>ArcforgeGases</code></td><td>Yes</td><td>Implements the mod's <code>PressurizedSource</code> with Arcforge's gas API, for Pressurized drives</td></tr></tbody></table></div>
+<p>The two classes that use Arcforge's API are package-private and referred to only by name, so the JVM never loads them (or Arcforge's classes) unless the check passes.</p>
+<h2 id="version-check">The version check<a class="anchor" href="#version-check" aria-label="Link to this section">#</a></h2>
+<p><code>ArcforgeCompat.init()</code> is called from the mod's constructor:</p>
+<ol><li><strong>Is Arcforge loaded?</strong> If <code>ModList</code> has no <code>arcforge</code>, it returns: nothing else happens.</li><li><strong>Read the API version by reflection.</strong> It loads <code>net.zagdrath.arcforge.api.ArcforgeApi</code> with <code>Class.forName</code> and reads its <code>API_VERSION_MAJOR</code>, <code>API_VERSION_MINOR</code> and <code>API_VERSION</code> fields. Reading them by reflection matters: <code>static final</code> constants referenced directly would be inlined at compile time, giving the version the mod was built against instead of the one installed. A missing class (Arcforge before 2.5.0) logs a warning and stops.</li><li><strong>Compare.</strong> The major version must equal the one built against (1); the minor must be at least 0 for machines and at least 1 for gases. A newer minor version is fine (minor versions only add); another major version turns it off, with a warning naming both versions.</li><li><strong>Machines.</strong> <code>MachineBridges.setAccess(...)</code> with a new <code>ArcforgeMachines</code>, created by reflection.</li><li><strong>Gases,</strong> if the minor version allows: <code>PressurizedSources.register(...)</code> with a new <code>ArcforgeGases</code>.</li></ol>
+<p>Every step catches <code>ReflectiveOperationException</code> and <code>LinkageError</code>, so an Arcforge that is there but different from what was expected disables the integration with a log line instead of crashing the game. The system property <code>-Dencodedlogistics.arcforgeApiMajor=N</code> overrides the major version it reads, to test the check without another Arcforge.</p>
+<pre class="code"><code>// The shape of ArcforgeCompat.init(), shortened.
+Class&lt;?&gt; api = Class.forName(&quot;net.zagdrath.arcforge.api.ArcforgeApi&quot;);
+int major = api.getField(&quot;API_VERSION_MAJOR&quot;).getInt(null);
+int minor = api.getField(&quot;API_VERSION_MINOR&quot;).getInt(null);
+if (major == 1 &amp;&amp; minor &gt;= 0) {
+    MachineBridges.setAccess((MachineAccess) Class.forName(MACHINES_CLASS).getDeclaredConstructor().newInstance());
+    if (minor &gt;= 1) {
+        PressurizedSources.register((PressurizedSource) Class.forName(GASES_CLASS).getDeclaredConstructor().newInstance());
+    }
+}</code></pre>
+<h2 id="machines">Machines: <code>ArcforgeMachines</code><a class="anchor" href="#machines" aria-label="Link to this section">#</a></h2>
+<p>It implements <code>machine.MachineAccess</code> (see <a href="extension-points.html#machines">Machines</a>) with the Arcforge API's <code>api.machine</code> packages:</p>
+<ul><li><strong>Finding a machine:</strong> the <code>MachineCapabilities.MACHINE_CONTROL</code> block capability. A bridged machine is followed with a <code>BlockCapabilityCache</code>, so a machine unloaded and loaded again, or a multiblock re-formed, is found again and its listener moved to the new instance.</li><li><strong>Reading it:</strong> <code>MachineControl</code>'s status, reason, progress, outputs, <code>energy()</code>, <code>heat()</code>, <code>fluids()</code> (<code>MachineFluids</code>), <code>statistics()</code> and <code>settings()</code> become the mod's own <code>MachineInfo</code>, so nothing outside this class sees an Arcforge type. A status added to the API after 1.0 maps to <code>UNKNOWN</code>.</li><li><strong>Changing it:</strong> enable, redstone mode, side modes and auto-eject go through Arcforge's <code>MachineSettings</code>, whose <code>SettingResult</code> maps onto the mod's <code>Result</code> (applied, unchanged, unsupported, invalid, rejected), plus the mod's own "no machine" and "not formed". Arcforge's rules decide; nothing is forced.</li><li><strong>Items and fluids:</strong> the machine's own item and fluid handlers, with its slot and tank rules, for the Gateway.</li><li><strong>Events:</strong> a <code>MachineListener</code> passes status changes and completed operations on, which the bridge turns into the <code>*MCHIDLE</code>, <code>*MCHFAULT</code>, <code>*MCHNOPWR</code> and <code>*MCHDONE</code> trigger events.</li></ul>
+<h2 id="gases">Gases: <code>ArcforgeGases</code><a class="anchor" href="#gases" aria-label="Link to this section">#</a></h2>
+<p>It implements <code>storage.PressurizedSource</code> (see <a href="extension-points.html#pressurized">Gases</a>) with <code>api.gas</code>:</p>
+<ul><li>Arcforge's gases are NeoForge fluids. <code>GasRegistry.isGas(fluid)</code> (lighter than air, or tagged <code>#arcforge:gases</code>) says which fluids are gases, and the network stores those as pressurized resources under the id <code>arcforge</code>, in mB, under their fluid id. Because they are fluids, every block that moves fluids moves them; no gas capability is needed on the mod's blocks.</li><li>Names and colours come from <code>GasRegistry</code>.</li><li>Gas Cartridges are reached through <code>GasCapabilities.ITEM</code>: the cartridge's first tank becomes a <code>Container</code>.</li></ul>
+<h2 id="data">Data that needs Arcforge<a class="anchor" href="#data" aria-label="Link to this section">#</a></h2>
+<p>The nine Arc Crusher recipes in <code>data/encodedlogistics/recipe/crushing/</code> are of Arcforge's type <code>arcforge:crushing</code>, and each carries a NeoForge load condition so it loads only when Arcforge is there:</p>
+<pre class="code"><code>&quot;neoforge:conditions&quot;: [{ &quot;type&quot;: &quot;neoforge:mod_loaded&quot;, &quot;modid&quot;: &quot;arcforge&quot; }]</code></pre>
+<p>They are the only conditional recipes in the mod.</p>
+<h2 id="tests">Tests<a class="anchor" href="#tests" aria-label="Link to this section">#</a></h2>
+<ul><li><code>ArcforgeCompatTest</code> (a unit test) covers the version check and the device-name prefixes without Arcforge.</li><li><code>ArcforgeGameTests</code> (game tests) are registered only while the integration is on, so they run only with <code>-Parcforge_jar=...</code>: attaching and linking a bridge, taking it off, a save and reload, a crafting job through a Gateway, power from the network, every machine command, and the machine events.</li></ul>
+<h2 id="yours">Doing the same for your mod<a class="anchor" href="#yours" aria-label="Link to this section">#</a></h2>
+<p>The pattern carries over to an integration of your own with Encoded Logistics: depend on it <code>compileOnly</code>, mark it optional, check <code>ModList</code> before touching anything, keep every class that names its types behind a class loaded by name, and catch <code>LinkageError</code> around it. Remember that Encoded Logistics' hooks are not a stable API (see <a href="extension-points.html">Extension points</a>), so check its version too.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="extension-points.html" rel="prev"><span>Previous</span>Extension points</a><a class="next" href="elcl-internals.html" rel="next"><span>Next</span>Terminal OS and ELCL internals</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

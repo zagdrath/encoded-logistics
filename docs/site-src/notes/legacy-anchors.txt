@@ -1,0 +1,142 @@
+# Every id on the old single-page reference (docs/terminal-os-elcl.html before the site), with its heading.
+# The redirect page maps each to its new page; the build fails if one is missing.
+top	Terminal OS and ELCL Reference
+overview	1. Overview
+what-is	
+systems	
+persistence	
+sign-on	
+security	
+seclvl	
+rack-security	
+using	2. Using the terminal
+screen-layout	
+keys	
+mouse	
+command-line	
+prompter	
+help-windows	
+phosphor	
+screens	3. Screens
+screen-list	
+main-menu	
+scr-signon	
+scr-cmdent	
+scr-desk	
+crafthistory	
+scr-wrklib	
+scr-wrkmbr	
+scr-wrkactjob	
+scr-wrkjob	
+scr-dspjoblog	
+scr-wrkjobscde	
+scr-wrktrgevt	
+scr-dspmsg	
+scr-wrksplf	
+scr-dspsplf	
+scr-wrksysval	
+scr-wrkmch	
+scr-morekeys	
+list-screens	
+libraries	4. Libraries, members and the editor
+libs-members	
+editor	
+editor-line-commands	
+editor-commands	
+editor-keys	
+syntax-check	
+compiling	
+listing	
+storage-cost	
+folder-sync	
+savlib	
+database	5. Database files
+db-objects	
+db-define	
+db-create	
+db-programs	
+db-screens	
+db-query	
+db-copy	
+db-limits	
+db-example	
+language	6. The ELCL language
+lexical	
+structure	
+grammar	
+types	
+expressions	
+builtins	
+control-flow	
+subroutines	
+errors	
+calling	
+running	
+return-params	
+limits	
+examples	
+ex-restock	
+ex-sortdemo	
+ex-upsalert	
+ex-nocwall	
+ex-archive	
+commands	7. Command reference
+cmd-overview	
+cmd-program	
+cmd-lists	
+cmd-inventory	
+cmd-crafting	
+cmd-devices	
+device-names	
+cmd-machines	
+cmd-power	
+cmd-redstone	
+cmd-plc	
+cmd-signals	
+cmd-messages	
+cmd-os-libraries	
+cmd-os-jobs	
+cmd-os-sysvals	
+cmd-db	
+cmd-screens	
+cmd-desk	
+cmd-extra	
+messages	8. Message reference
+msg-00	
+msg-01	
+msg-02	
+msg-03	
+msg-04	
+msg-12	
+msg-13	
+msg-14	
+msg-15	
+msg-22	
+msg-24	
+msg-usr	
+jobs	9. Jobs, scheduling, triggers, message queues, spooled output and system values
+job-basics	
+job-logs	
+schedules	
+triggers	
+msgqueues	
+spooled	
+printing	
+midrange	
+display	
+arcforge	
+sysvals	
+control-interface	10. The Control Interface and PLCs
+plc	
+signals	
+status	11. Status, limits and server config
+hardware	
+known-limits	
+config	
+developers	12. For developers
+dev-packages	
+dev-flow	
+dev-add-command	
+dev-services	
+dev-tests	
+differences	13. Where the spec and the code differ

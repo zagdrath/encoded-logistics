@@ -31,8 +31,12 @@ public final class StoredSysvalService implements SysvalService {
             new Definition("PHOSPHOR", "Default screen colour", List.of("*GREEN", "*AMBER", "*WHITE")));
 
     private static Map<String, String> defaults(ElclSystem system) {
+        return defaults(system.defaultName());
+    }
+
+    private static Map<String, String> defaults(String systemName) {
         Map<String, String> values = new LinkedHashMap<>();
-        values.put("SYSNAME", system.defaultName());
+        values.put("SYSNAME", systemName);
         values.put("DATFMT", "*DAY");
         values.put("SECLVL", "30");
         values.put("QMAXJOB", "16");
@@ -40,6 +44,17 @@ public final class StoredSysvalService implements SysvalService {
         values.put("CRFLOGRTN", Integer.toString(ElclConfig.craftLogRetention()));
         values.put("PHOSPHOR", "*GREEN");
         return values;
+    }
+
+    // Every system value at its default, for a system named systemName (the documentation export).
+    public static List<Sysval> definitions(String systemName) {
+        Map<String, String> defaults = defaults(systemName);
+        List<Sysval> list = new ArrayList<>();
+        for (Definition definition : DEFINITIONS) {
+            String value = defaults.get(definition.name());
+            list.add(new Sysval(definition.name(), value, value, definition.description(), definition.allowed()));
+        }
+        return list;
     }
 
     @Override

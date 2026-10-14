@@ -26,6 +26,20 @@ sourceSets.main.resources {
     exclude("src/generated/**/.cache") // datagen cache files
 }
 
+// The documentation site's exporters (docs/site-src/PUBLISHING.md): they join the mod in the docsExport and docsIcons
+// runs only, so nothing of them ships in the jar.
+sourceSets {
+    docs {
+        java.srcDir 'src/docs/java'
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+configurations {
+    docsImplementation.extendsFrom implementation
+    docsCompileOnly.extendsFrom compileOnly
+}
+
 repositories {
     // JEI
     maven {
@@ -106,6 +120,24 @@ runs {
     // The gametest system is also enabled by default for other run configs under the /test command.
     gameTestServer {
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+    }
+
+    // A server that writes the documentation data (registries, recipes, tags, config, ELCL commands and messages, device
+    // types, sounds) to docs/site-src/data and stops: ./gradlew exportDocsData.
+    docsExport {
+        runType 'server'
+        modSource project.sourceSets.docs
+        systemProperty 'encodedlogistics.docs.export', file('docs/site-src/data').absolutePath
+        argument '--nogui'
+    }
+
+    // A client that renders every block and item icon the way inventories show them, into docs/site/assets/icons,
+    // and quits: ./gradlew renderDocsIcons. It opens a game window for the minute it takes.
+    docsIcons {
+        runType 'client'
+        modSource project.sourceSets.docs
+        systemProperty 'encodedlogistics.docs.icons', file('docs/site/assets/icons').absolutePath
+        systemProperty 'encodedlogistics.docs.export', file('docs/site-src/data').absolutePath
     }
 
     clientData {
@@ -242,3 +274,77 @@ idea {
         downloadJavadoc = true
     }
 }
+
+// The documentation site: ./gradlew buildDocs exports the mod's data, renders the icons, compiles the ELCL examples
+// and builds docs/site (docs/site-src/PUBLISHING.md). Icons need a game window, so CI and -PskipDocsIcons leave out
+// renderDocsIcons and use the icons already in docs/site/assets/icons.
+def docsPython = project.findProperty('docs_python') ?: (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows') ? 'python' : 'python3')
+def docsSkipIcons = project.hasProperty('skipDocsIcons') || System.getenv('CI') != null
+
+tasks.register('prepareDocsRuns') {
+    def dirs = [file('run/docsExport'), file('run/docsIcons')]
+    outputs.dirs(dirs)
+    doLast {
+        dirs.each { dir ->
+            dir.mkdirs()
+            new File(dir, 'eula.txt').text = 'eula=true\n'
+            // A small, quiet world: the export needs only the registries and the data packs.
+            new File(dir, 'server.properties').text = 'level-name=docs-world\nlevel-type=minecraft\\:flat\ngenerate-structures=false\nspawn-protection=0\nonline-mode=false\nmax-players=1\nsync-chunk-writes=false\n'
+        }
+    }
+}
+tasks.matching { it.name == 'runDocsExport' || it.name == 'runDocsIcons' }.configureEach {
+    dependsOn 'prepareDocsRuns'
+}
+
+// The Terminal OS screens, composed headless as the layout tests do (DocsScreensExport).
+tasks.register('exportDocsScreens', Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter { includeTestsMatching 'net.zagdrath.encodedlogistics.client.crt.DocsScreensExport' }
+    systemProperty 'encodedlogistics.docs.export', file('docs/site-src/data').absolutePath
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('exportDocsData') {
+    group = 'documentation'
+    description = 'Writes the mod data the documentation site is built from to docs/site-src/data.'
+    dependsOn 'runDocsExport', 'exportDocsScreens'
+}
+
+tasks.register('renderDocsIcons') {
+    group = 'documentation'
+    description = 'Renders every block and item icon to docs/site/assets/icons (opens a game window).'
+    dependsOn 'runDocsIcons'
+}
+
+// Every ELCL program and snippet in the pages, pulled out for DocsExamplesTest to compile.
+tasks.register('docsSnippets', Exec) {
+    commandLine docsPython, 'tools/docs/build.py', 'snippets'
+}
+
+tasks.register('docsExamplesTest', Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter { includeTestsMatching 'net.zagdrath.encodedlogistics.elcl.DocsExamplesTest' }
+    // -PdocsSnippetsDir=FOLDER compiles the programs build.py check wrote there instead (one page's, say).
+    if (project.findProperty('docsSnippetsDir')) {
+        systemProperty 'encodedlogistics.docs.snippets', file(project.property('docsSnippetsDir')).absolutePath
+    } else {
+        dependsOn 'docsSnippets'
+    }
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('buildDocs', Exec) {
+    group = 'documentation'
+    description = 'Rebuilds the documentation site in docs/site and runs its checks.'
+    dependsOn 'exportDocsData', 'docsExamplesTest'
+    if (!docsSkipIcons) {
+        dependsOn 'renderDocsIcons'
+    }
+    commandLine docsPython, 'tools/docs/build.py', 'build'
+}
+tasks.matching { it.name == 'runDocsIcons' }.configureEach { mustRunAfter 'runDocsExport' }

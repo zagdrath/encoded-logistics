@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RCVF - Encoded Logistics</title>
+<meta name="description" content="Receive File">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">RCVF</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>RCVF</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-pgm">Programs only</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Receive File</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>RCVF [OPNID(*NONE | name (up to 10 characters))]</code></pre>
+<p>The first parameter can be given without its keyword, in that order: <code>OPNID</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>OPNID</code></td><td>Open file identifier</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long</span></td><td>No</td><td><code>*NONE</code></td><td><code>*NONE</code></td></tr></tbody></table></div>
+<p><code>RCVF</code> reads the next record of a file the program declared with <a class="cmd" href="DCLF.html"><code>DCLF</code></a> into that file's field variables. A keyed file is read in key order; a file without a key in the order its records were written. The first <code>RCVF</code> reads the first record, and each one after reads the record after the last one read. It sends no message when it reads a record.</p>
+<ul><li><strong>At the end</strong> it fails with <a class="msg" href="../messages.html#ELC2201"><code>ELC2201</code></a>, and keeps failing with it on every <code>RCVF</code> until you go back with <a class="cmd" href="POSDBF.html"><code>POSDBF</code></a> <code>POSITION(*START)</code> or <a class="cmd" href="CLOF.html"><code>CLOF</code></a>. Monitor for it to end a read loop: <code>MONMSG MSGID(ELC2201) EXEC(LEAVE)</code>. On an empty file the first <code>RCVF</code> gets it.</li><li><strong>The record it reads</strong> becomes the one <a class="cmd" href="UPDRCD.html"><code>UPDRCD</code></a> and <a class="cmd" href="DLTRCD.html"><code>DLTRCD</code></a> work on. At the end there's none.</li><li><strong>Reading on</strong> goes by key: records other jobs write or delete between your reads are seen (or skipped) as their keys fall after or before where you've got to.</li><li><strong>System files</strong> (<code>ELSYS/INVITEMS</code>, <code>DEVICES</code>, <code>CRFHIST</code>, <code>JOBS</code>) are made from the network as they're read. A read from the top sees the network as it is now; reads on from there see the same picture for the rest of that game tick. Reading them needs the Firewall's view permission (<a class="msg" href="../messages.html#ELC0401"><code>ELC0401</code></a>).</li><li>An open ID no <code>DCLF</code> declares is <a class="msg" href="../messages.html#ELC2206"><code>ELC2206</code></a> when the program is compiled; a field changed since then is <a class="msg" href="../messages.html#ELC2207"><code>ELC2207</code></a> (see <a class="cmd" href="DCLF.html"><code>DCLF</code></a>).</li></ul>
+<p>To find one record by its key instead, use <a class="cmd" href="CHNRCD.html"><code>CHNRCD</code></a>.</p>
+<div class="code-block"><pre class="code elcl"><code>PGM
+  DCLF FILE(ELSYS/INVITEMS)
+  DCL  VAR(&amp;TOTAL) TYPE(*INT)
+  DCL  VAR(&amp;KINDS) TYPE(*INT)
+  DOWHILE COND(<span class="s">&#x27;1&#x27;</span>)
+    RCVF
+    MONMSG MSGID(ELC2201) EXEC(LEAVE)   <span class="c">/* end of file */</span>
+    IF COND(&amp;TYPE *EQ <span class="s">&#x27;ITEM&#x27;</span>) THEN(DO)
+      CHGVAR VAR(&amp;TOTAL) VALUE(&amp;TOTAL + &amp;HOT + &amp;COLD)
+      CHGVAR VAR(&amp;KINDS) VALUE(&amp;KINDS + 1)
+    ENDDO
+  ENDDO
+  SNDPGMMSG MSG(%CHAR(&amp;KINDS) *BCAT <span class="s">&#x27;kinds of item,&#x27;</span> *BCAT %CHAR(&amp;TOTAL) *BCAT <span class="s">&#x27;in all&#x27;</span>)
+ENDPGM</code></pre></div>
+<h2 id="see-also">Database files</h2><p><a class="cmd" href="DCLF.html"><code>DCLF</code></a> <a class="cmd" href="POSDBF.html"><code>POSDBF</code></a> <a class="cmd" href="CLOF.html"><code>CLOF</code></a> <a class="cmd" href="CHNRCD.html"><code>CHNRCD</code></a> <a class="cmd" href="WRTRCD.html"><code>WRTRCD</code></a> <a class="cmd" href="UPDRCD.html"><code>UPDRCD</code></a> <a class="cmd" href="DLTRCD.html"><code>DLTRCD</code></a> <a class="cmd" href="CRTPF.html"><code>CRTPF</code></a> <a class="cmd" href="CHGPF.html"><code>CHGPF</code></a> <a class="cmd" href="DLTF.html"><code>DLTF</code></a> <a class="cmd" href="CLRPFM.html"><code>CLRPFM</code></a> <a class="cmd" href="CPYF.html"><code>CPYF</code></a> <a class="cmd" href="CPYTOIMPF.html"><code>CPYTOIMPF</code></a> <a class="cmd" href="CPYFRMIMPF.html"><code>CPYFRMIMPF</code></a> <a class="cmd" href="RUNQRY.html"><code>RUNQRY</code></a> <a class="cmd" href="WRKF.html"><code>WRKF</code></a> <a class="cmd" href="DSPPFM.html"><code>DSPPFM</code></a> <a class="cmd" href="DSPFD.html"><code>DSPFD</code></a> <a class="cmd" href="UPDDTA.html"><code>UPDDTA</code></a></p>
+<p><a href="index.html#db">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUNQRY - Encoded Logistics</title>
+<meta name="description" content="Run Query">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">RUNQRY</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>RUNQRY</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Run Query</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>RUNQRY FILE(library/name) [QRYSLT(*ALL | text)] [SORT(*NONE | *ASCEND | *DESCEND | name (up to 10 characters))] [OUTPUT(*DISPLAY | *PRINT | *OUTFILE)] [OUTFILE(library/name)]</code></pre>
+<p>The first parameter can be given without its keyword, in that order: <code>FILE</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>FILE</code></td><td>File</td><td>Library/name<br><span class="muted">prompter field 21 long; F4 lists files</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>QRYSLT</code></td><td>Record selection expression</td><td>Text<br><span class="muted">prompter field 64 long</span></td><td>No</td><td><code>*ALL</code></td><td><code>*ALL</code></td></tr><tr><td><code>SORT</code></td><td>Sort fields</td><td>Name (up to 10 characters)<br><span class="muted">a list of up to 8 values; prompter field 10 long</span></td><td>No</td><td><code>*NONE</code></td><td><code>*NONE</code>, <code>*ASCEND</code>, <code>*DESCEND</code></td></tr><tr><td><code>OUTPUT</code></td><td>Output</td><td>Special value</td><td>No</td><td><code>*DISPLAY</code></td><td><code>*DISPLAY</code>, <code>*PRINT</code>, <code>*OUTFILE</code></td></tr><tr><td><code>OUTFILE</code></td><td>Output file</td><td>Library/name<br><span class="muted">prompter field 21 long; F4 lists files</span></td><td>No</td><td></td><td></td></tr></tbody></table></div>
+<p><code>RUNQRY</code> picks records out of a physical file, sorts them, and shows, prints or saves the result. The file isn't changed. It works on any file, the <code>ELSYS</code> system files included (the network's data as it is now; they need the Firewall's view permission, <a class="msg" href="../messages.html#ELC0401"><code>ELC0401</code></a>). Without a library, the file is looked for down your library list.</p>
+<h2 id="selecting-and-sorting">Selecting and sorting<a class="anchor" href="#selecting-and-sorting" aria-label="Link to this section">#</a></h2>
+<ul><li><strong><code>QRYSLT</code></strong> is an ELCL condition over the file's field names, up to 64 characters: every operator and built-in function of the <a href="../language.html">language</a> works (<code>*EQ</code>, <code>*LT</code>, <code>*AND</code>, <code>*OR</code>, <code>*NOT</code>, <code>%SST</code>, <code>*CAT</code>...). Write a field bare (<code>QTY</code>) or as <code>&amp;QTY</code>, and a literal in double quotes (<code>"IRON"</code>), since the whole condition is already in single quotes. A record is selected when the condition is true for it. A name that isn't a field of the file is <a class="msg" href="../messages.html#ELC2242"><code>ELC2242</code></a>; a condition that doesn't parse fails with the parser's message. <code>*ALL</code>, the default, selects every record.</li><li><strong><code>SORT</code></strong> lists up to four fields, most important first, each followed by <code>*DESCEND</code> to put the highest first (<code>*ASCEND</code>, lowest first, is the default and may be written too). Records the sort can't tell apart keep the file's order. <code>*NONE</code>, the default, keeps the file's order: key order, or as written. A fifth field is <a class="msg" href="../messages.html#ELC2224"><code>ELC2224</code></a>; a <code>*DESCEND</code> with no field before it <a class="msg" href="../messages.html#ELC0103"><code>ELC0103</code></a>.</li></ul>
+<h2 id="where-the-result-goes">Where the result goes<a class="anchor" href="#where-the-result-goes" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th><code>OUTPUT</code></th><th>What you get</th></tr></thead><tbody><tr><td><code>*DISPLAY</code> (default)</td><td>Typed on a command line: the <strong>Display Report</strong> screen, laid out as <a class="cmd" href="DSPPFM.html"><code>DSPPFM</code></a>'s, with how many records were selected of how many. PageUp / PageDown roll it, F19 / F20 shift 40 columns. In a program or a batch job, where there's no screen to show it on, it's printed as with <code>*PRINT</code>.</td></tr><tr><td><code>*PRINT</code></td><td>The report (file, selection, date, system, column headings, the records, the count) as the spooled file <code>QPQUPRFIL</code> in your job, in Work with Output (<a class="cmd" href="WRKSPLF.html"><code>WRKSPLF</code></a>), 60 lines a page. 6=Print there puts it on the <a class="item-link" href="../../reference/items/line_printer.html"><img class="icon" src="../../assets/icons/encodedlogistics/line_printer.png" alt="" width="20" height="20" loading="lazy">Line Printer</a>.</td></tr><tr><td><code>*OUTFILE</code></td><td>The selected records, in the query's order, saved as the file named in <code>OUTFILE</code> (required with <code>*OUTFILE</code>: <a class="msg" href="../messages.html#ELC0102"><code>ELC0102</code></a>). It's made with the queried file's fields but no key, and the text <code>Query of LIB/FILE</code>, in the library named or your current library. A file of that name there is <strong>replaced</strong>, whatever it held.</td></tr></tbody></table></div>
+<p>Run on the server (every output but the Display Report screen), <code>RUNQRY</code> sends <a class="msg" href="../messages.html#ELC2238"><code>ELC2238</code></a>: how many records the query selected, of how many in the file. Writing an <code>OUTFILE</code> needs <code>*CHANGE</code> on its library (<a class="msg" href="../messages.html#ELC0401"><code>ELC0401</code></a>), and can't be in <code>ELSYS</code> (<a class="msg" href="../messages.html#ELC0205"><code>ELC0205</code></a>); it can't hold more than <a class="cfg" href="../../reference/config.html#cfg-elcl-maxRecordsPerFile"><code>elcl.maxRecordsPerFile</code></a> records (<a class="msg" href="../messages.html#ELC2208"><code>ELC2208</code></a>).</p>
+<pre class="term" aria-label="Terminal screen"> RUNQRY                          Display Report                System:  ELNET01
+                                                                Day 2  07:14:22
+ Query . . . . . :   ZAGLIB/STOCK               Selected  . :   2 of 3
+ Position to record .                                   Columns . . :  1 - 78
+*...+....1....+....2....+....3....+....4....+....5....+....6....+....7....+...
+Item                   Quantity        COST  HOT  SEEN
+IRON_INGOT                   40        1.50  1    00002 07:00:00
+GOLD_INGOT                    3        9.99  1    00003 07:00:00
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                         Bottom
+
+
+ F1=Help  F3=Exit  F5=Refresh  F12=Cancel  F19=Left  F20=Right</pre>
+<h2 id="examples">Examples<a class="anchor" href="#examples" aria-label="Link to this section">#</a></h2>
+<div class="code-block"><pre class="code elcl"><code><span class="c">/* Items under a stack, fewest on the drives first, to Work with Output */</span>
+RUNQRY FILE(ELSYS/INVITEMS) QRYSLT(<span class="s">&#x27;HOT + COLD *LT 64 *AND TYPE *EQ &quot;ITEM&quot;&#x27;</span>) +
+       SORT(HOT *ASCEND ITEM) OUTPUT(*PRINT)
+<span class="c">/* The devices that aren&#x27;t online, saved as a file of their own */</span>
+RUNQRY FILE(ELSYS/DEVICES) QRYSLT(<span class="s">&#x27;STATUS *NE &quot;*ONLINE&quot;&#x27;</span>) OUTPUT(*OUTFILE) +
+       OUTFILE(ZAGLIB/DOWNDEV)
+<span class="c">/* The crafting jobs that failed, newest first */</span>
+RUNQRY FILE(ELSYS/CRFHIST) QRYSLT(<span class="s">&#x27;STATUS *EQ &quot;*FAILED&quot;&#x27;</span>) SORT(ENDED *DESCEND) OUTPUT(*PRINT)</code></pre></div>
+<p>A Display Panel can show a query's result as a live table: see <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a> <code>WDG(*TABLE)</code>. More on queries: <a href="../database-files.html#db-query">Queries (RUNQRY)</a>.</p>
+<h2 id="see-also">Database files</h2><p><a class="cmd" href="DCLF.html"><code>DCLF</code></a> <a class="cmd" href="RCVF.html"><code>RCVF</code></a> <a class="cmd" href="POSDBF.html"><code>POSDBF</code></a> <a class="cmd" href="CLOF.html"><code>CLOF</code></a> <a class="cmd" href="CHNRCD.html"><code>CHNRCD</code></a> <a class="cmd" href="WRTRCD.html"><code>WRTRCD</code></a> <a class="cmd" href="UPDRCD.html"><code>UPDRCD</code></a> <a class="cmd" href="DLTRCD.html"><code>DLTRCD</code></a> <a class="cmd" href="CRTPF.html"><code>CRTPF</code></a> <a class="cmd" href="CHGPF.html"><code>CHGPF</code></a> <a class="cmd" href="DLTF.html"><code>DLTF</code></a> <a class="cmd" href="CLRPFM.html"><code>CLRPFM</code></a> <a class="cmd" href="CPYF.html"><code>CPYF</code></a> <a class="cmd" href="CPYTOIMPF.html"><code>CPYTOIMPF</code></a> <a class="cmd" href="CPYFRMIMPF.html"><code>CPYFRMIMPF</code></a> <a class="cmd" href="WRKF.html"><code>WRKF</code></a> <a class="cmd" href="DSPPFM.html"><code>DSPPFM</code></a> <a class="cmd" href="DSPFD.html"><code>DSPFD</code></a> <a class="cmd" href="UPDDTA.html"><code>UPDDTA</code></a></p>
+<p><a href="index.html#db">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

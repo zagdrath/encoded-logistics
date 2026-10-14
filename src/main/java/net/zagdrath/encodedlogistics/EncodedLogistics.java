@@ -95,7 +95,7 @@ public class EncodedLogistics {
 
     // FML 12.0.8 (NeoForge 26.3.0.37-beta) renamed COMMON to LOCAL. Looked up by name so the mod runs on both sides of
     // the rename while 26.3 is in beta.
-    private static ModConfig.Type localConfigType() {
+    public static ModConfig.Type localConfigType() {
         for (ModConfig.Type type : ModConfig.Type.values()) {
             if (type.name().equals("LOCAL")) {
                 return type;

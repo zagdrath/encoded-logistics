@@ -447,7 +447,7 @@ final class BuiltinCommands {
                 .p(p("TOUSR", "To user", Kind.NAME).sv("*REQUESTER", "*SYSOPR", "*ALL").dft("*REQUESTER"))
                 .p(p("TOTRM", "To terminal", Kind.DEVICE).sv("*NONE").dft("*NONE")));
         add(CommandDefinition.of("DSPMSG", "Display Messages").context(INTERACTIVE).positional(1)
-                .p(p("USR", "User", Kind.NAME).sv("*CURRENT").dft("*CURRENT")));
+                .p(p("USR", "User", Kind.NAME).sv("*CURRENT", "*SYSOPR").dft("*CURRENT")));
         add(CommandDefinition.of("SNDDSPTXT", "Send Display Text").positional(2)
                 .p(p("DEV", "Device", Kind.DEVICE).req())
                 .p(p("TEXT", "Text", Kind.CHAR).req().len(64))

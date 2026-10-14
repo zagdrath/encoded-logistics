@@ -73,7 +73,7 @@ public final class Compiler {
             "WHEN", "OTHERWISE", "MONMSG");
 
     // Built-ins: argument counts and what they give (null: the type of their numeric arguments).
-    private record Builtin(int min, int max, @Nullable VarType result) {}
+    public record Builtin(int min, int max, @Nullable VarType result) {}
 
     private static final Map<String, Builtin> BUILTINS = Map.ofEntries(Map.entry("%SST", new Builtin(3, 3, VarType.CHAR)),
             Map.entry("%TRIM", new Builtin(1, 1, VarType.CHAR)), Map.entry("%TRIML", new Builtin(1, 1, VarType.CHAR)),
@@ -84,6 +84,11 @@ public final class Compiler {
             Map.entry("%ABS", new Builtin(1, 1, null)), Map.entry("%MIN", new Builtin(2, 2, null)), Map.entry("%MAX", new Builtin(2, 2, null)),
             Map.entry("%SIZE", new Builtin(1, 1, VarType.INT)), Map.entry("%ELEM", new Builtin(2, 2, VarType.CHAR)),
             Map.entry("%NAME", new Builtin(1, 1, VarType.CHAR)));
+
+    // The built-in functions by name (%SST, ...).
+    public static Map<String, Builtin> builtins() {
+        return BUILTINS;
+    }
 
     // The file operations: each names a declared file by OPNID.
     private static final Set<String> FILE_OPS = Set.of("RCVF", "POSDBF", "CLOF", "CHNRCD", "WRTRCD", "UPDRCD", "DLTRCD");

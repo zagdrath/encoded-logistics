@@ -1,0 +1,728 @@
+{
+  "types": [
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:firewall",
+      "type": "FIREWALL",
+      "prefix": "FIREWALL",
+      "example": "FIREWALL01",
+      "source": "encodedlogistics:firewall",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:router",
+      "type": "ROUTER",
+      "prefix": "ROUTER",
+      "example": "ROUTER01",
+      "source": "encodedlogistics:router",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:ups",
+      "type": "UPS",
+      "prefix": "UPS",
+      "example": "UPS01",
+      "source": "encodedlogistics:ups",
+      "units": 2
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:l2_switch_24",
+      "type": "SWITCH",
+      "prefix": "SWITCH",
+      "example": "SWITCH01",
+      "source": "encodedlogistics:l2_switch_24",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:l2_switch_48",
+      "type": "SWITCH",
+      "prefix": "SWITCH",
+      "example": "SWITCH01",
+      "source": "encodedlogistics:l2_switch_48",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:l3_switch",
+      "type": "L3SWITCH",
+      "prefix": "L3SWITCH",
+      "example": "L3SWITCH01",
+      "source": "encodedlogistics:l3_switch",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:compute_server",
+      "type": "CMPSRV",
+      "prefix": "CMPSRV",
+      "example": "CMPSRV01",
+      "source": "encodedlogistics:compute_server",
+      "units": 2
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:memory_server",
+      "type": "MEMSRV",
+      "prefix": "MEMSRV",
+      "example": "MEMSRV01",
+      "source": "encodedlogistics:memory_server",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:fabrication_server",
+      "type": "FABSRV",
+      "prefix": "FABSRV",
+      "example": "FABSRV01",
+      "source": "encodedlogistics:fabrication_server",
+      "units": 2
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:directory_server_rack",
+      "type": "DIR",
+      "prefix": "DIR",
+      "example": "DIR01",
+      "source": "encodedlogistics:directory_server",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:monitoring_server",
+      "type": "MONSRV",
+      "prefix": "MONSRV",
+      "example": "MONSRV01",
+      "source": "encodedlogistics:monitoring_server",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:nas",
+      "type": "NAS",
+      "prefix": "NAS",
+      "example": "NAS01",
+      "source": "encodedlogistics:nas",
+      "units": 2
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:san",
+      "type": "SAN",
+      "prefix": "SAN",
+      "example": "SAN01",
+      "source": "encodedlogistics:san",
+      "units": 4
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:rack_console",
+      "type": "RACKCON",
+      "prefix": "RACKCON",
+      "example": "RACKCON01",
+      "source": "encodedlogistics:rack_console",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:rack_fabrication_console",
+      "type": "RACKFAB",
+      "prefix": "RACKFAB",
+      "example": "RACKFAB01",
+      "source": "encodedlogistics:rack_fabrication_console",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:rack_schematic_console",
+      "type": "RACKSCH",
+      "prefix": "RACKSCH",
+      "example": "RACKSCH01",
+      "source": "encodedlogistics:rack_schematic_console",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:wireless_controller",
+      "type": "WLC",
+      "prefix": "WLC",
+      "example": "WLC01",
+      "source": "encodedlogistics:wireless_controller",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:tape_library_4u",
+      "type": "TAPELIB",
+      "prefix": "TAPELIB",
+      "example": "TAPELIB01",
+      "source": "encodedlogistics:tape_library_4u",
+      "units": 4
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:tape_library_6u",
+      "type": "TAPELIB",
+      "prefix": "TAPELIB",
+      "example": "TAPELIB01",
+      "source": "encodedlogistics:tape_library_6u",
+      "units": 6
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:network_controller_2u",
+      "type": "NETWORK_CONTROLLER_2U",
+      "prefix": "NETWORK_CONTROLLER_2U",
+      "example": "NETWORK_CONTROLLER_2U01",
+      "source": "encodedlogistics:network_controller_2u",
+      "units": 2
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:network_controller_4u",
+      "type": "NETWORK_CONTROLLER_4U",
+      "prefix": "NETWORK_CONTROLLER_4U",
+      "example": "NETWORK_CONTROLLER_4U01",
+      "source": "encodedlogistics:network_controller_4u",
+      "units": 4
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:optical_multiplexer_rack",
+      "type": "MUX",
+      "prefix": "MUX",
+      "example": "MUX01",
+      "source": "encodedlogistics:optical_multiplexer",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:optical_amplifier_rack",
+      "type": "AMP",
+      "prefix": "AMP",
+      "example": "AMP01",
+      "source": "encodedlogistics:optical_amplifier",
+      "units": 1
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:optical_transport_shelf",
+      "type": "OTS",
+      "prefix": "OTS",
+      "example": "OTS01",
+      "source": "encodedlogistics:optical_transport_shelf",
+      "units": 6
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:chassis_switch",
+      "type": "CSW",
+      "prefix": "CSW",
+      "example": "CSW01",
+      "source": "encodedlogistics:chassis_switch",
+      "units": 10
+    },
+    {
+      "kind": "rack",
+      "item": "encodedlogistics:blade_enclosure",
+      "type": "BLD",
+      "prefix": "BLD",
+      "example": "BLD01",
+      "source": "encodedlogistics:blade_enclosure",
+      "units": 10
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:access_terminal",
+      "type": "TERM",
+      "prefix": "TERM",
+      "example": "TERM01",
+      "source": "access_terminal"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:fabrication_terminal",
+      "type": "FABTERM",
+      "prefix": "FABTERM",
+      "example": "FABTERM01",
+      "source": "fabrication_terminal"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:schematic_encoder",
+      "type": "ENCODER",
+      "prefix": "ENCODER",
+      "example": "ENCODER01",
+      "source": "schematic_encoder"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:ingress_port",
+      "type": "INGRESS",
+      "prefix": "INGRESS",
+      "example": "INGRESS01",
+      "source": "ingress_port"
+    },
+    {
+      "kind": "wirelessPort",
+      "item": "encodedlogistics:wireless_ingress_port",
+      "type": "WINGRESS",
+      "prefix": "WINGRESS",
+      "example": "WINGRESS01",
+      "source": "ingress_port"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:egress_port",
+      "type": "EGRESS",
+      "prefix": "EGRESS",
+      "example": "EGRESS01",
+      "source": "egress_port"
+    },
+    {
+      "kind": "wirelessPort",
+      "item": "encodedlogistics:wireless_egress_port",
+      "type": "WEGRESS",
+      "prefix": "WEGRESS",
+      "example": "WEGRESS01",
+      "source": "egress_port"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:inventory_tap",
+      "type": "TAP",
+      "prefix": "TAP",
+      "example": "TAP01",
+      "source": "inventory_tap"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:threshold_sensor",
+      "type": "SENSOR",
+      "prefix": "SENSOR",
+      "example": "SENSOR01",
+      "source": "threshold_sensor"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:point_to_point_link",
+      "type": "P2P",
+      "prefix": "P2P",
+      "example": "P2P01",
+      "source": "point_to_point_link"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:collector_plane",
+      "type": "COLLECTOR",
+      "prefix": "COLLECTOR",
+      "example": "COLLECTOR01",
+      "source": "collector_plane"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:deployer_plane",
+      "type": "DEPLOYER",
+      "prefix": "DEPLOYER",
+      "example": "DEPLOYER01",
+      "source": "deployer_plane"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:schematic_terminal",
+      "type": "SCHTERM",
+      "prefix": "SCHTERM",
+      "example": "SCHTERM01",
+      "source": "schematic_terminal"
+    },
+    {
+      "kind": "part",
+      "item": "encodedlogistics:trunk_port",
+      "type": "TRK",
+      "prefix": "TRK",
+      "example": "TRK01",
+      "source": "trunk_port"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:terminal_desk",
+      "type": "DESK",
+      "prefix": "ELDESK",
+      "example": "ELDESK01",
+      "source": "encodedlogistics:terminal_desk"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:plc",
+      "type": "PLC",
+      "prefix": "PLC",
+      "example": "PLC01",
+      "source": "encodedlogistics:plc"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:control_interface",
+      "type": "CTLIF",
+      "prefix": "CTLIF",
+      "example": "CTLIF01",
+      "source": "encodedlogistics:control_interface"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:gateway",
+      "type": "GATEWAY",
+      "prefix": "GATEWAY",
+      "example": "GATEWAY01",
+      "source": "encodedlogistics:gateway"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:directory_server",
+      "type": "DIR",
+      "prefix": "DIR",
+      "example": "DIR01",
+      "source": "encodedlogistics:directory_server"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:exchange_switch",
+      "type": "XSW",
+      "prefix": "XSW",
+      "example": "XSW01",
+      "source": "encodedlogistics:exchange_switch"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:optical_multiplexer",
+      "type": "MUX",
+      "prefix": "MUX",
+      "example": "MUX01",
+      "source": "encodedlogistics:optical_multiplexer"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:optical_amplifier",
+      "type": "AMP",
+      "prefix": "AMP",
+      "example": "AMP01",
+      "source": "encodedlogistics:optical_amplifier"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:access_point",
+      "type": "AP",
+      "prefix": "AP",
+      "example": "AP01",
+      "source": "encodedlogistics:access_point"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:wireless_bridge",
+      "type": "WBRIDGE",
+      "prefix": "WBRIDGE",
+      "example": "WBRIDGE01",
+      "source": "encodedlogistics:wireless_bridge"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:display_panel",
+      "type": "DSP",
+      "prefix": "DSP",
+      "example": "DSP01",
+      "source": "encodedlogistics:display_panel"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:integrated_midrange",
+      "type": "MIDRANGE",
+      "prefix": "MIDRANGE",
+      "example": "MIDRANGE01",
+      "source": "encodedlogistics:midrange_system"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:midrange_system",
+      "type": "MIDRANGE",
+      "prefix": "MIDRANGE",
+      "example": "MIDRANGE01",
+      "source": "encodedlogistics:midrange_system"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:keypunch",
+      "type": "KEYPUNCH",
+      "prefix": "KEYPUNCH",
+      "example": "KEYPUNCH01",
+      "source": "encodedlogistics:keypunch"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:card_reader",
+      "type": "CARDRDR",
+      "prefix": "CARDRDR",
+      "example": "CARDRDR01",
+      "source": "encodedlogistics:card_reader"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:line_printer",
+      "type": "PRT",
+      "prefix": "PRT",
+      "example": "PRT01",
+      "source": "encodedlogistics:line_printer"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:disk_drive",
+      "type": "DISK",
+      "prefix": "DISK",
+      "example": "DISK01",
+      "source": "encodedlogistics:disk_drive"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:tape_drive",
+      "type": "TAPE",
+      "prefix": "TAPE",
+      "example": "TAPE01",
+      "source": "encodedlogistics:tape_drive"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_black",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_blue",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_brown",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_cyan",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_gray",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_green",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_light_blue",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_light_gray",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_lime",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_magenta",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_orange",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_pink",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_purple",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_red",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_white",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:cage_light_yellow",
+      "type": "LGT",
+      "prefix": "LGT",
+      "example": "LGT01",
+      "source": "encodedlogistics:cage_light"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:siren_amber",
+      "type": "SRN",
+      "prefix": "SRN",
+      "example": "SRN01",
+      "source": "encodedlogistics:siren"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:siren_green",
+      "type": "SRN",
+      "prefix": "SRN",
+      "example": "SRN01",
+      "source": "encodedlogistics:siren"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:siren_red",
+      "type": "SRN",
+      "prefix": "SRN",
+      "example": "SRN01",
+      "source": "encodedlogistics:siren"
+    },
+    {
+      "kind": "block",
+      "item": "encodedlogistics:speaker",
+      "type": "SPK",
+      "prefix": "SPK",
+      "example": "SPK01",
+      "source": "encodedlogistics:speaker"
+    }
+  ],
+  "chassisParts": [
+    {
+      "item": "encodedlogistics:supervisor_card",
+      "kind": "SUPERVISOR"
+    },
+    {
+      "item": "encodedlogistics:access_card",
+      "kind": "LINE"
+    },
+    {
+      "item": "encodedlogistics:uplink_card",
+      "kind": "LINE"
+    },
+    {
+      "item": "encodedlogistics:routing_card",
+      "kind": "LINE"
+    },
+    {
+      "item": "encodedlogistics:trunk_card",
+      "kind": "LINE"
+    },
+    {
+      "item": "encodedlogistics:chassis_psu",
+      "kind": "CHASSIS_PSU"
+    },
+    {
+      "item": "encodedlogistics:controller_card",
+      "kind": "SHELF_CONTROLLER"
+    },
+    {
+      "item": "encodedlogistics:transponder_card",
+      "kind": "SHELF_LINE"
+    },
+    {
+      "item": "encodedlogistics:mux_card",
+      "kind": "SHELF_LINE"
+    },
+    {
+      "item": "encodedlogistics:amplifier_card",
+      "kind": "SHELF_LINE"
+    },
+    {
+      "item": "encodedlogistics:protection_card",
+      "kind": "SHELF_LINE"
+    },
+    {
+      "item": "encodedlogistics:compute_blade",
+      "kind": "BLADE"
+    },
+    {
+      "item": "encodedlogistics:memory_blade",
+      "kind": "BLADE"
+    },
+    {
+      "item": "encodedlogistics:fabrication_blade",
+      "kind": "BLADE"
+    },
+    {
+      "item": "encodedlogistics:storage_blade",
+      "kind": "BLADE"
+    },
+    {
+      "item": "encodedlogistics:interconnect_module",
+      "kind": "INTERCONNECT"
+    },
+    {
+      "item": "encodedlogistics:blade_psu",
+      "kind": "BLADE_PSU"
+    },
+    {
+      "item": "encodedlogistics:management_module",
+      "kind": "MANAGEMENT"
+    }
+  ]
+}

@@ -1,0 +1,2614 @@
+{
+  "files": [
+    {
+      "type": "LOCAL",
+      "fileName": "encodedlogistics-local.toml",
+      "foundInRun": true,
+      "sections": [
+        {
+          "path": "controller",
+          "label": "Network Controller",
+          "comment": null,
+          "options": [
+            {
+              "key": "maxSize",
+              "path": "controller.maxSize",
+              "type": "int",
+              "default": 7,
+              "min": 1,
+              "max": 32,
+              "comment": "Largest Network Controller structure, in blocks along each axis.\n Default: 7\n Range: 1 ~ 32",
+              "label": "Max Structure Size",
+              "restart": "NONE"
+            },
+            {
+              "key": "energyPerBlock",
+              "path": "controller.energyPerBlock",
+              "type": "int",
+              "default": 25000,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE each controller block adds to the structure's buffer.\n Default: 25000\n Range: > 1",
+              "label": "Energy per Block",
+              "restart": "NONE"
+            },
+            {
+              "key": "maxReceivePerBlock",
+              "path": "controller.maxReceivePerBlock",
+              "type": "int",
+              "default": 4096,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick each controller block accepts.\n Default: 4096\n Range: > 0",
+              "label": "Max Receive per Block",
+              "restart": "NONE"
+            },
+            {
+              "key": "drainPerBlock",
+              "path": "controller.drainPerBlock",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000000.0,
+              "comment": "FE per tick each controller block drains while the network runs.\n Default: 2.0\n Range: 0.0 ~ 1000000.0",
+              "label": "Drain per Block",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "lanes",
+          "label": "Lanes",
+          "comment": null,
+          "options": [
+            {
+              "key": "perControllerFace",
+              "path": "lanes.perControllerFace",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes each controller face with a network connection provides.\n Default: 32\n Range: 1 ~ 1024",
+              "label": "Per Controller Face",
+              "restart": "NONE"
+            },
+            {
+              "key": "perCable",
+              "path": "lanes.perCable",
+              "type": "int",
+              "default": 8,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a Network Cable carries.\n Default: 8\n Range: 1 ~ 1024",
+              "label": "Per Network Cable",
+              "restart": "NONE"
+            },
+            {
+              "key": "perDenseCable",
+              "path": "lanes.perDenseCable",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a Dense Network Cable carries.\n Default: 32\n Range: 1 ~ 1024",
+              "label": "Per Dense Network Cable",
+              "restart": "NONE"
+            },
+            {
+              "key": "perFiberCable",
+              "path": "lanes.perFiberCable",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a Fiber Cable carries.\n Default: 32\n Range: 1 ~ 1024",
+              "label": "Per Fiber Cable",
+              "restart": "NONE"
+            },
+            {
+              "key": "cableDrain",
+              "path": "lanes.cableDrain",
+              "type": "double",
+              "default": 0.05,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Network Cable block drains while its network runs.\n Default: 0.05\n Range: 0.0 ~ 1000.0",
+              "label": "Network Cable Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "denseCableDrain",
+              "path": "lanes.denseCableDrain",
+              "type": "double",
+              "default": 0.2,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Dense Network Cable block drains while its network runs.\n Default: 0.2\n Range: 0.0 ~ 1000.0",
+              "label": "Dense Network Cable Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "fiberCableDrain",
+              "path": "lanes.fiberCableDrain",
+              "type": "double",
+              "default": 0.1,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Fiber Cable block drains while its network runs.\n Default: 0.1\n Range: 0.0 ~ 1000.0",
+              "label": "Fiber Cable Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "adHocMaxDevices",
+              "path": "lanes.adHocMaxDevices",
+              "type": "int",
+              "default": 8,
+              "min": 0,
+              "max": 1024,
+              "comment": "Lane-using devices a network without a controller can run.\n Default: 8\n Range: 0 ~ 1024",
+              "label": "Ad-hoc Device Limit",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "power",
+          "label": "Power",
+          "comment": null,
+          "options": [
+            {
+              "key": "inletMaxInput",
+              "path": "power.inletMaxInput",
+              "type": "int",
+              "default": 16384,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick a Power Inlet accepts through its port.\n Default: 16384\n Range: > 0",
+              "label": "Power Inlet Max Input",
+              "restart": "NONE"
+            },
+            {
+              "key": "inletBuffer",
+              "path": "power.inletBuffer",
+              "type": "int",
+              "default": 0,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE a Power Inlet holds when the network's energy is full, passed on as soon as there's room (0: none).\n Default: 0\n Range: > 0",
+              "label": "Power Inlet Buffer",
+              "restart": "NONE"
+            },
+            {
+              "key": "capacitorCapacity",
+              "path": "power.capacitorCapacity",
+              "type": "int",
+              "default": 2000000,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE a Capacitor Bank stores.\n Default: 2000000\n Range: > 1",
+              "label": "Capacitor Bank Capacity",
+              "restart": "NONE"
+            },
+            {
+              "key": "capacitorMaxTransfer",
+              "path": "power.capacitorMaxTransfer",
+              "type": "int",
+              "default": 16384,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick a Capacitor Bank takes in, and gives out, at most.\n Default: 16384\n Range: > 0",
+              "label": "Capacitor Bank Max Transfer",
+              "restart": "NONE"
+            },
+            {
+              "key": "capacitorDirectIO",
+              "path": "power.capacitorDirectIO",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether Capacitor Banks also take and give FE directly on every face, not just through the network.",
+              "label": "Capacitor Bank Direct IO",
+              "restart": "NONE"
+            },
+            {
+              "key": "isolatorDrain",
+              "path": "power.isolatorDrain",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Segment Isolator drains from each network it separates.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Segment Isolator Drain",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "storage",
+          "label": "Storage",
+          "comment": null,
+          "options": [
+            {
+              "key": "driveBayDrain",
+              "path": "storage.driveBayDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Drive Bay drains while its network runs, on top of its drives.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Drive Bay Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "driveBayDrainPerDrive",
+              "path": "storage.driveBayDrainPerDrive",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Storage Drive in a Drive Bay drains.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Drive Bay Drain per Drive",
+              "restart": "NONE"
+            },
+            {
+              "key": "driveTypeLimit",
+              "path": "storage.driveTypeLimit",
+              "type": "int",
+              "default": 63,
+              "min": 1,
+              "max": 4096,
+              "comment": "Different item types one Storage Drive holds, whatever its size.\n Default: 63\n Range: 1 ~ 4096",
+              "label": "Types per Drive",
+              "restart": "NONE"
+            },
+            {
+              "key": "energyDriveMaxTransfer",
+              "path": "storage.energyDriveMaxTransfer",
+              "type": "int",
+              "default": 65536,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick an Energy Storage Drive takes in or gives out as a battery item, out of a drive holder (in one it is part of the network's energy pool, with no limit of its own).\n Default: 65536\n Range: > 0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "terminalDrain",
+              "path": "storage.terminalDrain",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an Access Terminal drains.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Access Terminal Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "terminalLanes",
+              "path": "storage.terminalLanes",
+              "type": "int",
+              "default": 1,
+              "min": 0,
+              "max": 32,
+              "comment": "Lanes an Access Terminal uses (0: terminals are free).\n Default: 1\n Range: 0 ~ 32",
+              "label": "Access Terminal Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "partDrain",
+              "path": "storage.partDrain",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each other cable part (ports, taps, sensors) drains.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Part Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "partLanes",
+              "path": "storage.partLanes",
+              "type": "int",
+              "default": 1,
+              "min": 0,
+              "max": 32,
+              "comment": "Lanes each other cable part (ports, taps, sensors) uses.\n Default: 1\n Range: 0 ~ 32",
+              "label": "Part Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "portRates",
+              "path": "storage.portRates",
+              "type": "list",
+              "default": [
+                4,
+                16,
+                32,
+                64
+              ],
+              "comment": "Items an Ingress or Egress Port moves per operation (one every 20 ticks), with 0, 1, 2 and 3 Throughput Modules.",
+              "label": "Port Rates",
+              "restart": "NONE"
+            },
+            {
+              "key": "portEnergyPerItem",
+              "path": "storage.portEnergyPerItem",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE a port spends from its network for each item it moves.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Port Energy per Item",
+              "restart": "NONE"
+            },
+            {
+              "key": "portFluidRates",
+              "path": "storage.portFluidRates",
+              "type": "list",
+              "default": [
+                1000,
+                4000,
+                8000,
+                16000
+              ],
+              "comment": "mB of fluid or gas an Ingress or Egress Port moves per operation (one every 20 ticks), with 0, 1, 2 and 3 Throughput Modules.",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "portEnergyPerBucket",
+              "path": "storage.portEnergyPerBucket",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE a port spends from its network for each 1,000 mB of fluid or gas it moves.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "portEnergyRates",
+              "path": "storage.portEnergyRates",
+              "type": "list",
+              "default": [
+                1024,
+                4096,
+                16384,
+                65536
+              ],
+              "comment": "FE per tick an Ingress or Egress Port in Energy mode moves, with 0, 1, 2 and 3 Throughput Modules.",
+              "label": null,
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "autocrafting",
+          "label": "Autocrafting",
+          "comment": null,
+          "options": [
+            {
+              "key": "schedulerMaxSize",
+              "path": "autocrafting.schedulerMaxSize",
+              "type": "int",
+              "default": 7,
+              "min": 1,
+              "max": 16,
+              "comment": "Largest Scheduler structure, in blocks along each axis.\n Default: 7\n Range: 1 ~ 16",
+              "label": "Scheduler Max Size",
+              "restart": "NONE"
+            },
+            {
+              "key": "schedulerDrain",
+              "path": "autocrafting.schedulerDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a formed Scheduler drains, on top of its blocks.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Scheduler Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "schedulerDrainPerBlock",
+              "path": "autocrafting.schedulerDrainPerBlock",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each block of a formed Scheduler drains.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Scheduler Drain per Block",
+              "restart": "NONE"
+            },
+            {
+              "key": "schedulerBaseMemory",
+              "path": "autocrafting.schedulerBaseMemory",
+              "type": "int",
+              "default": 4096,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "Job memory a Scheduler Core provides on its own (items across its jobs' ingredient trees).\n Default: 4096\n Range: > 0",
+              "label": "Scheduler Base Memory",
+              "restart": "NONE"
+            },
+            {
+              "key": "jobBufferMemory",
+              "path": "autocrafting.jobBufferMemory",
+              "type": "int",
+              "default": 16384,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "Job memory each Job Buffer adds.\n Default: 16384\n Range: > 0",
+              "label": "Job Buffer Memory",
+              "restart": "NONE"
+            },
+            {
+              "key": "schedulerBaseThreads",
+              "path": "autocrafting.schedulerBaseThreads",
+              "type": "int",
+              "default": 1,
+              "min": 1,
+              "max": 1024,
+              "comment": "Jobs a Scheduler Core runs at once on its own.\n Default: 1\n Range: 1 ~ 1024",
+              "label": "Scheduler Base Threads",
+              "restart": "NONE"
+            },
+            {
+              "key": "threadUnitThreads",
+              "path": "autocrafting.threadUnitThreads",
+              "type": "int",
+              "default": 1,
+              "min": 0,
+              "max": 1024,
+              "comment": "Jobs each Thread Unit adds.\n Default: 1\n Range: 0 ~ 1024",
+              "label": "Thread Unit Threads",
+              "restart": "NONE"
+            },
+            {
+              "key": "jobStallSeconds",
+              "path": "autocrafting.jobStallSeconds",
+              "type": "int",
+              "default": 30,
+              "min": 5,
+              "max": 3600,
+              "comment": "Seconds a running crafting job can go without progress before it shows as stalled (the Schematic Terminal's\nJobs tab, WRKCRFJOB's steps, the *CRFSTALL trigger).\n Default: 30\n Range: 5 ~ 3600",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "threadCrafts",
+              "path": "autocrafting.threadCrafts",
+              "type": "int",
+              "default": 1,
+              "min": 0,
+              "max": 100000,
+              "comment": "Crafts a thread keeps going at once (Fabricators and Fabrication Servers run every craft they're given side by\nside). A job with more crafts left takes more of its Scheduler's free threads, and gives them back as it nears\nits end; every job gets at least one. 0: a thread runs any number of crafts.\n Default: 1\n Range: 0 ~ 100000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "fabricatorCraftTicks",
+              "path": "autocrafting.fabricatorCraftTicks",
+              "type": "list",
+              "default": [
+                20,
+                10,
+                5
+              ],
+              "comment": "Ticks a Fabricator takes per craft with 0, 1 and 2 Throughput Modules.",
+              "label": "Fabricator Craft Ticks",
+              "restart": "NONE"
+            },
+            {
+              "key": "fabricatorEnergyPerCraft",
+              "path": "autocrafting.fabricatorEnergyPerCraft",
+              "type": "int",
+              "default": 50,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE a Fabricator spends from its network per craft.\n Default: 50\n Range: > 0",
+              "label": "Fabricator Energy per Craft",
+              "restart": "NONE"
+            },
+            {
+              "key": "fabricatorDrain",
+              "path": "autocrafting.fabricatorDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Fabricator drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "Fabricator Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "gatewayDrain",
+              "path": "autocrafting.gatewayDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Gateway drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "Gateway Drain",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "reach",
+          "label": "Reach",
+          "comment": null,
+          "options": [
+            {
+              "key": "relayBaseRange",
+              "path": "reach.relayBaseRange",
+              "type": "int",
+              "default": 32,
+              "min": 0,
+              "max": 4096,
+              "comment": "Blocks a Relay Antenna covers on its own (a sphere around it).\n Default: 32\n Range: 0 ~ 4096",
+              "label": "Relay Base Range",
+              "restart": "NONE"
+            },
+            {
+              "key": "relayRangePerTransceiver",
+              "path": "reach.relayRangePerTransceiver",
+              "type": "int",
+              "default": 32,
+              "min": 0,
+              "max": 4096,
+              "comment": "Blocks each Optical Transceiver in a Relay Antenna adds to its range.\n Default: 32\n Range: 0 ~ 4096",
+              "label": "Relay Range per Transceiver",
+              "restart": "NONE"
+            },
+            {
+              "key": "relayDrain",
+              "path": "reach.relayDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Relay Antenna drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Relay Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "controlInterfaceDrain",
+              "path": "reach.controlInterfaceDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Control Interface drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "handheldCapacity",
+              "path": "reach.handheldCapacity",
+              "type": "int",
+              "default": 200000,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE a Handheld Terminal's battery holds.\n Default: 200000\n Range: > 1",
+              "label": "Handheld Capacity",
+              "restart": "NONE"
+            },
+            {
+              "key": "handheldDrainPerSecond",
+              "path": "reach.handheldDrainPerSecond",
+              "type": "int",
+              "default": 10,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE a Handheld Terminal uses each second while its screen is open.\n Default: 10\n Range: > 0",
+              "label": "Handheld Drain per Second",
+              "restart": "NONE"
+            },
+            {
+              "key": "handheldEnergyPerItem",
+              "path": "reach.handheldEnergyPerItem",
+              "type": "int",
+              "default": 1,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE a Handheld Terminal uses for each item it moves in or out of the network.\n Default: 1\n Range: > 0",
+              "label": "Handheld Energy per Item",
+              "restart": "NONE"
+            },
+            {
+              "key": "handheldChargeRate",
+              "path": "reach.handheldChargeRate",
+              "type": "int",
+              "default": 4096,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick a Handheld Terminal takes from a Capacitor Bank while held against it (use and hold), and at most\nfrom any other charger.\n Default: 4096\n Range: > 0",
+              "label": "Handheld Charge Rate",
+              "restart": "NONE"
+            },
+            {
+              "key": "bridgeLanes",
+              "path": "reach.bridgeLanes",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a linked pair of Network Bridges carries between its two networks.\n Default: 32\n Range: 1 ~ 1024",
+              "label": "Bridge Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "bridgeDrain",
+              "path": "reach.bridgeDrain",
+              "type": "double",
+              "default": 8.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Network Bridge drains while its network runs.\n Default: 8.0\n Range: 0.0 ~ 1000.0",
+              "label": "Bridge Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "bridgeCrossDimension",
+              "path": "reach.bridgeCrossDimension",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether a pair of Network Bridges links networks in different dimensions.",
+              "label": "Bridge Cross Dimension",
+              "restart": "NONE"
+            },
+            {
+              "key": "bridgeChunkLoading",
+              "path": "reach.bridgeChunkLoading",
+              "type": "boolean",
+              "default": false,
+              "comment": "Whether a linked Network Bridge keeps its own chunk loaded (so its partner's network reaches it while nobody is near).",
+              "label": "Bridge Chunk Loading",
+              "restart": "NONE"
+            },
+            {
+              "key": "p2pLanes",
+              "path": "reach.p2pLanes",
+              "type": "int",
+              "default": 8,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a lanes Point-to-Point Link carries from its input to its outputs (split evenly between them).\n Default: 8\n Range: 1 ~ 1024",
+              "label": "Point-to-Point Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "p2pDrain",
+              "path": "reach.p2pDrain",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Point-to-Point Link endpoint drains while its network runs.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Point-to-Point Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "p2pItemsPerOperation",
+              "path": "reach.p2pItemsPerOperation",
+              "type": "int",
+              "default": 64,
+              "min": 1,
+              "max": 4096,
+              "comment": "Items an items Point-to-Point Link moves per operation (one every 10 ticks).\n Default: 64\n Range: 1 ~ 4096",
+              "label": "Point-to-Point Items per Operation",
+              "restart": "NONE"
+            },
+            {
+              "key": "p2pFluidPerOperation",
+              "path": "reach.p2pFluidPerOperation",
+              "type": "int",
+              "default": 8000,
+              "min": 1,
+              "max": 1000000,
+              "comment": "mB a fluids or pressurized Point-to-Point Link moves per operation (one every 10 ticks).\n Default: 8000\n Range: 1 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "p2pEnergyPerTick",
+              "path": "reach.p2pEnergyPerTick",
+              "type": "int",
+              "default": 8192,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE per tick an energy Point-to-Point Link moves from its input to its outputs at most.\n Default: 8192\n Range: > 1",
+              "label": "Point-to-Point Energy per Tick",
+              "restart": "NONE"
+            },
+            {
+              "key": "collectorTicksPerHardness",
+              "path": "reach.collectorTicksPerHardness",
+              "type": "int",
+              "default": 30,
+              "min": 1,
+              "max": 1000,
+              "comment": "Ticks a Collector Plane takes to break a block, per point of the block's hardness.\n Default: 30\n Range: 1 ~ 1000",
+              "label": "Collector Ticks per Hardness",
+              "restart": "NONE"
+            },
+            {
+              "key": "deployerInterval",
+              "path": "reach.deployerInterval",
+              "type": "int",
+              "default": 10,
+              "min": 1,
+              "max": 1000,
+              "comment": "Ticks between a Deployer Plane's operations.\n Default: 10\n Range: 1 ~ 1000",
+              "label": "Deployer Interval",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "lithography",
+          "label": "Lithography Press",
+          "comment": null,
+          "options": [
+            {
+              "key": "pressCapacity",
+              "path": "lithography.pressCapacity",
+              "type": "int",
+              "default": 32000,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE a Lithography Press buffers.\n Default: 32000\n Range: > 1",
+              "label": "Energy Buffer",
+              "restart": "NONE"
+            },
+            {
+              "key": "pressMaxInput",
+              "path": "lithography.pressMaxInput",
+              "type": "int",
+              "default": 512,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick a Lithography Press takes in.\n Default: 512\n Range: > 0",
+              "label": "Max Input",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "facades",
+          "label": "Cable Facades",
+          "comment": null,
+          "options": [
+            {
+              "key": "blocklist",
+              "path": "facades.blocklist",
+              "type": "list",
+              "default": [],
+              "comment": "Blocks a Cable Facade can't copy, by id (e.g. \"minecraft:bedrock\"), on top of the built-in rules: the block must be\na full, non-translucent cube without a block entity.",
+              "label": "Blocked Facade Blocks",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "rack",
+          "label": "Server Rack",
+          "comment": null,
+          "options": [
+            {
+              "key": "rackCullDistance",
+              "path": "rack.rackCullDistance",
+              "type": "int",
+              "default": 24,
+              "min": 0,
+              "max": 256,
+              "comment": "Blocks away beyond which a Server Rack with both doors closed doesn't draw its devices.\n Default: 24\n Range: 0 ~ 256",
+              "label": "Rack Device Cull Distance",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackElevationCreativeFree",
+              "path": "rack.rackElevationCreativeFree",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether a player in creative mode applying a Rack Elevation installs its devices (and their contents) without using up items.",
+              "label": "Rack Elevations Free in Creative",
+              "restart": "NONE"
+            },
+            {
+              "key": "firewallDrain",
+              "path": "rack.firewallDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Firewall drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Firewall Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "firewallFailClosed",
+              "path": "rack.firewallFailClosed",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether a Firewall that's offline (no lane, no power) still enforces its rules.",
+              "label": "Offline Firewall Still Enforces",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackBreakProtection",
+              "path": "rack.rackBreakProtection",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether breaking a Server Rack (and so pulling its devices out) needs the Firewall's rack access permission on its network.",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "rackBreakConfirm",
+              "path": "rack.rackBreakConfirm",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether breaking a Server Rack takes a sneak, or a second left click within a second of the first, so a stray click\ncan't start taking one down.",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "routerDrain",
+              "path": "rack.routerDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Router drains while its network runs.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "Router Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "routerDrainPerTransceiver",
+              "path": "rack.routerDrainPerTransceiver",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Optical Transceiver in a Router adds to its drain.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "Router Drain per Transceiver",
+              "restart": "NONE"
+            },
+            {
+              "key": "routerBaseRate",
+              "path": "rack.routerBaseRate",
+              "type": "int",
+              "default": 16,
+              "min": 0,
+              "max": 4096,
+              "comment": "Items per second a Router moves, shared between its routes.\n Default: 16\n Range: 0 ~ 4096",
+              "label": "Router Base Rate",
+              "restart": "NONE"
+            },
+            {
+              "key": "routerRatePerTransceiver",
+              "path": "rack.routerRatePerTransceiver",
+              "type": "int",
+              "default": 16,
+              "min": 0,
+              "max": 4096,
+              "comment": "Items per second each Optical Transceiver in a Router adds.\n Default: 16\n Range: 0 ~ 4096",
+              "label": "Router Rate per Transceiver",
+              "restart": "NONE"
+            },
+            {
+              "key": "routingBaseCost",
+              "path": "rack.routingBaseCost",
+              "type": "int",
+              "default": 100,
+              "min": 1,
+              "max": 100000,
+              "comment": "Dynamic routing: a hop costs this x 1000 / (what it carries + 1), rounded, at least 1 (what it carries: the smaller of\nits link's lanes and its Router's items per second). Lower costs win.\n Default: 100\n Range: 1 ~ 100000",
+              "label": "Routing Base Cost",
+              "restart": "NONE"
+            },
+            {
+              "key": "reconvergeSeconds",
+              "path": "rack.reconvergeSeconds",
+              "type": "int",
+              "default": 5,
+              "min": 2,
+              "max": 60,
+              "comment": "Dynamic routing: at most how long Routers take to find new paths after a neighbour goes down (missed hellos, then the\nrecompute).\n Default: 5\n Range: 2 ~ 60",
+              "label": "Reconvergence (s)",
+              "restart": "NONE"
+            },
+            {
+              "key": "maxHops",
+              "path": "rack.maxHops",
+              "type": "int",
+              "default": 16,
+              "min": 1,
+              "max": 64,
+              "comment": "Dynamic routing: the most hops a path may take.\n Default: 16\n Range: 1 ~ 64",
+              "label": "Max Hops",
+              "restart": "NONE"
+            },
+            {
+              "key": "aclDefaultPermit",
+              "path": "rack.aclDefaultPermit",
+              "type": "boolean",
+              "default": true,
+              "comment": "Router ACLs: whether what no rule matches is permitted (*PERMIT) or denied (*DENY).",
+              "label": "ACL Default Permit",
+              "restart": "NONE"
+            },
+            {
+              "key": "trunkPortLanes",
+              "path": "rack.trunkPortLanes",
+              "type": "int",
+              "default": 64,
+              "min": 1,
+              "max": 4096,
+              "comment": "Lanes a Trunk Port is rated for: its panel shows what the devices on its segments use against them (each device's lanes\nare its rack's to grant).\n Default: 64\n Range: 1 ~ 4096",
+              "label": "Trunk Port Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "directoryDrain",
+              "path": "rack.directoryDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Directory Server (block or rack) drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Directory Server Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "directoryCacheSeconds",
+              "path": "rack.directoryCacheSeconds",
+              "type": "int",
+              "default": 30,
+              "min": 0,
+              "max": 3600,
+              "comment": "How long a resolved SYSNAME/DEVICE name is kept (a route or network change clears it sooner).\n Default: 30\n Range: 0 ~ 3600",
+              "label": "Directory Cache (s)",
+              "restart": "NONE"
+            },
+            {
+              "key": "exchangePorts",
+              "path": "rack.exchangePorts",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 256,
+              "comment": "Ports an Exchange Switch has (each member Router takes one; its owner can offer fewer).\n Default: 32\n Range: 1 ~ 256",
+              "label": "Exchange Ports",
+              "restart": "NONE"
+            },
+            {
+              "key": "exchangePortLanes",
+              "path": "rack.exchangePortLanes",
+              "type": "int",
+              "default": 64,
+              "min": 1,
+              "max": 4096,
+              "comment": "Lanes an Exchange Switch port carries: a peering's throughput (and cost) is the smaller of these and its Routers' rates.\n Default: 64\n Range: 1 ~ 4096",
+              "label": "Exchange Port Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "exchangeDrain",
+              "path": "rack.exchangeDrain",
+              "type": "double",
+              "default": 8.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an Exchange Switch drains while its network runs.\n Default: 8.0\n Range: 0.0 ~ 1000.0",
+              "label": "Exchange Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "exchangeChunkLoading",
+              "path": "rack.exchangeChunkLoading",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether an Exchange Switch keeps its chunk loaded while it has members.",
+              "label": "Exchange Chunk Loading",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsCapacity",
+              "path": "rack.upsCapacity",
+              "type": "int",
+              "default": 1000000,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE a UPS's battery holds.\n Default: 1000000\n Range: > 1",
+              "label": "UPS Capacity",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsMaxOutput",
+              "path": "rack.upsMaxOutput",
+              "type": "int",
+              "default": 8192,
+              "min": 1,
+              "max": 2147483647,
+              "comment": "FE per tick a UPS supplies at most (more is an overload).\n Default: 8192\n Range: > 1",
+              "label": "UPS Max Output",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsMaxInput",
+              "path": "rack.upsMaxInput",
+              "type": "int",
+              "default": 8192,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "FE per tick a UPS recharges at most, from the network's surplus.\n Default: 8192\n Range: > 0",
+              "label": "UPS Max Input",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsDrainOnline",
+              "path": "rack.upsDrainOnline",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a UPS in Online mode drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "UPS Drain (Online)",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsDrainStandby",
+              "path": "rack.upsDrainStandby",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a UPS in Standby mode drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "UPS Drain (Standby)",
+              "restart": "NONE"
+            },
+            {
+              "key": "allowJobToasts",
+              "path": "rack.allowJobToasts",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether players get a toast when a crafting job finishes, fails or is cancelled (each player chooses which in their client config).",
+              "label": "Allow Job Toasts",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsLowBatteryPercent",
+              "path": "rack.upsLowBatteryPercent",
+              "type": "int",
+              "default": 20,
+              "min": 0,
+              "max": 100,
+              "comment": "Charge (%) below which a UPS on battery shows Low battery and sounds its rapid alarm.\n Default: 20\n Range: 0 ~ 100",
+              "label": "UPS Low Battery (%)",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsAlarms",
+              "path": "rack.upsAlarms",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether UPSes sound their alarms on battery, for every player. (Each player can also turn them off for themselves: upsAlarmSounds in their client config.)",
+              "label": "UPS Alarms",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackController2uEnergyBlocks",
+              "path": "rack.rackController2uEnergyBlocks",
+              "type": "int",
+              "default": 20,
+              "min": 1,
+              "max": 343,
+              "comment": "Controller blocks' worth of energy buffer, receive rate and drain a 2U Network Controller has (a 4U has twice).\n Default: 20\n Range: 1 ~ 343",
+              "label": "2U Controller Energy (blocks)",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackController2uLaneFaces",
+              "path": "rack.rackController2uLaneFaces",
+              "type": "int",
+              "default": 6,
+              "min": 1,
+              "max": 1024,
+              "comment": "Connected controller faces' worth of lanes a 2U Network Controller hands out (a 4U has twice).\n Default: 6\n Range: 1 ~ 1024",
+              "label": "2U Controller Lanes (faces)",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackControllerStandbyFactor",
+              "path": "rack.rackControllerStandbyFactor",
+              "type": "double",
+              "default": 0.1,
+              "min": 0.0,
+              "max": 1.0,
+              "comment": "The share of its drain a standby rack Network Controller draws while idle.\n Default: 0.1\n Range: 0.0 ~ 1.0",
+              "label": "Standby Controller Draw",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackPowerMaxInput",
+              "path": "rack.rackPowerMaxInput",
+              "type": "int",
+              "default": -1,
+              "min": -1,
+              "max": 2147483647,
+              "comment": "FE per tick a Server Rack takes in through its connection points (across all of them); -1: the same as inletMaxInput.\n Default: -1\n Range: > -1",
+              "label": "Rack Power Max Input",
+              "restart": "NONE"
+            },
+            {
+              "key": "l2Switch24Lanes",
+              "path": "rack.l2Switch24Lanes",
+              "type": "int",
+              "default": 16,
+              "min": 0,
+              "max": 1024,
+              "comment": "Rack-local lanes a 24-Port L2 Switch gives the other devices in its rack.\n Default: 16\n Range: 0 ~ 1024",
+              "label": "24-Port L2 Switch Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "l2Switch48Lanes",
+              "path": "rack.l2Switch48Lanes",
+              "type": "int",
+              "default": 32,
+              "min": 0,
+              "max": 1024,
+              "comment": "Rack-local lanes a 48-Port L2 Switch gives the other devices in its rack.\n Default: 32\n Range: 0 ~ 1024",
+              "label": "48-Port L2 Switch Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "l3SwitchLanes",
+              "path": "rack.l3SwitchLanes",
+              "type": "int",
+              "default": 32,
+              "min": 0,
+              "max": 1024,
+              "comment": "Rack-local lanes an L3 Switch gives the other devices in its rack.\n Default: 32\n Range: 0 ~ 1024",
+              "label": "L3 Switch Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "switchDrain",
+              "path": "rack.switchDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an L2 Switch drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Switch Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "l3SwitchDrain",
+              "path": "rack.l3SwitchDrain",
+              "type": "double",
+              "default": 3.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an L3 Switch drains while its network runs.\n Default: 3.0\n Range: 0.0 ~ 1000.0",
+              "label": "L3 Switch Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "l3SwitchRate",
+              "path": "rack.l3SwitchRate",
+              "type": "int",
+              "default": 32,
+              "min": 0,
+              "max": 4096,
+              "comment": "Items per second an L3 Switch routes between segments, shared between its routes.\n Default: 32\n Range: 0 ~ 4096",
+              "label": "L3 Switch Rate",
+              "restart": "NONE"
+            },
+            {
+              "key": "computeServerThreads",
+              "path": "rack.computeServerThreads",
+              "type": "int",
+              "default": 2,
+              "min": 0,
+              "max": 1024,
+              "comment": "Crafting threads each Compute Server gives its network's rack scheduler (the pool of every rack on the network).\n Default: 2\n Range: 0 ~ 1024",
+              "label": "Compute Server Threads",
+              "restart": "NONE"
+            },
+            {
+              "key": "memoryServerMemory",
+              "path": "rack.memoryServerMemory",
+              "type": "int",
+              "default": 32768,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "Job memory each Memory Server gives its network's rack scheduler.\n Default: 32768\n Range: > 0",
+              "label": "Memory Server Memory",
+              "restart": "NONE"
+            },
+            {
+              "key": "computeServerDrain",
+              "path": "rack.computeServerDrain",
+              "type": "double",
+              "default": 6.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Compute Server drains while its network runs.\n Default: 6.0\n Range: 0.0 ~ 1000.0",
+              "label": "Compute Server Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "memoryServerDrain",
+              "path": "rack.memoryServerDrain",
+              "type": "double",
+              "default": 3.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Memory Server drains while its network runs.\n Default: 3.0\n Range: 0.0 ~ 1000.0",
+              "label": "Memory Server Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "fabricationServerDrain",
+              "path": "rack.fabricationServerDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Fabrication Server drains while its network runs (each craft also costs fabricatorEnergyPerCraft).\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "Fabrication Server Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "monitoringServerDrain",
+              "path": "rack.monitoringServerDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Monitoring Server drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Monitoring Server Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "nasDrain",
+              "path": "rack.nasDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a NAS drains while its network runs, on top of its drives.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Nas Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "sanDrain",
+              "path": "rack.sanDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a SAN drains while its network runs, on top of its drives.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "San Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackDriveDrain",
+              "path": "rack.rackDriveDrain",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick each Storage Drive in a NAS or SAN drains.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": "Rack Drive Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackConsoleDrain",
+              "path": "rack.rackConsoleDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Rack Console drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "Rack Console Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "rackConsoleOpenDrain",
+              "path": "rack.rackConsoleOpenDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Rack Console drains on top of that while its drawer is out.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Rack Console Open Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "wirelessControllerDrain",
+              "path": "rack.wirelessControllerDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Wireless Controller drains while its network runs.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "Wireless Controller Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "wirelessCrossDimension",
+              "path": "rack.wirelessCrossDimension",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether Handheld Terminals linked to a Wireless Controller work in other dimensions too.",
+              "label": "Wireless Across Dimensions",
+              "restart": "NONE"
+            },
+            {
+              "key": "wirelessAnyController",
+              "path": "rack.wirelessAnyController",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether any online Wireless Controller on the network serves a linked Handheld Terminal (else only the one it was linked to).",
+              "label": "Any Wireless Controller Serves",
+              "restart": "NONE"
+            },
+            {
+              "key": "wirelessApClients",
+              "path": "rack.wirelessApClients",
+              "type": "int",
+              "default": 8,
+              "min": 1,
+              "max": 256,
+              "comment": "Wireless Bridges and Wireless Ports each online Access Point lets a network's Wireless Controller serve.\n Default: 8\n Range: 1 ~ 256",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "wirelessBridgeLanes",
+              "path": "rack.wirelessBridgeLanes",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a Wireless Bridge carries between its Wireless Controller and what's cabled to it.\n Default: 32\n Range: 1 ~ 1024",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "wirelessEnergyMultiplier",
+              "path": "rack.wirelessEnergyMultiplier",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 100.0,
+              "comment": "Wireless Bridges and Wireless Ports drain this many times their cabled equivalent's (Network Bridge, Ingress / Egress Port).\n Default: 2.0\n Range: 0.0 ~ 100.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "smallWirelessBridgeDrain",
+              "path": "rack.smallWirelessBridgeDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a linked Small Wireless Bridge (on an Arcforge machine) drains from its network over the air.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "machinePowerEfficiency",
+              "path": "rack.machinePowerEfficiency",
+              "type": "double",
+              "default": 0.9,
+              "min": 0.01,
+              "max": 1.0,
+              "comment": "With power from network on, the share of the FE taken from the network that reaches the machine.\n Default: 0.9\n Range: 0.01 ~ 1.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "machinePowerRate",
+              "path": "rack.machinePowerRate",
+              "type": "int",
+              "default": 1000,
+              "min": 0,
+              "max": 1000000,
+              "comment": "With power from network on, the most FE per tick a machine is given.\n Default: 1000\n Range: 0 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "machinePowerReserve",
+              "path": "rack.machinePowerReserve",
+              "type": "double",
+              "default": 0.25,
+              "min": 0.0,
+              "max": 1.0,
+              "comment": "Power from network never takes a network's stored energy below this share of its capacity, so the network keeps running.\n Default: 0.25\n Range: 0.0 ~ 1.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midrangeDrain",
+              "path": "rack.midrangeDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Midrange System drains while its network runs.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "expansionCabinetDrain",
+              "path": "rack.expansionCabinetDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an attached Expansion Cabinet adds to its Midrange System's drain.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "integratedMidrangeDrain",
+              "path": "rack.integratedMidrangeDrain",
+              "type": "double",
+              "default": 8.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an Integrated Midrange System drains while its network runs.\n Default: 8.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midrangeEnergyBlocks",
+              "path": "rack.midrangeEnergyBlocks",
+              "type": "int",
+              "default": 4,
+              "min": 1,
+              "max": 343,
+              "comment": "Controller blocks' worth of energy buffer and receive rate a Midrange System has as its network's controller.\n Default: 4\n Range: 1 ~ 343",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midrangeLaneFaces",
+              "path": "rack.midrangeLaneFaces",
+              "type": "int",
+              "default": 4,
+              "min": 1,
+              "max": 1024,
+              "comment": "Connected controller faces' worth of lanes a Midrange System hands out as its network's controller.\n Default: 4\n Range: 1 ~ 1024",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "integratedMidrangeEnergyBlocks",
+              "path": "rack.integratedMidrangeEnergyBlocks",
+              "type": "int",
+              "default": 20,
+              "min": 1,
+              "max": 343,
+              "comment": "Controller blocks' worth of energy buffer and receive rate an Integrated Midrange System has (a 2U rack controller's by default).\n Default: 20\n Range: 1 ~ 343",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "integratedMidrangeLaneFaces",
+              "path": "rack.integratedMidrangeLaneFaces",
+              "type": "int",
+              "default": 6,
+              "min": 1,
+              "max": 1024,
+              "comment": "Connected controller faces' worth of lanes an Integrated Midrange System hands out (a 2U rack controller's by default).\n Default: 6\n Range: 1 ~ 1024",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midrangeCraftEnergy",
+              "path": "rack.midrangeCraftEnergy",
+              "type": "int",
+              "default": 20,
+              "min": 0,
+              "max": 1000000,
+              "comment": "FE a Midrange System (or Integrated Midrange System) spends per craft it runs itself.\n Default: 20\n Range: 0 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midrangeIplTicks",
+              "path": "rack.midrangeIplTicks",
+              "type": "int",
+              "default": 100,
+              "min": 0,
+              "max": 6000,
+              "comment": "Ticks a Midrange System takes to IPL (boot) before it runs.\n Default: 100\n Range: 0 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midrangeStepTicks",
+              "path": "rack.midrangeStepTicks",
+              "type": "int",
+              "default": 40,
+              "min": 1,
+              "max": 6000,
+              "comment": "Ticks a Midrange System takes for each craft it runs itself.\n Default: 40\n Range: 1 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "integratedMidrangeStepTicks",
+              "path": "rack.integratedMidrangeStepTicks",
+              "type": "int",
+              "default": 25,
+              "min": 1,
+              "max": 6000,
+              "comment": "Ticks an Integrated Midrange System takes for each craft it runs itself.\n Default: 25\n Range: 1 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "diskDriveDrain",
+              "path": "rack.diskDriveDrain",
+              "type": "double",
+              "default": 1.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Disk Drive drains while its network runs.\n Default: 1.5\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "diskSpinUpTicks",
+              "path": "rack.diskSpinUpTicks",
+              "type": "int",
+              "default": 40,
+              "min": 0,
+              "max": 6000,
+              "comment": "Ticks a Disk Drive spins up after a Storage Drive goes in, before the network can read it.\n Default: 40\n Range: 0 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "diskSpinDownTicks",
+              "path": "rack.diskSpinDownTicks",
+              "type": "int",
+              "default": 20,
+              "min": 0,
+              "max": 6000,
+              "comment": "Ticks a Disk Drive spins down before its Storage Drive comes out.\n Default: 20\n Range: 0 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeDriveDrain",
+              "path": "rack.tapeDriveDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Tape Drive drains while its network runs (twice that while reading or writing).\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeReelItems",
+              "path": "rack.tapeReelItems",
+              "type": "int",
+              "default": 65536,
+              "min": 8,
+              "max": 1073741824,
+              "comment": "Items a Tape Reel holds.\n Default: 65536\n Range: 8 ~ 1073741824",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeReelTypes",
+              "path": "rack.tapeReelTypes",
+              "type": "int",
+              "default": 1024,
+              "min": 1,
+              "max": 65536,
+              "comment": "Item types a Tape Reel holds.\n Default: 1024\n Range: 1 ~ 65536",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeLoadTicks",
+              "path": "rack.tapeLoadTicks",
+              "type": "int",
+              "default": 100,
+              "min": 0,
+              "max": 6000,
+              "comment": "Ticks a Tape Drive takes to thread a reel mounted on it.\n Default: 100\n Range: 0 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeRewindTicks",
+              "path": "rack.tapeRewindTicks",
+              "type": "int",
+              "default": 40,
+              "min": 0,
+              "max": 6000,
+              "comment": "Ticks a Tape Drive takes to rewind its reel (before unloading it, or on 7=Rewind).\n Default: 40\n Range: 0 ~ 6000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeDriveBaseTicks",
+              "path": "rack.tapeDriveBaseTicks",
+              "type": "int",
+              "default": 60,
+              "min": 1,
+              "max": 72000,
+              "comment": "Ticks a Tape Drive takes for each read or write, plus tapeDriveTicksPer4k for each 4,096 items.\n Default: 60\n Range: 1 ~ 72000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeDriveTicksPer4k",
+              "path": "rack.tapeDriveTicksPer4k",
+              "type": "int",
+              "default": 20,
+              "min": 0,
+              "max": 72000,
+              "comment": "Ticks a Tape Drive adds to a read or write for each 4,096 items.\n Default: 20\n Range: 0 ~ 72000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayMaxWidth",
+              "path": "rack.displayMaxWidth",
+              "type": "int",
+              "default": 8,
+              "min": 1,
+              "max": 16,
+              "comment": "The widest a Display Panel screen merges, in panels.\n Default: 8\n Range: 1 ~ 16",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayMaxHeight",
+              "path": "rack.displayMaxHeight",
+              "type": "int",
+              "default": 6,
+              "min": 1,
+              "max": 16,
+              "comment": "The tallest a Display Panel screen merges, in panels.\n Default: 6\n Range: 1 ~ 16",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayPanelDrain",
+              "path": "rack.displayPanelDrain",
+              "type": "double",
+              "default": 0.5,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE/t each Display Panel of a screen draws from its network.\n Default: 0.5\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayHistorySeconds",
+              "path": "rack.displayHistorySeconds",
+              "type": "int",
+              "default": 600,
+              "min": 10,
+              "max": 3600,
+              "comment": "Seconds of graph history a Display Panel keeps itself (one sample a second, while loaded) for graphs no Monitoring Server serves.\n Default: 600\n Range: 10 ~ 3600",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "allowImages",
+              "path": "rack.allowImages",
+              "type": "enum",
+              "default": "AUTO",
+              "allowed": [
+                "AUTO",
+                "TRUE",
+                "FALSE"
+              ],
+              "comment": "Whether Display Panels show images from <world>/encodedlogistics/images/<SYSNAME>/: AUTO is on in single-player and off on dedicated servers.\nAllowed Values: AUTO, TRUE, FALSE",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayMaxImageSize",
+              "path": "rack.displayMaxImageSize",
+              "type": "int",
+              "default": 4096,
+              "min": 16,
+              "max": 16384,
+              "comment": "The largest source image a Display Panel takes, in pixels each way.\n Default: 4096\n Range: 16 ~ 16384",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayMaxImagePixels",
+              "path": "rack.displayMaxImagePixels",
+              "type": "int",
+              "default": 16777216,
+              "min": 256,
+              "max": 268435456,
+              "comment": "The most pixels (width x height) a source image for a Display Panel may have. Read from the file's header before it's decoded, so a small file can't unpack into a huge image.\n Default: 16777216\n Range: 256 ~ 268435456",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayMaxImageBytes",
+              "path": "rack.displayMaxImageBytes",
+              "type": "int",
+              "default": 4,
+              "min": 1,
+              "max": 64,
+              "comment": "The largest source image file a Display Panel takes, in MB.\n Default: 4\n Range: 1 ~ 64",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "displayImageColors",
+              "path": "rack.displayImageColors",
+              "type": "string",
+              "default": "256",
+              "comment": "The most colours a player may pick for an image on a Display Panel: 16, 64, 256 or FULL.",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "accessPointDrain",
+              "path": "rack.accessPointDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an Access Point drains while its network runs.\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeLibrary4uDrain",
+              "path": "rack.tapeLibrary4uDrain",
+              "type": "double",
+              "default": 3.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a 4U Tape Library drains while its network runs, idle.\n Default: 3.0\n Range: 0.0 ~ 1000.0",
+              "label": "4U Tape Library Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeLibrary6uDrain",
+              "path": "rack.tapeLibrary6uDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a 6U Tape Library drains while its network runs, idle.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "6U Tape Library Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeDriveBusyDrain",
+              "path": "rack.tapeDriveBusyDrain",
+              "type": "double",
+              "default": 8.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Tape Library drains for each of its drives reading or writing.\n Default: 8.0\n Range: 0.0 ~ 1000.0",
+              "label": "Busy Tape Drive Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapePickerDrain",
+              "path": "rack.tapePickerDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Tape Library drains while its picker moves.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "Tape Picker Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeBaseTicks",
+              "path": "rack.tapeBaseTicks",
+              "type": "int",
+              "default": 40,
+              "min": 1,
+              "max": 72000,
+              "comment": "Ticks an LTO-6 tape takes to read or write, before the items (each newer generation is 15% faster).\n Default: 40\n Range: 1 ~ 72000",
+              "label": "Tape Base Ticks",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeTicksPer4k",
+              "path": "rack.tapeTicksPer4k",
+              "type": "int",
+              "default": 20,
+              "min": 0,
+              "max": 72000,
+              "comment": "Ticks an LTO-6 tape takes to read or write each 4,096 items.\n Default: 20\n Range: 0 ~ 72000",
+              "label": "Tape Ticks per 4K Items",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeArchiveInterval",
+              "path": "rack.tapeArchiveInterval",
+              "type": "int",
+              "default": 200,
+              "min": 20,
+              "max": 72000,
+              "comment": "Ticks between a Tape Library's looks for items to archive.\n Default: 200\n Range: 20 ~ 72000",
+              "label": "Tape Archive Interval",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeDefaultAgeHours",
+              "path": "rack.tapeDefaultAgeHours",
+              "type": "int",
+              "default": 2,
+              "min": 1,
+              "max": 9999,
+              "comment": "A new Tape Library's archive age: hours (game time) an item goes untouched before it's archived.\n Default: 2\n Range: 1 ~ 9999",
+              "label": "Default Archive Age (Hours)",
+              "restart": "NONE"
+            },
+            {
+              "key": "terminalDeskDrain",
+              "path": "rack.terminalDeskDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Terminal Desk drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "Terminal Desk Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "terminalDeskScreenDrain",
+              "path": "rack.terminalDeskScreenDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Terminal Desk drains on top of that while its screen is on (whenever it's online).\n Default: 2.0\n Range: 0.0 ~ 1000.0",
+              "label": "Terminal Desk Screen Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "tapeDefaultHotPercent",
+              "path": "rack.tapeDefaultHotPercent",
+              "type": "int",
+              "default": 80,
+              "min": 0,
+              "max": 100,
+              "comment": "A new Tape Library's free-space trigger: it only archives while hot storage is fuller than this (%).\n Default: 80\n Range: 0 ~ 100",
+              "label": "Default Hot Storage Trigger (%)",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "optical",
+          "label": "Optical and Chassis",
+          "comment": null,
+          "options": [
+            {
+              "key": "fiberSpanLoss",
+              "path": "optical.fiberSpanLoss",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether long Fiber Cable runs lose lanes (span loss); an Optical Amplifier in the run starts the count again.",
+              "label": "Fiber Span Loss",
+              "restart": "NONE"
+            },
+            {
+              "key": "fiberSpanThreshold",
+              "path": "optical.fiberSpanThreshold",
+              "type": "int",
+              "default": 256,
+              "min": 1,
+              "max": 1000000,
+              "comment": "Fiber Cable blocks a run (since the last amplifier) can be before it loses lanes.\n Default: 256\n Range: 1 ~ 1000000",
+              "label": "Span Loss Threshold (blocks)",
+              "restart": "NONE"
+            },
+            {
+              "key": "fiberSpanLossStep",
+              "path": "optical.fiberSpanLossStep",
+              "type": "int",
+              "default": 32,
+              "min": 1,
+              "max": 1000000,
+              "comment": "Blocks beyond fiberSpanThreshold for each lane lost (a run never drops below 1 lane).\n Default: 32\n Range: 1 ~ 1000000",
+              "label": "Blocks per Lane Lost",
+              "restart": "NONE"
+            },
+            {
+              "key": "multiplexerChannels",
+              "path": "optical.multiplexerChannels",
+              "type": "int",
+              "default": 8,
+              "min": 1,
+              "max": 16,
+              "comment": "Channels an Optical Multiplexer carries over its line, each a client network of up to a Fiber Cable's lanes.\n Default: 8\n Range: 1 ~ 16",
+              "label": "Multiplexer Channels",
+              "restart": "NONE"
+            },
+            {
+              "key": "multiplexerDrain",
+              "path": "optical.multiplexerDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an Optical Multiplexer (block or rack) drains while its network runs.\n Default: 4.0\n Range: 0.0 ~ 1000.0",
+              "label": "Multiplexer Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "amplifierDrain",
+              "path": "optical.amplifierDrain",
+              "type": "double",
+              "default": 1.0,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick an Optical Amplifier (block or rack) drains while its network runs.\n Default: 1.0\n Range: 0.0 ~ 1000.0",
+              "label": "Amplifier Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "shelfChannels",
+              "path": "optical.shelfChannels",
+              "type": "int",
+              "default": 40,
+              "min": 1,
+              "max": 40,
+              "comment": "Channels an Optical Transport Shelf carries at most.\n Default: 40\n Range: 1 ~ 40",
+              "label": "Shelf Channels",
+              "restart": "NONE"
+            },
+            {
+              "key": "chassisDrain",
+              "path": "optical.chassisDrain",
+              "type": "double",
+              "default": 10.0,
+              "min": 0.0,
+              "max": 100000.0,
+              "comment": "FE per tick a modular chassis (Optical Transport Shelf, Chassis Switch, Blade Enclosure) drains on its own.\n Default: 10.0\n Range: 0.0 ~ 100000.0",
+              "label": "Chassis Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "chassisCardDrain",
+              "path": "optical.chassisCardDrain",
+              "type": "double",
+              "default": 2.0,
+              "min": 0.0,
+              "max": 100000.0,
+              "comment": "FE per tick each card, blade, power supply or module in a chassis drains on top of it.\n Default: 2.0\n Range: 0.0 ~ 100000.0",
+              "label": "Chassis Drain per Part",
+              "restart": "NONE"
+            },
+            {
+              "key": "accessCardLanes",
+              "path": "optical.accessCardLanes",
+              "type": "int",
+              "default": 48,
+              "min": 0,
+              "max": 1024,
+              "comment": "Rack-local lanes each Access Card in a Chassis Switch gives the other devices in its rack.\n Default: 48\n Range: 0 ~ 1024",
+              "label": "Access Card Lanes",
+              "restart": "NONE"
+            },
+            {
+              "key": "routingCardRate",
+              "path": "optical.routingCardRate",
+              "type": "int",
+              "default": 128,
+              "min": 1,
+              "max": 1000000,
+              "comment": "Items a second each Routing Card in a Chassis Switch moves between segments (the cards add up).\n Default: 128\n Range: 1 ~ 1000000",
+              "label": "Routing Card Rate (items/s)",
+              "restart": "NONE"
+            },
+            {
+              "key": "bladeBonusPercent",
+              "path": "optical.bladeBonusPercent",
+              "type": "int",
+              "default": 25,
+              "min": 0,
+              "max": 1000,
+              "comment": "How much more a blade gives per rack unit than its server (Compute, Memory): % on top of the server's rate per U.\n Default: 25\n Range: 0 ~ 1000",
+              "label": "Blade Bonus per Rack Unit (%)",
+              "restart": "NONE"
+            },
+            {
+              "key": "interconnectLanes",
+              "path": "optical.interconnectLanes",
+              "type": "int",
+              "default": 64,
+              "min": 1,
+              "max": 1024,
+              "comment": "Lanes a Blade Enclosure's Interconnect Module gives its blades (the blades take none of the rack's).\n Default: 64\n Range: 1 ~ 1024",
+              "label": "Interconnect Lanes",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "elcl",
+          "label": null,
+          "comment": null,
+          "options": [
+            {
+              "key": "spooledFileCap",
+              "path": "elcl.spooledFileCap",
+              "type": "int",
+              "default": 200,
+              "min": 1,
+              "max": 100000,
+              "comment": "Spooled files a system keeps; past this the oldest is removed.\n Default: 200\n Range: 1 ~ 100000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "messageCap",
+              "path": "elcl.messageCap",
+              "type": "int",
+              "default": 500,
+              "min": 1,
+              "max": 100000,
+              "comment": "Messages each user's message queue keeps; past this the oldest is removed.\n Default: 500\n Range: 1 ~ 100000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "charsPerStorageByte",
+              "path": "elcl.charsPerStorageByte",
+              "type": "int",
+              "default": 64,
+              "min": 1,
+              "max": 1000000,
+              "comment": "Characters of source member text that take one byte of the network's drive storage (rounded up per member).\n Default: 64\n Range: 1 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "messageChatNotice",
+              "path": "elcl.messageChatNotice",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether SNDMSG also tells online recipients in chat that a message is waiting.",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "interactiveBudget",
+              "path": "elcl.interactiveBudget",
+              "type": "int",
+              "default": 200,
+              "min": 1,
+              "max": 1000000,
+              "comment": "VM instructions an interactive job runs per tick before it yields.\n Default: 200\n Range: 1 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "batchBudget",
+              "path": "elcl.batchBudget",
+              "type": "int",
+              "default": 100,
+              "min": 1,
+              "max": 1000000,
+              "comment": "VM instructions each batch job runs per tick before it yields.\n Default: 100\n Range: 1 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "globalBudget",
+              "path": "elcl.globalBudget",
+              "type": "int",
+              "default": 2000,
+              "min": 1,
+              "max": 10000000,
+              "comment": "VM instructions all jobs on the server run per tick, together.\n Default: 2000\n Range: 1 ~ 10000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "maxSourceLines",
+              "path": "elcl.maxSourceLines",
+              "type": "int",
+              "default": 5000,
+              "min": 1,
+              "max": 100000,
+              "comment": "Lines a source member may have.\n Default: 5000\n Range: 1 ~ 100000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "maxListSize",
+              "path": "elcl.maxListSize",
+              "type": "int",
+              "default": 4096,
+              "min": 1,
+              "max": 1000000,
+              "comment": "Elements a *LIST variable may hold.\n Default: 4096\n Range: 1 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "computeServerJobs",
+              "path": "elcl.computeServerJobs",
+              "type": "int",
+              "default": 4,
+              "min": 0,
+              "max": 64,
+              "comment": "Batch jobs each Compute Server runs at once.\n Default: 4\n Range: 0 ~ 64",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "disketteBytes",
+              "path": "elcl.disketteBytes",
+              "type": "int",
+              "default": 65536,
+              "min": 1,
+              "max": 16777216,
+              "comment": "Bytes of library source an 8\" Diskette holds (SAVLIB).\n Default: 65536\n Range: 1 ~ 16777216",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "craftLogRetention",
+              "path": "elcl.craftLogRetention",
+              "type": "int",
+              "default": 200,
+              "min": 0,
+              "max": 999,
+              "comment": "Ended crafting jobs each network's history keeps by default (the CRFLOGRTN system value's default); past this the oldest is removed.\n Default: 200\n Range: 0 ~ 999",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "maxRecordsPerFile",
+              "path": "elcl.maxRecordsPerFile",
+              "type": "int",
+              "default": 10000,
+              "min": 1,
+              "max": 1000000,
+              "comment": "Records a physical file (CRTPF) may hold; a write past this is refused (ELC2208).\n Default: 10000\n Range: 1 ~ 1000000",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "allowFolderSync",
+              "path": "elcl.allowFolderSync",
+              "type": "enum",
+              "default": "AUTO",
+              "allowed": [
+                "AUTO",
+                "TRUE",
+                "FALSE"
+              ],
+              "comment": "Whether libraries sync with <world>/encodedlogistics/libraries/: AUTO is on in single-player and off on dedicated servers.\nAllowed Values: AUTO, TRUE, FALSE",
+              "label": null,
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "plc",
+          "label": "PLCs",
+          "comment": null,
+          "options": [
+            {
+              "key": "plcEnergy",
+              "path": "plc.plcEnergy",
+              "type": "int",
+              "default": 2,
+              "min": 0,
+              "max": 1000,
+              "comment": "FE per tick a PLC uses while it's powered (from its own buffer, or from its network when cabled to one).\n Default: 2\n Range: 0 ~ 1000",
+              "label": "PLC Energy",
+              "restart": "NONE"
+            },
+            {
+              "key": "plcBuffer",
+              "path": "plc.plcBuffer",
+              "type": "int",
+              "default": 1000,
+              "min": 1,
+              "max": 1000000,
+              "comment": "FE a PLC's own buffer holds (filled from any face).\n Default: 1000\n Range: 1 ~ 1000000",
+              "label": "PLC Buffer",
+              "restart": "NONE"
+            },
+            {
+              "key": "plcInstructionsPerTick",
+              "path": "plc.plcInstructionsPerTick",
+              "type": "int",
+              "default": 50,
+              "min": 1,
+              "max": 100000,
+              "comment": "VM instructions a PLC runs per tick; a scan that needs more carries on next tick.\n Default: 50\n Range: 1 ~ 100000",
+              "label": "PLC Instructions Per Tick",
+              "restart": "NONE"
+            },
+            {
+              "key": "plcMaxPerChunk",
+              "path": "plc.plcMaxPerChunk",
+              "type": "int",
+              "default": 16,
+              "min": 1,
+              "max": 4096,
+              "comment": "PLCs that may run in one chunk; another stays in STOP (PLC limit reached).\n Default: 16\n Range: 1 ~ 4096",
+              "label": "PLCs Per Chunk",
+              "restart": "NONE"
+            },
+            {
+              "key": "plcMaxPerServer",
+              "path": "plc.plcMaxPerServer",
+              "type": "int",
+              "default": 512,
+              "min": 1,
+              "max": 1000000,
+              "comment": "PLCs that may run on the server at once; another stays in STOP (PLC limit reached).\n Default: 512\n Range: 1 ~ 1000000",
+              "label": "PLCs Per Server",
+              "restart": "NONE"
+            },
+            {
+              "key": "plcFaultOutputs",
+              "path": "plc.plcFaultOutputs",
+              "type": "enum",
+              "default": "HOLD",
+              "allowed": [
+                "HOLD",
+                "ZERO"
+              ],
+              "comment": "What a PLC's outputs do on FAULT: HOLD keeps their last levels, ZERO drops them to 0.\nAllowed Values: HOLD, ZERO",
+              "label": "PLC Outputs on Fault",
+              "restart": "NONE"
+            },
+            {
+              "key": "plcOpenToAnyone",
+              "path": "plc.plcOpenToAnyone",
+              "type": "boolean",
+              "default": true,
+              "comment": "Whether anyone may open a PLC that isn't cabled to a network (false: only the player who placed it, and operators).",
+              "label": "Anyone May Open an Unnetworked PLC",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "signals",
+          "label": "Lights, Sirens and Speakers",
+          "comment": null,
+          "options": [
+            {
+              "key": "signalDeviceDrain",
+              "path": "signals.signalDeviceDrain",
+              "type": "double",
+              "default": 0.25,
+              "min": 0.0,
+              "max": 1000.0,
+              "comment": "FE per tick a Cage Light, Alarm Strobe or Speaker drains from its network while it's cabled to one.\n Default: 0.25\n Range: 0.0 ~ 1000.0",
+              "label": "Signal Device Drain",
+              "restart": "NONE"
+            },
+            {
+              "key": "sirenMaxRange",
+              "path": "signals.sirenMaxRange",
+              "type": "int",
+              "default": 96,
+              "min": 8,
+              "max": 256,
+              "comment": "The farthest an Alarm Strobe's siren can be set to carry, in blocks.\n Default: 96\n Range: 8 ~ 256",
+              "label": "Siren Max Range",
+              "restart": "NONE"
+            },
+            {
+              "key": "speakerMaxRange",
+              "path": "signals.speakerMaxRange",
+              "type": "int",
+              "default": 64,
+              "min": 8,
+              "max": 256,
+              "comment": "The farthest a Speaker can be set to carry, in blocks.\n Default: 64\n Range: 8 ~ 256",
+              "label": "Speaker Max Range",
+              "restart": "NONE"
+            },
+            {
+              "key": "audioMaxBytes",
+              "path": "signals.audioMaxBytes",
+              "type": "int",
+              "default": 4,
+              "min": 1,
+              "max": 64,
+              "comment": "The largest audio file (or web audio) a Speaker plays, in MB.\n Default: 4\n Range: 1 ~ 64",
+              "label": "Audio Max Size (MB)",
+              "restart": "NONE"
+            },
+            {
+              "key": "audioMaxSeconds",
+              "path": "signals.audioMaxSeconds",
+              "type": "int",
+              "default": 180,
+              "min": 1,
+              "max": 3600,
+              "comment": "The longest audio file (or web audio) a Speaker plays, in seconds.\n Default: 180\n Range: 1 ~ 3600",
+              "label": "Audio Max Length (s)",
+              "restart": "NONE"
+            },
+            {
+              "key": "midiMaxKilobytes",
+              "path": "signals.midiMaxKilobytes",
+              "type": "int",
+              "default": 256,
+              "min": 1,
+              "max": 8192,
+              "comment": "The largest MIDI file a Speaker plays, in KB.\n Default: 256\n Range: 1 ~ 8192",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midiMaxSeconds",
+              "path": "signals.midiMaxSeconds",
+              "type": "int",
+              "default": 600,
+              "min": 1,
+              "max": 3600,
+              "comment": "The longest MIDI file a Speaker plays, in seconds.\n Default: 600\n Range: 1 ~ 3600",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "midiMaxNotes",
+              "path": "signals.midiMaxNotes",
+              "type": "int",
+              "default": 8,
+              "min": 1,
+              "max": 64,
+              "comment": "The most notes one Speaker starts at once (in one tick) from a MIDI file; the quietest beyond it are left out.\n Default: 8\n Range: 1 ~ 64",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "allowWebAudio",
+              "path": "signals.allowWebAudio",
+              "type": "enum",
+              "default": "AUTO",
+              "allowed": [
+                "AUTO",
+                "TRUE",
+                "FALSE"
+              ],
+              "comment": "Whether Speakers may play audio from web URLs (fetched by each listening player's own game): AUTO is on in single-player and off on dedicated servers.\nAllowed Values: AUTO, TRUE, FALSE",
+              "label": "Allow Web Audio",
+              "restart": "NONE"
+            },
+            {
+              "key": "webAudioHosts",
+              "path": "signals.webAudioHosts",
+              "type": "list",
+              "default": [],
+              "comment": "The hosts Speakers may play web audio from (example.com also allows its subdomains); empty: none.",
+              "label": "Web Audio Hosts",
+              "restart": "NONE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "CLIENT",
+      "fileName": "encodedlogistics-client.toml",
+      "foundInRun": false,
+      "sections": [
+        {
+          "path": "terminal",
+          "label": "Terminals",
+          "comment": null,
+          "options": [
+            {
+              "key": "sortMode",
+              "path": "terminal.sortMode",
+              "type": "enum",
+              "default": "NAME",
+              "allowed": [
+                "NAME",
+                "COUNT",
+                "MOD"
+              ],
+              "comment": "Sort the grid by name, count or mod.\nAllowed Values: NAME, COUNT, MOD",
+              "label": "Sort Mode",
+              "restart": "NONE"
+            },
+            {
+              "key": "descending",
+              "path": "terminal.descending",
+              "type": "boolean",
+              "default": false,
+              "comment": "Sort in descending order.",
+              "label": "Sort Descending",
+              "restart": "NONE"
+            },
+            {
+              "key": "craftablesAlways",
+              "path": "terminal.craftablesAlways",
+              "type": "boolean",
+              "default": true,
+              "comment": "Show what the network can craft but has none of always (true) or only while searching (false).",
+              "label": "Always Show Craftable",
+              "restart": "NONE"
+            },
+            {
+              "key": "height",
+              "path": "terminal.height",
+              "type": "enum",
+              "default": "FILL",
+              "allowed": [
+                "SMALL",
+                "MEDIUM",
+                "TALL",
+                "FILL"
+              ],
+              "comment": "The grid's height: a fixed size, or as many rows as fit the window.\nAllowed Values: SMALL, MEDIUM, TALL, FILL",
+              "label": "Grid Height",
+              "restart": "NONE"
+            },
+            {
+              "key": "typeTab",
+              "path": "terminal.typeTab",
+              "type": "enum",
+              "default": "ALL",
+              "allowed": [
+                "ALL",
+                "ITEMS",
+                "FLUIDS",
+                "PRESSURIZED",
+                "ENERGY"
+              ],
+              "comment": "The grid's tab: everything, items, fluids, pressurized gases, or the energy summary.\nAllowed Values: ALL, ITEMS, FLUIDS, PRESSURIZED, ENERGY",
+              "label": null,
+              "restart": "NONE"
+            },
+            {
+              "key": "searchSynced",
+              "path": "terminal.searchSynced",
+              "type": "boolean",
+              "default": false,
+              "comment": "Keep the search field in step with JEI's search bar (needs JEI).",
+              "label": "Sync Search with JEI",
+              "restart": "NONE"
+            },
+            {
+              "key": "phosphor",
+              "path": "terminal.phosphor",
+              "type": "string",
+              "default": "*SYSVAL",
+              "comment": "The Terminal Desk's screen colour: green, amber or white (screens/crt/phosphor.json), or *SYSVAL for the system's PHOSPHOR value.",
+              "label": "Terminal Desk Phosphor",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "toasts",
+          "label": "Job Toasts",
+          "comment": null,
+          "options": [
+            {
+              "key": "enabled",
+              "path": "toasts.enabled",
+              "type": "boolean",
+              "default": true,
+              "comment": "Show a toast when a crafting job finishes, fails or is cancelled.",
+              "label": "Show Job Toasts",
+              "restart": "NONE"
+            },
+            {
+              "key": "jobs",
+              "path": "toasts.jobs",
+              "type": "enum",
+              "default": "MINE",
+              "allowed": [
+                "MINE",
+                "ALL"
+              ],
+              "comment": "Whose jobs: MINE (the ones you asked for) or ALL (every job on networks you can view).\nAllowed Values: MINE, ALL",
+              "label": "Whose Jobs",
+              "restart": "NONE"
+            },
+            {
+              "key": "completed",
+              "path": "toasts.completed",
+              "type": "boolean",
+              "default": true,
+              "comment": "Toast when a job completes.",
+              "label": "When Completed",
+              "restart": "NONE"
+            },
+            {
+              "key": "failed",
+              "path": "toasts.failed",
+              "type": "boolean",
+              "default": true,
+              "comment": "Toast when a job fails.",
+              "label": "When Failed",
+              "restart": "NONE"
+            },
+            {
+              "key": "cancelled",
+              "path": "toasts.cancelled",
+              "type": "boolean",
+              "default": false,
+              "comment": "Toast when a job is cancelled.",
+              "label": "When Cancelled",
+              "restart": "NONE"
+            },
+            {
+              "key": "minimumSeconds",
+              "path": "toasts.minimumSeconds",
+              "type": "int",
+              "default": 5,
+              "min": 0,
+              "max": 3600,
+              "comment": "Only toast for jobs that ran at least this many seconds (failures always toast).\n Default: 5\n Range: 0 ~ 3600",
+              "label": "Minimum Job Duration (s)",
+              "restart": "NONE"
+            },
+            {
+              "key": "sound",
+              "path": "toasts.sound",
+              "type": "boolean",
+              "default": true,
+              "comment": "A quiet chime with each toast (a lower tone for failures).",
+              "label": "Chime",
+              "restart": "NONE"
+            }
+          ]
+        },
+        {
+          "path": "audio",
+          "label": "Sounds",
+          "comment": null,
+          "options": [
+            {
+              "key": "allowWebAudio",
+              "path": "audio.allowWebAudio",
+              "type": "boolean",
+              "default": false,
+              "comment": "Play web audio from Speakers. Off by default: playing it means this game fetches the URL itself, which shows your IP address to whoever hosts it.",
+              "label": "Allow Web Audio",
+              "restart": "NONE"
+            },
+            {
+              "key": "upsAlarmSounds",
+              "path": "audio.upsAlarmSounds",
+              "type": "boolean",
+              "default": true,
+              "comment": "Hear UPS alarms (the beeps on battery, the rapid low-battery beep, and the beep when power's back). Off silences every UPS for you only.",
+              "label": "Hear UPS Alarms",
+              "restart": "NONE"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

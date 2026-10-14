@@ -1,0 +1,17 @@
+{
+ "ELC00": {"title": "Language and runtime", "text": "Raised by the compiler and while a program runs: syntax, undeclared variables, values that don't fit their type, division by zero, list limits, call depth. A compile that gives any message of severity 20 or more makes no program; ELC0008 is a warning and the program is still created."},
+ "ELC01": {"title": "Commands", "text": "A command that doesn't exist, a required parameter left out, a value a parameter doesn't take, or a command used where it can't run (on the command line, in a batch job or in a program). ELC0108 and ELC0110 are the completion messages of `CALL` on the command line."},
+ "ELC02": {"title": "Objects", "text": "Libraries, members, programs and system values: not found, already there, read-only, locked, out of storage, and the completion messages of the library, member and program commands."},
+ "ELC03": {"title": "Jobs", "text": "Batch jobs, schedule entries and triggers. ELC0303 (ended by `ENDJOB` or the job screens) and ELC0310 (its job host was unloaded or lost power) have severity 40: they're recorded when the job is ended from outside, so the program gets no chance to catch them."},
+ "ELC04": {"title": "Security", "text": "A Firewall permission or an OS authority the user doesn't have, and failed sign-ons."},
+ "ELC12": {"title": "Inventory and storage", "text": "Items not in the network, not enough of an item, storage full, ambiguous item names, recalls from tape and resource types."},
+ "ELC13": {"title": "Devices", "text": "Devices that aren't found, are offline or don't support a command; printers, diskettes, Display Panels, images and Arcforge machines."},
+ "ELC14": {"title": "Crafting", "text": "No Scheduler, no recipe, missing ingredients, or a crafting job that isn't found."},
+ "ELC15": {"title": "PLCs", "text": "PLC modules, programs and the commands a PLC with no network can't run."},
+ "ELC22": {"title": "Database files", "text": "Reading and writing records (ELC2201 to ELC2209), definition errors when a physical file is compiled (ELC2220 to ELC2228), and the file commands' completion messages and errors (ELC2230 to ELC2247)."},
+ "ELC24": {"title": "Lights, sirens and speakers", "text": "Cage Light levels, Speaker audio files, web audio, notes and MIDI files."},
+ "ELC25": {"title": "Schematics and craft steps", "text": "Schematic holders, a crafting job's planned steps, and schematics moved to a Rack Schematic Console's drawer."},
+ "ELC26": {"title": "Routing, exchanges and the directory", "text": "Routers, routes, neighbours, ACLs, Exchange Switch members and the Directory Server."},
+ "ELC27": {"title": "Chassis and optical", "text": "Chassis Switches, Blade Enclosures, Optical Transport Shelves, spans, channels and protection switching."},
+ "USR": {"title": "Your own messages", "text": "Sent with `SNDPGMMSG`: the default ID is USR0001, and `MSGID(USRnnnn)` picks another. The text is whatever `MSG()` says. `MSGTYPE(*INFO)` (the default) only logs it; `MSGTYPE(*ESCAPE)` makes it an error of severity 30 that ends the program unless a `MONMSG` catches it. `MONMSG MSGID(USR0000)` catches every USR message, and `MONMSG MSGID(USR0100)` the ones from USR0100 to USR0199. `MONMSG MSGID(ELC0000)` catches them too, since it catches every message."}
+}

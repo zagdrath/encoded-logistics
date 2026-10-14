@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Developers and add-ons - Encoded Logistics</title>
+<meta name="description" content="What another mod can hook into, how the Arcforge integration is built, notes for contributors on the Terminal OS&#x27;s code, and how this site is generated.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Developers and add-ons">
+<p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html" aria-current="page" class="current">Developers and add-ons</a></li><li><a href="extension-points.html">Extension points</a></li><li><a href="arcforge-integration.html">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html">Building this site</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Developers and add-ons</span></nav>
+<details class="mobile-toc"><summary>Developers and add-ons: pages</summary><p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html" aria-current="page" class="current">Developers and add-ons</a></li><li><a href="extension-points.html">Extension points</a></li><li><a href="arcforge-integration.html">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html">Building this site</a></li></ol></nav></details>
+<h1>Developers and add-ons</h1>
+<p class="lead">What another mod can hook into, how the Arcforge integration is built, notes for contributors on the Terminal OS's code, and how this site is generated.</p>
+
+<div class="page-body">
+<p>This section is for mod developers: people writing an add-on or integration for Encoded Logistics, and people working on the mod itself. Players and server admins don't need any of it.</p>
+<div class="callout warn" role="note"><p class="callout-title">No stable API</p><p>Encoded Logistics has no published API package. The hooks on these pages are public Java classes that the mod uses for its own devices and integrations, so another mod can call them, but they can change in any release without notice. Build against a specific version, and check again when you update.</p></div>
+<p>What exists, in short:</p>
+<ul><li>The <strong>standard NeoForge capabilities</strong> on the mod's blocks and items (energy and items), which any mod can use as it would anyone's.</li><li>A few <strong>registries</strong> the mod itself uses to add devices and integrations: new ELCL commands, batch job hosts, displays, a gas mod's pressurized resources, and the machine access the Small Wireless Bridge goes through.</li></ul>
+<p>There is no ServiceLoader, no IMC, no custom NeoForge event and no custom capability type. ELCL's trigger events (<code>*RSCHANGE</code>, <code>*MCHDONE</code> and the rest) are internal to the Terminal OS, not NeoForge events.</p>
+<h2 id="pages">Pages<a class="anchor" href="#pages" aria-label="Link to this section">#</a></h2>
+<ol><li><a href="extension-points.html">Extension points</a>: every hook, with short examples.</li><li><a href="arcforge-integration.html">The Arcforge integration</a>: how the mod's Arcforge support uses those hooks, as a worked example of an integration that stays optional.</li><li><a href="elcl-internals.html">Terminal OS and ELCL internals</a>: contributor notes on the Terminal OS and ELCL code - the packages, how a command line runs, adding a command, the services and the tests.</li><li><a href="building-the-docs.html">Building this site</a>: how this site is generated from the code.</li></ol>
+<p>The mod's data components (for pack makers and add-ons) are listed on <a href="../reference/data-components.html">Data components</a>, its tags on <a href="../reference/tags.html">Tags</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="next" href="extension-points.html" rel="next"><span>Next</span>Extension points</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

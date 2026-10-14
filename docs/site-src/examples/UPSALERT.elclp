@@ -1,0 +1,28 @@
+/* UPSALERT - on switch to UPS power, shed non-essential load    */
+/* Install: ADDTRGEVT TRG(UPSALERT) EVENT(*PWRUPS) +             */
+/*            PGM(ELSYS/UPSALERT)                                 */
+PGM PARM(&EVENT &DATA)
+  DCL VAR(&EVENT) TYPE(*CHAR) LEN(10)
+  DCL VAR(&DATA)  TYPE(*CHAR) LEN(256)
+  DCL VAR(&DEVS)  TYPE(*LIST)
+  DCL VAR(&DEV)   TYPE(*CHAR) LEN(10)
+  DCL VAR(&CHG)   TYPE(*DEC)  LEN(5 1)
+
+  MONMSG MSGID(ELC1300)    /* ignore device errors, keep going */
+
+  RTVPWRSTS RTNCHG(&CHG)
+  SNDMSG MSG('Running on UPS, charge' *BCAT %CHAR(&CHG) *TCAT '%') +
+         TOUSR(*ALL)
+
+  /* Disable every Deployer and Collector Plane */
+  RTVDEVLST TYPE(DEPLOYER) RTNLST(&DEVS)
+  FOREACH VAR(&DEV) IN(&DEVS)
+    CHGDEVSTS DEV(&DEV) STATUS(*DISABLE)
+  ENDFOR
+  RTVDEVLST TYPE(COLLECTOR) RTNLST(&DEVS)
+  FOREACH VAR(&DEV) IN(&DEVS)
+    CHGDEVSTS DEV(&DEV) STATUS(*DISABLE)
+  ENDFOR
+
+  CHGRSOUT DEV(CTLIF01) SIDE(*ALL) LVL(15)   /* alarm lamp on */
+ENDPGM

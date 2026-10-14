@@ -41,7 +41,9 @@ import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.network.routing.Directories;
 import net.zagdrath.encodedlogistics.part.CablePart;
+import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.rack.RackDevice;
+import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.terminal.TerminalContext;
 import net.zagdrath.encodedlogistics.wireless.WirelessDevice;
@@ -182,7 +184,11 @@ public final class ElclDevices {
 
     // A rack device kind's type code.
     public static String code(RackDevice device) {
-        String id = device.type().id().getPath();
+        return code(device.type());
+    }
+
+    public static String code(RackDeviceType type) {
+        String id = type.id().getPath();
         return switch (id) {
             case "l2_switch_24", "l2_switch_48" -> "SWITCH";
             case "l3_switch" -> "L3SWITCH";
@@ -207,8 +213,12 @@ public final class ElclDevices {
 
     // A cable part's type code.
     public static String code(CablePart part) {
-        boolean wireless = part.host() instanceof WirelessPortBlockEntity;
-        return switch (part.type()) {
+        return code(part.type(), part.host() instanceof WirelessPortBlockEntity);
+    }
+
+    // A part type's code; ports on a Wireless Port block have their own.
+    public static String code(PartType type, boolean wireless) {
+        return switch (type) {
             case INGRESS_PORT -> wireless ? "WINGRESS" : "INGRESS";
             case EGRESS_PORT -> wireless ? "WEGRESS" : "EGRESS";
             case INVENTORY_TAP -> "TAP";
@@ -250,15 +260,15 @@ public final class ElclDevices {
             if (machine != null && row.type().equals("Machine")) {
                 candidates.add(new Candidate(machine.typeCode(), row.pos(), null, null, null, row.online(), machine));
             } else if (entity instanceof AccessPointBlockEntity ap) {
-                candidates.add(new Candidate("AP", row.pos(), ap, null, null, ap.isOnline(), null));
+                candidates.add(new Candidate(code(ap), row.pos(), ap, null, null, ap.isOnline(), null));
             } else if (entity instanceof WirelessBridgeBlockEntity bridge) {
-                candidates.add(new Candidate("WBRIDGE", row.pos(), bridge, null, null, row.online(), null));
+                candidates.add(new Candidate(code(bridge), row.pos(), bridge, null, null, row.online(), null));
             } else if (entity instanceof NamedDevice midrange) {
-                candidates.add(new Candidate(midrange.deviceType(), row.pos(), entity, null, null, midrange.isOnline(), null));
+                candidates.add(new Candidate(code(entity), row.pos(), entity, null, null, midrange.isOnline(), null));
             } else if (entity instanceof ControlInterfaceBlockEntity ci) {
-                candidates.add(new Candidate(ControlInterfaceBlockEntity.TYPE, row.pos(), ci, null, null, ci.isOnline(), null));
+                candidates.add(new Candidate(code(ci), row.pos(), ci, null, null, ci.isOnline(), null));
             } else if (entity instanceof TerminalDeskBlockEntity && row.type().equals("Terminal")) {
-                candidates.add(new Candidate("DESK", row.pos(), entity, null, null, row.online(), null));
+                candidates.add(new Candidate(code(entity), row.pos(), entity, null, null, row.online(), null));
             } else if (entity instanceof CableBlockEntity cable && row.type().equals("Part") && partHosts.add(row.pos())) {
                 // Each part on it, in side order.
                 for (Direction side : Direction.values()) {
@@ -272,8 +282,24 @@ public final class ElclDevices {
         return candidates;
     }
 
+    // A device block's type code (one that isn't a rack device, cable part or machine), or null for any other block.
+    public static @Nullable String code(BlockEntity entity) {
+        if (entity instanceof AccessPointBlockEntity) {
+            return "AP";
+        } else if (entity instanceof WirelessBridgeBlockEntity) {
+            return "WBRIDGE";
+        } else if (entity instanceof NamedDevice named) {
+            return named.deviceType();
+        } else if (entity instanceof ControlInterfaceBlockEntity) {
+            return ControlInterfaceBlockEntity.TYPE;
+        } else if (entity instanceof TerminalDeskBlockEntity) {
+            return "DESK";
+        }
+        return null;
+    }
+
     // The name prefix for a type code: ELDESK for desks, the code itself otherwise.
-    private static String prefix(String type) {
+    public static String prefix(String type) {
         return type.equals("DESK") ? "ELDESK" : type;
     }
 

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHGACLE - Encoded Logistics</title>
+<meta name="description" content="Change ACL Entry">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">CHGACLE</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>CHGACLE</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: BUILD</span></p>
+<p class="lead">Change ACL Entry</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>CHGACLE RTR(device name) ACL(name (up to 10 characters)) SEQ(whole number) [MATCH(*SAME | text)] [DIR(*SAME | *BOTH | *IN | *OUT)] [ACTION(*SAME | *PERMIT | *DENY)] [RATE(*SAME | *NONE | whole number)] [QUOTA(*SAME | *NONE | whole number)] [MOVE(*NONE | *UP | *DOWN)]</code></pre>
+<p>The first 3 parameters can be given without their keyword, in that order: <code>RTR</code>, <code>ACL</code>, <code>SEQ</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>RTR</code></td><td>Router</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>ACL</code></td><td>ACL</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>SEQ</code></td><td>Sequence number</td><td>Whole number<br><span class="muted">1 to 9999</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>MATCH</code></td><td>Match</td><td>Text<br><span class="muted">prompter field 64 long</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code></td></tr><tr><td><code>DIR</code></td><td>Direction</td><td>Special value</td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*BOTH</code>, <code>*IN</code>, <code>*OUT</code></td></tr><tr><td><code>ACTION</code></td><td>Action</td><td>Special value</td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*PERMIT</code>, <code>*DENY</code></td></tr><tr><td><code>RATE</code></td><td>Rate per minute</td><td>Whole number<br><span class="muted">1 to 1,000,000</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*NONE</code></td></tr><tr><td><code>QUOTA</code></td><td>Quota per day</td><td>Whole number<br><span class="muted">1 to 1,000,000,000</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*NONE</code></td></tr><tr><td><code>MOVE</code></td><td>Move</td><td>Special value</td><td>No</td><td><code>*NONE</code></td><td><code>*NONE</code>, <code>*UP</code>, <code>*DOWN</code></td></tr></tbody></table></div>
+<p>Changes one rule of a Router's ACL, or moves it up or down the list. <a class="cmd" href="WRKACL.html"><code>WRKACL</code></a>'s 2=Change, 6=Move up and 7=Move down run it. <code>RTR</code>, <code>ACL</code> and <code>SEQ</code> pick the rule as for <a class="cmd" href="RMVACLE.html"><code>RMVACLE</code></a> (<a class="msg" href="../messages.html#ELC2601"><code>ELC2601</code></a>, <a class="msg" href="../messages.html#ELC2606"><code>ELC2606</code></a>, <a class="msg" href="../messages.html#ELC2607"><code>ELC2607</code></a>).</p>
+<p><code>MATCH</code>, <code>DIR</code>, <code>ACTION</code>, <code>RATE</code> and <code>QUOTA</code> take the values <a class="cmd" href="ADDACLE.html"><code>ADDACLE</code></a> describes; each one left at <code>*SAME</code> keeps the rule's current value (a <code>MATCH</code> value starting with <code>*</code> goes in quotes, <code>MATCH('*FLUID')</code>, except <code>*SAME</code>). <code>RATE(*NONE)</code> and <code>QUOTA(*NONE)</code> take a limit off. A <code>MATCH</code> that names nothing is <a class="msg" href="../messages.html#ELC0103"><code>ELC0103</code></a>. Changing a rule keeps its hit count.</p>
+<p><code>MOVE(*UP)</code> swaps the rule with the one before it, <code>MOVE(*DOWN)</code> with the one after; the two swap their numbers, so the rule you named has a new <code>SEQ</code> afterwards. Moving the first rule up or the last one down does nothing. The changes are made first, then the move.</p>
+<p>The command sends no completion message.</p>
+<div class="code-block"><pre class="code elcl"><code>CHGACLE RTR(ROUTER01) ACL(NOFUEL) SEQ(20) RATE(512)
+CHGACLE RTR(ROUTER01) ACL(NOFUEL) SEQ(10) ACTION(*PERMIT) QUOTA(10000)
+CHGACLE RTR(ROUTER01) ACL(NOFUEL) SEQ(20) MOVE(*UP)</code></pre></div>
+<h2 id="see-also">Routing and interconnect</h2><p><a class="cmd" href="RTVRTE.html"><code>RTVRTE</code></a> <a class="cmd" href="RTVNBRSTS.html"><code>RTVNBRSTS</code></a> <a class="cmd" href="CHGNBR.html"><code>CHGNBR</code></a> <a class="cmd" href="ADDACLE.html"><code>ADDACLE</code></a> <a class="cmd" href="RMVACLE.html"><code>RMVACLE</code></a> <a class="cmd" href="RTVDIRENT.html"><code>RTVDIRENT</code></a> <a class="cmd" href="CHGDIRENT.html"><code>CHGDIRENT</code></a> <a class="cmd" href="APVIXMBR.html"><code>APVIXMBR</code></a> <a class="cmd" href="RMVIXMBR.html"><code>RMVIXMBR</code></a></p>
+<p><a href="index.html#routing">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

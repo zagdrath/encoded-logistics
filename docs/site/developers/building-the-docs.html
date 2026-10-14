@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building this site - Encoded Logistics</title>
+<meta name="description" content="How this documentation is generated from the mod&#x27;s own data and the hand-written pages, and how to rebuild it.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="../integrations/index.html">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="index.html" aria-current="true" class="current">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Developers and add-ons">
+<p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html">Developers and add-ons</a></li><li><a href="extension-points.html">Extension points</a></li><li><a href="arcforge-integration.html">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html" aria-current="page" class="current">Building this site</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Developers and add-ons</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Building this site</span></nav>
+<details class="mobile-toc"><summary>Developers and add-ons: pages</summary><p class="toc-title">Developers and add-ons</p><nav aria-label="Developers and add-ons pages"><ol><li><a href="index.html">Developers and add-ons</a></li><li><a href="extension-points.html">Extension points</a></li><li><a href="arcforge-integration.html">Arcforge integration</a></li><li><a href="elcl-internals.html">ELCL internals</a></li><li><a href="building-the-docs.html" aria-current="page" class="current">Building this site</a></li></ol></nav></details>
+<h1>Building this site</h1>
+<p class="lead">How this documentation is generated from the mod's own data and the hand-written pages, and how to rebuild it.</p>
+
+<div class="page-body">
+<p>This site is generated: the reference pages come from the mod's real data, exported by the mod itself, and the guide pages are Markdown checked against that data. Everything lives in the repository:</p>
+<div class="table-wrap"><table><thead><tr><th>Where</th><th>What</th></tr></thead><tbody><tr><td><code>docs/site-src/pages/</code></td><td>The hand-written pages (Markdown with shortcodes)</td></tr><tr><td><code>docs/site-src/data/</code></td><td>The exported data: blocks, items, recipes, tags, config, ELCL commands and messages, screens</td></tr><tr><td><code>docs/site-src/notes/</code></td><td>Text the code doesn't hold: item descriptions, command categories, the terms the build refuses</td></tr><tr><td><code>tools/docs/</code></td><td>The builder (Python 3.9 or later, standard library only)</td></tr><tr><td><code>docs/site/</code></td><td>The built site: plain static files, committed</td></tr></tbody></table></div>
+<h2 id="rebuild">Rebuilding<a class="anchor" href="#rebuild" aria-label="Link to this section">#</a></h2>
+<pre class="code"><code>./gradlew buildDocs</code></pre>
+<p>runs, in order:</p>
+<ol><li><strong><code>exportDocsData</code></strong>: starts a headless server with the docs exporter (in its own source set, <code>src/docs</code>, so none of it ships in the mod's jar), which writes the mod's data to <code>docs/site-src/data/*.json</code>, then composes every Terminal OS screen as the layout tests do.</li><li><strong><code>renderDocsIcons</code></strong>: starts the game client for about a minute and renders every block and item icon through the game's own renderer. <code>-PskipDocsIcons</code> leaves it out and reuses the committed icons.</li><li><strong><code>docsSnippets</code></strong> and <strong><code>docsExamplesTest</code></strong>: every ELCL program and DDS file on the pages is compiled with the mod's own compiler (<code>DocsExamplesTest</code>). One that doesn't compile fails the build.</li><li><strong><code>tools/docs/build.py build</code></strong>: builds <code>docs/site/</code> from the data and the pages, writes the search index and the redirect page for the old single-page reference, lists the screenshots still needed, and runs the checks.</li></ol>
+<p>The build fails if a registered block, item, command, message or config option has no documentation, if a link or anchor is broken, if an example doesn't compile, or if a page names something that isn't registered. With the data already exported, <code>python tools/docs/build.py build</code> rebuilds just the site in seconds.</p>
+<h2 id="writing">Writing and checking a page<a class="anchor" href="#writing" aria-label="Link to this section">#</a></h2>
+<p><code>docs/site-src/AUTHORING.md</code> explains the page format and the shortcodes. To check one page or section without writing the site:</p>
+<pre class="code"><code>python tools/docs/build.py check pages/control</code></pre>
+<p>Publishing the built site, and the old URL's redirect, are covered in <a href="https://github.com/zagdrath/encoded-logistics/blob/main/docs/site-src/PUBLISHING.md">docs/site-src/PUBLISHING.md</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="elcl-internals.html" rel="prev"><span>Previous</span>Terminal OS and ELCL internals</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLRDSP - Encoded Logistics</title>
+<meta name="description" content="Clear Display">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">CLRDSP</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>CLRDSP</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Clear Display</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>CLRDSP DEV(device name) [RGN(*ALL | name (up to 10 characters))]</code></pre>
+<p>The first parameter can be given without its keyword, in that order: <code>DEV</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>DEV</code></td><td>Device</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>RGN</code></td><td>Region</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long</span></td><td>No</td><td><code>*ALL</code></td><td><code>*ALL</code></td></tr></tbody></table></div>
+<p><code>CLRDSP</code> clears a Display Panel screen, or one region of it.</p>
+<ul><li><code>RGN(*ALL)</code> (the default) clears the whole screen: every text line, every region and every image. The screen is left with the single region <code>A</code> over all of it, showing nothing, and its next <a class="cmd" href="SNDDSPTXT.html"><code>SNDDSPTXT</code></a> <code>LINE(*NEXT)</code> goes at the top. Its mode (Text or Dashboard) and its own background stay as they were.</li><li><code>RGN(name)</code> takes that region's widget away (it shows <code>*NONE</code>), keeping the region's position, size and background. A region the screen doesn't have is <a class="msg" href="../messages.html#ELC1314"><code>ELC1314</code></a>. On a screen with no regions set up, <code>A</code> is the whole screen.</li></ul>
+<p>To take the text lines away and nothing else, write a line with <code>CLEAR(*YES)</code> on <a class="cmd" href="SNDDSPTXT.html"><code>SNDDSPTXT</code></a>. To remove one region altogether, clear the screen and set the layout up again with <a class="cmd" href="CHGDSPRGN.html"><code>CHGDSPRGN</code></a>.</p>
+<p>The screen doesn't have to be online. A name that isn't on the network is <a class="msg" href="../messages.html#ELC1301"><code>ELC1301</code></a>, and a device that isn't a Display Panel screen <a class="msg" href="../messages.html#ELC1303"><code>ELC1303</code></a>. <code>CLRDSP</code> sends no completion message.</p>
+<div class="code-block"><pre class="code elcl"><code>CLRDSP DEV(DSP01)              <span class="c">/* everything */</span>
+CLRDSP DEV(DSP01) RGN(B)       <span class="c">/* just region B&#x27;s widget */</span></code></pre></div>
+<p>See <a href="../../control/display-panels.html#regions">Regions</a>.</p>
+<h2 id="see-also">Messages, displays and output</h2><p><a class="cmd" href="SNDMSG.html"><code>SNDMSG</code></a> <a class="cmd" href="DSPMSG.html"><code>DSPMSG</code></a> <a class="cmd" href="SNDDSPTXT.html"><code>SNDDSPTXT</code></a> <a class="cmd" href="CHGDSPRGN.html"><code>CHGDSPRGN</code></a> <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a> <a class="cmd" href="SNDDSPGPH.html"><code>SNDDSPGPH</code></a> <a class="cmd" href="SNDDSPIMG.html"><code>SNDDSPIMG</code></a> <a class="cmd" href="RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> <a class="cmd" href="PRTTXT.html"><code>PRTTXT</code></a> <a class="cmd" href="PRTRPT.html"><code>PRTRPT</code></a></p>
+<p><a href="index.html#messages">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

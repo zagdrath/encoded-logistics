@@ -253,6 +253,14 @@ public final class ItemInfoTooltips {
         }
     }
 
+    // An item's Shift description, unwrapped (with its config numbers), or null when it has none: what the
+    // documentation export shows on each item's page.
+    public static @Nullable Component description(ItemStack stack) {
+        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        String key = descriptionKey(path);
+        return key == null ? null : Component.translatable(key, descriptionArguments(path));
+    }
+
     // Numbers a description shows that come from the config.
     private static Object[] descriptionArguments(String path) {
         return switch (path) {

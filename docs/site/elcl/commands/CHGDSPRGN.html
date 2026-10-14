@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CHGDSPRGN - Encoded Logistics</title>
+<meta name="description" content="Change Display Region">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../../assets/site.css">
+</head>
+<body data-root="../../" data-index="../../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../../index.html">Home</a></li><li><a href="../../getting-started/index.html">Getting started</a></li><li><a href="../../networks/index.html">Networks</a></li><li><a href="../../storage/index.html">Storage</a></li><li><a href="../../crafting/index.html">Crafting</a></li><li><a href="../../terminals/index.html">Terminals</a></li><li><a href="../../racks/index.html">Racks</a></li><li><a href="../../networking/index.html">Networking</a></li><li><a href="../../control/index.html">Control</a></li><li><a href="../index.html" aria-current="true" class="current">Terminal OS</a></li><li><a href="../../integrations/index.html">Integrations</a></li><li><a href="../../admin/index.html">Admins</a></li><li><a href="../../developers/index.html">Developers</a></li><li><a href="../../reference/index.html">Reference</a></li><li><a href="../../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Terminal OS and ELCL">
+<p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="../index.html">Terminal OS and ELCL</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Command reference</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">CHGDSPRGN</span></nav>
+<details class="mobile-toc"><summary>Terminal OS and ELCL: pages</summary><p class="toc-title">Terminal OS and ELCL</p><nav aria-label="Terminal OS and ELCL pages"><ol><li><a href="../index.html">Terminal OS and ELCL</a></li><li><a href="../using-the-terminal.html">Using the terminal</a></li><li><a href="../screens.html">Screens</a></li><li><a href="../libraries-and-editor.html">Libraries and the editor</a></li><li><a href="../database-files.html">Database files</a></li><li><a href="../language.html">Language</a></li><li><a href="../examples.html">Examples</a></li><li><a href="../jobs-and-scheduling.html">Jobs and scheduling</a></li><li><a href="../control-and-plcs.html">Control and PLCs</a></li><li><a href="../status-and-limits.html">Limits</a></li><li><a href="index.html">Command reference</a></li><li><a href="../messages.html">Message reference</a></li></ol></nav></details>
+<h1>CHGDSPRGN</h1>
+
+
+<div class="page-body">
+<p class="badges"><span class="badge b-ok">Command line and programs</span> <span class="badge b-pgm">Firewall: None</span></p>
+<p class="lead">Change Display Region</p>
+<h2 id="syntax">Syntax</h2>
+<pre class="code elcl syntax"><code>CHGDSPRGN DEV(device name) RGN(name (up to 10 characters)) [X(*SAME | whole number)] [Y(*SAME | whole number)] [W(*SAME | whole number)] [H(*SAME | whole number)] [BG(*SAME | *DFT | text)]</code></pre>
+<p>The first 2 parameters can be given without their keyword, in that order: <code>DEV</code>, <code>RGN</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<div class="table-wrap"><table class="param-table"><thead><tr><th>Keyword</th><th>Prompt</th><th>Takes</th><th>Required</th><th>Default</th><th>Special values</th></tr></thead><tbody><tr><td><code>DEV</code></td><td>Device</td><td>Device name<br><span class="muted">prompter field 10 long; F4 lists devices</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>RGN</code></td><td>Region</td><td>Name (up to 10 characters)<br><span class="muted">prompter field 10 long</span></td><td>Yes</td><td></td><td></td></tr><tr><td><code>X</code></td><td>Left (canvas px)</td><td>Whole number<br><span class="muted">0 to 1024</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code></td></tr><tr><td><code>Y</code></td><td>Top (canvas px)</td><td>Whole number<br><span class="muted">0 to 1024</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code></td></tr><tr><td><code>W</code></td><td>Width (canvas px)</td><td>Whole number<br><span class="muted">1 to 1024</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code></td></tr><tr><td><code>H</code></td><td>Height (canvas px)</td><td>Whole number<br><span class="muted">1 to 1024</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code></td></tr><tr><td><code>BG</code></td><td>Background colour</td><td>Text<br><span class="muted">prompter field 8 long</span></td><td>No</td><td><code>*SAME</code></td><td><code>*SAME</code>, <code>*DFT</code></td></tr></tbody></table></div>
+<p><code>CHGDSPRGN</code> defines a region on a Display Panel screen, or moves, resizes or recolours one. A region is a named rectangle of the screen's canvas (32 pixels a panel each way, from the top left) that shows one widget. A Text screen that a program gives a region becomes a Dashboard.</p>
+<h2 id="a-new-region-or-an-old-one">A new region or an old one<a class="anchor" href="#a-new-region-or-an-old-one" aria-label="Link to this section">#</a></h2>
+<p><code>RGN</code> names the region: 1-8 letters and digits (anything else is <a class="msg" href="../messages.html#ELC0003"><code>ELC0003</code></a>), in any case.</p>
+<ul><li><strong>An existing region</strong> keeps whatever you leave as <code>*SAME</code>, and keeps its widget.</li><li><strong>A new region</strong> starts at <code>X(0) Y(0)</code> and runs to the right and bottom edges of the screen, unless you give its position and size. It has no widget until <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a>, <a class="cmd" href="SNDDSPGPH.html"><code>SNDDSPGPH</code></a> or <a class="cmd" href="SNDDSPIMG.html"><code>SNDDSPIMG</code></a> gives it one.</li></ul>
+<p>The region must lie on the screen, and must not overlap any other region; either way it's <a class="msg" href="../messages.html#ELC1314"><code>ELC1314</code></a> and nothing changes.</p>
+<div class="callout" role="note"><p class="callout-title">Note</p><p>A screen with no regions set up has one region, <code>A</code>, covering all of it. A new region would overlap it, so make <code>A</code> smaller first, then add the others in the space you freed.</p></div>
+<h2 id="background">Background<a class="anchor" href="#background" aria-label="Link to this section">#</a></h2>
+<p><code>BG</code> is the region's background colour: <code>*SAME</code> (the default) keeps it (none, on a new region), <code>*DFT</code> is no background of its own, and a palette name or <code>#RRGGBB</code> sets one. Palette names and hex colours go in quotes here: <code>BG('*NAVY')</code>, <code>BG('#1F2228')</code> (an unquoted <code>BG(*NAVY)</code> is refused with <a class="msg" href="../messages.html#ELC0103"><code>ELC0103</code></a>). A value that isn't a colour is <a class="msg" href="../messages.html#ELC0003"><code>ELC0003</code></a>.</p>
+<p>A region that changes size has its image, if it shows one, drawn again at the new size. The screen doesn't have to be online. A name that isn't on the network is <a class="msg" href="../messages.html#ELC1301"><code>ELC1301</code></a>, and a device that isn't a Display Panel screen <a class="msg" href="../messages.html#ELC1303"><code>ELC1303</code></a>. <code>CHGDSPRGN</code> sends no completion message.</p>
+<h2 id="examples">Examples<a class="anchor" href="#examples" aria-label="Link to this section">#</a></h2>
+<p>A 4 x 2 screen (128 x 64 pixels), split into a left half and two quarters on the right:</p>
+<div class="code-block"><pre class="code elcl"><code>CHGDSPRGN DEV(DSP01) RGN(A) W(64)                       <span class="c">/* A: the left half      */</span>
+CHGDSPRGN DEV(DSP01) RGN(B) X(64) H(32) BG(<span class="s">&#x27;*NAVY&#x27;</span>)    <span class="c">/* B: top right          */</span>
+CHGDSPRGN DEV(DSP01) RGN(C) X(64) Y(32)                 <span class="c">/* C: the rest, to the edges */</span></code></pre></div>
+<p>Use <a class="cmd" href="RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> to work the sizes out from the screen's real size. See <a href="../../control/display-panels.html#regions">Regions</a>.</p>
+<h2 id="see-also">Messages, displays and output</h2><p><a class="cmd" href="SNDMSG.html"><code>SNDMSG</code></a> <a class="cmd" href="DSPMSG.html"><code>DSPMSG</code></a> <a class="cmd" href="SNDDSPTXT.html"><code>SNDDSPTXT</code></a> <a class="cmd" href="CLRDSP.html"><code>CLRDSP</code></a> <a class="cmd" href="SNDDSPWDG.html"><code>SNDDSPWDG</code></a> <a class="cmd" href="SNDDSPGPH.html"><code>SNDDSPGPH</code></a> <a class="cmd" href="SNDDSPIMG.html"><code>SNDDSPIMG</code></a> <a class="cmd" href="RTVDSPSIZ.html"><code>RTVDSPSIZ</code></a> <a class="cmd" href="PRTTXT.html"><code>PRTTXT</code></a> <a class="cmd" href="PRTRPT.html"><code>PRTRPT</code></a></p>
+<p><a href="index.html#messages">All commands</a></p>
+</div>
+
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../../assets/site.js" defer></script>
+</body>
+</html>

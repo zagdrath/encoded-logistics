@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JEI - Encoded Logistics</title>
+<meta name="description" content="What Encoded Logistics adds to JEI - the Lithography category, crafting stations, recipe transfer, dragging items onto filters and ghost slots, and search sync with the terminals.">
+<script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body data-root="../" data-index="../assets/search-index.js">
+<a class="skip" href="#content">Skip to content</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">EL</span><span class="brand-name">Encoded Logistics</span></a>
+    <form class="search" role="search" action="../search.html" method="get" autocomplete="off">
+      <label class="visually-hidden" for="q">Search the documentation</label>
+      <input id="q" name="q" type="search" placeholder="Search  ( / )" aria-controls="search-results" aria-expanded="false" aria-autocomplete="list">
+      <div id="search-results" class="search-results" role="listbox" hidden></div>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="Colour theme: automatic" title="Colour theme"><span aria-hidden="true">&#9680;</span></button>
+  </div>
+  <nav class="sections" aria-label="Sections">
+    <details class="sections-menu"><summary>Sections</summary><ul><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="index.html" aria-current="true" class="current">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul></details>
+    <ul class="sections-bar"><li><a href="../index.html">Home</a></li><li><a href="../getting-started/index.html">Getting started</a></li><li><a href="../networks/index.html">Networks</a></li><li><a href="../storage/index.html">Storage</a></li><li><a href="../crafting/index.html">Crafting</a></li><li><a href="../terminals/index.html">Terminals</a></li><li><a href="../racks/index.html">Racks</a></li><li><a href="../networking/index.html">Networking</a></li><li><a href="../control/index.html">Control</a></li><li><a href="../elcl/index.html">Terminal OS</a></li><li><a href="index.html" aria-current="true" class="current">Integrations</a></li><li><a href="../admin/index.html">Admins</a></li><li><a href="../developers/index.html">Developers</a></li><li><a href="../reference/index.html">Reference</a></li><li><a href="../changelog.html">Changelog</a></li></ul>
+  </nav>
+</header>
+<div class="layout">
+<aside class="sidebar" aria-label="Integrations">
+<p class="toc-title">Integrations</p><nav aria-label="Integrations pages"><ol><li><a href="index.html">Integrations</a></li><li><a href="arcforge.html">Arcforge</a></li><li><a href="jei.html" aria-current="page" class="current">JEI</a></li><li><a href="jade.html">Jade</a></li></ol></nav>
+</aside>
+<main id="content">
+<nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Integrations</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">JEI</span></nav>
+<details class="mobile-toc"><summary>Integrations: pages</summary><p class="toc-title">Integrations</p><nav aria-label="Integrations pages"><ol><li><a href="index.html">Integrations</a></li><li><a href="arcforge.html">Arcforge</a></li><li><a href="jei.html" aria-current="page" class="current">JEI</a></li><li><a href="jade.html">Jade</a></li></ol></nav></details>
+<h1>JEI</h1>
+<p class="lead">What Encoded Logistics adds to JEI - the Lithography category, crafting stations, recipe transfer, dragging items onto filters and ghost slots, and search sync with the terminals.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#lithography">The Lithography category</a></li><li class="toc-l2"><a href="#stations">Crafting stations and info</a></li><li class="toc-l2"><a href="#transfer">Recipe transfer (the "+" button)</a></li><li class="toc-l2"><a href="#ghosts">Dragging onto filters and ghost slots</a></li><li class="toc-l2"><a href="#search">Search sync</a></li></ol></nav></details>
+<div class="page-body">
+<p>With JEI installed, the mod's crafting, smelting and other vanilla-type recipes show up in JEI as any mod's do. On top of that, the mod adds the following.</p>
+<h2 id="lithography">The Lithography category<a class="anchor" href="#lithography" aria-label="Link to this section">#</a></h2>
+<p>Lithography Press recipes have a category of their own, laid out like the press: the photomask above, the wafer on the left, the additive below and the result on the right, with the energy and time underneath. The photomask is marked "Not consumed": it is never used up. The <a class="item-link" href="../reference/items/lithography_press.html"><img class="icon" src="../assets/icons/encodedlogistics/lithography_press.png" alt="" width="20" height="20" loading="lazy">Lithography Press</a> is the category's station, so looking up its uses shows every lithography recipe. The recipes are the ones the server sends, so a datapack's changes show too. See <a href="../crafting/lithography.html">Lithography</a>.</p>
+<h2 id="stations">Crafting stations and info<a class="anchor" href="#stations" aria-label="Link to this section">#</a></h2>
+<ul><li>The <a class="item-link" href="../reference/items/fabricator.html"><img class="icon" src="../assets/icons/encodedlogistics/fabricator.png" alt="" width="20" height="20" loading="lazy">Fabricator</a> is listed as a station for crafting recipes, since it runs them for the network's crafting jobs.</li><li>The <a class="item-link" href="../reference/items/network_controller.html"><img class="icon" src="../assets/icons/encodedlogistics/network_controller.png" alt="" width="20" height="20" loading="lazy">Network Controller</a> has an information page on how controllers form structures and what they provide.</li></ul>
+<h2 id="transfer">Recipe transfer (the "+" button)<a class="anchor" href="#transfer" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Where</th><th>What "+" does</th></tr></thead><tbody><tr><td>A <a class="item-link" href="../reference/items/fabrication_terminal.html"><img class="icon" src="../assets/icons/encodedlogistics/fabrication_terminal.png" alt="" width="20" height="20" loading="lazy">Fabrication Terminal</a> (any crafting recipe)</td><td>Fills the crafting grid from the network first, then your inventory. Before that, the recipe marks what is missing: red for missing, blue for missing but craftable on the network. The "+" still works then, moving what there is</td></tr><tr><td>A <a class="item-link" href="../reference/items/schematic_encoder.html"><img class="icon" src="../assets/icons/encodedlogistics/schematic_encoder.png" alt="" width="20" height="20" loading="lazy">Schematic Encoder</a> (any recipe)</td><td>A crafting recipe fills the ghost grid in crafting mode; any other recipe becomes a processing schematic with its inputs (up to nine) and outputs (up to three) and their amounts. Only ghost entries are set: nothing is taken from anywhere</td></tr></tbody></table></div>
+<h2 id="ghosts">Dragging onto filters and ghost slots<a class="anchor" href="#ghosts" aria-label="Link to this section">#</a></h2>
+<p>Drag an item from JEI's list onto a ghost slot to set it, as clicking with the item would:</p>
+<ul><li>the filters on ports, Inventory Taps, Collector and Deployer Planes, and the Threshold Sensor's item;</li><li>the Gateway's stock list;</li><li>the Schematic Encoder's grid and outputs;</li><li>the filter boxes in the Server Rack's screen (a Router or L3 Switch route, an L3 Switch QoS rule);</li><li>the Rack Elevation editor: drag a rack device onto a free unit to place it there.</li></ul>
+<p>Dragging a fluid (an Arcforge gas is one too) sets a fluid or gas entry.</p>
+<h2 id="search">Search sync<a class="anchor" href="#search" aria-label="Link to this section">#</a></h2>
+<p>The terminals can keep their search field in step with JEI's search bar, both ways. Turn it on with the client option <a class="cfg" href="../reference/config.html#cfg-terminal-searchSynced"><code>terminal.searchSynced</code></a> (default false) (Sync Search with JEI). See <a href="../terminals/block-terminals.html">Access and Fabrication Terminals</a>.</p>
+</div>
+<nav class="prevnext" aria-label="Previous and next"><a class="prev" href="arcforge.html" rel="prev"><span>Previous</span>Arcforge</a><a class="next" href="jade.html" rel="next"><span>Next</span>Jade</a></nav>
+</main>
+</div>
+<footer class="site-footer">
+  <p>Encoded Logistics 1.2.1+26.3 for Minecraft 26.3 (NeoForge 26.3.0.40-beta). These pages were built from that version's code: <a href="https://github.com/zagdrath/encoded-logistics">source on GitHub</a>.</p>
+</footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>
