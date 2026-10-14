@@ -87,8 +87,12 @@ def compute_glow(frame,state='on'):
     im=new()
     if state=='fault': (put(im,88,9,RED[6]),put(im,89,9,RED[5])) if frame==0 else None; return im
     for (x,y) in ((89,4),(90,4),(89,5)): put(im,x,y,GRN[5])
-    put(im,88,9,GRN[5]); put(im,89,9,GRN[4]); put(im,88,11,ORANGE[5] if frame%2 else ORANGE[3]); put(im,88,13,GRN[5] if frame!=2 else GRN[3])
-    for i in range(8): put(im,18+i*7,13,(GRN[5] if (i+frame)%3 else GRN[3]))            # drive activity
+    put(im,88,9,GRN[5]); put(im,89,9,GRN[4])
+    if frame%2: put(im,88,11,ORANGE[5])                                                   # busy: CPU LED on/off
+    if frame%2==0: put(im,88,13,GRN[5])
+    r=random.Random(91+frame)                                                             # drive activity: lit or dark
+    for i in range(8):
+        if r.random()<0.5: put(im,18+i*7,13,GRN[5])
     return im
 def memory():
     im=new(); ears_bezel(im,1,2030); accent_stripe(im,1,6,MAGENTA)
