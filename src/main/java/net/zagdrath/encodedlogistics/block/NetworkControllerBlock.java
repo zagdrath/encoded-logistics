@@ -35,6 +35,7 @@ import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.client.ClientRenderHooks;
 import net.zagdrath.encodedlogistics.menu.NetworkControllerMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NetworkStatus;
 
 // The Network Controller. Touching controllers form one structure (see ControllerStructures); FORMED and STATE are
@@ -97,7 +98,7 @@ public class NetworkControllerBlock extends BaseEntityBlock {
         super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
         // Something next to the structure changed: its network may have gained or lost a node.
         if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.BLOCK);
         }
     }
 

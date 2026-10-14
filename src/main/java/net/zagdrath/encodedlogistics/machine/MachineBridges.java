@@ -53,6 +53,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.display.SmallWirelessBridgeBlock;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.net.MachineBridgesPayload;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
@@ -220,7 +221,7 @@ public final class MachineBridges extends SavedData {
         if (drop) {
             Block.popResourceFromFace(level, bridge.pos(), bridge.face(), ModItems.SMALL_WIRELESS_BRIDGE.toStack());
         }
-        ControllerStructures.get(level).markTopologyChanged();
+        ControllerStructures.topologyChanged(level, bridge.pos(), TopologyCause.LINK);
         setDirty();
         shownChanged = true;
         sync(level);
@@ -231,7 +232,10 @@ public final class MachineBridges extends SavedData {
         setDirty();
         shownChanged = true;
         if (level != null) {
-            ControllerStructures.get(level).markTopologyChanged();
+            // Which bridge isn't known here: the networks at every one are worked out again (relinking is rare).
+            List<NodePos> ends = new ArrayList<>();
+            bridges.keySet().forEach(pos -> ends.add(NodePos.of(level.dimension(), pos)));
+            ControllerStructures.topologyChanged(level.getServer(), ends, TopologyCause.LINK);
         }
     }
 

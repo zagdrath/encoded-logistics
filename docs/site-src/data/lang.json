@@ -303,6 +303,8 @@
   "encodedlogistics.configuration.perDenseCable": "Per Dense Network Cable",
   "encodedlogistics.configuration.perFiberCable": "Per Fiber Cable",
   "encodedlogistics.configuration.adHocMaxDevices": "Ad-hoc Device Limit",
+  "encodedlogistics.configuration.resolveInterval": "Re-solve Interval (ticks)",
+  "encodedlogistics.configuration.slowSolveMillis": "Slow Solve Warning (ms)",
   "encodedlogistics.configuration.cableDrain": "Network Cable Drain",
   "encodedlogistics.configuration.denseCableDrain": "Dense Network Cable Drain",
   "encodedlogistics.configuration.fiberCableDrain": "Fiber Cable Drain",

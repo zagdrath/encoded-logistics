@@ -34,6 +34,7 @@ import net.minecraft.world.level.redstone.Orientation;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.ControlInterfaceBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
@@ -124,14 +125,14 @@ public class ControlInterfaceBlock extends BaseEntityBlock implements NetworkNod
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!oldState.is(this) && level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.BLOCK);
         }
     }
 
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        ControllerStructures.get(level).markTopologyChanged();
+        ControllerStructures.topologyChanged(level, pos, TopologyCause.BLOCK);
     }
 
     // --- Block entity ---

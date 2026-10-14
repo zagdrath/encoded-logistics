@@ -99,8 +99,31 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   `multiplexerChannels`, `shelfChannels`, `accessCardLanes`, `routingCardRate`, `bladeBonusPercent`,
   `interconnectLanes`, and the drains.
 
+- **Admin commands** (operators):
+  - `/encodedlogistics config get|set <option>` and `/encodedlogistics config reset all|<section>|<option>`, with tab
+    completion of every section and option, as Arcforge's `/arcforge config`. Changes are saved to
+    `encodedlogistics-local.toml` and take effect at once.
+  - `/encodedlogistics debug solves` (each network's solves over the last minute: how many, what they cost and what
+    caused them), `debug ticks` (each level's and the costliest networks' tick time), `debug networks` (every
+    network's status, size, lanes and energy) and `debug watch solves [ms]` / `debug watch off` (slow solves shown in
+    your chat). They answer whoever asks; nothing goes to the server log.
+
 ### Fixed
 
+- **Server lag from networks being worked out again.** Any change anywhere - a block placed, or just a chunk with one
+  end of a Network Bridge, Point-to-Point Link, Wireless Bridge or Wireless Port loading as a player walked by - made
+  every network in every dimension rediscover itself and work out its lanes again, and a network with many Server
+  Racks did so slowly. Now:
+  - only the networks a change touches are worked out again (the ones holding the block or next to it, and those at
+    the far ends of its remote links);
+  - a remote link's end loading or unloading costs nothing unless the link really came up or went down (its other end
+    is loaded);
+  - a network works itself out at most once every `resolveInterval` ticks (20; 0 for every change), so a burst of
+    changes costs one solve; a lone change is still worked out on the next tick;
+  - a redundant pair of rack Network Controllers works the network out once, not once each;
+  - working out a rack's uplinks no longer searches the whole network once per rack: a network of 50 racks with seven
+    uplinks each takes about a sixth of the time it did, with exactly the same lanes.
+  A solve slower than `slowSolveMillis` (50 ms) is logged with its network and cause.
 - Jobs share identical machines instead of piling onto the first ones. Each run now goes to the least busy Gateway,
   Fabricator, Fabrication Server or Blade Enclosure that can make it, so a second job using the same schematic
   uses idle Gateways (and the machines behind them) rather than queueing behind the first job on the same ones.

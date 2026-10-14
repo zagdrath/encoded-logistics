@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Server commands - Encoded Logistics</title>
-<meta name="description" content="The mod&#x27;s one chat command, /encodedlogistics caches, which shows how often the network caches were rebuilt and can log it every minute.">
+<meta name="description" content="The /encodedlogistics chat commands - config to read, set and reset the config in game, debug to see how the networks are performing, and caches.">
 <script>try{var t=localStorage.getItem("el-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <link rel="stylesheet" href="../assets/site.css">
 </head>
@@ -33,15 +33,43 @@
 <nav class="breadcrumbs" aria-label="Breadcrumbs"><a href="../index.html">Home</a> <span class="sep" aria-hidden="true">/</span> <a href="index.html">Server admins</a> <span class="sep" aria-hidden="true">/</span> <span aria-current="page">Server commands</span></nav>
 <details class="mobile-toc"><summary>Server admins: pages</summary><p class="toc-title">Server admins</p><nav aria-label="Server admins pages"><ol><li><a href="index.html">Server admins</a></li><li><a href="config.html">Configuration</a></li><li><a href="permissions.html">Permissions</a></li><li><a href="folders.html">Folders on disk</a></li><li><a href="performance.html">Performance and limits</a></li><li><a href="commands.html" aria-current="page" class="current">Server commands</a></li></ol></nav></details>
 <h1>Server commands</h1>
-<p class="lead">The mod's one chat command, /encodedlogistics caches, which shows how often the network caches were rebuilt and can log it every minute.</p>
-
+<p class="lead">The /encodedlogistics chat commands - config to read, set and reset the config in game, debug to see how the networks are performing, and caches.</p>
+<details class="page-toc" open><summary>On this page</summary><nav aria-label="On this page"><ol><li class="toc-l2"><a href="#config">/encodedlogistics config</a></li><li class="toc-l2"><a href="#debug">/encodedlogistics debug</a></li><li class="toc-l3"><a href="#debug-solves">debug solves</a></li><li class="toc-l3"><a href="#debug-ticks">debug ticks</a></li><li class="toc-l3"><a href="#debug-networks">debug networks</a></li><li class="toc-l3"><a href="#debug-watch">debug watch solves</a></li><li class="toc-l2"><a href="#caches">/encodedlogistics caches</a></li><li class="toc-l3"><a href="#show">Showing the counts</a></li><li class="toc-l3"><a href="#log">Logging every minute</a></li></ol></nav></details>
 <div class="page-body">
-<p>Encoded Logistics has a single chat (Brigadier) command, for checking how hard the network caches are working. Everything else is done in the game or in the <a href="../elcl/index.html">Terminal OS</a>, whose commands are ELCL, not chat commands.</p>
+<p>Encoded Logistics has one chat (Brigadier) command, <code>/encodedlogistics</code>, with three parts: <a href="#config"><code>config</code></a> reads, sets and resets the mod's config in game, <a href="#debug"><code>debug</code></a> shows how the networks are performing, and <a href="#caches"><code>caches</code></a> how hard the network caches are working. Everything else is done in the game or in the <a href="../elcl/index.html">Terminal OS</a>, whose commands are ELCL, not chat commands.</p>
+<p><strong>Who may use them:</strong> operators only: permission level 2 (gamemaster) or higher, which includes the server console and command blocks. Tab completion lists every choice.</p>
+<h2 id="config"><code>/encodedlogistics config</code><a class="anchor" href="#config" aria-label="Link to this section">#</a></h2>
+<pre class="code"><code>/encodedlogistics config get &lt;option&gt;
+/encodedlogistics config set &lt;option&gt; &lt;value&gt;
+/encodedlogistics config reset all
+/encodedlogistics config reset &lt;section&gt;
+/encodedlogistics config reset &lt;option&gt;</code></pre>
+<p>The mod's main config, <code>encodedlogistics-local.toml</code> (see <a href="config.html">Configuration</a>), from in game, as Arcforge's <code>/arcforge config</code> does. Options are written as <code>section.key</code>, <code>lanes.resolveInterval</code> say; tab completion lists every section and option, and <code>set</code> suggests the values an option takes.</p>
+<ul><li><code>get</code> answers with the option's value, its default and what it allows: <code>lanes.resolveInterval = 20 (default 20, 0 to 1200)</code>.</li><li><code>set</code> checks the value against the option's range or allowed values and refuses one it doesn't take.</li><li><code>reset all</code> puts every option back to its default, <code>reset &lt;section&gt;</code> every option in a section (<code>reset lanes</code>), and <code>reset &lt;option&gt;</code> one option. It names the options it changed.</li></ul>
+<p>A change is saved to the file straight away, takes effect at once, and every network works out its lanes again with the new values. The client config (<code>encodedlogistics-client.toml</code>, each player's own) isn't covered: change that in the game's Mods screen.</p>
+<h2 id="debug"><code>/encodedlogistics debug</code><a class="anchor" href="#debug" aria-label="Link to this section">#</a></h2>
+<pre class="code"><code>/encodedlogistics debug solves
+/encodedlogistics debug ticks [count]
+/encodedlogistics debug networks
+/encodedlogistics debug watch solves [ms]
+/encodedlogistics debug watch off</code></pre>
+<p>For finding what a network costs the server. Each answers whoever asked, in chat or the console; nothing goes to the server log.</p>
+<p>A network is <strong>solved</strong> when something it's made of changes: it finds its blocks again and works out its lanes. Only the networks a change touches solve, at most once every <a class="cfg" href="../reference/config.html#cfg-lanes-resolveInterval"><code>lanes.resolveInterval</code></a> (default 20) ticks (a burst of changes costs one), and a lone change is worked out on the next tick. See <a href="../networks/lanes.html">Lanes</a>.</p>
+<h3 id="debug-solves"><code>debug solves</code><a class="anchor" href="#debug-solves" aria-label="Link to this section">#</a></h3>
+<p>Each network that solved in the last two minutes, busiest first:</p>
+<pre class="code"><code>Network solves: 6 in the last full minute; re-solve interval 20 ticks, 0 waiting
+minecraft:overworld #3 (ONLINE): 4 solves last minute (1 so far), avg 3.1 ms, max 5.0 ms, last 2.9 ms (2.1 finding its blocks), 1615 nodes; block placed, broken or reconnected 3, remote link changed 2</code></pre>
+<p>A network solving every few seconds while nobody builds on it means something keeps changing it; the causes say what (a block placed, broken or reconnected; parts or lanes; a remote link; rack devices; an optical channel; a controller structure). A large network solving in tens of milliseconds is worth looking at with <code>debug networks</code>.</p>
+<h3 id="debug-ticks"><code>debug ticks</code><a class="anchor" href="#debug-ticks" aria-label="Link to this section">#</a></h3>
+<p>How long each level's networks take to tick, all together, then the costliest networks (10, or <code>count</code>), as the average and the most per tick over the last minute. This is the work every tick does - energy, devices, ports - with any solves on top.</p>
+<h3 id="debug-networks"><code>debug networks</code><a class="anchor" href="#debug-networks" aria-label="Link to this section">#</a></h3>
+<p>Every network: its status, what runs it (controller blocks, a rack or a Midrange System, and for a redundant pair the rack it follows), its nodes, devices and racks, the lanes in use and short, its energy, and how long ago it was last solved.</p>
+<h3 id="debug-watch"><code>debug watch solves</code><a class="anchor" href="#debug-watch" aria-label="Link to this section">#</a></h3>
+<p><code>/encodedlogistics debug watch solves</code> tells you in chat of every network solve as it happens, with the network, its size, the time it took and why it solved; <code>debug watch solves 20</code> only of those taking 20 ms or more. <code>/encodedlogistics debug watch off</code> stops it. It lasts until you stop it or the server restarts. (A solve slower than <a class="cfg" href="../reference/config.html#cfg-lanes-slowSolveMillis"><code>lanes.slowSolveMillis</code></a> (default 50) ms is also written to the server log as a warning; 0 turns that off.)</p>
 <h2 id="caches"><code>/encodedlogistics caches</code><a class="anchor" href="#caches" aria-label="Link to this section">#</a></h2>
 <pre class="code"><code>/encodedlogistics caches
 /encodedlogistics caches log true
 /encodedlogistics caches log false</code></pre>
-<p><strong>Who may use it:</strong> operators only: permission level 2 (gamemaster) or higher, which includes the server console and command blocks.</p>
 <p>Each network keeps caches of what it is made of, and rebuilds one only when something it depends on changes. The command counts the rebuilds:</p>
 <div class="table-wrap"><table><thead><tr><th>Counted</th><th>Caches</th></tr></thead><tbody><tr><td>For each controller structure</td><td><code>storage</code>, <code>drive cells</code>, <code>rack devices serving</code></td></tr><tr><td>For the whole server</td><td><code>racks</code> (the racks in order) and <code>scheduler heads</code> (the rack Scheduler pools' heads)</td></tr></tbody></table></div>
 <p>Rebuilds are counted over each minute of game time (1,200 ticks).</p>

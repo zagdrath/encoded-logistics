@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 
 // How Display Panels merge into screens (HANDOFF 1): panels with the same facing, side by side or stacked in one
 // plane, are flooded together and split greedily into the largest rectangles up to displayMaxWidth x displayMaxHeight
@@ -66,7 +67,9 @@ public final class DisplayScreens {
                 split(level, group, facing);
             }
         }
-        ControllerStructures.get(level).markTopologyChanged();
+        for (BlockPos start : starts) {
+            ControllerStructures.topologyChanged(level, start, TopologyCause.BLOCK);
+        }
     }
 
     private static boolean isPanel(ServerLevel level, BlockPos pos, Direction facing) {

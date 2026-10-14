@@ -69,6 +69,16 @@ public class Config {
             .comment("Lane-using devices a network without a controller can run.")
             .defineInRange("adHocMaxDevices", 8, 0, 1024);
 
+    public static final ModConfigSpec.IntValue RESOLVE_INTERVAL = BUILDER
+            .comment("Ticks a network waits after working out its lanes before it works them out again: changes in the",
+                    "meantime are gathered into one solve. 0 solves on the next tick after every change.")
+            .defineInRange("resolveInterval", 20, 0, 1200);
+
+    public static final ModConfigSpec.IntValue SLOW_SOLVE_MILLIS = BUILDER
+            .comment("A network solve (finding its graph and working out its lanes) that takes longer than this many",
+                    "milliseconds is logged as a warning, with the network and what made it solve. 0 logs none.")
+            .defineInRange("slowSolveMillis", 50, 0, 60_000);
+
     static {
         BUILDER.pop();
         BUILDER.push("power");

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
@@ -37,6 +38,13 @@ import net.minecraft.core.Direction;
 // cable on to the next rack) isn't one, and a link that leads to nothing at all (a cut cable's stub) is a down uplink.
 // A rack source's own demands take lanes straight from the budget. Lanes passing through a rack to something beyond it
 // go along the tree as before.
+//
+// Each rack's "rack left out" paths come from one search shared by the whole solve (RackSearch): the paths every rack
+// would get if it weren't there are the shared ones, unless some node's path runs through the rack (a cable bus over the
+// tops carrying lanes on through it). Only those racks get a search of their own, and it stops as soon as it has reached
+// every one of the rack's uplinks. Either way the paths are exactly the ones a full search without the rack finds
+// (LaneSolverEquivalenceTest checks the results against the solver as it was), at a fraction of the cost: a network of
+// 50 racks no longer searches the whole graph 50 times.
 //
 // A block that's a controller on its own (SourceNode: a Midrange System) is a source too: its lanes are one budget for
 // everything drawing on it.
@@ -166,6 +174,7 @@ public final class LaneSolver {
             }
         }
 
+        RackSearch search = new RackSearch(graph, rackOf, distance);
         devices.sort(Comparator.<NodePos>comparingInt(d -> distance.getOrDefault(d, Integer.MAX_VALUE)).thenComparing(NetworkGraph.ORDER));
         Map<NodePos, Boolean> lanes = new HashMap<>();
         Map<NetworkLink, Integer> usage = new HashMap<>();
@@ -176,7 +185,7 @@ public final class LaneSolver {
             NetworkNode node = graph.node(device);
             if (node instanceof RackNode rack) {
                 RackLanes result = rackSources.contains(device) ? sourceRack(rack, budget, budgetUsed)
-                        : bondedRack(graph, device, rack, rackOf, rackSources, distance, usage, budget, budgetUsed, budgets);
+                        : bondedRack(search, device, rack, rackOf, rackSources, usage, budget, budgetUsed, budgets);
                 rackLanes.put(device, result);
                 lanes.put(device, result.source() || result.activeUplinks() > 0);
                 used += result.used();
@@ -198,7 +207,7 @@ public final class LaneSolver {
                 continue;
             }
             List<RackLanes.Uplink> uplinks = new ArrayList<>();
-            for (RackLink link : rackLinks(graph, source, rackOf)) {
+            for (RackLink link : search.rackLinks(source)) {
                 uplinks.add(new RackLanes.Uplink(link.outside(), shown(link.link()), usage.getOrDefault(link.link(), 0), true));
             }
             rackLanes.put(source, new RackLanes(true, result.granted(), result.used(), result.available(), result.total(), uplinks, result.shed()));
@@ -209,21 +218,207 @@ public final class LaneSolver {
     // A link from one of a rack's blocks to something outside it.
     private record RackLink(NetworkLink link, NodePos outside) {}
 
-    // A rack's links to the outside, in a stable order.
-    private static List<RackLink> rackLinks(NetworkGraph graph, NodePos master, Map<NodePos, NodePos> rackOf) {
-        List<RackLink> result = new ArrayList<>();
-        rackOf.forEach((block, rack) -> {
-            if (rack.equals(master)) {
-                for (NetworkLink link : links(graph, block)) {
-                    NodePos outside = link.other(block);
-                    if (!master.equals(rackOf.get(outside))) {
-                        result.add(new RackLink(link, outside));
+    // What every rack's uplink search shares within one solve: each rack's blocks, its links to the outside, and the
+    // reference search: breadth-first from the sources (in order, as a rack's own search goes), every node's link toward
+    // a source, its distance, its place in the search order and which of its parent's links reached it.
+    //
+    // A rack's own search (the sources' paths with the rack left out) differs from the reference only for the rack's
+    // subtree: the nodes whose reference path runs through the rack. Everything else keeps its distance and its link:
+    // leaving nodes out never shortens a path, and in a breadth-first search the nodes that survive keep their order
+    // among themselves, so a node outside the subtree is still reached first by the node that reached it before. So a
+    // rack nobody's path runs through takes the reference as it is, as does one whose uplinks all lead outside its
+    // subtree; otherwise only the subtree is searched again, in the order the full search would reach it (each node by
+    // the earliest node of the level before, the order decided as the full search decides it: by its parents' order,
+    // then the link).
+    private static final class RackSearch {
+        private final NetworkGraph graph;
+        private final Map<NodePos, NodePos> rackOf;
+        private final Map<NodePos, List<NodePos>> blocks = new HashMap<>();
+        private final Map<NodePos, List<RackLink>> links = new HashMap<>();
+        private final List<NodePos> sources = new ArrayList<>();
+        // The reference search, made the first time a bonded rack needs it.
+        private @Nullable Paths reference;
+        private final Map<NodePos, Integer> rank = new HashMap<>(), linkIndex = new HashMap<>();
+        private final Map<NodePos, List<NodePos>> children = new HashMap<>();
+
+        RackSearch(NetworkGraph graph, Map<NodePos, NodePos> rackOf, Map<NodePos, Integer> distance) {
+            this.graph = graph;
+            this.rackOf = rackOf;
+            // Each rack's blocks, in the order a rack's links were always gathered in.
+            rackOf.forEach((block, rack) -> blocks.computeIfAbsent(rack, key -> new ArrayList<>()).add(block));
+            distance.forEach((pos, d) -> {
+                if (d == 0) {
+                    sources.add(pos);
+                }
+            });
+            sources.sort(NetworkGraph.ORDER);
+        }
+
+        // A rack's links to the outside, in a stable order.
+        List<RackLink> rackLinks(NodePos master) {
+            return links.computeIfAbsent(master, key -> {
+                List<RackLink> result = new ArrayList<>();
+                for (NodePos block : blocks.getOrDefault(master, List.of())) {
+                    for (NetworkLink link : links(graph, block)) {
+                        NodePos outside = link.other(block);
+                        if (!master.equals(rackOf.get(outside))) {
+                            result.add(new RackLink(link, outside));
+                        }
+                    }
+                }
+                result.sort(Comparator.comparing(RackLink::outside, NetworkGraph.ORDER));
+                return result;
+            });
+        }
+
+        // The paths to the sources with a (non-source) rack left out, for following back from each of targets.
+        Paths without(NodePos master, List<NodePos> targets) {
+            Paths reference = reference();
+            Set<NodePos> rackBlocks = new HashSet<>(blocks.getOrDefault(master, List.of()));
+            // The rack's subtree.
+            Set<NodePos> subtree = new HashSet<>();
+            ArrayDeque<NodePos> queue = new ArrayDeque<>();
+            for (NodePos block : rackBlocks) {
+                queue.addAll(children.getOrDefault(block, List.of()));
+            }
+            while (!queue.isEmpty()) {
+                NodePos at = queue.poll();
+                // (The rack's own blocks reach each other: they're left out, not part of it.)
+                if (!rackBlocks.contains(at) && subtree.add(at)) {
+                    queue.addAll(children.getOrDefault(at, List.of()));
+                }
+            }
+            boolean needed = false;
+            for (NodePos target : targets) {
+                needed |= subtree.contains(target);
+            }
+            if (!needed) {
+                // Every uplink's path back (outside the subtree, so its whole path is) is the reference's.
+                return reference;
+            }
+            return reroute(reference, rackBlocks, subtree);
+        }
+
+        // The subtree's nodes searched again without the rack, in the full search's order.
+        private Paths reroute(Paths reference, Set<NodePos> rackBlocks, Set<NodePos> subtree) {
+            Map<NodePos, NetworkLink> parent = new HashMap<>();
+            Map<NodePos, Integer> distance = new HashMap<>(), index = new HashMap<>();
+            record Offer(NodePos node, NodePos from, NetworkLink link, int level, int index) {}
+            PriorityQueue<Offer> offers = new PriorityQueue<>((a, b) -> {
+                if (a.level() != b.level()) {
+                    return Integer.compare(a.level(), b.level());
+                }
+                int byFrom = order(a.from(), b.from(), reference, parent, index);
+                return byFrom != 0 ? byFrom : Integer.compare(a.index(), b.index());
+            });
+            // Into the subtree from anything the search reaches outside it (and outside the rack).
+            for (NodePos node : subtree) {
+                for (NetworkLink link : links(graph, node)) {
+                    NodePos from = link.other(node);
+                    Integer d = reference.distance(from);
+                    if (d != null && !subtree.contains(from) && !rackBlocks.contains(from)) {
+                        offers.add(new Offer(node, from, link, d + 1, links(graph, from).indexOf(link)));
                     }
                 }
             }
-        });
-        result.sort(Comparator.comparing(RackLink::outside, NetworkGraph.ORDER));
-        return result;
+            while (!offers.isEmpty()) {
+                Offer offer = offers.poll();
+                if (distance.containsKey(offer.node())) {
+                    continue;
+                }
+                distance.put(offer.node(), offer.level());
+                parent.put(offer.node(), offer.link());
+                index.put(offer.node(), offer.index());
+                List<NetworkLink> out = links(graph, offer.node());
+                for (int i = 0; i < out.size(); i++) {
+                    NodePos next = out.get(i).other(offer.node());
+                    if (subtree.contains(next) && !distance.containsKey(next)) {
+                        offers.add(new Offer(next, offer.node(), out.get(i), offer.level() + 1, i));
+                    }
+                }
+            }
+            return new Paths() {
+                @Override
+                public @Nullable NetworkLink parent(NodePos node) {
+                    return subtree.contains(node) || rackBlocks.contains(node) ? parent.get(node) : reference.parent(node);
+                }
+
+                @Override
+                public @Nullable Integer distance(NodePos node) {
+                    return subtree.contains(node) || rackBlocks.contains(node) ? distance.get(node) : reference.distance(node);
+                }
+            };
+        }
+
+        // The search order of two nodes at the same distance: by their parents' order, then by which of the parent's
+        // links reached each. Nodes outside the subtree keep the reference's order among themselves.
+        private int order(NodePos a, NodePos b, Paths reference, Map<NodePos, NetworkLink> parent, Map<NodePos, Integer> index) {
+            while (!a.equals(b)) {
+                NetworkLink linkA = parent.get(a), linkB = parent.get(b);
+                if (linkA == null && linkB == null) {
+                    return Integer.compare(rank.get(a), rank.get(b));
+                }
+                int indexA = linkA != null ? index.get(a) : linkIndex.get(a), indexB = linkB != null ? index.get(b) : linkIndex.get(b);
+                NodePos parentA = (linkA != null ? linkA : reference.parent(a)).other(a);
+                NodePos parentB = (linkB != null ? linkB : reference.parent(b)).other(b);
+                if (parentA.equals(parentB)) {
+                    return Integer.compare(indexA, indexB);
+                }
+                a = parentA;
+                b = parentB;
+            }
+            return 0;
+        }
+
+        private Paths reference() {
+            if (reference != null) {
+                return reference;
+            }
+            Map<NodePos, NetworkLink> parent = new HashMap<>();
+            Map<NodePos, Integer> distance = new HashMap<>();
+            ArrayDeque<NodePos> queue = new ArrayDeque<>();
+            for (NodePos source : sources) {
+                distance.put(source, 0);
+                queue.add(source);
+            }
+            int order = 0;
+            while (!queue.isEmpty()) {
+                NodePos at = queue.poll();
+                rank.put(at, order++);
+                List<NetworkLink> out = links(graph, at);
+                for (int i = 0; i < out.size(); i++) {
+                    NodePos next = out.get(i).other(at);
+                    NetworkNode node = graph.node(next);
+                    if (node == null || node.isController() || distance.containsKey(next)) {
+                        continue;
+                    }
+                    distance.put(next, distance.get(at) + 1);
+                    parent.put(next, out.get(i));
+                    linkIndex.put(next, i);
+                    children.computeIfAbsent(at, key -> new ArrayList<>()).add(next);
+                    queue.add(next);
+                }
+            }
+            reference = new Paths() {
+                @Override
+                public @Nullable NetworkLink parent(NodePos node) {
+                    return parent.get(node);
+                }
+
+                @Override
+                public @Nullable Integer distance(NodePos node) {
+                    return distance.get(node);
+                }
+            };
+            return reference;
+        }
+    }
+
+    // A search's result: each reached node's link toward a source and its distance from one (null: not reached).
+    private interface Paths {
+        @Nullable NetworkLink parent(NodePos node);
+
+        @Nullable Integer distance(NodePos node);
     }
 
     // A link's lanes as shown: 0 for one with no limit (straight into a device).
@@ -249,41 +444,19 @@ public final class LaneSolver {
         return new RackLanes(true, granted, used, budget, budget, List.of(), shed);
     }
 
-    private static RackLanes bondedRack(NetworkGraph graph, NodePos master, RackNode rack, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources,
-            Map<NodePos, Integer> distance, Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed, Map<NodePos, int[]> budgets) {
+    private static RackLanes bondedRack(RackSearch search, NodePos master, RackNode rack, Map<NodePos, NodePos> rackOf, Set<NodePos> rackSources,
+            Map<NetworkLink, Integer> usage, int budget, int[] budgetUsed, Map<NodePos, int[]> budgets) {
+        NetworkGraph graph = search.graph;
         // Shortest paths to the sources with this rack left out.
-        Map<NodePos, NetworkLink> parent = new HashMap<>();
-        Map<NodePos, Integer> without = new HashMap<>();
-        ArrayDeque<NodePos> queue = new ArrayDeque<>();
-        List<NodePos> sources = new ArrayList<>();
-        distance.forEach((pos, d) -> {
-            if (d == 0 && !master.equals(rackOf.get(pos))) {
-                sources.add(pos);
-            }
-        });
-        sources.sort(NetworkGraph.ORDER);
-        for (NodePos source : sources) {
-            without.put(source, 0);
-            queue.add(source);
-        }
-        while (!queue.isEmpty()) {
-            NodePos at = queue.poll();
-            for (NetworkLink link : links(graph, at)) {
-                NodePos next = link.other(at);
-                NetworkNode node = graph.node(next);
-                if (node == null || node.isController() || without.containsKey(next) || master.equals(rackOf.get(next))) {
-                    continue;
-                }
-                without.put(next, without.get(at) + 1);
-                parent.put(next, link);
-                queue.add(next);
-            }
-        }
+        List<RackLink> rackLinks = search.rackLinks(master);
+        List<NodePos> outsides = new ArrayList<>(rackLinks.size());
+        rackLinks.forEach(link -> outsides.add(link.outside()));
+        Paths without = search.without(master, outsides);
         // The rack's uplinks, each with its way to a source (null: down); links leading only on to other devices left out.
         record Candidate(NetworkLink link, NodePos outside, @Nullable Path path) {}
         List<Candidate> candidates = new ArrayList<>();
-        for (RackLink link : rackLinks(graph, master, rackOf)) {
-            Path path = pathToSource(link.outside(), parent, without);
+        for (RackLink link : rackLinks) {
+            Path path = pathToSource(link.outside(), without);
             if (path != null || !leadsToDevices(graph, link.outside(), master, rackOf)) {
                 candidates.add(new Candidate(link.link(), link.outside(), path));
             }
@@ -415,6 +588,22 @@ public final class LaneSolver {
             longer.addAll(links);
             return new Path(longer, end);
         }
+    }
+
+    // The same along a search's paths (null when it can't reach one).
+    private static @Nullable Path pathToSource(NodePos device, Paths paths) {
+        Integer d = paths.distance(device);
+        if (d == null) {
+            return null;
+        }
+        List<NetworkLink> path = new ArrayList<>(d);
+        NodePos at = device;
+        while (paths.distance(at) > 0) {
+            NetworkLink link = paths.parent(at);
+            path.add(link);
+            at = link.other(at);
+        }
+        return new Path(path, at);
     }
 
     // Null when it can't reach one.

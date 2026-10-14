@@ -30,8 +30,10 @@ import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 
 // Which network every node on a controller's network is on, across all dimensions (a Network Bridge can carry a
-// network into another one): kept with the overworld, rebuilt as networks are solved, never saved. Also a counter that
-// goes up whenever a network changes anywhere, so every level's networks are solved again.
+// network into another one): kept with the overworld, rebuilt as networks are solved, never saved. Also every node of
+// every network's last discovered graph, by where it is (graphNodes: which networks a change there can affect), the
+// networks waiting to be worked out again with why (dirty), and a counter (generation) that goes up with any change to
+// any network's topology, for the caches built from it.
 public final class NetworkIndex extends SavedData {
     // A network: its controller structure, by the dimension it's in and its id there.
     public record NetworkRef(ResourceKey<Level> dimension, long id) {
@@ -53,6 +55,14 @@ public final class NetworkIndex extends SavedData {
     // Every Server Rack on any network (their devices may serve another network than the rack's: a segment).
     final Set<NodePos> racks = new HashSet<>();
     int generation;
+    // Something changed since generation last went up (it goes up once a tick at most).
+    boolean changed;
+    // Every node of every structure's last discovered graph (controllers, conflicting and paired networks' included).
+    final Map<NodePos, Set<NetworkRef>> graphNodes = new HashMap<>();
+    // Networks to work out again, each with the first cause since it was last solved; everything goes up when every
+    // network is.
+    final Map<NetworkRef, TopologyCause> dirty = new HashMap<>();
+    int everything;
     // Cached (ControllerStructures, "Caches"): racks in NetworkGraph.ORDER (sorted again only when racks changes:
     // racksVersion), the loaded ones' block entities, and each network's rack Scheduler pool head.
     int racksVersion;

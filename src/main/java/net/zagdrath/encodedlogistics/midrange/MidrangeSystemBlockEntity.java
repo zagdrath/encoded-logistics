@@ -167,7 +167,7 @@ public class MidrangeSystemBlockEntity extends BaseContainerBlockEntity implemen
         ControllerStructures structures = ControllerStructures.get(level);
         ControllerStructures.Structure own = structure > 0 ? structures.get(structure) : null;
         if (own == null || !own.midrange() || !own.members().getFirst().equals(worldPosition)) {
-            structure = structures.addMidrange(worldPosition);
+            structure = structures.addMidrange(level, worldPosition);
             setChanged();
         }
     }

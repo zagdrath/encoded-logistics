@@ -15,6 +15,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestServer;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
@@ -25,10 +26,13 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.ControllerState;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
@@ -45,6 +49,7 @@ public final class EncodedLogisticsGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION,
             EncodedLogistics.MODID);
     private static final Map<String, Consumer<GameTestHelper>> TESTS = new LinkedHashMap<>();
+    private static final Map<String, Consumer<GameTestHelper>> ALONE_TESTS = new LinkedHashMap<>();
     // Run only while the Arcforge integration is on (Arcforge in the run: -Parcforge_jar=...), with longer to finish.
     private static final Map<String, Consumer<GameTestHelper>> ARCFORGE_TESTS = new LinkedHashMap<>();
     // Dynamic routing: Routers take a few seconds to find each other and converge, so these get longer.
@@ -281,6 +286,12 @@ public final class EncodedLogisticsGameTests {
         ROUTING_TESTS.put("optical_chassis_switch", OpticalGameTests::chassisSwitch);
         ROUTING_TESTS.put("optical_blade_enclosure", OpticalGameTests::bladeEnclosure);
         ROUTING_TESTS.put("optical_shelf_protection", OpticalGameTests::shelfProtection);
+        TESTS.put("solve_link_ends", SolveGameTests::linkEnds);
+        // Each in a batch of its own: the hall is far bigger than a test's usual space, and the interval test changes a
+        // config value the others run with.
+        ALONE_TESTS.put("solve_stress", SolveGameTests::stressHall);
+        ALONE_TESTS.put("solve_interval", SolveGameTests::interval);
+        ALONE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ROUTING_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
         ARCFORGE_TESTS.forEach((name, test) -> FUNCTIONS.register(name, () -> test));
@@ -291,6 +302,13 @@ public final class EncodedLogisticsGameTests {
     public static void register(IEventBus modEventBus) {
         FUNCTIONS.register(modEventBus);
         modEventBus.addListener(EncodedLogisticsGameTests::registerTests);
+        // The game test server works a network out on the tick after every change: the tests place blocks a tick or two
+        // apart and look straight away. SolveGameTests checks the interval itself.
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
+            if (event.getServer() instanceof GameTestServer) {
+                Config.RESOLVE_INTERVAL.set(0);
+            }
+        });
     }
 
     private static void registerTests(RegisterGameTestsEvent event) {
@@ -303,6 +321,11 @@ public final class EncodedLogisticsGameTests {
                 600, 0, true, Rotation.NONE, false, 1, 1, false, 10);
         ROUTING_TESTS.keySet().forEach(name -> event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(
                 ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), routing)));
+        ALONE_TESTS.keySet().forEach(name -> {
+            TestData<Holder<TestEnvironmentDefinition<?>>> alone = new TestData<>(event.registerEnvironment(EncodedLogistics.id(name)), Level.OVERWORLD,
+                    Identifier.withDefaultNamespace("empty"), 600, 0, true, Rotation.NONE, false, 1, 1, false, 10);
+            event.registerTest(EncodedLogistics.id(name), new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, EncodedLogistics.id(name)), alone));
+        });
         if (MachineBridges.enabled()) {
             TestData<Holder<TestEnvironmentDefinition<?>>> longer = new TestData<>(environment, Level.OVERWORLD, Identifier.withDefaultNamespace("empty"),
                     1_200, 0, true, Rotation.NONE, false, 1, 1, false, 10);

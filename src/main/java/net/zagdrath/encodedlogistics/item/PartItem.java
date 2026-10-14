@@ -21,6 +21,7 @@ import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
 
@@ -67,7 +68,7 @@ public class PartItem extends Item {
                 host.setAttachment(face.getOpposite(), CableAttachments.Attachment.part(type));
             }
             if (level instanceof ServerLevel serverLevel) {
-                ControllerStructures.get(serverLevel).markTopologyChanged();
+                ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.PARTS);
             }
             stack.consume(1, context.getPlayer());
             level.playSound(null, pos, SoundEvents.METAL_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);

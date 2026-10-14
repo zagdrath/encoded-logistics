@@ -31,6 +31,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.menu.PointToPointMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
 import net.zagdrath.encodedlogistics.network.RemoteLink;
@@ -179,7 +180,7 @@ public class PointToPointPart extends CablePart {
         }
         changed();
         if (host.getLevel() instanceof ServerLevel level) {
-            ControllerStructures.get(level).markTopologyChanged();
+            ControllerStructures.topologyChanged(level, host.getBlockPos(), TopologyCause.LINK);
         }
     }
 

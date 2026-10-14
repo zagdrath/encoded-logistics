@@ -148,6 +148,28 @@
               "comment": "Lane-using devices a network without a controller can run.\n Default: 8\n Range: 0 ~ 1024",
               "label": "Ad-hoc Device Limit",
               "restart": "NONE"
+            },
+            {
+              "key": "resolveInterval",
+              "path": "lanes.resolveInterval",
+              "type": "int",
+              "default": 20,
+              "min": 0,
+              "max": 1200,
+              "comment": "Ticks a network waits after working out its lanes before it works them out again: changes in the\nmeantime are gathered into one solve. 0 solves on the next tick after every change.\n Default: 20\n Range: 0 ~ 1200",
+              "label": "Re-solve Interval (ticks)",
+              "restart": "NONE"
+            },
+            {
+              "key": "slowSolveMillis",
+              "path": "lanes.slowSolveMillis",
+              "type": "int",
+              "default": 50,
+              "min": 0,
+              "max": 60000,
+              "comment": "A network solve (finding its graph and working out its lanes) that takes longer than this many\nmilliseconds is logged as a warning, with the network and what made it solve. 0 logs none.\n Default: 50\n Range: 0 ~ 60000",
+              "label": "Slow Solve Warning (ms)",
+              "restart": "NONE"
             }
           ]
         },

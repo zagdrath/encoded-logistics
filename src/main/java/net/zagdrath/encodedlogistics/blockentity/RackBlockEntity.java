@@ -50,6 +50,7 @@ import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.block.ServerRackBlock;
 import net.zagdrath.encodedlogistics.menu.RackMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.part.TrunkPortPart;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
@@ -309,7 +310,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         if (level instanceof ServerLevel serverLevel) {
             setChanged();
             if (topology) {
-                ControllerStructures.get(serverLevel).markTopologyChanged();
+                ControllerStructures.topologyChanged(serverLevel, worldPosition, TopologyCause.RACK);
             }
             syncPending = true;
         }
@@ -506,7 +507,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         } else if (current == null && home != null && !ControllerStructures.exists(level.getServer(), home)) {
             home = null;
             setChanged();
-            ControllerStructures.get(level).markTopologyChanged();
+            ControllerStructures.topologyChanged(level, worldPosition, TopologyCause.RACK);
         }
     }
 
@@ -623,7 +624,7 @@ public class RackBlockEntity extends BlockEntity implements NetworkDevice {
         ControllerStructures.Structure structure = controllerStructure > 0 ? structures.get(controllerStructure) : null;
         boolean valid = structure != null && structure.rack() && structure.members().contains(worldPosition);
         if (wanted && !valid) {
-            controllerStructure = structures.addRack(worldPosition);
+            controllerStructure = structures.addRack(level, worldPosition);
             setChanged();
         } else if (!wanted && controllerStructure > 0) {
             if (valid) {

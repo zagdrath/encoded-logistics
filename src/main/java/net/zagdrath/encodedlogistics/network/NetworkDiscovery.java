@@ -216,7 +216,8 @@ public final class NetworkDiscovery {
         return null;
     }
 
-    private static @Nullable NetworkNode nodeAt(ServerLevel level, BlockPos pos, int lanesPerFace) {
+    // The network node at pos as discovery sees it, or null.
+    public static @Nullable NetworkNode nodeAt(ServerLevel level, BlockPos pos, int lanesPerFace) {
         BlockState state = level.getBlockState(pos);
         if (state.getBlock() instanceof NetworkNodeBlock block) {
             return block.getNetworkNode(level, pos, state);

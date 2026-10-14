@@ -27,6 +27,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.zagdrath.encodedlogistics.block.WirelessPortBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableAttachments;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.part.CablePart;
 import net.zagdrath.encodedlogistics.part.PortPart;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
@@ -84,10 +86,18 @@ public class WirelessPortBlockEntity extends CableBlockEntity implements Wireles
         if (Objects.equals(this.link, link)) {
             return;
         }
+        WirelessLink old = this.link;
         this.link = link;
         setChanged();
         if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            List<NodePos> ends = new ArrayList<>(List.of(NodePos.of(serverLevel.dimension(), worldPosition)));
+            if (old != null) {
+                ends.add(NodePos.of(old.rack()));
+            }
+            if (link != null) {
+                ends.add(NodePos.of(link.rack()));
+            }
+            ControllerStructures.topologyChanged(serverLevel.getServer(), ends, TopologyCause.LINK);
             updateState(serverLevel);
         }
     }
@@ -189,7 +199,7 @@ public class WirelessPortBlockEntity extends CableBlockEntity implements Wireles
         if (level instanceof ServerLevel serverLevel) {
             ensurePart();
             if (link != null) {
-                ControllerStructures.get(serverLevel).markTopologyChanged();
+                ControllerStructures.linkEndLoaded(serverLevel, worldPosition, List.of(NodePos.of(link.rack())));
             }
         }
     }
@@ -198,7 +208,7 @@ public class WirelessPortBlockEntity extends CableBlockEntity implements Wireles
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
         if (level instanceof ServerLevel serverLevel && link != null) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.linkEndLoaded(serverLevel, worldPosition, List.of(NodePos.of(link.rack())));
         }
     }
 

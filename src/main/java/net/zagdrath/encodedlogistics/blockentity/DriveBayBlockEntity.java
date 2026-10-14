@@ -34,6 +34,7 @@ import net.neoforged.neoforge.model.data.ModelProperty;
 import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.menu.DriveBayMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 import net.zagdrath.encodedlogistics.storage.DriveHolder;
@@ -145,7 +146,7 @@ public class DriveBayBlockEntity extends BaseContainerBlockEntity implements Net
         int count = driveCount();
         if (count != drives) {
             if (drives >= 0) {
-                ControllerStructures.get(serverLevel).markTopologyChanged();
+                ControllerStructures.topologyChanged(serverLevel, worldPosition, TopologyCause.PARTS);
             }
             drives = count;
         }

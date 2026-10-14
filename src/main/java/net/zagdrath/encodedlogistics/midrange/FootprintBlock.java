@@ -38,6 +38,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 
 // A Midrange-line block that takes more than one block of room (HANDOFF 1): a master where it was placed (the block
 // clicked, its front toward the player) and dummies at the footprint's other offsets, model-local - +x across the width
@@ -193,14 +194,14 @@ public abstract class FootprintBlock extends BaseEntityBlock {
                 }
             }
         }
-        ControllerStructures.get(level).markTopologyChanged();
+        ControllerStructures.topologyChanged(level, pos, TopologyCause.BLOCK);
     }
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!oldState.is(this) && level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.BLOCK);
         }
     }
 

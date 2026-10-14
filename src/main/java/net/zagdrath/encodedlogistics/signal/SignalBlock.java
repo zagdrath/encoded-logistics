@@ -41,6 +41,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.DeviceNode;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
@@ -155,7 +156,7 @@ public abstract class SignalBlock extends BaseEntityBlock implements NetworkNode
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!oldState.is(this) && level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.BLOCK);
             if (level.getBlockEntity(pos) instanceof SignalBlockEntity device) {
                 device.redstoneChanged();
             }
@@ -165,7 +166,7 @@ public abstract class SignalBlock extends BaseEntityBlock implements NetworkNode
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        ControllerStructures.get(level).markTopologyChanged();
+        ControllerStructures.topologyChanged(level, pos, TopologyCause.BLOCK);
     }
 
     // --- Block entity ---

@@ -230,7 +230,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         updateTicking();
         // An end of a remote link coming back can join a network up again.
         if (level instanceof ServerLevel serverLevel && !remoteLinks().isEmpty()) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.linkEndLoaded(serverLevel, worldPosition, remoteLinks().stream().map(RemoteLink::target).toList());
         }
         partsCameOrWent();
     }
@@ -250,7 +250,7 @@ public class CableBlockEntity extends BlockEntity implements NetworkDevice {
         if (level instanceof ServerLevel serverLevel) {
             ControllerStructures.get(serverLevel).setTicking(this, false);
             if (!remoteLinks().isEmpty()) {
-                ControllerStructures.get(serverLevel).markTopologyChanged();
+                ControllerStructures.linkEndLoaded(serverLevel, worldPosition, remoteLinks().stream().map(RemoteLink::target).toList());
             }
         }
         partsCameOrWent();

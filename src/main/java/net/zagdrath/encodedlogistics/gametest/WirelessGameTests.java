@@ -172,7 +172,7 @@ final class WirelessGameTests {
                         BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(pos), helper.getBlockState(pos), saved, helper.getLevel().registryAccess());
                         helper.getLevel().setBlockEntity(loaded);
                     }
-                    ControllerStructures.get(helper.getLevel()).markTopologyChanged();
+                    ControllerStructures.everythingChanged(helper.getLevel().getServer());
                 })
                 .thenIdle(40)
                 .thenExecute(() -> {

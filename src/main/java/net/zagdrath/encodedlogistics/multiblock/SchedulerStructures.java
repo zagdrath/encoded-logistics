@@ -106,7 +106,9 @@ public class SchedulerStructures extends SavedData {
             changed |= form(level, group);
         }
         if (changed) {
-            ControllerStructures.get(level).markTopologyChanged();
+            for (BlockPos pos : order) {
+                ControllerStructures.topologyChanged(level, pos, TopologyCause.STRUCTURE);
+            }
         }
     }
 

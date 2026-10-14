@@ -53,6 +53,7 @@ import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 import net.zagdrath.encodedlogistics.network.NetworkNodeHost;
@@ -194,7 +195,7 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         refreshConnections(level, pos);
         refreshConnections(level, pos.relative(side));
         if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.BLOCK);
         }
     }
 
@@ -213,14 +214,14 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            ControllerStructures.topologyChanged(serverLevel, pos, TopologyCause.BLOCK);
         }
     }
 
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        ControllerStructures.get(level).markTopologyChanged();
+        ControllerStructures.topologyChanged(level, pos, TopologyCause.BLOCK);
     }
 
     // --- Network ---

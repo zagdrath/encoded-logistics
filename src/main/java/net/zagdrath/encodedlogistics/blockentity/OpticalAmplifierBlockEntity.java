@@ -23,6 +23,7 @@ import net.zagdrath.encodedlogistics.block.OpticalAmplifierBlock;
 import net.zagdrath.encodedlogistics.elcl.exec.NamedDevice;
 import net.zagdrath.encodedlogistics.midrange.MidrangeHud;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
 import net.zagdrath.encodedlogistics.optical.FiberTrace;
@@ -87,7 +88,7 @@ public class OpticalAmplifierBlockEntity extends BlockEntity implements NetworkD
         if (want != now && getBlockState().getBlock() instanceof OpticalAmplifierBlock) {
             level.setBlock(worldPosition, getBlockState().setValue(OpticalAmplifierBlock.STATE, want), Block.UPDATE_CLIENTS);
             if (want == OpticalState.ON || now == OpticalState.ON) {
-                ControllerStructures.get(level).markTopologyChanged();
+                ControllerStructures.topologyChanged(level, worldPosition, TopologyCause.OPTICAL);
             }
         }
     }

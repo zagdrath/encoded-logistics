@@ -7,8 +7,10 @@ package net.zagdrath.encodedlogistics.optical;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
@@ -17,6 +19,7 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.network.RemoteLink;
 
@@ -96,11 +99,20 @@ public final class OpticalChannels {
                 }
             }
         }
-        INDEX.put(server, index);
-        // Every network is worked out again next tick (markTopologyChanged covers every level).
-        ServerLevel overworld = server.overworld();
-        if (overworld != null) {
-            ControllerStructures.get(overworld).markTopologyChanged();
+        Map<NodePos, List<RemoteLink>> before = INDEX.put(server, index);
+        // The networks at the ends of every channel that came, went or changed are worked out again.
+        Set<NodePos> changed = new HashSet<>();
+        Map<NodePos, List<RemoteLink>> was = before != null ? before : Map.of();
+        for (Map<NodePos, List<RemoteLink>> side : List.of(was, index)) {
+            side.forEach((pos, links) -> {
+                if (!links.equals(side == was ? index.get(pos) : was.get(pos))) {
+                    changed.add(pos);
+                    links.forEach(link -> changed.add(link.target()));
+                }
+            });
+        }
+        if (!changed.isEmpty()) {
+            ControllerStructures.topologyChanged(server, changed, TopologyCause.OPTICAL);
         }
     }
 }

@@ -228,7 +228,7 @@ final class CraftingCompletionGameTests {
                         BlockEntity loaded = BlockEntity.loadStatic(helper.absolutePos(pos), helper.getBlockState(pos), saved, helper.getLevel().registryAccess());
                         helper.getLevel().setBlockEntity(loaded);
                     }
-                    ControllerStructures.get(helper.getLevel()).markTopologyChanged();
+                    ControllerStructures.everythingChanged(helper.getLevel().getServer());
                     CraftingJob job = scheduler(helper, master).jobs().getFirst();
                     helper.assertTrue(job.running, "Job lost its place after loading");
                     smelt(helper, OUTPUT);

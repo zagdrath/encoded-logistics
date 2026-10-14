@@ -5,6 +5,7 @@
 
 package net.zagdrath.encodedlogistics.blockentity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.block.NetworkBridgeBlock;
 import net.zagdrath.encodedlogistics.menu.NetworkBridgeMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NodePos;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
@@ -79,10 +81,18 @@ public class NetworkBridgeBlockEntity extends BlockEntity implements MenuProvide
         if (Objects.equals(this.partner, partner)) {
             return;
         }
+        GlobalPos old = this.partner;
         this.partner = partner;
         setChanged();
         if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+            List<NodePos> ends = new ArrayList<>(List.of(NodePos.of(serverLevel.dimension(), worldPosition)));
+            if (old != null) {
+                ends.add(NodePos.of(old));
+            }
+            if (partner != null) {
+                ends.add(NodePos.of(partner));
+            }
+            ControllerStructures.topologyChanged(serverLevel.getServer(), ends, TopologyCause.LINK);
             updateChunkTicket(serverLevel);
             updateStatus(serverLevel);
         }
@@ -188,16 +198,16 @@ public class NetworkBridgeBlockEntity extends BlockEntity implements MenuProvide
     @Override
     public void onLoad() {
         super.onLoad();
-        if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+        if (level instanceof ServerLevel serverLevel && partner != null) {
+            ControllerStructures.linkEndLoaded(serverLevel, worldPosition, List.of(NodePos.of(partner)));
         }
     }
 
     @Override
     public void onChunkUnloaded() {
         super.onChunkUnloaded();
-        if (level instanceof ServerLevel serverLevel) {
-            ControllerStructures.get(serverLevel).markTopologyChanged();
+        if (level instanceof ServerLevel serverLevel && partner != null) {
+            ControllerStructures.linkEndLoaded(serverLevel, worldPosition, List.of(NodePos.of(partner)));
         }
     }
 

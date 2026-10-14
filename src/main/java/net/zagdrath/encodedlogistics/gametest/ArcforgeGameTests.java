@@ -302,7 +302,7 @@ final class ArcforgeGameTests {
                 .thenExecute(() -> {
                     helper.assertTrue(requireBridge(helper, MACHINE).isOnline(), "Not online before saving");
                     reload(helper.getLevel());
-                    ControllerStructures.get(helper.getLevel()).markTopologyChanged();
+                    ControllerStructures.everythingChanged(helper.getLevel().getServer());
                 })
                 .thenIdle(40)
                 .thenExecute(() -> {

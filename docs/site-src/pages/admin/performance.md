@@ -93,6 +93,22 @@ and a MIDI play at most 32 parts; a web fetch gives up after 30 seconds.
 
 Lanes are what limit how many devices a network runs; see {{page networks/lanes}}.
 
+### How often networks are worked out {#solves}
+
+A network rediscovers its blocks and works out its lanes again (a solve) only when something it's made of changes:
+a block placed, broken or reconnected on it or next to it, or a remote link to it coming up or going down. A remote
+link's end loading or unloading as players move about costs nothing unless the link really changed. A burst of
+changes costs one solve:
+
+| Option | What it does |
+|---|---|
+| {{config lanes.resolveInterval default}} | Ticks a network waits after a solve before it solves again; changes in the meantime are gathered into one. 0 solves after every change |
+| {{config lanes.slowSolveMillis default}} | A solve slower than this many milliseconds is logged as a warning, with the network and its cause; 0 logs none |
+
+`/encodedlogistics debug solves` shows each network's solves over the last minute, what they cost and what caused
+them, `debug ticks` what the networks cost every tick, and `debug watch solves` shows slow solves in your chat as they
+happen. See {{page admin/commands#debug}}.
+
 ### Checking the network caches {#caches}
 
 Networks keep caches (their storage, drive cells, the rack devices serving them, racks in order and the rack Scheduler

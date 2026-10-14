@@ -35,6 +35,7 @@ import net.zagdrath.encodedlogistics.item.StorageDriveItem;
 import net.zagdrath.encodedlogistics.menu.DiskDriveMenu;
 import net.zagdrath.encodedlogistics.menu.PeripheralMenu;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
+import net.zagdrath.encodedlogistics.multiblock.TopologyCause;
 import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
@@ -219,7 +220,7 @@ public class DiskDriveBlockEntity extends PeripheralBlockEntity implements Drive
         refresh(level);
         setChanged();
         showSpinning();
-        ControllerStructures.get(level).markTopologyChanged();
+        ControllerStructures.topologyChanged(level, worldPosition, TopologyCause.PARTS);
         if (pack.isEmpty()) {
             return;
         }

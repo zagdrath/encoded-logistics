@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.multiblock;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -27,11 +29,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -75,6 +79,7 @@ import net.zagdrath.encodedlogistics.network.NetworkDevice;
 import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
+import net.zagdrath.encodedlogistics.optical.OpticalChannels;
 import net.zagdrath.encodedlogistics.network.NetworkLink;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
@@ -113,9 +118,16 @@ import net.zagdrath.encodedlogistics.storage.StorageView;
 //
 // Placing or breaking a controller queues the positions around it; once per tick the queued positions are flood-filled
 // into groups, each group is validated (ControllerFrame) and keeps the id most of it had, or gets a new one. Then every
-// structure ticks: its energy (buffer, drain, FE received over the last 20 ticks), its network (rediscovered and
-// re-solved only when the topology changed, anywhere: a Bridge can carry a network into another dimension) and the
-// FORMED / STATE of its blocks.
+// structure ticks: its energy (buffer, drain, FE received over the last 20 ticks), its network and the FORMED / STATE of
+// its blocks.
+//
+// A network is rediscovered and its lanes worked out again (a solve) only when something it's made of changed
+// (topologyChanged): a node placed, broken or reconnected on it or next to it, or at the far end of one of its remote
+// links (a Bridge can carry a network into another dimension). The networks a position can affect are the ones whose
+// last discovered graph holds it or a neighbour (NetworkIndex.graphNodes); nothing else is touched. A network solves at
+// most once every resolveInterval ticks, so a burst of changes costs one solve; and a redundant pair of rack
+// controllers is worked out once, by the lead rack, for both. /encodedlogistics debug solves shows each network's
+// solves, their cost and causes (SolveStats); a solve slower than slowSolveMillis is logged.
 //
 // Devices (anything using lanes: Drive Bays, terminals) are told every tick whether they're online: on a powered
 // network, with their lanes. A part reaches its network's storage (the drives in online Drive Bays and the inventories
@@ -191,9 +203,13 @@ public class ControllerStructures extends SavedData {
     private final Set<CableBlockEntity> ticking = new LinkedHashSet<>();
     // Networks just solved again: their devices get any names they're missing at the end of the tick (ElclDevices).
     private final Set<NetworkRef> namesDue = new LinkedHashSet<>();
-    private boolean topologyChanged;
-    // The NetworkIndex generation this level's networks were last solved for.
-    private int seenGeneration = -1;
+    // NetworkIndex.everything as this level last saw it.
+    private int seenEverything = -1;
+    // How long this level's networks take to tick, all together (/encodedlogistics debug ticks).
+    private final TimingStats levelTicks = new TimingStats();
+    // Players watching for slow solves (/encodedlogistics debug watch solves), each with the time a solve has to take
+    // to be shown to them, in nanoseconds. Told in chat, not the log.
+    private static final Map<UUID, Long> SOLVE_WATCHERS = new java.util.concurrent.ConcurrentHashMap<>();
 
     public ControllerStructures() {}
 
@@ -230,10 +246,65 @@ public class ControllerStructures extends SavedData {
         queueNeighbours(pos);
     }
 
-    // A network node was added, removed or reconnected somewhere: re-solve every network (in every level) next tick.
-    // What's cached from the networks as they were goes at once.
-    public void markTopologyChanged() {
-        topologyChanged = true;
+    // Something about the network node at pos changed - placed, broken or reconnected, its lanes, parts or remote links:
+    // the networks it's on or next to, and those at the far ends of its remote links, are worked out again (the next
+    // tick, or once resolveInterval has passed since their last solve). What's cached from the topology goes at once.
+    public static void topologyChanged(ServerLevel level, BlockPos pos, TopologyCause cause) {
+        MinecraftServer server = level.getServer();
+        List<NodePos> around = new ArrayList<>(8);
+        NodePos at = NodePos.of(level.dimension(), pos);
+        around.add(at);
+        for (Direction side : Direction.values()) {
+            around.add(NodePos.of(level.dimension(), pos.relative(side)));
+        }
+        if (level.isLoaded(pos)) {
+            NetworkNode node = NetworkDiscovery.nodeAt(level, pos, 0);
+            if (node != null) {
+                node.remoteLinks().forEach(link -> around.add(link.target()));
+            }
+            OpticalChannels.links(server, at).forEach(link -> around.add(link.target()));
+        }
+        topologyChanged(server, around, cause);
+    }
+
+    // The same for nodes anywhere: the networks holding any of them are worked out again.
+    public static void topologyChanged(MinecraftServer server, Collection<NodePos> positions, TopologyCause cause) {
+        NetworkIndex index = NetworkIndex.get(server);
+        for (NodePos pos : positions) {
+            Set<NetworkRef> networks = index.graphNodes.get(pos);
+            if (networks != null) {
+                networks.forEach(network -> index.dirty.putIfAbsent(network, cause));
+            }
+        }
+        index.changed = true;
+        contentChanged();
+    }
+
+    // One end of a remote link (at pos, to targets) loaded or unloaded. The link is up only while both its ends are
+    // loaded, so it changed only if a far end is loaded (or in the same chunk, loading or unloading with it): then the
+    // networks on each side are worked out again. Otherwise nothing about it changed, and nothing is.
+    public static void linkEndLoaded(ServerLevel level, BlockPos pos, Collection<NodePos> targets) {
+        MinecraftServer server = level.getServer();
+        ChunkPos chunk = ChunkPos.containing(pos);
+        List<NodePos> ends = new ArrayList<>();
+        for (NodePos target : targets) {
+            ServerLevel there = server.getLevel(target.dimension());
+            boolean sameChunk = target.dimension().equals(level.dimension()) && ChunkPos.containing(target.pos()).equals(chunk);
+            if (there != null && (sameChunk || there.isLoaded(target.pos()))) {
+                ends.add(target);
+            }
+        }
+        if (!ends.isEmpty()) {
+            ends.add(NodePos.of(level.dimension(), pos));
+            topologyChanged(server, ends, TopologyCause.LINK);
+        }
+    }
+
+    // Every network, in every level.
+    public static void everythingChanged(MinecraftServer server) {
+        NetworkIndex index = NetworkIndex.get(server);
+        index.everything++;
+        index.changed = true;
         contentChanged();
     }
 
@@ -278,6 +349,106 @@ public class ControllerStructures extends SavedData {
         return lines;
     }
 
+    // /encodedlogistics debug solves: each network's solves over the last full minute and the one so far, what they cost
+    // and why they happened, busiest first.
+    public static List<String> solveReport(MinecraftServer server) {
+        record Line(int solves, String text) {}
+        List<Line> lines = new ArrayList<>();
+        int total = 0;
+        for (ServerLevel level : server.getAllLevels()) {
+            ControllerStructures structures = get(level);
+            for (Structure structure : structures.structures.values()) {
+                Runtime runtime = structures.runtimes.get(structure.id());
+                if (runtime != null && runtime.solves.any()) {
+                    total += runtime.solves.lastMinute();
+                    lines.add(new Line(runtime.solves.lastMinute() + runtime.solves.thisMinute(), level.dimension().identifier() + " #" + structure.id()
+                            + " (" + runtime.status + (runtime.lead != structure.id() ? ", follows #" + runtime.lead : "") + "): " + runtime.solves.describe()));
+                }
+            }
+        }
+        lines.sort(Comparator.comparingInt(Line::solves).reversed());
+        List<String> report = new ArrayList<>();
+        report.add("Network solves: " + total + " in the last full minute; re-solve interval " + Config.RESOLVE_INTERVAL.getAsInt() + " ticks, "
+                + NetworkIndex.get(server).dirty.size() + " waiting");
+        lines.forEach(line -> report.add(line.text()));
+        if (lines.isEmpty()) {
+            report.add("No network has been worked out in the last two minutes.");
+        }
+        return report;
+    }
+
+    // A network's solve statistics (null: no such structure here): what game tests and the debug commands read.
+    public static @Nullable SolveStats solveStats(ServerLevel level, long id) {
+        Runtime runtime = get(level).runtimes.get(id);
+        return runtime != null ? runtime.solves : null;
+    }
+
+    // /encodedlogistics debug watch solves: a player is told in chat of every solve taking at least threshold
+    // milliseconds (0: every solve); null stops it.
+    public static void watchSolves(UUID player, @Nullable Integer thresholdMillis) {
+        if (thresholdMillis == null) {
+            SOLVE_WATCHERS.remove(player);
+        } else {
+            SOLVE_WATCHERS.put(player, thresholdMillis * 1_000_000L);
+        }
+    }
+
+    // /encodedlogistics debug ticks: each level's networks' tick time (all together), then the costliest networks.
+    public static List<String> tickReport(MinecraftServer server, int limit) {
+        record Line(double average, String text) {}
+        List<String> report = new ArrayList<>();
+        List<Line> lines = new ArrayList<>();
+        report.add("Network tick time per tick, over the last full minute (the work outside of solves; see debug solves):");
+        for (ServerLevel level : server.getAllLevels()) {
+            ControllerStructures structures = get(level);
+            if (structures.structures.isEmpty()) {
+                continue;
+            }
+            report.add(level.dimension().identifier() + ": " + structures.structures.size() + " networks, " + structures.levelTicks.describe()
+                    + ", " + structures.ticking.size() + " part hosts ticking");
+            for (Structure structure : structures.structures.values()) {
+                Runtime runtime = structures.runtimes.get(structure.id());
+                if (runtime != null) {
+                    lines.add(new Line(runtime.ticks.averageMillis(), "  " + level.dimension().identifier() + " #" + structure.id() + " ("
+                            + runtime.status + ", " + runtime.members.size() + " nodes, " + runtime.devices.size() + " devices): " + runtime.ticks.describe()));
+                }
+            }
+        }
+        lines.sort(Comparator.comparingDouble(Line::average).reversed());
+        lines.stream().limit(limit).forEach(line -> report.add(line.text()));
+        if (lines.size() > limit) {
+            report.add("  ... and " + (lines.size() - limit) + " more");
+        }
+        return report;
+    }
+
+    // /encodedlogistics debug networks: every network - status, size, lanes, energy, and when it was last worked out.
+    public static List<String> networkReport(MinecraftServer server) {
+        List<String> report = new ArrayList<>();
+        int count = 0;
+        for (ServerLevel level : server.getAllLevels()) {
+            ControllerStructures structures = get(level);
+            long now = level.getGameTime();
+            for (Structure structure : structures.structures.values()) {
+                Runtime runtime = structures.runtimes.get(structure.id());
+                if (runtime == null) {
+                    continue;
+                }
+                count++;
+                String kind = structure.rack() ? "rack" : structure.midrange() ? "midrange" : structure.members().size() + " controller blocks";
+                String lanes = runtime.lanes == null ? "not solved" : runtime.lanes.used() + "/" + runtime.lanes.capacity() + " lanes, "
+                        + runtime.lanes.missing() + " short";
+                String solved = runtime.lastSolve < 0 ? "never" : (now - runtime.lastSolve) / 20 + " s ago";
+                report.add(level.dimension().identifier() + " #" + structure.id() + " (" + kind + ") " + runtime.status
+                        + (runtime.lead != structure.id() ? ", follows #" + runtime.lead : "") + ": " + runtime.members.size() + " nodes, "
+                        + runtime.devices.size() + " devices, " + runtime.racks.size() + " racks; " + lanes + "; " + runtime.stored + "/"
+                        + runtime.capacity + " FE; solved " + solved + (runtime.dirty ? " (waiting to solve again)" : ""));
+            }
+        }
+        report.addFirst(count + " networks:");
+        return report;
+    }
+
     public static long cacheKey(MinecraftServer server) {
         return (long) NetworkIndex.get(server).generation << 32 | contentEpoch & 0xFFFFFFFFL;
     }
@@ -285,30 +456,46 @@ public class ControllerStructures extends SavedData {
     // --- Ticking ---
 
     public void tick(ServerLevel level) {
+        long tickStart = System.nanoTime();
         MinecraftServer server = level.getServer();
         NetworkIndex index = NetworkIndex.get(server);
         processPending(level, index);
-        if (topologyChanged) {
-            topologyChanged = false;
+        if (index.changed) {
+            index.changed = false;
             index.generation++;
         }
-        boolean topology = index.generation != seenGeneration;
-        seenGeneration = index.generation;
+        boolean everything = index.everything != seenEverything;
+        seenEverything = index.everything;
         boolean minute = level.getGameTime() % CacheStats.MINUTE == 0;
         if (minute && level == server.overworld()) {
             index.stats.roll(null);
         }
+        if (minute) {
+            levelTicks.roll();
+        }
         List<NodePos> online = new ArrayList<>();
         for (Structure structure : List.copyOf(structures.values())) {
             Runtime runtime = runtimes.computeIfAbsent(structure.id(), id -> new Runtime());
-            if (topology) {
+            NetworkRef ref = new NetworkRef(level.dimension(), structure.id());
+            TopologyCause cause = index.dirty.remove(ref);
+            if (cause == null && everything) {
+                cause = TopologyCause.EVERYTHING;
+            }
+            if (cause != null) {
                 runtime.dirty = true;
+                if (runtime.cause == null) {
+                    runtime.cause = cause;
+                }
             }
             if (minute) {
-                runtime.stats.roll(new NetworkRef(level.dimension(), structure.id()));
+                runtime.stats.roll(ref);
+                runtime.solves.roll();
+                runtime.ticks.roll();
             }
             Set<NodePos> before = runtime.online;
+            long structureStart = System.nanoTime();
             tickStructure(level, index, structure, runtime);
+            runtime.ticks.add(System.nanoTime() - structureStart);
             if (!runtime.online.equals(before)) {
                 // Its online devices changed: what its storage and drive cells are made of may have.
                 runtime.version++;
@@ -334,6 +521,7 @@ public class ControllerStructures extends SavedData {
                 host.tickParts(level);
             }
         }
+        levelTicks.add(System.nanoTime() - tickStart);
     }
 
     // A cable or part host starts or stops holding parts that tick.
@@ -394,18 +582,42 @@ public class ControllerStructures extends SavedData {
                 structures.remove(id);
                 Runtime runtime = runtimes.remove(id);
                 if (runtime != null) {
-                    // Its devices go offline and leave the index.
-                    runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
-                    NetworkRef ref = new NetworkRef(level.dimension(), id);
-                    runtime.members.forEach(pos -> index.members.remove(pos, ref));
-                    index.removeRacks(runtime.racks);
+                    forget(level, index, id, runtime);
                 }
             }
         }
         touched.clear();
         // A structure appearing or disappearing can change the networks next to it.
-        markTopologyChanged();
+        for (BlockPos pos : order) {
+            topologyChanged(level, pos, TopologyCause.STRUCTURE);
+        }
         setDirty();
+    }
+
+    // A structure that's gone: its devices go offline and leave the index, and the networks that shared nodes with it
+    // (a conflict) are worked out again.
+    private void forget(ServerLevel level, NetworkIndex index, long id, Runtime runtime) {
+        runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
+        NetworkRef ref = new NetworkRef(level.dimension(), id);
+        runtime.members.forEach(pos -> index.members.remove(pos, ref));
+        index.removeRacks(runtime.racks);
+        topologyChanged(level.getServer(), runtime.graphNodes, TopologyCause.STRUCTURE);
+        indexGraph(index, ref, runtime, null);
+        index.dirty.remove(ref);
+    }
+
+    // Records which nodes a structure's graph holds (none: null), in NetworkIndex.graphNodes.
+    private static void indexGraph(NetworkIndex index, NetworkRef ref, Runtime runtime, @Nullable NetworkGraph graph) {
+        for (NodePos pos : runtime.graphNodes) {
+            Set<NetworkRef> networks = index.graphNodes.get(pos);
+            if (networks != null && networks.remove(ref) && networks.isEmpty()) {
+                index.graphNodes.remove(pos);
+            }
+        }
+        runtime.graphNodes = graph == null ? List.of() : List.copyOf(graph.entries().keySet());
+        for (NodePos pos : runtime.graphNodes) {
+            index.graphNodes.computeIfAbsent(pos, key -> new HashSet<>(2)).add(ref);
+        }
     }
 
     private static List<BlockPos> floodFill(ServerLevel level, BlockPos start) {
@@ -479,27 +691,20 @@ public class ControllerStructures extends SavedData {
             runtime.lanes = null;
             runtime.dirty = true;
             setNetworkNodes(level, index, structure.id(), runtime, null);
+            indexGraph(index, new NetworkRef(level.dimension(), structure.id()), runtime, null);
         } else if (runtime.dirty || runtime.discovered == null || runtime.lanes == null) {
-            int lanesPerFace = Config.LANES_PER_CONTROLLER_FACE.getAsInt();
-            runtime.discovered = rack != null ? NetworkDiscovery.discoverRack(level, rack.getBlockPos(), lanesPerFace)
-                    : midrange != null ? NetworkDiscovery.discoverRack(level, midrange.getBlockPos(), lanesPerFace)
-                    : NetworkDiscovery.discover(level, structure.id(), structure.members(), lanesPerFace);
-            runtime.lanes = LaneSolver.solve(runtime.discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
-            runtime.dirty = false;
-            // Racks with controllers paired up: the one with the lowest structure id runs the network.
-            runtime.lead = rack != null ? lead(runtime.discovered.graph(), structure.id()) : structure.id();
-            boolean runs = runtime.lanes.status() != NetworkStatus.CONFLICT && runtime.lead == structure.id();
-            setNetworkNodes(level, index, structure.id(), runtime, runs ? runtime.discovered : null);
-            if (runs) {
-                for (NodePos pos : runtime.racks) {
-                    if (blockEntity(level.getServer(), pos) instanceof RackBlockEntity onNetwork) {
-                        onNetwork.setRackLanes(runtime.lanes.rack(pos));
-                    }
+            boolean fresh = runtime.discovered == null || runtime.lanes == null;
+            long now = level.getGameTime();
+            Structure leading = rack != null && !fresh && runtime.lead != structure.id() ? structures.get(runtime.lead) : null;
+            Runtime leadRuntime = leading != null ? runtimes.get(leading.id()) : null;
+            if (leadRuntime != null && leading.rack() && level.isLoaded(leading.members().getFirst())) {
+                // Its partner runs the network and works it out for both of them (shareWithPartners): see that it does.
+                leadRuntime.dirty = true;
+                if (leadRuntime.cause == null) {
+                    leadRuntime.cause = runtime.cause;
                 }
-            }
-            runtime.deviceCount = countDevices(runtime.discovered.graph());
-            if (runs) {
-                namesDue.add(new NetworkRef(level.dimension(), structure.id()));
+            } else if (fresh || now - runtime.lastSolve >= Config.RESOLVE_INTERVAL.getAsInt() || now < runtime.lastSolve) {
+                solve(level, index, structure, runtime, rack, midrange);
             }
         }
         boolean conflict = status == null && runtime.lanes != null && runtime.lanes.status() == NetworkStatus.CONFLICT;
@@ -637,24 +842,110 @@ public class ControllerStructures extends SavedData {
         }
     }
 
+    // Rediscovers a structure's network and works out its lanes, timed (SolveStats, and logged if slow).
+    private void solve(ServerLevel level, NetworkIndex index, Structure structure, Runtime runtime, @Nullable RackBlockEntity rack,
+            @Nullable MidrangeSystemBlockEntity midrange) {
+        long start = System.nanoTime();
+        TopologyCause cause = runtime.cause != null ? runtime.cause : TopologyCause.NEW;
+        int lanesPerFace = Config.LANES_PER_CONTROLLER_FACE.getAsInt();
+        NetworkDiscovery.Discovered discovered = rack != null ? NetworkDiscovery.discoverRack(level, rack.getBlockPos(), lanesPerFace)
+                : midrange != null ? NetworkDiscovery.discoverRack(level, midrange.getBlockPos(), lanesPerFace)
+                : NetworkDiscovery.discover(level, structure.id(), structure.members(), lanesPerFace);
+        long discovery = System.nanoTime() - start;
+        LaneResult lanes = LaneSolver.solve(discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
+        // Racks with controllers paired up: the one with the lowest structure id runs the network.
+        long lead = rack != null ? lead(discovered.graph(), structure.id()) : structure.id();
+        apply(level, index, structure.id(), runtime, discovered, lanes, lead);
+        if (rack != null && lead == structure.id()) {
+            shareWithPartners(level, index, structure.id(), discovered, lanes);
+        }
+        long took = System.nanoTime() - start;
+        runtime.solves.solved(took, discovery, discovered.graph().size(), cause);
+        String text = String.format(Locale.ROOT, "Network %s #%d took %.1f ms to work out (%.1f finding its blocks; %d nodes, %d racks; %s)",
+                level.dimension().identifier(), structure.id(), took / 1e6, discovery / 1e6, discovered.graph().size(), runtime.racks.size(), cause.label());
+        int slow = Config.SLOW_SOLVE_MILLIS.getAsInt();
+        if (slow > 0 && took > slow * 1_000_000L) {
+            EncodedLogistics.LOGGER.warn(text);
+        }
+        if (!SOLVE_WATCHERS.isEmpty()) {
+            SOLVE_WATCHERS.forEach((player, threshold) -> {
+                ServerPlayer watcher = level.getServer().getPlayerList().getPlayer(player);
+                if (watcher != null && took >= threshold) {
+                    watcher.sendSystemMessage(Component.literal("[solves] " + text));
+                }
+            });
+        }
+    }
+
+    // A solve's result taken on by a structure: its own, or (a rack in a redundant pair) its lead's.
+    private void apply(ServerLevel level, NetworkIndex index, long id, Runtime runtime, NetworkDiscovery.Discovered discovered, LaneResult lanes,
+            long lead) {
+        runtime.discovered = discovered;
+        runtime.lanes = lanes;
+        runtime.dirty = false;
+        runtime.cause = null;
+        runtime.lastSolve = level.getGameTime();
+        runtime.lead = lead;
+        NetworkRef ref = new NetworkRef(level.dimension(), id);
+        indexGraph(index, ref, runtime, discovered.graph());
+        boolean runs = lanes.status() != NetworkStatus.CONFLICT && lead == id;
+        setNetworkNodes(level, index, id, runtime, runs ? discovered : null);
+        if (runs) {
+            for (NodePos pos : runtime.racks) {
+                if (blockEntity(level.getServer(), pos) instanceof RackBlockEntity onNetwork) {
+                    onNetwork.setRackLanes(lanes.rack(pos));
+                }
+            }
+            namesDue.add(ref);
+        }
+        runtime.deviceCount = countDevices(discovered.graph());
+    }
+
+    // The lead of a redundant pair just worked out the network: the other racks with controllers on it (in this level)
+    // take its result instead of working it out again. One that followed it but isn't on its network any more works
+    // its own out.
+    private void shareWithPartners(ServerLevel level, NetworkIndex index, long leadId, NetworkDiscovery.Discovered discovered, LaneResult lanes) {
+        Set<Long> partners = new HashSet<>();
+        discovered.graph().entries().forEach((pos, node) -> {
+            if (pos.dimension().equals(level.dimension()) && node instanceof RackNode rack && !rack.controllers().isEmpty() && rack.structure() > 0
+                    && rack.structure() != leadId) {
+                partners.add(rack.structure());
+            }
+        });
+        for (Map.Entry<Long, Runtime> entry : runtimes.entrySet()) {
+            long id = entry.getKey();
+            Runtime partner = entry.getValue();
+            Structure structure = structures.get(id);
+            if (id == leadId || structure == null || !structure.rack()) {
+                continue;
+            }
+            if (partners.contains(id)) {
+                apply(level, index, id, partner, discovered, lanes, leadId);
+            } else if (partner.lead == leadId) {
+                partner.lead = id;
+                partner.dirty = true;
+            }
+        }
+    }
+
     // --- Rack Network Controllers ---
 
     // A rack that has rack Network Controllers gets a structure of its own: its id, kept by the rack.
-    public long addRack(BlockPos rack) {
+    public long addRack(ServerLevel level, BlockPos rack) {
         long id = nextId++;
         structures.put(id, new Structure(id, List.of(rack.immutable()), ControllerFrame.Problem.NONE, true, false));
         runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
-        markTopologyChanged();
+        topologyChanged(level, rack, TopologyCause.STRUCTURE);
         setDirty();
         return id;
     }
 
     // A Midrange System's structure: its network's controller on its own (MidrangeSystemBlockEntity keeps the id).
-    public long addMidrange(BlockPos master) {
+    public long addMidrange(ServerLevel level, BlockPos master) {
         long id = nextId++;
         structures.put(id, new Structure(id, List.of(master.immutable()), ControllerFrame.Problem.NONE, false, true));
         runtimes.computeIfAbsent(id, key -> new Runtime()).dirty = true;
-        markTopologyChanged();
+        topologyChanged(level, master, TopologyCause.STRUCTURE);
         setDirty();
         return id;
     }
@@ -665,15 +956,14 @@ public class ControllerStructures extends SavedData {
     }
 
     private void dropStructure(ServerLevel level, NetworkIndex index, long id) {
-        structures.remove(id);
+        Structure structure = structures.remove(id);
         Runtime runtime = runtimes.remove(id);
         if (runtime != null) {
-            runtime.online.forEach(pos -> setDeviceOnline(level.getServer(), pos, false));
-            NetworkRef ref = new NetworkRef(level.dimension(), id);
-            runtime.members.forEach(pos -> index.members.remove(pos, ref));
-            index.removeRacks(runtime.racks);
+            forget(level, index, id, runtime);
         }
-        markTopologyChanged();
+        if (structure != null) {
+            structure.members().forEach(pos -> topologyChanged(level, pos, TopologyCause.STRUCTURE));
+        }
         setDirty();
     }
 
@@ -1995,6 +2285,14 @@ public class ControllerStructures extends SavedData {
     // A structure's live state: its network, energy figures and what its blocks show.
     private static final class Runtime {
         boolean dirty = true;
+        // Why it's to be worked out again (the first cause since its last solve), and when it last was (game time).
+        @Nullable TopologyCause cause;
+        long lastSolve = Long.MIN_VALUE / 2;
+        // Every node of its graph as last discovered, as entered in NetworkIndex.graphNodes.
+        List<NodePos> graphNodes = List.of();
+        final SolveStats solves = new SolveStats();
+        // How long its tick takes (energy, devices and any solve), for /encodedlogistics debug ticks.
+        final TimingStats ticks = new TimingStats();
         NetworkDiscovery.@Nullable Discovered discovered;
         @Nullable LaneResult lanes;
         // Every node on the network but the controllers (as entered in the index), and by kind.
