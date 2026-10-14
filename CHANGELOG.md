@@ -23,6 +23,8 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-14
+
 ### Added
 
 - **Storage blocks** for Neodymium, Tantalum, Gallium and Ferrite, for compact storage and shipping, as Arcforge's
@@ -380,7 +382,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.1+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.0+26.3...HEAD
+[1.3.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.1+26.3...v1.3.0+26.3
 [1.2.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.0+26.3...v1.2.1+26.3
 [1.2.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.1.0+26.3...v1.2.0+26.3
 [1.1.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.0.1+26.3...v1.1.0+26.3
