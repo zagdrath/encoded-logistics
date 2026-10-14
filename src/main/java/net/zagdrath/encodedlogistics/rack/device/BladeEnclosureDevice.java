@@ -181,6 +181,11 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
     }
 
     @Override
+    public int load() {
+        return crafts.size();
+    }
+
+    @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
         if (!working() || rack() == null || count(ChassisPart.FABRICATION_BLADE) == 0 || offered.schematic().kind() != Schematic.Kind.CRAFTING
                 || !accepts(offered.schematic())) {

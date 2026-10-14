@@ -335,4 +335,51 @@ final class Phase3GameTests {
                 })
                 .thenSucceed();
     }
+
+    // Two Gateways with the same schematic, two jobs: the second job's run goes to the idle Gateway, not to the one the
+    // first job's run went to (which has pushed it into its machine and would take more).
+    static void gatewaysShareJobs(GameTestHelper helper) {
+        BlockPos first = new BlockPos(1, 1, 1), firstMachine = new BlockPos(2, 1, 1), second = new BlockPos(0, 1, 1), secondMachine = new BlockPos(0, 1, 2);
+        BlockPos core = new BlockPos(1, 2, 0), thread = new BlockPos(1, 3, 0);
+        for (BlockPos gateway : List.of(first, second)) {
+            helper.setBlock(gateway, ModBlocks.GATEWAY.get());
+        }
+        helper.setBlock(firstMachine, Blocks.CHEST);
+        helper.setBlock(secondMachine, Blocks.CHEST);
+        helper.setBlock(core, ModBlocks.SCHEDULER_CORE.get());
+        helper.setBlock(thread, ModBlocks.THREAD_UNIT.get());
+        rig(helper);
+        for (BlockPos gateway : List.of(first, second)) {
+            helper.getBlockEntity(gateway, GatewayBlockEntity.class).schematicSlots()
+                    .set(0, schematic(Schematic.Kind.PROCESSING, List.of(new ItemStack(Items.RAW_IRON)), List.of(new ItemStack(Items.IRON_INGOT))));
+        }
+        Runnable job = () -> {
+            BlockPos device = helper.absolutePos(BAY);
+            CraftPlanner.Plan plan = CraftRequests.plan(helper.getLevel(), device, INGOT, 1);
+            helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+            helper.assertTrue(CraftRequests.start(helper.getLevel(), device, plan, CraftRequests.schedulers(helper.getLevel(), device).getFirst()) != null,
+                    "Job didn't start");
+        };
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    helper.assertTrue(helper.getBlockEntity(core, SchedulerCoreBlockEntity.class).threads() == 2, "Scheduler threads");
+                    storage(helper).insert(RAW_IRON, 2, false);
+                    job.run();
+                })
+                .thenIdle(6)
+                .thenExecute(() -> {
+                    int pushed = helper.getBlockEntity(firstMachine, ChestBlockEntity.class).countItem(Items.RAW_IRON)
+                            + helper.getBlockEntity(secondMachine, ChestBlockEntity.class).countItem(Items.RAW_IRON);
+                    helper.assertTrue(pushed == 1, "First job pushed " + pushed + " raw iron");
+                    job.run();
+                })
+                .thenIdle(6)
+                .thenExecute(() -> {
+                    int a = helper.getBlockEntity(firstMachine, ChestBlockEntity.class).countItem(Items.RAW_IRON);
+                    int b = helper.getBlockEntity(secondMachine, ChestBlockEntity.class).countItem(Items.RAW_IRON);
+                    helper.assertTrue(a == 1 && b == 1, "Machines have " + a + " and " + b + " raw iron");
+                })
+                .thenSucceed();
+    }
 }

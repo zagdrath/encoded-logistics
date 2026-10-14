@@ -6,6 +6,7 @@
 package net.zagdrath.encodedlogistics.crafting;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -296,20 +297,33 @@ public final class JobRunner {
     }
 
     // Offers each step's next runs to the providers holding its schematic, while the job holds the inputs and its
-    // threads have room for another craft in flight (runsPerThread each; 0: any number).
+    // threads have room for another craft in flight (runsPerThread each; 0: any number). Each run goes to the least busy
+    // of them that takes it (CraftingProvider.load; ties in network order), so a second job's runs go to idle machines
+    // rather than queueing behind the first job's on the same ones.
     private static boolean dispatch(ServerLevel level, BlockPos host, CraftingJob job, List<CraftingProvider> providers, int runsPerThread) {
         boolean changed = false;
         int offers = 0, maxOffers = MAX_OFFERS * Math.max(1, job.threads);
         int inFlight = job.inFlight(), capacity = runsPerThread <= 0 ? Integer.MAX_VALUE : Math.max(1, job.threads) * runsPerThread;
         for (int index = 0; index < job.steps.size(); index++) {
             CraftingJob.Step step = job.steps.get(index);
+            List<CraftingProvider> able = null;
             while (step.left() > 0 && offers < maxOffers && inFlight < capacity && job.holds(step.schematic.inputTotals())) {
                 CraftTask task = new CraftTask(host, job.id, index, step.schematic, step.schematic.inputs().stream()
                         .map(input -> input.item().create()).toList());
+                if (able == null) {
+                    able = new ArrayList<>();
+                    for (CraftingProvider provider : providers) {
+                        if (provider.accepts(step.schematic)) {
+                            able.add(provider);
+                        }
+                    }
+                }
+                // Stable: equally busy providers keep their network order.
+                able.sort(Comparator.comparingInt(CraftingProvider::load));
                 boolean taken = false;
-                for (CraftingProvider provider : providers) {
+                for (CraftingProvider provider : able) {
                     offers++;
-                    if (provider.accepts(step.schematic) && provider.offer(level, task)) {
+                    if (provider.offer(level, task)) {
                         taken = true;
                         break;
                     }

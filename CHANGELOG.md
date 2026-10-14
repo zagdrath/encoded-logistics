@@ -99,6 +99,12 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
   `multiplexerChannels`, `shelfChannels`, `accessCardLanes`, `routingCardRate`, `bladeBonusPercent`,
   `interconnectLanes`, and the drains.
 
+### Fixed
+
+- Jobs share identical machines instead of piling onto the first ones. Each run now goes to the least busy Gateway,
+  Fabricator, Fabrication Server or Blade Enclosure that can make it, so a second job using the same schematic
+  uses idle Gateways (and the machines behind them) rather than queueing behind the first job on the same ones.
+
 ### Upgrading
 
 - Routers load in Static mode with their routes unchanged; racks' linked segments get IDs in order (2, 3, ...) and

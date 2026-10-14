@@ -86,6 +86,11 @@ public class FabricationServerDevice extends RackDevice implements CraftingProvi
     }
 
     @Override
+    public int load() {
+        return crafts.size();
+    }
+
+    @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
         if (!isOnline() || rack() == null || offered.schematic().kind() != Schematic.Kind.CRAFTING
                 || !accepts(offered.schematic())) {

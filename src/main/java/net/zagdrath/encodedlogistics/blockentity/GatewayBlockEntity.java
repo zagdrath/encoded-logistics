@@ -198,6 +198,11 @@ public class GatewayBlockEntity extends BlockEntity implements MenuProvider, Net
     }
 
     @Override
+    public int load() {
+        return runs.size();
+    }
+
+    @Override
     public boolean offer(ServerLevel level, CraftTask task) {
         if (!online || task.schematic().kind() != Schematic.Kind.PROCESSING || runs.size() >= MAX_RUNS || !accepts(task.schematic())) {
             return false;

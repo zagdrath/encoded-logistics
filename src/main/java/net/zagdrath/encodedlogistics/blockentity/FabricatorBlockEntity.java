@@ -122,6 +122,11 @@ public class FabricatorBlockEntity extends BaseContainerBlockEntity implements N
     }
 
     @Override
+    public int load() {
+        return crafts.size();
+    }
+
+    @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
         if (!online || offered.schematic().kind() != Schematic.Kind.CRAFTING || !accepts(offered.schematic())) {
             return false;

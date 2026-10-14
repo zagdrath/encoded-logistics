@@ -21,6 +21,13 @@ public interface CraftingProvider {
         return schematics().contains(schematic);
     }
 
+    // How busy it is: the tasks it has taken and not yet sent back. Jobs offer each task to the least busy provider that
+    // can carry it out first (ties in network order), so identical machines share the work instead of the first ones
+    // filling up while the rest sit idle. 0 (the default): always offered first, among the providers that are idle.
+    default int load() {
+        return 0;
+    }
+
     // Takes the task if it holds the schematic and has room for it now; false leaves the inputs with the job.
     boolean offer(ServerLevel level, CraftTask task);
 }

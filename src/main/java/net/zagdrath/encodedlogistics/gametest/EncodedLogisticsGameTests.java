@@ -100,6 +100,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("ghost_drag", Phase3GameTests::ghostDrag);
         TESTS.put("fabricator_crafts", Phase3GameTests::fabricatorCrafts);
         TESTS.put("gateway_processes", Phase3GameTests::gatewayProcesses);
+        TESTS.put("gateways_share_jobs", Phase3GameTests::gatewaysShareJobs);
         TESTS.put("bridge_joins_networks", Phase4GameTests::bridgeJoinsNetworks);
         TESTS.put("bridge_cross_dimension", Phase4GameTests::bridgeCrossDimension);
         TESTS.put("relay_range", Phase4GameTests::relayRange);
