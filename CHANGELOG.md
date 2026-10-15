@@ -23,6 +23,8 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-14
+
 ### Changed
 
 - **Blade Enclosure rebalanced as late-game gear:** every blade now gives more than the server it's crafted from
@@ -43,6 +45,11 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 - Existing enclosures keep their blades, drives and schematics where they were; the new bays and slots start empty.
   The nine schematics an enclosure already had are the first Fabrication Blade's page.
   A `bladeBonusPercent` set in a config file is dropped.
+
+### Fixed
+
+- The Chassis Switch, Blade Enclosure and Optical Transport Shelf drew no chassis body while on, faulted or degraded
+  (only their cards and status light showed); only an offline one looked right.
 
 ## [1.3.1] - 2026-10-14
 
@@ -443,7 +450,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.1+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.0+26.3...HEAD
+[1.4.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.1+26.3...v1.4.0+26.3
 [1.3.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.0+26.3...v1.3.1+26.3
 [1.3.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.1+26.3...v1.3.0+26.3
 [1.2.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.0+26.3...v1.2.1+26.3

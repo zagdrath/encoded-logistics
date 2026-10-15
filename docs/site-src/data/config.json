@@ -2047,14 +2047,80 @@
               "restart": "NONE"
             },
             {
-              "key": "bladeBonusPercent",
-              "path": "optical.bladeBonusPercent",
+              "key": "computeBladeThreads",
+              "path": "optical.computeBladeThreads",
               "type": "int",
-              "default": 25,
+              "default": 4,
               "min": 0,
-              "max": 1000,
-              "comment": "How much more a blade gives per rack unit than its server (Compute, Memory): % on top of the server's rate per U.\n Default: 25\n Range: 0 ~ 1000",
-              "label": "Blade Bonus per Rack Unit (%)",
+              "max": 1024,
+              "comment": "Crafting threads each Compute Blade in a Blade Enclosure gives its network's rack scheduler.\n Default: 4\n Range: 0 ~ 1024",
+              "label": "Compute Blade Threads",
+              "restart": "NONE"
+            },
+            {
+              "key": "memoryBladeMemory",
+              "path": "optical.memoryBladeMemory",
+              "type": "int",
+              "default": 65536,
+              "min": 0,
+              "max": 2147483647,
+              "comment": "Job memory each Memory Blade in a Blade Enclosure gives its network's rack scheduler.\n Default: 65536\n Range: > 0",
+              "label": "Memory Blade Job Memory",
+              "restart": "NONE"
+            },
+            {
+              "key": "fabricationBladeCrafts",
+              "path": "optical.fabricationBladeCrafts",
+              "type": "int",
+              "default": 4,
+              "min": 0,
+              "max": 1024,
+              "comment": "Crafts each Fabrication Blade runs at once beyond its jobs' threads (extra runs, which take none of them).\n Default: 4\n Range: 0 ~ 1024",
+              "label": "Fabrication Blade Extra Crafts",
+              "restart": "NONE"
+            },
+            {
+              "key": "computeBladeDrain",
+              "path": "optical.computeBladeDrain",
+              "type": "double",
+              "default": 8.0,
+              "min": 0.0,
+              "max": 100000.0,
+              "comment": "FE per tick each Compute Blade drains (in place of chassisCardDrain).\n Default: 8.0\n Range: 0.0 ~ 100000.0",
+              "label": "Compute Blade Drain (FE/t)",
+              "restart": "NONE"
+            },
+            {
+              "key": "memoryBladeDrain",
+              "path": "optical.memoryBladeDrain",
+              "type": "double",
+              "default": 4.0,
+              "min": 0.0,
+              "max": 100000.0,
+              "comment": "FE per tick each Memory Blade drains (in place of chassisCardDrain).\n Default: 4.0\n Range: 0.0 ~ 100000.0",
+              "label": "Memory Blade Drain (FE/t)",
+              "restart": "NONE"
+            },
+            {
+              "key": "fabricationBladeDrain",
+              "path": "optical.fabricationBladeDrain",
+              "type": "double",
+              "default": 6.0,
+              "min": 0.0,
+              "max": 100000.0,
+              "comment": "FE per tick each Fabrication Blade drains (in place of chassisCardDrain; each craft also costs fabricatorEnergyPerCraft).\n Default: 6.0\n Range: 0.0 ~ 100000.0",
+              "label": "Fabrication Blade Drain (FE/t)",
+              "restart": "NONE"
+            },
+            {
+              "key": "storageBladeDrain",
+              "path": "optical.storageBladeDrain",
+              "type": "double",
+              "default": 3.0,
+              "min": 0.0,
+              "max": 100000.0,
+              "comment": "FE per tick each Storage Blade drains (in place of chassisCardDrain; its drives drain rackDriveDrain each on top).\n Default: 3.0\n Range: 0.0 ~ 100000.0",
+              "label": "Storage Blade Drain (FE/t)",
               "restart": "NONE"
             },
             {
