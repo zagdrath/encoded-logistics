@@ -299,7 +299,8 @@ public final class JobRunner {
     // Offers each step's next runs to the providers holding its schematic, while the job holds the inputs and its
     // threads have room for another craft in flight (runsPerThread each; 0: any number). Each run goes to the least busy
     // of them that takes it (CraftingProvider.load; ties in network order), so a second job's runs go to idle machines
-    // rather than queueing behind the first job's on the same ones.
+    // rather than queueing behind the first job's on the same ones. With its threads full, runs still go to providers
+    // with extra runs free, as extra runs (CraftTask.extra), which don't count against the threads.
     private static boolean dispatch(ServerLevel level, BlockPos host, CraftingJob job, List<CraftingProvider> providers, int runsPerThread) {
         boolean changed = false;
         int offers = 0, maxOffers = MAX_OFFERS * Math.max(1, job.threads);
@@ -307,9 +308,10 @@ public final class JobRunner {
         for (int index = 0; index < job.steps.size(); index++) {
             CraftingJob.Step step = job.steps.get(index);
             List<CraftingProvider> able = null;
-            while (step.left() > 0 && offers < maxOffers && inFlight < capacity && job.holds(step.schematic.inputTotals())) {
+            while (step.left() > 0 && offers < maxOffers && job.holds(step.schematic.inputTotals())) {
+                boolean extra = inFlight >= capacity;
                 CraftTask task = new CraftTask(host, job.id, index, step.schematic, step.schematic.inputs().stream()
-                        .map(input -> input.item().create()).toList());
+                        .map(input -> input.item().create()).toList(), extra);
                 if (able == null) {
                     able = new ArrayList<>();
                     for (CraftingProvider provider : providers) {
@@ -322,6 +324,9 @@ public final class JobRunner {
                 able.sort(Comparator.comparingInt(CraftingProvider::load));
                 boolean taken = false;
                 for (CraftingProvider provider : able) {
+                    if (extra && provider.extraRuns() <= 0) {
+                        continue;
+                    }
                     offers++;
                     if (provider.offer(level, task)) {
                         taken = true;
@@ -333,7 +338,11 @@ public final class JobRunner {
                 }
                 job.takeInputs(step.schematic);
                 step.running++;
-                inFlight++;
+                if (extra) {
+                    step.extra++;
+                } else {
+                    inFlight++;
+                }
                 changed = true;
             }
         }

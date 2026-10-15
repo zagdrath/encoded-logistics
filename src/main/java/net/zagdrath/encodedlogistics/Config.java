@@ -809,6 +809,10 @@ public class Config {
             .comment("Job memory each Memory Blade in a Blade Enclosure gives its network's rack scheduler.")
             .defineInRange("memoryBladeMemory", 65_536, 0, Integer.MAX_VALUE);
 
+    public static final ModConfigSpec.IntValue FABRICATION_BLADE_CRAFTS = BUILDER
+            .comment("Crafts each Fabrication Blade runs at once beyond its jobs' threads (extra runs, which take none of them).")
+            .defineInRange("fabricationBladeCrafts", 4, 0, 1024);
+
     public static final ModConfigSpec.DoubleValue COMPUTE_BLADE_DRAIN = BUILDER
             .comment("FE per tick each Compute Blade drains (in place of chassisCardDrain).")
             .defineInRange("computeBladeDrain", 8.0, 0.0, 100_000.0);

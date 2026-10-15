@@ -44,9 +44,11 @@ public final class ChassisLayout {
     public static final int SWITCH_CAGES_FROM = 14, CAGES_PER_CARD = 4;
     // The Blade Enclosure's slots, in the order they were added (so older enclosures load as they were): each front
     // slot's first two drive bays, its bays, its first nine schematics, each front slot's other four drive bays, the
-    // other eighteen schematics. The panel pages through them: drive bays two a blade a page, schematics nine a page.
+    // other schematics (nine for each Fabrication Blade it can hold). The panel pages through them: drive bays two a
+    // blade a page, schematics nine a page.
     public static final int BLADE_BAYS_FROM = 32, BLADE_SCHEMATICS_FROM = 58, BLADE_MORE_DRIVES_FROM = 67, BLADE_MORE_SCHEMATICS_FROM = 131;
-    public static final int BLADES = 16, DRIVES_PER_BLADE = 6, DRIVES_PER_PAGE = 2, SCHEMATICS = 27, SCHEMATICS_PER_PAGE = 9;
+    public static final int BLADES = 16, DRIVES_PER_BLADE = 6, DRIVES_PER_PAGE = 2, SCHEMATICS_PER_PAGE = 9,
+            SCHEMATICS = BLADES * SCHEMATICS_PER_PAGE;
 
     public static final ChassisLayout SWITCH = switchLayout(), SHELF = shelfLayout(), BLADE = bladeLayout();
 
@@ -208,7 +210,7 @@ public final class ChassisLayout {
         return more >= 0 && more < BLADES * (DRIVES_PER_BLADE - DRIVES_PER_PAGE) ? more / (DRIVES_PER_BLADE - DRIVES_PER_PAGE) : -1;
     }
 
-    // The i-th schematic (0-26), as an item slot.
+    // The i-th schematic (0-143), as an item slot.
     public static int bladeSchematicSlot(int i) {
         return i < SCHEMATICS_PER_PAGE ? BLADE_SCHEMATICS_FROM + i : BLADE_MORE_SCHEMATICS_FROM + i - SCHEMATICS_PER_PAGE;
     }

@@ -105,6 +105,8 @@ Server in the same rack as each Compute Server, and you don't get one Scheduler 
 - It appears on the plan screen's Scheduler choices as "Rack x, y, z": the rack that heads the pool (the first rack
   with an online Compute Server serving the network). If the head changes, its jobs move to the new head and carry on.
 - It offers crafts to the network's Fabrication Servers and Fabrication Blades first, then to the other providers.
+  When a job's threads are all busy, Fabrication Blades still take its crafts, up to
+  {{config optical.fabricationBladeCrafts}} each beyond the threads ({{page racks/chassis#blade-enclosure}}).
 - Compute Servers blink while jobs run on the pool; Memory Servers while jobs hold memory.
 - Breaking the head rack fails its jobs, as breaking a Core does.
 

@@ -298,8 +298,8 @@ public class ChassisPanel extends RackScreen.Panel {
         }
     }
 
-    // Whether a page slot is in use: a cage under an Uplink Card, a drive bay behind a Storage Blade, a schematic with a
-    // Fabrication Blade in.
+    // Whether a page slot is in use: a cage under an Uplink Card, a drive bay behind a Storage Blade, a schematic on a
+    // page a Fabrication Blade has (one page each, the first pages first).
     private boolean used(List<BayView> views, int slot) {
         if (tab == Tab.CAGES) {
             int line = (slot - ChassisLayout.SWITCH_CAGES_FROM) / ChassisLayout.CAGES_PER_CARD;
@@ -310,7 +310,11 @@ public class ChassisPanel extends RackScreen.Panel {
             int blade = ChassisLayout.bladeOfDriveSlot(slot);
             return blade >= 0 && blade < views.size() && views.get(blade).part() == ChassisPart.STORAGE_BLADE;
         }
-        return views.stream().anyMatch(view -> view.part() == ChassisPart.FABRICATION_BLADE);
+        return page < fabBlades(views);
+    }
+
+    private static int fabBlades(List<BayView> views) {
+        return (int) views.stream().filter(view -> view.part() == ChassisPart.FABRICATION_BLADE).count();
     }
 
     @Override
@@ -526,7 +530,7 @@ public class ChassisPanel extends RackScreen.Panel {
 
     // The crafts running over the grid, what the schematics are for under it.
     private void fab(GuiGraphicsExtractor graphics, ValueInput data) {
-        boolean any = bays(data).stream().anyMatch(view -> view.part() == ChassisPart.FABRICATION_BLADE);
+        boolean any = page < fabBlades(bays(data));
         graphics.text(font(), tr("crafts", data.getIntOr("crafts", 0)), 12, FACE_Y - 1, RackScreen.TEXT_MUTED, false);
         right(graphics, pager(), RIGHT, FACE_Y - 1, RackScreen.TEXT);
         wrapped(graphics, tr(any ? "fab_hint" : "fab_none"), 12, 46 + 3 * 18 + 8, RIGHT - 12, 3, any ? RackScreen.TEXT_MUTED : RackScreen.TEXT_DISABLED);

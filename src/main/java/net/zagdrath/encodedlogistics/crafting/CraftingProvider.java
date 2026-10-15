@@ -28,6 +28,13 @@ public interface CraftingProvider {
         return 0;
     }
 
-    // Takes the task if it holds the schematic and has room for it now; false leaves the inputs with the job.
+    // Runs it can take now beyond the jobs' threads (a Blade Enclosure's Fabrication Blades). A job whose threads are all
+    // busy still offers runs to providers with room here, as extra runs (CraftTask.extra); 0 (the default): none.
+    default int extraRuns() {
+        return 0;
+    }
+
+    // Takes the task if it holds the schematic and has room for it now (an extra run: room in extraRuns); false leaves
+    // the inputs with the job.
     boolean offer(ServerLevel level, CraftTask task);
 }

@@ -43,8 +43,9 @@ import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
 // The Blade Enclosure (10U, the optical handoff 6), the late-game way to fill a rack: each blade is crafted from its
 // server and gives more than it. Sixteen half-height blade slots in front: Compute Blades give its network's rack
 // Scheduler computeBladeThreads threads each and Memory Blades memoryBladeMemory job memory each (RackScheduler);
-// Fabrication Blades craft from the enclosure's 27 schematic slots as a Fabrication Server with both Throughput Modules
-// does; a Storage Blade opens its six drive bays (network storage, StorageDevice), a NAS's worth. Behind: two
+// Fabrication Blades craft as a Fabrication Server with both Throughput Modules does, each with nine schematic slots of
+// its own (the enclosure's first nine for the first blade, the next nine for the second) and fabricationBladeCrafts runs
+// at once beyond its jobs' threads (CraftingProvider.extraRuns); a Storage Blade opens its six drive bays (network storage, StorageDevice), a NAS's worth. Behind: two
 // Interconnect Modules (the lanes its blades use - the blades take none of the rack's; the second is redundant), six
 // power supplies and one or two Management Modules (the second a standby). It runs with an interconnect, a management
 // module and a power supply; degraded below two interconnects or two power supplies. Each blade drains its own
@@ -169,13 +170,26 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         if (count(ChassisPart.FABRICATION_BLADE) == 0) {
             return schematics;
         }
-        for (int i = 0; i < ChassisLayout.SCHEMATICS; i++) {
+        for (int i = 0; i < schematicSlots(); i++) {
             Schematic schematic = SchematicItem.schematic(items().get(ChassisLayout.bladeSchematicSlot(i)));
             if (schematic != null && schematic.kind() == Schematic.Kind.CRAFTING) {
                 schematics.add(schematic);
             }
         }
         return schematics;
+    }
+
+    // Nine schematic slots for each Fabrication Blade, the first pages first.
+    public int schematicSlots() {
+        return Math.min(ChassisLayout.SCHEMATICS, count(ChassisPart.FABRICATION_BLADE) * ChassisLayout.SCHEMATICS_PER_PAGE);
+    }
+
+    @Override
+    public int extraRuns() {
+        if (!working()) {
+            return 0;
+        }
+        return Math.max(0, count(ChassisPart.FABRICATION_BLADE) * Config.FABRICATION_BLADE_CRAFTS.getAsInt() - crafts.extraRuns());
     }
 
     // Every Fabrication Blade crafts at a Fabricator's top speed (fabricatorCraftTicks' last entry, both modules).
@@ -192,7 +206,7 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
     @Override
     public boolean offer(ServerLevel level, CraftTask offered) {
         if (!working() || rack() == null || count(ChassisPart.FABRICATION_BLADE) == 0 || offered.schematic().kind() != Schematic.Kind.CRAFTING
-                || !accepts(offered.schematic())) {
+                || !accepts(offered.schematic()) || offered.extra() && extraRuns() <= 0) {
             return false;
         }
         int cost = Config.FABRICATOR_ENERGY_PER_CRAFT.getAsInt();

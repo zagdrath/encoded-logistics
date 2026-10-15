@@ -223,7 +223,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
         if (runDone) {
             CraftingJob.Step step = job.steps.get(task.step());
             step.done++;
-            step.running = Math.max(0, step.running - 1);
+            step.runEnded(task);
         }
         host.jobChanged();
     }
@@ -237,8 +237,7 @@ public class SchedulerCoreBlockEntity extends BlockEntity implements NetworkDevi
             return;
         }
         inputs.forEach(job::add);
-        CraftingJob.Step step = job.steps.get(task.step());
-        step.running = Math.max(0, step.running - 1);
+        job.steps.get(task.step()).runEnded(task);
         host.jobChanged();
     }
 

@@ -48,6 +48,11 @@ public final class CraftQueue {
         return crafts.size();
     }
 
+    // How many of its crafts are extra runs (CraftTask.extra).
+    public int extraRuns() {
+        return (int) crafts.stream().filter(craft -> craft.task.extra()).count();
+    }
+
     public void add(CraftTask task, int duration) {
         crafts.add(new Craft(task, 0, duration));
     }

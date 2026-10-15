@@ -39,6 +39,9 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackScheduler;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
+import net.zagdrath.encodedlogistics.rack.device.BladeEnclosureDevice;
 import net.zagdrath.encodedlogistics.rack.device.ComputeServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FabricationServerDevice;
 import net.zagdrath.encodedlogistics.rack.device.FirewallDevice;
@@ -209,6 +212,58 @@ final class Rack2GameTests {
                 .thenSucceed();
     }
 
+
+    // A Blade Enclosure is a Scheduler and its own fabricator: a Compute Blade (computeBladeThreads threads), a Memory
+    // Blade and one Fabrication Blade. The blade has the first page of schematics only (a planks schematic; the second
+    // page's isn't held). A job of more crafts than the threads runs the threads' worth plus the blade's
+    // fabricationBladeCrafts extra runs at once, and finishes.
+    static void bladeFabrication(GameTestHelper helper) {
+        BlockPos master = RackGameTests.networkedRack(helper);
+        BladeEnclosureDevice blades = RackGameTests.install(helper, master, RackDeviceType.BLADE_ENCLOSURE, 1, BladeEnclosureDevice.class);
+        int front = ChassisLayout.BLADE_BAYS_FROM;
+        blades.items().set(front, new ItemStack(ModItems.chassisPart(ChassisPart.COMPUTE_BLADE).get()));
+        blades.items().set(front + 1, new ItemStack(ModItems.chassisPart(ChassisPart.MEMORY_BLADE).get()));
+        blades.items().set(front + 2, new ItemStack(ModItems.chassisPart(ChassisPart.FABRICATION_BLADE).get()));
+        blades.items().set(front + 16, new ItemStack(ModItems.chassisPart(ChassisPart.INTERCONNECT_MODULE).get()));
+        blades.items().set(front + 18, new ItemStack(ModItems.chassisPart(ChassisPart.MANAGEMENT_MODULE).get()));
+        blades.items().set(front + 20, new ItemStack(ModItems.chassisPart(ChassisPart.BLADE_PSU).get()));
+        ItemStack card = new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
+        card.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_LOG)),
+                List.of(new ItemStack(Items.OAK_PLANKS, 4))));
+        blades.items().set(ChassisLayout.bladeSchematicSlot(0), card);
+        ItemStack sticks = new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
+        sticks.set(ModDataComponents.SCHEMATIC.get(), Schematic.of(Schematic.Kind.CRAFTING, List.of(new ItemStack(Items.OAK_PLANKS),
+                new ItemStack(Items.OAK_PLANKS)), List.of(new ItemStack(Items.STICK, 4))));
+        blades.items().set(ChassisLayout.bladeSchematicSlot(ChassisLayout.SCHEMATICS_PER_PAGE), sticks);
+        blades.itemsChanged();
+        storageDevice(helper, master, RackDeviceType.NAS, 11, NasDevice.class, 0, StorageDevice.READ_WRITE);
+        int threads = BladeEnclosureDevice.threadsPerBlade(), extra = Config.FABRICATION_BLADE_CRAFTS.getAsInt();
+        int crafts = threads + extra + 4;
+        helper.startSequence()
+                .thenIdle(3)
+                .thenExecute(() -> {
+                    ServerLevel level = helper.getLevel();
+                    BlockPos device = helper.absolutePos(master);
+                    RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+                    helper.assertTrue(rack.scheduler().active() && rack.scheduler().threads() == threads, "Scheduler " + rack.scheduler().threads());
+                    helper.assertTrue(blades.schematics().size() == 1, "Schematics held " + blades.schematics().size());
+                    helper.assertTrue(blades.extraRuns() == extra, "Extra runs " + blades.extraRuns());
+                    RackGameTests.storage(helper, master).insert(LOG, crafts, false);
+                    CraftPlanner.Plan plan = CraftRequests.plan(level, device, PLANKS, 4L * crafts);
+                    helper.assertTrue(plan != null && plan.complete(), "Plan: " + plan);
+                    helper.assertTrue(CraftRequests.start(level, device, plan, rack.scheduler()) != null, "Job didn't start");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(blades.load() == threads + extra && blades.extraRuns() == 0,
+                        "Crafting " + blades.load() + " at once, " + blades.extraRuns() + " extra runs free"))
+                .thenWaitUntil(() -> helper.assertTrue(RackGameTests.storage(helper, master).count(PLANKS) == 4L * crafts,
+                        "Network has " + RackGameTests.storage(helper, master).count(PLANKS) + " planks"))
+                .thenExecute(() -> {
+                    RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+                    helper.assertTrue(rack.scheduler().jobs().isEmpty(), "Job not finished");
+                    helper.assertTrue(blades.load() == 0 && blades.extraRuns() == extra, "Extra runs not given back: " + blades.extraRuns());
+                })
+                .thenSucceed();
+    }
 
     // Two racks on one network: a Compute Server (and Fabrication Server) in one, the Memory Server in the other, pool into
     // one Scheduler, headed by one rack, counting both racks' servers. A job started on it runs. A second Compute Server

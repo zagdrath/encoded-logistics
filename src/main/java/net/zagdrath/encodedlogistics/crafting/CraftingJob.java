@@ -38,18 +38,33 @@ public final class CraftingJob {
                 Schematic.CODEC.fieldOf("schematic").forGetter(step -> step.schematic),
                 Codec.INT.fieldOf("total").forGetter(step -> step.total),
                 Codec.INT.fieldOf("done").forGetter(step -> step.done),
-                Codec.INT.fieldOf("running").forGetter(step -> step.running))
+                Codec.INT.fieldOf("running").forGetter(step -> step.running),
+                Codec.INT.optionalFieldOf("extra", 0).forGetter(step -> step.extra))
                 .apply(i, Step::new));
 
         public final Schematic schematic;
         public final int total;
-        public int done, running;
+        // Runs done and in flight, and how many in flight are extra runs (CraftTask.extra: not on the job's threads).
+        public int done, running, extra;
 
         public Step(Schematic schematic, int total, int done, int running) {
+            this(schematic, total, done, running, 0);
+        }
+
+        public Step(Schematic schematic, int total, int done, int running, int extra) {
             this.schematic = schematic;
             this.total = total;
             this.done = done;
             this.running = running;
+            this.extra = extra;
+        }
+
+        // A run back (or refunded): one fewer in flight, and one fewer extra run if it was one.
+        public void runEnded(CraftTask task) {
+            running = Math.max(0, running - 1);
+            if (task.extra()) {
+                extra = Math.max(0, extra - 1);
+            }
         }
 
         public boolean finished() {
@@ -181,9 +196,9 @@ public final class CraftingJob {
         return steps.stream().allMatch(Step::finished);
     }
 
-    // Crafts dispatched and not yet back.
+    // Crafts dispatched and not yet back on its threads (extra runs don't count).
     public int inFlight() {
-        return steps.stream().mapToInt(step -> Math.max(0, step.running)).sum();
+        return steps.stream().mapToInt(step -> Math.max(0, step.running - step.extra)).sum();
     }
 
     // The threads it can use: enough to keep every craft it has left (in flight or not) going, runsPerThread to a thread;
