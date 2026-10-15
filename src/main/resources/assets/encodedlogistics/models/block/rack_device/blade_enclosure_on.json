@@ -2,10 +2,80 @@
  "parent": "minecraft:block/block",
  "render_type": "minecraft:cutout",
  "textures": {
+  "tex": "encodedlogistics:block/rack_device/blade_enclosure",
   "g": "encodedlogistics:block/rack_device/blade_enclosure_on",
   "particle": "encodedlogistics:block/rack_device/blade_enclosure"
  },
  "elements": [
+  {
+   "name": "chassis",
+   "from": [
+    1.55,
+    0,
+    1.75
+   ],
+   "to": [
+    14.45,
+    10,
+    29.25
+   ],
+   "faces": {
+    "north": {
+     "texture": "#tex",
+     "uv": [
+      0,
+      0,
+      13,
+      5.0
+     ]
+    },
+    "south": {
+     "texture": "#tex",
+     "uv": [
+      0,
+      8,
+      13,
+      13.0
+     ]
+    },
+    "east": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      1.0
+     ]
+    },
+    "west": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      1.0
+     ]
+    },
+    "up": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      1.0
+     ]
+    },
+    "down": {
+     "texture": "#tex",
+     "uv": [
+      14.0,
+      0.0,
+      16.0,
+      1.0
+     ]
+    }
+   }
+  },
   {
    "name": "status",
    "from": [
