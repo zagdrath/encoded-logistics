@@ -32,6 +32,9 @@ import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 // What's on tape counts as stored: a plan takes it as the hot items it would be once recalled (Plan#recall), and
 // starting the job starts those recalls; the job takes the items as they arrive (CraftingJob#awaiting).
 public final class CraftRequests {
+    // The most of one item a single request crafts, from any terminal or ELCL.
+    public static final long MAX_AMOUNT = Integer.MAX_VALUE;
+
     private CraftRequests() {}
 
     // The network a device reaches: its own while it's online.

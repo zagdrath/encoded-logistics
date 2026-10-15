@@ -121,7 +121,7 @@ public class InventoryTapScreen extends AbstractContainerScreen<InventoryTapMenu
         }
         super.extractTooltip(graphics, mouseX, mouseY);
         if (PartScreens.over(mouseX, mouseY, leftPos + ACCESS_X, topPos + ACCESS_Y, 18, 18)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.tap.access"), mouseX, mouseY);
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.tap.access"), mouseX, mouseY);
         }
     }
 

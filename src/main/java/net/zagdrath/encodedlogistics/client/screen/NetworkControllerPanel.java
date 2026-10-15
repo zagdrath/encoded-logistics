@@ -18,13 +18,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.ValueInput;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.blockentity.RackBlockEntity;
+import net.zagdrath.encodedlogistics.rack.RackGeometry;
 import net.zagdrath.encodedlogistics.rack.RackDeviceInfo;
 import net.zagdrath.encodedlogistics.rack.device.NetworkControllerDevice;
 
 // A rack Network Controller's panel (screens/rack/network_controller_<n>u.json): its energy well, Status / Energy /
 // Usage (or the standby's idle draw) / Devices, Lanes with a bar, the redundant pair (role, partner, last failover), its
 // uplinks (one chip per connection point of its rack: up, down, unused or a network mismatch) and Switch over (asks
-// once more before it does it; only while both of a pair are online).
+// once more before it does it; only while both of a pair are online). A pair value too long for its row ends in "..."
+// and shows in full on hover; the partner's shows its role there.
 public class NetworkControllerPanel extends RackScreen.Panel {
     private static final Identifier ENERGY_BAR = EncodedLogistics.id("controller/energy_bar"), LANES_BAR = EncodedLogistics.id("common/bar_fill_mint");
     private static final Identifier[] CHIPS = { EncodedLogistics.id("rack/controller/chip_up"), EncodedLogistics.id("rack/controller/chip_down"),
@@ -32,12 +34,14 @@ public class NetworkControllerPanel extends RackScreen.Panel {
     // The energy well's inside (its texture's well is wider and taller than the UPS's): the bar is stretched to fill it.
     private static final int GAUGE_X = 9, GAUGE_Y = 23, GAUGE_W = 14, GAUGE_H = 58;
     private static final int LABEL_X = 31, VALUE_RIGHT = 165, READOUT_Y = 25, LINE_H = 11, LANES_Y = 67, BAR_X = 32, BAR_Y = 78, BAR_W = 132;
-    private static final int PAIR_TITLE_Y = 86, PAIR_X = 12, PAIR_Y = 98, PAIR_VALUE_X = 82;
-    private static final int SWITCH_X = 108, SWITCH_Y = 136, SWITCH_W = 60, SWITCH_H = 14;
+    private static final int PAIR_TITLE_Y = 86, PAIR_X = 12, PAIR_Y = 98, PAIR_VALUE_X = 82, PAIR_VALUE_RIGHT = 166;
+    private static final int SWITCH_X = 96, SWITCH_Y = 136, SWITCH_W = 72, SWITCH_H = 14;
     private static final int UPLINKS_TITLE_Y = 140, CHIP_X = 9, CHIP_Y = 153, CHIP_W = 16, CHIP_H = 8, CHIP_SPACING = 20;
     private static final int CONFIRM_TICKS = 60;
 
     private int confirming;
+    // Each pair row's value in full, for its tooltip when it doesn't fit (null: it fits).
+    private final Component[] pairFull = new Component[3];
 
     public NetworkControllerPanel(RackScreen screen) {
         super(screen);
@@ -50,9 +54,9 @@ public class NetworkControllerPanel extends RackScreen.Panel {
         return EncodedLogistics.id("textures/gui/rack/" + id + ".png");
     }
 
-    private int chips() {
-        NetworkControllerDevice device = device(NetworkControllerDevice.class);
-        return device != null && device.size() >= 4 ? 8 : 4;
+    // One per connection point of the rack, on either size.
+    private static int chips() {
+        return RackGeometry.Point.values().length;
     }
 
     @Override
@@ -128,7 +132,10 @@ public class NetworkControllerPanel extends RackScreen.Panel {
         String partner = data.getStringOr("partner", "");
         String partnerRole = device.shown() == NetworkControllerDevice.Shown.STANDBY ? "active" : "standby";
         pair(graphics, 0, "role", data.getStringOr("role", ""));
-        pair(graphics, 1, "partner", partner.isEmpty() ? "—" : partner + " (" + Component.translatable("gui.encodedlogistics.controller.partner." + partnerRole).getString() + ")");
+        pair(graphics, 1, "partner", partner.isEmpty() ? "—" : partner);
+        if (!partner.isEmpty()) {
+            pairFull[1] = Component.literal(partner + " (" + Component.translatable("gui.encodedlogistics.controller.partner." + partnerRole).getString() + ")");
+        }
         String last = data.getStringOr("last_failover_text", "");
         pair(graphics, 2, "last_failover", last.isEmpty() ? Component.translatable("gui.encodedlogistics.controller.never").getString() : last);
         graphics.text(font(), Component.translatable("gui.encodedlogistics.controller.uplinks"), 8, UPLINKS_TITLE_Y, RackScreen.TEXT_MUTED, false);
@@ -143,7 +150,14 @@ public class NetworkControllerPanel extends RackScreen.Panel {
     private void pair(GuiGraphicsExtractor graphics, int line, String key, String value) {
         int y = PAIR_Y + line * LINE_H;
         graphics.text(font(), Component.translatable("gui.encodedlogistics.controller." + key), PAIR_X, y, RackScreen.TEXT_MUTED, false);
-        graphics.text(font(), font().plainSubstrByWidth(value, 168 - PAIR_VALUE_X), PAIR_VALUE_X, y, RackScreen.TEXT, false);
+        int room = PAIR_VALUE_RIGHT - PAIR_VALUE_X;
+        String shown = value;
+        pairFull[line] = null;
+        if (font().width(value) > room) {
+            shown = font().plainSubstrByWidth(value, room - font().width("...")).stripTrailing() + "...";
+            pairFull[line] = Component.literal(value);
+        }
+        graphics.text(font(), shown, PAIR_VALUE_X, y, RackScreen.TEXT, false);
     }
 
     @Override
@@ -153,8 +167,14 @@ public class NetworkControllerPanel extends RackScreen.Panel {
             return;
         }
         if (screen.over(mouseX, mouseY, SWITCH_X, SWITCH_Y, SWITCH_W, SWITCH_H) && confirming > 0) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.controller.switch_over.confirm"), mouseX, mouseY);
+            Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.controller.switch_over.confirm"), mouseX, mouseY);
             return;
+        }
+        for (int line = 0; line < pairFull.length; line++) {
+            if (pairFull[line] != null && screen.over(mouseX, mouseY, PAIR_X, PAIR_Y + line * LINE_H - 1, PAIR_VALUE_RIGHT - PAIR_X, LINE_H)) {
+                Tooltips.show(graphics, font(), pairFull[line], mouseX, mouseY);
+                return;
+            }
         }
         int i = 0;
         for (ValueInput child : data.childrenListOrEmpty("uplinks")) {
@@ -166,13 +186,13 @@ public class NetworkControllerPanel extends RackScreen.Panel {
                 lines.add(Component.translatable("gui.encodedlogistics.controller.uplink." + state.name().toLowerCase(Locale.ROOT))
                         .withColor(state == RackBlockEntity.PointState.UP ? RackScreen.ACCENT : state == RackBlockEntity.PointState.UNUSED ? RackScreen.TEXT_MUTED
                                 : RackScreen.ERROR));
-                graphics.setComponentTooltipForNextFrame(font(), lines, mouseX, mouseY);
+                Tooltips.show(graphics, font(), lines, mouseX, mouseY);
                 return;
             }
             i++;
         }
         if (screen.over(mouseX, mouseY, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
-            graphics.setTooltipForNextFrame(Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", data.getLongOr("network_stored", 0),
+            Tooltips.show(graphics, font(), Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", data.getLongOr("network_stored", 0),
                     data.getLongOr("network_capacity", 0))), mouseX, mouseY);
         }
     }

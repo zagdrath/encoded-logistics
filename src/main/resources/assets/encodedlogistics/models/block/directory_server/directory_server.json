@@ -8,69 +8,75 @@
   {
    "name": "body",
    "from": [
-    2,
     0,
-    2
+    0,
+    0
    ],
    "to": [
-    14,
-    14,
-    14
+    16,
+    16,
+    16
    ],
    "faces": {
     "north": {
-     "texture": "#t",
      "uv": [
       0.0,
       0.0,
-      6.0,
-      7.0
-     ]
+      4.0,
+      4.0
+     ],
+     "texture": "#t",
+     "cullface": "north"
     },
     "south": {
-     "texture": "#t",
      "uv": [
-      6.0,
+      8.0,
       0.0,
       12.0,
-      7.0
-     ]
+      4.0
+     ],
+     "texture": "#t",
+     "cullface": "south"
     },
     "east": {
-     "texture": "#t",
      "uv": [
-      6.0,
+      4.0,
       0.0,
-      12.0,
-      7.0
-     ]
+      8.0,
+      4.0
+     ],
+     "texture": "#t",
+     "cullface": "east"
     },
     "west": {
-     "texture": "#t",
      "uv": [
-      6.0,
+      8.0,
       0.0,
-      12.0,
-      7.0
-     ]
+      4.0,
+      4.0
+     ],
+     "texture": "#t",
+     "cullface": "west"
     },
     "up": {
-     "texture": "#t",
      "uv": [
+      12.0,
       0.0,
-      8.0,
-      6.0,
-      14.0
-     ]
+      16.0,
+      4.0
+     ],
+     "texture": "#t",
+     "cullface": "up"
     },
     "down": {
-     "texture": "#t",
      "uv": [
       0.0,
-      8.0,
-      6.0,
-      14.0
-     ]
+      4.0,
+      4.0,
+      8.0
+     ],
+     "texture": "#t",
+     "cullface": "down"
     }
    }
   }

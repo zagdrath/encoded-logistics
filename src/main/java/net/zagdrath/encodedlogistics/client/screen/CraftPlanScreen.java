@@ -241,7 +241,7 @@ public class CraftPlanScreen extends Screen {
         if (row >= 0 && scroll + row < shown.size()) {
             CraftPlanner.Line line = lines().get(shown.get(scroll + row));
             if (line.cold() > 0 && mouseX >= left + HAVE_X - 12) {
-                graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("tooltip.encodedlogistics.tape.on_tape").withColor(TAPE_BLUE),
+                Tooltips.show(graphics, font, List.of(Component.translatable("tooltip.encodedlogistics.tape.on_tape").withColor(TAPE_BLUE),
                         Component.literal(String.format(Locale.ROOT, "%,d", line.cold())).withColor(PartScreens.TEXT_MUTED)), mouseX, mouseY);
                 return;
             }
@@ -252,11 +252,11 @@ public class CraftPlanScreen extends Screen {
         int[] xs = { HAVE_X, MAKE_X, MISS_X };
         for (int i = 0; i < 3; i++) {
             if (PartScreens.over(mouseX, mouseY, left + xs[i], top + HEADER_Y - 1, 28, 10)) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.craft." + columns[i] + ".tooltip"), mouseX, mouseY);
+                Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.craft." + columns[i] + ".tooltip"), mouseX, mouseY);
             }
         }
         if (PartScreens.over(mouseX, mouseY, left + START_X, top + BUTTON_Y, SMALL_W, BUTTON_H)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.craft.memory", String.format(Locale.ROOT, "%,d", plan.memory())), mouseX, mouseY);
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.craft.memory", String.format(Locale.ROOT, "%,d", plan.memory())), mouseX, mouseY);
         }
     }
 

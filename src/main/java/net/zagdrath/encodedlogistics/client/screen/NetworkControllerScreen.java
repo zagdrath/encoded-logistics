@@ -158,7 +158,7 @@ public class NetworkControllerScreen extends AbstractContainerScreen<NetworkCont
             lines.add(Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", snapshot.stored(), snapshot.capacity())).withColor(TEXT_MUTED));
         }
         if (!lines.isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            Tooltips.show(graphics, font, lines, mouseX, mouseY);
         }
     }
 

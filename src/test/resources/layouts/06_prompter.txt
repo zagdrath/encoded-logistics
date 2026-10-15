@@ -5,7 +5,7 @@
 02 |  Type choices, press Enter.
 03 | 
 04 |  Item  . . . . . . . .  ITEM       logic_die                 Name, F4 for list
-05 |  Quantity  . . . . . .  QTY        64                        1-999999
+05 |  Quantity  . . . . . .  QTY        64                        1-2147483647
 06 | 
 07 |  Additional Parameters
 08 | 

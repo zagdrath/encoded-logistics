@@ -78,13 +78,13 @@ public class ServerPanel extends RackScreen.Panel {
         int rows = Math.min(JOB_ROWS, data.childrenListOrEmpty("jobs").stream().toList().size());
         for (int i = 0; i < rows; i++) {
             if (screen.over(mouseX, mouseY, CANCEL_X, JOBS_Y + i * JOB_H - 1, CANCEL_SIZE, CANCEL_SIZE)) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.scheduler.cancel"), mouseX, mouseY);
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.scheduler.cancel"), mouseX, mouseY);
             }
         }
         RecentJobs.Row finished = RecentJobs.at(recent(data), mouseX - screen.left(), mouseY - screen.top(), LABEL_X, RECENT_Y, VALUE_RIGHT - LABEL_X,
                 RECENT_H);
         if (finished != null) {
-            graphics.setComponentTooltipForNextFrame(font(), RecentJobs.tooltip(finished), mouseX, mouseY);
+            Tooltips.show(graphics, font(), RecentJobs.tooltip(finished), mouseX, mouseY);
         }
     }
 

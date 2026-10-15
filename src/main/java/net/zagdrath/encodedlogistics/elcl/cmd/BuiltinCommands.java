@@ -16,6 +16,7 @@ import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Auth.VIEW
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Context.INTERACTIVE;
 import static net.zagdrath.encodedlogistics.elcl.cmd.CommandDefinition.Context.PROGRAM;
 
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.display.DisplayContent;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.Kind;
 import net.zagdrath.encodedlogistics.elcl.cmd.ParamDef.ValueList;
@@ -213,7 +214,7 @@ final class BuiltinCommands {
         // --- 4. Crafting ---
         add(CommandDefinition.of("STRCRAFT", "Start Crafting").auth(CRAFT).positional(2)
                 .p(p("ITEM", "Item", Kind.ITEM).req().len(64))
-                .p(p("QTY", "Quantity", Kind.INT).req().range(1, 999_999))
+                .p(p("QTY", "Quantity", Kind.INT).req().range(1, CraftRequests.MAX_AMOUNT))
                 .p(p("SCHEDULER", "Scheduler", Kind.NAME).sv("*ANY").dft("*ANY"))
                 .p(p("MISSING", "Missing ingredients", Kind.SPECIAL).sv("*FAIL", "*PARTIAL").dft("*FAIL"))
                 .p(yesNo("WAIT", "Wait for completion", "*NO"))

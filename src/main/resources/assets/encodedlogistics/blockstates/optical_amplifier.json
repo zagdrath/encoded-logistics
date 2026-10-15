@@ -73,6 +73,45 @@
     "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_on",
     "y": 270
    }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_fault"
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_fault",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_fault",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "state": "fault"
+   },
+   "apply": {
+    "model": "encodedlogistics:block/optical_amplifier/optical_amplifier_fault",
+    "y": 270
+   }
   }
  ]
 }

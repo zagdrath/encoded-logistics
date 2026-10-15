@@ -119,7 +119,7 @@ public class PointToPointScreen extends AbstractContainerScreen<PointToPointMenu
             lines.add(Component.translatable("gui.encodedlogistics.p2p.locked").withColor(PartScreens.TEXT_MUTED));
         }
         if (!lines.isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            Tooltips.show(graphics, font, lines, mouseX, mouseY);
         }
     }
 

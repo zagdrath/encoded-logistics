@@ -24,7 +24,7 @@ A cable uses no lanes itself; it only carries them. Its drain is paid while its 
   everything else hangs off.
 - **Fiber Cable** carries as many lanes as Dense in the slim profile, and it's the only cable that carries optical
   lines (Optical Multiplexer channels). Very long continuous fibre runs lose lanes to span loss, which Optical
-  Amplifiers fix. Looking at a Fiber Cable shows a popup with its span length and the lanes left after loss. See
+  Amplifiers fix. Looking at a Fiber Cable shows a popup with its network, its span length, and its lanes in use out of those left after loss. See
   {{page networking/optical}}.
 
 {{recipe network_cable}}

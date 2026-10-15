@@ -728,7 +728,7 @@ public class SchematicTerminalScreen extends AbstractContainerScreen<SchematicTe
         }
         List<Component> lines = tooltip(mouseX, mouseY);
         if (!lines.isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            Tooltips.show(graphics, font, lines, mouseX, mouseY);
         }
     }
 

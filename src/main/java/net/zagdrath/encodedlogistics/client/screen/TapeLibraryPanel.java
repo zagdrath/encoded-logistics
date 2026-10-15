@@ -337,12 +337,12 @@ public class TapeLibraryPanel extends RackScreen.Panel {
                 int bx = type().slots().get(tapes() + bay).x() + 18;
                 if (px >= bx && px < bx + 18 && py >= BAY_Y - 1 && py < BAY_Y + 17) {
                     int state = bay < drives.length ? drives[bay] : TapeLibraryDevice.DRIVE_NONE;
-                    graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.tape.drive." + CHIP_KEYS[Mth.clamp(state + 1, 0, 3)]),
+                    Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.tape.drive." + CHIP_KEYS[Mth.clamp(state + 1, 0, 3)]),
                             mouseX, mouseY);
                 }
             }
             if (data != null && px >= BAR_X && px < BAR_X + BAR_W && py >= BAR_Y - 1 && py < BAR_Y + 7) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.storage.capacity",
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.storage.capacity",
                         StorageDevice.bytes(data.getLongOr("cold_used", 0)), StorageDevice.bytes(data.getLongOr("cold_total", 0))), mouseX, mouseY);
             }
             return;
@@ -361,11 +361,11 @@ public class TapeLibraryPanel extends RackScreen.Panel {
             }
             lines.add(Component.translatable(keep >= 0 ? "gui.encodedlogistics.tape.policy.keep_hint" : "gui.encodedlogistics.tape.policy.pinned_hint")
                     .withColor(RackScreen.TEXT_DISABLED));
-            graphics.setComponentTooltipForNextFrame(font(), lines, mouseX, mouseY);
+            Tooltips.show(graphics, font(), lines, mouseX, mouseY);
         } else if (py >= AGE_Y - 2 && py < AGE_Y + 12 && px >= BUTTON_X && px < BUTTON_X + BUTTON_W) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.tape.policy.age_hint"), mouseX, mouseY);
+            Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.tape.policy.age_hint"), mouseX, mouseY);
         } else if (py >= PERCENT_Y - 2 && py < PERCENT_Y + 12 && px >= BUTTON_X && px < BUTTON_X + BUTTON_W) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.tape.policy.free_hint"), mouseX, mouseY);
+            Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.tape.policy.free_hint"), mouseX, mouseY);
         }
     }
 

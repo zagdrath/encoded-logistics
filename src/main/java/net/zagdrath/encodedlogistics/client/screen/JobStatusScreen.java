@@ -31,7 +31,9 @@ import net.zagdrath.encodedlogistics.net.JobStatusPayload;
 
 // A job's progress (screens/job_status.json): what it makes and its overall progress, then its steps two to a row, each
 // with its own progress (scroll for more), and Cancel job. It asks the server every POLL ticks; once the job is gone it
-// says it finished. Opened when a job starts and from the Scheduler Core's screen; closing it goes back there.
+// says it finished. Opened when a job starts and from the Scheduler Core's screen; closing it goes back there. The name
+// takes the room the progress leaves it (cut with "...", in full on hover); counts too wide for their room are
+// abbreviated (1.2K, 34M).
 public class JobStatusScreen extends Screen {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/job_status.png");
     private static final Identifier MINT = EncodedLogistics.id("common/bar_fill_mint"), GOLD = EncodedLogistics.id("common/bar_fill_gold");
@@ -39,6 +41,7 @@ public class JobStatusScreen extends Screen {
     private static final int ITEM_X = 9, ITEM_Y = 21, NAME_X = 32, NAME_Y = 20, BAR_X = 33, BAR_Y = 32, BAR_W = 178;
     private static final int LIST_X = 10, LIST_Y = 50, ROWS = 3, COLUMNS = 2, CELL_W = 100, CELL_H = 22, CELL_BAR_W = 76;
     private static final int CANCEL_X = 148, CANCEL_Y = 124, CANCEL_W = 64, CANCEL_H = 18;
+    private static final int PROGRESS_RIGHT = 211, PROGRESS_MAX_W = 100, GAP = 6, STEP_TEXT_X = 21;
 
     private final Screen parent;
     private final BlockPos core;
@@ -92,14 +95,15 @@ public class JobStatusScreen extends Screen {
         graphics.text(font, title, left + 8, top + 5, PartScreens.TEXT, false);
         if (job != null) {
             ResourceRender.icon(graphics, job.item(), left + ITEM_X, top + ITEM_Y);
-            String amount = job.item().isItem() ? Long.toString(job.amount()) : job.item().format(job.amount());
-            Component name = Component.literal(amount + " x ").append(job.item().displayName());
-            graphics.text(font, font.plainSubstrByWidth(name.getString(), WIDTH - NAME_X - 70), left + NAME_X, top + NAME_Y, PartScreens.TEXT, false);
-            // Waiting on tape: how many items are still to come back, else the runs done.
-            Component progress = job.awaiting() > 0 ? Component.translatable("gui.encodedlogistics.craft.awaiting", String.format(Locale.ROOT, "%,d", job.awaiting()))
-                    : Component.translatable("gui.encodedlogistics.craft.progress", job.done(), job.total());
-            graphics.text(font, progress, left + 211 - font.width(progress), top + NAME_Y, job.awaiting() > 0 ? CraftPlanScreen.TAPE_BLUE : PartScreens.TEXT_MUTED,
-                    false);
+            Component progress = progress(job);
+            int progressX = PROGRESS_RIGHT - font.width(progress);
+            String name = name(job), shown = name;
+            int room = progressX - GAP - NAME_X;
+            if (font.width(name) > room) {
+                shown = font.plainSubstrByWidth(name, room - font.width("...")).stripTrailing() + "...";
+            }
+            graphics.text(font, shown, left + NAME_X, top + NAME_Y, PartScreens.TEXT, false);
+            graphics.text(font, progress, left + progressX, top + NAME_Y, job.awaiting() > 0 ? CraftPlanScreen.TAPE_BLUE : PartScreens.TEXT_MUTED, false);
             PartScreens.bar(graphics, MINT, left + BAR_X, top + BAR_Y, BAR_W, job.progress());
             List<JobInfo.StepInfo> steps = job.steps();
             for (int cell = 0; cell < ROWS * COLUMNS; cell++) {
@@ -110,8 +114,11 @@ public class JobStatusScreen extends Screen {
                 JobInfo.StepInfo step = steps.get(index);
                 int x = left + LIST_X + (cell % COLUMNS) * CELL_W, y = top + LIST_Y + (cell / COLUMNS) * CELL_H;
                 ResourceRender.icon(graphics, step.output(), x + 2, y + 3);
-                graphics.text(font, step.done() + " / " + step.total(), x + 21, y + 4, step.done() >= step.total() ? PartScreens.ACCENT : PartScreens.TEXT,
-                        false);
+                String count = step.done() + " / " + step.total();
+                if (font.width(count) > CELL_W - STEP_TEXT_X - 2) {
+                    count = AbstractTerminalScreen.abbreviate(step.done()) + " / " + AbstractTerminalScreen.abbreviate(step.total());
+                }
+                graphics.text(font, count, x + STEP_TEXT_X, y + 4, step.done() >= step.total() ? PartScreens.ACCENT : PartScreens.TEXT, false);
                 PartScreens.bar(graphics, GOLD, x + 21, y + 14, CELL_BAR_W, step.total() <= 0 ? 0 : (float) step.done() / step.total());
             }
         } else if (gone) {
@@ -119,6 +126,25 @@ public class JobStatusScreen extends Screen {
         }
         PartScreens.wideButton(graphics, font, left + CANCEL_X, top + CANCEL_Y, CANCEL_W, CANCEL_H,
                 Component.translatable("gui.encodedlogistics.scheduler.cancel"), job != null, mouseX, mouseY);
+    }
+
+    // "19999 x Iron Ingot" (a fluid's or other resource's amount in its own units).
+    private static String name(JobInfo job) {
+        String amount = job.item().isItem() ? String.format(Locale.ROOT, "%,d", job.amount()) : job.item().format(job.amount());
+        return Component.literal(amount + " x ").append(job.item().displayName()).getString();
+    }
+
+    // Waiting on tape: how many items are still to come back, else the runs done; abbreviated when too wide.
+    private Component progress(JobInfo job) {
+        if (job.awaiting() > 0) {
+            Component full = Component.translatable("gui.encodedlogistics.craft.awaiting", String.format(Locale.ROOT, "%,d", job.awaiting()));
+            return font.width(full) <= PROGRESS_MAX_W ? full
+                    : Component.translatable("gui.encodedlogistics.craft.awaiting", AbstractTerminalScreen.abbreviate(job.awaiting()));
+        }
+        Component full = Component.translatable("gui.encodedlogistics.craft.progress", job.done(), job.total());
+        return font.width(full) <= PROGRESS_MAX_W ? full
+                : Component.translatable("gui.encodedlogistics.craft.progress", AbstractTerminalScreen.abbreviate(job.done()),
+                        AbstractTerminalScreen.abbreviate(job.total()));
     }
 
     @Override
@@ -129,6 +155,11 @@ public class JobStatusScreen extends Screen {
         }
         if (PartScreens.over(mouseX, mouseY, left + ITEM_X, top + ITEM_Y, 16, 16)) {
             graphics.setTooltipForNextFrame(font, job.item().stack(), mouseX, mouseY);
+            return;
+        }
+        if (PartScreens.over(mouseX, mouseY, left + NAME_X, top + NAME_Y - 1, PROGRESS_RIGHT - NAME_X, 10)) {
+            Tooltips.show(graphics, font, List.of(Component.literal(name(job)), Component.translatable("gui.encodedlogistics.craft.progress",
+                    String.format(Locale.ROOT, "%,d", job.done()), String.format(Locale.ROOT, "%,d", job.total())).withColor(PartScreens.TEXT_MUTED)), mouseX, mouseY);
             return;
         }
         for (int cell = 0; cell < ROWS * COLUMNS; cell++) {

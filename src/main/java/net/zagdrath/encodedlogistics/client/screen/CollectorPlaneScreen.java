@@ -154,7 +154,7 @@ public class CollectorPlaneScreen extends AbstractContainerScreen<CollectorPlane
             }
         }
         if (!lines.isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            Tooltips.show(graphics, font, lines, mouseX, mouseY);
         }
     }
 

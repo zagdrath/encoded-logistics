@@ -130,15 +130,15 @@ public class UpsPanel extends RackScreen.Panel {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         UpsDevice ups = ups();
         if (ups != null && screen.over(mouseX, mouseY, ALARM_X, ALARM_Y, ALARM_SIZE, ALARM_SIZE)) {
-            graphics.setComponentTooltipForNextFrame(font(), List.of(Component.translatable("gui.encodedlogistics.ups.alarm",
+            Tooltips.show(graphics, font(), List.of(Component.translatable("gui.encodedlogistics.ups.alarm",
                     Component.translatable(ups.muted() ? "gui.encodedlogistics.ups.alarm.muted" : "gui.encodedlogistics.ups.alarm.on")),
                     Component.translatable(ups.onBattery() ? "gui.encodedlogistics.ups.alarm.hint" : "gui.encodedlogistics.ups.alarm.idle")
                             .withColor(RackScreen.TEXT_MUTED)), mouseX, mouseY);
         } else if (ups != null && screen.over(mouseX, mouseY, MODE_X, MODE_Y, MODE_SIZE, MODE_SIZE)) {
-            graphics.setComponentTooltipForNextFrame(font(), List.of(ups.mode().label(),
+            Tooltips.show(graphics, font(), List.of(ups.mode().label(),
                     Component.translatable("gui.encodedlogistics.ups.mode.hint").withColor(RackScreen.TEXT_MUTED)), mouseX, mouseY);
         } else if (ups != null && screen.over(mouseX, mouseY, GAUGE_X, GAUGE_Y, GAUGE_W, GAUGE_H)) {
-            graphics.setTooltipForNextFrame(Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", ups.stored(), UpsDevice.capacity())),
+            Tooltips.show(graphics, font(), Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", ups.stored(), UpsDevice.capacity())),
                     mouseX, mouseY);
         }
     }

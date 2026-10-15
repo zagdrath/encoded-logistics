@@ -32,7 +32,8 @@ import net.zagdrath.encodedlogistics.rack.RackScheduler;
 // Which network every node on a controller's network is on, across all dimensions (a Network Bridge can carry a
 // network into another one): kept with the overworld, rebuilt as networks are solved, never saved. Also every node of
 // every network's last discovered graph, by where it is (graphNodes: which networks a change there can affect), the
-// networks waiting to be worked out again with why (dirty), and a counter (generation) that goes up with any change to
+// networks waiting to be worked out again with why (dirty), the chunks each network's last walk stopped at unloaded
+// (waiting: it's worked out again when one loads), and a counter (generation) that goes up with any change to
 // any network's topology, for the caches built from it.
 public final class NetworkIndex extends SavedData {
     // A network: its controller structure, by the dimension it's in and its id there.
@@ -73,6 +74,12 @@ public final class NetworkIndex extends SavedData {
     long headsKey = -1;
     Map<NetworkRef, RackScheduler> heads = Map.of();
     final CacheStats stats = new CacheStats();
+
+    // A chunk, by its dimension and packed ChunkPos.
+    public record ChunkRef(ResourceKey<Level> dimension, long chunk) {}
+
+    // The networks whose last discovered graph stopped at an unloaded block in each chunk.
+    final Map<ChunkRef, Set<NetworkRef>> waiting = new HashMap<>();
 
     public NetworkIndex() {}
 

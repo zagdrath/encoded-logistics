@@ -396,7 +396,7 @@ public class RackElevationScreen extends Screen {
         }
         RackTemplate.Planned planned = template.at(view.unitAt(mouseX - left, mouseY - top));
         if (planned != null && dragging == null && planned.deviceType() != null) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.rack_elevation.ghost_hint", typeName(planned.deviceType())),
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.rack_elevation.ghost_hint", typeName(planned.deviceType())),
                     mouseX, mouseY);
         }
     }

@@ -105,10 +105,10 @@ public class SchematicEncoderScreen extends AbstractTerminalScreen<SchematicEnco
         super.extractTooltip(graphics, mouseX, mouseY);
         int top = sectionTop();
         if (PartScreens.over(mouseX, mouseY, leftPos + MODE_X, top + MODE_Y, 18, 18)) {
-            graphics.setTooltipForNextFrame(Component.translatable(menu.processing() ? "gui.encodedlogistics.encoder.mode.processing"
+            Tooltips.show(graphics, font, Component.translatable(menu.processing() ? "gui.encodedlogistics.encoder.mode.processing"
                     : "gui.encodedlogistics.encoder.mode.crafting"), mouseX, mouseY);
         } else if (PartScreens.over(mouseX, mouseY, leftPos + CLEAR_X, top + CLEAR_Y, CLEAR_SIZE, CLEAR_SIZE)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.encoder.clear"), mouseX, mouseY);
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.encoder.clear"), mouseX, mouseY);
         }
     }
 

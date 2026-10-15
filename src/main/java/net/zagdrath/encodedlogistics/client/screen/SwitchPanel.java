@@ -44,8 +44,9 @@ public class SwitchPanel extends RackScreen.Panel {
     // A device in the list, as the server sent it.
     protected record Row(int u, RackDeviceType type, boolean pooled, int segment, boolean trunk, List<Integer> allowed, boolean all) {}
 
-    // The ports view's columns (from the list's left): mode, segments, native (right edge).
-    private static final int PORT_MODE_X = 20, PORT_ALLOWED_X = 60, PORT_NATIVE_X = 120, PORT_NATIVE_RIGHT = 142, TOGGLE_W = 44, TOGGLE_H = 12;
+    // The ports view's columns (from the list's left): mode (after the widest unit, "U42"), segments (after "Access"),
+    // native (right edge).
+    private static final int PORT_MODE_X = 26, PORT_ALLOWED_X = 68, PORT_NATIVE_X = 120, PORT_NATIVE_RIGHT = 142, TOGGLE_W = 44, TOGGLE_H = 12;
     protected static final int TRUNK_BLUE = 0xFF50C2EC;
 
     protected int scroll;
@@ -302,12 +303,12 @@ public class SwitchPanel extends RackScreen.Panel {
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (screen.over(mouseX, mouseY, toggleX(), toggleY(), TOGGLE_W, TOGGLE_H)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.switch.ports_hint"), mouseX, mouseY);
+            Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.switch.ports_hint"), mouseX, mouseY);
             return;
         }
         if (ports) {
             if (screen.over(mouseX, mouseY, listX(), listY(), PORT_NATIVE_RIGHT + 2, listRows() * rowHeight())) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.switch.port_hint"), mouseX, mouseY);
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.switch.port_hint"), mouseX, mouseY);
             }
             return;
         }
@@ -316,12 +317,12 @@ public class SwitchPanel extends RackScreen.Panel {
             Row row = rows.get(scroll + i);
             int rowY = listY() + i * rowHeight();
             if (screen.over(mouseX, mouseY, listX() + LANES_X, rowY, 32, rowHeight())) {
-                graphics.setTooltipForNextFrame(Component.translatable(row.pooled() ? "gui.encodedlogistics.switch.pooled"
+                Tooltips.show(graphics, font(), Component.translatable(row.pooled() ? "gui.encodedlogistics.switch.pooled"
                         : "gui.encodedlogistics.switch.unpooled"), mouseX, mouseY);
                 return;
             }
             if (screen.over(mouseX, mouseY, listX() + SEGMENT_X, rowY + 1, SEGMENT_W, SEGMENT_H)) {
-                graphics.setComponentTooltipForNextFrame(font(), List.of(Component.translatable("gui.encodedlogistics.switch.segment"),
+                Tooltips.show(graphics, font(), List.of(Component.translatable("gui.encodedlogistics.switch.segment"),
                         Component.translatable(row.pooled() ? "gui.encodedlogistics.switch.segment_hint" : "gui.encodedlogistics.switch.segment_unpooled")
                                 .withColor(RackScreen.TEXT_MUTED),
                         Component.translatable("gui.encodedlogistics.switch.link_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);

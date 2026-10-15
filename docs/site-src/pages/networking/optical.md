@@ -33,7 +33,8 @@ How it's worked out:
 - **Signal quality** is 100 % less 4 % for each lane lost.
 - Network Cable, Dense Cable, Bridges and Point-to-Point Links don't lose anything.
 
-Look at a Fiber Cable to see a popup with its span length since the last amplifier and the lanes left. Turn span loss off
+Look at a Fiber Cable to see a popup with the network it's on (or *Not on a network*), its span length since the last
+amplifier, and the lanes running through it out of those it carries after loss. Turn span loss off
 altogether with {{config optical.fiberSpanLoss default}}.
 
 ## Optical Amplifier {#amplifier}

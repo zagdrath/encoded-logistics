@@ -26,25 +26,37 @@ import net.zagdrath.encodedlogistics.rack.device.L3SwitchDevice;
 // source segment -> destination segment and the filter (click a segment to step through them, the filter box to edit the
 // route's filter over the list - RouteFilterEditor, with "Done" in place of "+ Add route" - right-click to remove). QoS: each rule's priority and the items it
 // covers (click the priority to step through High / Normal / Low, the items with an item to set them; right-click to
-// remove; "+ Add QoS rule").
+// remove; "+ Add QoS rule"). In a Chassis Switch's panel (ChassisPanel) it has a fourth tab back to the cards, the tabs
+// narrowed to fit it.
 public class L3SwitchPanel extends SwitchPanel {
     private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/l3_switch.png");
     private static final Identifier TAB_ACTIVE = EncodedLogistics.id("rack/switch/tab_active"), TAB_INACTIVE = EncodedLogistics.id("rack/switch/tab_inactive"),
             ARROW = EncodedLogistics.id("rack/router/arrow"), QOS = EncodedLogistics.id("rack/switch/qos_high");
-    private static final int TABS_X = 8, TABS_Y = 17, TAB_STEP = 53, TAB_W = 52, LIST_X = 10, LIST_Y = 31, ROWS = 8, ROW_H = 14;
+    private static final int TABS_X = 8, TABS_Y = 17, LIST_X = 10, LIST_Y = 31, ROWS = 8, ROW_H = 14;
     private static final int SOURCE_X = 12, ARROW_X = 52, DEST_X = 70, FILTER_X = 130;
     private static final int KIND_X = 24, TARGET_X = 72, LEVEL_X = 118;
-    // The lane pool's bar, on the Devices tab under the list.
-    private static final int POOL_Y = 150;
+    // The lane pool on the Devices tab under the list, left of the Devices / Ports switch: "N / M lanes", then the bar
+    // (its inside 4 high) over the room left before the switch.
+    private static final int POOL_TEXT_X = 10, POOL_Y = 150, POOL_GAP = 4;
     private static final int ADD_X = 8, ADD_Y = 146, ADD_W = 160, ADD_H = 14;
     private static final String[] TABS = { "gui.encodedlogistics.l3.tab.devices", "gui.encodedlogistics.l3.tab.routes", "gui.encodedlogistics.l3.tab.qos" };
     private static final String[] LEVELS = { "high", "normal", "low" };
 
     private int tab;
     private final RouteFilterEditor editor;
+    // The tab back to a chassis's cards (after its own three), or null; the tabs' step and width with or without it.
+    private final @Nullable Component backTab;
+    private final int tabStep, tabW;
 
     public L3SwitchPanel(RackScreen screen) {
+        this(screen, null);
+    }
+
+    public L3SwitchPanel(RackScreen screen, @Nullable Component backTab) {
         super(screen);
+        this.backTab = backTab;
+        this.tabStep = backTab != null ? 40 : 53;
+        this.tabW = tabStep - 1;
         editor = new RouteFilterEditor(this, LIST_X - 1, LIST_Y - 1, 147, ROWS * ROW_H + 1, L3SwitchDevice.ACTION_SET_FILTER,
                 L3SwitchDevice.ACTION_FILTER_OPTION, L3SwitchDevice.ACTION_SHARE_OPTION);
     }
@@ -105,8 +117,10 @@ public class L3SwitchPanel extends SwitchPanel {
         int x = screen.left(), y = screen.top();
         for (int i = 0; i < TABS.length; i++) {
             boolean active = i == tab;
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, active ? TAB_ACTIVE : TAB_INACTIVE, x + TABS_X + i * TAB_STEP, y + TABS_Y, TAB_W,
-                    active ? 13 : 12);
+            tab(graphics, active ? TAB_ACTIVE : TAB_INACTIVE, x + TABS_X + i * tabStep, y + TABS_Y, active ? 13 : 12);
+        }
+        if (backTab != null) {
+            tab(graphics, TAB_INACTIVE, x + TABS_X + TABS.length * tabStep, y + TABS_Y, 12);
         }
         L3SwitchDevice l3 = l3();
         if (tab == 0) {
@@ -141,17 +155,36 @@ public class L3SwitchPanel extends SwitchPanel {
         }
     }
 
-    // The rack's lane pool as the L2 Switch shows it: a sunken bar (its inside POOL_W x 4) filled by the share in use.
+    // A tab tabW wide: the sprite's left and middle, then its right edge (narrower than the sprite, its edges kept).
+    private void tab(GuiGraphicsExtractor graphics, Identifier sprite, int x, int y, int height) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 52, height, 0, 0, x, y, tabW - 3, height);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, 52, height, 49, 0, x + tabW - 3, y, 3, height);
+    }
+
+    // Where the pool's bar starts (its inside) and how wide it is: after the text, up to the Devices / Ports switch.
+    private int poolBarX() {
+        return POOL_TEXT_X + font().width(poolText()) + POOL_GAP + 1;
+    }
+
+    private int poolBarW() {
+        return toggleX() - POOL_GAP - 1 - poolBarX();
+    }
+
+    // The rack's lane pool as the L2 Switch shows it: a sunken bar (its inside poolBarW() x 4) filled by the share in use.
     private void extractPool(GuiGraphicsExtractor graphics, int x, int y) {
-        int left = x + POOL_X - 1, top = y + POOL_Y - 1;
-        graphics.fill(left, top, left + POOL_W + 2, top + 6, 0xFF5C5C5C);
-        graphics.fill(left, top, left + POOL_W + 1, top + 5, 0xFF0E0E0E);
-        graphics.fill(left + 1, top + 1, left + POOL_W + 1, top + 5, 0xFF1F1F1F);
+        int barW = poolBarW();
+        if (barW < 8) {
+            return;
+        }
+        int left = x + poolBarX() - 1, top = y + POOL_Y + 1;
+        graphics.fill(left, top, left + barW + 2, top + 6, 0xFF5C5C5C);
+        graphics.fill(left, top, left + barW + 1, top + 5, 0xFF0E0E0E);
+        graphics.fill(left + 1, top + 1, left + barW + 1, top + 5, 0xFF1F1F1F);
         var data = data();
         int capacity = data != null ? data.getIntOr("pool_capacity", 0) : 0;
-        int width = capacity <= 0 ? 0 : Math.round(POOL_W * Math.clamp((float) data.getIntOr("pool_used", 0) / capacity, 0, 1));
+        int width = capacity <= 0 ? 0 : Math.round(barW * Math.clamp((float) data.getIntOr("pool_used", 0) / capacity, 0, 1));
         if (width > 0) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, POOL_FILL, 200, 6, 0, 0, x + POOL_X, y + POOL_Y, width, 4);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, POOL_FILL, 200, 6, 0, 0, left + 1, top + 1, width, 4);
         }
     }
 
@@ -169,14 +202,16 @@ public class L3SwitchPanel extends SwitchPanel {
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         for (int i = 0; i < TABS.length; i++) {
-            graphics.centeredText(font(), Component.translatable(TABS[i]), TABS_X + i * TAB_STEP + TAB_W / 2, TABS_Y + 3,
+            graphics.centeredText(font(), Component.translatable(TABS[i]), TABS_X + i * tabStep + tabW / 2, TABS_Y + 3,
                     i == tab ? RackScreen.TEXT : RackScreen.TEXT_MUTED);
+        }
+        if (backTab != null) {
+            graphics.centeredText(font(), backTab, TABS_X + TABS.length * tabStep + tabW / 2, TABS_Y + 3, RackScreen.TEXT_MUTED);
         }
         L3SwitchDevice l3 = l3();
         if (tab == 0) {
             extractDeviceNames(graphics);
-            Component pool = poolText();
-            graphics.text(font(), pool, 168 - font().width(pool), POOL_Y - 2, RackScreen.TEXT_MUTED, false);
+            graphics.text(font(), poolText(), POOL_TEXT_X, POOL_Y, RackScreen.TEXT_MUTED, false);
             return;
         }
         if (l3 == null) {
@@ -232,22 +267,28 @@ public class L3SwitchPanel extends SwitchPanel {
         }
         if (tab == 1 && row < l3.routes().size()) {
             ItemRouting.Route route = l3.routes().get(row);
-            graphics.setComponentTooltipForNextFrame(font(), List.of(routeName(route),
+            Tooltips.show(graphics, font(), List.of(routeName(route),
                     RouteFilterEditor.modeLine(route).copy().withColor(route.shares() ? 0xFF8FB8F0 : RackScreen.TEXT_MUTED),
                     RouteFilterEditor.summary(route.filter()).copy().withColor(RackScreen.TEXT_MUTED),
                     Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
         } else if (tab == 2 && row < l3.qos().size()) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.l3.qos_hint"), mouseX, mouseY);
+            Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.l3.qos_hint"), mouseX, mouseY);
         }
     }
 
     // --- Input ---
 
+    // Whether x, y (panel coordinates) is on the tab back to the cards (ChassisPanel takes that click).
+    public boolean overBackTab(double x, double y) {
+        int left = TABS_X + TABS.length * tabStep;
+        return backTab != null && x >= left && x < left + tabW && y >= TABS_Y && y < TABS_Y + 13;
+    }
+
     @Override
     protected boolean mouseClicked(double x, double y, int button, boolean shift) {
         boolean left = button == InputConstants.MOUSE_BUTTON_LEFT, right = button == InputConstants.MOUSE_BUTTON_RIGHT;
         for (int i = 0; i < TABS.length; i++) {
-            if (left && x >= TABS_X + i * TAB_STEP && x < TABS_X + i * TAB_STEP + TAB_W && y >= TABS_Y && y < TABS_Y + 13) {
+            if (left && x >= TABS_X + i * tabStep && x < TABS_X + i * tabStep + tabW && y >= TABS_Y && y < TABS_Y + 13) {
                 tab = i;
                 editor.close();
                 return true;

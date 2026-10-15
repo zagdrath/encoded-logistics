@@ -71,9 +71,9 @@
    ]
   },
   "switch_over": {
-   "left": 108,
+   "left": 96,
    "top": 136,
-   "width": 60,
+   "width": 72,
    "height": 14,
    "button": "common/button_wide",
    "text": "gui.encodedlogistics.controller.switch_over",
@@ -83,7 +83,7 @@
   "uplinks": {
    "left": 9,
    "top": 153,
-   "count": 4,
+   "count": 7,
    "spacing": 20,
    "sprites": {
     "up": "rack/controller/chip_up",

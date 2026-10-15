@@ -19,6 +19,8 @@ public enum TopologyCause {
     RACK("rack devices changed"),
     // An optical channel (multiplexer line, transport shelf) came or went, or an amplifier's power did.
     OPTICAL("optical channel changed"),
+    // A chunk at a network's edge, where its last walk stopped at an unloaded block, loaded.
+    CHUNK("chunk at its edge loaded"),
     // A controller structure formed, changed or went.
     STRUCTURE("controller structure changed"),
     // A network that hadn't been worked out yet (new, or loaded).

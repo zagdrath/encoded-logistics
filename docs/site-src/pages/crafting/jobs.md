@@ -15,7 +15,7 @@ From any terminal (an Access Terminal, Fabrication Terminal, Handheld Terminal o
 
 1. **Middle-click** or **Ctrl-click** an item the network can craft. An item it can craft but has none of shows "Craft"
    in place of a count; any click on that one does the same.
-2. The **Craft amount** screen asks how many. Type a number or use the buttons, then press **Next** (or Enter).
+2. The **Craft amount** screen asks how many (up to 2,147,483,647). Type a number or use the buttons, then press **Next** (or Enter).
 3. The **Craft plan** screen shows what the job takes (below). Press **Start**.
 4. The **Job Status** screen opens on the new job.
 

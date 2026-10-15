@@ -60,13 +60,13 @@ public class DeployerPlaneScreen extends AbstractContainerScreen<DeployerPlaneMe
         }
         super.extractTooltip(graphics, mouseX, mouseY);
         if (PartScreens.over(mouseX, mouseY, leftPos + DeployerPlaneMenu.MODE_X, topPos + DeployerPlaneMenu.MODE_Y, 18, 18)) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(
+            Tooltips.show(graphics, font, List.of(
                     Component.translatable(menu.dropMode() ? "gui.encodedlogistics.deployer.mode.drop" : "gui.encodedlogistics.deployer.mode.place"),
                     Component.translatable(menu.dropMode() ? "gui.encodedlogistics.deployer.mode.drop.info" : "gui.encodedlogistics.deployer.mode.place.info")
                             .withColor(PartScreens.TEXT_MUTED)), mouseX, mouseY);
         } else if (PartScreens.over(mouseX, mouseY, leftPos + DeployerPlaneMenu.FILTER_X, topPos + DeployerPlaneMenu.FILTER_Y, 54, 54)
                 && hoveredSlot != null && !hoveredSlot.hasItem() && menu.getCarried().isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.deployer.filter"),
+            Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.deployer.filter"),
                     Component.translatable("gui.encodedlogistics.deployer.filter.info").withColor(PartScreens.TEXT_MUTED)), mouseX, mouseY);
         }
     }

@@ -36,12 +36,14 @@ import net.zagdrath.encodedlogistics.optical.SpanLoss;
 // (wirelessCrossDimension, for wireless links). A node that doesn't pass through (a
 // Segment Isolator) is on the network but the walk stops there.
 // Controllers of another structure that turn up are added too (and not walked through), so the solver sees the
-// conflict.
+// conflict. Where the walk met an unloaded block (a neighbour, or a remote link's far end) is kept as its frontier: the
+// network is worked out again when that chunk loads, so it doesn't stay cut short at a chunk border.
+// A graph's Fiber Cable spans (SpanLoss) are kept with it, for the Fiber Cable and Optical Amplifier popups.
 public final class NetworkDiscovery {
     // A network bigger than this is cut off where the walk stops.
     public static final int MAX_NODES = 16_384;
 
-    public record Discovered(NetworkGraph graph, Map<NodePos, Item> items) {}
+    public record Discovered(NetworkGraph graph, Map<NodePos, Item> items, Map<NodePos, SpanLoss.Span> spans, Set<NodePos> frontier) {}
 
     // A controller block on the graph: links on all six sides, 32 (config) lanes per linked face.
     public record ControllerNode(BlockPos pos, long controllerGroup, int laneCapacity) implements NetworkNode {
@@ -91,13 +93,18 @@ public final class NetworkDiscovery {
 
     private static Discovered walk(ServerLevel level, NetworkGraph graph, Map<NodePos, Item> items, ArrayDeque<NodePos> queue, int lanesPerFace) {
         MinecraftServer server = level.getServer();
+        Set<NodePos> frontier = new HashSet<>();
         while (!queue.isEmpty() && graph.size() < MAX_NODES) {
             NodePos at = queue.poll();
             NetworkNode node = graph.node(at);
             ServerLevel here = server.getLevel(at.dimension());
             for (Direction side : node.connections()) {
                 NodePos neighbourPos = NodePos.of(at.dimension(), at.pos().relative(side));
-                if (here == null || !here.isLoaded(neighbourPos.pos())) {
+                if (here == null) {
+                    continue;
+                }
+                if (!here.isLoaded(neighbourPos.pos())) {
+                    frontier.add(neighbourPos);
                     continue;
                 }
                 NetworkNode neighbour = graph.node(neighbourPos);
@@ -137,7 +144,11 @@ public final class NetworkDiscovery {
                     continue;
                 }
                 ServerLevel there = server.getLevel(target.dimension());
-                if (there == null || !there.isLoaded(target.pos())) {
+                if (there == null) {
+                    continue;
+                }
+                if (!there.isLoaded(target.pos())) {
+                    frontier.add(target);
                     continue;
                 }
                 NetworkNode other = graph.node(target);
@@ -166,8 +177,8 @@ public final class NetworkDiscovery {
                 graph.connectRemote(at, target, Math.min(remote.capacity(), back.capacity()));
             }
         }
-        SpanLoss.apply(graph);
-        return new Discovered(graph, items);
+        Map<NodePos, SpanLoss.Span> spans = SpanLoss.apply(graph);
+        return new Discovered(graph, items, spans, frontier);
     }
 
     // The controller structure reachable from a node (start, linked toward the side it was reached from), without passing

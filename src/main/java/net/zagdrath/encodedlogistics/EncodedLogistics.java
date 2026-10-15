@@ -19,6 +19,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -78,6 +79,7 @@ public class EncodedLogistics {
 
         modEventBus.addListener(EncodedLogistics::registerTicketControllers);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onLevelTick);
+        NeoForge.EVENT_BUS.addListener(EncodedLogistics::onChunkLoad);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onServerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(EncodedLogistics::onDatapackSync);
@@ -148,6 +150,13 @@ public class EncodedLogistics {
             SchedulerStructures.get(level).tick(level);
             ControllerStructures.get(level).tick(level);
             MachineBridges.get(level).tick(level);
+        }
+    }
+
+    // A chunk loading may finish a network that was cut short at its border.
+    private static void onChunkLoad(ChunkEvent.Load event) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            ControllerStructures.chunkLoaded(level, event.getChunk().getPos());
         }
     }
 }

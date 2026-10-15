@@ -34,7 +34,6 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 // Scheduler (-1: Auto, else its index in the plan's list). The server answers with a CraftPlanPayload.
 public record CraftRequestPayload(int containerId, StorageKey key, long amount, int scheduler, boolean start) implements CustomPacketPayload {
     public static final Type<CraftRequestPayload> TYPE = new Type<>(EncodedLogistics.id("craft_request"));
-    public static final long MAX_AMOUNT = 999_999;
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CraftRequestPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, CraftRequestPayload::containerId,
@@ -59,7 +58,7 @@ public record CraftRequestPayload(int containerId, StorageKey key, long amount, 
         }
         MinecraftServer server = level.getServer();
         NetworkRef network = menu.network();
-        long amount = Math.clamp(payload.amount(), 1, MAX_AMOUNT);
+        long amount = Math.clamp(payload.amount(), 1, CraftRequests.MAX_AMOUNT);
         CraftPlanner.Plan plan = CraftRequests.plan(server, network, payload.key(), amount);
         List<JobHost> schedulers = CraftRequests.schedulers(server, network);
         Optional<CraftPlanPayload.Started> started = Optional.empty();

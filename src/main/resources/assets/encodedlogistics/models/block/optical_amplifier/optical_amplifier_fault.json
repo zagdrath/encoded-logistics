@@ -1,0 +1,38 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "g": "encodedlogistics:block/optical_amplifier/glow",
+  "particle": "encodedlogistics:block/optical_amplifier/optical_amplifier"
+ },
+ "elements": [
+  {
+   "name": "glow_top",
+   "from": [
+    3,
+    14.01,
+    3
+   ],
+   "to": [
+    13,
+    14.01,
+    13
+   ],
+   "faces": {
+    "up": {
+     "uv": [
+      8.0,
+      0.0,
+      10.5,
+      2.5
+     ],
+     "texture": "#g"
+    }
+   },
+   "shade": false,
+   "neoforge_data": {
+    "block_light": 15,
+    "sky_light": 15
+   }
+  }
+ ]
+}

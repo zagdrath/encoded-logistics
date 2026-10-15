@@ -124,10 +124,10 @@ public class OpticalAmplifierBlockEntity extends BlockEntity implements NetworkD
     // The span on one side of it: what its network's span loss found for the Fiber Cable there, else what the line
     // through it said; null when neither knows.
     private SpanLoss.@org.jspecify.annotations.Nullable Span span(Direction side, int line) {
-        if (level == null) {
+        if (level == null || level.getServer() == null) {
             return null;
         }
-        SpanLoss.Span found = SpanLoss.at(NetworkGraph.at(level.dimension(), worldPosition.relative(side)));
+        SpanLoss.Span found = ControllerStructures.fiberSpan(level.getServer(), NetworkGraph.at(level.dimension(), worldPosition.relative(side)));
         if (found != null) {
             return found;
         }

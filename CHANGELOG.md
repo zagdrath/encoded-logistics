@@ -23,6 +23,44 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Changed
+
+- **L2 Switch lanes match their ports:** a 24-Port L2 Switch now pools 24 lanes (was 16) and a 48-Port 48 (was 32)
+  (`l2Switch24Lanes`, `l2Switch48Lanes`).
+- **Craft larger amounts:** a single crafting request can now be up to 2,147,483,647 (was 999,999), from the Craft
+  amount screen, the terminal's Craft panel and ELCL `STRCRAFT QTY`.
+- **Fiber Cable popup** shows the network the cable is on (or *Not on a network*), its span, and the lanes running
+  through it out of those it carries after span loss, instead of only the span's capacity. It's shown only to players
+  who can view that network.
+- **Tooltips wrap:** long hover hints across the mod's screens wrap onto several short lines instead of running across
+  the screen.
+- **New art:** the Optical Amplifier is now an in-line fibre housing whose ports line up with the Fiber Cable, with a
+  fault light. The Directory Server is a full block. The Chassis Switch, Blade Enclosure and Optical Transport Shelf
+  (and the rack Optical Multiplexer, Optical Amplifier and Directory Server) have their own item icons and detailed
+  rears in the rack. Chassis parts come in three families that are easy to tell apart: silver blades for the Blade
+  Enclosure, navy line cards for the Chassis Switch, and teal optical cards for the Transport Shelf.
+- GUI titles use the blocks' full names: Exchange Switch, Directory Server, Optical Multiplexer.
+
+### Fixed
+
+- **A rack Network Controller could show no devices** on a network that crossed a chunk border. If a network was
+  worked out while part of it was unloaded (at server start or login, for example), it stayed cut short until a block
+  on it changed. A network is now worked out again when a chunk at its unloaded edge loads.
+- Racks reached through a cross-dimension Bridge could be taken as a rack controller's redundant partner.
+- Fiber Cables kept showing the span of a network they were no longer on, even when connected to nothing.
+- The Trunk Port's item and placed part showed the missing texture.
+- **Network Controller panel:** it showed 8 uplink chips on the 4U (and only 4 on the 2U) instead of one for each of
+  the rack's 7 connection points. *Switch over* didn't fit its button, and the partner's role was cut off (a cut-off
+  value now ends in "..." and shows in full on hover).
+- **Overlapping text** in the Chassis Switch, Blade Enclosure and Optical Transport Shelf panels (every tab), the L2/L3
+  Switch Ports view, the Directory Server, Exchange Switch, Optical Multiplexer, Trunk Port and Router panels, and the
+  Job Status screen with large amounts. The Chassis Switch's Cards button is now a tab.
+
+### Upgrading
+
+- Worlds that already have a server config keep the old L2 Switch lane counts (16 and 32). To get the new ones, set
+  `rack.l2Switch24Lanes` to 24 and `rack.l2Switch48Lanes` to 48 (`/encodedlogistics config` or the config file).
+
 ## [1.3.0] - 2026-10-14
 
 ### Added

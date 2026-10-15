@@ -15,12 +15,10 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.ValueInput;
-import net.zagdrath.encodedlogistics.EncodedLogistics;
 
 // A rack unit's panel that is a PanelBody (the same panel its block form shows): the Directory Server's, the Optical
 // Multiplexer's.
 public class BodyPanel extends RackScreen.Panel implements PanelBody.Context {
-    private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/l3_switch.png");
     private final PanelBody body;
 
     public BodyPanel(RackScreen screen, Function<PanelBody.Context, PanelBody> body) {
@@ -43,7 +41,7 @@ public class BodyPanel extends RackScreen.Panel implements PanelBody.Context {
 
     @Override
     protected Identifier background() {
-        return BACKGROUND;
+        return PanelBody.BACKGROUND;
     }
 
     // --- Context ---

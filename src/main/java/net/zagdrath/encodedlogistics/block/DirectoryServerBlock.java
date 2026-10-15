@@ -17,7 +17,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -32,8 +31,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.DirectoryServerBlockEntity;
 import net.zagdrath.encodedlogistics.menu.BlockPanelMenu;
@@ -45,11 +42,10 @@ import net.zagdrath.encodedlogistics.network.NetworkNodeBlock;
 
 // The Directory Server (the routing handoff 5): publishes devices of the network it's on so other networks can reach
 // them as SYSNAME/DEVICE (Directories). A device: one lane, directoryDrain FE/t; ONLINE (its display glows) while it
-// works. Its screen is a panel (DirectoryPanel).
+// works. Its screen is a panel (DirectoryPanel). A full, occluding block (the default full-cube shape).
 public class DirectoryServerBlock extends BaseEntityBlock implements NetworkNodeBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty ONLINE = BooleanProperty.create("online");
-    private static final VoxelShape SHAPE = Block.box(2, 0, 2, 14, 14, 14);
 
     public DirectoryServerBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -79,11 +75,6 @@ public class DirectoryServerBlock extends BaseEntityBlock implements NetworkNode
     @Override
     protected RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
-    }
-
-    @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPE;
     }
 
     @Override

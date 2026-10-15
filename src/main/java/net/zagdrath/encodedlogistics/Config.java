@@ -473,11 +473,11 @@ public class Config {
 
     public static final ModConfigSpec.IntValue L2_SWITCH_24_LANES = BUILDER
             .comment("Rack-local lanes a 24-Port L2 Switch gives the other devices in its rack.")
-            .defineInRange("l2Switch24Lanes", 16, 0, 1024);
+            .defineInRange("l2Switch24Lanes", 24, 0, 1024);
 
     public static final ModConfigSpec.IntValue L2_SWITCH_48_LANES = BUILDER
             .comment("Rack-local lanes a 48-Port L2 Switch gives the other devices in its rack.")
-            .defineInRange("l2Switch48Lanes", 32, 0, 1024);
+            .defineInRange("l2Switch48Lanes", 48, 0, 1024);
 
     public static final ModConfigSpec.IntValue L3_SWITCH_LANES = BUILDER
             .comment("Rack-local lanes an L3 Switch gives the other devices in its rack.")

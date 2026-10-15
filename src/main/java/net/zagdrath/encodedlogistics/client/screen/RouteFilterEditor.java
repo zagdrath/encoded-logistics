@@ -212,9 +212,9 @@ final class RouteFilterEditor {
         }
     }
 
-    // In the labels' pose: the route's endpoints as a heading.
+    // In the labels' pose: the route's endpoints as a heading, cut with "..." to the area (the route's row tooltip has it whole).
     void extractLabels(GuiGraphicsExtractor graphics, Component heading) {
-        graphics.text(panel.font(), panel.font().substrByWidth(heading, width - 4).getString(), x + 2, y + 3, RackScreen.TEXT, false);
+        graphics.text(panel.font(), PanelBody.fit(panel.font(), heading.getString(), width - 4), x + 2, y + 3, RackScreen.TEXT, false);
     }
 
     void extractTooltip(GuiGraphicsExtractor graphics, ItemRouting.Route route, int left, int top, int mouseX, int mouseY) {
@@ -222,11 +222,11 @@ final class RouteFilterEditor {
         PartFilter filter = route.filter();
         if (hovered >= SHARE_HIT) {
             if (hovered - SHARE_HIT < shareButtons(route)) {
-                graphics.setComponentTooltipForNextFrame(panel.font(), List.of(shareTip(route, hovered - SHARE_HIT),
+                Tooltips.show(graphics, panel.font(), List.of(shareTip(route, hovered - SHARE_HIT),
                         Component.translatable("gui.encodedlogistics.route.share_hint").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
             }
         } else if (hovered >= PartFilter.SIZE) {
-            graphics.setTooltipForNextFrame(Component.translatable(switch (hovered - PartFilter.SIZE) {
+            Tooltips.show(graphics, panel.font(), Component.translatable(switch (hovered - PartFilter.SIZE) {
                 case ItemRouting.OPTION_DENY -> filter.deny() ? "gui.encodedlogistics.port.deny" : "gui.encodedlogistics.port.allow";
                 case ItemRouting.OPTION_TAGS -> filter.tags() ? "gui.encodedlogistics.port.tags.on" : "gui.encodedlogistics.port.tags.off";
                 default -> filter.components() ? "gui.encodedlogistics.port.components.on" : "gui.encodedlogistics.port.components.off";
@@ -238,7 +238,7 @@ final class RouteFilterEditor {
                 lines.add(entry.getHoverName());
             }
             lines.add(Component.translatable("gui.encodedlogistics.route.entry_hint").withColor(RackScreen.TEXT_DISABLED));
-            graphics.setComponentTooltipForNextFrame(panel.font(), lines, mouseX, mouseY);
+            Tooltips.show(graphics, panel.font(), lines, mouseX, mouseY);
         }
     }
 

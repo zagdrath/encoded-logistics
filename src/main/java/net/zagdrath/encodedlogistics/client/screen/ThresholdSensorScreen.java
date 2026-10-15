@@ -115,7 +115,7 @@ public class ThresholdSensorScreen extends AbstractContainerScreen<ThresholdSens
         }
         super.extractTooltip(graphics, mouseX, mouseY);
         if (PartScreens.over(mouseX, mouseY, leftPos + MODE_X, topPos + MODE_Y, 18, 18)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.sensor." + MODE_KEYS[Math.min(menu.mode(), 2)]),
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.sensor." + MODE_KEYS[Math.min(menu.mode(), 2)]),
                     mouseX, mouseY);
         }
     }

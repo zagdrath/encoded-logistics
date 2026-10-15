@@ -193,7 +193,7 @@ public class StoragePanel extends RackScreen.Panel {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         ValueInput data = data();
         if (data != null && screen.over(mouseX, mouseY, accessX(), accessY(), 18, 18)) {
-            graphics.setComponentTooltipForNextFrame(font(), List.of(Component.translatable("gui.encodedlogistics.tap.access"),
+            Tooltips.show(graphics, font(), List.of(Component.translatable("gui.encodedlogistics.tap.access"),
                     Component.translatable("gui.encodedlogistics.tap." + ACCESS_KEYS[Math.clamp(data.getIntOr("access", 0), 0, 2)])
                             .withColor(RackScreen.TEXT_MUTED)), mouseX, mouseY);
         }

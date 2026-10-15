@@ -16,20 +16,19 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.world.level.storage.ValueInput;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.menu.BlockPanelMenu;
 import net.zagdrath.encodedlogistics.net.BlockPanelPayloads;
 
-// A block's panel screen (BlockPanelMenu): the L3 Switch's panel background with the host's title, and the panel body
-// its kind names (ExchangePanel, DirectoryPanel).
+// A block's panel screen (BlockPanelMenu): the panel bodies' background with the host's title (cut with "..." where it
+// would run past the frame, the whole of it on hover), and the panel body its kind names (ExchangePanel, DirectoryPanel).
 public class BlockPanelScreen extends AbstractContainerScreen<BlockPanelMenu> implements PanelBody.Context {
-    private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/l3_switch.png");
+    // The title's room: from titleLabelX to the frame's right edge.
+    private static final int TITLE_W = 160;
     private final @Nullable PanelBody body;
 
     public BlockPanelScreen(BlockPanelMenu menu, Inventory inventory, Component title) {
@@ -91,7 +90,7 @@ public class BlockPanelScreen extends AbstractContainerScreen<BlockPanelMenu> im
     @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, PanelBody.BACKGROUND, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
         if (body != null) {
             body.extractBackground(graphics, mouseX, mouseY);
         }
@@ -99,7 +98,7 @@ public class BlockPanelScreen extends AbstractContainerScreen<BlockPanelMenu> im
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, RackScreen.TEXT, false);
+        graphics.text(font, PanelBody.fit(font, title.getString(), TITLE_W), titleLabelX, titleLabelY, RackScreen.TEXT, false);
         if (body != null) {
             body.extractLabels(graphics, mouseX, mouseY);
         }
@@ -108,6 +107,9 @@ public class BlockPanelScreen extends AbstractContainerScreen<BlockPanelMenu> im
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
+        if (font.width(title) > TITLE_W && PartScreens.over(mouseX - leftPos, mouseY - topPos, titleLabelX, titleLabelY - 1, TITLE_W, 10)) {
+            Tooltips.show(graphics, font, title, mouseX, mouseY);
+        }
         if (body != null) {
             body.extractTooltip(graphics, mouseX, mouseY);
         }

@@ -31,6 +31,9 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 final class RouterAclTab {
     private static final int ACL_Y = 36, ON_Y = 49, HEAD_Y = 62, RULES_Y = 75, ROW = 11, ROWS = 5, DEFAULT_Y = RULES_Y + ROWS * ROW;
     private static final int BUTTONS_Y = 144, BUTTON_W = 29, BUTTON_H = 13, BUTTON_STEP = 31, ON_X = 30;
+    // The rules' columns: # at 12 (two digits), match at MATCH_X, action right at ACT_RIGHT, hits right at 152; each value
+    // cut short of the next column (RouterPanel.GAP), the rule whole in its tooltip.
+    private static final int MATCH_X = 26, ACT_RIGHT = 124;
     private static final String[] BUTTONS = {"add", "edit", "del", "up", "dn"};
 
     private final RouterPanel panel;
@@ -81,6 +84,7 @@ final class RouterAclTab {
     void extractBackground(GuiGraphicsExtractor graphics, RouterDevice router, int mouseX, int mouseY) {
         int x = panel.screen.left(), y = panel.screen.top();
         RouterAcl acl = acl(router);
+        PanelBody.scrollbar(graphics, x, y, scroll, acl == null ? 0 : acl.rules().size(), ROWS);
         if (acl != null && selected >= scroll && selected < scroll + ROWS && selected < acl.rules().size()) {
             int rowY = y + RULES_Y + (selected - scroll) * ROW - 1;
             graphics.fill(x + RouterPanel.INSET_X - 1, rowY, x + RouterPanel.INSET_RIGHT + 1, rowY + ROW, 0x40FFFFFF);
@@ -99,20 +103,21 @@ final class RouterAclTab {
             right(graphics, Component.translatable("gui.encodedlogistics.router.acl.none").getString(), ACL_Y, RackScreen.TEXT_DISABLED);
             return;
         }
-        right(graphics, acl.name(), ACL_Y, RackScreen.ACCENT);
+        right(graphics, PanelBody.fit(panel.font(), acl.name(), valueWidth("gui.encodedlogistics.router.acl")), ACL_Y, RackScreen.ACCENT);
         graphics.text(panel.font(), Component.translatable("gui.encodedlogistics.router.acl.on"), RouterPanel.INSET_X, ON_Y, RackScreen.TEXT_MUTED, false);
         List<Target> targets = targets(router, acl, table);
         if (targets.isEmpty()) {
             graphics.text(panel.font(), Component.translatable("gui.encodedlogistics.router.acl.nothing"), ON_X, ON_Y, RackScreen.TEXT_DISABLED, false);
         } else {
             Target shown = targets.get(Math.floorMod(target, targets.size()));
-            text(graphics, shown.name(), ON_X, ON_Y, 70, RackScreen.TEXT);
+            text(graphics, shown.name(), ON_X, ON_Y, stateLeft() - RouterPanel.GAP - ON_X, RackScreen.TEXT);
             right(graphics, Component.translatable(shown.applied() ? "gui.encodedlogistics.router.acl.applied" : "gui.encodedlogistics.router.acl.not_applied")
                     .getString(), ON_Y, shown.applied() ? RackScreen.ACCENT : RackScreen.TEXT_DISABLED);
         }
+        PanelBody.divider(graphics, HEAD_Y);
         graphics.text(panel.font(), "#", RouterPanel.INSET_X, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        graphics.text(panel.font(), Component.translatable("gui.encodedlogistics.router.acl.match"), 20, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        rightAt(graphics, Component.translatable("gui.encodedlogistics.router.acl.act").getString(), 126, HEAD_Y, RackScreen.TEXT_MUTED);
+        text(graphics, Component.translatable("gui.encodedlogistics.router.acl.match").getString(), MATCH_X, HEAD_Y, matchWidth(), RackScreen.TEXT_MUTED);
+        rightAt(graphics, Component.translatable("gui.encodedlogistics.router.acl.act").getString(), ACT_RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
         right(graphics, Component.translatable("gui.encodedlogistics.router.acl.hits").getString(), HEAD_Y, RackScreen.TEXT_MUTED);
         List<RouterAcl.Rule> rules = acl.rules();
         for (int i = 0; i < ROWS && scroll + i < rules.size(); i++) {
@@ -123,19 +128,44 @@ final class RouterAclTab {
             int rowY = RULES_Y + i * ROW;
             graphics.text(panel.font(), Integer.toString(scroll + i + 1), RouterPanel.INSET_X, rowY, RackScreen.TEXT, false);
             String match = matchName(rule.match()) + (rule.rate() > 0 ? " " + rule.rate() + "/m" : "") + (rule.quota() > 0 ? " " + rule.quota() + "/d" : "");
-            text(graphics, match, 20, rowY, 76, RackScreen.TEXT);
+            text(graphics, match, MATCH_X, rowY, matchWidth(), RackScreen.TEXT);
             action(graphics, rule.permit(), rowY);
             right(graphics, compact(rule.hits()), rowY, RackScreen.TEXT);
         }
+        if (editor != null && adding) {
+            // The line being typed in is where the default shows.
+            return;
+        }
         graphics.text(panel.font(), "*", RouterPanel.INSET_X, DEFAULT_Y, RackScreen.TEXT_MUTED, false);
-        graphics.text(panel.font(), Component.translatable("gui.encodedlogistics.router.acl.default"), 20, DEFAULT_Y, RackScreen.TEXT_MUTED, false);
+        text(graphics, Component.translatable("gui.encodedlogistics.router.acl.default").getString(), MATCH_X, DEFAULT_Y, matchWidth(), RackScreen.TEXT_MUTED);
         action(graphics, byDefault, DEFAULT_Y);
         right(graphics, compact(acl.defaultHits()), DEFAULT_Y, RackScreen.TEXT_MUTED);
     }
 
     private void action(GuiGraphicsExtractor graphics, boolean permit, int y) {
         rightAt(graphics, Component.translatable(permit ? "gui.encodedlogistics.router.acl.permit" : "gui.encodedlogistics.router.acl.deny").getString(),
-                126, y, permit ? RackScreen.ACCENT : RackScreen.ERROR);
+                ACT_RIGHT, y, permit ? RackScreen.ACCENT : RackScreen.ERROR);
+    }
+
+    // The match column: up to the action column's widest word.
+    private int matchWidth() {
+        int act = Math.max(width("gui.encodedlogistics.router.acl.act"), Math.max(width("gui.encodedlogistics.router.acl.permit"),
+                width("gui.encodedlogistics.router.acl.deny")));
+        return ACT_RIGHT - act - RouterPanel.GAP - MATCH_X;
+    }
+
+    // Where "applied" / "off" starts (right-aligned at 152): the target's name stops short of it, and clicks split there.
+    private int stateLeft() {
+        return RouterPanel.INSET_RIGHT - Math.max(width("gui.encodedlogistics.router.acl.applied"), width("gui.encodedlogistics.router.acl.not_applied"));
+    }
+
+    // The room for a value right-aligned beside the label at key.
+    private int valueWidth(String key) {
+        return RouterPanel.INSET_RIGHT - RouterPanel.INSET_X - width(key) - RouterPanel.GAP * 2;
+    }
+
+    private int width(String key) {
+        return panel.font().width(Component.translatable(key));
     }
 
     // An item's name (Coal), or the match as written (#c:fuels, *ENERGY).
@@ -154,8 +184,9 @@ final class RouterAclTab {
         return count < 10_000_000 ? String.format(Locale.ROOT, "%.1fM", count / 1_000_000.0) : count / 1_000_000 + "M";
     }
 
+    // text in width, cut with "..." (the tooltip over it has it whole).
     private void text(GuiGraphicsExtractor graphics, String text, int x, int y, int width, int color) {
-        graphics.text(panel.font(), panel.font().plainSubstrByWidth(text, width), x, y, color, false);
+        graphics.text(panel.font(), PanelBody.fit(panel.font(), text, width), x, y, color, false);
     }
 
     private void right(GuiGraphicsExtractor graphics, String text, int y, int color) {
@@ -168,10 +199,25 @@ final class RouterAclTab {
 
     void extractTooltip(GuiGraphicsExtractor graphics, RouterDevice router, double x, double y, int mouseX, int mouseY) {
         RouterAcl acl = acl(router);
+        if (x < RouterPanel.INSET_X || x >= RouterPanel.INSET_RIGHT) {
+            return;
+        }
+        // The ACL's and the target's names whole above the hints (they're cut to fit beside their labels).
         if (y >= ACL_Y - 2 && y < ACL_Y + 9) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.acl.hint.picker"), mouseX, mouseY);
+            List<Component> lines = new ArrayList<>();
+            if (acl != null) {
+                lines.add(Component.literal(acl.name()));
+            }
+            lines.add(Component.translatable("gui.encodedlogistics.router.acl.hint.picker").withColor(acl != null ? RackScreen.TEXT_DISABLED : RackScreen.TEXT));
+            Tooltips.show(graphics, panel.font(), lines, mouseX, mouseY);
         } else if (acl != null && y >= ON_Y - 2 && y < ON_Y + 9) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.acl.hint.on"), mouseX, mouseY);
+            List<Target> targets = targets(router, acl, panel.table());
+            List<Component> lines = new ArrayList<>();
+            if (!targets.isEmpty()) {
+                lines.add(Component.literal(targets.get(Math.floorMod(target, targets.size())).name()));
+            }
+            lines.add(Component.translatable("gui.encodedlogistics.router.acl.hint.on").withColor(lines.isEmpty() ? RackScreen.TEXT : RackScreen.TEXT_DISABLED));
+            Tooltips.show(graphics, panel.font(), lines, mouseX, mouseY);
         } else if (acl != null && y >= RULES_Y && y < RULES_Y + ROWS * ROW) {
             int row = scroll + (int) ((y - RULES_Y) / ROW);
             if (row < acl.rules().size()) {
@@ -181,10 +227,10 @@ final class RouterAclTab {
                 lines.add(Component.translatable("gui.encodedlogistics.router.acl.hits_line", String.format(Locale.ROOT, "%,d", rule.hits()))
                         .withColor(RackScreen.TEXT_MUTED));
                 lines.add(Component.translatable("gui.encodedlogistics.router.acl.hint.rule").withColor(RackScreen.TEXT_DISABLED));
-                graphics.setComponentTooltipForNextFrame(panel.font(), lines, mouseX, mouseY);
+                Tooltips.show(graphics, panel.font(), lines, mouseX, mouseY);
             }
         } else if (editor != null && y >= RULES_Y - 2) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.acl.hint.edit"), mouseX, mouseY);
+            Tooltips.show(graphics, panel.font(), Component.translatable("gui.encodedlogistics.router.acl.hint.edit"), mouseX, mouseY);
         }
     }
 
@@ -223,7 +269,7 @@ final class RouterAclTab {
             if (targets.isEmpty()) {
                 return true;
             }
-            if (x >= ON_X + 72) {
+            if (x >= stateLeft() - RouterPanel.GAP / 2) {
                 panel.send(RouterDevice.ACTION_ACL_BIND, Math.floorMod(target, targets.size()), acl.name());
             } else {
                 target = Math.floorMod(target + (right ? -1 : 1), targets.size());
@@ -271,7 +317,7 @@ final class RouterAclTab {
         close();
         adding = !edit;
         int row = edit && selected >= scroll && selected < scroll + ROWS ? selected - scroll : ROWS;
-        editor = new EditBox(panel.font(), panel.screen.left() + 20, panel.screen.top() + RULES_Y + row * ROW, RouterPanel.INSET_RIGHT - 20, 9,
+        editor = new EditBox(panel.font(), panel.screen.left() + MATCH_X, panel.screen.top() + RULES_Y + row * ROW, RouterPanel.INSET_RIGHT - MATCH_X, 9,
                 Component.translatable("gui.encodedlogistics.router.acl.edit"));
         editor.setBordered(false);
         editor.setMaxLength(48);

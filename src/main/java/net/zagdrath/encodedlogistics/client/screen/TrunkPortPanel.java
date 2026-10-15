@@ -21,6 +21,8 @@ import net.zagdrath.encodedlogistics.part.TrunkPortPart;
 // unlink it.
 final class TrunkPortPanel implements PanelBody {
     private static final int X = 12, RIGHT = 152, MODE_Y = 36, NATIVE_Y = 49, LANES_Y = 62, HEAD_Y = 75, ROWS_Y = 88, ROW = 11, ROWS = 5, CARRY_X = 120;
+    // The segments' columns: ID at 12, network at NETWORK_X (up to the Carry column, GAP short of it), carry right at 152.
+    private static final int NETWORK_X = 40, GAP = 4;
 
     private final Context context;
     private int scroll;
@@ -48,6 +50,12 @@ final class TrunkPortPanel implements PanelBody {
     }
 
     @Override
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        ValueInput data = context.data();
+        PanelBody.scrollbar(graphics, context.left(), context.top(), scroll, data == null ? 0 : segments(data).size(), ROWS);
+    }
+
+    @Override
     public void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         ValueInput data = context.data();
         if (data == null) {
@@ -62,20 +70,22 @@ final class TrunkPortPanel implements PanelBody {
         graphics.text(context.font(), tr("lanes"), X, LANES_Y, RackScreen.TEXT_MUTED, false);
         right(graphics, data.getIntOr("lanes_used", 0) + " / " + data.getIntOr("lanes", 0), LANES_Y, RackScreen.TEXT);
         graphics.text(context.font(), tr("col.id"), X, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        graphics.text(context.font(), tr("col.network"), 40, HEAD_Y, RackScreen.TEXT_MUTED, false);
+        graphics.text(context.font(), tr("col.network"), NETWORK_X, HEAD_Y, RackScreen.TEXT_MUTED, false);
         right(graphics, tr("col.carry"), HEAD_Y, RackScreen.TEXT_MUTED);
+        PanelBody.divider(graphics, HEAD_Y);
+        int networkW = RIGHT - context.font().width(tr("col.carry")) - GAP - NETWORK_X;
         List<SegmentRow> rows = segments(data);
         for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
             SegmentRow row = rows.get(scroll + i);
             int y = ROWS_Y + i * ROW;
             boolean carried = trunk ? row.allowed() || row.id() == nativeId : row.id() == nativeId;
             graphics.text(context.font(), Integer.toString(row.id()), X, y, row.id() == nativeId ? SwitchPanel.TRUNK_BLUE : RackScreen.TEXT, false);
-            graphics.text(context.font(), context.font().plainSubstrByWidth(row.network().isEmpty() ? tr("unreachable") : row.network(), 76), 40, y,
+            graphics.text(context.font(), PanelBody.fit(context.font(), row.network().isEmpty() ? tr("unreachable") : row.network(), networkW), NETWORK_X, y,
                     row.network().isEmpty() ? RackScreen.TEXT_DISABLED : RackScreen.TEXT, false);
             right(graphics, tr(carried ? "yes" : "no"), y, carried ? RackScreen.ACCENT : RackScreen.TEXT_DISABLED);
         }
         if (rows.isEmpty()) {
-            graphics.text(context.font(), tr("none"), X, ROWS_Y, RackScreen.TEXT_DISABLED, false);
+            PanelBody.wrapped(graphics, context.font(), tr("none"), X, ROWS_Y, RIGHT - X, ROW, RackScreen.TEXT_DISABLED);
         }
     }
 
@@ -86,9 +96,18 @@ final class TrunkPortPanel implements PanelBody {
             return;
         }
         if (y >= MODE_Y - 2 && y < MODE_Y + 9) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.trunk.hint.mode"), mouseX, mouseY);
-        } else if (y >= HEAD_Y - 2) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.trunk.hint.segments"), mouseX, mouseY);
+            Tooltips.show(graphics, context.font(), Component.translatable("gui.encodedlogistics.trunk.hint.mode"), mouseX, mouseY);
+        } else if (y >= HEAD_Y - 2 && y < ROWS_Y + ROWS * ROW) {
+            // Over a segment, its network in full (it's cut to fit) above the hint.
+            ValueInput data = context.data();
+            List<SegmentRow> rows = data == null ? List.of() : segments(data);
+            int row = y >= ROWS_Y ? scroll + (int) ((y - ROWS_Y) / ROW) : -1;
+            List<Component> lines = new ArrayList<>();
+            if (row >= 0 && row < rows.size() && !rows.get(row).network().isEmpty()) {
+                lines.add(Component.literal(rows.get(row).network()));
+            }
+            lines.add(Component.translatable("gui.encodedlogistics.trunk.hint.segments").withColor(lines.isEmpty() ? RackScreen.TEXT : RackScreen.TEXT_DISABLED));
+            Tooltips.show(graphics, context.font(), lines, mouseX, mouseY);
         }
     }
 

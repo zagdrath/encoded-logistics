@@ -81,7 +81,7 @@ public class DriveBayScreen extends AbstractContainerScreen<DriveBayMenu> {
             int bx = leftPos + slot.x + BAR_X, by = topPos + slot.y;
             if (slot.hasItem() && mouseX >= bx && mouseX < bx + BAR_W && mouseY >= by && mouseY < by + BAR_H) {
                 DriveStats stats = StorageDriveItem.stats(slot.getItem());
-                graphics.setComponentTooltipForNextFrame(font, List.of(
+                Tooltips.show(graphics, font, List.of(
                         Component.translatable("gui.encodedlogistics.drive_bay.fill", Math.round(stats.fill() * 100)),
                         Component.translatable("tooltip.encodedlogistics.drive.bytes", String.format(Locale.ROOT, "%,d", stats.bytesUsed()),
                                 String.format(Locale.ROOT, "%,d", stats.bytesTotal())).withColor(PartScreens.TEXT_MUTED),

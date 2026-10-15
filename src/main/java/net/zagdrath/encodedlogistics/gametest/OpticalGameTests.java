@@ -7,6 +7,7 @@ package net.zagdrath.encodedlogistics.gametest;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -67,10 +68,10 @@ final class OpticalGameTests {
     static void spanLoss(GameTestHelper helper) {
         ResourceKey<Level> dimension = helper.getLevel().dimension();
         NetworkGraph plain = run(dimension, 300, -1);
-        SpanLoss.apply(plain);
+        Map<NodePos, SpanLoss.Span> spans = SpanLoss.apply(plain);
         NetworkLink middle = plain.link(NodePos.of(dimension, new BlockPos(150, 0, 0)), Direction.EAST);
         helper.assertTrue(middle != null && middle.capacity() == SpanLoss.fiberLanes() - 1, "Span of 300 carries " + (middle != null ? middle.capacity() : -1));
-        SpanLoss.Span span = SpanLoss.at(NodePos.of(dimension, new BlockPos(10, 0, 0)));
+        SpanLoss.Span span = spans.get(NodePos.of(dimension, new BlockPos(10, 0, 0)));
         helper.assertTrue(span != null && span.length() == 300 && span.lost() == 1, "Span " + span);
         NetworkGraph amplified = run(dimension, 300, 150);
         SpanLoss.apply(amplified);

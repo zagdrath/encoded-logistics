@@ -203,7 +203,7 @@ public class PortScreen extends AbstractContainerScreen<PortMenu> {
                     : "gui.encodedlogistics.port.empty_filter.egress").withColor(PartScreens.TEXT_MUTED));
         }
         if (!lines.isEmpty()) {
-            graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+            Tooltips.show(graphics, font, lines, mouseX, mouseY);
         }
     }
 

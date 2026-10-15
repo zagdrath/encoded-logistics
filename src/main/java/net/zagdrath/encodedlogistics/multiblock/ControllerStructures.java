@@ -30,10 +30,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
@@ -80,6 +82,7 @@ import net.zagdrath.encodedlogistics.plc.PlcBlockEntity;
 import net.zagdrath.encodedlogistics.network.NetworkDiscovery;
 import net.zagdrath.encodedlogistics.network.NetworkGraph;
 import net.zagdrath.encodedlogistics.optical.OpticalChannels;
+import net.zagdrath.encodedlogistics.optical.SpanLoss;
 import net.zagdrath.encodedlogistics.network.NetworkLink;
 import net.zagdrath.encodedlogistics.network.NetworkNode;
 import net.zagdrath.encodedlogistics.network.NetworkPart;
@@ -606,17 +609,46 @@ public class ControllerStructures extends SavedData {
         index.dirty.remove(ref);
     }
 
-    // Records which nodes a structure's graph holds (none: null), in NetworkIndex.graphNodes.
-    private static void indexGraph(NetworkIndex index, NetworkRef ref, Runtime runtime, @Nullable NetworkGraph graph) {
+    // Records which nodes a structure's graph holds (none: null), in NetworkIndex.graphNodes, and the chunks its walk
+    // stopped at unloaded, in NetworkIndex.waiting.
+    private static void indexGraph(NetworkIndex index, NetworkRef ref, Runtime runtime, NetworkDiscovery.@Nullable Discovered discovered) {
         for (NodePos pos : runtime.graphNodes) {
             Set<NetworkRef> networks = index.graphNodes.get(pos);
             if (networks != null && networks.remove(ref) && networks.isEmpty()) {
                 index.graphNodes.remove(pos);
             }
         }
-        runtime.graphNodes = graph == null ? List.of() : List.copyOf(graph.entries().keySet());
+        runtime.graphNodes = discovered == null ? List.of() : List.copyOf(discovered.graph().entries().keySet());
         for (NodePos pos : runtime.graphNodes) {
             index.graphNodes.computeIfAbsent(pos, key -> new HashSet<>(2)).add(ref);
+        }
+        for (NetworkIndex.ChunkRef chunk : runtime.waitingChunks) {
+            Set<NetworkRef> networks = index.waiting.get(chunk);
+            if (networks != null && networks.remove(ref) && networks.isEmpty()) {
+                index.waiting.remove(chunk);
+            }
+        }
+        Set<NetworkIndex.ChunkRef> chunks = new HashSet<>();
+        if (discovered != null) {
+            for (NodePos pos : discovered.frontier()) {
+                chunks.add(new NetworkIndex.ChunkRef(pos.dimension(), ChunkPos.containing(pos.pos()).pack()));
+            }
+        }
+        runtime.waitingChunks = List.copyOf(chunks);
+        for (NetworkIndex.ChunkRef chunk : runtime.waitingChunks) {
+            index.waiting.computeIfAbsent(chunk, key -> new HashSet<>(2)).add(ref);
+        }
+    }
+
+    // A chunk loaded: the networks whose last walk stopped at an unloaded block in it are worked out again, so a
+    // network that spans a chunk border isn't left with only the part that was loaded when it last solved.
+    public static void chunkLoaded(ServerLevel level, ChunkPos pos) {
+        NetworkIndex index = NetworkIndex.get(level.getServer());
+        Set<NetworkRef> networks = index.waiting.get(new NetworkIndex.ChunkRef(level.dimension(), pos.pack()));
+        if (networks != null && !networks.isEmpty()) {
+            networks.forEach(network -> index.dirty.putIfAbsent(network, TopologyCause.CHUNK));
+            index.changed = true;
+            contentChanged();
         }
     }
 
@@ -854,7 +886,7 @@ public class ControllerStructures extends SavedData {
         long discovery = System.nanoTime() - start;
         LaneResult lanes = LaneSolver.solve(discovered.graph(), Config.ADHOC_MAX_DEVICES.getAsInt());
         // Racks with controllers paired up: the one with the lowest structure id runs the network.
-        long lead = rack != null ? lead(discovered.graph(), structure.id()) : structure.id();
+        long lead = rack != null ? lead(discovered.graph(), structure.id(), level.dimension()) : structure.id();
         apply(level, index, structure.id(), runtime, discovered, lanes, lead);
         if (rack != null && lead == structure.id()) {
             shareWithPartners(level, index, structure.id(), discovered, lanes);
@@ -887,7 +919,7 @@ public class ControllerStructures extends SavedData {
         runtime.lastSolve = level.getGameTime();
         runtime.lead = lead;
         NetworkRef ref = new NetworkRef(level.dimension(), id);
-        indexGraph(index, ref, runtime, discovered.graph());
+        indexGraph(index, ref, runtime, discovered);
         boolean runs = lanes.status() != NetworkStatus.CONFLICT && lead == id;
         setNetworkNodes(level, index, id, runtime, runs ? discovered : null);
         if (runs) {
@@ -967,11 +999,13 @@ public class ControllerStructures extends SavedData {
         setDirty();
     }
 
-    // The lowest controller structure among the racks with controllers on a graph (own when there's none).
-    private static long lead(NetworkGraph graph, long own) {
+    // The lowest controller structure among the racks with controllers on a graph in its own dimension (own when there's
+    // none): structure ids are per level, so a rack a Bridge reaches in another dimension can't be its partner.
+    private static long lead(NetworkGraph graph, long own, ResourceKey<Level> dimension) {
         long lead = Long.MAX_VALUE;
-        for (NetworkNode node : graph.nodes()) {
-            if (node instanceof RackNode rack && !rack.controllers().isEmpty() && rack.structure() > 0) {
+        for (Map.Entry<NodePos, NetworkNode> entry : graph.entries().entrySet()) {
+            if (entry.getKey().dimension().equals(dimension) && entry.getValue() instanceof RackNode rack && !rack.controllers().isEmpty()
+                    && rack.structure() > 0) {
                 lead = Math.min(lead, rack.structure());
             }
         }
@@ -2034,6 +2068,38 @@ public class ControllerStructures extends SavedData {
         return new int[] { used, node.laneCapacity() };
     }
 
+    // A Fiber Cable's place on its network as last solved: the network, its span, and the lanes running through it and
+    // how many it carries after the span's loss (the busiest of its links). Null off a controlled network.
+    public record FiberInfo(NetworkRef network, SpanLoss.@Nullable Span span, int used, int capacity, boolean adHoc) {}
+
+    public static @Nullable FiberInfo fiberInfo(MinecraftServer server, NodePos pos) {
+        NetworkRef ref = NetworkIndex.get(server).members.get(pos);
+        Owner owner = owner(server, ref);
+        if (ref == null || owner == null || owner.runtime.discovered == null || owner.runtime.lanes == null) {
+            return null;
+        }
+        NetworkGraph graph = owner.runtime.discovered.graph();
+        if (graph.node(pos) == null) {
+            return null;
+        }
+        LaneResult lanes = owner.runtime.lanes;
+        int used = 0, capacity = 0;
+        for (Direction side : Direction.values()) {
+            NetworkLink link = graph.link(pos, side);
+            if (link != null) {
+                used = Math.max(used, lanes.usage(link));
+                capacity = Math.max(capacity, link.capacity());
+            }
+        }
+        return new FiberInfo(ref, owner.runtime.discovered.spans().get(pos), used, capacity, lanes.adHoc());
+    }
+
+    // The span the Fiber Cable at pos is on, as its network last found it; null off a controlled network.
+    public static SpanLoss.@Nullable Span fiberSpan(MinecraftServer server, NodePos pos) {
+        Owner owner = owner(server, NetworkIndex.get(server).members.get(pos));
+        return owner != null && owner.runtime.discovered != null ? owner.runtime.discovered.spans().get(pos) : null;
+    }
+
     // Whether the remote link between two nodes is part of a network right now.
     public static boolean remoteLinked(MinecraftServer server, NodePos a, NodePos b) {
         Owner owner = owner(server, NetworkIndex.get(server).members.get(a));
@@ -2288,8 +2354,10 @@ public class ControllerStructures extends SavedData {
         // Why it's to be worked out again (the first cause since its last solve), and when it last was (game time).
         @Nullable TopologyCause cause;
         long lastSolve = Long.MIN_VALUE / 2;
-        // Every node of its graph as last discovered, as entered in NetworkIndex.graphNodes.
+        // Every node of its graph as last discovered, as entered in NetworkIndex.graphNodes; and the chunks its walk
+        // stopped at unloaded, as entered in NetworkIndex.waiting.
         List<NodePos> graphNodes = List.of();
+        List<NetworkIndex.ChunkRef> waitingChunks = List.of();
         final SolveStats solves = new SolveStats();
         // How long its tick takes (energy, devices and any solve), for /encodedlogistics debug ticks.
         final TimingStats ticks = new TimingStats();

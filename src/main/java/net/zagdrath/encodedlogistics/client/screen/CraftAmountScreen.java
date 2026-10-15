@@ -20,6 +20,7 @@ import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.client.ResourceRender;
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.net.CraftRequestPayload;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
@@ -64,7 +65,7 @@ public class CraftAmountScreen extends Screen {
         String value = amount != null ? amount.getValue() : "1";
         amount = new EditBox(font, left + FIELD_X + 4, top + FIELD_Y + 2, FIELD_W - 6, 9, Component.translatable("gui.encodedlogistics.craft.amount"));
         amount.setBordered(false);
-        amount.setMaxLength(6);
+        amount.setMaxLength(Long.toString(CraftRequests.MAX_AMOUNT).length());
         amount.setTextColor(PartScreens.TEXT);
         PartScreens.numeric(amount, false);
         amount.setValue(value);
@@ -83,7 +84,7 @@ public class CraftAmountScreen extends Screen {
     private void next() {
         long value = value();
         if (value >= 1) {
-            ClientPacketDistributor.sendToServer(new CraftRequestPayload(menu.containerId, key, Math.min(value, CraftRequestPayload.MAX_AMOUNT), -1, false));
+            ClientPacketDistributor.sendToServer(new CraftRequestPayload(menu.containerId, key, Math.min(value, CraftRequests.MAX_AMOUNT), -1, false));
         }
     }
 
@@ -114,7 +115,7 @@ public class CraftAmountScreen extends Screen {
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             for (int[] step : STEPS) {
                 if (PartScreens.over(event.x(), event.y(), left + step[1], top + step[2], STEP_W, STEP_H) && amount != null) {
-                    long value = Math.clamp(value() + step[0], 1, CraftRequestPayload.MAX_AMOUNT);
+                    long value = Math.clamp(value() + step[0], 1, CraftRequests.MAX_AMOUNT);
                     // From 1, +10 and +64 give round numbers.
                     if (value() == 1 && step[0] > 1) {
                         value = step[0];

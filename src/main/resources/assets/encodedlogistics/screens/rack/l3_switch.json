@@ -24,10 +24,16 @@
    "gui.encodedlogistics.l3.tab.devices",
    "gui.encodedlogistics.l3.tab.routes",
    "gui.encodedlogistics.l3.tab.qos"
-  ]
+  ],
+  "embedded": {
+   "note": "in a Chassis Switch panel (ChassisPanel): four tabs, a fourth back to the cards",
+   "spacing": 40,
+   "width": 39,
+   "back": "gui.encodedlogistics.chassis.cards"
+  }
  },
  "pages": {
-  "devices": "as l2_switch_48.json devices list, inside (10,32)",
+  "devices": "as l2_switch_48.json devices list, inside (10,31), 8 rows of 14; ports view columns unit 2, mode 26, segments 68, native right 142",
   "routes": {
    "rows": 8,
    "row_height": 14,
@@ -70,6 +76,25 @@
     "height": 14,
     "button": "common/button_wide",
     "text": "gui.encodedlogistics.l3.add_qos"
+   }
+  },
+  "pool": {
+   "text": {
+    "key": "gui.encodedlogistics.switch.pool",
+    "left": 10,
+    "top": 150,
+    "color": "TEXT_MUTED"
+   },
+   "bar": {
+    "note": "after the text (4 px gap) up to the toggle (4 px gap), inside 4 high at top 152",
+    "sprite": "common/bar_fill_mint"
+   },
+   "toggle": {
+    "left": 124,
+    "top": 148,
+    "width": 44,
+    "height": 12,
+    "button": "common/button_wide"
    }
   }
  },

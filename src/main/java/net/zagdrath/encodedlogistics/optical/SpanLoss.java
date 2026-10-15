@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
@@ -31,15 +30,14 @@ import net.zagdrath.encodedlogistics.network.NodePos;
 //
 // Worked out for each network's graph once it's discovered (NetworkDiscovery): each run's span is its longest path
 // between its ends (where it meets anything that isn't Fiber Cable), and every link of the run, and into it, carries at
-// most the lanes left after its span's loss. The spans are kept by position for the Fiber Cable popup.
+// most the lanes left after its span's loss. The spans, by position, are kept with the network's discovered graph
+// (NetworkDiscovery.Discovered) for the Fiber Cable and Optical Amplifier popups, so they go when it does.
 public final class SpanLoss {
     // A run's span: its length in blocks (since the last amplifier, or the run's end) and the lanes it carries.
     public record Span(int length, int lanes, int lost) {}
 
     // The ends whose paths are measured, at most (a run with more is measured from its first ones).
     private static final int MAX_ENDS = 16;
-    private static final int MAX_KEPT = 200_000;
-    private static final Map<NodePos, Span> SPANS = new ConcurrentHashMap<>();
 
     private SpanLoss() {}
 
@@ -66,20 +64,13 @@ public final class SpanLoss {
         return Config.LANES_PER_FIBER_CABLE.getAsInt();
     }
 
-    // The span a Fiber Cable at pos was last found on, or null.
-    public static @Nullable Span at(NodePos pos) {
-        return SPANS.get(pos);
-    }
-
     private static boolean inRun(@Nullable NetworkNode node) {
         return node != null && node.optical() == NetworkNode.Optical.FIBER;
     }
 
-    // Limits the graph's Fiber Cable links to their spans' lanes.
-    public static void apply(NetworkGraph graph) {
-        if (SPANS.size() > MAX_KEPT) {
-            SPANS.clear();
-        }
+    // Limits the graph's Fiber Cable links to their spans' lanes; each Fiber Cable's span, by position.
+    public static Map<NodePos, Span> apply(NetworkGraph graph) {
+        Map<NodePos, Span> spans = new HashMap<>();
         Set<NodePos> seen = new HashSet<>();
         int full = fiberLanes();
         for (Map.Entry<NodePos, NetworkNode> entry : graph.entries().entrySet()) {
@@ -120,7 +111,7 @@ public final class SpanLoss {
             int lanes = lanes(length, full);
             Span span = new Span(length, lanes, Math.max(0, full - lanes));
             for (NodePos at : run) {
-                SPANS.put(at, span);
+                spans.put(at, span);
             }
             if (lanes >= full) {
                 continue;
@@ -134,6 +125,7 @@ public final class SpanLoss {
                 }
             }
         }
+        return spans;
     }
 
     // The run's longest path between two of its ends, in blocks (one end: its farthest block; no ends: all of it).

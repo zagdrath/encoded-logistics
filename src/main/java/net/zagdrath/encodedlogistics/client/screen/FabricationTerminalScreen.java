@@ -44,7 +44,7 @@ public class FabricationTerminalScreen extends AbstractTerminalScreen<Fabricatio
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
         if (overClear(mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.terminal.clear_grid"), mouseX, mouseY);
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.terminal.clear_grid"), mouseX, mouseY);
         }
     }
 

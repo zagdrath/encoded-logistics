@@ -65,10 +65,10 @@ public class HandheldTerminalScreen extends AbstractTerminalScreen<HandheldTermi
         super.extractTooltip(graphics, mouseX, mouseY);
         int x = panelX(), y = panelY();
         if (PartScreens.over(mouseX, mouseY, x + BAR_X, y + BAR_Y, BAR_W, BAR_H)) {
-            graphics.setTooltipForNextFrame(Component.translatable("tooltip.encodedlogistics.handheld.energy",
+            Tooltips.show(graphics, font, Component.translatable("tooltip.encodedlogistics.handheld.energy",
                     String.format(Locale.ROOT, "%,d", menu.energy()), String.format(Locale.ROOT, "%,d", menu.capacity())), mouseX, mouseY);
         } else if (PartScreens.over(mouseX, mouseY, x + SIGNAL_X - 2, y + LIGHT_Y - 2, 16, 20)) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.handheld." + menu.linkState().getSerializedName()), mouseX,
+            Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.handheld." + menu.linkState().getSerializedName()), mouseX,
                     mouseY);
         }
     }

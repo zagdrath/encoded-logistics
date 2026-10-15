@@ -1,0 +1,142 @@
+{
+ "includes": [
+  "common/palette.json"
+ ],
+ "top": {
+  "texture": "gui/rack/chassis.png",
+  "width": 176,
+  "height": 168,
+  "note": "plain top panel (tools/chassis_gui.py); wells drawn per tab"
+ },
+ "back": {
+  "left": 150,
+  "top": 2,
+  "sprite": "rack/back",
+  "button": "terminal/button",
+  "tooltip": "gui.encodedlogistics.rack.back"
+ },
+ "tabs": {
+  "left": 8,
+  "top": 17,
+  "widget": "PanelTabs",
+  "chassis_switch": [
+   "gui.encodedlogistics.chassis.tab.slots",
+   "gui.encodedlogistics.chassis.tab.cages",
+   "gui.encodedlogistics.chassis.tab.switch"
+  ],
+  "blade_enclosure": [
+   "gui.encodedlogistics.chassis.tab.front",
+   "gui.encodedlogistics.chassis.tab.rear",
+   "gui.encodedlogistics.chassis.tab.drives",
+   "gui.encodedlogistics.chassis.tab.fab"
+  ],
+  "optical_transport_shelf": [
+   "gui.encodedlogistics.chassis.tab.slots",
+   "gui.encodedlogistics.chassis.tab.channels",
+   "gui.encodedlogistics.chassis.tab.spans"
+  ]
+ },
+ "text_right": 168,
+ "line": 10,
+ "pages": {
+  "slots": {
+   "face": {
+    "left": 12,
+    "top": 35,
+    "width": 84,
+    "height": "8 x U",
+    "u": 10,
+    "well": "2 px round it",
+    "rear_blanks": "empty rear bays: edge #1F2228, screws #79808A"
+   },
+   "column": {
+    "left": 104,
+    "top": 34,
+    "pair": 18,
+    "value_offset": 9,
+    "label": "TEXT_MUTED"
+   },
+   "switched": {
+    "note": "shelf only: two lines under the face well, face width",
+    "top": "face bottom + 5"
+   },
+   "detail": {
+    "left": 12,
+    "top": 125,
+    "width": 156,
+    "note": "picked part: name, state + detail, setting (2 wrapped lines, clickable); else the hint wrapped (up to 4 lines)"
+   }
+  },
+  "channels": {
+   "header_top": 35,
+   "separator": 45,
+   "rows_top": 49,
+   "row_height": 11,
+   "columns": {
+    "ch": 12,
+    "network": 28,
+    "far": 80,
+    "up_right": 168
+   }
+  },
+  "spans": {
+   "span": {
+    "left": 12,
+    "top": 35
+   },
+   "table_top": 50,
+   "separator": 60,
+   "rows_top": 64,
+   "row_height": 11,
+   "rows": [
+    "length",
+    "loss",
+    "lanes",
+    "quality",
+    "bridged"
+   ],
+   "columns": {
+    "label": 12,
+    "working_right": 110,
+    "protect_right": 168
+   },
+   "protection": {
+    "top": 120,
+    "lines": 2
+   },
+   "pair": {
+    "top": 142,
+    "lines": 2,
+    "unpair": "gui.encodedlogistics.chassis.unpair"
+   }
+  },
+  "cages": {
+   "groups": "ChassisLayout.cageX/cageY (13 + 39 per line, 44 / 94), label 10 above",
+   "hint": {
+    "top": 136,
+    "lines": 2
+   }
+  },
+  "drives": {
+   "header_top": 34,
+   "grid": "ChassisLayout.driveX/driveY",
+   "note": {
+    "top": 128,
+    "lines": 3
+   }
+  },
+  "fab": {
+   "crafts_top": 34,
+   "grid": {
+    "left": 62,
+    "top": 46,
+    "columns": 3
+   },
+   "hint": {
+    "top": 108,
+    "lines": 3
+   }
+  },
+  "switch": "l3_switch.json (embedded: four tabs, the fourth back to Slots)"
+ }
+}

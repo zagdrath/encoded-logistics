@@ -148,7 +148,7 @@ public class FirewallPanel extends RackScreen.Panel {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         for (RackPermission permission : RackPermission.values()) {
             if (screen.over(mouseX, mouseY, PERM_X + PERM_STEP * permission.ordinal(), HEADER_Y, TOGGLE, 7)) {
-                graphics.setTooltipForNextFrame(permission.label(), mouseX, mouseY);
+                Tooltips.show(graphics, font(), permission.label(), mouseX, mouseY);
                 return;
             }
         }
@@ -157,12 +157,12 @@ public class FirewallPanel extends RackScreen.Panel {
             Row row = rows.get(scroll + i);
             for (RackPermission permission : RackPermission.values()) {
                 if (screen.over(mouseX, mouseY, PERM_X + PERM_STEP * permission.ordinal(), LIST_Y + i * ROW_H + 2, TOGGLE, TOGGLE)) {
-                    graphics.setTooltipForNextFrame(toggleText(row, permission), mouseX, mouseY);
+                    Tooltips.show(graphics, font(), toggleText(row, permission), mouseX, mouseY);
                     return;
                 }
             }
             if (row.permissions() == null && screen.over(mouseX, mouseY, LIST_X, LIST_Y + i * ROW_H, PERM_X - LIST_X - 4, ROW_H)) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.firewall.owner"), mouseX, mouseY);
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.firewall.owner"), mouseX, mouseY);
                 return;
             }
         }

@@ -81,10 +81,10 @@ public class LithographyPressScreen extends AbstractContainerScreen<LithographyP
         super.extractTooltip(graphics, mouseX, mouseY);
         double x = mouseX - leftPos, y = mouseY - topPos;
         if (x >= GAUGE_X && x < GAUGE_X + GAUGE_W && y >= GAUGE_Y && y < GAUGE_Y + GAUGE_H) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.lithography_press.energy",
+            Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.lithography_press.energy",
                     String.format(Locale.ROOT, "%,d", menu.energy()), String.format(Locale.ROOT, "%,d", menu.capacity()))), mouseX, mouseY);
         } else if (x >= ARROW_X && x < ARROW_X + ARROW_W && y >= ARROW_Y && y < ARROW_Y + ARROW_H) {
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.lithography_press.progress",
+            Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.lithography_press.progress",
                     Math.round(menu.progress() * 100))), mouseX, mouseY);
         }
     }

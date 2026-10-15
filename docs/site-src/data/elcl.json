@@ -1643,11 +1643,11 @@
           "specials": [],
           "maxValues": 1,
           "min": 1,
-          "max": 999999,
+          "max": 2147483647,
           "length": 10,
           "returns": null,
           "valueList": "NONE",
-          "hint": "1-999999"
+          "hint": "1-2147483647"
         },
         {
           "keyword": "SCHEDULER",

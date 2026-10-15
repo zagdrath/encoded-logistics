@@ -2,11 +2,11 @@
  "parent": "minecraft:block/block",
  "render_type": "minecraft:cutout",
  "textures": {
-  "mouth": "encodedlogistics:part/trunk_port/front",
-  "side": "encodedlogistics:part/trunk_port/side",
-  "casing": "encodedlogistics:part/trunk_port/side",
-  "side_glow": "encodedlogistics:part/trunk_port/status",
-  "particle": "encodedlogistics:part/trunk_port/side",
+  "mouth": "encodedlogistics:block/part/trunk_port/front",
+  "side": "encodedlogistics:block/part/trunk_port/side",
+  "casing": "encodedlogistics:block/part/trunk_port/side",
+  "side_glow": "encodedlogistics:block/part/trunk_port/status",
+  "particle": "encodedlogistics:block/part/trunk_port/side",
   "parts": "encodedlogistics:block/part/parts"
  },
  "elements": [

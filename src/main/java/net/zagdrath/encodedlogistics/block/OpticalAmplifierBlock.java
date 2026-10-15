@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.zagdrath.encodedlogistics.Config;
 import net.zagdrath.encodedlogistics.blockentity.OpticalAmplifierBlockEntity;
@@ -41,7 +42,7 @@ import net.zagdrath.encodedlogistics.optical.OpticalState;
 import net.zagdrath.encodedlogistics.optical.SpanLoss;
 import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 
-// The Optical Amplifier (the optical handoff 3): an 8 x 8 x 16 housing inline on a Fiber Cable run, along FACING's axis
+// The Optical Amplifier (the optical handoff 3): a finned housing inline on a Fiber Cable run, along FACING's axis
 // (light comes in at the back and leaves at the front). Powered, it ends the span it's on, so span loss counts again
 // from it (SpanLoss); unpowered it passes the light through and the run goes on through it. It's powered while it's
 // online on a network, or while an online Optical Multiplexer or Transport Shelf whose line runs through it powers the
@@ -50,7 +51,10 @@ import net.zagdrath.encodedlogistics.registry.ModBlockEntityTypes;
 public class OpticalAmplifierBlock extends BaseEntityBlock implements NetworkNodeBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<OpticalState> STATE = OpticalState.PROPERTY;
-    private static final VoxelShape ALONG_Z = Block.box(4, 4, 0, 12, 12, 16), ALONG_X = Block.box(0, 4, 4, 16, 12, 12);
+    // The finned housing, centred on the fibre (no base plate: it may hang in the air on a run), and the two 8 x 8 port
+    // flanges (centred like a Fiber Cable's) at the ends.
+    private static final VoxelShape ALONG_Z = Shapes.or(Block.box(2, 2, 3, 14, 14, 13), Block.box(4, 4, 0, 12, 12, 16));
+    private static final VoxelShape ALONG_X = Shapes.or(Block.box(3, 2, 2, 13, 14, 14), Block.box(0, 4, 4, 16, 12, 12));
 
     public OpticalAmplifierBlock(BlockBehaviour.Properties properties) {
         super(properties);

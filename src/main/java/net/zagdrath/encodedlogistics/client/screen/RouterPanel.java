@@ -39,15 +39,19 @@ import net.zagdrath.encodedlogistics.rack.device.RouterDevice;
 //   right-click -10, shift-click back to its own).
 //  ACLs: RouterAclTab.
 public class RouterPanel extends RackScreen.Panel {
-    private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/router.png"),
-            TABLE_BACKGROUND = EncodedLogistics.id("textures/gui/rack/l3_switch.png");
+    private static final Identifier BACKGROUND = EncodedLogistics.id("textures/gui/rack/router.png"), TABLE_BACKGROUND = PanelBody.BACKGROUND;
     private static final Identifier DOT = EncodedLogistics.id("rack/router/segment_dot"), ARROW = EncodedLogistics.id("rack/router/arrow"),
             GHOST = EncodedLogistics.id("relay/ghost_transceiver"), BAR = EncodedLogistics.id("common/bar_fill_mint");
     private static final int SEGMENTS_X = 10, LIST_Y = 31, ROWS = 6, ROW_H = 14, SEGMENTS_W = 52;
     private static final int ROUTES_X = 70, SOURCE_X = 72, ARROW_X = 98, DEST_X = 112, FILTER_X = 150, ROUTES_W = 98;
-    private static final int ADD_X = 68, ADD_Y = 116, ADD_W = 100, ADD_H = 12, RATE_Y = 132, BAR_X = 69, BAR_Y = 144, BAR_W = 98;
-    // The other tabs: the L3 Switch's inset (x 12-153, y 34-139), values right-aligned at 152.
+    private static final int ADD_X = 68, ADD_Y = 116, ADD_W = 100, ADD_H = 12, RATE_X = 68, RATE_Y = 132, RATE_W = 100, BAR_X = 69, BAR_Y = 144, BAR_W = 98;
+    // The other tabs: the panel bodies' inset (PanelBody.BACKGROUND: text in x 12-152, the scroll track beside it), values
+    // right-aligned at 152.
     static final int INSET_X = 12, INSET_RIGHT = 152, HEAD_Y = 36, TABLE_Y = 49, TABLE_ROW = 11, TABLE_ROWS = 8, MODE_ROW = 13;
+    // The table's columns (GAP between each and the next): network at 12, next hop / via at NEXT_X, cost right at
+    // COST_RIGHT (the neighbours': at 152), hops right at 152.
+    static final int GAP = 4;
+    private static final int NEXT_X = 62, COST_RIGHT = 128;
     private static final int TAB_ROUTES = 0, TAB_MODE = 1, TAB_TABLE = 2, TAB_ACLS = 3;
     private static final int MODE_MODE = 0, MODE_TRANSIT = 1, MODE_NEIGHBOURS = 2, MODE_ROWS = 7;
     static final int BLUE = 0xFF50C2EC;
@@ -163,6 +167,11 @@ public class RouterPanel extends RackScreen.Panel {
         if (router != null && tab == TAB_ACLS) {
             acls.extractBackground(graphics, router, mouseX, mouseY);
         }
+        if (router != null && tab == TAB_TABLE) {
+            PanelBody.scrollbar(graphics, x, y, scroll, showNeighbours ? neighbours().size() : table().size(), TABLE_ROWS);
+        } else if (router != null && tab == TAB_MODE) {
+            PanelBody.scrollbar(graphics, x, y, 0, 0, 1);
+        }
         if (router == null || tab != TAB_ROUTES) {
             return;
         }
@@ -247,9 +256,8 @@ public class RouterPanel extends RackScreen.Panel {
         }
         ValueInput data = data();
         if (data != null) {
-            graphics.text(font(), Component.translatable("gui.encodedlogistics.router.throughput",
-                    String.format(Locale.ROOT, "%.1f", data.getDoubleOr("throughput", 0))).append(" / " + data.getIntOr("rate", 0)), 68, RATE_Y,
-                    RackScreen.TEXT_MUTED, false);
+            text(graphics, Component.translatable("gui.encodedlogistics.router.throughput", String.format(Locale.ROOT, "%.1f", data.getDoubleOr("throughput", 0)))
+                    .getString() + " / " + data.getIntOr("rate", 0), RATE_X, RATE_Y, RATE_W, RackScreen.TEXT_MUTED);
         }
     }
 
@@ -280,37 +288,54 @@ public class RouterPanel extends RackScreen.Panel {
             int rowY = HEAD_Y + i * MODE_ROW;
             boolean clickable = i <= MODE_NEIGHBOURS;
             graphics.text(font(), labels[i], INSET_X, rowY, RackScreen.TEXT_MUTED, false);
-            graphics.text(font(), values[i], INSET_RIGHT - font().width(values[i]), rowY, clickable ? RackScreen.ACCENT : RackScreen.TEXT, false);
+            right(graphics, PanelBody.fit(font(), values[i].getString(), INSET_RIGHT - INSET_X - font().width(labels[i]) - GAP * 2), INSET_RIGHT, rowY,
+                    clickable ? RackScreen.ACCENT : RackScreen.TEXT);
         }
     }
 
-    // Columns: network at 12, next hop at 62, cost right at 132, hops right at 152.
+    // Columns: network at 12, next hop at NEXT_X, cost right at COST_RIGHT, hops right at 152; each value cut short of the
+    // next column (the row's tooltip has it whole).
     private void tableLabels(GuiGraphicsExtractor graphics) {
-        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.col.network"), INSET_X, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.col.next"), 62, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        right(graphics, Component.translatable("gui.encodedlogistics.router.col.cost").getString(), 132, HEAD_Y, RackScreen.TEXT_MUTED);
+        String cost = Component.translatable("gui.encodedlogistics.router.col.cost").getString();
+        PanelBody.divider(graphics, HEAD_Y);
+        text(graphics, Component.translatable("gui.encodedlogistics.router.col.network").getString(), INSET_X, HEAD_Y, NEXT_X - GAP - INSET_X,
+                RackScreen.TEXT_MUTED);
+        text(graphics, Component.translatable("gui.encodedlogistics.router.col.next").getString(), NEXT_X, HEAD_Y,
+                COST_RIGHT - font().width(cost) - GAP - NEXT_X, RackScreen.TEXT_MUTED);
+        right(graphics, cost, COST_RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
         right(graphics, Component.translatable("gui.encodedlogistics.router.col.hops").getString(), INSET_RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
         List<TableRow> rows = table();
         for (int i = 0; i < TABLE_ROWS && scroll + i < rows.size(); i++) {
             TableRow row = rows.get(scroll + i);
             int rowY = TABLE_Y + i * TABLE_ROW;
             boolean isStatic = row.source().equals("STATIC");
-            text(graphics, row.name(), INSET_X, rowY, 48, row.transit() ? RackScreen.ACCENT : RackScreen.TEXT);
-            String next = isStatic ? Component.translatable("gui.encodedlogistics.router.static").getString() : row.next();
-            text(graphics, next, 62, rowY, 48, isStatic ? BLUE : RackScreen.TEXT);
-            right(graphics, Integer.toString(row.cost()), 132, rowY, RackScreen.TEXT);
+            String rowCost = Integer.toString(row.cost());
+            text(graphics, row.name(), INSET_X, rowY, NEXT_X - GAP - INSET_X, row.transit() ? RackScreen.ACCENT : RackScreen.TEXT);
+            text(graphics, next(row), NEXT_X, rowY, COST_RIGHT - Math.max(font().width(cost), font().width(rowCost)) - GAP - NEXT_X,
+                    isStatic ? BLUE : RackScreen.TEXT);
+            right(graphics, rowCost, COST_RIGHT, rowY, RackScreen.TEXT);
             right(graphics, Integer.toString(row.hops()), INSET_RIGHT, rowY, RackScreen.TEXT);
         }
         if (rows.isEmpty()) {
-            graphics.text(font(), Component.translatable("gui.encodedlogistics.router.no_routes"), INSET_X, TABLE_Y, RackScreen.TEXT_DISABLED, false);
+            PanelBody.wrapped(graphics, font(), Component.translatable("gui.encodedlogistics.router.no_routes").getString(), INSET_X, TABLE_Y,
+                    INSET_RIGHT - INSET_X, TABLE_ROW, RackScreen.TEXT_DISABLED);
         }
     }
 
-    // Columns: neighbour at 12, via at 62, state right at 126, cost right at 152.
+    // A route's next hop, or "static" for one linked to this Router.
+    private static String next(TableRow row) {
+        return row.source().equals("STATIC") ? Component.translatable("gui.encodedlogistics.router.static").getString() : row.next();
+    }
+
+    // Columns: neighbour at 12, via at NEXT_X, cost right at 152.
     private void neighbourLabels(GuiGraphicsExtractor graphics) {
-        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.col.neighbour"), INSET_X, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        graphics.text(font(), Component.translatable("gui.encodedlogistics.router.col.via"), 62, HEAD_Y, RackScreen.TEXT_MUTED, false);
-        right(graphics, Component.translatable("gui.encodedlogistics.router.col.cost").getString(), INSET_RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
+        String cost = Component.translatable("gui.encodedlogistics.router.col.cost").getString();
+        PanelBody.divider(graphics, HEAD_Y);
+        text(graphics, Component.translatable("gui.encodedlogistics.router.col.neighbour").getString(), INSET_X, HEAD_Y, NEXT_X - GAP - INSET_X,
+                RackScreen.TEXT_MUTED);
+        text(graphics, Component.translatable("gui.encodedlogistics.router.col.via").getString(), NEXT_X, HEAD_Y,
+                INSET_RIGHT - font().width(cost) - GAP - NEXT_X, RackScreen.TEXT_MUTED);
+        right(graphics, cost, INSET_RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
         List<NeighbourRow> rows = neighbours();
         for (int i = 0; i < TABLE_ROWS && scroll + i < rows.size(); i++) {
             NeighbourRow row = rows.get(scroll + i);
@@ -320,12 +345,14 @@ public class RouterPanel extends RackScreen.Panel {
                 case "INIT" -> RackScreen.WARNING;
                 default -> RackScreen.ERROR;
             };
-            text(graphics, row.name(), INSET_X, rowY, 48, color);
-            text(graphics, row.via(), 62, rowY, 50, RackScreen.TEXT_MUTED);
-            right(graphics, Integer.toString(row.cost()), INSET_RIGHT, rowY, row.override() >= 0 ? BLUE : RackScreen.TEXT);
+            String rowCost = Integer.toString(row.cost());
+            text(graphics, row.name(), INSET_X, rowY, NEXT_X - GAP - INSET_X, color);
+            text(graphics, row.via(), NEXT_X, rowY, INSET_RIGHT - Math.max(font().width(cost), font().width(rowCost)) - GAP - NEXT_X, RackScreen.TEXT_MUTED);
+            right(graphics, rowCost, INSET_RIGHT, rowY, row.override() >= 0 ? BLUE : RackScreen.TEXT);
         }
         if (rows.isEmpty()) {
-            graphics.text(font(), Component.translatable("gui.encodedlogistics.router.no_neighbours"), INSET_X, TABLE_Y, RackScreen.TEXT_DISABLED, false);
+            PanelBody.wrapped(graphics, font(), Component.translatable("gui.encodedlogistics.router.no_neighbours").getString(), INSET_X, TABLE_Y,
+                    INSET_RIGHT - INSET_X, TABLE_ROW, RackScreen.TEXT_DISABLED);
         }
     }
 
@@ -333,8 +360,9 @@ public class RouterPanel extends RackScreen.Panel {
         return Component.translatable("gui.encodedlogistics.router.route", router.endpointName(route.source()), destName(router, route));
     }
 
+    // text in width, cut with "..." (the tooltip over it has it whole).
     private void text(GuiGraphicsExtractor graphics, String text, int x, int y, int width, int color) {
-        graphics.text(font(), font().plainSubstrByWidth(text, width), x, y, color, false);
+        graphics.text(font(), PanelBody.fit(font(), text, width), x, y, color, false);
     }
 
     private void right(GuiGraphicsExtractor graphics, String text, int right, int y, int color) {
@@ -355,7 +383,7 @@ public class RouterPanel extends RackScreen.Panel {
         if (tab == TAB_MODE) {
             int row = (int) Math.floor((y - HEAD_Y + 2) / MODE_ROW);
             if (x >= INSET_X && x < INSET_RIGHT && y >= HEAD_Y - 2 && row >= 0 && row <= MODE_NEIGHBOURS) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.hint." + switch (row) {
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.router.hint." + switch (row) {
                     case MODE_MODE -> "mode";
                     case MODE_TRANSIT -> "transit";
                     default -> "neighbours";
@@ -365,7 +393,7 @@ public class RouterPanel extends RackScreen.Panel {
         }
         if (tab == TAB_TABLE) {
             if (y >= HEAD_Y && y < TABLE_Y && x >= INSET_X && x < INSET_RIGHT) {
-                graphics.setTooltipForNextFrame(Component.translatable(showNeighbours ? "gui.encodedlogistics.router.hint.show_table"
+                Tooltips.show(graphics, font(), Component.translatable(showNeighbours ? "gui.encodedlogistics.router.hint.show_table"
                         : "gui.encodedlogistics.router.hint.show_neighbours"), mouseX, mouseY);
                 return;
             }
@@ -374,7 +402,8 @@ public class RouterPanel extends RackScreen.Panel {
                 List<NeighbourRow> rows = neighbours();
                 if (row >= 0 && row < rows.size()) {
                     NeighbourRow neighbour = rows.get(row);
-                    graphics.setComponentTooltipForNextFrame(font(), List.of(Component.literal(neighbour.name()),
+                    Tooltips.show(graphics, font(), List.of(Component.literal(neighbour.name()),
+                            Component.translatable("gui.encodedlogistics.router.via_line", neighbour.via()).withColor(RackScreen.TEXT_MUTED),
                             Component.translatable("gui.encodedlogistics.router.state." + neighbour.state().toLowerCase(Locale.ROOT)).withColor(RackScreen.TEXT_MUTED),
                             Component.translatable("gui.encodedlogistics.router.hint.cost").withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
                 }
@@ -383,13 +412,14 @@ public class RouterPanel extends RackScreen.Panel {
                 if (row >= 0 && row < rows.size()) {
                     TableRow entry = rows.get(row);
                     List<Component> lines = new ArrayList<>(List.of(Component.literal(entry.name()),
+                            Component.translatable("gui.encodedlogistics.router.next_line", next(entry)).withColor(RackScreen.TEXT_MUTED),
                             Component.translatable("gui.encodedlogistics.router.source." + entry.source().toLowerCase(Locale.ROOT)).withColor(RackScreen.TEXT_MUTED),
                             Component.translatable("gui.encodedlogistics.router.age", age(entry.age())).withColor(RackScreen.TEXT_MUTED)));
                     if (router.transit() == net.zagdrath.encodedlogistics.network.routing.RoutingDomain.Transit.LISTED) {
                         lines.add(Component.translatable(entry.transit() ? "gui.encodedlogistics.router.hint.transit_listed"
                                 : "gui.encodedlogistics.router.hint.transit_unlisted").withColor(RackScreen.TEXT_DISABLED));
                     }
-                    graphics.setComponentTooltipForNextFrame(font(), lines, mouseX, mouseY);
+                    Tooltips.show(graphics, font(), lines, mouseX, mouseY);
                 }
             }
             return;
@@ -397,13 +427,13 @@ public class RouterPanel extends RackScreen.Panel {
         if (screen.over(mouseX, mouseY, SEGMENTS_X, LIST_Y, SEGMENTS_W, ROWS * ROW_H)) {
             int row = (mouseY - screen.top() - LIST_Y) / ROW_H;
             if (row < router.endpointCount()) {
-                graphics.setComponentTooltipForNextFrame(font(), List.of(router.endpointName(row),
+                Tooltips.show(graphics, font(), List.of(router.endpointName(row),
                         Component.translatable(reachable(row) ? "gui.encodedlogistics.router.reachable" : "gui.encodedlogistics.router.unreachable")
                                 .withColor(RackScreen.TEXT_MUTED),
                         Component.translatable(row == 0 ? "gui.encodedlogistics.router.rename_hint" : "gui.encodedlogistics.router.network_hint")
                                 .withColor(RackScreen.TEXT_DISABLED)), mouseX, mouseY);
             } else {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.router.link_hint"), mouseX, mouseY);
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.router.link_hint"), mouseX, mouseY);
             }
             return;
         }
@@ -424,7 +454,7 @@ public class RouterPanel extends RackScreen.Panel {
                 lines.add(Component.translatable("gui.encodedlogistics.router.via_routing").withColor(BLUE));
             }
             lines.add(Component.translatable("gui.encodedlogistics.router.route_hint").withColor(RackScreen.TEXT_DISABLED));
-            graphics.setComponentTooltipForNextFrame(font(), lines, mouseX, mouseY);
+            Tooltips.show(graphics, font(), lines, mouseX, mouseY);
         }
     }
 

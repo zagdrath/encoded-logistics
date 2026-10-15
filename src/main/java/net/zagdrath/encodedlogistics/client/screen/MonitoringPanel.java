@@ -111,7 +111,7 @@ public class MonitoringPanel extends RackScreen.Panel {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         for (int i = 0; i < STATS.length; i++) {
             if (screen.over(mouseX, mouseY, STAT_X + i * STAT_STEP, STAT_Y, 18, 18)) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.monitor." + STATS[i]), mouseX, mouseY);
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.monitor." + STATS[i]), mouseX, mouseY);
                 return;
             }
         }
@@ -122,7 +122,7 @@ public class MonitoringPanel extends RackScreen.Panel {
         int px = mouseX - screen.left() - PLOT_X;
         int index = Math.min(series.length - 1, (int) ((long) px * series.length / (PLOT_W - 1)));
         long secondsAgo = (long) (series.length - 1 - index) * MonitoringServerDevice.step(range());
-        graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.monitor.point", ago(secondsAgo),
+        Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.monitor.point", ago(secondsAgo),
                 MonitoringServerDevice.format(stat(), series[index])), mouseX, mouseY);
     }
 

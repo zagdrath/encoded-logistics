@@ -534,7 +534,7 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                 if (menu.craftables().contains(entry.getKey())) {
                     lines.add(Component.translatable("gui.encodedlogistics.terminal.craft_hint").withColor(ACCENT));
                 }
-                graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+                Tooltips.show(graphics, font, lines, mouseX, mouseY);
                 return;
             }
             List<Component> lines = new ArrayList<>(getTooltipFromContainerItem(entry.getKey().stack()));
@@ -558,13 +558,13 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
             if (mouseX >= bx && mouseX < bx + 18 && mouseY >= by && mouseY < by + 18) {
                 String id = layout.buttonIds.get(button);
                 if (id.equals("type_filter")) {
-                    graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.type"),
+                    Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.terminal.type"),
                             Component.translatable("gui.encodedlogistics.terminal.tab." + TerminalSettings.typeTab().name().toLowerCase(Locale.ROOT))
                                     .withColor(TEXT_MUTED)), mouseX, mouseY);
                     continue;
                 }
                 if (id.equals("height")) {
-                    graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.height"),
+                    Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.terminal.height"),
                             Component.translatable("gui.encodedlogistics.terminal.height." + TerminalSettings.height().name().toLowerCase(Locale.ROOT))
                                     .withColor(TEXT_MUTED)), mouseX, mouseY);
                     continue;
@@ -576,18 +576,18 @@ public abstract class AbstractTerminalScreen<M extends AccessTerminalMenu> exten
                     if (ExternalSearch.field() == null) {
                         lines.add(Component.translatable("gui.encodedlogistics.terminal.search_mode.no_jei").withColor(ERROR));
                     }
-                    graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+                    Tooltips.show(graphics, font, lines, mouseX, mouseY);
                     continue;
                 }
                 if (id.equals("craftables")) {
-                    graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.terminal.craftable"),
+                    Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.terminal.craftable"),
                             Component.translatable(TerminalSettings.craftablesAlways() ? "gui.encodedlogistics.terminal.craftable.always"
                                     : "gui.encodedlogistics.terminal.craftable.search").withColor(TEXT_MUTED)), mouseX, mouseY);
                     continue;
                 }
                 String key = id.equals("sort_mode") ? "gui.encodedlogistics.terminal.sort." + TerminalSettings.sortMode().name().toLowerCase(Locale.ROOT)
                         : TerminalSettings.descending() ? "gui.encodedlogistics.terminal.dir.desc" : "gui.encodedlogistics.terminal.dir.asc";
-                graphics.setTooltipForNextFrame(Component.translatable(key), mouseX, mouseY);
+                Tooltips.show(graphics, font, Component.translatable(key), mouseX, mouseY);
             }
         }
     }

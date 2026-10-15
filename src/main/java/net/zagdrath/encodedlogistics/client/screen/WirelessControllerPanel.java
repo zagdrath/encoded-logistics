@@ -144,9 +144,9 @@ public class WirelessControllerPanel extends RackScreen.Panel {
             int rowY = screen.top() + LIST_Y + i * ROW_H;
             Row row = rows.get(scroll + i);
             if (row.action() >= 0 && PartScreens.over(mouseX, mouseY, screen.left() + UNLINK_RIGHT - 9, rowY + 2, 9, 9)) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.wireless.unlink"), mouseX, mouseY);
+                Tooltips.show(graphics, font(), Component.translatable("gui.encodedlogistics.wireless.unlink"), mouseX, mouseY);
             } else if (PartScreens.over(mouseX, mouseY, screen.left() + LIST_X + 1, rowY + 3, 7, 7)) {
-                graphics.setTooltipForNextFrame(Component.translatable(tab == 0 ? row.lit() ? "gui.encodedlogistics.wireless.ap.online"
+                Tooltips.show(graphics, font(), Component.translatable(tab == 0 ? row.lit() ? "gui.encodedlogistics.wireless.ap.online"
                         : "gui.encodedlogistics.wireless.ap.offline" : row.lit() ? "gui.encodedlogistics.wireless.connected" : "gui.encodedlogistics.wireless.away"),
                         mouseX, mouseY);
             }

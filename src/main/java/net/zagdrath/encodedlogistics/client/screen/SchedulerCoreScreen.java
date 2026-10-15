@@ -127,14 +127,14 @@ public class SchedulerCoreScreen extends AbstractContainerScreen<SchedulerCoreMe
         super.extractTooltip(graphics, mouseX, mouseY);
         RecentJobs.Row finished = RecentJobs.at(recent(), mouseX - leftPos, mouseY - topPos, RECENT_X, RECENT_Y, RECENT_W, RECENT_H);
         if (finished != null) {
-            graphics.setComponentTooltipForNextFrame(font, RecentJobs.tooltip(finished), mouseX, mouseY);
+            Tooltips.show(graphics, font, RecentJobs.tooltip(finished), mouseX, mouseY);
         }
         JobInfo job = jobAt(mouseX, mouseY);
         if (job != null) {
             if (mouseX >= cancelX() && mouseX < cancelX() + CANCEL_SIZE) {
-                graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.scheduler.cancel"), mouseX, mouseY);
+                Tooltips.show(graphics, font, Component.translatable("gui.encodedlogistics.scheduler.cancel"), mouseX, mouseY);
             } else {
-                graphics.setComponentTooltipForNextFrame(font, List.of(job.item().stack().getHoverName(),
+                Tooltips.show(graphics, font, List.of(job.item().stack().getHoverName(),
                         Component.translatable("gui.encodedlogistics.craft.progress", job.done(), job.total()).withColor(PartScreens.TEXT_MUTED)),
                         mouseX, mouseY);
             }

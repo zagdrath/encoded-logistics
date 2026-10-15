@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
 import net.zagdrath.encodedlogistics.net.CrtResponsePayload;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.terminal.TerminalItems;
@@ -89,7 +90,7 @@ final class CraftPanel extends CrtPanel {
         grid.put(3, 0, tr("crt.encodedlogistics.type_choices"));
         grid.put(5, 0, CrtGrid.pad(tr("crt.encodedlogistics.field.item"), LABEL));
         grid.put(6, 0, CrtGrid.pad(tr("crt.encodedlogistics.field.quantity"), LABEL));
-        grid.put(6, LABEL + 12, "1-999999");
+        grid.put(6, LABEL + 12, "1-" + CraftRequests.MAX_AMOUNT);
         grid.put(7, 0, CrtGrid.pad(tr("crt.encodedlogistics.field.scheduler"), LABEL));
         grid.put(7, LABEL + 12, "*AUTO, name");
         grid.put(8, 0, CrtGrid.pad(tr("crt.encodedlogistics.field.destination"), LABEL));
@@ -124,7 +125,7 @@ final class CraftPanel extends CrtPanel {
     boolean enter() {
         long amount = TerminalItems.amount(quantity.trimmed());
         String to = destination.trimmed().toUpperCase(Locale.ROOT);
-        if (amount < 1 || amount > 999_999) {
+        if (amount < 1 || amount > CraftRequests.MAX_AMOUNT) {
             screen.message(tr("crt.encodedlogistics.msg.invalid_value", quantity.trimmed()));
             screen.focus(quantity);
             return true;

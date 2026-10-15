@@ -96,7 +96,7 @@ public class CapacitorBankScreen extends AbstractContainerScreen<CapacitorBankMe
             CapacitorBankPayload figures = figures();
             Component amount = figures.capacity() < 0 ? Component.translatable("gui.encodedlogistics.capacitor_bank.infinite")
                     : Component.literal(String.format(Locale.ROOT, "%,d / %,d FE", figures.stored(), figures.capacity()));
-            graphics.setComponentTooltipForNextFrame(font, List.of(Component.translatable("gui.encodedlogistics.capacitor_bank.stored"),
+            Tooltips.show(graphics, font, List.of(Component.translatable("gui.encodedlogistics.capacitor_bank.stored"),
                     amount.copy().withColor(TEXT_MUTED)),
                     mouseX, mouseY);
         }

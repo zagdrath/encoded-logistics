@@ -23,6 +23,9 @@ import net.zagdrath.encodedlogistics.optical.Multiplexer;
 final class OpticalMuxPanel implements PanelBody {
     private static final int X = 12, RIGHT = 152, HEAD_Y = 36, ROWS_Y = 49, ROW = 11, ROWS = 8;
     private static final int TAB_CHANNELS = 0, TAB_LINE = 1;
+    // Channels: number at 12, network at NETWORK_X, lanes right at LANES_RIGHT, up right at 152 (GAP between columns).
+    // Line: Unpair under the rows, inside the inset.
+    private static final int NETWORK_X = 30, LANES_RIGHT = 128, GAP = 4, UNPAIR_Y = 124, UNPAIR_W = 60, UNPAIR_H = 14;
 
     private final Context context;
     private final PanelTabs tabs = new PanelTabs("gui.encodedlogistics.mux.tab.channels", "gui.encodedlogistics.mux.tab.line");
@@ -36,8 +39,9 @@ final class OpticalMuxPanel implements PanelBody {
         return Component.translatable("gui.encodedlogistics.mux." + key, args).getString();
     }
 
+    // text in width, cut with "..." (the row's tooltip has it whole).
     private void text(GuiGraphicsExtractor graphics, String text, int x, int y, int width, int color) {
-        graphics.text(context.font(), context.font().plainSubstrByWidth(text, width), x, y, color, false);
+        graphics.text(context.font(), PanelBody.fit(context.font(), text, width), x, y, color, false);
     }
 
     private void right(GuiGraphicsExtractor graphics, String text, int right, int y, int color) {
@@ -61,9 +65,12 @@ final class OpticalMuxPanel implements PanelBody {
                 graphics.fill(context.left() + X - 2, y, context.left() + RIGHT + 1, y + ROW, 0x4000D992);
             }
         }
+        if (tab == TAB_CHANNELS) {
+            PanelBody.scrollbar(graphics, context.left(), context.top(), scroll, data == null ? 0 : channels(data).size(), ROWS);
+        }
         if (data != null && tab == TAB_LINE && !data.getStringOr("line", "unpaired").equals("unpaired")) {
-            PartScreens.wideButton(graphics, context.font(), context.left() + X, context.top() + 122, 60, 14, Component.translatable("gui.encodedlogistics.mux.unpair"),
-                    true, mouseX, mouseY);
+            PartScreens.wideButton(graphics, context.font(), context.left() + X, context.top() + UNPAIR_Y, UNPAIR_W, UNPAIR_H,
+                    Component.translatable("gui.encodedlogistics.mux.unpair"), true, mouseX, mouseY);
         }
     }
 
@@ -78,18 +85,20 @@ final class OpticalMuxPanel implements PanelBody {
             line(graphics, data);
             return;
         }
-        text(graphics, tr("col.ch"), X, HEAD_Y, 16, RackScreen.TEXT_MUTED);
-        text(graphics, tr("col.network"), X + 18, HEAD_Y, 70, RackScreen.TEXT_MUTED);
-        right(graphics, tr("col.lanes"), 126, HEAD_Y, RackScreen.TEXT_MUTED);
+        PanelBody.divider(graphics, HEAD_Y);
+        int networkW = LANES_RIGHT - context.font().width(tr("col.lanes")) - GAP - NETWORK_X;
+        text(graphics, tr("col.ch"), X, HEAD_Y, NETWORK_X - GAP - X, RackScreen.TEXT_MUTED);
+        text(graphics, tr("col.network"), NETWORK_X, HEAD_Y, networkW, RackScreen.TEXT_MUTED);
+        right(graphics, tr("col.lanes"), LANES_RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
         right(graphics, tr("col.up"), RIGHT, HEAD_Y, RackScreen.TEXT_MUTED);
         List<ValueInput> rows = channels(data);
         for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
             ValueInput row = rows.get(scroll + i);
             int y = ROWS_Y + i * ROW;
             boolean assigned = row.getBooleanOr("assigned", false), up = row.getBooleanOr("up", false);
-            text(graphics, Integer.toString(scroll + i + 1), X, y, 16, RackScreen.TEXT);
-            text(graphics, assigned ? row.getStringOr("network", "") : "-", X + 18, y, 80, assigned ? RackScreen.TEXT : RackScreen.TEXT_DISABLED);
-            right(graphics, up ? Integer.toString(row.getIntOr("lanes", 0)) : "-", 126, y, RackScreen.TEXT);
+            text(graphics, Integer.toString(scroll + i + 1), X, y, NETWORK_X - GAP - X, RackScreen.TEXT);
+            text(graphics, assigned ? row.getStringOr("network", "") : "-", NETWORK_X, y, networkW, assigned ? RackScreen.TEXT : RackScreen.TEXT_DISABLED);
+            right(graphics, up ? Integer.toString(row.getIntOr("lanes", 0)) : "-", LANES_RIGHT, y, RackScreen.TEXT);
             right(graphics, !assigned ? "-" : tr(up ? "yes" : "no"), RIGHT, y, !assigned ? RackScreen.TEXT_DISABLED : up ? RackScreen.TEXT : RackScreen.ERROR);
         }
     }
@@ -109,20 +118,40 @@ final class OpticalMuxPanel implements PanelBody {
             row(graphics, y += ROW, tr("quality"), data.getIntOr("quality", 0) + "%", RackScreen.TEXT);
             row(graphics, y += ROW, tr("amplifiers"), Integer.toString(data.getIntOr("amplifiers", 0)), RackScreen.TEXT);
         } else if (state.equals("unpaired")) {
-            text(graphics, tr("pair_hint"), X, y + 2 * ROW, 140, RackScreen.TEXT_DISABLED);
+            PanelBody.wrapped(graphics, context.font(), tr("pair_hint"), X, y + 2 * ROW, RIGHT - X, ROW, RackScreen.TEXT_DISABLED);
         }
     }
 
+    // A label at 12 and its value right at 152, the value cut short of the label.
     private void row(GuiGraphicsExtractor graphics, int y, String label, String value, int color) {
-        text(graphics, label, X, y, 70, RackScreen.TEXT_MUTED);
-        right(graphics, value, RIGHT, y, color);
+        int labelW = context.font().width(label);
+        graphics.text(context.font(), label, X, y, RackScreen.TEXT_MUTED, false);
+        right(graphics, PanelBody.fit(context.font(), value, RIGHT - X - labelW - GAP * 2), RIGHT, y, color);
     }
 
     @Override
     public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         double x = mouseX - context.left(), y = mouseY - context.top();
-        if (tab == TAB_CHANNELS && x >= X && x < RIGHT && y >= ROWS_Y && y < ROWS_Y + ROWS * ROW) {
-            graphics.setTooltipForNextFrame(Component.translatable("gui.encodedlogistics.mux.hint"), mouseX, mouseY);
+        ValueInput data = context.data();
+        if (data == null || x < X || x >= RIGHT) {
+            return;
+        }
+        if (tab == TAB_LINE) {
+            // The far end in full (it's cut to fit beside its label).
+            if (y >= HEAD_Y - 1 && y < HEAD_Y + ROW - 1 && !data.getStringOr("line", "unpaired").equals("unpaired")) {
+                Tooltips.show(graphics, context.font(), Component.literal(data.getStringOr("partner", "?")), mouseX, mouseY);
+            }
+            return;
+        }
+        if (y >= ROWS_Y && y < ROWS_Y + ROWS * ROW) {
+            List<ValueInput> rows = channels(data);
+            int channel = scroll + (int) ((y - ROWS_Y) / ROW);
+            List<Component> lines = new ArrayList<>();
+            if (channel < rows.size() && rows.get(channel).getBooleanOr("assigned", false)) {
+                lines.add(Component.literal(rows.get(channel).getStringOr("network", "")));
+            }
+            lines.add(Component.translatable("gui.encodedlogistics.mux.hint").withColor(lines.isEmpty() ? RackScreen.TEXT : RackScreen.TEXT_DISABLED));
+            Tooltips.show(graphics, context.font(), lines, mouseX, mouseY);
         }
     }
 
@@ -143,7 +172,7 @@ final class OpticalMuxPanel implements PanelBody {
             return true;
         }
         if (tab == TAB_LINE) {
-            if (button == InputConstants.MOUSE_BUTTON_LEFT && PartScreens.over(x, y, X, 122, 60, 14)) {
+            if (button == InputConstants.MOUSE_BUTTON_LEFT && PartScreens.over(x, y, X, UNPAIR_Y, UNPAIR_W, UNPAIR_H)) {
                 context.send(Multiplexer.ACTION_UNPAIR, 0, "");
                 return true;
             }
