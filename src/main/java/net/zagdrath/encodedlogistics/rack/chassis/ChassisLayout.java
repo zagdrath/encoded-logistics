@@ -42,8 +42,11 @@ public final class ChassisLayout {
     public static final int HIDDEN = 1000, CAGE_PAGE = 100, BAY_PAGE = 200, SCHEMATIC_PAGE = 300;
     // The Chassis Switch's cages: four for each line slot, after its 14 bays.
     public static final int SWITCH_CAGES_FROM = 14, CAGES_PER_CARD = 4;
-    // The Blade Enclosure's drive bays (two for each front slot) come first, then its bays, then its schematics.
-    public static final int BLADE_BAYS_FROM = 32, BLADE_SCHEMATICS_FROM = 58, DRIVES_PER_BLADE = 2, SCHEMATICS = 9;
+    // The Blade Enclosure's slots, in the order they were added (so older enclosures load as they were): each front
+    // slot's first two drive bays, its bays, its first nine schematics, each front slot's other four drive bays, the
+    // other eighteen schematics. The panel pages through them: drive bays two a blade a page, schematics nine a page.
+    public static final int BLADE_BAYS_FROM = 32, BLADE_SCHEMATICS_FROM = 58, BLADE_MORE_DRIVES_FROM = 67, BLADE_MORE_SCHEMATICS_FROM = 131;
+    public static final int BLADES = 16, DRIVES_PER_BLADE = 6, DRIVES_PER_PAGE = 2, SCHEMATICS = 27, SCHEMATICS_PER_PAGE = 9;
 
     public static final ChassisLayout SWITCH = switchLayout(), SHELF = shelfLayout(), BLADE = bladeLayout();
 
@@ -169,25 +172,52 @@ public final class ChassisLayout {
         return SHELF.baySlots();
     }
 
-    // The Blade Enclosure: two drive bays for each front slot (eight slots' bays a row), its bays, then nine schematics.
+    // The Blade Enclosure: its slots in the order above. On each drive page every front slot shows two of its bays
+    // (eight slots' bays a row); on each schematic page nine schematics, 3 x 3.
     public static List<RackSlot> bladeSlots() {
-        List<RackSlot> slots = new ArrayList<>();
+        RackSlot[] slots = new RackSlot[BLADE_MORE_SCHEMATICS_FROM + SCHEMATICS - SCHEMATICS_PER_PAGE];
         Predicate<ItemStack> drive = RackDeviceType::isDrive;
-        for (int i = 0; i < BLADE_BAYS_FROM; i++) {
-            int blade = i / DRIVES_PER_BLADE, k = i % DRIVES_PER_BLADE;
-            slots.add(new RackSlot(driveX(blade), driveY(blade, k), drive, 1, BAY_PAGE));
+        for (int blade = 0; blade < BLADES; blade++) {
+            for (int k = 0; k < DRIVES_PER_BLADE; k++) {
+                slots[bladeDriveSlot(blade, k)] = new RackSlot(driveX(blade), driveY(blade, k % DRIVES_PER_PAGE), drive, 1, BAY_PAGE + k / DRIVES_PER_PAGE);
+            }
         }
-        slots.addAll(BLADE.baySlots());
+        List<RackSlot> bays = BLADE.baySlots();
+        for (int i = 0; i < bays.size(); i++) {
+            slots[BLADE_BAYS_FROM + i] = bays.get(i);
+        }
+        Predicate<ItemStack> schematic = stack -> stack.is(ModItems.ENCODED_SCHEMATIC_CRAFTING.get());
         for (int i = 0; i < SCHEMATICS; i++) {
-            slots.add(new RackSlot(62 + i % 3 * 18, 46 + i / 3 * 18, stack -> stack.is(ModItems.ENCODED_SCHEMATIC_CRAFTING.get()), 1, SCHEMATIC_PAGE));
+            int k = i % SCHEMATICS_PER_PAGE;
+            slots[bladeSchematicSlot(i)] = new RackSlot(62 + k % 3 * 18, 46 + k / 3 * 18, schematic, 1, SCHEMATIC_PAGE + i / SCHEMATICS_PER_PAGE);
         }
-        return slots;
+        return List.of(slots);
+    }
+
+    // A front slot's k-th drive bay (0-5), as an item slot.
+    public static int bladeDriveSlot(int blade, int k) {
+        return k < DRIVES_PER_PAGE ? blade * DRIVES_PER_PAGE + k : BLADE_MORE_DRIVES_FROM + blade * (DRIVES_PER_BLADE - DRIVES_PER_PAGE) + k - DRIVES_PER_PAGE;
+    }
+
+    // The front slot (0-15) whose drive bay an item slot is, or -1.
+    public static int bladeOfDriveSlot(int slot) {
+        if (slot >= 0 && slot < BLADE_BAYS_FROM) {
+            return slot / DRIVES_PER_PAGE;
+        }
+        int more = slot - BLADE_MORE_DRIVES_FROM;
+        return more >= 0 && more < BLADES * (DRIVES_PER_BLADE - DRIVES_PER_PAGE) ? more / (DRIVES_PER_BLADE - DRIVES_PER_PAGE) : -1;
+    }
+
+    // The i-th schematic (0-26), as an item slot.
+    public static int bladeSchematicSlot(int i) {
+        return i < SCHEMATICS_PER_PAGE ? BLADE_SCHEMATICS_FROM + i : BLADE_MORE_SCHEMATICS_FROM + i - SCHEMATICS_PER_PAGE;
     }
 
     public static int driveX(int blade) {
         return 16 + blade % 8 * 18;
     }
 
+    // A front slot's bay on a drive page (k 0 or 1).
     public static int driveY(int blade, int k) {
         return 44 + (blade / 8 * 2 + k) * 18 + blade / 8 * 6;
     }

@@ -800,9 +800,30 @@ public class Config {
             .comment("Items a second each Routing Card in a Chassis Switch moves between segments (the cards add up).")
             .defineInRange("routingCardRate", 128, 1, 1_000_000);
 
-    public static final ModConfigSpec.IntValue BLADE_BONUS_PERCENT = BUILDER
-            .comment("How much more a blade gives per rack unit than its server (Compute, Memory): % on top of the server's rate per U.")
-            .defineInRange("bladeBonusPercent", 25, 0, 1_000);
+    // Each blade is crafted from its server, so it gives more than one: the enclosure is the late-game way to fill a rack.
+    public static final ModConfigSpec.IntValue COMPUTE_BLADE_THREADS = BUILDER
+            .comment("Crafting threads each Compute Blade in a Blade Enclosure gives its network's rack scheduler.")
+            .defineInRange("computeBladeThreads", 4, 0, 1024);
+
+    public static final ModConfigSpec.IntValue MEMORY_BLADE_MEMORY = BUILDER
+            .comment("Job memory each Memory Blade in a Blade Enclosure gives its network's rack scheduler.")
+            .defineInRange("memoryBladeMemory", 65_536, 0, Integer.MAX_VALUE);
+
+    public static final ModConfigSpec.DoubleValue COMPUTE_BLADE_DRAIN = BUILDER
+            .comment("FE per tick each Compute Blade drains (in place of chassisCardDrain).")
+            .defineInRange("computeBladeDrain", 8.0, 0.0, 100_000.0);
+
+    public static final ModConfigSpec.DoubleValue MEMORY_BLADE_DRAIN = BUILDER
+            .comment("FE per tick each Memory Blade drains (in place of chassisCardDrain).")
+            .defineInRange("memoryBladeDrain", 4.0, 0.0, 100_000.0);
+
+    public static final ModConfigSpec.DoubleValue FABRICATION_BLADE_DRAIN = BUILDER
+            .comment("FE per tick each Fabrication Blade drains (in place of chassisCardDrain; each craft also costs fabricatorEnergyPerCraft).")
+            .defineInRange("fabricationBladeDrain", 6.0, 0.0, 100_000.0);
+
+    public static final ModConfigSpec.DoubleValue STORAGE_BLADE_DRAIN = BUILDER
+            .comment("FE per tick each Storage Blade drains (in place of chassisCardDrain; its drives drain rackDriveDrain each on top).")
+            .defineInRange("storageBladeDrain", 3.0, 0.0, 100_000.0);
 
     public static final ModConfigSpec.IntValue INTERCONNECT_LANES = BUILDER
             .comment("Lanes a Blade Enclosure's Interconnect Module gives its blades (the blades take none of the rack's).")

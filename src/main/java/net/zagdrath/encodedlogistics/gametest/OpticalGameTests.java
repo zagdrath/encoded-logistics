@@ -190,9 +190,9 @@ final class OpticalGameTests {
                 .thenSucceed();
     }
 
-    // A Blade Enclosure with two Compute Blades, a Memory Blade and a Storage Blade (a drive behind it), an interconnect,
-    // a management module and a power supply: its network's rack Scheduler has the blades' threads and memory, and the
-    // drive is network storage; a drive behind an empty slot isn't.
+    // A Blade Enclosure with two Compute Blades, a Memory Blade and a Storage Blade (drives in its first bay and its
+    // sixth, the second bank's), an interconnect, a management module and a power supply: its network's rack Scheduler
+    // has the blades' threads and memory, and both drives are network storage; a drive behind an empty slot isn't.
     static void bladeEnclosure(GameTestHelper helper) {
         BlockPos master = RackGameTests.networkedRack(helper);
         BladeEnclosureDevice blades = RackGameTests.install(helper, master, RackDeviceType.BLADE_ENCLOSURE, 1, BladeEnclosureDevice.class);
@@ -204,19 +204,20 @@ final class OpticalGameTests {
         blades.items().set(front + 16, part(ChassisPart.INTERCONNECT_MODULE));
         blades.items().set(front + 18, part(ChassisPart.MANAGEMENT_MODULE));
         blades.items().set(front + 20, part(ChassisPart.BLADE_PSU));
-        // The Storage Blade (slot 3) opens drive bays 6 and 7; bay 0 has no blade in front.
-        blades.items().set(6, new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
+        // The Storage Blade (slot 3) opens its six drive bays; bay 0 has no blade in front.
+        blades.items().set(ChassisLayout.bladeDriveSlot(3, 0), new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
+        blades.items().set(ChassisLayout.bladeDriveSlot(3, 5), new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
         blades.items().set(0, new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
         blades.itemsChanged();
         helper.startSequence()
                 .thenWaitUntil(() -> {
                     RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
                     helper.assertTrue(blades.isOnline() && blades.running(), "Enclosure online " + blades.isOnline());
-                    int threads = (int) Math.ceil(2 * BladeEnclosureDevice.threadsPerBlade() - 1.0E-9);
+                    int threads = 2 * BladeEnclosureDevice.threadsPerBlade();
                     helper.assertTrue(blades.schedulerThreads() == threads && blades.schedulerMemory() == BladeEnclosureDevice.memoryPerBlade(),
                             "Threads " + blades.schedulerThreads() + ", memory " + blades.schedulerMemory());
                     helper.assertTrue(rack.scheduler().active() && rack.scheduler().threads() == threads, "Scheduler " + rack.scheduler().active());
-                    helper.assertTrue(blades.views(helper.getLevel().getServer()).size() == 1, "Storage views " + blades.views(helper.getLevel().getServer()).size());
+                    helper.assertTrue(blades.views(helper.getLevel().getServer()).size() == 2, "Storage views " + blades.views(helper.getLevel().getServer()).size());
                     helper.assertTrue(blades.status() == RackDeviceInfo.Status.WARNING, "Not degraded on one interconnect");
                 })
                 .thenSucceed();

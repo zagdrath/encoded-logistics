@@ -12,7 +12,7 @@ affects only what that part gave.
 | Chassis | Height | Bays |
 |---|---|---|
 | {{item chassis_switch}} | 10U | 2 supervisor bays (A, B), 8 line card bays (L1-L8), 4 power bays (P1-P4), plus 4 transceiver cages behind each Uplink Card |
-| {{item blade_enclosure}} | 10U | 16 blade bays in front (F1-F16); at the back 2 interconnect bays (R1, R2), 2 management bays (M1, M2), 6 power bays (P1-P6); plus 2 drive bays behind each blade bay and 9 schematic slots |
+| {{item blade_enclosure}} | 10U | 16 blade bays in front (F1-F16); at the back 2 interconnect bays (R1, R2), 2 management bays (M1, M2), 6 power bays (P1-P6); plus 6 drive bays behind each blade bay and 27 schematic slots |
 | {{item optical_transport_shelf}} | 6U | 2 controller bays (C1, C2) and 8 line card bays (L1-L8) |
 
 {{recipe chassis_switch}}
@@ -68,23 +68,32 @@ lanes, more routing throughput, or redundancy.
 
 ## Blade Enclosure {#blade-enclosure}
 
-The Blade Enclosure packs compute, memory, fabrication and storage into one 10U chassis.
+The Blade Enclosure packs compute, memory, fabrication and storage into one 10U chassis. It's the late-game way to fill
+a rack: each blade is crafted from its server and gives more than that server does, in a fraction of the space.
+
+| Blade | Gives | Its server | Drain |
+|---|---|---|---|
+| {{item compute_blade}} | {{config optical.computeBladeThreads default}} threads | {{config rack.computeServerThreads default}} threads in 2U | {{config optical.computeBladeDrain default}} FE/t |
+| {{item memory_blade}} | {{config optical.memoryBladeMemory default}} job memory | {{config rack.memoryServerMemory default}} in 1U | {{config optical.memoryBladeDrain default}} FE/t |
+| {{item fabrication_blade}} | Crafts at full speed from 27 schematic slots | 9 slots, full speed with two Throughput Modules | {{config optical.fabricationBladeDrain default}} FE/t |
+| {{item storage_blade}} | 6 drive bays | NAS: 6 bays in 2U | {{config optical.storageBladeDrain default}} FE/t, plus its drives |
+
+A full enclosure of Compute Blades gives 64 threads in 10U at the defaults; four of them fill a rack with 256, against 42
+from a rack of Compute Servers. A full enclosure of Storage Blades holds 96 drives. The chassis itself drains
+{{config optical.chassisDrain default}} FE/t and each rear module {{config optical.chassisCardDrain default}} FE/t.
 
 - **It runs** with at least one Interconnect Module, one Management Module and one Blade Power Supply. It is degraded
   with fewer than two interconnects or two power supplies.
 - **Lanes:** the blades take none of the rack's lanes. The Interconnect Module gives them
   {{config optical.interconnectLanes default}}; a second one is a spare. The Management Module's second is a standby.
-- **Compute Blades** give the network's rack Scheduler threads, as a Compute Server does but packed denser: each blade
-  is worth half a Compute Server's {{config rack.computeServerThreads}} threads for its 10/16 U of height, plus
-  {{config optical.bladeBonusPercent default}} % more. The blades' threads are added up and rounded up; at the
-  defaults each blade is worth 0.78 threads, so eight blades give 7.
-- **Memory Blades** give job memory the same way: {{config rack.memoryServerMemory}} times 10/16 times the bonus, 25,600
-  each at the defaults.
-- **Fabrication Blades** craft from the enclosure's nine schematic slots (the **Fab** tab) as a Fabrication Server
-  does, {{config autocrafting.fabricatorEnergyPerCraft}} FE a craft. More blades craft faster: a second blade counts as
-  one Throughput Module, a third as two.
-- **Storage Blades** each open the two drive bays behind them (the **Drives** tab) as network storage, with a priority
-  and access mode like a NAS.
+- **Compute Blades** each give the network's rack Scheduler {{config optical.computeBladeThreads}} threads.
+- **Memory Blades** each give it {{config optical.memoryBladeMemory}} job memory.
+- **Fabrication Blades** craft from the enclosure's 27 schematic slots (the **Fab** tab, nine a page) as a Fabrication
+  Server with both Throughput Modules does: the last (fastest) of {{config autocrafting.fabricatorCraftTicks}}, 5 ticks
+  a craft at the defaults, and {{config autocrafting.fabricatorEnergyPerCraft}} FE a craft. One blade is enough; how many crafts run at once is up
+  to the jobs' threads.
+- **Storage Blades** each open the six drive bays behind them (the **Drives** tab, two of each blade's bays a page) as
+  network storage, with a priority and access mode like a NAS.
 
 The panel's tabs: **Front**, **Rear**, **Drives** and **Fab**. The scheduler pooling is explained on
 {{page crafting/schedulers}}.

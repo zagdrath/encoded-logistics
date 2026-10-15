@@ -40,18 +40,17 @@ import net.zagdrath.encodedlogistics.rack.chassis.Chassis;
 import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
 import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
 
-// The Blade Enclosure (10U, the optical handoff 6). Sixteen half-height blade slots in front: Compute Blades and Memory
-// Blades give its network's rack Scheduler threads and job memory as their servers do, bladeBonusPercent more per rack
-// unit (RackScheduler); Fabrication Blades craft from the enclosure's nine schematic slots as a Fabrication Server does
-// (more blades, quicker crafts: one per Throughput Module's worth, up to two); a Storage Blade opens two of its drive
-// bays (network storage, StorageDevice). Behind: two Interconnect Modules (the lanes its blades use - the blades take
-// none of the rack's; the second is redundant), six power supplies and one or two Management Modules (the second a
-// standby). It runs with an interconnect, a management module and a power supply; degraded below two interconnects or
-// two power supplies.
+// The Blade Enclosure (10U, the optical handoff 6), the late-game way to fill a rack: each blade is crafted from its
+// server and gives more than it. Sixteen half-height blade slots in front: Compute Blades give its network's rack
+// Scheduler computeBladeThreads threads each and Memory Blades memoryBladeMemory job memory each (RackScheduler);
+// Fabrication Blades craft from the enclosure's 27 schematic slots as a Fabrication Server with both Throughput Modules
+// does; a Storage Blade opens its six drive bays (network storage, StorageDevice), a NAS's worth. Behind: two
+// Interconnect Modules (the lanes its blades use - the blades take none of the rack's; the second is redundant), six
+// power supplies and one or two Management Modules (the second a standby). It runs with an interconnect, a management
+// module and a power supply; degraded below two interconnects or two power supplies. Each blade drains its own
+// <kind>BladeDrain, the rear modules chassisCardDrain.
 public class BladeEnclosureDevice extends StorageDevice implements Chassis, CraftingProvider {
-    private static final int BLADES = 16, BLADE_PSUS = 6;
-    // A blade's share of the 10U chassis.
-    private static final double BLADE_UNITS = 10.0 / BLADES;
+    private static final int BLADES = ChassisLayout.BLADES, BLADE_PSUS = 6;
 
     private int[] shownParts = new int[0];
     private final CraftQueue crafts = new CraftQueue();
@@ -106,23 +105,17 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         return count(ChassisPart.INTERCONNECT_MODULE) > 0 ? Config.INTERCONNECT_LANES.getAsInt() : 0;
     }
 
-    private static double bonus() {
-        return 1 + Config.BLADE_BONUS_PERCENT.getAsInt() / 100.0;
-    }
-
-    // A Compute Server gives its threads over 2U, a Memory Server its memory over 1U; a blade its share of that.
-    public static double threadsPerBlade() {
-        return Config.COMPUTE_SERVER_THREADS.getAsInt() / 2.0 * BLADE_UNITS * bonus();
+    public static int threadsPerBlade() {
+        return Config.COMPUTE_BLADE_THREADS.getAsInt();
     }
 
     public static long memoryPerBlade() {
-        return Math.round(Config.MEMORY_SERVER_MEMORY.getAsInt() * BLADE_UNITS * bonus());
+        return Config.MEMORY_BLADE_MEMORY.getAsInt();
     }
 
     @Override
     public int schedulerThreads() {
-        int blades = count(ChassisPart.COMPUTE_BLADE);
-        return running() && blades > 0 ? (int) Math.ceil(blades * threadsPerBlade() - 1.0E-9) : 0;
+        return running() ? count(ChassisPart.COMPUTE_BLADE) * threadsPerBlade() : 0;
     }
 
     @Override
@@ -130,16 +123,23 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         return running() ? count(ChassisPart.MEMORY_BLADE) * memoryPerBlade() : 0;
     }
 
-    // --- Storage: two bays behind each Storage Blade ---
+    // --- Storage: six bays behind each Storage Blade ---
 
     @Override
     public int drives() {
-        return ChassisLayout.BLADE_BAYS_FROM;
+        return BLADES * ChassisLayout.DRIVES_PER_BLADE;
+    }
+
+    // Drive i is front slot i / 6's bay i % 6.
+    @Override
+    public int driveSlot(int i) {
+        return ChassisLayout.bladeDriveSlot(i / ChassisLayout.DRIVES_PER_BLADE, i % ChassisLayout.DRIVES_PER_BLADE);
     }
 
     @Override
     protected boolean bayUsable(int slot) {
-        return running() && ChassisPart.of(items().get(ChassisLayout.BLADE_BAYS_FROM + slot / ChassisLayout.DRIVES_PER_BLADE)) == ChassisPart.STORAGE_BLADE;
+        int blade = ChassisLayout.bladeOfDriveSlot(slot);
+        return running() && blade >= 0 && ChassisPart.of(items().get(ChassisLayout.BLADE_BAYS_FROM + blade)) == ChassisPart.STORAGE_BLADE;
     }
 
     public int storageBays() {
@@ -151,9 +151,14 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         return working();
     }
 
+    // The chassis and its rear modules as any chassis's parts; each blade its own drain.
     @Override
     protected double baseDrain() {
-        return Chassis.drain(this);
+        return Chassis.drain(this) - blades() * Config.CHASSIS_CARD_DRAIN.getAsDouble()
+                + count(ChassisPart.COMPUTE_BLADE) * Config.COMPUTE_BLADE_DRAIN.getAsDouble()
+                + count(ChassisPart.MEMORY_BLADE) * Config.MEMORY_BLADE_DRAIN.getAsDouble()
+                + count(ChassisPart.FABRICATION_BLADE) * Config.FABRICATION_BLADE_DRAIN.getAsDouble()
+                + count(ChassisPart.STORAGE_BLADE) * Config.STORAGE_BLADE_DRAIN.getAsDouble();
     }
 
     // --- Crafting: the Fabrication Blades ---
@@ -164,8 +169,8 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         if (count(ChassisPart.FABRICATION_BLADE) == 0) {
             return schematics;
         }
-        for (int slot = ChassisLayout.BLADE_SCHEMATICS_FROM; slot < ChassisLayout.BLADE_SCHEMATICS_FROM + ChassisLayout.SCHEMATICS; slot++) {
-            Schematic schematic = SchematicItem.schematic(items().get(slot));
+        for (int i = 0; i < ChassisLayout.SCHEMATICS; i++) {
+            Schematic schematic = SchematicItem.schematic(items().get(ChassisLayout.bladeSchematicSlot(i)));
             if (schematic != null && schematic.kind() == Schematic.Kind.CRAFTING) {
                 schematics.add(schematic);
             }
@@ -173,11 +178,10 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         return schematics;
     }
 
-    // More Fabrication Blades craft quicker: the second as a Throughput Module, the third as two.
-    private int craftTicks() {
+    // Every Fabrication Blade crafts at a Fabricator's top speed (fabricatorCraftTicks' last entry, both modules).
+    private static int craftTicks() {
         List<? extends Integer> ticks = Config.FABRICATOR_CRAFT_TICKS.get();
-        int speed = Math.max(0, count(ChassisPart.FABRICATION_BLADE) - 1);
-        return ticks.isEmpty() ? 20 : Math.max(1, ticks.get(Math.min(speed, ticks.size() - 1)));
+        return ticks.isEmpty() ? 5 : Math.max(1, ticks.getLast());
     }
 
     @Override
@@ -287,11 +291,6 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
 
     // --- Its bays ---
 
-    // "0.8", "2".
-    private static String number(double value) {
-        return value == Math.floor(value) ? Long.toString((long) value) : String.format(Locale.ROOT, "%.1f", value);
-    }
-
     @Override
     public PartState partState(ChassisLayout.Bay bay) {
         ChassisPart part = part(bay);
@@ -307,14 +306,14 @@ public class BladeEnclosureDevice extends StorageDevice implements Chassis, Craf
         }
         String code = on ? "*ONLINE" : "*OFFLINE";
         return switch (part) {
-            case COMPUTE_BLADE -> new PartState(code, status, Component.translatable("hud.encodedlogistics.chassis.threads", number(threadsPerBlade())), on);
+            case COMPUTE_BLADE -> new PartState(code, status, Component.translatable("hud.encodedlogistics.chassis.threads", threadsPerBlade()), on);
             case MEMORY_BLADE -> new PartState(code, status, Component.translatable("hud.encodedlogistics.chassis.buffer",
                     MemoryServerDevice.memory(memoryPerBlade())), on);
             case FABRICATION_BLADE -> new PartState(code, status, Component.translatable("hud.encodedlogistics.chassis.schematics", schematics().size()), on);
             case STORAGE_BLADE -> {
                 int drives = 0;
                 for (int k = 0; k < ChassisLayout.DRIVES_PER_BLADE; k++) {
-                    if (items().get((bay.slot() - ChassisLayout.BLADE_BAYS_FROM) * ChassisLayout.DRIVES_PER_BLADE + k).getItem() instanceof StorageDriveItem) {
+                    if (items().get(ChassisLayout.bladeDriveSlot(bay.slot() - ChassisLayout.BLADE_BAYS_FROM, k)).getItem() instanceof StorageDriveItem) {
                         drives++;
                     }
                 }

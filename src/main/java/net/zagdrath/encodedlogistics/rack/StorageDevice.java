@@ -39,7 +39,8 @@ import net.zagdrath.encodedlogistics.storage.StorageView;
 // A rack device holding Storage Drives (NAS, SAN): while online they're part of the storage of the network it serves,
 // with a priority (-999..999) and an access mode (read-write, read-only, write-only) as an Inventory Tap has. A drive
 // gets its id the first time it goes in; its stats (the item's tooltip, the bay's fill light) are refreshed whenever the
-// network changes it. The first drives() item slots hold the drives.
+// network changes it. Its drives() drive bays are item slots driveSlot(0..drives() - 1): the first ones, unless it
+// says otherwise (a Blade Enclosure's are in two banks).
 public abstract class StorageDevice extends RackDevice implements DriveCopies.Mount {
     public static final int READ_WRITE = 0, READ = 1, WRITE = 2, MIN_PRIORITY = -999, MAX_PRIORITY = 999;
     public static final int ACTION_SET_PRIORITY = 0, ACTION_STEP_PRIORITY = 1, ACTION_CYCLE_ACCESS = 2;
@@ -55,6 +56,20 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
 
     // How many of its slots hold drives.
     public abstract int drives();
+
+    // The item slot of its i-th drive bay.
+    public int driveSlot(int i) {
+        return i;
+    }
+
+    private boolean isDriveSlot(int slot) {
+        for (int i = 0; i < drives(); i++) {
+            if (driveSlot(i) == slot) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Its base drain, without the drives.
     protected abstract double baseDrain();
@@ -84,8 +99,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
 
     public int driveCount() {
         int count = 0;
-        for (int slot = 0; slot < drives(); slot++) {
-            if (items().get(slot).getItem() instanceof StorageDriveItem) {
+        for (int i = 0; i < drives(); i++) {
+            if (items().get(driveSlot(i)).getItem() instanceof StorageDriveItem) {
                 count++;
             }
         }
@@ -111,7 +126,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
             return views;
         }
         DriveStorage data = DriveStorage.get(server);
-        for (int slot = 0; slot < drives(); slot++) {
+        for (int i = 0; i < drives(); i++) {
+            int slot = driveSlot(i);
             ItemStack stack = items().get(slot);
             if (stack.getItem() instanceof StorageDriveItem drive && drive.getType() != ResourceType.ENERGY && bayUsable(slot)) {
                 UUID id = assignId(server, stack, slot);
@@ -129,7 +145,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
         if (!ready()) {
             return cells;
         }
-        for (int slot = 0; slot < drives(); slot++) {
+        for (int i = 0; i < drives(); i++) {
+            int slot = driveSlot(i);
             ItemStack stack = items().get(slot);
             if (EnergyDrives.is(stack) && bayUsable(slot) && seen.add(assignId(server, stack, slot))) {
                 int changed = slot;
@@ -157,7 +174,7 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
     @Override
     public @Nullable ItemStack mountedDrive(int slot) {
         RackBlockEntity rack = rack();
-        return rack == null || rack.isRemoved() || slot < 0 || slot >= drives() ? null : items().get(slot);
+        return rack == null || rack.isRemoved() || !isDriveSlot(slot) ? null : items().get(slot);
     }
 
     private void driveChanged(int slot) {
@@ -171,8 +188,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
     @Override
     public void itemsChanged() {
         if (rack() != null && rack().getLevel() instanceof ServerLevel level) {
-            for (int slot = 0; slot < drives(); slot++) {
-                refresh(level.getServer(), slot);
+            for (int i = 0; i < drives(); i++) {
+                refresh(level.getServer(), driveSlot(i));
             }
             ControllerStructures.contentChanged();
         }
@@ -182,8 +199,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
     // Bytes used and in all, over its storage drives (not Energy Storage Drives).
     public long[] capacity() {
         long used = 0, total = 0;
-        for (int slot = 0; slot < drives(); slot++) {
-            ItemStack stack = items().get(slot);
+        for (int i = 0; i < drives(); i++) {
+            ItemStack stack = items().get(driveSlot(i));
             if (stack.getItem() instanceof StorageDriveItem && !EnergyDrives.is(stack)) {
                 DriveStats stats = StorageDriveItem.stats(stack);
                 used += stats.bytesUsed();
@@ -276,8 +293,8 @@ public abstract class StorageDevice extends RackDevice implements DriveCopies.Mo
     @Override
     public void writeClient(ValueOutput output) {
         int[] bays = new int[drives()];
-        for (int slot = 0; slot < drives(); slot++) {
-            bays[slot] = StorageDriveItem.sledCode(items().get(slot), ready());
+        for (int i = 0; i < drives(); i++) {
+            bays[i] = StorageDriveItem.sledCode(items().get(driveSlot(i)), ready());
         }
         output.putIntArray("bays", bays);
     }

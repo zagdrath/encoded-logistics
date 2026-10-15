@@ -119,6 +119,7 @@
   },
   "drives": {
    "header_top": 34,
+   "pager": "right-aligned on the header line: < Bays 1-2 >, three pages (also the mouse wheel)",
    "grid": "ChassisLayout.driveX/driveY",
    "note": {
     "top": 128,
@@ -127,6 +128,7 @@
   },
   "fab": {
    "crafts_top": 34,
+   "pager": "right-aligned on the header line: < 1-9 >, three pages (also the mouse wheel)",
    "grid": {
     "left": 62,
     "top": 46,

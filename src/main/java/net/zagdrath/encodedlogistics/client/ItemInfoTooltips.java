@@ -281,7 +281,7 @@ public final class ItemInfoTooltips {
             case "access_card" -> new Object[] { Config.ACCESS_CARD_LANES.getAsInt() };
             case "routing_card" -> new Object[] { Config.ROUTING_CARD_RATE.getAsInt() };
             case "interconnect_module" -> new Object[] { Config.INTERCONNECT_LANES.getAsInt() };
-            case "compute_blade" -> new Object[] { String.format(Locale.ROOT, "%.2f", BladeEnclosureDevice.threadsPerBlade()) };
+            case "compute_blade" -> new Object[] { BladeEnclosureDevice.threadsPerBlade() };
             case "memory_blade" -> new Object[] { MemoryServerDevice.memory(BladeEnclosureDevice.memoryPerBlade()) };
             default -> new Object[0];
         };

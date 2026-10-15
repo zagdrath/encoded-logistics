@@ -71,6 +71,8 @@ public class ChassisPanel extends RackScreen.Panel {
     private final @Nullable L3SwitchPanel switchPanel;
     private Tab tab = Tab.FRONT;
     private int selected = -1;
+    // The Drives or Fab tab's page.
+    private int page;
 
     public ChassisPanel(RackScreen screen) {
         super(screen);
@@ -115,8 +117,8 @@ public class ChassisPanel extends RackScreen.Panel {
     private void applyWindow() {
         switch (tab) {
             case CAGES -> screen.getMenu().setSlotWindow(true, ChassisLayout.CAGE_PAGE, 1);
-            case DRIVES -> screen.getMenu().setSlotWindow(true, ChassisLayout.BAY_PAGE, 1);
-            case FAB -> screen.getMenu().setSlotWindow(true, ChassisLayout.SCHEMATIC_PAGE, 1);
+            case DRIVES -> screen.getMenu().setSlotWindow(true, ChassisLayout.BAY_PAGE + page, 1);
+            case FAB -> screen.getMenu().setSlotWindow(true, ChassisLayout.SCHEMATIC_PAGE + page, 1);
             default -> screen.getMenu().setSlotWindow(false, 0, 0);
         }
     }
@@ -147,7 +149,45 @@ public class ChassisPanel extends RackScreen.Panel {
     private void select(Tab next) {
         tab = next;
         selected = -1;
+        page = 0;
         applyWindow();
+    }
+
+    // --- Pages (Drives: two of each blade's six bays a page; Fab: nine schematics a page) ---
+
+    private int pages() {
+        return switch (tab) {
+            case DRIVES -> ChassisLayout.DRIVES_PER_BLADE / ChassisLayout.DRIVES_PER_PAGE;
+            case FAB -> ChassisLayout.SCHEMATICS / ChassisLayout.SCHEMATICS_PER_PAGE;
+            default -> 1;
+        };
+    }
+
+    private void turn(int by) {
+        page = Math.floorMod(page + by, pages());
+        applyWindow();
+    }
+
+    // "Bays 3-4", "10-18".
+    private String pageName() {
+        int per = tab == Tab.DRIVES ? ChassisLayout.DRIVES_PER_PAGE : ChassisLayout.SCHEMATICS_PER_PAGE;
+        return tr(tab == Tab.DRIVES ? "drives_page" : "fab_page", page * per + 1, page * per + per);
+    }
+
+    private String pager() {
+        return "< " + pageName() + " >";
+    }
+
+    // The pager, right-aligned on the hint line: -1 over its back arrow, 1 over its forward arrow, else 0.
+    private int pagerAt(double x, double y) {
+        if (pages() < 2 || y < FACE_Y - 1 || y >= FACE_Y + 8) {
+            return 0;
+        }
+        int left = RIGHT - font().width(pager());
+        if (x >= left && x < left + font().width("< ")) {
+            return -1;
+        }
+        return x >= RIGHT - font().width(" >") && x < RIGHT ? 1 : 0;
     }
 
     // --- Data ---
@@ -246,7 +286,8 @@ public class ChassisPanel extends RackScreen.Panel {
     private void slotFrames(GuiGraphicsExtractor graphics, @Nullable ValueInput data, int left, int top) {
         List<BayView> views = bays(data);
         List<RackSlot> specs = type.slots();
-        int page = tab == Tab.CAGES ? ChassisLayout.CAGE_PAGE : tab == Tab.DRIVES ? ChassisLayout.BAY_PAGE : ChassisLayout.SCHEMATIC_PAGE;
+        int page = tab == Tab.CAGES ? ChassisLayout.CAGE_PAGE : tab == Tab.DRIVES ? ChassisLayout.BAY_PAGE + this.page
+                : ChassisLayout.SCHEMATIC_PAGE + this.page;
         for (int i = 0; i < specs.size(); i++) {
             RackSlot spec = specs.get(i);
             if (spec.scrollRow() != page) {
@@ -266,8 +307,8 @@ public class ChassisPanel extends RackScreen.Panel {
             return view != null && view.part() == ChassisPart.UPLINK_CARD;
         }
         if (tab == Tab.DRIVES) {
-            int blade = slot / ChassisLayout.DRIVES_PER_BLADE;
-            return blade < views.size() && views.get(blade).part() == ChassisPart.STORAGE_BLADE;
+            int blade = ChassisLayout.bladeOfDriveSlot(slot);
+            return blade >= 0 && blade < views.size() && views.get(blade).part() == ChassisPart.STORAGE_BLADE;
         }
         return views.stream().anyMatch(view -> view.part() == ChassisPart.FABRICATION_BLADE);
     }
@@ -476,9 +517,10 @@ public class ChassisPanel extends RackScreen.Panel {
         wrapped(graphics, tr("cages_hint"), 12, ChassisLayout.cageY(4) + 2 * 18 + 6, RIGHT - 12, 2, RackScreen.TEXT_DISABLED);
     }
 
-    // How many drive bays are open over the grid, whose bays are which under it.
+    // How many drive bays are open and the page over the grid, whose bays are which under it.
     private void drives(GuiGraphicsExtractor graphics, ValueInput data) {
         graphics.text(font(), tr("drives_hint", data.getIntOr("storage_bays", 0)), 12, FACE_Y - 1, RackScreen.TEXT_MUTED, false);
+        right(graphics, pager(), RIGHT, FACE_Y - 1, RackScreen.TEXT);
         wrapped(graphics, tr("drives_note"), 12, ChassisLayout.driveY(8, 1) + 18 + 6, RIGHT - 12, 3, RackScreen.TEXT_DISABLED);
     }
 
@@ -486,6 +528,7 @@ public class ChassisPanel extends RackScreen.Panel {
     private void fab(GuiGraphicsExtractor graphics, ValueInput data) {
         boolean any = bays(data).stream().anyMatch(view -> view.part() == ChassisPart.FABRICATION_BLADE);
         graphics.text(font(), tr("crafts", data.getIntOr("crafts", 0)), 12, FACE_Y - 1, RackScreen.TEXT_MUTED, false);
+        right(graphics, pager(), RIGHT, FACE_Y - 1, RackScreen.TEXT);
         wrapped(graphics, tr(any ? "fab_hint" : "fab_none"), 12, 46 + 3 * 18 + 8, RIGHT - 12, 3, any ? RackScreen.TEXT_MUTED : RackScreen.TEXT_DISABLED);
     }
 
@@ -541,6 +584,11 @@ public class ChassisPanel extends RackScreen.Panel {
         int clicked = tabStrip.at(font(), x, y);
         if (button == InputConstants.MOUSE_BUTTON_LEFT && clicked >= 0) {
             select(tabs.get(clicked));
+            return true;
+        }
+        int turn = pagerAt(x, y);
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && turn != 0) {
+            turn(turn);
             return true;
         }
         ValueInput data = data();
@@ -599,7 +647,14 @@ public class ChassisPanel extends RackScreen.Panel {
 
     @Override
     protected boolean mouseScrolled(double x, double y, double amount) {
-        return switchView() && switchPanel.mouseScrolled(x, y, amount);
+        if (switchView()) {
+            return switchPanel.mouseScrolled(x, y, amount);
+        }
+        if (pages() > 1 && amount != 0) {
+            turn(amount > 0 ? -1 : 1);
+            return true;
+        }
+        return false;
     }
 
     @Override

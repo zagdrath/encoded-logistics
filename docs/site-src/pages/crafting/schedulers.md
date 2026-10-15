@@ -95,7 +95,7 @@ Server Racks have their own Scheduler, built from rack devices:
 |---|---|
 | {{item compute_server}} | {{config rack.computeServerThreads default}} threads |
 | {{item memory_server}} | {{config rack.memoryServerMemory default}} job memory |
-| {{item compute_blade}}, {{item memory_blade}} in a Blade Enclosure | Threads and memory as their servers give per rack unit, {{config optical.bladeBonusPercent default}} % more |
+| {{item compute_blade}}, {{item memory_blade}} in a Blade Enclosure | {{config optical.computeBladeThreads default}} threads or {{config optical.memoryBladeMemory default}} job memory each, twice their servers' |
 
 They **pool across every rack on the network**: all the online Compute and Memory Servers and Blades serving a network,
 in whichever of its racks, make one rack Scheduler with all their threads and memory added up. You don't need a Memory

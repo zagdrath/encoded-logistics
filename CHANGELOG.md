@@ -23,6 +23,24 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Changed
+
+- **Blade Enclosure rebalanced as late-game gear:** every blade now gives more than the server it's crafted from
+  (before, each gave less). A Compute Blade gives 4 threads (was 0.78) and a Memory Blade 65,536 job memory (was
+  25,600), twice their servers'. A full enclosure gives 64 threads in 10U, so a rack of four gives 256, against 42 from
+  a rack of Compute Servers. Storage Blades open six drive bays each (was two), a NAS's worth: 96 in a full enclosure.
+  Fabrication Blades craft at full speed from the first blade (5 ticks a craft at the defaults), from 27 schematic
+  slots (was 9). The Drives and Fab tabs page through the new bays and slots.
+- **Blades drain by kind:** Compute 8, Memory 4, Fabrication 6 and Storage 3 FE/t each (was 2 for any part); the
+  chassis and its rear modules are unchanged.
+- Config: `optical.bladeBonusPercent` is replaced by `computeBladeThreads`, `memoryBladeMemory`,
+  `computeBladeDrain`, `memoryBladeDrain`, `fabricationBladeDrain` and `storageBladeDrain`.
+
+### Upgrading
+
+- Existing enclosures keep their blades, drives and schematics where they were; the new bays and slots start empty.
+  A `bladeBonusPercent` set in a config file is dropped.
+
 ## [1.3.1] - 2026-10-14
 
 ### Changed
