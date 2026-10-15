@@ -23,6 +23,8 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-10-14
+
 ### Changed
 
 - **L2 Switch lanes match their ports:** a 24-Port L2 Switch now pools 24 lanes (was 16) and a 48-Port 48 (was 32)
@@ -420,7 +422,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.0+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.1+26.3...HEAD
+[1.3.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.0+26.3...v1.3.1+26.3
 [1.3.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.1+26.3...v1.3.0+26.3
 [1.2.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.0+26.3...v1.2.1+26.3
 [1.2.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.1.0+26.3...v1.2.0+26.3
