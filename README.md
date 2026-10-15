@@ -40,7 +40,7 @@ Wireless Bridge.
 
 ## Documentation
 
-- [The documentation site](https://zagdrath.dev/encoded-logistics/): guides for every block, rack device and
+- [The documentation site](https://zagdrath.dev/encoded-logistics/site): guides for every block, rack device and
   network, the Terminal OS and ELCL, server config and every recipe. Its source is in `docs/site-src` and the built
   site in `docs/site` (open `docs/site/index.html` to read it offline); [rebuilding and publishing it](docs/site-src/PUBLISHING.md).
 - [ELCL design notes](docs/elcl)
