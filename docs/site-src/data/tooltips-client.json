@@ -848,25 +848,25 @@
     "lines": [
       "Hold [Shift] for info"
     ],
-    "shift": "A Blade Enclosure blade: 0.78 crafting threads for its network's rack Scheduler (its share, a quarter more per rack unit than a Compute Server)."
+    "shift": "A Blade Enclosure blade: 4 crafting threads for its network's rack Scheduler, twice a Compute Server's."
   },
   "encodedlogistics:memory_blade": {
     "lines": [
       "Hold [Shift] for info"
     ],
-    "shift": "A Blade Enclosure blade: 25K job memory for its network's rack Scheduler."
+    "shift": "A Blade Enclosure blade: 64K job memory for its network's rack Scheduler, twice a Memory Server's."
   },
   "encodedlogistics:fabrication_blade": {
     "lines": [
       "Hold [Shift] for info"
     ],
-    "shift": "A Blade Enclosure blade: crafts from the enclosure's nine schematic slots, as a Fabrication Server does. More blades craft quicker."
+    "shift": "A Blade Enclosure blade: crafts at full speed, as a Fabrication Server with both Throughput Modules does, from nine schematic slots of its own (the Fab tab). It runs 4 crafts at once beyond its jobs' threads."
   },
   "encodedlogistics:storage_blade": {
     "lines": [
       "Hold [Shift] for info"
     ],
-    "shift": "A Blade Enclosure blade: opens two Storage Drive bays (the Drives tab) as network storage."
+    "shift": "A Blade Enclosure blade: opens six Storage Drive bays (the Drives tab) as network storage, as a NAS does."
   },
   "encodedlogistics:interconnect_module": {
     "lines": [

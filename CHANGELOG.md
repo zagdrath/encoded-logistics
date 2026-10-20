@@ -23,6 +23,20 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-10-19
+
+### Fixed
+
+- **Rack Elevations copy Blade Enclosures in full:** a recorded enclosure's items past its 256th slot (the last
+  Fabrication Blades' schematics) broke the plan, so it couldn't be saved (the elevation was lost from the player's
+  inventory on save) and a well-filled enclosure's contents didn't carry over. Plans now hold devices with up to 1,024
+  slots.
+- **Cables go on ports mounted on blocks:** using a cable on an Ingress or Egress Port (or any other part) placed on a
+  block's face now puts the cable in its place, with the part on it facing the block, instead of in the space beyond.
+- **Why there's no Scheduler:** a network whose rack servers have Compute but no Memory Servers (or Memory but no
+  Compute) now says *No Memory Server* or *No Compute Server* when crafting, on the Craft Plan screen and at the
+  terminal, instead of *No Scheduler*.
+
 ## [1.4.0] - 2026-10-14
 
 ### Changed
@@ -450,7 +464,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.0+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.1+26.3...HEAD
+[1.4.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.0+26.3...v1.4.1+26.3
 [1.4.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.1+26.3...v1.4.0+26.3
 [1.3.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.0+26.3...v1.3.1+26.3
 [1.3.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.2.1+26.3...v1.3.0+26.3
