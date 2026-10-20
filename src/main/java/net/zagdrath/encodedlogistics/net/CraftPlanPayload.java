@@ -23,9 +23,10 @@ import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // Server to client: a crafting plan for an open terminal - the ingredient tree, how many items are missing, the job
 // memory it needs, whether it can be made (complete), the network's Schedulers and whether the chosen one has room,
-// the job when it was just started, and how long recalling its ingredients from tape should take (ticks, 0 for none).
+// the job when it was just started, how long recalling its ingredients from tape should take (ticks, 0 for none), and,
+// without a Scheduler, why (CraftRequests.noScheduler).
 public record CraftPlanPayload(int containerId, StorageKey key, long amount, List<CraftPlanner.Line> lines, int missing, long memory, boolean complete,
-        List<BlockPos> schedulers, boolean room, Optional<Started> started, int recallTicks) implements CustomPacketPayload {
+        List<BlockPos> schedulers, boolean room, Optional<Started> started, int recallTicks, String noScheduler) implements CustomPacketPayload {
     public static final Type<CraftPlanPayload> TYPE = new Type<>(EncodedLogistics.id("craft_plan"));
 
     public record Started(BlockPos core, UUID job) {
@@ -52,9 +53,10 @@ public record CraftPlanPayload(int containerId, StorageKey key, long amount, Lis
         ByteBufCodecs.BOOL.encode(buf, payload.room());
         STARTED.encode(buf, payload.started());
         ByteBufCodecs.VAR_INT.encode(buf, payload.recallTicks());
+        ByteBufCodecs.STRING_UTF8.encode(buf, payload.noScheduler());
     }, buf -> new CraftPlanPayload(ByteBufCodecs.VAR_INT.decode(buf), StorageKey.STREAM_CODEC.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf),
             LINES.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_LONG.decode(buf), ByteBufCodecs.BOOL.decode(buf),
-            POSITIONS.decode(buf), ByteBufCodecs.BOOL.decode(buf), STARTED.decode(buf), ByteBufCodecs.VAR_INT.decode(buf)));
+            POSITIONS.decode(buf), ByteBufCodecs.BOOL.decode(buf), STARTED.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.STRING_UTF8.decode(buf)));
 
     @Override
     public Type<? extends CustomPacketPayload> type() {

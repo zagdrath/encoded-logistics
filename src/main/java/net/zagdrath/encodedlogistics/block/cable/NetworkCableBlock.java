@@ -50,6 +50,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.common.Tags;
 import net.zagdrath.encodedlogistics.block.NetworkControllerBlock;
+import net.zagdrath.encodedlogistics.block.PartHostBlock;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.item.CableFacadeItem;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
@@ -134,10 +135,11 @@ public class NetworkCableBlock extends Block implements SimpleWaterloggedBlock, 
         return new CableBlockEntity(pos, state);
     }
 
-    // Swapping one cable for another (dyeing, washing) keeps the block entity with its attachments.
+    // Swapping one cable for another (dyeing, washing), or a cable taking a part host's place, keeps the block entity
+    // with its attachments.
     @Override
     protected boolean shouldChangedStateKeepBlockEntity(BlockState oldState) {
-        return oldState.getBlock() instanceof NetworkCableBlock;
+        return oldState.getBlock() instanceof NetworkCableBlock || oldState.getBlock() instanceof PartHostBlock;
     }
 
     public static CableAttachments attachments(BlockGetter level, BlockPos pos) {

@@ -76,6 +76,7 @@ public record CraftRequestPayload(int containerId, StorageKey key, long amount, 
         boolean room = plan != null && CraftRequests.choose(schedulers, plan.memory(), payload.scheduler()) != null;
         PacketDistributor.sendToPlayer(player, new CraftPlanPayload(payload.containerId(), payload.key(), amount,
                 plan != null ? plan.lines() : List.of(), plan != null ? plan.missing() : 0, plan != null ? plan.memory() : 0,
-                plan != null && plan.complete(), positions, room, started, plan != null ? plan.recallTicks() : 0));
+                plan != null && plan.complete(), positions, room, started, plan != null ? plan.recallTicks() : 0,
+                schedulers.isEmpty() ? CraftRequests.noScheduler(server, network) : ""));
     }
 }

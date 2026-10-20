@@ -65,6 +65,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("cable_colours_connect", CableGameTests::coloursConnect);
         TESTS.put("cable_joins_controller", CableGameTests::cableJoinsController);
         TESTS.put("cable_dyeing_recolours", CableGameTests::dyeingRecolours);
+        TESTS.put("cable_on_part_host", CableGameTests::cableOnPartHost);
         TESTS.put("cable_shapes", CableGameTests::shapes);
         TESTS.put("fiber_cable", InfrastructureGameTests::fiberCable);
         TESTS.put("anchor_blocks_side", InfrastructureGameTests::anchorBlocksSide);
@@ -131,6 +132,7 @@ public final class EncodedLogisticsGameTests {
         TESTS.put("rack_targeting", RackGameTests::targeting);
         TESTS.put("rack_on_network", RackGameTests::onNetwork);
         TESTS.put("rack_elevation_record_apply", RackElevationGameTests::recordAndApply);
+        TESTS.put("rack_elevation_blade_enclosure", RackElevationGameTests::bladeEnclosureContents);
         TESTS.put("rack_elevation_skip_missing", RackElevationGameTests::skipsAndReportsMissing);
         TESTS.put("rack_elevation_creative", RackElevationGameTests::creativeNeedsNoItems);
         TESTS.put("rack_elevation_shulker_same", RackElevationGameTests::shulkerBoxAndSameDevice);

@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
+import net.zagdrath.encodedlogistics.rack.RackDevice;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 import net.zagdrath.encodedlogistics.storage.NetworkStorage;
 
@@ -119,6 +120,23 @@ public final class CraftRequests {
             }
         }
         return null;
+    }
+
+    // Why a network has no Scheduler, as the last part of a message's key: its racks' online servers pool threads but
+    // no memory ("no_memory") or memory but no threads ("no_compute") - a rack Scheduler needs both - else "no_scheduler".
+    public static String noScheduler(MinecraftServer server, @Nullable NetworkRef network) {
+        int threads = 0;
+        long memory = 0;
+        for (RackDevice device : ControllerStructures.rackDevicesServing(server, network)) {
+            if (device.isOnline()) {
+                threads += device.schedulerThreads();
+                memory += device.schedulerMemory();
+            }
+        }
+        if (threads > 0 && memory == 0) {
+            return "no_memory";
+        }
+        return memory > 0 && threads == 0 ? "no_compute" : "no_scheduler";
     }
 
     // Who asks for a job: the player (by id), their Terminal OS user, the user it runs as (a script's; empty: theirs),

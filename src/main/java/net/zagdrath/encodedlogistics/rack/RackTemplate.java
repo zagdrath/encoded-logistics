@@ -42,6 +42,8 @@ import net.zagdrath.encodedlogistics.registry.ModDataComponents;
 public record RackTemplate(String name, List<Planned> devices, boolean includeContents, boolean includeSettings, boolean useNetworkStorage,
         Mode mode) {
     public static final int MAX_NAME = 32;
+    // Slots a planned device can have (a Blade Enclosure has 266).
+    public static final int MAX_SLOTS = 1024;
 
     public enum Mode implements StringRepresentable {
         FILL_EMPTY;
@@ -57,7 +59,7 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
     // A slot's planned item.
     public record SlotItem(int slot, ItemStackTemplate item) {
         public static final Codec<SlotItem> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Codec.intRange(0, 255).fieldOf("slot").forGetter(SlotItem::slot),
+                Codec.intRange(0, MAX_SLOTS - 1).fieldOf("slot").forGetter(SlotItem::slot),
                 ItemStackTemplate.CODEC.fieldOf("item").forGetter(SlotItem::item)).apply(i, SlotItem::new));
         public static final StreamCodec<RegistryFriendlyByteBuf, SlotItem> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, SlotItem::slot,
@@ -77,7 +79,7 @@ public record RackTemplate(String name, List<Planned> devices, boolean includeCo
                 ByteBufCodecs.VAR_INT, Planned::u,
                 Identifier.STREAM_CODEC, Planned::type,
                 ByteBufCodecs.VAR_INT, Planned::size,
-                SlotItem.STREAM_CODEC.apply(ByteBufCodecs.list(256)), Planned::contents,
+                SlotItem.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_SLOTS)), Planned::contents,
                 ByteBufCodecs.optional(ByteBufCodecs.COMPOUND_TAG), Planned::settings,
                 Planned::new);
 

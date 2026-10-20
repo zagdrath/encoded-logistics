@@ -199,7 +199,7 @@ public class CraftPlanScreen extends Screen {
             return Component.translatable("gui.encodedlogistics.craft.missing_count", plan.missing());
         }
         if (plan.schedulers().isEmpty()) {
-            return Component.translatable("gui.encodedlogistics.craft.no_scheduler");
+            return Component.translatable("gui.encodedlogistics.craft." + (plan.noScheduler().isEmpty() ? "no_scheduler" : plan.noScheduler()));
         }
         if (!plan.room()) {
             return Component.translatable("gui.encodedlogistics.craft.no_room");

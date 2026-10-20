@@ -263,7 +263,8 @@ public final class TerminalActions {
         int index = scheduler(schedulers, schedulerSpec);
         JobHost host = index >= -1 ? CraftRequests.choose(schedulers, plan.memory(), index) : null;
         if (host == null) {
-            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg.no_scheduler"));
+            return TerminalOutput.message(Component.translatable("crt.encodedlogistics.msg." + (schedulers.isEmpty()
+                    ? CraftRequests.noScheduler(context.server(), context.network()) : "no_scheduler")));
         }
         CraftingJob job = CraftRequests.start(context.server(), context.network(), plan, host,
                 new CraftRequests.Requester(Optional.of(context.player().getUUID()), context.user(), ""));

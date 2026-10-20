@@ -14,17 +14,22 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -44,7 +49,8 @@ import net.zagdrath.encodedlogistics.part.PartHosting;
 // CableBlockEntity whose part sits on the side toward the block it's mounted on (terminals and sensors facing out, ports
 // and taps facing the block). It's on that block's network when the block is a network block (a Drive Bay, a
 // controller...), as a device using the part's lanes; otherwise the part is offline. Using it opens the part's menu;
-// mining it (or sneak-using it with an empty hand) drops the part and its contents, and the host goes with it.
+// mining it (or sneak-using it with an empty hand) drops the part and its contents, and the host goes with it. Using a
+// cable on it puts the cable in its place, with the part on it.
 public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBlock {
     public PartHostBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -76,6 +82,25 @@ public class PartHostBlock extends Block implements EntityBlock, NetworkNodeBloc
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return CableShapes.partHost(NetworkCableBlock.attachments(level, pos));
+    }
+
+    // A cable used on it takes its place, the part staying on its side of the cable (the block entity carries over:
+    // NetworkCableBlock#shouldChangedStateKeepBlockEntity).
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
+            BlockHitResult hit) {
+        if (!(stack.getItem() instanceof BlockItem item) || !(item.getBlock() instanceof NetworkCableBlock cable)) {
+            return super.useItemOn(stack, state, level, pos, player, hand, hit);
+        }
+        if (!level.isClientSide()) {
+            BlockState placed = cable.withConnections(cable.defaultBlockState(), level, pos)
+                    .setValue(NetworkCableBlock.WATERLOGGED, level.getFluidState(pos).getType() == Fluids.WATER);
+            level.setBlock(pos, placed, Block.UPDATE_ALL);
+            stack.consume(1, player);
+            SoundType sound = placed.getSoundType(level, pos, player);
+            level.playSound(null, pos, sound.getPlaceSound(), SoundSource.BLOCKS, (sound.getVolume() + 1.0F) / 2.0F, sound.getPitch() * 0.8F);
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override

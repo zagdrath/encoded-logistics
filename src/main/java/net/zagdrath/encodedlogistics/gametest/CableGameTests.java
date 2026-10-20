@@ -13,20 +13,26 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.zagdrath.encodedlogistics.block.PartHostBlock;
 import net.zagdrath.encodedlogistics.block.cable.CableColor;
 import net.zagdrath.encodedlogistics.block.cable.CableConnection;
 import net.zagdrath.encodedlogistics.block.cable.CableTier;
 import net.zagdrath.encodedlogistics.block.cable.NetworkCableBlock;
+import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
 import net.zagdrath.encodedlogistics.blockentity.NetworkControllerBlockEntity;
 import net.zagdrath.encodedlogistics.multiblock.ControllerStructures;
 import net.zagdrath.encodedlogistics.network.NetworkSnapshot;
 import net.zagdrath.encodedlogistics.network.NodePos;
+import net.zagdrath.encodedlogistics.part.PartType;
 import net.zagdrath.encodedlogistics.registry.ModBlocks;
+import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // Network Cables: connections and colours, the controller flange, lanes and drain on the network, dyeing, shapes.
 final class CableGameTests {
@@ -131,6 +137,30 @@ final class CableGameTests {
                     assertSide(helper, red, Direction.WEST, CableConnection.CABLE);
                 })
                 .thenSucceed();
+    }
+
+    // An Ingress Port on a chest's top (a part host); a cable used on the port takes the host's place, the port on its
+    // underside against the chest, and joins the cable beside it.
+    static void cableOnPartHost(GameTestHelper helper) {
+        BlockPos chest = new BlockPos(1, 1, 1), host = chest.above(), beside = host.east();
+        helper.setBlock(chest, Blocks.CHEST);
+        cable(helper, beside, CableTier.NORMAL, CableColor.NEUTRAL);
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack port = new ItemStack(ModItems.part(PartType.INGRESS_PORT).get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, port);
+        BlockPos top = helper.absolutePos(chest);
+        port.getItem().onItemUseFirst(port, new UseOnContext(player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(top).add(0, 0.5, 0), Direction.UP, top, false)));
+        helper.assertTrue(helper.getBlockState(host).getBlock() instanceof PartHostBlock, "No part host");
+        use(helper, player, host, new ItemStack(ModBlocks.cable(CableTier.NORMAL, CableColor.NEUTRAL).get(), 2));
+        helper.assertTrue(helper.getBlockState(host).getBlock() == ModBlocks.cable(CableTier.NORMAL, CableColor.NEUTRAL).get(),
+                "No cable: " + helper.getBlockState(host));
+        helper.assertTrue(helper.getBlockEntity(host, CableBlockEntity.class).getAttachments().part(Direction.DOWN) == PartType.INGRESS_PORT,
+                "The port didn't stay against the chest");
+        helper.assertTrue(player.getMainHandItem().getCount() == 1, "Cable not used up");
+        assertSide(helper, host, Direction.EAST, CableConnection.CABLE);
+        assertSide(helper, host, Direction.DOWN, CableConnection.NONE);
+        helper.succeed();
     }
 
     private static void use(GameTestHelper helper, Player player, BlockPos pos, ItemStack stack) {

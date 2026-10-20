@@ -26,6 +26,9 @@ import net.zagdrath.encodedlogistics.rack.RackDeviceType;
 import net.zagdrath.encodedlogistics.rack.RackElevations;
 import net.zagdrath.encodedlogistics.rack.RackTemplate;
 import net.zagdrath.encodedlogistics.rack.StorageDevice;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisLayout;
+import net.zagdrath.encodedlogistics.rack.chassis.ChassisPart;
+import net.zagdrath.encodedlogistics.rack.device.BladeEnclosureDevice;
 import net.zagdrath.encodedlogistics.rack.device.NasDevice;
 import net.zagdrath.encodedlogistics.recipe.RackElevationRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
@@ -98,6 +101,62 @@ final class RackElevationGameTests {
         helper.assertTrue(player.getInventory().countItem(ModItems.NAS.get()) == 0 && player.getInventory().countItem(ModItems.FIREWALL.get()) == 0,
                 "Items weren't used up");
         helper.assertTrue(rack.isFrontOpen(), "The front door didn't open to install");
+        helper.succeed();
+    }
+
+    // A full Blade Enclosure (sixteen Storage Blades with every drive bay filled, every rear module, a schematic in every
+    // slot): recorded with contents, the plan saves and syncs; taken out; applied back into another rack, everything's
+    // where it was.
+    static void bladeEnclosureContents(GameTestHelper helper) {
+        BlockPos master = RackGameTests.rack(helper, BOTTOM_FRONT, Direction.NORTH);
+        BladeEnclosureDevice blades = RackGameTests.install(helper, master, RackDeviceType.BLADE_ENCLOSURE, 1, BladeEnclosureDevice.class);
+        for (ChassisLayout.Bay bay : ChassisLayout.BLADE.bays()) {
+            ChassisPart part = switch (bay.kind()) {
+                case INTERCONNECT -> ChassisPart.INTERCONNECT_MODULE;
+                case MANAGEMENT -> ChassisPart.MANAGEMENT_MODULE;
+                case BLADE_PSU -> ChassisPart.BLADE_PSU;
+                default -> ChassisPart.STORAGE_BLADE;
+            };
+            blades.items().set(bay.slot(), new ItemStack(ModItems.chassisPart(part).get()));
+        }
+        for (int blade = 0; blade < ChassisLayout.BLADES; blade++) {
+            for (int k = 0; k < ChassisLayout.DRIVES_PER_BLADE; k++) {
+                blades.items().set(ChassisLayout.bladeDriveSlot(blade, k), new ItemStack(ModItems.storageDrive(StorageTier.K8).get()));
+            }
+        }
+        for (int i = 0; i < ChassisLayout.SCHEMATICS; i++) {
+            blades.items().set(ChassisLayout.bladeSchematicSlot(i), new ItemStack(ModItems.ENCODED_SCHEMATIC_CRAFTING.get()));
+        }
+        blades.itemsChanged();
+        int filled = (int) blades.items().stream().filter(stack -> !stack.isEmpty()).count();
+        RackBlockEntity rack = helper.getBlockEntity(master, RackBlockEntity.class);
+        ServerPlayer player = player(helper, GameType.CREATIVE);
+
+        ItemStack elevation = held(player, RackTemplate.EMPTY.withContents(true));
+        RackElevations.record(player, rack, elevation);
+        RackTemplate recorded = RackTemplate.of(elevation);
+        helper.assertTrue(recorded != null && recorded.at(1) != null && recorded.at(1).contents().size() == filled, "Recorded " + (recorded != null
+                && recorded.at(1) != null ? recorded.at(1).contents().size() : -1) + " of " + filled);
+        var registries = helper.getLevel().registryAccess();
+        var saved = RackTemplate.CODEC.encodeStart(registries.createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), recorded);
+        helper.assertTrue(saved.isSuccess(), "The plan doesn't save: " + saved.error().map(Object::toString).orElse(""));
+        var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), registries);
+        try {
+            RackTemplate.STREAM_CODEC.encode(buf, recorded);
+            helper.assertTrue(RackTemplate.STREAM_CODEC.decode(buf).equals(recorded), "The plan doesn't sync back the same");
+        } catch (RuntimeException e) {
+            helper.fail("The plan doesn't sync: " + e);
+        } finally {
+            buf.release();
+        }
+
+        rack.remove(1).clearContents();
+        RackElevations.Result result = RackElevations.apply(player, rack, elevation);
+        helper.assertTrue(result != null && result.installed() == 1 && result.missing() == 0, "Applied " + result);
+        RackDevice applied = rack.deviceAt(1);
+        helper.assertTrue(applied instanceof BladeEnclosureDevice, "No Blade Enclosure");
+        int got = (int) applied.items().stream().filter(stack -> !stack.isEmpty()).count();
+        helper.assertTrue(got == filled, "Applied " + got + " of " + filled + " items");
         helper.succeed();
     }
 
