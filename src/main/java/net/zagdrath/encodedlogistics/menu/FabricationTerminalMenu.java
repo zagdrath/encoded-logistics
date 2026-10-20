@@ -5,8 +5,11 @@
 
 package net.zagdrath.encodedlogistics.menu;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
@@ -16,6 +19,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -34,7 +38,13 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.zagdrath.encodedlogistics.blockentity.CableBlockEntity;
+import net.zagdrath.encodedlogistics.crafting.CraftPlanner;
+import net.zagdrath.encodedlogistics.crafting.CraftRequests;
+import net.zagdrath.encodedlogistics.crafting.CraftingJob;
+import net.zagdrath.encodedlogistics.crafting.JobHost;
+import net.zagdrath.encodedlogistics.multiblock.NetworkIndex.NetworkRef;
 import net.zagdrath.encodedlogistics.part.FabricationTerminalPart;
+import net.zagdrath.encodedlogistics.rack.NetworkAccess;
 import net.zagdrath.encodedlogistics.rack.RackPermission;
 import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
@@ -285,5 +295,39 @@ public class FabricationTerminalMenu extends AccessTerminalMenu {
         }
         loading = false;
         slotsChanged(craftSlots);
+    }
+
+    // JEI Ctrl-click, after fillGrid: starts crafting what the grid is still without - each empty slot's first option
+    // the network can craft, one job per item on the Auto Scheduler - and tells the player what started and what didn't.
+    // The items land in storage; the player moves the recipe again once they're made.
+    public void craftMissing(List<List<ItemStack>> inputs) {
+        if (!(player instanceof ServerPlayer serverPlayer) || !(player.level() instanceof ServerLevel level)
+                || !NetworkAccess.tell(allowed(RackPermission.CRAFT), player, RackPermission.CRAFT)) {
+            return;
+        }
+        MinecraftServer server = level.getServer();
+        NetworkRef network = network();
+        Set<StorageKey> craftables = CraftRequests.craftables(server, network);
+        Map<StorageKey, Long> wanted = new LinkedHashMap<>();
+        for (int i = 0; i < Math.min(9, inputs.size()); i++) {
+            if (craftSlots.getItem(i).isEmpty()) {
+                inputs.get(i).stream().filter(option -> !option.isEmpty()).map(StorageKey::of).filter(craftables::contains).findFirst()
+                        .ifPresent(key -> wanted.merge(key, 1L, Long::sum));
+            }
+        }
+        List<JobHost> schedulers = CraftRequests.schedulers(server, network);
+        wanted.forEach((key, amount) -> {
+            CraftPlanner.Plan plan = CraftRequests.plan(server, network, key, amount);
+            JobHost scheduler = plan != null && plan.complete() ? CraftRequests.choose(schedulers, plan.memory(), -1) : null;
+            CraftingJob job = scheduler != null ? CraftRequests.start(server, network, plan, scheduler, CraftRequests.Requester.of(serverPlayer)) : null;
+            if (job != null) {
+                player.sendSystemMessage(Component.translatable("message.encodedlogistics.terminal.craft_missing.started", amount, key.displayName()));
+                return;
+            }
+            Component reason = plan == null || !plan.complete() ? Component.translatable("message.encodedlogistics.terminal.craft_missing.ingredients")
+                    : schedulers.isEmpty() ? Component.translatable("gui.encodedlogistics.craft." + CraftRequests.noScheduler(server, network))
+                    : Component.translatable("message.encodedlogistics.terminal.craft_missing.no_room");
+            player.sendSystemMessage(Component.translatable("message.encodedlogistics.terminal.craft_missing.failed", amount, key.displayName(), reason));
+        });
     }
 }

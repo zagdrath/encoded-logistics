@@ -7,7 +7,8 @@ covers: [encodedlogistics:raw_*, encodedlogistics:*_ingot, encodedlogistics:*_du
 ---
 The mod adds three metals. **Neodymium** and **tantalum** open up the middle of the mod: 128K and larger dies and
 drives, Tantalum Capacitors, Pressurized and Energy drives, ports and the Gateway. **Gallium** is for the top of it:
-Processor Dies, Optical Transceivers and Radio Modules. Each has an ore, a raw metal, an ingot and a storage block.
+Processor Dies, Optical Transceivers and Radio Modules. Each has an ore, a raw metal, an ingot, and a storage block
+for each of the raw metal and the ingot.
 Everything before them (Logic and Memory Dies, the first network, the Midrange line) needs only vanilla materials.
 
 ## Where the ores are {#ores}
@@ -67,5 +68,13 @@ Nine ingots make a block, and a block crafts back into nine:
 
 {{recipe neodymium_block}}
 
-They need an iron pickaxe to mine, and are in the `c:storage_blocks` tags. The three metal blocks (not Ferrite) can be
-used in a beacon's base.
+Nine raw metals likewise make a raw block, as vanilla's raw iron does, and it crafts back into nine:
+
+| Block | From |
+|---|---|
+| {{item raw_neodymium_block}} | 9 Raw Neodymium |
+| {{item raw_tantalum_block}} | 9 Raw Tantalum |
+| {{item raw_gallium_block}} | 9 Raw Gallium |
+
+They all need an iron pickaxe to mine, and are in the `c:storage_blocks` tags. The three metal blocks (not Ferrite or
+the raw blocks) can be used in a beacon's base.

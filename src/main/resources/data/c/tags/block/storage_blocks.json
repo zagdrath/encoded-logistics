@@ -3,6 +3,9 @@
   "#c:storage_blocks/neodymium",
   "#c:storage_blocks/tantalum",
   "#c:storage_blocks/gallium",
-  "#c:storage_blocks/ferrite"
+  "#c:storage_blocks/ferrite",
+  "#c:storage_blocks/raw_neodymium",
+  "#c:storage_blocks/raw_tantalum",
+  "#c:storage_blocks/raw_gallium"
  ]
 }

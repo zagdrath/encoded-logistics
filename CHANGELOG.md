@@ -23,6 +23,23 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+### Added
+
+- **Raw ore blocks:** Block of Raw Neodymium, Raw Tantalum and Raw Gallium. Nine raw metals craft one and it crafts
+  back into nine, as vanilla's raw iron block; they need an iron pickaxe and are in `#c:storage_blocks/raw_<metal>`.
+- **Craft what's missing from JEI:** Ctrl-click JEI's "+" on a crafting recipe in a Fabrication Terminal or Rack
+  Fabrication Console to also start crafting jobs for the ingredients marked blue (missing but craftable), one job per
+  item on the Auto Scheduler. Chat says what started and what couldn't; "+" again once they're made fills the rest.
+
+### Changed
+
+- **New textures for materials**, as Arcforge 2.8.1's: the raw metals, the metal dusts, the new raw ore blocks and the
+  Neodymium, Tantalum, Gallium and Ferrite blocks.
+
+### Fixed
+
+- **JEI's "+" works in the Rack Fabrication Console:** recipe transfer only reached the Fabrication Terminal.
+
 ## [1.4.1] - 2026-10-19
 
 ### Fixed

@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "###",
+  "###",
+  "###"
+ ],
+ "key": {
+  "#": "#c:raw_materials/gallium"
+ },
+ "result": {
+  "id": "encodedlogistics:raw_gallium_block",
+  "count": 1
+ }
+}

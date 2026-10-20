@@ -29,6 +29,29 @@ def recolour_indexed(src,ramp):
             p=im.getpixel((x,y))
             if p[3]: out.putpixel((x,y),m[p[:3]]+(p[3],))
     return out,cols
+def transfer(src,ref,ramp):
+    """Arcforge 2.8.1's material art (tools/arcforge_ref/v2/): each family is one template palette-swapped per material.
+       Each template colour sits somewhere in the brightness range of the Arcforge material it was coloured for (ref: that
+       material's raw ore or ingot); take the colour at the same point of our material's ramp. Stays stepped, and a block
+       keeps its narrower range inside the ore's or ingot's, as Arcforge's do."""
+    def span(cs): ls=[L(c) for c in cs]; return min(ls),max(ls)
+    def colours(p):
+        im=Image.open(os.path.join(REF,'v2',p)).convert('RGBA')
+        return im,{im.getpixel((x,y))[:3] for x in range(im.width) for y in range(im.height) if im.getpixel((x,y))[3]}
+    im,_=colours(src); lo,hi=span(colours(ref)[1])
+    stops=sorted((H(s) if isinstance(s,str) else s for s in ramp),key=L); slo,shi=L(stops[0]),L(stops[-1])
+    def at(c):
+        v=slo+min(1,max(0,(L(c)-lo)/max(1,hi-lo)))*(shi-slo)
+        for a,b in zip(stops,stops[1:]):
+            if L(a)<=v<=L(b):
+                f=(v-L(a))/max(1e-6,L(b)-L(a)); return tuple(round(a[k]+(b[k]-a[k])*f) for k in range(3))
+        return stops[-1]
+    out=Image.new('RGBA',(16,16),(0,0,0,0))
+    for y in range(16):
+        for x in range(16):
+            p=im.getpixel((x,y))
+            if p[3]: out.putpixel((x,y),at(p[:3])+(p[3],))
+    return out
 def silica():
     return recolour('nether_quartz_dust.png',['#3E4148','#7C8089','#AEB2B9','#D3D6DB','#EEF0F2','#FBFCFD'])
 def silica_blend():

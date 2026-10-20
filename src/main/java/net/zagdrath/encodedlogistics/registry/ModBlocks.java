@@ -107,6 +107,10 @@ public final class ModBlocks {
     public static final DeferredBlock<Block> TANTALUM_BLOCK = BLOCKS.registerSimpleBlock("tantalum_block", p -> storage(p, MapColor.METAL));
     public static final DeferredBlock<Block> GALLIUM_BLOCK = BLOCKS.registerSimpleBlock("gallium_block", p -> storage(p, MapColor.METAL));
     public static final DeferredBlock<Block> FERRITE_BLOCK = BLOCKS.registerSimpleBlock("ferrite_block", p -> storage(p, MapColor.COLOR_BLACK));
+    // Raw ore blocks: nine raw ores packed, as vanilla's and Arcforge's.
+    public static final DeferredBlock<Block> RAW_NEODYMIUM_BLOCK = BLOCKS.registerSimpleBlock("raw_neodymium_block", p -> rawStorage(p, MapColor.COLOR_LIGHT_GRAY));
+    public static final DeferredBlock<Block> RAW_TANTALUM_BLOCK = BLOCKS.registerSimpleBlock("raw_tantalum_block", p -> rawStorage(p, MapColor.COLOR_GRAY));
+    public static final DeferredBlock<Block> RAW_GALLIUM_BLOCK = BLOCKS.registerSimpleBlock("raw_gallium_block", p -> rawStorage(p, MapColor.METAL));
 
     // Autocrafting (Phase 3): the Fabricator and Gateway carry out schematics; the Scheduler multiblock runs the jobs.
     public static final DeferredBlock<FabricatorBlock> FABRICATOR = BLOCKS.registerBlock("fabricator", FabricatorBlock::new,
@@ -242,6 +246,10 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties storage(BlockBehaviour.Properties properties, MapColor color) {
         return properties.mapColor(color).strength(5.0F, 6.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);
+    }
+
+    private static BlockBehaviour.Properties rawStorage(BlockBehaviour.Properties properties, MapColor color) {
+        return properties.mapColor(color).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(5.0F, 6.0F);
     }
 
     private static BlockBehaviour.Properties deepslateOre(BlockBehaviour.Properties properties) {

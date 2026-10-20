@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
@@ -22,6 +23,7 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -33,24 +35,33 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.zagdrath.encodedlogistics.menu.AccessTerminalMenu;
 import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
 import net.zagdrath.encodedlogistics.net.TerminalRecipePayload;
-import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 import net.zagdrath.encodedlogistics.storage.StorageKey;
 
 // JEI's "+" on a crafting recipe in a Fabrication Terminal: sends each grid slot's options to the server, which fills the
 // grid from the network first, then the player's inventory (FabricationTerminalMenu.fillGrid). Before that, as AE2 does,
 // the recipe shows which ingredients the network, the inventory and the grid don't have between them: red for missing,
-// blue for missing but craftable on the network. The "+" still works then, moving what there is.
+// blue for missing but craftable on the network. The "+" still works then, moving what there is; Ctrl-click also starts
+// crafting the blue ones (FabricationTerminalMenu.craftMissing). JEI looks handlers up by the menu's exact class and
+// type, so there's one for the Fabrication Terminal and one for the Rack Fabrication Console.
 public class FabricationTransferHandler implements IRecipeTransferHandler<FabricationTerminalMenu, RecipeHolder<CraftingRecipe>> {
     private static final int MISSING = 0x66FF0000, CRAFTABLE = 0x660060FF;
 
+    private final Class<? extends FabricationTerminalMenu> menuClass;
+    private final Supplier<MenuType<FabricationTerminalMenu>> menuType;
+
+    public FabricationTransferHandler(Class<? extends FabricationTerminalMenu> menuClass, Supplier<MenuType<FabricationTerminalMenu>> menuType) {
+        this.menuClass = menuClass;
+        this.menuType = menuType;
+    }
+
     @Override
     public Class<? extends FabricationTerminalMenu> getContainerClass() {
-        return FabricationTerminalMenu.class;
+        return menuClass;
     }
 
     @Override
     public Optional<MenuType<FabricationTerminalMenu>> getMenuType() {
-        return Optional.of(ModMenuTypes.FABRICATION_TERMINAL.get());
+        return Optional.of(menuType.get());
     }
 
     @Override
@@ -75,7 +86,7 @@ public class FabricationTransferHandler implements IRecipeTransferHandler<Fabric
         while (inputs.size() < 9) {
             inputs.add(List.of());
         }
-        ClientPacketDistributor.sendToServer(new TerminalRecipePayload(container.containerId, inputs));
+        ClientPacketDistributor.sendToServer(new TerminalRecipePayload(container.containerId, inputs, Minecraft.getInstance().hasControlDown()));
         return null;
     }
 
@@ -138,6 +149,9 @@ public class FabricationTransferHandler implements IRecipeTransferHandler<Fabric
                 tooltip.add(Component.translatable("jei.encodedlogistics.transfer.craftable", craftable.size()).withStyle(ChatFormatting.BLUE));
             }
             tooltip.add(Component.translatable("jei.encodedlogistics.transfer.partial").withStyle(ChatFormatting.GRAY));
+            if (!craftable.isEmpty()) {
+                tooltip.add(Component.translatable("jei.encodedlogistics.transfer.craft_missing").withStyle(ChatFormatting.GRAY));
+            }
         }
 
         @Override

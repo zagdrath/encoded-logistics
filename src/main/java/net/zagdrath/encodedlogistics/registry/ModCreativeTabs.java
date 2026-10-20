@@ -119,11 +119,12 @@ public final class ModCreativeTabs {
             .withTabsBefore(key("2_parts"))
             .icon(() -> ModItems.SILICON_WAFER.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                // Ores, then each metal's raw, dust, ingot and block.
+                // Ores, then each metal's raw, raw block, dust, ingot and block.
                 for (var item : List.of(ModItems.NEODYMIUM_ORE, ModItems.DEEPSLATE_NEODYMIUM_ORE, ModItems.TANTALUM_ORE,
-                        ModItems.DEEPSLATE_TANTALUM_ORE, ModItems.DEEPSLATE_GALLIUM_ORE, ModItems.RAW_NEODYMIUM, ModItems.NEODYMIUM_DUST,
-                        ModItems.NEODYMIUM_INGOT, ModItems.NEODYMIUM_BLOCK, ModItems.RAW_TANTALUM, ModItems.TANTALUM_DUST, ModItems.TANTALUM_INGOT,
-                        ModItems.TANTALUM_BLOCK, ModItems.RAW_GALLIUM, ModItems.GALLIUM_DUST, ModItems.GALLIUM_INGOT, ModItems.GALLIUM_BLOCK)) {
+                        ModItems.DEEPSLATE_TANTALUM_ORE, ModItems.DEEPSLATE_GALLIUM_ORE, ModItems.RAW_NEODYMIUM, ModItems.RAW_NEODYMIUM_BLOCK,
+                        ModItems.NEODYMIUM_DUST, ModItems.NEODYMIUM_INGOT, ModItems.NEODYMIUM_BLOCK, ModItems.RAW_TANTALUM, ModItems.RAW_TANTALUM_BLOCK,
+                        ModItems.TANTALUM_DUST, ModItems.TANTALUM_INGOT, ModItems.TANTALUM_BLOCK, ModItems.RAW_GALLIUM, ModItems.RAW_GALLIUM_BLOCK,
+                        ModItems.GALLIUM_DUST, ModItems.GALLIUM_INGOT, ModItems.GALLIUM_BLOCK)) {
                     output.accept(item.get());
                 }
                 for (var material : List.of(ModItems.SILICA, ModItems.SILICA_BLEND, ModItems.SILICON_BOULE, ModItems.SILICON_WAFER,

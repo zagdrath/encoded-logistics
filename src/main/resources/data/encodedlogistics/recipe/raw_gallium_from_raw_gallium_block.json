@@ -1,0 +1,11 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "misc",
+ "ingredients": [
+  "#c:storage_blocks/raw_gallium"
+ ],
+ "result": {
+  "id": "encodedlogistics:raw_gallium",
+  "count": 9
+ }
+}

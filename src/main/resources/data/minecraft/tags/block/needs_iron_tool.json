@@ -8,6 +8,9 @@
   "encodedlogistics:neodymium_block",
   "encodedlogistics:tantalum_block",
   "encodedlogistics:gallium_block",
-  "encodedlogistics:ferrite_block"
+  "encodedlogistics:ferrite_block",
+  "encodedlogistics:raw_neodymium_block",
+  "encodedlogistics:raw_tantalum_block",
+  "encodedlogistics:raw_gallium_block"
  ]
 }

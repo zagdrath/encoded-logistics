@@ -28,12 +28,15 @@ import net.zagdrath.encodedlogistics.client.screen.RackElevationScreen;
 import net.zagdrath.encodedlogistics.client.screen.RackScreen;
 import net.zagdrath.encodedlogistics.client.screen.SchematicEncoderScreen;
 import net.zagdrath.encodedlogistics.client.screen.ThresholdSensorScreen;
+import net.zagdrath.encodedlogistics.menu.FabricationTerminalMenu;
+import net.zagdrath.encodedlogistics.menu.RackConsoleFabricationMenu;
 import net.zagdrath.encodedlogistics.recipe.LithographyRecipes;
 import net.zagdrath.encodedlogistics.registry.ModItems;
+import net.zagdrath.encodedlogistics.registry.ModMenuTypes;
 
 // JEI support (only loaded when JEI is installed). Crafting recipes show up on their own; this adds the Lithography
 // category (with the press as its station), the Fabricator as a crafting station, recipe transfer into the Fabrication
-// Terminal's grid and the Schematic Encoder's ghost slots (any recipe), dragging items onto ghost slots (every filter, the Gateway's stock list, the Encoder's grid) and the Server Rack's filter
+// Terminal's and Rack Fabrication Console's grids and the Schematic Encoder's ghost slots (any recipe), dragging items onto ghost slots (every filter, the Gateway's stock list, the Encoder's grid) and the Server Rack's filter
 // boxes, and an info page on how controllers form
 // structures and what they provide. Its search bar is what the terminals' JEI search mode syncs with (ExternalSearch).
 @JeiPlugin
@@ -60,7 +63,10 @@ public class EncodedLogisticsJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
-        registration.addRecipeTransferHandler(new FabricationTransferHandler(), RecipeTypes.CRAFTING);
+        registration.addRecipeTransferHandler(new FabricationTransferHandler(FabricationTerminalMenu.class, ModMenuTypes.FABRICATION_TERMINAL),
+                RecipeTypes.CRAFTING);
+        registration.addRecipeTransferHandler(new FabricationTransferHandler(RackConsoleFabricationMenu.class, ModMenuTypes.RACK_CONSOLE_FABRICATION),
+                RecipeTypes.CRAFTING);
         registration.addUniversalRecipeTransferHandler(new EncoderTransferHandler());
     }
 

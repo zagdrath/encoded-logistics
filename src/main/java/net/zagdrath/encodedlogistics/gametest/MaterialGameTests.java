@@ -31,8 +31,8 @@ import net.zagdrath.encodedlogistics.EncodedLogistics;
 import net.zagdrath.encodedlogistics.registry.ModItems;
 
 // The metal dusts: each is in #c:dusts and #c:dusts/<metal>, and smelts and blasts into its ingot. Their Arc Crusher
-// recipes only load with Arcforge installed. The storage blocks: nine ingots (or Ferrite) craft one, which is in
-// #c:storage_blocks/<name> and crafts back into nine.
+// recipes only load with Arcforge installed. The storage blocks: nine ingots (or Ferrite, or raw ores) craft one, which
+// is in #c:storage_blocks/<name> and crafts back into nine.
 final class MaterialGameTests {
     private record Metal(String name, DeferredItem<Item> dust, DeferredItem<Item> ingot) {}
 
@@ -43,7 +43,8 @@ final class MaterialGameTests {
 
     private static final List<Storage> STORAGE = List.of(new Storage("neodymium", ModItems.NEODYMIUM_INGOT, ModItems.NEODYMIUM_BLOCK),
             new Storage("tantalum", ModItems.TANTALUM_INGOT, ModItems.TANTALUM_BLOCK), new Storage("gallium", ModItems.GALLIUM_INGOT, ModItems.GALLIUM_BLOCK),
-            new Storage("ferrite", ModItems.FERRITE, ModItems.FERRITE_BLOCK));
+            new Storage("ferrite", ModItems.FERRITE, ModItems.FERRITE_BLOCK), new Storage("raw_neodymium", ModItems.RAW_NEODYMIUM, ModItems.RAW_NEODYMIUM_BLOCK),
+            new Storage("raw_tantalum", ModItems.RAW_TANTALUM, ModItems.RAW_TANTALUM_BLOCK), new Storage("raw_gallium", ModItems.RAW_GALLIUM, ModItems.RAW_GALLIUM_BLOCK));
 
     private MaterialGameTests() {}
 

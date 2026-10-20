@@ -80,7 +80,7 @@ def heatsink():
     return out
 ITEMS={'schematic_card':lambda: card(None,'blank'),'encoded_schematic_crafting':lambda: card(CRAFTING,'crafting'),
        'encoded_schematic_processing':lambda: card(PROCESSING,'processing'),
-       'raw_gallium':lambda: raw(GA_RAMP,95),'gallium_ingot':lambda: ingot(GA_INGOT),'gallium_dust':lambda: dust(GA_RAMP),
+       'raw_gallium':lambda: raw(GA_RAMP),'gallium_ingot':lambda: ingot(GA_INGOT),'gallium_dust':lambda: dust(GA_RAMP),
        'processor_die':processor_die,'processor_photomask':photomask_processor,'heatsink':heatsink,
        'storage_die_2m':lambda: storage_die(4),'storage_drive_2m':lambda: drive(4)}
 BLOCK_TEX={'ore/deepslate_gallium_ore':lambda: ore_overlay('ore_deepslate_nickel_ore.png',GA_RAMP)}

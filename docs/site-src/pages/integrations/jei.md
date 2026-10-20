@@ -25,7 +25,7 @@ shows every lithography recipe. The recipes are the ones the server sends, so a 
 
 | Where | What "+" does |
 |---|---|
-| A {{item fabrication_terminal}} (any crafting recipe) | Fills the crafting grid from the network first, then your inventory. Before that, the recipe marks what is missing: red for missing, blue for missing but craftable on the network. The "+" still works then, moving what there is |
+| A {{item fabrication_terminal}} or {{item rack_fabrication_console}} (any crafting recipe) | Fills the crafting grid from the network first, then your inventory. Before that, the recipe marks what is missing: red for missing, blue for missing but craftable on the network. The "+" still works then, moving what there is. Ctrl-click the "+" to also start crafting jobs for the blue ones (on the Auto Scheduler, one job per item); chat says what started and what couldn't, and once they're made, "+" again fills the rest |
 | A {{item schematic_encoder}} (any recipe) | A crafting recipe fills the ghost grid in crafting mode; any other recipe becomes a processing schematic with its inputs (up to nine) and outputs (up to three) and their amounts. Only ghost entries are set: nothing is taken from anywhere |
 
 ## Dragging onto filters and ghost slots {#ghosts}
