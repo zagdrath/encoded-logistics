@@ -23,6 +23,8 @@ number and date. How to cut a release is in [docs/RELEASING.md](docs/RELEASING.m
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-19
+
 ### Added
 
 - **Raw ore blocks:** Block of Raw Neodymium, Raw Tantalum and Raw Gallium. Nine raw metals craft one and it crafts
@@ -481,7 +483,8 @@ The first release. Needs Minecraft 26.3 and NeoForge 26.3.0.0-beta or later. JEI
   log says why.
 - **JEI and Jade** support throughout.
 
-[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.1+26.3...HEAD
+[Unreleased]: https://github.com/zagdrath/encoded-logistics/compare/v1.5.0+26.3...HEAD
+[1.5.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.1+26.3...v1.5.0+26.3
 [1.4.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.4.0+26.3...v1.4.1+26.3
 [1.4.0]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.1+26.3...v1.4.0+26.3
 [1.3.1]: https://github.com/zagdrath/encoded-logistics/compare/v1.3.0+26.3...v1.3.1+26.3
